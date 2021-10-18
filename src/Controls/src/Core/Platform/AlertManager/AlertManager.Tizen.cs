@@ -1,57 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Handlers;
+using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
+using NWindow = Tizen.NUI.Window;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class AlertManager
 	{
-		//readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
+		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
 		internal void Subscribe(Window window)
 		{
-			IMauiContext mauiContext = window?.MauiContext;
-			EWindow platformWindow = mauiContext.GetPlatformWindow();
+			var nativeWindow = window?.MauiContext.GetNativeWindow();
 
-			if (mauiContext == null || platformWindow == null)
+			if (Subscriptions.Any(s => s.Window == nativeWindow))
 				return;
 
-			if (Subscriptions.Any(s => s.Window == platformWindow))
-			{
-				return;
-			}
-
-			Subscriptions.Add(new AlertRequestHelper(platformWindow, mauiContext));
+			Subscriptions.Add(new AlertRequestHelper(nativeWindow));
 		}
 
 		internal void Unsubscribe(Window window)
 		{
-			IMauiContext mauiContext = window?.MauiContext;
-			EWindow nativeWindow = mauiContext.GetPlatformWindow();
+			var nativeWindow = window?.MauiContext.GetNativeWindow();
 
-			//var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
+			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 
-			//foreach (AlertRequestHelper alertRequestHelper in toRemove)
-			//{
-			//	alertRequestHelper.Dispose();
-			//	Subscriptions.Remove(alertRequestHelper);
-			//}
+			foreach (AlertRequestHelper alertRequestHelper in toRemove)
+			{
+				alertRequestHelper.Dispose();
+				Subscriptions.Remove(alertRequestHelper);
+			}
 		}
 	}
 
 	internal sealed class AlertRequestHelper : IDisposable
 	{
 		int _busyCount;
-		Dialog _pageBusyDialog;
-		readonly HashSet<EvasObject> _alerts = new HashSet<EvasObject>();
+		Popup _busyPopup;
 
-		internal AlertRequestHelper(EWindow window, IMauiContext mauiContext)
+		internal AlertRequestHelper(NWindow window)
 		{
 			Window = window;
-			MauiContext = mauiContext;
 
 			MessagingCenter.Subscribe<Page, bool>(Window, Page.BusySetSignalName, OnBusySetRequest);
 			MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequest);
@@ -59,8 +52,7 @@ namespace Microsoft.Maui.Controls.Platform
 			MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
 		}
 
-		public EWindow Window { get; }
-		public IMauiContext MauiContext { get; }
+		public NWindow Window { get; }
 
 		public void Dispose()
 		{
@@ -73,251 +65,108 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnBusySetRequest(Page sender, bool enabled)
 		{
 			// Verify that the page making the request is child of this platform
-			if (!PageIsInThisContext(sender))
+			if (!PageIsInThisWindow(sender))
 			{
 				return;
 			}
 			_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
 
-			if (null == _pageBusyDialog)
+			if (null == _busyPopup)
 			{
-				_pageBusyDialog = new Dialog(MauiContext.GetPlatformParent())
+				_busyPopup = new Popup
 				{
-					Orientation = PopupOrientation.Center,
-					BackgroundColor = EColor.Transparent
+					BackgroundColor = new Tizen.NUI.Color(0.1f, 0.1f, 0.1f, 0.5f),
+					Layout = new LinearLayout
+					{
+						HorizontalAlignment = HorizontalAlignment.Center,
+						VerticalAlignment = VerticalAlignment.Center,
+					},
+					Content = new Tizen.UIExtensions.NUI.GraphicsView.ActivityIndicator
+					{
+						// TODO. need to fix
+						SizeWidth = 100,
+						SizeHeight = 100,
+						IsRunning = true,
+					}
 				};
-
-				_pageBusyDialog.SetTitleBackgroundColor(EColor.Transparent);
-				_pageBusyDialog.SetContentBackgroundColor(EColor.Transparent);
-
-				var activity = new EProgressBar(_pageBusyDialog) { IsPulseMode = true }.SetLargeStyle();
-				activity.PlayPulse();
-				activity.Show();
-
-				_pageBusyDialog.Content = activity;
 			}
 
 			if (_busyCount > 0)
 			{
-				_pageBusyDialog.Show();
+				_busyPopup.Open();
 			}
 			else
 			{
-				_pageBusyDialog.Dismiss();
-				_pageBusyDialog.Unrealize();
-				_pageBusyDialog = null;
+				_busyPopup.Close();
+				_busyPopup.Dispose();
+				_busyPopup = null;
 			}
 		}
 
-		void OnAlertRequest(Page sender, AlertArguments arguments)
+		async void OnAlertRequest(Page sender, AlertArguments arguments)
 		{
 			// Verify that the page making the request is child of this platform
-			if (!PageIsInThisContext(sender))
+			if (!PageIsInThisWindow(sender))
 				return;
 
-			var alert = Dialog.CreateDialog(MauiContext.GetPlatformParent(), (arguments.Accept != null));
-
-			alert.Title = arguments.Title;
-			var message = arguments.Message?.Replace("&", "&amp;", StringComparison.Ordinal).Replace("<", "&lt;", StringComparison.Ordinal).Replace(">", "&gt;", StringComparison.Ordinal).Replace(Environment.NewLine, "<br>", StringComparison.Ordinal);
-			alert.Message = message;
-
-			var cancel = new EButton(alert) { Text = arguments.Cancel };
-			alert.NegativeButton = cancel;
-			cancel.Clicked += (s, evt) =>
-			{
-				arguments.SetResult(false);
-				alert.Dismiss();
-			};
-
+			MessagePopup alert = null;
 			if (arguments.Accept != null)
 			{
-				var ok = new EButton(alert) { Text = arguments.Accept };
-				alert.NeutralButton = ok;
-				ok.Clicked += (s, evt) =>
-				{
-					arguments.SetResult(true);
-					alert.Dismiss();
-				};
+				alert = new MessagePopup(arguments.Title, arguments.Message, arguments.Accept, arguments.Cancel);
 			}
-
-			alert.BackButtonPressed += (s, evt) =>
+			else
+			{
+				alert = new MessagePopup(arguments.Title, arguments.Message, arguments.Cancel);
+			}
+			try
+			{
+				arguments.SetResult(await alert.Open());
+			}
+			catch (TaskCanceledException)
 			{
 				arguments.SetResult(false);
-				alert.Dismiss();
-			};
-
-			alert.Show();
-			_alerts.Add(alert);
-			alert.Dismissed += (s, e) => _alerts.Remove(alert);
+			}
 		}
 
-		void OnActionSheetRequest(Page sender, ActionSheetArguments arguments)
+		async void OnActionSheetRequest(Page sender, ActionSheetArguments arguments)
 		{
 			// Verify that the page making the request is child of this platform
-			if (!PageIsInThisContext(sender))
+			if (!PageIsInThisWindow(sender))
 				return;
 
-			var alert = Dialog.CreateDialog(MauiContext.GetPlatformParent());
-
-			alert.Title = arguments.Title;
-			var box = new EBox(alert);
-
-			if (null != arguments.Destruction)
+			try
 			{
-				var destruction = new TButton(alert)
-				{
-					Text = arguments.Destruction,
-					AlignmentX = -1
-				};
-				//TextColor should be set after applying style
-				destruction.TextColor = TColor.Red;
-
-				destruction.Clicked += (s, evt) =>
-				{
-					arguments.SetResult(arguments.Destruction);
-					alert.Dismiss();
-				};
-				destruction.Show();
-				box.PackEnd(destruction);
+				var popup = new ActionSheetPopup(arguments.Title, arguments.Cancel, destruction: arguments.Destruction, buttons: arguments.Buttons);
+				arguments.SetResult(await popup.Open());
 			}
-
-			foreach (string buttonName in arguments.Buttons)
+			catch (TaskCanceledException)
 			{
-				var button = new TButton(alert)
-				{
-					Text = buttonName,
-					AlignmentX = -1
-				};
-
-				button.Clicked += (s, evt) =>
-				{
-					arguments.SetResult(buttonName);
-					alert.Dismiss();
-				};
-				button.Show();
-				box.PackEnd(button);
+				arguments.SetResult(arguments.Cancel);
 			}
-
-			box.Show();
-			alert.Content = box;
-
-			if (null != arguments.Cancel)
-			{
-				var cancel = new TButton(alert) { Text = arguments.Cancel };
-				alert.NegativeButton = cancel;
-				cancel.Clicked += (s, evt) =>
-				{
-					alert.Dismiss();
-				};
-			}
-
-			alert.BackButtonPressed += (s, evt) =>
-			{
-				alert.Dismiss();
-			};
-
-			alert.Show();
-
-			_alerts.Add(alert);
-			alert.Dismissed += (s, e) => _alerts.Remove(alert);
 		}
 
-		void OnPromptRequested(Page sender, PromptArguments args)
+		async void OnPromptRequested(Page sender, PromptArguments args)
 		{
 			// Verify that the page making the request is child of this platform
-			if (!PageIsInThisContext(sender))
+			if (!PageIsInThisWindow(sender))
 				return;
 
-			var prompt = Dialog.CreateDialog(MauiContext.GetPlatformParent(), (args.Accept != null));
-			prompt.Title = args.Title;
-
-			var entry = new Entry
+			try
 			{
-				MinimumWidthRequest = 200,
-				HorizontalOptions = LayoutOptions.Fill,
-				BackgroundColor = GColor.FromRgb(250, 250, 250),
-				TextColor = GColor.FromRgb(0, 0, 0),
-				Keyboard = args.Keyboard,
-			};
-
-			if (!string.IsNullOrEmpty(args.Placeholder))
-			{
-				entry.Placeholder = args.Placeholder;
+				// placeholder should not be empty string, if not layout is broken
+				var popup = new PromptPopup(args.Title, args.Message, args.Accept, args.Cancel, args.Placeholder ?? " ", args.MaxLength, args.Keyboard.ToNative(), args.InitialValue);
+				args.SetResult(await popup.Open());
 			}
-
-			if (args.MaxLength > 0)
-			{
-				entry.MaxLength = args.MaxLength;
-			}
-
-			var layout = new VerticalStackLayout
-			{
-				Spacing = 10,
-			};
-			layout.Add(new Label
-			{
-				LineBreakMode = LineBreakMode.CharacterWrap,
-				TextColor = Application.AccentColor,
-				Text = args.Message,
-				HorizontalOptions = LayoutOptions.Fill,
-				HorizontalTextAlignment = TextAlignment.Center,
-#pragma warning disable CS0612 // Type or member is obsolete
-				FontSize = Device.GetNamedSize(NamedSize.Subtitle, typeof(Label)),
-#pragma warning disable CS0612 // Type or member is obsolete
-			});
-			layout.Add(entry);
-			layout.Parent = sender;
-			var nativeView = layout.ToPlatform(MauiContext);
-
-			var width = sender.Width <= -1 ? double.PositiveInfinity : sender.Width;
-			var height = sender.Height <= -1 ? double.PositiveInfinity : sender.Height;
-			var request = layout.CrossPlatformMeasure(width, height);
-
-			nativeView.MinimumHeight = request.Height.ToScaledPixel();
-			nativeView.MinimumWidth = request.Width.ToScaledPixel();
-
-			prompt.Content = nativeView;
-
-			var cancel = new EButton(prompt) { Text = args.Cancel };
-			prompt.NegativeButton = cancel;
-			cancel.Clicked += (s, evt) =>
+			catch (TaskCanceledException)
 			{
 				args.SetResult(null);
-				prompt.Dismiss();
-			};
-
-			if (args.Accept != null)
-			{
-				var ok = new EButton(prompt) { Text = args.Accept };
-				prompt.NeutralButton = ok;
-				ok.Clicked += (s, evt) =>
-				{
-					args.SetResult(entry.Text);
-					prompt.Dismiss();
-				};
 			}
-
-			entry.Completed += (s, e) =>
-			{
-				args.SetResult(entry.Text);
-				prompt.Dismiss();
-			};
-
-			prompt.BackButtonPressed += (s, evt) =>
-			{
-				prompt.Dismiss();
-			};
-
-			prompt.Show();
-
-			_alerts.Add(prompt);
-			prompt.Dismissed += (s, e) => _alerts.Remove(prompt);
 		}
 
-		bool PageIsInThisContext(IView sender)
+		bool PageIsInThisWindow(IView sender)
 		{
-			var context = sender.Handler?.MauiContext ?? null;
-			return context?.GetPlatformWindow() == Window;
+			var window = sender.Handler?.MauiContext?.GetNativeWindow() ?? null;
+			return window == Window;
 		}
 	}
 }
