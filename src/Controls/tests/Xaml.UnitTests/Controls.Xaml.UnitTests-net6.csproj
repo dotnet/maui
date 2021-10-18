@@ -40,8 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Core.UnitTests\MockDispatcherProvider.cs" />
-    <Compile Include="..\Core.UnitTests\MockDispatcher.cs" />
     <Compile Include="..\Core.UnitTests\MockPlatformServices.cs" />
     <Compile Include="..\Core.UnitTests\BaseTestFixture.cs" />
   </ItemGroup>
