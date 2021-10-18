@@ -1,6 +1,5 @@
-﻿using ElmSharp;
-using Microsoft.Extensions.DependencyInjection;
-using ELayout = ElmSharp.Layout;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Tizen.NUI;
 
 namespace Microsoft.Maui.Platform
 {
@@ -8,11 +7,5 @@ namespace Microsoft.Maui.Platform
 	{
 		public static Window GetPlatformWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<Window>();
-
-		public static ELayout GetPlatformParent(this IMauiContext mauiContext) =>
-			mauiContext.GetPlatformWindow().GetBaseLayout();
-
-		public static ModalStack GetModalStack(this IMauiContext mauiContext) =>
-			mauiContext.GetPlatformWindow().GetModalStack();
 	}
 }

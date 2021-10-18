@@ -56,21 +56,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 		}
 
-		public InitializationOptions(CoreApplication application)
+		public InitializationOptions(bool useDeviceIndependentPixel, HandlerAttribute[] handlers)
 		{
-			Context = application;
-		}
-
-		public InitializationOptions(CoreApplication application, bool useDeviceIndependentPixel, HandlerAttribute[] handlers)
-		{
-			Context = application;
 			UseDeviceIndependentPixel = useDeviceIndependentPixel;
 			Handlers = handlers;
 		}
 
-		public InitializationOptions(CoreApplication application, bool useDeviceIndependentPixel, params Assembly[] assemblies)
+		public InitializationOptions(bool useDeviceIndependentPixel, params Assembly[] assemblies)
 		{
-			Context = application;
 			UseDeviceIndependentPixel = useDeviceIndependentPixel;
 			Assemblies = assemblies;
 		}
@@ -95,8 +88,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static IReadOnlyList<string> s_flags;
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
-
-		public static CoreApplication Context { get; internal set; }
 
 		public static bool IsInitialized { get; private set; }
 

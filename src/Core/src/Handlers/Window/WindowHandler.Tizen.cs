@@ -13,14 +13,11 @@ namespace Microsoft.Maui.Handlers
 
 			var platformContent = window.Content.ToContainerView(handler.MauiContext);
 
-			platformContent.SetAlignment(-1, -1);
-			platformContent.SetWeight(1, 1);
-			platformContent.Show();
-			handler.MauiContext.GetModalStack().Reset();
 			handler.MauiContext.GetModalStack().Push(platformContent);
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();
+
 		}
 
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)

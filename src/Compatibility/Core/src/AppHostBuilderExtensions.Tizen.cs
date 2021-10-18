@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 				var options = services.GetService<InitializationOptions>();
 				if (options == null)
 				{
-					options = new InitializationOptions(MauiApplication.Current)
+					options = new InitializationOptions()
 					{
 						DisplayResolutionUnit = TDeviceInfo.DisplayResolutionUnit.ToCompatibility(TDeviceInfo.ViewPortWidth)
 					};
