@@ -194,18 +194,4 @@
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
 
-  <!-- UWP Targets-->
-  <Target Name="WinUICheckTargetPlatformVersion" BeforeTargets="PrepareForBuild"
-      Condition="'$(TargetPlatformIdentifier)' == 'UAP' AND '$(TargetPlatformVersion)' != '' AND '$(TargetPlatformMinVersion)' != ''">
-    <PropertyGroup>
-      <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
-      <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
-    </PropertyGroup>
-    <Warning
-        Text="Microsoft.Maui recommends TargetPlatformMinVersion &gt;= 10.0.17763.0 (current project is $(TargetPlatformMinVersion))"
-        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 17763" />
-    <Warning
-        Text="Microsoft.Maui recommends TargetPlatformVersion &gt;= 10.0.17763.0 (current project is $(TargetPlatformVersion))"
-        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 17763" />
-  </Target>
 </Project>
