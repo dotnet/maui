@@ -2,14 +2,9 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IView, object>
+	public partial class PageHandler : ContentViewHandler
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
-
-		public static void MapTitle(PageHandler handler, IView page)
-		{
-		}
-		public static void MapContent(PageHandler handler, IView page)
+		public static void MapTitle(PageHandler handler, IContentView page)
 		{
 		}
 	}

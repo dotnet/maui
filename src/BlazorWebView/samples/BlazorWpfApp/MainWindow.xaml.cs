@@ -2,34 +2,38 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WebViewAppShared;
 
 namespace BlazorWpfApp
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
-    {
-        private readonly AppState _appState = new();
+	/// <summary>
+	/// Interaction logic for MainWindow.xaml
+	/// </summary>
+	public partial class MainWindow : Window
+	{
+		private readonly AppState _appState = new();
 
-        public MainWindow()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddBlazorWebView();
-            serviceCollection.AddSingleton<AppState>(_appState);
-            Resources.Add("services", serviceCollection.BuildServiceProvider());
+		public MainWindow()
+		{
+			var serviceCollection = new ServiceCollection();
+			serviceCollection.AddBlazorWebView();
+			serviceCollection.AddSingleton<AppState>(_appState);
+			Resources.Add("services", serviceCollection.BuildServiceProvider());
 
-            InitializeComponent();
-        }
+			InitializeComponent();
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
+			blazorWebView1.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
+		}
+
+		private void Button_Click(object sender, RoutedEventArgs e)
+		{
 			MessageBox.Show(
-                owner: this,
-                messageBoxText: $"Current counter value is: {_appState.Counter}",
-                caption: "Counter");
-        }
+				owner: this,
+				messageBoxText: $"Current counter value is: {_appState.Counter}",
+				caption: "Counter");
+		}
 
 		private void WebViewAlertButton_Click(object sender, RoutedEventArgs e)
 		{

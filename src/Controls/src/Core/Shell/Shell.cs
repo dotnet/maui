@@ -1327,15 +1327,6 @@ namespace Microsoft.Maui.Controls
 		}
 		#endregion
 
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void VerifyShellUWPFlagEnabled(
-			string constructorHint = null,
-			[CallerMemberName] string memberName = "")
-		{
-			// ExperimentalFlags.VerifyFlagEnabled(nameof(Shell), ExperimentalFlags.ShellUWPExperimental);
-		}
-
 		class NavigationImpl : NavigationProxy
 		{
 			readonly Shell _shell;
@@ -1372,6 +1363,7 @@ namespace Microsoft.Maui.Controls
 				if (ModalStack.Count == 0 && !_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
 					_shell.CurrentItem.SendAppearing();
 
+				modalPopped.Parent = null;
 				return modalPopped;
 			}
 
@@ -1379,6 +1371,8 @@ namespace Microsoft.Maui.Controls
 			{
 				if (ModalStack.Count == 0)
 					_shell.CurrentItem.SendDisappearing();
+
+				modal.Parent = (Element)_shell.FindParentOfType<IWindow>();
 
 				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
 					modal.SendAppearing();

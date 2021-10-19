@@ -36,11 +36,53 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
 
-		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
+		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var editorStub = new EditorStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			UITextAlignment expectedValue = UITextAlignment.Right;
+
+			var values = await GetValueAsync(editorStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editorStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		static MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
 			editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
+
+		static void SetNativeText(EditorHandler editorHandler, string text) =>
+			GetNativeEditor(editorHandler).Text = text;
+
+		static int GetCursorStartPosition(EditorHandler editorHandler)
+		{
+			var control = GetNativeEditor(editorHandler);
+			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
+		}
+
+		static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
+		{
+			var control = GetNativeEditor(editorHandler);
+			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
+			control.SelectedTextRange = control.GetTextRange(endPosition, endPosition);
+		}
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).PlaceholderText;
@@ -65,6 +107,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativeTextColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextColor.ToColor();
+
+		UITextAlignment GetNativeHorizontalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).TextAlignment;
 
 		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.DecimalPad;

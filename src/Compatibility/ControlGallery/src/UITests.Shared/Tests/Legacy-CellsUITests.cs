@@ -348,7 +348,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			App.WaitForElement(q => q.Marked("Entered: 1"));
 			App.Screenshot("Completed should have changed label's text");
-			
+
 #endif
 		}
 

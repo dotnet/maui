@@ -7,18 +7,24 @@
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
-    <_MicrosoftGraphicsWin2DVersion>0.8.0.21</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-rc.1.382</_MicrosoftMauiGraphics>
-    <_MicrosoftMauiGraphicsWin2D>6.0.100-rc.1.382</_MicrosoftMauiGraphicsWin2D>
+    <MicrosoftGraphicsWin2DVersion>1.0.0.28-preview2</MicrosoftGraphicsWin2DVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.101-preview.10.566</MicrosoftMauiGraphicsVersion>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
-    <_MicrosoftWindowsAppSdkVersion>1.0.0-experimental1</_MicrosoftWindowsAppSdkVersion>
-    <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
+    <_MicrosoftWindowsAppSdkVersion>1.0.0-preview2</_MicrosoftWindowsAppSdkVersion>
+    <_MicrosoftWindowsAppSdkVersion Condition="'$(UseInternalWinUIPackages)' == 'true'">1.0.0-20211012.0-CI-experimental</_MicrosoftWindowsAppSdkVersion>
+    <_MicrosoftWebWebView2Version>1.0.961.33</_MicrosoftWebWebView2Version>
   </PropertyGroup>
   <!-- Android related Packages -->
   <PropertyGroup>
-    <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
+    <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
+  </PropertyGroup>
+  <!-- SkiaSharp related Packages -->
+  <PropertyGroup>
+    <_SkiaSharpVersion>2.88.0-preview.145</_SkiaSharpVersion>
+    <_HarfBuzzSharpVersion>2.8.2-preview.145</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.7533b54bb17a4dbc0c837e47eb4615b3ff2d26ed.145</_SkiaSharpNativeAssetsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
     <!-- Debugger workaround -->
@@ -26,16 +32,16 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference
-        Update="Reloadify3000"
-        Version="1.0.7"
-    />
-    <PackageReference
         Update="Microsoft.Maui.Graphics"
-        Version="$(_MicrosoftMauiGraphics)" 
+        Version="$(MicrosoftMauiGraphicsVersion)"
     />
     <PackageReference
          Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
-         Version="$(_MicrosoftMauiGraphicsWin2D)"
+         Version="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <PackageReference
+         Update="Microsoft.Maui.Graphics.Skia"
+         Version="$(MicrosoftMauiGraphicsVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
@@ -90,21 +96,13 @@
         Version="$(_MicrosoftWindowsAppSdkVersion)"
     />
     <PackageReference
-        Update="Microsoft.WindowsAppSDK.Foundation"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.WindowsAppSDK.WinUI"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.WindowsAppSDK.InteractiveExperiences"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-        NoWarn="NU1701"
+        Update="Microsoft.WindowsAppSDK"
+        Condition="'$(UseInternalWinUIPackages)' == 'true'"
+        NoWarn=" NU1605"
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
-        Version="$(_MicrosoftGraphicsWin2DVersion)"
+        Version="$(MicrosoftGraphicsWin2DVersion)"
     />
     <PackageReference
         Update="Xamarin.Android.Glide"
@@ -142,6 +140,7 @@
   <Target Name="RemoveLoggingAnalyzer" BeforeTargets="CoreCompile">
     <ItemGroup>
       <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'Microsoft.Extensions.Logging.Generators'" />
+      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'System.Text.Json.SourceGeneration' and '$(BuildForLegacy)' == 'true'" />
     </ItemGroup>
   </Target>
 </Project>

@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				activityController.PopoverPresentationController.SourceView = vc.View;
 
-				if (request.PresentationSourceBounds != Rectangle.Zero)
+				if (request.PresentationSourceBounds != Rectangle.Zero || Platform.HasOSVersion(13, 0))
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 

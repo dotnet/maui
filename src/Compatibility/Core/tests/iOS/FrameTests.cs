@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using Foundation;
-using UIKit;
-using NUnit.Framework;
 using System.Threading.Tasks;
+using Foundation;
+using NUnit.Framework;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
@@ -16,7 +15,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Test, Category("Frame")]
 		public async Task ReusingFrameRendererDoesCauseOverlapWithPreviousContent()
 		{
-			await Device.InvokeOnMainThreadAsync(() => {
+			await Device.InvokeOnMainThreadAsync(() =>
+			{
 
 
 				ContentPage page = new ContentPage();

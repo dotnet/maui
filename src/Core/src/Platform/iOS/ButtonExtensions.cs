@@ -7,13 +7,13 @@ namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateText(this UIButton nativeButton, IButton button) =>
+		public static void UpdateText(this UIButton nativeButton, IText button) =>
 			nativeButton.SetTitle(button.Text, UIControlState.Normal);
 
-		public static void UpdateTextColor(this UIButton nativeButton, IButton button) =>
+		public static void UpdateTextColor(this UIButton nativeButton, ITextStyle button) =>
 			nativeButton.UpdateTextColor(button);
 
-		public static void UpdateTextColor(this UIButton nativeButton, IButton button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
+		public static void UpdateTextColor(this UIButton nativeButton, ITextStyle button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
 		{
 			if (button.TextColor == null)
 			{

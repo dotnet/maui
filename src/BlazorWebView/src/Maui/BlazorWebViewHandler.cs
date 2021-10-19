@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
@@ -21,6 +20,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 		}
 
+#if !NETSTANDARD
+		private MauiDispatcher ComponentsDispatcher { get; } = new MauiDispatcher();
+#endif
+
 		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
@@ -40,8 +43,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #if !NETSTANDARD
 		private string? HostPage { get; set; }
 
-		private ObservableCollection<RootComponent>? _rootComponents;
-		private ObservableCollection<RootComponent>? RootComponents
+		private RootComponentsCollection? _rootComponents;
+		private RootComponentsCollection? RootComponents
 		{
 			get => _rootComponents;
 			set

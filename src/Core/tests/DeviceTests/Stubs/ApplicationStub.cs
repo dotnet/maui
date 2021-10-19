@@ -6,6 +6,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		readonly List<IWindow> _windows = new List<IWindow>();
 
+		public IElementHandler Handler { get; set; }
+
+		public IElement Parent { get; set; }
+
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		public IWindow CreateWindow(IActivationState state)

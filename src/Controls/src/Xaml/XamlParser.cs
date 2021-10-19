@@ -332,16 +332,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		static void GatherXmlnsDefinitionAttributes()
 		{
-			Assembly[] assemblies = null;
-#if !NETSTANDARD2_0 && !NET6_0
-			assemblies = new[] {
-				typeof(XamlLoader).GetTypeInfo().Assembly,
-				typeof(View).GetTypeInfo().Assembly,
-			};
-#else
-			assemblies = AppDomain.CurrentDomain.GetAssemblies();
-#endif
-
+			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
 			foreach (var assembly in assemblies)
@@ -358,7 +349,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					// If we can't load the custom attribute for whatever reason from the assembly,
 					// We can ignore it and keep going.
-					System.Diagnostics.Debug.WriteLine($"Failed to parse Assembly Attribute: {ex.ToString()}");
+					Debug.WriteLine($"Failed to parse Assembly Attribute: {ex.ToString()}");
 				}
 			}
 		}
@@ -366,14 +357,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
-#if NETSTANDARD2_0 || NET6_0
 			bool hasRetriedNsSearch = false;
-#endif
-			IList<XamlLoader.FallbackTypeInfo> potentialTypes;
 
-#if NETSTANDARD2_0 || NET6_0
 		retry:
-#endif
 			if (s_xmlnsDefinitions == null)
 				GatherXmlnsDefinitionAttributes();
 
@@ -381,13 +367,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				s_xmlnsDefinitions,
 				currentAssembly?.FullName,
 				(typeInfo) =>
-					Type.GetType($"{typeInfo.ClrNamespace}.{typeInfo.TypeName}, {typeInfo.AssemblyName}"),
-				out potentialTypes);
+					Type.GetType($"{typeInfo.clrNamespace}.{typeInfo.typeName}, {typeInfo.assemblyName}"));
 
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
 
-#if NETSTANDARD2_0 || NET6_0
 			if (type == null)
 			{
 				// This covers the scenario where the AppDomain's loaded
@@ -401,10 +385,6 @@ namespace Microsoft.Maui.Controls.Xaml
 					goto retry;
 				}
 			}
-#endif
-
-			if (XamlLoader.FallbackTypeResolver != null)
-				type = XamlLoader.FallbackTypeResolver(potentialTypes, type);
 
 			if (type != null && typeArguments != null)
 			{

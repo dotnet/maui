@@ -15,10 +15,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static bool _nativeAnimationSupport = false;
 		static ImageElementManager()
 		{
-			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
-				if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
-					if (Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
-						if (Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
+			if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
+				if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
+					if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
+						if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
 							_nativeAnimationSupport = true;
 		}
 

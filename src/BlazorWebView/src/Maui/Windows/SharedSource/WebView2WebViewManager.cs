@@ -135,20 +135,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			// Desktop applications almost never want to show a URL preview when hovering over a link
 			_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
-
-			// Desktop applications don't normally want to enable things like "alt-left to go back"
-			// or "ctrl+f to find". Developers should explicitly opt into allowing these.
-			// Issues #30511 and #30624 track making an option to control this.
-			var removeKeyPressCallback = _webview.AddAcceleratorKeyPressedHandler((sender, eventArgs) =>
-			{
-				if (eventArgs.VirtualKey != 0x49) // Allow ctrl+shift+i to open dev tools, at least for now
-				{
-					// Note: due to what seems like a bug (https://github.com/MicrosoftEdge/WebView2Feedback/issues/549),
-					// setting eventArgs.Handled doesn't actually have any effect in WPF, even though it works fine in
-					// WinForms. Leaving the code here because it's supposedly fixed in a newer version.
-					eventArgs.Handled = true;
-				}
-			});
 		}
 	}
 }

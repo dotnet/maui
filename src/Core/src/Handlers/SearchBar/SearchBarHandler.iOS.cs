@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : ViewHandler<ISearchBar, UISearchBar>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
 		UIColor? _defaultTextColor;
 
@@ -18,32 +18,34 @@ namespace Microsoft.Maui.Handlers
 
 		public UITextField? QueryEditor => _editor;
 
-		protected override UISearchBar CreateNativeView()
+		protected override MauiSearchBar CreateNativeView()
 		{
-			var searchBar = new UISearchBar(RectangleF.Empty) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
+			var searchBar = new MauiSearchBar() { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
-			_editor = searchBar.FindDescendantView<UITextField>();
+			if (NativeVersion.IsAtLeast(13))
+				_editor = searchBar.SearchTextField;
+			else
+				_editor = searchBar.FindDescendantView<UITextField>();
 
 			return searchBar;
 		}
 
-		protected override void ConnectHandler(UISearchBar nativeView)
+		protected override void ConnectHandler(MauiSearchBar nativeView)
 		{
 			nativeView.CancelButtonClicked += OnCancelClicked;
 			nativeView.SearchButtonClicked += OnSearchButtonClicked;
-			nativeView.TextChanged += OnTextChanged;
+			nativeView.TextPropertySet += OnTextPropertySet;
 			nativeView.ShouldChangeTextInRange += ShouldChangeText;
-
 			base.ConnectHandler(nativeView);
+			SetupDefaults(nativeView);
 		}
 
-		protected override void DisconnectHandler(UISearchBar nativeView)
+		protected override void DisconnectHandler(MauiSearchBar nativeView)
 		{
 			nativeView.CancelButtonClicked -= OnCancelClicked;
 			nativeView.SearchButtonClicked -= OnSearchButtonClicked;
-			nativeView.TextChanged -= OnTextChanged;
+			nativeView.TextPropertySet -= OnTextPropertySet;
 			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
-
 			base.DisconnectHandler(nativeView);
 		}
 
@@ -91,6 +93,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+		}
+
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler?._editor);
 		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
@@ -146,10 +153,10 @@ namespace Microsoft.Maui.Handlers
 			NativeView?.ResignFirstResponder();
 		}
 
-		void OnTextChanged(object? sender, UISearchBarTextChangedEventArgs a)
+		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			if (VirtualView != null)
-				VirtualView.Text = a.SearchText;
+				VirtualView.UpdateText(NativeView?.Text);
 		}
 
 		bool ShouldChangeText(UISearchBar searchBar, NSRange range, string text)

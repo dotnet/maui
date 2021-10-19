@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (operationPriorToSend != dragEventArgs.AcceptedOperation)
 				{
 					var result = (int)dragEventArgs.AcceptedOperation;
-					e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+					e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
 				}
 			});
 		}
@@ -172,13 +172,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (!rec.AllowDrop)
 				{
-					e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
+					e.AcceptedOperation = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
 					return;
 				}
 
 				rec.SendDragOver(dragEventArgs);
 				var result = (int)dragEventArgs.AcceptedOperation;
-				e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+				e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
 			});
 		}
 
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				e.Cancel = args.Cancel;
-				e.AllowedOperations = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+				e.AllowedOperations = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 			});
 		}
 
@@ -381,9 +381,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (!_wasPanGestureStartedSent)
 				{
-					recognizer.SendPanStarted(view, Application.Current.PanGestureId);
+					recognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				}
-				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, Application.Current.PanGestureId);
+				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
 			}
 			_wasPanGestureStartedSent = true;
 		}
@@ -395,7 +395,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isPinching = true;
 
-			Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
+			global::Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
 
 			var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
@@ -559,15 +559,15 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (success)
 				{
-					recognizer.SendPanCompleted(view, Application.Current.PanGestureId);
+					recognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
 				}
 				else
 				{
-					recognizer.SendPanCanceled(view, Application.Current.PanGestureId);
+					recognizer.SendPanCanceled(view, PanGestureRecognizer.CurrentId.Value);
 				}
 			}
 
-			Application.Current.PanGestureId++;
+			PanGestureRecognizer.CurrentId.Increment();
 			_isPanning = false;
 		}
 

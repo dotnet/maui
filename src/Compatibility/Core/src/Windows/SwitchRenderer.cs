@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void UpdateOnColor()
 		{
 			if (Control == null)
@@ -156,6 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateThumbColor()
 		{
 			if (Control == null)
@@ -191,7 +193,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 							{
 								if (_originalThumbOnBrush == null)
 								{
-									if (frame.Value is Windows.UI.Color color)
+									if (frame.Value is global::Windows.UI.Color color)
 										_originalOnColorBrush = new WSolidColorBrush(color);
 
 									if (frame.Value is WBrush brush)

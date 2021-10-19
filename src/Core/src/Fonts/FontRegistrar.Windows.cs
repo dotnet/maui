@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	{
 		string? LoadNativeAppFont(string font, string filename, string? alias)
 		{
-			var root = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+			var root = global::Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
 
 			var packagePath = Path.Combine(root, "Assets", filename);
 			if (File.Exists(packagePath))

@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 
+					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
@@ -95,7 +96,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CollectionView), typeof(CollectionViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CarouselView), typeof(CarouselViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Path), typeof(PathRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Ellipse), typeof(EllipseRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Line), typeof(LineRenderer));
@@ -115,7 +115,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(ProgressBar), typeof(ProgressBarRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ScrollView), typeof(ScrollViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CheckBox), typeof(CheckBoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
 #if !WINDOWS
@@ -138,7 +137,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
 
 					// This is for Layouts that currently don't work when assigned to LayoutHandler
-					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(DefaultRenderer));
 
 					DependencyService.Register<Xaml.ResourcesLoader>();
 					DependencyService.Register<NativeBindingService>();
@@ -152,8 +150,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					Internals.Registrar.Registered.Register(typeof(StreamImageSource), typeof(StreamImagesourceHandler));
 					Internals.Registrar.Registered.Register(typeof(UriImageSource), typeof(ImageLoaderSourceHandler));
 					Internals.Registrar.Registered.Register(typeof(FontImageSource), typeof(FontImageSourceHandler));
-
-
 					Internals.Registrar.Registered.Register(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader));
 
 #endif
@@ -161,14 +157,15 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
-
-					// Update the mappings for IView/View to work specifically for Controls
-					VisualElement.RemapForControls();
-					Label.RemapForControls();
-					Button.RemapForControls();
-				});
+			});
 
 			builder.AddMauiCompat();
+
+			// Update the mappings for IView/View to work specifically for Controls
+			VisualElement.RemapForControls();
+			Label.RemapForControls();
+			Button.RemapForControls();
+			Window.RemapForControls();
 
 			return builder;
 		}

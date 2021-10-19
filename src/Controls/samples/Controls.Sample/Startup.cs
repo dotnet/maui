@@ -26,6 +26,8 @@ namespace Maui.Controls.Sample
 
 	public static class MauiProgram
 	{
+		static bool UseMauiGraphicsSkia = false;
+
 		enum PageType { Main, Blazor, Shell, Template }
 		readonly static PageType _pageType = PageType.Main;
 
@@ -35,6 +37,22 @@ namespace Maui.Controls.Sample
 
 			appBuilder.UseMauiApp<XamlApp>();
 			var services = appBuilder.Services;
+
+			if (UseMauiGraphicsSkia)
+			{
+				appBuilder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<GraphicsView, SkiaGraphicsViewHandler>();
+					handlers.AddHandler<BoxView, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
+				});
+			}
 
 			appBuilder
 				.ConfigureMauiHandlers(handlers =>
@@ -57,10 +75,6 @@ namespace Maui.Controls.Sample
 			{
 				builder.Add<FocusRoutingEffect, FocusPlatformEffect>();
 			});
-
-#if DEBUG && !WINDOWS
-			appBuilder.EnableHotReload();
-#endif
 
 			appBuilder.Configuration.AddInMemoryCollection(
 				new Dictionary<string, string>
@@ -212,6 +226,16 @@ namespace Maui.Controls.Sample
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
 						return true;
 					}
+
+#if __ANDROID__
+					Microsoft.Maui.Handlers.ButtonHandler.NativeViewFactory = (handler) => 
+					{
+						return new Google.Android.Material.Button.MaterialButton(handler.Context) 
+						{ 
+							CornerRadius = 50, SoundEffectsEnabled = true 
+						};
+					};
+#endif
 				});
 
 			return appBuilder.Build();
