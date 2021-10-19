@@ -78,10 +78,5 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
 		}
-
-		public void UpdateMetrics(FoldEventArgs newFoldMetrics)
-		{
-			//HACK:FOLDABLE
-		}
 	}
 }
