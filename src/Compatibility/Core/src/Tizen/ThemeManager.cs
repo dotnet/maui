@@ -10,6 +10,7 @@ using ELayout = ElmSharp.Layout;
 using EProgressBar = ElmSharp.ProgressBar;
 using ESize = ElmSharp.Size;
 using ESlider = ElmSharp.Slider;
+using EToolbar = ElmSharp.Toolbar;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using Index = ElmSharp.Index;
 
@@ -473,13 +474,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		#endregion
 
 		#region Toolbar
-		public static Toolbar SetNavigationBarStyle(this Toolbar toolbar)
+		public static EToolbar SetNavigationBarStyle(this EToolbar toolbar)
 		{
 			toolbar.Style = ThemeConstants.Toolbar.Styles.NavigationBar;
 			return toolbar;
 		}
 
-		public static Toolbar SetTVTabBarWithTitleStyle(this Toolbar toolbar)
+		public static EToolbar SetTVTabBarWithTitleStyle(this EToolbar toolbar)
 		{
 			if (Device.Idiom != TargetIdiom.TV)
 			{

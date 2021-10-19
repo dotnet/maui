@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 using EColor = ElmSharp.Color;
 using ERect = ElmSharp.Rect;
+using EToolbar = ElmSharp.Toolbar;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		Box _outterLayout;
 		Box _innerBox;
 		Scroller _scroller;
-		Toolbar _toolbar;
+		EToolbar _toolbar;
 		Dictionary<EToolbarItem, Page> _itemToItemPage = new Dictionary<EToolbarItem, Page>();
 		List<EToolbarItem> _toolbarItemList = new List<EToolbarItem>();
 		bool _isResettingToolbarItems = false;
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				_outterLayout.Show();
 
 				//Create toolbar that is placed inside the _outterLayout
-				_toolbar = new Toolbar(Forms.NativeParent)
+				_toolbar = new EToolbar(Forms.NativeParent)
 				{
 					AlignmentX = -1,
 					WeightX = 1,
