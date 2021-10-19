@@ -5,7 +5,7 @@ namespace GraphicsTester.Scenarios
 	public class DrawLongTextInRectWithOverflow : AbstractScenario
 	{
 		public DrawLongTextInRectWithOverflow()
-			: base(720, 1024)
+			: base(800, 1024)
 		{
 		}
 

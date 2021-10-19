@@ -6,7 +6,7 @@ namespace GraphicsTester.Scenarios
 	public class DrawImages : AbstractScenario
 	{
 		public DrawImages()
-			: base(720, 1024)
+			: base(1400, 800)
 		{
 		}
 

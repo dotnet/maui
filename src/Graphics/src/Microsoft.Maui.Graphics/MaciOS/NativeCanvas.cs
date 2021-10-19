@@ -8,6 +8,7 @@ using CoreGraphics;
 using CoreText;
 using Foundation;
 using System;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics.Native
 {
@@ -1356,7 +1357,7 @@ namespace Microsoft.Maui.Graphics.Native
 			_context.TranslateCTM(tx, ty);
 		}
 
-		protected override void NativeConcatenateTransform(AffineTransform transform)
+		protected override void NativeConcatenateTransform(Matrix3x2 transform)
 		{
 			_context.ConcatCTM(transform.AsCGAffineTransform());
 		}

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Windows.Media;
 
 namespace Microsoft.Maui.Graphics.Xaml
@@ -134,16 +135,14 @@ namespace Microsoft.Maui.Graphics.Xaml
 			return geometry;
 		}
 
-		public static Transform AsTransform(this AffineTransform transform)
+		public static Transform AsTransform(this in Matrix3x2 transform)
 		{
 			if (transform.IsIdentity)
 			{
 				return Transform.Identity;
 			}
 
-			var values = new float[6];
-			transform.GetMatrix(values);
-			return new MatrixTransform(values[0], values[1], values[2], values[3], values[4], values[5]);
+			return new MatrixTransform(transform.M11, transform.M12, transform.M21, transform.M22, transform.M31, transform.M32);
 		}
 	}
 }

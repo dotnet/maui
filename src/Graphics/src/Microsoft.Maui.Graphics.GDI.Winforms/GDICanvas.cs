@@ -4,6 +4,7 @@ using Drawing = System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using Microsoft.Maui.Graphics.Text;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics.GDI
 {
@@ -238,25 +239,23 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
-			var strokeWidth = CurrentState.StrokeWidth;
+			if (cornerRadius == 0)
+			{
+				NativeDrawRectangle(x, y, width, height);
+				return;
+			}
 
 			SetRect(x, y, width, height);
 
-			if (cornerRadius > _rect.Width / 2)
-			{
-				cornerRadius = _rect.Width / 2;
-			}
-
-			if (cornerRadius > _rect.Height / 2)
-			{
-				cornerRadius = _rect.Height / 2;
-			}
+			float minEdgeLength = Math.Min(_rect.Width, _rect.Height);
+			cornerRadius = Math.Min(cornerRadius, minEdgeLength / 2);
+			float cornerDiameter = cornerRadius * 2;
 
 			var path = new GraphicsPath();
-			path.AddArc(_rect.X, _rect.Y, cornerRadius, cornerRadius, 180, 90);
-			path.AddArc(_rect.X + _rect.Width - cornerRadius, _rect.Y, cornerRadius, cornerRadius, 270, 90);
-			path.AddArc(_rect.X + _rect.Width - cornerRadius, _rect.Y + _rect.Height - cornerRadius, cornerRadius, cornerRadius, 0, 90);
-			path.AddArc(_rect.X, _rect.Y + _rect.Height - cornerRadius, cornerRadius, cornerRadius, 90, 90);
+			path.AddArc(_rect.X, _rect.Y, cornerDiameter, cornerDiameter, 180, 90);
+			path.AddArc(_rect.X + _rect.Width - cornerDiameter, _rect.Y, cornerDiameter, cornerDiameter, 270, 90);
+			path.AddArc(_rect.X + _rect.Width - cornerDiameter, _rect.Y + _rect.Height - cornerDiameter, cornerDiameter, cornerDiameter, 0, 90);
+			path.AddArc(_rect.X, _rect.Y + _rect.Height - cornerDiameter, cornerDiameter, cornerDiameter, 90, 90);
 			path.CloseAllFigures();
 
 			// ReSharper disable once AccessToDisposedClosure
@@ -326,13 +325,23 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		public override void FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
+			if (cornerRadius == 0)
+			{
+				FillRectangle(x, y, width, height);
+				return;
+			}
+
 			SetRect(x, y, width, height);
 
+			float minEdgeLength = Math.Min(_rect.Width, _rect.Height);
+			cornerRadius = Math.Min(cornerRadius, minEdgeLength / 2);
+			float cornerDiameter = cornerRadius * 2;
+
 			var path = new GraphicsPath();
-			path.AddArc(_rect.X, _rect.Y, cornerRadius, cornerRadius, 180, 90);
-			path.AddArc(_rect.X + _rect.Width - cornerRadius, _rect.Y, cornerRadius, cornerRadius, 270, 90);
-			path.AddArc(_rect.X + _rect.Width - cornerRadius, _rect.Y + _rect.Height - cornerRadius, cornerRadius, cornerRadius, 0, 90);
-			path.AddArc(_rect.X, _rect.Y + _rect.Height - cornerRadius, cornerRadius, cornerRadius, 90, 90);
+			path.AddArc(_rect.X, _rect.Y, cornerDiameter, cornerDiameter, 180, 90);
+			path.AddArc(_rect.X + _rect.Width - cornerDiameter, _rect.Y, cornerDiameter, cornerDiameter, 270, 90);
+			path.AddArc(_rect.X + _rect.Width - cornerDiameter, _rect.Y + _rect.Height - cornerDiameter, cornerDiameter, cornerDiameter, 0, 90);
+			path.AddArc(_rect.X, _rect.Y + _rect.Height - cornerDiameter, cornerDiameter, cornerDiameter, 90, 90);
 			path.CloseAllFigures();
 
 			Draw(g => g.FillPath(CurrentState.FillBrush, path));
@@ -457,7 +466,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			CurrentState.NativeTranslate(tx, ty);
 		}
 
-		protected override void NativeConcatenateTransform(AffineTransform transform)
+		protected override void NativeConcatenateTransform(Matrix3x2 transform)
 		{
 			CurrentState.NativeConcatenateTransform(transform);
 		}

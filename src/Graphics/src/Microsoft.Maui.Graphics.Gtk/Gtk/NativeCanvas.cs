@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Microsoft.Maui.Graphics.Native.Gtk {
 
 	public partial class NativeCanvas : AbstractCanvas<NativeCanvasState> {
@@ -170,7 +172,7 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 		}
 
 		[GtkMissingImplementation]
-		protected override void NativeConcatenateTransform(AffineTransform transform) { }
+		protected override void NativeConcatenateTransform(Matrix3x2 transform) { }
 
 		public override void SetShadow(SizeF offset, float blur, Color color) {
 			CurrentState.Shadow = (offset, blur, color);

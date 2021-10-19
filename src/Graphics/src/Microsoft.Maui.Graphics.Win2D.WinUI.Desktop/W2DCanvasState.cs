@@ -437,12 +437,9 @@ namespace Microsoft.Maui.Graphics.Win2D
 			return Matrix;
 		}
 
-		public Matrix3x2 AppendConcatenateTransform(AffineTransform transform)
-		{
-			var values = new float[6];
-			transform.GetMatrix(values);
-			Matrix = Matrix3x2.Multiply(Matrix, new Matrix3x2(values[0], values[1], values[2], values[3], values[4], values[5]));
-			return Matrix;
+		public Matrix3x2 AppendConcatenateTransform(Matrix3x2 transform)
+		{			
+			return Matrix = Matrix3x2.Multiply(Matrix, transform);
 		}
 
 		public Matrix3x2 AppendScale(float tx, float ty)

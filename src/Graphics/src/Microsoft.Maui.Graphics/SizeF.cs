@@ -69,6 +69,11 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		public SizeF TransformNormalBy(in Matrix3x2 transform)
+		{
+			return (SizeF)Vector2.TransformNormal((Vector2)this, transform);
+		}
+
 		public static SizeF operator +(SizeF s1, SizeF s2)
 		{
 			return new SizeF(s1._width + s2._width, s1._height + s2._height);
@@ -104,6 +109,11 @@ namespace Microsoft.Maui.Graphics
 			return new Vector2(size.Width, size.Height);
 		}
 
+		public static explicit operator SizeF(Vector2 size)
+		{
+			return new SizeF(size.X, size.Y);
+		}
+
 		public bool Equals(SizeF other)
 		{
 			return _width.Equals(other._width) && _height.Equals(other._height);
@@ -134,6 +144,7 @@ namespace Microsoft.Maui.Graphics
 			width = Width;
 			height = Height;
 		}
+
 		public static implicit operator Size(SizeF s) => new Size(s.Width, s.Height);
 
 		public static bool TryParse(string value, out SizeF sizeF)

@@ -1,4 +1,6 @@
 using System;
+using System.Numerics;
+
 using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
@@ -74,16 +76,16 @@ namespace Microsoft.Maui.Graphics.Skia
 			return new SKPoint(target.X, target.Y);
 		}
 
-		public static SKMatrix AsMatrix(this AffineTransform transform)
+		public static SKMatrix AsMatrix(this in Matrix3x2 transform)
 		{
 			var matrix = new SKMatrix
 			{
-				ScaleX = transform.ScaleX,
-				SkewX = transform.ShearX,
-				TransX = transform.TranslateX,
-				SkewY = transform.ShearY,
-				ScaleY = transform.ScaleY,
-				TransY = transform.TranslateY,
+				ScaleX = transform.M11,
+				SkewX = transform.M21,
+				TransX = transform.M31,
+				SkewY = transform.M12,
+				ScaleY = transform.M22,
+				TransY = transform.M32,
 				Persp0 = 0,
 				Persp1 = 0,
 				Persp2 = 1
