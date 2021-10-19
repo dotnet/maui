@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
+    <!--<PackageReference Include="Microsoft.Maui.Graphics.Skia" />-->
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
