@@ -1,5 +1,4 @@
-﻿using System;
-using Tizen.UIExtensions.Common;
+﻿using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
 using TLineBreakMode = Tizen.UIExtensions.Common.LineBreakMode;
 using TTextDecorationse = Tizen.UIExtensions.Common.TextDecorations;

@@ -1,10 +1,9 @@
 ﻿using System;
-using Tizen.UIExtensions.NUI;
 using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
 using TSize = Tizen.UIExtensions.Common.Size;
-using Tizen.NUI;
 
 
 namespace Microsoft.Maui.Platform

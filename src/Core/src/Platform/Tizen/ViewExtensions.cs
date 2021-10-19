@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void InvalidateMeasure(this NView nativeView, IView view)
 		{
-			(nativeView.GetParent() as NView)?.Layout?.RequestLayout();
+			nativeView.Layout?.RequestLayout();
 		}
 
 		public static void UpdateWidth(this NView nativeView, IView view)

@@ -12,11 +12,6 @@ namespace Microsoft.Maui.Platform
 			return c == null ? TColor.Default : new TColor(c.Red, c.Green, c.Blue, c.Alpha);
 		}
 
-		public static EColor ToPlatformEFL(this Color c)
-		{
-			return c == null ? EColor.Default : new EColor((int)(255.0 * c.Red), (int)(255.0 * c.Green), (int)(255.0 * c.Blue), (int)(255.0 * c.Alpha));
-		}
-
 		public static Color WithAlpha(this Color color, double alpha)
 		{
 			return new Color(color.Red, color.Green, color.Blue, (int)(255 * alpha));

@@ -12,8 +12,6 @@ namespace Microsoft.Maui
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
-			Console.WriteLine($"HandlerExtension::ToNative - VirtualView {view} - start");
-
 			//This is how MVU works. It collapses views down
 			if (view is IReplaceableView ir)
 				view = ir.ReplacedView;
@@ -37,8 +35,6 @@ namespace Microsoft.Maui
 
 			if (((INativeViewHandler)handler).NativeView is not NView result)
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(NView)}");
-
-			Console.WriteLine($"HandlerExtension::ToNative - VirtualView {view}, Handler {handler} - End");
 
 			return result;
 		}
