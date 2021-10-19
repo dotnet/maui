@@ -100,7 +100,7 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework.StartsWith('uap10.0')) ">
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
     <DefineConstants>WINDOWS_UWP;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
