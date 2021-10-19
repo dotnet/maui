@@ -11,11 +11,4 @@ namespace Microsoft.Maui.Controls.DualScreen
 		Rectangle WindowBounds { get; }
 		event System.EventHandler<FoldEventArgs> FoldingFeatureChanged;
 	}
-
-	//public class FoldEventArgs : System.EventArgs
-	//{
-	//	public bool isSeparating { get; set; }
-	//	public Rectangle FoldingFeatureBounds { get; set; }
-	//	public Rectangle WindowBounds { get; set; }
-	//}
 }
