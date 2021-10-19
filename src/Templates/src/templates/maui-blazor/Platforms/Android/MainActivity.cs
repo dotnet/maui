@@ -10,6 +10,7 @@ public class MainActivity : MauiAppCompatActivity
 		base.OnCreate(savedInstanceState);
 		Platform.Init(this, savedInstanceState);
 	}
+
 	public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 	{
 		Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
