@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					_newPane2 = Rectangle.Zero;
 				}
 			}
-			else
+			else // isPortrait
 			{
 				if (isSpanned)
 				{
@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			var properties = _pendingPropertyChanges.ToList();
 			_pendingPropertyChanges.Clear();
 
-			System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.UpdatLayouts ", "JWM");
+			System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.UpdateLayouts ", "JWM");
 
 			foreach (var property in properties)
 			{
@@ -385,7 +385,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 				}
 			}
 			
-
 			return isInMultipleRegions;
 		}
 

@@ -57,5 +57,12 @@
 
 			hingeLabel.Text = e.HingeAngleInDegrees + " degrees";
 		}
+
+		void OnReset(object sender, System.EventArgs e)
+		{
+			twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
+			Pane1Length.Value = 0.5;
+			Pane2Length.Value = 0.5;
+		}
 	}
 }

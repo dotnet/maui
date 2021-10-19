@@ -200,7 +200,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			try
 			{
 				//HACK:FOLDABLE this does not _do_ anything...
-				this.InvalidateMeasure();
+				//_twoPaneViewLayoutGuide.UpdateLayouts();
+				//this.InvalidateMeasure();
 				//Device.BeginInvokeOnMainThread(() =>
 				//{
 				//	this.InvalidateMeasure();

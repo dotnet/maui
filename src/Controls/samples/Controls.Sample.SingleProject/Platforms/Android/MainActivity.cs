@@ -28,23 +28,10 @@ namespace Maui.Controls.Sample.Droid
 		new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
 		Categories = new[] { Android.Content.Intent.CategoryDefault })]
 	public class MainActivity : MauiAppCompatActivity
-		/*,IDeviceInfoProvider*/ 
-		,Microsoft.Maui.Controls.DualScreen.IFoldableContext // AndroidX.Core.Util.IConsumer
+		, Microsoft.Maui.Controls.DualScreen.IFoldableContext // AndroidX.Core.Util.IConsumer
 	{
 		WindowInfoRepositoryCallbackAdapter wir;
 		IWindowMetricsCalculator wmc;
-
-		#region Should be in MauiAppCompatActivity?
-		// IDeviceInfoProvider
-		//public event EventHandler ConfigurationChanged;
-		public override void OnConfigurationChanged(Configuration newConfig)
-		{
-			base.OnConfigurationChanged(newConfig);
-			Android.Util.Log.Debug("JWM", "IDeviceInfoProvider.OnConfigurationChanged - NOOP");
-			//ConfigurationChanged?.Invoke(this, new EventArgs());
-			//TODO: Xamarin.Forms.Application.Current?.TriggerThemeChanged (new AppThemeChangedEventArgs(Xamarin.Forms.Application.Current.RequestedTheme));
-		}
-		#endregion
 
 		#region IFoldableContext properties
 		public bool isSeparating { get; protected set; }

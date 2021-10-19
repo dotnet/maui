@@ -33,14 +33,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 		internal class DualScreenServiceImpl : IDualScreenService //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
 		{
 			ScreenHelper _helper;
-			//[Obsolete("Should not care about specific device model")]
-			//bool _isDuo = false;
-			[Obsolete("Should not care about specific device model")]
-			bool IsDuo => _isSpanned; //HACK:FOLDABLE (_helper == null || _HingeService == null || _mainActivity == null || _singleUseHingeSensor == null) ? false : _isDuo;
 			HingeSensor _singleUseHingeSensor;
 			static IFoldableContext _mainActivity;
 			static DualScreenServiceImpl _HingeService;
-			//[Obsolete("don't rely on custom 'landscape'")]
 			bool _isLandscape;
 			Size _pixelScreenSize;
 			object _hingeAngleLock = new object();
@@ -93,16 +88,15 @@ namespace Microsoft.Maui.Controls.DualScreen
 					}
 				}
 
-				//TODO: fix this?
-				Update(); //HACK:FOLDABLE enabling this prevents the hinge being shown?!?
-				//_helper.Update();
-				OnLayoutChanged?.Invoke(sender, ea);
+				//HACK:FOLDABLE fix this?
+				Update();
+				//HACK:FOLDABLE sends message to TwoPaneView, but nothing happens there...
+				OnLayoutChanged?.Invoke(sender, ea); 
 			}
 
 			public static void Init(IFoldableContext activity)
 			{
 				//HACK:FOLDABLE 
-				
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Init - Android detected");
 
 				if (_HingeService == null)
@@ -117,44 +111,16 @@ namespace Microsoft.Maui.Controls.DualScreen
 					return;
 				}
 
-				if (_mainActivity is IDeviceInfoProvider oldDeviceInfoProvider)
-					oldDeviceInfoProvider.ConfigurationChanged -= _HingeService.ConfigurationChanged;
-
 				_mainActivity = activity;
 
 				if (_mainActivity == null)
 					return;
 
-				
-				//bool isDuo = _HingeService._isDuo = ScreenHelper.IsDualScreenDevice(_mainActivity);
-				//if (!isDuo)
-				//{
-					if (_mainActivity is IDeviceInfoProvider infoProvider)
-					{
-						infoProvider.ConfigurationChanged += _HingeService.ConfigurationChanged;
-					}
-
-					//return;
-				//}
-
 				var screenHelper = _HingeService._helper ?? new ScreenHelper(activity);
-				//isDuo = screenHelper.Initialize(_mainActivity);
-				//_HingeService._isDuo = isDuo;
 
-				//if (!isDuo)
-				//{
-				//	_HingeService._helper = null;
-				//	_HingeService.SetupHingeSensors(null);
-				//	return;
-				//}
-
-				// Hinge service is set up for every device - figure out how to NOT do that (based on hinge existing?)
+				//HACK:FOLDABLE Hinge service is set up for every device - figure out how to NOT do that (based on hinge existing?)
 				_HingeService._helper = screenHelper;
 				_HingeService.SetupHingeSensors(_mainActivity as Activity);
-				if (_mainActivity is IDeviceInfoProvider newDeviceInfoProvider)
-				{
-					newDeviceInfoProvider.ConfigurationChanged += _HingeService.ConfigurationChanged;
-				}
 
 				_HingeService?.Update();
 			}
@@ -174,8 +140,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			void Update()
 			{
-				
-				_isSpanned = _helper?.IsDualMode ?? false; //HACK:FOLDABLE /*IsDuo &&*/
+				//HACK:FOLDABLE
+				_isSpanned = _helper?.IsDualMode ?? false; 
 
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Update _isSpanned:" + _isSpanned);
 
@@ -213,24 +179,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 					}
 				}
 
-				// Is Landscape
-				//if (!IsDuo)
-				//{
-				//if (_mainActivity == null)
-				//	_isLandscape = false;
-				//else
-				//{
-				//	//var orientation = (_mainActivity as Activity).Resources.Configuration.Orientation;
-				//	//_isLandscape = (orientation == global::Android.Content.Res.Orientation.Landscape);
-				//	_isLandscape = (_mainActivity.WindowBounds.Width >= _mainActivity.WindowBounds.Height);
-				//}
-				//}
-				//else
-				//{
-
-				//	var rotation = ScreenHelper.GetRotation(_helper.Activity);
-				//	_isLandscape = (rotation == SurfaceOrientation.Rotation270 || rotation == SurfaceOrientation.Rotation90);
-				//}
 				global::Android.Util.Log.Debug("JWM", "                             _isLandscape:" + _isLandscape);
 			}
 
@@ -238,9 +186,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			public Task<int> GetHingeAngleAsync()
 			{
-				//if (!IsDuo)
-				//	return Task.FromResult(0);
-
 				Task<int> returnValue = null;
 				lock (_hingeAngleLock)
 				{
@@ -257,8 +202,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 
 			public Rectangle GetHinge() => _hingeDp;
-			[Obsolete("shouldn't matter")]
-			public bool IsDualScreenDevice => IsDuo;
 			public bool IsLandscape
 			{ //=> _isLandscape;
 				get {
@@ -529,7 +472,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				//}
 
 				//if (screenChanged)
-				//	_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
+				//	_onScreenChangedE ventManager.HandleEvent(this, e, nameof(OnScreenChanged));
 			}
 
 

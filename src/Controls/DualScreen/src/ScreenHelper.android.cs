@@ -16,7 +16,6 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.DualScreen
 {	public class ScreenHelper
 	{
-		//HACK: public DisplayMask DisplayMask { get; private set; }
 		public Rectangle FoldingFeatureBounds { get; set; } = Rectangle.Zero;
 		public Rectangle WindowBounds { get; set; } = Rectangle.Zero;
 		public bool IsSpanned { get; set; }
@@ -33,14 +32,15 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 
 		//TODO: FOLDABLE remove this implementation
-		[Obsolete("shouldnt care")]
-		public static bool IsDualScreenDevice(IFoldableContext context)
-		{
-			return true; //HACK:FOLDABLE			context.isSeparating;
-			//return context.PackageManager.HasSystemFeature("com.microsoft.device.display.displaymask");
-		}
+		//[Obsolete("shouldnt care")]
+		//public static bool IsDualScreenDevice(IFoldableContext context)
+		//{
+		//	return true; //HACK:FOLDABLE			context.isSeparating;
+		//	//return context.PackageManager.HasSystemFeature("com.microsoft.device.display.displaymask");
+		//}
 		public bool Initialize(IFoldableContext activity)
 		{
+			Activity = activity as Activity;
 			//if (!IsDualScreenDevice(activity))
 			//	return false;
 			//WindowBounds = activity.WindowBounds;

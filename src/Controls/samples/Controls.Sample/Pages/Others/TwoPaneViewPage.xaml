@@ -34,12 +34,16 @@
                         <Picker x:Name="PanePriority" Title="PanePriority" SelectedIndex="0" />
                         <Picker x:Name="TallModeConfiguration" Title="TallModeConfiguration" SelectedIndex="1" />
                         <Picker x:Name="WideModeConfiguration" Title="WideModeConfiguration" SelectedIndex="1" />
+
+                        <Label Text=""/>
+                        <Button Text="Reset" Clicked="OnReset" />
                     </StackLayout>
                 </Frame>
             </foldable:TwoPaneView.Pane1>
             <foldable:TwoPaneView.Pane2>
                 <StackLayout BackgroundColor="DarkGreen">
-                    <Label Text="Three"/>
+                    <Label Text="Pane2 StackLayout"/>
+                    <Button Text="Reset" Clicked="OnReset" />
                 </StackLayout>
             </foldable:TwoPaneView.Pane2>
         </foldable:TwoPaneView>
