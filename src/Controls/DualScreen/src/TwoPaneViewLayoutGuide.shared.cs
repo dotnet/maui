@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			bool isSpanned = IsInMultipleRegions(locationOnScreen);
 
-			if (!DualScreenService.IsLandscape)
+			if (DualScreenService.IsLandscape)
 			{
 				if (isSpanned)
 				{
@@ -343,35 +343,48 @@ namespace Microsoft.Maui.Controls.DualScreen
 			var properties = _pendingPropertyChanges.ToList();
 			_pendingPropertyChanges.Clear();
 
+			System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.UpdatLayouts ", "JWM");
+
 			foreach (var property in properties)
 			{
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
 			}
 		}
 
-
+		//HACK:FOLDABLE this method was munged because Landscape was changed to equal Wide
 		bool IsInMultipleRegions(Rectangle layoutBounds)
 		{
 			bool isInMultipleRegions = false;
 			var hinge = DualScreenService.GetHinge();
 
-			// Portrait
-			if (!DualScreenService.IsLandscape)
-			{
-				// Check that the control is over the split
-				if (layoutBounds.X < hinge.X && layoutBounds.X + layoutBounds.Width > (hinge.X + hinge.Width))
-				{
-					isInMultipleRegions = true;
-				}
-			}
-			else
+			if (DualScreenService.IsLandscape)
 			{
 				// Check that the control is over the split
 				if (layoutBounds.Y < hinge.Y && layoutBounds.Y + layoutBounds.Height > (hinge.Y + hinge.Height))
 				{
 					isInMultipleRegions = true;
 				}
+
+				// Check that the control is over the split
+				if (layoutBounds.X < hinge.X && layoutBounds.X + layoutBounds.Width > (hinge.X + hinge.Width))
+				{
+					isInMultipleRegions = true;
+				}
+			} else // Portrait
+			{
+				// Check that the control is over the split
+				if (layoutBounds.Y < hinge.Y && layoutBounds.Y + layoutBounds.Height > (hinge.Y + hinge.Height))
+				{
+					isInMultipleRegions = true;
+				}
+
+				// Check that the control is over the split
+				if (layoutBounds.X < hinge.X && layoutBounds.X + layoutBounds.Width > (hinge.X + hinge.Width))
+				{
+					isInMultipleRegions = true;
+				}
 			}
+			
 
 			return isInMultipleRegions;
 		}
@@ -382,9 +395,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 				return TwoPaneViewMode.SinglePane;
 
 			if (DualScreenService.IsLandscape)
-				return TwoPaneViewMode.Tall;
+				return TwoPaneViewMode.Wide;
 
-			return TwoPaneViewMode.Wide;
+			return TwoPaneViewMode.Tall;
 		}
 
 		protected bool SetProperty<T>(ref T backingStore, T value,

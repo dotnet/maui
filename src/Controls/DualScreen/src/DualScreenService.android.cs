@@ -33,10 +33,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 		internal class DualScreenServiceImpl : IDualScreenService //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
 		{
 			ScreenHelper _helper;
+			//[Obsolete("Should not care about specific device model")]
+			//bool _isDuo = false;
 			[Obsolete("Should not care about specific device model")]
-			bool _isDuo = false;
-			[Obsolete("Should not care about specific device model")]
-			bool IsDuo => (_helper == null || _HingeService == null || _mainActivity == null || _singleUseHingeSensor == null) ? false : _isDuo;
+			bool IsDuo => _isSpanned; //HACK:FOLDABLE (_helper == null || _HingeService == null || _mainActivity == null || _singleUseHingeSensor == null) ? false : _isDuo;
 			HingeSensor _singleUseHingeSensor;
 			static IFoldableContext _mainActivity;
 			static DualScreenServiceImpl _HingeService;
@@ -69,18 +69,57 @@ namespace Microsoft.Maui.Controls.DualScreen
 				}
 			}
 
+			public void UpdateMetrics(FoldEventArgs newFoldMetrics) 
+			{
+				_isLandscape = (newFoldMetrics.WindowBounds.Width >= newFoldMetrics.WindowBounds.Height);
+				_isSpanned = newFoldMetrics.isSeparating;
+
+				_helper.FoldingFeatureBounds = newFoldMetrics.FoldingFeatureBounds;
+				_helper.WindowBounds = newFoldMetrics.WindowBounds;
+				_helper.IsSpanned = newFoldMetrics.isSeparating;
+
+				using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+				{
+					var scalingFactor = display.Density;
+					_pixelScreenSize = new Size(newFoldMetrics.WindowBounds.Width, newFoldMetrics.WindowBounds.Height);
+					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
+
+					if (newSize != ScaledScreenSize)
+					{
+						ScaledScreenSize = newSize;
+					}
+				}
+
+				Update();
+				//_helper.Update();
+			}
 			private void DualScreenServiceImpl_FoldingFeatureChanged(object sender, FoldEventArgs ea)
 			{
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.DualScreenServiceImpl_FoldingFeatureChanged");
+				global::Android.Util.Log.Debug("JWM", "   " + ea);
 
-				_isLandscape = (_mainActivity.WindowBounds.Width >= _mainActivity.WindowBounds.Height);
+				_isLandscape = (ea.WindowBounds.Width >= ea.WindowBounds.Height);
 				_isSpanned = ea.isSeparating;
 
 				_helper.FoldingFeatureBounds = ea.FoldingFeatureBounds;
 				_helper.WindowBounds = ea.WindowBounds;
 				_helper.IsSpanned = ea.isSeparating;
-				
-				_helper.Update();
+
+				using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+				{
+					var scalingFactor = display.Density;
+					_pixelScreenSize = new Size(ea.WindowBounds.Width, ea.WindowBounds.Height);
+					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
+
+					if (newSize != ScaledScreenSize)
+					{
+						ScaledScreenSize = newSize;
+					}
+				}
+
+				//TODO: fix this?
+				Update(); //HACK:FOLDABLE enabling this prevents the hinge being shown?!?
+				//_helper.Update();
 				OnLayoutChanged?.Invoke(sender, ea);
 			}
 
@@ -159,14 +198,17 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			void Update()
 			{
-				_isSpanned = /*IsDuo &&*/ (_helper?.IsDualMode ?? false);
+				
+				_isSpanned = _helper?.IsDualMode ?? false; //HACK:FOLDABLE /*IsDuo &&*/
+
+				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Update _isSpanned:" + _isSpanned);
 
 				// Hinge
 				if (!_isSpanned)
 				{
 					_hingeDp = Rectangle.Zero;
 				}
-				else
+				else // IsSpanned
 				{
 					var hinge = _helper.GetHingeBoundsDip();
 
@@ -180,17 +222,32 @@ namespace Microsoft.Maui.Controls.DualScreen
 					}
 				}
 
+
+				//HACK:FOLDABLE
+				using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+				{
+					var scalingFactor = display.Density;
+					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
+					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
+
+					if (newSize != ScaledScreenSize)
+					{
+						ScaledScreenSize = newSize;
+						//screenChanged = true;
+					}
+				}
+
 				// Is Landscape
 				//if (!IsDuo)
 				//{
-				if (_mainActivity == null)
-					_isLandscape = false;
-				else
-				{
-					//var orientation = (_mainActivity as Activity).Resources.Configuration.Orientation;
-					//_isLandscape = (orientation == global::Android.Content.Res.Orientation.Landscape);
-					_isLandscape = (_mainActivity.WindowBounds.Width >= _mainActivity.WindowBounds.Height);
-				}
+				//if (_mainActivity == null)
+				//	_isLandscape = false;
+				//else
+				//{
+				//	//var orientation = (_mainActivity as Activity).Resources.Configuration.Orientation;
+				//	//_isLandscape = (orientation == global::Android.Content.Res.Orientation.Landscape);
+				//	_isLandscape = (_mainActivity.WindowBounds.Width >= _mainActivity.WindowBounds.Height);
+				//}
 				//}
 				//else
 				//{
@@ -198,6 +255,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				//	var rotation = ScreenHelper.GetRotation(_helper.Activity);
 				//	_isLandscape = (rotation == SurfaceOrientation.Rotation270 || rotation == SurfaceOrientation.Rotation90);
 				//}
+				global::Android.Util.Log.Debug("JWM", "                             _isLandscape:" + _isLandscape);
 			}
 
 			public bool IsSpanned => _isSpanned;
@@ -459,41 +517,43 @@ namespace Microsoft.Maui.Controls.DualScreen
 					DefaultHingeSensor.OnSensorChanged += DefaultHingeSensorOnSensorChanged;
 				}
 			}
-
+						
 			void ConfigurationChanged(object sender, EventArgs e)
 			{
-				//if (IsDuo)
+				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ConfigurationChanged IGNORE ConfigurationChanged");
+				return;
+				////if (IsDuo)
+				////{
+				//_helper?.Update();
+				////}
+
+				//bool wasLandscape = IsLandscape;
+				//Update();
+
+				//bool screenChanged = false;
+				//if (wasLandscape != IsLandscape)
 				//{
-				_helper?.Update();
+				//	screenChanged = true;
 				//}
 
-				bool wasLandscape = IsLandscape;
-				Update();
+				//if (_mainActivity != null)
+				//{
+				//	using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+				//	{
+				//		var scalingFactor = display.Density;
+				//		_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
+				//		var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
 
-				bool screenChanged = false;
-				if (wasLandscape != IsLandscape)
-				{
-					screenChanged = true;
-				}
+				//		if (newSize != ScaledScreenSize)
+				//		{
+				//			ScaledScreenSize = newSize;
+				//			screenChanged = true;
+				//		}
+				//	}
+				//}
 
-				if (_mainActivity != null)
-				{
-					using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
-					{
-						var scalingFactor = display.Density;
-						_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
-						var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
-
-						if (newSize != ScaledScreenSize)
-						{
-							ScaledScreenSize = newSize;
-							screenChanged = true;
-						}
-					}
-				}
-
-				if (screenChanged)
-					_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
+				//if (screenChanged)
+				//	_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
 			}
 
 

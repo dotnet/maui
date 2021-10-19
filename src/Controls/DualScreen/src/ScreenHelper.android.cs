@@ -36,39 +36,39 @@ namespace Microsoft.Maui.Controls.DualScreen
 		[Obsolete("shouldnt care")]
 		public static bool IsDualScreenDevice(IFoldableContext context)
 		{
-			return context.isSeparating;
+			return true; //HACK:FOLDABLE			context.isSeparating;
 			//return context.PackageManager.HasSystemFeature("com.microsoft.device.display.displaymask");
 		}
 		public bool Initialize(IFoldableContext activity)
 		{
 			//if (!IsDualScreenDevice(activity))
 			//	return false;
-			WindowBounds = activity.WindowBounds;
+			//WindowBounds = activity.WindowBounds;
 
-			try
-			{
-				Activity = activity as Activity;
-				if (activity.isSeparating)
-					FoldingFeatureBounds = activity.FoldingFeatureBounds;
-				//HACK:DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
-				//HACK:if (DisplayMask == null)
-				//    return false;
-			}
-			catch (Java.Lang.NoSuchMethodError ex)
-			{
-				ex.PrintStackTrace();
-				return false;
-			}
-			catch (Java.Lang.RuntimeException ex)
-			{
-				ex.PrintStackTrace();
-				return false;
-			}
-			catch (Java.Lang.NoClassDefFoundError ex)
-			{
-				ex.PrintStackTrace();
-				return false;
-			}
+			//try
+			//{
+			//	Activity = activity as Activity;
+			//	if (activity.isSeparating)
+			//		FoldingFeatureBounds = activity.FoldingFeatureBounds;
+			//	//HACK:DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
+			//	//HACK:if (DisplayMask == null)
+			//	//    return false;
+			//}
+			//catch (Java.Lang.NoSuchMethodError ex)
+			//{
+			//	ex.PrintStackTrace();
+			//	return false;
+			//}
+			//catch (Java.Lang.RuntimeException ex)
+			//{
+			//	ex.PrintStackTrace();
+			//	return false;
+			//}
+			//catch (Java.Lang.NoClassDefFoundError ex)
+			//{
+			//	ex.PrintStackTrace();
+			//	return false;
+			//}
 
 			return true;
 		}
@@ -78,8 +78,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		public void Update() {
 			//HACK:=> DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
-//			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds;
-//			WindowBounds = (Activity as IFoldableContext).WindowBounds;
+			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds;
+			WindowBounds = (Activity as IFoldableContext).WindowBounds;
 		}
 
 
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 
 		public Rect GetHingeBounds()
-			=> GetHinge(GetRotation());
+			=> GetHinge();//HACK:FOLDABLE GetRotation());
 
 		public Rect GetHingeBoundsDip()
 			=> RectPixelsToDip(GetHingeBounds());

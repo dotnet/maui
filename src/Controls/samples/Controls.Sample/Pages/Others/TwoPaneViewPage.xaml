@@ -14,14 +14,17 @@
                               MinTallModeHeight="600">
             <foldable:TwoPaneView.Pane1
                 BackgroundColor="#dddddd">
-                <StackLayout BackgroundColor="DarkGray"
-                             Orientation="Vertical"
-                             VerticalOptions="StartAndExpand">
-                    <Label Text="Hinge" x:Name="hingeLabel"/>
-                    <Label Text="One"/>
-                    <Label Text="One point five... "/>
-                    <Label Text="Two"/>
-                </StackLayout>
+                <Frame BorderColor="Red">
+                    <StackLayout BackgroundColor="DarkGray"
+                                 Orientation="Vertical"
+                                 VerticalOptions="StartAndExpand"
+                                 >
+                        <Label Text="Hinge" x:Name="hingeLabel"/>
+                        <Label Text="One"/>
+                        <Label Text="One point five... "/>
+                        <Label Text="Two"/>
+                    </StackLayout>
+                </Frame>
             </foldable:TwoPaneView.Pane1>
             <foldable:TwoPaneView.Pane2>
                 <StackLayout BackgroundColor="DarkGreen">

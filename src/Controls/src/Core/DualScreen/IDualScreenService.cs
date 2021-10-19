@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 		void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle);
 		Task<int> GetHingeAngleAsync();
 
+		void UpdateMetrics(FoldEventArgs newFoldMetrics);
+
 		event EventHandler<FoldEventArgs> OnLayoutChanged;
 	}
 

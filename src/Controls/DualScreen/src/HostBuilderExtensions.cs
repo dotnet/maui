@@ -24,18 +24,21 @@ namespace Microsoft.Maui.Controls.DualScreen
 				{
 					android.OnConfigurationChanged((activity, configuration) =>
 					{
-					
+						global::Android.Util.Log.Debug("JWM", "~~~ HostBuilder.ConfigurationChanged");
 					})
 					.OnStart((activity) =>
 					{
+						// FUTURE USE
 						wir.AddWindowLayoutInfoListener(runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
 					})
 					.OnStop((activity) =>
 					{
+						// FUTURE USE
 						wir.RemoveWindowLayoutInfoListener(consumer);
 					})
 					.OnCreate((activity, bundle) =>
 					{
+						// FUTURE USE
 						wir = new AndroidX.Window.Java.Layout.WindowInfoRepositoryCallbackAdapter(
 						AndroidX.Window.Layout.WindowInfoRepository.Companion.GetOrCreate(
 							activity));
@@ -65,6 +68,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 #endif
 	}
 #if ANDROID
+	// FUTURE USE
 	public class Consumer : Java.Lang.Object, AndroidX.Core.Util.IConsumer
 	{
 		public void Accept(Java.Lang.Object windowLayoutInfo)
@@ -72,7 +76,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			var newLayoutInfo = windowLayoutInfo as AndroidX.Window.Layout.WindowLayoutInfo;
 
 			global::Android.Util.Log.Info("JWM2", "%%% LayoutStateChangeCallback.Accept");
-			global::Android.Util.Log.Info("JWM2", newLayoutInfo.ToString());
+			global::Android.Util.Log.Info("JWM2", "%%% " + newLayoutInfo.ToString());
 		}
 	}
 #endif

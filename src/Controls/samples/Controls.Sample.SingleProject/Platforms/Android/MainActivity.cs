@@ -27,19 +27,21 @@ namespace Maui.Controls.Sample.Droid
 	[IntentFilter(
 		new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
 		Categories = new[] { Android.Content.Intent.CategoryDefault })]
-	public class MainActivity : MauiAppCompatActivity, IDeviceInfoProvider, Microsoft.Maui.Controls.DualScreen.IFoldableContext // AndroidX.Core.Util.IConsumer
+	public class MainActivity : MauiAppCompatActivity
+		/*,IDeviceInfoProvider*/ 
+		,Microsoft.Maui.Controls.DualScreen.IFoldableContext // AndroidX.Core.Util.IConsumer
 	{
 		WindowInfoRepositoryCallbackAdapter wir;
 		IWindowMetricsCalculator wmc;
 
 		#region Should be in MauiAppCompatActivity?
 		// IDeviceInfoProvider
-		public event EventHandler ConfigurationChanged;
+		//public event EventHandler ConfigurationChanged;
 		public override void OnConfigurationChanged(Configuration newConfig)
 		{
 			base.OnConfigurationChanged(newConfig);
-			ConfigurationChanged?.Invoke(this, new EventArgs());
-
+			Android.Util.Log.Debug("JWM", "IDeviceInfoProvider.OnConfigurationChanged - NOOP");
+			//ConfigurationChanged?.Invoke(this, new EventArgs());
 			//TODO: Xamarin.Forms.Application.Current?.TriggerThemeChanged (new AppThemeChangedEventArgs(Xamarin.Forms.Application.Current.RequestedTheme));
 		}
 		#endregion
@@ -73,6 +75,7 @@ namespace Maui.Controls.Sample.Droid
 			wir.RemoveWindowLayoutInfoListener(this);
 		}
 
+		
 		#region Used by WindowInfoRepository callback
 		Java.Util.Concurrent.IExecutor runOnUiThreadExecutor()
 		{
@@ -95,8 +98,8 @@ namespace Maui.Controls.Sample.Droid
 			WindowBounds = new Rectangle(curWinBounds.Left, curWinBounds.Top,
 										curWinBounds.Width(), curWinBounds.Height());
 
-			Android.Util.Log.Info("JWM", "===LayoutStateChangeCallback.Accept");
-			Android.Util.Log.Info("JWM", newLayoutInfo.ToString());
+			Android.Util.Log.Info("JWM", "=== LayoutStateChangeCallback.Accept");
+			Android.Util.Log.Info("JWM", "    "+newLayoutInfo.ToString());
 
 			isSeparating = false; // we don't know if we'll find a displayFeature of not
 			FoldingFeatureBounds = Rectangle.Zero;
@@ -112,9 +115,9 @@ namespace Maui.Controls.Sample.Droid
 					FoldingFeatureBounds = new Rectangle(foldingFeature.Bounds.Left, foldingFeature.Bounds.Top, 
 														foldingFeature.Bounds.Width(), foldingFeature.Bounds.Height());
 
-					Android.Util.Log.Info("JWM", "\nIsSeparating: " + foldingFeature.IsSeparating
-							+ "\nOrientation: " + foldingFeature.Orientation  // FoldingFeature.OrientationVertical or Horizontal
-							+ "\nState: " + foldingFeature.State // FoldingFeature.StateFlat or StateHalfOpened
+					Android.Util.Log.Info("JWM", "\n    IsSeparating: " + foldingFeature.IsSeparating
+							+ "\n    Orientation: " + foldingFeature.Orientation  // FoldingFeature.OrientationVertical or Horizontal
+							+ "\n    State: " + foldingFeature.State // FoldingFeature.StateFlat or StateHalfOpened
 					);
 				}
 				else
@@ -122,8 +125,9 @@ namespace Maui.Controls.Sample.Droid
 					Android.Util.Log.Info("JWM", "DisplayFeature is not a fold or hinge (shouldn't happen currently)");
 				}
 			}
+			Android.Util.Log.Info("JWM", "=== FoldingFeatureChanged?.Invoke");
 			FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Controls.DualScreen.FoldEventArgs()
-			{ 
+			{
 				isSeparating = isSeparating,
 				FoldingFeatureBounds = FoldingFeatureBounds,
 				WindowBounds = WindowBounds
