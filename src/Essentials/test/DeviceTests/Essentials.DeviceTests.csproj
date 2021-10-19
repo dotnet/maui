@@ -12,7 +12,6 @@
     <AssemblyName>Microsoft.Maui.Essentials.DeviceTests</AssemblyName>
 
     <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
-    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
