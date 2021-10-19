@@ -47,14 +47,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 		readonly TextBlock _textBlock;
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			_textBlock.Arrange(new Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
+			_textBlock.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 			return finalSize;
 		}
 
 
-		protected override global::Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			_textBlock.Measure(availableSize);
 
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			double scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 			var size = new Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
 
-			return new Windows.Foundation.Size(size.Width, _textBlock.DesiredSize.Height);
+			return new global::Windows.Foundation.Size(size.Width, _textBlock.DesiredSize.Height);
 		}
 	}
 }

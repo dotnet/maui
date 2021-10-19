@@ -1,4 +1,5 @@
 using Android.Content;
+using Android.Views;
 using AndroidX.Core.Content;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -7,13 +8,20 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ShellPageContainer : PageContainer
+	internal class ShellPageContainer : ViewGroup
 	{
 		static int? DarkBackground;
 		static int? LightBackground;
 
-		public ShellPageContainer(Context context, INativeViewHandler child, bool inFragment = false) : base(context, child, inFragment)
+
+		public IViewHandler Child { get; set; }
+
+		public bool IsInFragment { get; set; }
+
+		public ShellPageContainer(Context context, INativeViewHandler child, bool inFragment = false) : base(context)
 		{
+			Child = child;
+			IsInFragment = inFragment;
 			if (child.VirtualView.Background == null)
 			{
 				int color;
@@ -26,16 +34,22 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-
-
-
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			var width = r - l;
 			var height = b - t;
 
-			if (changed && Child.NativeView is AView aView)
+			if (Child.NativeView is AView aView)
 				aView.Layout(0, 0, width, height);
+		}
+
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			if (Child.NativeView is AView aView)
+			{
+				aView.Measure(widthMeasureSpec, heightMeasureSpec);
+				SetMeasuredDimension(aView.MeasuredWidth, aView.MeasuredHeight);
+			}
 		}
 	}
 }

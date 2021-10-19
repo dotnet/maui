@@ -1,6 +1,7 @@
 using Android.Content;
 using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		IShellSectionView CreateShellSectionView(ShellSection shellSection);
 
-		IShellToolbarTracker CreateTrackerForToolbar(Toolbar toolbar);
+		IShellToolbarTracker CreateTrackerForToolbar(AToolbar toolbar);
 
 		IShellToolbarAppearanceTracker CreateToolbarAppearanceTracker();
 

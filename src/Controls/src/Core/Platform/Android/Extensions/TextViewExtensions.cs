@@ -1,6 +1,7 @@
 ﻿using Android.Widget;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 			switch (label.TextType)
 			{
 				case TextType.Text:
-					textView.UpdateTextPlainText(label);
+					textView.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;
 				case TextType.Html:
 					textView.UpdateTextHtml(label);

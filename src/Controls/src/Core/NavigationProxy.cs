@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public Task PushModalAsync(Page modal, bool animated)
 		{
-			if (modal.RealParent != null)
+			if (modal.RealParent != null && modal.RealParent is not IWindow)
 				throw new InvalidOperationException("Page must not already have a parent.");
 			return OnPushModal(modal, animated);
 		}

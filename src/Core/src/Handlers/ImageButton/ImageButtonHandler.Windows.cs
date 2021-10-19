@@ -86,16 +86,6 @@ namespace Microsoft.Maui.Handlers
 				i.Source = obj;
 		}
 
-		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-
-		public override void NativeArrange(Graphics.Rectangle rect)
-		{
-			base.NativeArrange(rect);
-		}
-
 		void OnNativeViewLoaded(object sender = null!, RoutedEventArgs e = null!)
 		{
 			if (NativeView?.XamlRoot != null)

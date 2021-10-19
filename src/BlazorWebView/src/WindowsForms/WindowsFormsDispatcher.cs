@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 	/// class uses the async <see cref="Task"/> pattern so everything must be mapped from the <see cref="IAsyncResult"/>
 	/// pattern using techniques listed in https://docs.microsoft.com/dotnet/standard/asynchronous-programming-patterns/interop-with-other-asynchronous-patterns-and-types.
 	/// </summary>
-	internal class WindowsFormsDispatcher : Dispatcher
+	internal sealed class WindowsFormsDispatcher : Dispatcher
 	{
 		private static Action<Exception> RethrowException = exception =>
 			ExceptionDispatchInfo.Capture(exception).Throw();

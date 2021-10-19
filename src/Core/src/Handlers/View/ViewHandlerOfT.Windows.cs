@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 				rect = AdjustForScrollViewer(nativeView, VirtualView, rect);
 			}
 
-			nativeView.Arrange(new Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
+			nativeView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;
 
-			var measureConstraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var measureConstraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			nativeView.Measure(measureConstraint);
 

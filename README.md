@@ -9,7 +9,7 @@
 * [Install .NET MAUI](https://docs.microsoft.com/dotnet/maui/get-started/first-app?pivots=windows)
 * [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui)
 * [Weather '21 Sample App](https://github.com/davidortinau/WeatherTwentyOne)
-* [Contributor Guide](./.github/DEVELOPMENT.md)
+* [Development Guide](./.github/DEVELOPMENT.md)
 
 ## Overview
 
@@ -19,8 +19,8 @@
 
 ## Current News
 
+* October 12, 2021 - [Announcing .NET MAUI Preview 9](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-9/)
 * September 14, 2021 - [Update on .NET Multi-platform App UI (.NET MAUI)](https://aka.ms/maui-update/)
-* August 10, 2021 - [Announcing .NET MAUI Preview 7](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-7/)
 
 Follow the [.NET MAUI Blog](https://devblogs.microsoft.com/dotnet/category/net-maui/) and visit the [News](https://github.com/dotnet/maui/wiki/News) wiki page for more news and updates.
 

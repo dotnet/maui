@@ -8,29 +8,29 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>491ed9a112559872c31ae40da8f6d9977ba4ce3a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.101-preview.10.26">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.101-preview.10.41">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>3b0510fa6d66d4151665c983ece5dcce74feab5b</Sha>
+      <Sha>89dcb1372574c416c8ae834691c74c4ae3d751ee</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.101-preview.10.107">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.101-preview.10.175">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>44f570e85bb2bdf6ccedb5d070e340366c04cbb5</Sha>
+      <Sha>313bc16bc76b41b29b520c1d43af03c0ea9db8d5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.0.101-preview.10.107">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.0.101-preview.10.175">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>44f570e85bb2bdf6ccedb5d070e340366c04cbb5</Sha>
+      <Sha>313bc16bc76b41b29b520c1d43af03c0ea9db8d5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.0.101-preview.10.107">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.0.101-preview.10.175">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>44f570e85bb2bdf6ccedb5d070e340366c04cbb5</Sha>
+      <Sha>313bc16bc76b41b29b520c1d43af03c0ea9db8d5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.0.101-preview.10.107">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.0.101-preview.10.175">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>44f570e85bb2bdf6ccedb5d070e340366c04cbb5</Sha>
+      <Sha>313bc16bc76b41b29b520c1d43af03c0ea9db8d5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0-rtm.21464.2">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0-rtm.21514.1">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>5cac15def164fc5ab593f8a0d3159dc51acd3cdd</Sha>
+      <Sha>73c8cd3619efc79364fef5fa81989f9e0dd2147b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.0-rtm.21475.9" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>

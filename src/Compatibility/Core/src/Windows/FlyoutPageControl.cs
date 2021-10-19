@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set { SetValue(DetailProperty, value); }
 		}
 
-		public Windows.Foundation.Size DetailSize
+		public global::Windows.Foundation.Size DetailSize
 		{
 			get
 			{
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						width -= _flyoutPresenter.ActualWidth;
 				}
 
-				return new Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
+				return new global::Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
 			}
 		}
 
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set { SetValue(FlyoutProperty, value); }
 		}
 
-		public Windows.Foundation.Size FlyoutSize
+		public global::Windows.Foundation.Size FlyoutSize
 		{
 			get
 			{
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else if (_flyoutPresenter != null)
 					width = _flyoutPresenter.ActualWidth;
 
-				return new Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
+				return new global::Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
 			}
 		}
 
@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set => FlyoutToolbarVisibility = value;
 		}
 
-		public Windows.Foundation.Size MasterSize => FlyoutSize;
+		public global::Windows.Foundation.Size MasterSize => FlyoutSize;
 
 		private protected override string FlyoutPresenterTemplateName => "MasterPresenter";
 
