@@ -197,17 +197,14 @@ namespace Microsoft.Maui.Controls.DualScreen
 		private void DualScreenService_OnFeatureChanged(object sender, FoldEventArgs e)
 		{
 			System.Diagnostics.Debug.Write("TwoPaneView.DualScreenService_OnFeatureChanged - " + e, "JWM");
-
 			try
 			{
-				Device.BeginInvokeOnMainThread(() =>
-				{
-					//_twoPaneViewLayoutGuide.IsLandscape = (e.WindowBounds.Width > e.WindowBounds.Height); // trigger prop changed
-					//_twoPaneViewLayoutGuide.UpdateLayouts();
-//					this.InvalidateMeasure();
-					//this.UpdateMode(true);
-					//this.ModeChanged?.Invoke(sender, e);
-				});
+				//HACK:FOLDABLE this does not _do_ anything...
+				this.InvalidateMeasure();
+				//Device.BeginInvokeOnMainThread(() =>
+				//{
+				//	this.InvalidateMeasure();
+				//});
 			}
 			catch (Exception) {
 				

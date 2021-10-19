@@ -10,19 +10,30 @@
         <foldable:TwoPaneView x:Name="twoPaneView"
                               TallModeConfiguration="TopBottom"
                               WideModeConfiguration="LeftRight"
+                              PanePriority="Pane1"
                               MinWideModeWidth="400"
                               MinTallModeHeight="600">
             <foldable:TwoPaneView.Pane1
                 BackgroundColor="#dddddd">
                 <Frame BorderColor="Red">
-                    <StackLayout BackgroundColor="DarkGray"
+                    <StackLayout BackgroundColor="Blue"
                                  Orientation="Vertical"
                                  VerticalOptions="StartAndExpand"
                                  >
+                        <Label Text="Hinge angle"/>
                         <Label Text="Hinge" x:Name="hingeLabel"/>
-                        <Label Text="One"/>
-                        <Label Text="One point five... "/>
-                        <Label Text="Two"/>
+                        <Label Text="SinglePane" x:Name="spanLabel"/>
+
+                        <Label Text=""/>
+                        <Label Text="Pane1Length"/>
+                        <Slider x:Name="Pane1Length" Maximum="1" Value="0.5" />
+                        <Label Text="Pane2Length"/>
+                        <Slider x:Name="Pane2Length" Maximum="1" Value="0.5" />
+                        
+                        <Label Text=""/>
+                        <Picker x:Name="PanePriority" Title="PanePriority" SelectedIndex="0" />
+                        <Picker x:Name="TallModeConfiguration" Title="TallModeConfiguration" SelectedIndex="1" />
+                        <Picker x:Name="WideModeConfiguration" Title="WideModeConfiguration" SelectedIndex="1" />
                     </StackLayout>
                 </Frame>
             </foldable:TwoPaneView.Pane1>
