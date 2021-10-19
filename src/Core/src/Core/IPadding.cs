@@ -6,7 +6,7 @@
 	public interface IPadding
 	{
 		/// <summary>
-		/// Gets the Padding
+		/// The space between the outer edge of the control and its content.
 		/// </summary>
 		Thickness Padding { get; }
 	}

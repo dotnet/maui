@@ -3,12 +3,28 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui
 {
 	public class MauiSlider : Slider
 	{
+		public MauiSlider()
+		{
+			DefaultStyleKey = typeof(MauiSlider);
+			ThumbColorOver = (Brush)Resources["SystemControlHighlightChromeAltLowBrush"];
+		}
+
+		public Brush ThumbColorOver
+		{
+			get { return (Brush)GetValue(ThumbColorOverProperty); }
+			set { SetValue(ThumbColorOverProperty, value); }
+		}
+
+		public static readonly DependencyProperty ThumbColorOverProperty =
+		DependencyProperty.Register(nameof(ThumbColorOver), typeof(Brush), typeof(MauiSlider), new PropertyMetadata(null));
+
 		internal Thumb Thumb { get; set; }
 		internal Thumb ImageThumb { get; set; }
 

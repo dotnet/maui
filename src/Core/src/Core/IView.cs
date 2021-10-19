@@ -40,6 +40,11 @@ namespace Microsoft.Maui
 		IShape? Clip { get; }
 
 		/// <summary>
+		/// Paints a shadow around the target View.
+		/// </summary>
+		IShadow? Shadow { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether this View is enabled in the user interface. 
 		/// </summary>
 		bool IsEnabled { get; }
@@ -103,11 +108,6 @@ namespace Microsoft.Maui
 		/// Gets or sets the View Handler of the View.
 		/// </summary>
 		new IViewHandler? Handler { get; set; }
-
-		/// <summary>
-		/// Gets the Parent of the Element.
-		/// </summary>
-		new IView? Parent { get; }
 
 		/// <summary>
 		/// Positions child elements and determines a size for an Element.

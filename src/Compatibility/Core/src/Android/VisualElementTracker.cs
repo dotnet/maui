@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
@@ -96,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				formsViewGroup.MeasureAndLayout(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly), x, y, x + width, y + height);
 				Performance.Stop(reference, "MeasureAndLayout");
 			}
-			else if ((aview is LayoutViewGroup || aview is PageViewGroup) && width == 0 && height == 0)
+			else if ((aview is LayoutViewGroup || aview is ContentViewGroup || aview is CoordinatorLayout || aview is FragmentContainerView) && width == 0 && height == 0)
 			{
 				// Nothing to do here; just chill.
 			}

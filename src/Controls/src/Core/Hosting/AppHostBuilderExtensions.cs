@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
@@ -19,7 +17,9 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
+			{ typeof(Application), typeof(ApplicationHandler) },
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
+			{ typeof(BoxView), typeof(ShapeViewHandler) },
 			{ typeof(Button), typeof(ButtonHandler) },
 			{ typeof(CheckBox), typeof(CheckBoxHandler) },
 			{ typeof(DatePicker), typeof(DatePickerHandler) },
@@ -38,17 +38,30 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Switch), typeof(SwitchHandler) },
 			{ typeof(TimePicker), typeof(TimePickerHandler) },
 			{ typeof(Page), typeof(PageHandler) },
+			{ typeof(WebView), typeof(WebViewHandler) },
+			{ typeof(Border), typeof(BorderHandler) },
+			{ typeof(IContentView), typeof(ContentViewHandler) },
 			{ typeof(Shapes.Ellipse), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Line), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Path), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Polygon), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
+			{ typeof(Shapes.RoundRectangle), typeof(ShapeViewHandler) },
 			{ typeof(Window), typeof(WindowHandler) },
+			{ typeof(ImageButton), typeof(ImageButtonHandler) },
+			{ typeof(IndicatorView), typeof(IndicatorViewHandler) },
 #if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
+			
 #endif
-			//{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+#if WINDOWS || ANDROID
+			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
+			{ typeof(Toolbar), typeof(Controls.Handlers.ToolbarHandler) },
+#endif
+#if __ANDROID__
+			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
+#endif
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)

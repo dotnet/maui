@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
 			Assert.Equal(view.FlowDirection, id);
 		}
-		
+
 		[Theory(DisplayName = "Opacity is set correctly")]
 		[InlineData(0)]
 		[InlineData(0.25)]
@@ -62,12 +62,29 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Visibility, id);
 		}
 
+		[Fact(DisplayName = "Setting Semantic Description makes element accessible")]
+		public async Task SettingSemanticDescriptionMakesElementAccessible()
+		{
+			var view = new TStub();
+			view.Semantics.Description = "Test";
+			var important = await GetValueAsync(view, handler => GetIsAccessibilityElement(handler));
+			Assert.True(important);
+		}
+
+		[Fact(DisplayName = "Setting Semantic Hint makes element accessible")]
+		public async Task SettingSemanticHintMakesElementAccessible()
+		{
+			var view = new TStub();
+			view.Semantics.Hint = "Test";
+			var important = await GetValueAsync(view, handler => GetIsAccessibilityElement(handler));
+			Assert.True(important);
+		}
+
 		[Fact(DisplayName = "Semantic Description is set correctly"
 #if __ANDROID__
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
-		[InlineData()]
 		public async Task SetSemanticDescription()
 		{
 			var view = new TStub();
@@ -81,17 +98,15 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
-		[InlineData()]
 		public async Task SetSemanticHint()
 		{
 			var view = new TStub();
-			view.Semantics.Description = "Test";
-			var id = await GetValueAsync(view, handler => GetSemanticDescription(handler));
-			Assert.Equal(view.Semantics.Description, id);
+			view.Semantics.Hint = "Test";
+			var id = await GetValueAsync(view, handler => GetSemanticHint(handler));
+			Assert.Equal(view.Semantics.Hint, id);
 		}
 
 		[Fact(DisplayName = "Semantic Heading is set correctly")]
-		[InlineData()]
 		public async Task SetSemanticHeading()
 		{
 			var view = new TStub();
@@ -101,7 +116,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Null Semantics Doesnt throw exception")]
-		[InlineData()]
 		public async Task NullSemanticsClass()
 		{
 			var view = new TStub

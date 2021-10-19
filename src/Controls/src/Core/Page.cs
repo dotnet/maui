@@ -279,16 +279,17 @@ namespace Microsoft.Maui.Controls
 			if (RealParent is BaseShellItem || RealParent is Shell)
 				return false;
 
-			var application = RealParent as Window;
-			if (application == null || this == application.Page)
+
+			var window = RealParent as Window;
+			if (window == null || this == window.Page)
 				return false;
 
 			var canceled = false;
 			EventHandler handler = (sender, args) => { canceled = true; };
-			application.PopCanceled += handler;
+			window.PopCanceled += handler;
 			Navigation.PopModalAsync().ContinueWith(t => { throw t.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext());
 
-			application.PopCanceled -= handler;
+			window.PopCanceled -= handler;
 			return !canceled;
 		}
 
@@ -411,6 +412,14 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendAppearing()
 		{
+			// Only fire appearing if the page has been added to the windows
+			// Visual Hierarchy
+			var window = this.FindParentOfType<Window>();
+			if (window == null)
+			{
+				return;
+			}
+
 			if (_hasAppeared)
 				return;
 

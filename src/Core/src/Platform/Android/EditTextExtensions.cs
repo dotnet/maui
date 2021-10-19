@@ -18,7 +18,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.Text = entry.Text;
+			// Setting the text causes the cursor to reset to position zero
+			// Therefore if:
+			// User Types => VirtualView Updated => Triggers Native Update
+			// Then it will cause the cursor to reset to position zero as the user typed
+			if (entry.Text != editText.Text)
+				editText.Text = entry.Text;
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
@@ -60,9 +65,9 @@ namespace Microsoft.Maui
 			editText.SetInputType(entry);
 		}
 
-		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, ITextAlignment textAlignment)
 		{
-			editText.UpdateHorizontalAlignment(entry.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
+			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
 		}
 
 		public static void UpdateVerticalTextAlignment(this AppCompatEditText editText, IEntry entry)
@@ -131,9 +136,9 @@ namespace Microsoft.Maui
 			editText.Hint = textInput.Placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
 		{
-			editText.UpdatePlaceholderColor(editor.PlaceholderColor, defaultColor);
+			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor, defaultColor);
 		}
 
 		public static void UpdatePlaceholderColor(this AppCompatEditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)

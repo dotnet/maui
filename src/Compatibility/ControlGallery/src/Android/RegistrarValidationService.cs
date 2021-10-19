@@ -1,7 +1,7 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android

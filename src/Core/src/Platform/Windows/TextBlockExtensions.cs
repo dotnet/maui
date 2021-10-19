@@ -26,13 +26,13 @@ namespace Microsoft.Maui
 			nativeControl.UpdateTextPlainText(label);
 		}
 
-		public static void UpdateTextColor(this TextBlock nativeControl, IText text) =>
+		public static void UpdateTextColor(this TextBlock nativeControl, ITextStyle text) =>
 			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
 			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());
 
-		public static void UpdateCharacterSpacing(this TextBlock nativeControl, ILabel label)
+		public static void UpdateCharacterSpacing(this TextBlock nativeControl, ITextStyle label)
 		{
 			nativeControl.CharacterSpacing = label.CharacterSpacing.ToEm();
 		}
@@ -54,14 +54,14 @@ namespace Microsoft.Maui
 			var elementTextDecorations = label.TextDecorations;
 
 			if ((elementTextDecorations & TextDecorations.Underline) == 0)
-				nativeControl.TextDecorations &= ~Windows.UI.Text.TextDecorations.Underline;
+				nativeControl.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Underline;
 			else
-				nativeControl.TextDecorations |= Windows.UI.Text.TextDecorations.Underline;
+				nativeControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Underline;
 
 			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
-				nativeControl.TextDecorations &= ~Windows.UI.Text.TextDecorations.Strikethrough;
+				nativeControl.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Strikethrough;
 			else
-				nativeControl.TextDecorations |= Windows.UI.Text.TextDecorations.Strikethrough;
+				nativeControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
 
 			// TextDecorations are not updated in the UI until the text changes
 			if (nativeControl.Inlines != null && nativeControl.Inlines.Count > 0)
@@ -129,7 +129,7 @@ namespace Microsoft.Maui
 			catch (Exception)
 			{
 				// If anything goes wrong just show the html
-				nativeControl.Text = Windows.Data.Html.HtmlUtilities.ConvertToText(label.Text);
+				nativeControl.Text = global::Windows.Data.Html.HtmlUtilities.ConvertToText(label.Text);
 			}
 		}
 
@@ -173,7 +173,7 @@ namespace Microsoft.Maui
 		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock) =>
 			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
 
-		internal static void UpdateTextPlainText(this TextBlock nativeControl, ILabel label)
+		internal static void UpdateTextPlainText(this TextBlock nativeControl, IText label)
 		{
 			nativeControl.Text = label.Text;
 		}

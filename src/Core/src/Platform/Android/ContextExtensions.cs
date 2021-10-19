@@ -195,7 +195,7 @@ namespace Microsoft.Maui
 				return null;
 
 			if (context is AppCompatActivity activity)
-				return activity.SupportActionBar.ThemedContext;
+				return activity.SupportActionBar?.ThemedContext ?? context;
 
 			if (context is ContextWrapper contextWrapper)
 				return contextWrapper.BaseContext?.GetThemedContext();
@@ -239,9 +239,6 @@ namespace Microsoft.Maui
 		public static IWindow? GetWindow(this Context context)
 		{
 			var nativeWindow = context.GetActivity();
-
-			if (nativeWindow is MauiAppCompatActivity mac && mac.VirtualWindow != null)
-				return mac.VirtualWindow;
 
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{

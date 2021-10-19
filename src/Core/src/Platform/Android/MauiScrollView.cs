@@ -20,6 +20,7 @@ namespace Microsoft.Maui
 		ScrollOrientation _scrollOrientation = ScrollOrientation.Vertical;
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
+		ScrollBarVisibility _horizontalScrollVisibility = 0;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -44,6 +45,7 @@ namespace Microsoft.Maui
 
 		public void SetHorizontalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
+			_horizontalScrollVisibility = scrollBarVisibility;
 			if (_hScrollView == null)
 			{
 				return;
@@ -92,6 +94,7 @@ namespace Microsoft.Maui
 					_hScrollView = new MauiHorizontalScrollView(Context, this);
 					_hScrollView.HorizontalFadingEdgeEnabled = HorizontalFadingEdgeEnabled;
 					_hScrollView.SetFadingEdgeLength(HorizontalFadingEdgeLength);
+					SetHorizontalScrollBarVisibility(_horizontalScrollVisibility);
 				}
 
 				_hScrollView.IsBidirectional = _isBidirectional = orientation == ScrollOrientation.Both;
@@ -372,35 +375,5 @@ namespace Microsoft.Maui
 		bool ScrollBarsInitialized { get; set; }
 		bool ScrollbarFadingEnabled { get; set; }
 		void AwakenScrollBars();
-	}
-
-	internal static class ScrollViewExtensions
-	{
-		internal static void HandleScrollBarVisibilityChange(this IScrollBarView scrollView)
-		{
-			// According to the Android Documentation
-			// * <p>AwakenScrollBars method should be invoked every time a subclass directly updates
-			// *the scroll parameters.</ p >
-
-			// If AwakenScrollBars is never called there are cases where the ScrollDrawable is never called
-			// which causes a crash during draw
-
-			if (scrollView.ScrollBarsInitialized)
-				scrollView.AwakenScrollBars();
-
-			// The scrollbar drawable won't initialize if ScrollbarFadingEnabled == false
-			if (!scrollView.ScrollbarFadingEnabled)
-			{
-				scrollView.ScrollbarFadingEnabled = true;
-				scrollView.AwakenScrollBars();
-				scrollView.ScrollbarFadingEnabled = false;
-			}
-			else
-			{
-				scrollView.AwakenScrollBars();
-			}
-
-			scrollView.ScrollBarsInitialized = true;
-		}
 	}
 }

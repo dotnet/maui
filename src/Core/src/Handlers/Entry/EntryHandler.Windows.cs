@@ -1,25 +1,44 @@
 ﻿#nullable enable
+using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.System;
 
-﻿namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
-		protected override MauiTextBox CreateNativeView() =>
-			new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
+		Brush? _defaultPlaceholderBrush;
+		Brush? _defaultPlaceholderColorFocusBrush;
+	
+		protected override MauiTextBox CreateNativeView()
+		{
+			var nativeEntry = new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
+
+			_defaultPlaceholderBrush = nativeEntry.PlaceholderForeground;
+			_defaultPlaceholderColorFocusBrush = nativeEntry.PlaceholderForegroundFocusBrush;
+
+			return nativeEntry;
+		}
 
 		protected override void ConnectHandler(MauiTextBox nativeView)
 		{
+			NativeView.CursorPositionChangePending = VirtualView.CursorPosition > 0;
+			NativeView.SelectionLengthChangePending = VirtualView.SelectionLength > 0;
 			nativeView.KeyUp += OnNativeKeyUp;
+			nativeView.CursorPositionChanged += OnCursorPositionChanged;
+			nativeView.SelectionLengthChanged += OnSelectionLengthChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTextBox nativeView)
 		{
 			nativeView.KeyUp -= OnNativeKeyUp;
+			nativeView.CursorPositionChanged -= OnCursorPositionChanged;
+			nativeView.SelectionLengthChanged -= OnSelectionLengthChanged;
 		}
 
-		public static void MapText(EntryHandler handler, IEntry entry) 
+		public static void MapText(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateText(entry);
 		}
@@ -29,7 +48,7 @@ using Windows.System;
 			handler.NativeView?.UpdateTextColor(entry);
 		}
 
-		public static void MapIsPassword(EntryHandler handler, IEntry entry) 
+		public static void MapIsPassword(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateIsPassword(entry);
 		}
@@ -44,8 +63,10 @@ using Windows.System;
 			handler.NativeView?.UpdateVerticalTextAlignment(entry);
 		}
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
+		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateIsTextPredictionEnabled(entry);
+		}
 
 		public static void MapMaxLength(EntryHandler handler, IEntry entry)
 		{
@@ -55,6 +76,11 @@ using Windows.System;
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(entry, handler._defaultPlaceholderBrush, handler._defaultPlaceholderColorFocusBrush);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
@@ -84,8 +110,10 @@ using Windows.System;
 			handler.NativeView?.UpdateCharacterSpacing(entry);
 		}
 
-		[MissingMapper]
-		public static void MapKeyboard(IViewHandler handler, IEntry entry) { }
+		public static void MapKeyboard(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateKeyboard(entry);
+		}
 
 		void OnNativeKeyUp(object? sender, KeyRoutedEventArgs args)
 		{
@@ -104,10 +132,25 @@ using Windows.System;
 			VirtualView?.Completed();
 		}
 
-		[MissingMapper]
-		public static void MapCursorPosition(IViewHandler handler, IEntry entry) { }
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView.CursorPosition = entry.CursorPosition;
+		}
 
-		[MissingMapper]
-		public static void MapSelectionLength(IViewHandler handler, IEntry entry) { }
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView.ViewSelectionLength = entry.SelectionLength;
+		}
+
+		void OnCursorPositionChanged(object? sender, EventArgs e)
+		{
+			VirtualView.CursorPosition = NativeView.CursorPosition;
+		}
+
+		void OnSelectionLengthChanged(object? sender, EventArgs e)
+		{
+			VirtualView.SelectionLength = NativeView.ViewSelectionLength;
+		}
+
 	}
 }

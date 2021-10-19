@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.NativeView == null || handler.MauiContext == null || scrollView.Content == null)
+			if (handler.NativeView == null || handler.MauiContext == null)
 				return;
 
-			handler.NativeView.SetContent(scrollView.Content.ToNative(handler.MauiContext));
+			handler.NativeView.UpdateContent(scrollView.PresentedContent, handler.MauiContext);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)

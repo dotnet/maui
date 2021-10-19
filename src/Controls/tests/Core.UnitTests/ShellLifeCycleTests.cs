@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AppearingOnCreate()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 
 			FlyoutItem flyoutItem = new FlyoutItem();
 			Tab tab = new Tab();
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void MisfiringOfAppearingWithMultipleTabs()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 
 			var item0 = CreateShellItem(shellContentRoute: "Outbox", templated: true);
 			var item1 = CreateShellItem(shellSectionRoute: "RequestType1", shellContentRoute: "RequestType1Details", templated: true);
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AppearingOnCreateFromTemplate()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 
 			FlyoutItem flyoutItem = new FlyoutItem();
 			Tab tab = new Tab();
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(false)]
 		public void EnsureOnAppearingFiresAfterParentIsSet(bool templated)
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 
 			ContentPage page = new ContentPage();
 
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task EnsureOnAppearingFiresForNavigatedToPage()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem());
 			await shell.GoToAsync("LifeCyclePage");
 
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task EnsureOnAppearingFiresForLastPageOnly()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			LifeCyclePage shellContentPage = new LifeCyclePage();
 			shell.Items.Add(CreateShellItem(page: shellContentPage));
 			await shell.GoToAsync("LifeCyclePage/LifeCyclePage");
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task EnsureOnAppearingFiresForLastPageOnlyAbsoluteRoute()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			LifeCyclePage shellContentPage = new LifeCyclePage();
 			shell.Items.Add(CreateShellItem());
 			shell.Items.Add(CreateShellItem(page: shellContentPage, shellItemRoute: "ShellItemRoute"));
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task EnsureOnAppearingFiresForPushedPage()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem());
 			shell.Navigation.PushAsync(new LifeCyclePage());
 			var page = (LifeCyclePage)shell.GetVisiblePage();
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task NavigatedFiresAfterContentIsCreatedWhenUsingTemplate()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 
 			FlyoutItem flyoutItem = new FlyoutItem();
 			Tab tab = new Tab();
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AppearingOnShellContentChanged()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			var section = item.SearchForRoute<ShellSection>(SectionRoute);
 
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AppearingOnShellSectionChanged()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			var section = item.SearchForRoute<ShellSection>(SectionRoute);
 			var newSection = CreateShellSection();
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AppearingOnShellItemChanged()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			var item2 = CreateShellItem();
 			shell.Items.Add(item2);
@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ShellPartWithModalPush()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			ShellLifeCycleState lifeCycleState = new ShellLifeCycleState(item);
 			shell.Items.Add(item);
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ShellPartWithPagePush()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			ShellLifeCycleState lifeCycleState = new ShellLifeCycleState(item);
 			shell.Items.Add(item);
@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ShellPartWithPopToRoot()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			ShellLifeCycleState lifeCycleState = new ShellLifeCycleState(item);
 			shell.Items.Add(item);
@@ -397,7 +397,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task PagePushModal()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			ShellLifeCycleState lifeCycleState = new ShellLifeCycleState(item);
 			shell.Items.Add(item);
@@ -421,7 +421,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task PagePush()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			shell.Items.Add(item);
 
@@ -442,7 +442,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void OnNavigatedOnlyFiresOnce()
 		{
 			int navigated = 0;
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Navigated += (_, __) =>
 			{
 				navigated++;
@@ -457,7 +457,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AppearingOnlyForVisiblePage()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var pageAppearing = new ContentPage();
 			var pageNotAppearing = new ContentPage();
 

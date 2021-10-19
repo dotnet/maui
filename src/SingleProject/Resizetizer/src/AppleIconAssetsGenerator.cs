@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public IEnumerable<ResizedImageInfo> Generate()
 		{
-			var outputAppIconSetDir = Path.Combine(IntermediateOutputPath, DpiPath.IosAppIconPath.Replace("{name}", AppIconName));
+			var outputAppIconSetDir = Path.Combine(IntermediateOutputPath, DpiPath.Ios.AppIconPath.Replace("{name}", AppIconName));
 			var outputAssetsDir = Path.Combine(outputAppIconSetDir, "..");
 
 			Logger.Log("iOS App Icon Set Directory: " + outputAppIconSetDir);

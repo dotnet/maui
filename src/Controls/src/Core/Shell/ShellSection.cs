@@ -306,13 +306,13 @@ namespace Microsoft.Maui.Controls
 			return (ShellSection)(ShellContent)page;
 		}
 
-		async Task PrepareCurrentStackForBeingReplaced(NavigationRequest request, ShellRouteParameters queryData, bool? animate, List<string> globalRoutes, bool isRelativePopping)
+		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, bool? animate, List<string> globalRoutes, bool isRelativePopping)
 		{
 			string route = "";
 			List<Page> navStack = null;
 
 			// Pop the stack down to where it no longer matches 
-			if (request.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
+			if (request.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 			{
 				// If there's a visible Modal Stack then let's remove the pages under it that
 				// are going to be popped so they never become visible and never fire OnAppearing
@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls
 			return content;
 		}
 
-		internal async Task GoToAsync(NavigationRequest request, ShellRouteParameters queryData, bool? animate, bool isRelativePopping)
+		internal async Task GoToAsync(ShellNavigationRequest request, ShellRouteParameters queryData, bool? animate, bool isRelativePopping)
 		{
 			List<string> globalRoutes = request.Request.GlobalRoutes;
 			if (globalRoutes == null || globalRoutes.Count == 0)
@@ -505,7 +505,7 @@ namespace Microsoft.Maui.Controls
 			bool weveGoneTotalModal = currentNavStack.Count > _navStack.Count;
 			int whereToStartNavigation = 0;
 
-			if (request.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
+			if (request.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				whereToStartNavigation = currentNavStack.Count - 1;
 
 			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
