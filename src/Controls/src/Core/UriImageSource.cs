@@ -106,11 +106,6 @@ namespace Microsoft.Maui.Controls
 			return $"Uri: {Uri}";
 		}
 
-		static string GetCacheKey(Uri uri)
-		{
-			return Application.Current.Handler.GetRequiredService<IHashAlgorithm>().ComputeHashString(uri.AbsoluteUri);
-		}
-
 		Task<bool> GetHasLocallyCachedCopyAsync(string key, bool checkValidity = true)
 		{
 			return Task.FromResult(false);
@@ -222,7 +217,7 @@ namespace Microsoft.Maui.Controls
 
 		async Task<Stream> GetStreamFromCacheAsync(Uri uri, CancellationToken cancellationToken)
 		{
-			string key = GetCacheKey(uri);
+			string key = Crc64.ComputeHashString(uri.AbsoluteUri);
 			LockingSemaphore sem;
 			lock (s_syncHandle)
 			{
