@@ -1,3 +1,5 @@
+using System.Numerics;
+
 using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics
@@ -76,7 +78,7 @@ namespace Microsoft.Maui.Graphics
 
 		public  void Translate(float tx, float ty);
 
-		public  void ConcatenateTransform(AffineTransform transform);
+		public  void ConcatenateTransform(Matrix3x2 transform);
 
 		public  void SaveState();
 

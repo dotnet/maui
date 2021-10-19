@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics.Xaml
 {
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 
 		}
 
-		protected override void NativeConcatenateTransform(AffineTransform transform)
+		protected override void NativeConcatenateTransform(Matrix3x2 transform)
 		{
 			CurrentState.XamlConcatenateTransform(transform);
 		}

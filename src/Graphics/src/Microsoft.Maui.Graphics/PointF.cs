@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Graphics
 
 		public float Y { get; set; }
 
-		public static PointF Zero = new PointF();
+		public static readonly PointF Zero = new PointF();
 
 		public override string ToString()
 		{
@@ -67,6 +67,11 @@ namespace Microsoft.Maui.Graphics
 			p.X += dx;
 			p.Y += dy;
 			return p;
+		}
+
+		public PointF TransformBy(in Matrix3x2 transform)
+		{
+			return Vector2.Transform((Vector2)this, transform);
 		}
 
 		public PointF Round()

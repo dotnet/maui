@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+
 using Microsoft.Maui.Graphics.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -232,7 +234,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 
 		}
 
-		protected override void NativeConcatenateTransform(AffineTransform transform)
+		protected override void NativeConcatenateTransform(Matrix3x2 transform)
 		{
 			CurrentState.XamlConcatenateTransform(transform);
 		}
@@ -427,8 +429,8 @@ namespace Microsoft.Maui.Graphics.Xaml
 			var item = GetOrCreateItem(ItemType.DrawLine);
 			var element = (Line)item.Element;
 
-			var p1 = CurrentState.Transform.Transform(x1, y1);
-			var p2 = CurrentState.Transform.Transform(x2, y2);
+			var p1 = Vector2.Transform(new Vector2(x1, y1), CurrentState.Transform);
+			var p2 = Vector2.Transform(new Vector2(x2, y2), CurrentState.Transform);
 			element.X1 = p1.X;
 			element.Y1 = p1.Y;
 			element.X2 = p2.X;

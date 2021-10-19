@@ -16,13 +16,9 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 			LineCap = Cairo.LineCap.Butt;
 		}
 
-		public NativeCanvasState(NativeCanvasState prototype) {
-
-			StrokeDashPattern = prototype.StrokeDashPattern;
-			StrokeSize = prototype.StrokeSize;
-			Scale = prototype.Scale;
-			Transform = prototype.Transform;
-
+		public NativeCanvasState(NativeCanvasState prototype)
+			: base(prototype)
+		{
 			Antialias = prototype.Antialias;
 			MiterLimit = prototype.MiterLimit;
 			StrokeColor = prototype.StrokeColor;

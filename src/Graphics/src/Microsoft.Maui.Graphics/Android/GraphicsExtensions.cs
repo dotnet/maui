@@ -1,6 +1,7 @@
 using Android.Graphics;
 using Android.Text;
 using System;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics.Native
 {
@@ -65,11 +66,16 @@ namespace Microsoft.Maui.Graphics.Native
 			return new global::Android.Graphics.PointF(target.X, target.Y);
 		}
 
-		public static Matrix AsMatrix(this AffineTransform transform)
+		public static Matrix AsMatrix(this Matrix3x2 transform)
 		{
 			var values = new float[9];
-			transform.GetMatrix(values);
 
+			values[Matrix.MscaleX] = transform.M11;
+			values[Matrix.MskewX] = transform.M21;
+			values[Matrix.MtransY] = transform.M31;
+			values[Matrix.MskewY] = transform.M12;
+			values[Matrix.MscaleY] = transform.M22;
+			values[Matrix.MtransX] = transform.M32;
 			values[Matrix.Mpersp0] = 0; // 6
 			values[Matrix.Mpersp1] = 0; // 7
 			values[Matrix.Mpersp2] = 1; // 8

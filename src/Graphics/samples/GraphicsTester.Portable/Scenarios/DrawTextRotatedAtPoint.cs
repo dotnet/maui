@@ -5,7 +5,7 @@ namespace GraphicsTester.Scenarios
 	public class DrawTextRotatedAtPoint : AbstractScenario
 	{
 		public DrawTextRotatedAtPoint()
-			: base(720, 1024)
+			: base(1024, 720)
 		{
 		}
 

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+
 using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics
@@ -221,10 +223,11 @@ namespace Microsoft.Maui.Graphics
 			_canvas.Translate(tx, ty);
 		}
 
-		public void ConcatenateTransform(AffineTransform transform)
+		public void ConcatenateTransform(Matrix3x2 transform)
 		{
-			_scaleX *= transform.ScaleX;
-			_scaleY *= transform.ScaleY;
+			transform.DeconstructScales(out _, out var sx, out var sy);
+			_scaleX *= sx;
+			_scaleY *= sy;
 			_canvas.ConcatenateTransform(transform);
 		}
 
