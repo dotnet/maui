@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					shellContent.icon.LoadImage(mauiContext, result =>
 					{
-						image.SetImageDrawable(result.Value);
+						image.SetImageDrawable(result?.Value);
 					});
 
 					innerLayout.AddView(image);

@@ -10,7 +10,7 @@
     </views:BasePage.BindingContext>
     <views:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout Margin="12">
+            <VerticalStackLayout Padding="12">
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
@@ -81,7 +81,6 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="123"
-                    Style="{StaticResource Headline}" 
                     Keyboard="Numeric"/>
                 <Label
                     Text="HorizontalTextAlignment"

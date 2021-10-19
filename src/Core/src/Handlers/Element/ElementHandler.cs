@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 		public IElement? VirtualView { get; private protected set; }
 
-		public void SetMauiContext(IMauiContext mauiContext) =>
+		public virtual void SetMauiContext(IMauiContext mauiContext) =>
 			MauiContext = mauiContext;
 
 		public virtual void SetVirtualView(IElement view)
