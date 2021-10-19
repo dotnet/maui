@@ -68,31 +68,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					(_mainActivity as IFoldableContext).FoldingFeatureChanged += DualScreenServiceImpl_FoldingFeatureChanged;
 				}
 			}
-			//[Obsolete("delete me")]
-			//public void UpdateMetrics(FoldEventArgs newFoldMetrics) 
-			//{
-			//	_isLandscape = (newFoldMetrics.WindowBounds.Width >= newFoldMetrics.WindowBounds.Height);
-			//	_isSpanned = newFoldMetrics.isSeparating;
 
-			//	_helper.FoldingFeatureBounds = newFoldMetrics.FoldingFeatureBounds;
-			//	_helper.WindowBounds = newFoldMetrics.WindowBounds;
-			//	_helper.IsSpanned = newFoldMetrics.isSeparating;
-
-			//	using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
-			//	{
-			//		var scalingFactor = display.Density;
-			//		_pixelScreenSize = new Size(newFoldMetrics.WindowBounds.Width, newFoldMetrics.WindowBounds.Height);
-			//		var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
-
-			//		if (newSize != ScaledScreenSize)
-			//		{
-			//			ScaledScreenSize = newSize;
-			//		}
-			//	}
-
-			//	Update();
-			//	//_helper.Update();
-			//}
 			private void DualScreenServiceImpl_FoldingFeatureChanged(object sender, FoldEventArgs ea)
 			{
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.DualScreenServiceImpl_FoldingFeatureChanged");
