@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			if (rect.Width < 0 || rect.Height < 0)
 				return;
 
-			nativeView.Arrange(new Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
+			nativeView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
