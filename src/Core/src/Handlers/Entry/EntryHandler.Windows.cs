@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.System;
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CursorPositionChangePending = VirtualView.CursorPosition > 0;
 			NativeView.SelectionLengthChangePending = VirtualView.SelectionLength > 0;
 			nativeView.KeyUp += OnNativeKeyUp;
+			nativeView.TextChanged += TextChanged;
 			nativeView.CursorPositionChanged += OnCursorPositionChanged;
 			nativeView.SelectionLengthChanged += OnSelectionLengthChanged;
 		}
@@ -34,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiTextBox nativeView)
 		{
 			nativeView.KeyUp -= OnNativeKeyUp;
+			nativeView.TextChanged -= TextChanged;
 			nativeView.CursorPositionChanged -= OnCursorPositionChanged;
 			nativeView.SelectionLengthChanged -= OnSelectionLengthChanged;
 		}
@@ -130,6 +133,11 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			VirtualView?.Completed();
+		}
+
+		void TextChanged(object sender, TextChangedEventArgs args)
+		{
+			VirtualView?.UpdateText(NativeView.Text);
 		}
 
 		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
