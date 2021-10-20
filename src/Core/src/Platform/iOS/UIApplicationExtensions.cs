@@ -1,4 +1,3 @@
-using System;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -21,13 +20,11 @@ namespace Microsoft.Maui
 
 		public static IWindow? GetWindow(this UIApplication application)
 		{
-			if (MauiUIApplicationDelegate.Current.VirtualWindow != null)
-				return MauiUIApplicationDelegate.Current.VirtualWindow;
+			var windows = application.Windows;
 
-			var nativeWindow = application.GetKeyWindow();
 			foreach (var window in MauiUIApplicationDelegate.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView is UIWindow win && win == nativeWindow)
+				if (window?.Handler?.NativeView is UIWindow win && windows.IndexOf(win) != -1)
 					return window;
 			}
 

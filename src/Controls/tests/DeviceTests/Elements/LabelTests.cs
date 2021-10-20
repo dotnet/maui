@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Label)]
-	public partial class LabelTests : HandlerTestBase 
+	public partial class LabelTests : HandlerTestBase
 	{
 		[Theory]
 		[InlineData("Hello There", TextTransform.None, "Hello There")]
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 
 			var nativeText = await InvokeOnMainThreadAsync(() =>
-			{ 
+			{
 				return handler.NativeView.Text;
 			});
 
