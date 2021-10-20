@@ -33,9 +33,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 		bool _isLandscape;
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
-		Rectangle _absoluteLayoutPosition;
-		object _watchHandle;
-		Action _layoutChangedReference;
+		//Rectangle _absoluteLayoutPosition;
+		//object _watchHandle;
+		//Action _layoutChangedReference;
 
 		TwoPaneViewLayoutGuide()
 		{
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			if(_layout != null)
 			{
-				UpdateLayouts();
+				UpdateLayouts(layout.Width, layout.Height);
 				_layout.PropertyChanged += OnLayoutPropertyChanged;
 				_layout.PropertyChanging += OnLayoutPropertyChanging;
 				WatchForChanges();
@@ -79,79 +79,79 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		public void WatchForChanges()
 		{
-			if (_layout != null && _watchHandle == null)
-			{
-				_layoutChangedReference = OnLayoutChanged;
-				var layoutHandle = DualScreenService.WatchForChangesOnLayout(_layout, _layoutChangedReference);
+			//if (_layout != null && _watchHandle == null)
+			//{
+			//	_layoutChangedReference = OnLayoutChanged;
+			//	var layoutHandle = DualScreenService.WatchForChangesOnLayout(_layout, _layoutChangedReference);
 
-				if (layoutHandle == null)
-				{
-					_layoutChangedReference = null;
-					return;
-				}
+			//	if (layoutHandle == null)
+			//	{
+			//		_layoutChangedReference = null;
+			//		return;
+			//	}
 
-				_watchHandle = layoutHandle;
-				OnScreenChanged(DualScreenService, EventArgs.Empty);
-				DualScreenService.OnScreenChanged += OnScreenChanged;
-			}
-			else
-			{
-				DualScreenService.OnScreenChanged += OnScreenChanged;
-			}
+			//	_watchHandle = layoutHandle;
+			//	OnScreenChanged(DualScreenService, EventArgs.Empty);
+			//	DualScreenService.OnScreenChanged += OnScreenChanged;
+			//}
+			//else
+			//{
+			//	DualScreenService.OnScreenChanged += OnScreenChanged;
+			//}
 		}
 
 		public void StopWatchingForChanges()
 		{
-			DualScreenService.OnScreenChanged -= OnScreenChanged;
-			if (_layout != null)
-			{
-				DualScreenService.StopWatchingForChangesOnLayout(_layout, _watchHandle);
-			}
+			//DualScreenService.OnScreenChanged -= OnScreenChanged;
+			//if (_layout != null)
+			//{
+			//	DualScreenService.StopWatchingForChangesOnLayout(_layout, _watchHandle);
+			//}
 
-			_layoutChangedReference = null;
-			_watchHandle = null;
+			//_layoutChangedReference = null;
+			//_watchHandle = null;
 		}
 
-		void OnLayoutChanged()
-		{
-			if (_watchHandle == null)
-			{
-				StopWatchingForChanges();
-				return;
-			}
+		//void OnLayoutChanged()
+		//{
+		//	if (_watchHandle == null)
+		//	{
+		//		StopWatchingForChanges();
+		//		return;
+		//	}
 
-			OnScreenChanged(DualScreenService, EventArgs.Empty);
-		}
+		//	OnScreenChanged(DualScreenService, EventArgs.Empty);
+		//}
 
-		void OnScreenChanged(object sender, EventArgs e)
-		{
-			if (_layout == null)
-			{
-				UpdateLayouts();
-				return;
-			}
+		//void OnScreenChanged(object sender, EventArgs e)
+		//{
+		//	if (_layout == null)
+		//	{
+		//		UpdateLayouts();
+		//		return;
+		//	}
 
-			if(_layout != null && _watchHandle == null)
-			{
-				StopWatchingForChanges();
-				return;
-			}
+		//	if(_layout != null && _watchHandle == null)
+		//	{
+		//		StopWatchingForChanges();
+		//		return;
+		//	}
 
-			var screenPosition = DualScreenService.GetLocationOnScreen(_layout);
-			if (screenPosition == null)
-			{
-				UpdateLayouts();
-				return;
-			}
+		//	var screenPosition = DualScreenService.GetLocationOnScreen(_layout);
+		//	if (screenPosition == null)
+		//	{
+		//		UpdateLayouts();
+		//		return;
+		//	}
 
-			var newPosition = new Rectangle(screenPosition.Value, _layout.Bounds.Size);
+		//	var newPosition = new Rectangle(screenPosition.Value, _layout.Bounds.Size);
 
-			if (newPosition != _absoluteLayoutPosition)
-			{
-				_absoluteLayoutPosition = newPosition;
-				UpdateLayouts();
-			}
-		}
+		//	if (newPosition != _absoluteLayoutPosition)
+		//	{
+		//		_absoluteLayoutPosition = newPosition;
+		//		UpdateLayouts();
+		//	}
+		//}
 
 		public bool IsLandscape
 		{
@@ -163,7 +163,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			get
 			{
-				return GetTwoPaneViewMode();
+				if (_layoutWidth == -1)
+					return TwoPaneViewMode.SinglePane;
+
+				return GetTwoPaneViewMode(_layoutWidth, _layoutHeight);
 			}
 			private set
 			{
@@ -207,7 +210,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-		Rectangle GetContainerArea()
+		Rectangle GetContainerArea(double width, double height)
 		{
 			Rectangle containerArea;
 			if (_layout == null)
@@ -216,13 +219,13 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 			else
 			{
-				containerArea = _layout.Bounds;
+				containerArea = new Rectangle(_layout.X, _layout.Y, width, height);
 			}
 
 			return containerArea;
 		}
 
-		Rectangle GetScreenRelativeBounds()
+		Rectangle GetScreenRelativeBounds(double width, double height)
 		{
 			Rectangle containerArea;
 			if (_layout == null)
@@ -235,16 +238,21 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (!locationOnScreen.HasValue)
 					return Rectangle.Zero;
 
-				containerArea = new Rectangle(locationOnScreen.Value, _layout.Bounds.Size);
+				containerArea = new Rectangle(locationOnScreen.Value, new Size(width, height));
 			}
 
 			return containerArea;
-
 		}
 
-		internal void UpdateLayouts()
+		double _layoutWidth = -1;
+		double _layoutHeight = -1;
+
+		internal void UpdateLayouts(double width, double height)
 		{
-			Rectangle containerArea = GetContainerArea();
+			_layoutWidth = width;
+			_layoutHeight = height;
+
+			Rectangle containerArea = GetContainerArea(width, height);
 			if (containerArea.Width <= 0)
 			{
 				return;
@@ -253,7 +261,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			// Pane dimensions are calculated relative to the layout container
 			Rectangle _newPane1 = Pane1;
 			Rectangle _newPane2 = Pane2;
-			var locationOnScreen = GetScreenRelativeBounds();
+			var locationOnScreen = GetScreenRelativeBounds(width, height);
 			if (locationOnScreen == Rectangle.Zero && Hinge == Rectangle.Zero)
 				locationOnScreen = containerArea;
 
@@ -336,7 +344,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			Pane1 = _newPane1;
 			Pane2 = _newPane2;
-			Mode = GetTwoPaneViewMode();
+			Mode = GetTwoPaneViewMode(width, height);
 			Hinge = DualScreenService.GetHinge();
 			IsLandscape = DualScreenService.IsLandscape;
 
@@ -388,9 +396,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 			return isInMultipleRegions;
 		}
 
-		TwoPaneViewMode GetTwoPaneViewMode()
+		TwoPaneViewMode GetTwoPaneViewMode(double width, double height)
 		{
-			if (!IsInMultipleRegions(GetScreenRelativeBounds()))
+			if (!IsInMultipleRegions(GetScreenRelativeBounds(width, height)))
 				return TwoPaneViewMode.SinglePane;
 
 			if (DualScreenService.IsLandscape)

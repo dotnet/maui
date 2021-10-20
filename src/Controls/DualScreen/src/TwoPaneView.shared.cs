@@ -198,7 +198,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			System.Diagnostics.Debug.Write("TwoPaneView.DualScreenService_OnFeatureChanged - " + e, "JWM");
 			try
-			{
+			{ 
+				InvalidateMeasure();
+
 				//HACK:FOLDABLE this does not _do_ anything...
 				//_twoPaneViewLayoutGuide.UpdateLayouts();
 				//this.InvalidateMeasure();
@@ -245,7 +247,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			_layoutGuideHinge = _twoPaneViewLayoutGuide.Hinge;
 			_layoutGuideIsLandscape = _twoPaneViewLayoutGuide.IsLandscape;
 
-			UpdateMode(Width, Height);
+			//UpdateMode(Width, Height);
+			InvalidateMeasure();
 		}
 
 
@@ -277,6 +280,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 			return sizeRequest;
 		}
 
+		protected override Size ArrangeOverride(Rectangle bounds)
+		{
+			return base.ArrangeOverride(bounds);
+		}
+
 		//protected override Size ArrangeOverride(Rectangle bounds)
 		//{
 		//	if (_updatingMode)
@@ -300,7 +308,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		//		UpdateMode(bounds.Width, bounds.Height);
 		//		return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to not exist
 		//	}
-			
+
 		//}
 		//HACK:FOLDABLE was LayoutChildren, temporarily updated to ArrangeOverride
 		//protected override void LayoutChildren(double x, double y, double width, double height)
@@ -325,18 +333,38 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		bool UpdateMode(double width, double height, bool invalidateLayout = true)
 		{
+			invalidateLayout = false;
+			//if (_twoPaneViewLayoutGuide.Hinge != _previousHinge)
+			//{
+			//	_previousWidth = -1;
+			//	_previousHeight = -1;
+			//	_previousHinge = _twoPaneViewLayoutGuide.Hinge;
+			//}
+
+			//// controls hasn't fully been created yet
+			//if (RowDefinitions.Count != 3
+			//	|| ColumnDefinitions.Count != 3
+			//	|| width == -1
+			//	|| height == -1
+			//	|| width == _previousWidth
+			//	|| height == _previousHeight
+			//	|| width == double.PositiveInfinity
+			//	|| height == double.PositiveInfinity)
+			//{
+			//	return false;
+			//}
+
 			// controls hasn't fully been created yet
 			if (RowDefinitions.Count != 3
 				|| ColumnDefinitions.Count != 3
 				|| width == -1
 				|| height == -1
-				|| width == _previousWidth
-				|| height == _previousHeight
 				|| width == double.PositiveInfinity
 				|| height == double.PositiveInfinity)
 			{
 				return false;
 			}
+
 
 			if (_updatingMode)
 			{
@@ -356,7 +384,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				//_hasMeasured = true;
 
-				_twoPaneViewLayoutGuide.UpdateLayouts();
+				_twoPaneViewLayoutGuide.UpdateLayouts(width, height);
 
 				if (_twoPaneViewLayoutGuide.Mode != TwoPaneViewMode.SinglePane)
 				{
@@ -450,6 +478,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			return true;
 		}
 
+		Rectangle _previousHinge = Rectangle.Zero;
+
 		void UpdateRowsColumns(ViewMode newMode)
 		{
 			var columnLeft = ColumnDefinitions[0];
@@ -467,6 +497,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			if (_twoPaneViewLayoutGuide.Mode != TwoPaneViewMode.SinglePane && newMode != ViewMode.Pane1Only && newMode != ViewMode.Pane2Only)
 			{
 				Rectangle hinge = _twoPaneViewLayoutGuide.Hinge;
+				_previousHinge = hinge;
 
 				if (_twoPaneViewLayoutGuide.Mode == TwoPaneViewMode.Wide)
 				{
