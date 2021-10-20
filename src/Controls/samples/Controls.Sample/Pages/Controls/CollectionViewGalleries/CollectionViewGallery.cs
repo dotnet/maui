@@ -27,8 +27,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		{
 			Content = new ScrollView
 			{
-				Content = new Microsoft.Maui.Controls.StackLayout
+				Content = new StackLayout
 				{
+					Spacing = 5,
 					Children =
 					{
 						GalleryBuilder.NavButton("Default Text Galleries", () => new DefaultTextGallery(), Navigation),

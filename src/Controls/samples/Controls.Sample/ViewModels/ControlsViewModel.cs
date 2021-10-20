@@ -21,6 +21,10 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(CheckBoxPage), "CheckBox",
 				"The CheckBox is a type of button that can either be checked or empty. When a checkbox is checked, it's considered to be on."),
 
+			new SectionModel(typeof(Pages.CollectionViewGalleries.CollectionViewGallery), "CollectionView",
+				"List of Items"),
+
+
 			new SectionModel(typeof(DatePickerPage), "DatePicker",
 				"A view that allows the user to select a date."),
 
