@@ -16,8 +16,8 @@ namespace Microsoft.Maui
 			return FlowDirection.MatchParent;
 		}
 
-		public static WindowManager GetWindowManager(this IMauiContext mauiContext) =>
-			mauiContext.Services.GetRequiredService<WindowManager>();
+		public static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<NavigationRootManager>();
 
 		public static UI.Xaml.Window GetNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<UI.Xaml.Window>();
@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 		{
 			var scopedContext = new MauiContext(mauiContext);
 			scopedContext.AddSpecific(nativeWindow);
-			scopedContext.AddSpecific(new WindowManager(scopedContext));
+			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
 			return scopedContext;
 		}
 	}

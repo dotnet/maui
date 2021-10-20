@@ -8,18 +8,6 @@ namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
-		WeakReference<IWindow>? _virtualWindow;
-		internal IWindow? VirtualWindow
-		{
-			get
-			{
-				IWindow? window = null;
-				_virtualWindow?.TryGetTarget(out window);
-				return window;
-			}
-		}
-
-
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
 
@@ -51,13 +39,12 @@ namespace Microsoft.Maui
 			if (mauiApp == null)
 				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
 
-			var services = MauiApplication.Current.Services;
-			if (services == null)
+			if (mauiApp.Handler?.MauiContext is not IMauiContext applicationContext)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
-			var mauiContext = MauiApplication.Current.MauiApplicationContext.MakeScoped(this);
+			var mauiContext = applicationContext.MakeScoped(this);
 
-			services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
+			applicationContext.Services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			// TODO: Fix once we have multiple windows
 			IWindow window;
@@ -73,7 +60,6 @@ namespace Microsoft.Maui
 				window = mauiApp.CreateWindow(state);
 			}
 
-			_virtualWindow = new WeakReference<IWindow>(window);
 			this.SetWindowHandler(window, mauiContext);
 		}
 	}

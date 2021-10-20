@@ -130,6 +130,7 @@ string[] androidSdkManagerInstalls = androidSdks.Split(',');
 {
     ("10.0.19041.0", "https://go.microsoft.com/fwlink/p/?linkid=2120843", "OptionId.WindowsPerformanceToolkit OptionId.WindowsDesktopDebuggers OptionId.AvrfExternal OptionId.WindowsSoftwareLogoToolkit OptionId.MSIInstallTools OptionId.SigningTools OptionId.UWPManaged OptionId.UWPCPP OptionId.UWPLocalized OptionId.DesktopCPPx86 OptionId.DesktopCPPx64 OptionId.DesktopCPParm OptionId.DesktopCPParm64"), 
     ("10.0.18362.0", "https://go.microsoft.com/fwlink/?linkid=2083338", "+"),
+    ("10.0.17763.0", "https://go.microsoft.com/fwlink/p/?linkid=2033908", "+"),
     ("10.0.16299.0", "https://go.microsoft.com/fwlink/p/?linkid=864422", "+"),
     ("10.0.14393.0", "https://go.microsoft.com/fwlink/p/?LinkId=838916", "+")
 };

@@ -7,12 +7,13 @@
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
-    <MicrosoftGraphicsWin2DVersion>1.0.0.26-experimental1</MicrosoftGraphicsWin2DVersion>
-    <MicrosoftMauiGraphicsVersion>6.0.101-preview.9.512</MicrosoftMauiGraphicsVersion>
+    <MicrosoftGraphicsWin2DVersion>1.0.0.28-preview2</MicrosoftGraphicsWin2DVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.101-preview.10.566</MicrosoftMauiGraphicsVersion>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
-    <_MicrosoftWindowsAppSdkVersion>1.0.0-experimental1</_MicrosoftWindowsAppSdkVersion>
+    <_MicrosoftWindowsAppSdkVersion>1.0.0-preview2</_MicrosoftWindowsAppSdkVersion>
+    <_MicrosoftWindowsAppSdkVersion Condition="'$(UseInternalWinUIPackages)' == 'true'">1.0.0-20211012.0-CI-experimental</_MicrosoftWindowsAppSdkVersion>
     <_MicrosoftWebWebView2Version>1.0.961.33</_MicrosoftWebWebView2Version>
   </PropertyGroup>
   <!-- Android related Packages -->
@@ -38,6 +39,10 @@
     />
     <PackageReference
          Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
+         Version="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <PackageReference
+         Update="Microsoft.Maui.Graphics.Skia"
          Version="$(MicrosoftMauiGraphicsVersion)"
     />
     <PackageReference
@@ -93,17 +98,9 @@
         Version="$(_MicrosoftWindowsAppSdkVersion)"
     />
     <PackageReference
-        Update="Microsoft.WindowsAppSDK.Foundation"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.WindowsAppSDK.WinUI"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.WindowsAppSDK.InteractiveExperiences"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-        NoWarn="NU1701"
+        Update="Microsoft.WindowsAppSDK"
+        Condition="'$(UseInternalWinUIPackages)' == 'true'"
+        NoWarn=" NU1605"
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"

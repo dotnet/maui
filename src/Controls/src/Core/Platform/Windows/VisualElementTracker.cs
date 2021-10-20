@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (operationPriorToSend != dragEventArgs.AcceptedOperation)
 				{
 					var result = (int)dragEventArgs.AcceptedOperation;
-					e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+					e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
 				}
 			});
 		}
@@ -153,13 +153,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if(!rec.AllowDrop)
 				{
-					e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
+					e.AcceptedOperation = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
 					return;
 				}
 
 				rec.SendDragOver(dragEventArgs);
 				var result = (int)dragEventArgs.AcceptedOperation;
-				e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+				e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
 			});
 		}
 
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				e.Cancel = args.Cancel;
-				e.AllowedOperations = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+				e.AllowedOperations = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 			});
 		}
 
@@ -461,7 +461,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isPinching = true;
 
-			Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
+			global::Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
 
 			var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
@@ -783,7 +783,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			double anchorX = view.AnchorX;
 			double anchorY = view.AnchorY;
-			frameworkElement.RenderTransformOrigin = new Windows.Foundation.Point(anchorX, anchorY);
+			frameworkElement.RenderTransformOrigin = new global::Windows.Foundation.Point(anchorX, anchorY);
 			frameworkElement.RenderTransform = new WScaleTransform { ScaleX = view.Scale * view.ScaleX, ScaleY = view.Scale * view.ScaleY };
 
 			UpdateRotation(view, frameworkElement);
