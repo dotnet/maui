@@ -5,7 +5,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement
+	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement
 	{
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 

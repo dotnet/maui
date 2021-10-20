@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 {
 	public static class ImageSourceExtensions
 	{
-		public static void LoadImage(this IImageSource source, IMauiContext mauiContext, Action<IImageSourceServiceResult<NativeImage>?>? finished = null)
+		public static void LoadImage(this IImageSource? source, IMauiContext mauiContext, Action<IImageSourceServiceResult<NativeImage>?>? finished = null)
 		{
 			LoadImageResult(source.GetNativeImageAsync(mauiContext), finished)
 						.FireAndForget(mauiContext.Services.CreateLogger<IImageSource>(), nameof(LoadImage));
@@ -30,18 +30,22 @@ namespace Microsoft.Maui
 			finished?.Invoke(result);
 		}
 
-		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSource imageSource, IMauiContext mauiContext)
+		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSource? imageSource, IMauiContext mauiContext)
 		{
 			if (imageSource == null)
-				return new Task<IImageSourceServiceResult<NativeImage>?>(() => null);
+				return Task.FromResult<IImageSourceServiceResult<NativeImage>?>(null);
+
 			var services = mauiContext.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 			var imageSourceService = provider.GetRequiredImageSourceService(imageSource);
-			return imageSource.GetNativeImageAsync(mauiContext, imageSourceService);
+			return imageSourceService.GetNativeImageAsync(imageSource, mauiContext);
 		}
 
-		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSource imageSource, IMauiContext mauiContext, IImageSourceService imageSourceService)
+		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSourceService imageSourceService, IImageSource? imageSource, IMauiContext mauiContext)
 		{
+			if (imageSource == null)
+				return Task.FromResult<IImageSourceServiceResult<NativeImage>?>(null);
+
 #if __IOS__ || MACCATALYST
 			return imageSourceService.GetImageAsync(imageSource);
 #elif MONOANDROID

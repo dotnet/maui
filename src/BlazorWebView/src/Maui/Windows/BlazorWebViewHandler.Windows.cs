@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// WinUIWebViewManager so that loading static assets is done entirely there.
 			var mauiAssetFileProvider = new NullFileProvider();
 
-			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, MauiDispatcher.Instance, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
+			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, ComponentsDispatcher, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
 
 			if (RootComponents != null)
 			{

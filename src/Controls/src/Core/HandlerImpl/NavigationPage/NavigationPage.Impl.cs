@@ -12,6 +12,11 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage : INavigationView
 	{
+		partial void Init()
+		{
+			this.Appearing += OnAppearing;
+		}
+
 		Thickness IView.Margin => Thickness.Zero;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
@@ -86,34 +91,24 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<IView> NavigationStack => this.Navigation.NavigationStack;
 
-		static void CurrentPagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+
+		static void OnCurrentPageChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var np = (NavigationPage)bindable;
+			if (oldValue is Page oldPage)
+				oldPage.SendDisappearing();
 
-			if (oldValue is INotifyPropertyChanged ncpOld)
-			{
-				ncpOld.PropertyChanged -= np.CurrentPagePropertyChanged;
-			}
-
-			if (newValue is INotifyPropertyChanged ncpNew)
-			{
-				ncpNew.PropertyChanged += np.CurrentPagePropertyChanged;
-			}
+			if (newValue is Page newPage && ((NavigationPage)bindable).HasAppeared)
+				newPage.SendAppearing();
 		}
 
-		void CurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			if (e.IsOneOf(NavigationPage.HasNavigationBarProperty,
-				NavigationPage.HasBackButtonProperty,
-				NavigationPage.TitleIconImageSourceProperty,
-				NavigationPage.TitleViewProperty,
-				NavigationPage.IconColorProperty) ||
-				e.IsOneOf(Page.TitleProperty, PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
-			{
-				Handler?.UpdateValue(e.PropertyName);
-			}
-		}
 
+		void OnAppearing(object sender, EventArgs e)
+		{
+			// Update the Window level Toolbar with my Toolbar information
+			var window = this.FindParentOfType<Window>();
+			if (window?.Toolbar != null)
+				window.Toolbar.ApplyNavigationPage(this);
+		}
 
 		Task WaitForCurrentNavigationTask() =>
 			CurrentNavigationTask ?? Task.CompletedTask;

@@ -19,10 +19,10 @@
         "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ],
         "modifiers": [
           {
-            "condition": "(HostIdentifier != \"dotnetcli\")",
-            "exclude": [
-              "*.sln"
-            ]
+            "condition": "(HostIdentifier == \"dotnetcli\")",
+            "rename": {
+               ".App.sln": ".sln"
+            }
           }
         ]
       }
