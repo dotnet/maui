@@ -22,8 +22,7 @@ namespace Maui.Controls.Sample.ViewModels
 				"The CheckBox is a type of button that can either be checked or empty. When a checkbox is checked, it's considered to be on."),
 
 			new SectionModel(typeof(Pages.CollectionViewGalleries.CollectionViewGallery), "CollectionView",
-				"List of Items"),
-
+				"CollectionView displays a scrollable list of selectable data items, using different layout specifications.It aims to provide a more flexible, and performant alternative to ListView. "),
 
 			new SectionModel(typeof(DatePickerPage), "DatePicker",
 				"A view that allows the user to select a date."),
