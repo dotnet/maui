@@ -150,8 +150,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					Internals.Registrar.Registered.Register(typeof(StreamImageSource), typeof(StreamImagesourceHandler));
 					Internals.Registrar.Registered.Register(typeof(UriImageSource), typeof(ImageLoaderSourceHandler));
 					Internals.Registrar.Registered.Register(typeof(FontImageSource), typeof(FontImageSourceHandler));
-
-
 					Internals.Registrar.Registered.Register(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader));
 
 #endif
@@ -159,15 +157,15 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
-
-					// Update the mappings for IView/View to work specifically for Controls
-					VisualElement.RemapForControls();
-					Label.RemapForControls();
-					Button.RemapForControls();
-					Window.RemapForControls();
-				});
+			});
 
 			builder.AddMauiCompat();
+
+			// Update the mappings for IView/View to work specifically for Controls
+			VisualElement.RemapForControls();
+			Label.RemapForControls();
+			Button.RemapForControls();
+			Window.RemapForControls();
 
 			return builder;
 		}
