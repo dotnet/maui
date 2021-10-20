@@ -95,6 +95,9 @@ Task("dotnet-templates")
             { "RestoreNoCache", "true" },
             { "RestorePackagesPath", MakeAbsolute(File("../templatesTest/packages")).FullPath },
             { "RestoreConfigFile", MakeAbsolute(File("../templatesTest/nuget.config")).FullPath },
+
+            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+            { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
         };
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
@@ -102,7 +105,7 @@ Task("dotnet-templates")
             var name = template.Replace("-", "") + " Space-Dash";
             StartProcess(dn, $"new {template} -o \"../templatesTest/{name}\"");
 
-            RunMSBuildWithDotNet($"../templatesTest/{name}", properties);
+            RunMSBuildWithDotNet($"../templatesTest/{name}", properties, warningsAsError: true);
         }
     });
 
@@ -331,7 +334,7 @@ void StartVisualStudioForDotNet6(string sln = null)
 
 // NOTE: These methods work as long as the "dotnet" target has already run
 
-void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
+void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false, bool warningsAsError = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"\"{logDirectory}/{name}-{configuration}.binlog\"";
@@ -345,6 +348,10 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)
             .EnableBinaryLogger(binlog);
+        if (warningsAsError)
+        {
+            msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
+        }
 
         if (properties != null)
         {
@@ -376,6 +383,10 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
             .WithRestore()
             .SetConfiguration(configuration)
             .EnableBinaryLogger(binlog);
+        if (warningsAsError)
+        {
+            msbuildSettings.WarningsAsError = true;
+        }
 
         if (properties != null)
         {

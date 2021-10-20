@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
-			});
+				});
 
 			builder.AddMauiCompat();
 
