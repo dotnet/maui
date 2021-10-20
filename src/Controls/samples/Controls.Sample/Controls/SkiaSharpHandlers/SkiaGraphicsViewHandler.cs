@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui;
+﻿/*
+using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
 #if !NETSTANDARD
@@ -39,3 +40,4 @@ namespace Maui.Controls.Sample.Controls
 		}
 	}
 }
+*/

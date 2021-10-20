@@ -10,17 +10,6 @@ namespace Microsoft.Maui
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
 		MauiContext _applicationContext = null!;
-		WeakReference<IWindow>? _virtualWindow;
-
-		internal IWindow? VirtualWindow
-		{
-			get
-			{
-				IWindow? window = null;
-				_virtualWindow?.TryGetTarget(out window);
-				return window;
-			}
-		}
 
 		protected MauiUIApplicationDelegate()
 		{
@@ -69,7 +58,6 @@ namespace Microsoft.Maui
 
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
-			_virtualWindow = new WeakReference<IWindow>(window);
 			uiWindow.SetWindowHandler(window, mauiContext);
 
 			return uiWindow;
