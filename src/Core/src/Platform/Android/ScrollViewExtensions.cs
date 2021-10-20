@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 			if (nativeContent != null)
 			{
 				scrollView.SetContent(nativeContent);
-				
+
 			}
 		}
 	}
