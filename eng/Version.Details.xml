@@ -30,7 +30,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>7b2c3228bec174e2ef12bc189e9c176eafd24334</Sha>
+      <Sha>93e4ced8c2c508684a85e42f1b87042d7e798cee</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.0-rtm.21475.9" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
