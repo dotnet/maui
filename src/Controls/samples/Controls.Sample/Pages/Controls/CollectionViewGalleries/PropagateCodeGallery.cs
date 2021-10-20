@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using FlowDirection = Microsoft.Maui.Controls.FlowDirection;
+using FlowDirection = Microsoft.Maui.FlowDirection;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 {

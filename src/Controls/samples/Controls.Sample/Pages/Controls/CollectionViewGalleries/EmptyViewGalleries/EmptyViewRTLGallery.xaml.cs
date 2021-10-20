@@ -28,10 +28,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			{
 				default:
 				case 0:
-					EmptyViewRTLPage.FlowDirection = FlowDirection.LeftToRight;
+					EmptyViewRTLPage.FlowDirection = Microsoft.Maui.FlowDirection.LeftToRight;
 					break;
 				case 1:
-					EmptyViewRTLPage.FlowDirection = FlowDirection.RightToLeft;
+					EmptyViewRTLPage.FlowDirection = Microsoft.Maui.FlowDirection.RightToLeft;
 					break;
 			}
 		}
