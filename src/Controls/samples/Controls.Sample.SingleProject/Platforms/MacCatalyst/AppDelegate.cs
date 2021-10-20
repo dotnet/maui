@@ -1,7 +1,15 @@
-﻿using Foundation;
+using Foundation;
+using UIKit;
 using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
 
-namespace Maui.Controls.Sample.SingleProject
+#if !NET6_0
+using Microsoft.Maui.Controls;
+#endif
+
+using Maui.Controls.Sample;
+
+namespace Sample.MacCatalyst
 {
 	[Register("AppDelegate")]
 	public class AppDelegate : MauiUIApplicationDelegate

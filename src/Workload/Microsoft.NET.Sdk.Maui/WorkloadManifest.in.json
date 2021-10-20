@@ -26,9 +26,9 @@
       "abstract": true,
       "description": ".NET MAUI SDK Core Packages",
       "packs": [
-          "Microsoft.AspNetCore.Components.WebView.Maui",
           "Microsoft.Maui.Dependencies",
-          "Microsoft.Maui.Controls.Sdk",
+          "Microsoft.Maui.Controls.Build.Tasks",
+          "Microsoft.Maui.Sdk",
           "Microsoft.Maui.Extensions",
           "Microsoft.Maui.Resizetizer.Sdk",
           "Microsoft.Maui.Templates",
@@ -40,10 +40,18 @@
           "Microsoft.Maui.Essentials.Runtime.any"
       ]
     },
+    "maui-blazor": {
+      "abstract": true,
+      "description": ".NET MAUI SDK Blazor Packages",
+      "extends": [ "maui-core" ],
+      "packs": [
+          "Microsoft.AspNetCore.Components.WebView.Maui"
+      ]
+    },
     "maui-android": {
       "description": ".NET MAUI SDK for Android",
       "extends": [ 
-        "maui-core",
+        "maui-blazor",
         "android"
       ],
       "packs": [
@@ -58,7 +66,7 @@
     "maui-maccatalyst": {
       "description": ".NET MAUI SDK for Mac Catalyst",
       "extends": [ 
-        "maui-core",
+        "maui-blazor",
         "maccatalyst"
       ],
       "packs": [
@@ -73,7 +81,7 @@
     "maui-ios": {
       "description": ".NET MAUI SDK for iOS",
       "extends": [ 
-        "maui-core",
+        "maui-blazor",
         "ios"
       ],
       "packs": [
@@ -87,7 +95,7 @@
     },
     "maui-windows": {
       "description": ".NET MAUI SDK for Windows",
-      "extends": [ "maui-core" ],
+      "extends": [ "maui-blazor" ],
       "packs": [
           "Microsoft.Maui.Core.Ref.win",
           "Microsoft.Maui.Core.Runtime.win",
@@ -231,12 +239,16 @@
       "kind": "library",
       "version": "@VERSION@"
     },
-    "Microsoft.Maui.Controls.Sdk": {
+    "Microsoft.Maui.Sdk": {
       "kind": "sdk",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Controls.Build.Tasks": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Resizetizer.Sdk": {
-      "kind": "sdk",
+      "kind": "library",
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Templates": {

@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>
+	public partial class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>
 	{
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 

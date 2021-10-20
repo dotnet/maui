@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Controls.Platform
 		ObservableCollection<ShellContent> ShellContentMenuItems;
 		public ShellSectionView()
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellSectionView));
 			MenuItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["ShellSectionMenuItemTemplate"];
 			IsBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed;
 			IsSettingsVisible = false;
@@ -417,7 +416,7 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateBrushColor("NavigationViewSelectionIndicatorForeground", tabBarForegroundColor);
 		}
 
-		void UpdateBrushColor(string resourceKey, Windows.UI.Color color)
+		void UpdateBrushColor(string resourceKey, global::Windows.UI.Color color)
 		{
 			if (Resources[resourceKey] is Microsoft.UI.Xaml.Media.SolidColorBrush sb)
 				sb.Color = color;

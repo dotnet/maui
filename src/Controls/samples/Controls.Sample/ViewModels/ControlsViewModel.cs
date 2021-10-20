@@ -12,6 +12,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ActivityIndicatorPage), "ActivityIndicator",
 				"Displays an animation to show that the application is engaged in a lengthy activity."),
 
+			new SectionModel(typeof(BoxViewPage), "BoxView",
+				"BoxView renders a simple rectangle of a specified width, height, and color. You can use BoxView for decoration, rudimentary graphics, and for interaction with the user through touch."),
+
 			new SectionModel(typeof(ButtonPage), "Button",
 				"The Button responds to a tap or click that directs an application to carry out a particular task."),
 
@@ -29,6 +32,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ImagePage), "Image",
 				"Displays an image."),
+
+			new SectionModel(typeof(IndicatorPage), "IndicatorView",
+				"IndicatorView displays indicators. It can also represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
 
 			new SectionModel(typeof(LabelPage), "Label",
 				"The Label view is used for displaying text, both single and multi-line."),
@@ -59,6 +65,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(TimePickerPage), "TimePicker",
 				"A view that allows the user to select a time."),
+
+	  new SectionModel(typeof(WebViewPage), "WebView",
+				"WebView is a view for displaying web and HTML content in your app.")
 		};
 	}
 }

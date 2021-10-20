@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiComboBox nativeView)
 		{
 			nativeView.SelectionChanged += OnControlSelectionChanged;
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiComboBox nativeView)
@@ -35,7 +36,6 @@ namespace Microsoft.Maui.Handlers
 
 		void Reload()
 		{
-
 			if (VirtualView == null || NativeView == null)
 				return;
 			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
@@ -78,6 +78,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+		}
+		
+		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(picker);
 		}
 
 		void OnControlSelectionChanged(object? sender, WSelectionChangedEventArgs e)

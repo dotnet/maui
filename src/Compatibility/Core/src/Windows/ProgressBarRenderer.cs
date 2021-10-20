@@ -73,6 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateProgressColor();
 		}
 
+		[PortHandler]
 		void UpdateProgressColor()
 		{
 			Color color = Element.ProgressColor;

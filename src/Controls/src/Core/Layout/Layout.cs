@@ -7,13 +7,13 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
 	{
 		ReadOnlyCastingList<Element, IView> _logicalChildren;
 
 		protected ILayoutManager _layoutManager;
 
-		public ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
+		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
 		// The actual backing store for the IViews in the ILayout
 		readonly List<IView> _children = new();
@@ -231,5 +231,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
+
+		public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			return LayoutManager.Measure(widthConstraint, heightConstraint);
+		}
+
+		public Graphics.Size CrossPlatformArrange(Graphics.Rectangle bounds)
+		{
+			return LayoutManager.ArrangeChildren(bounds);
+		}
 	}
 }

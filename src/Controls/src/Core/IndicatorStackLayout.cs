@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class IndicatorStackLayout : Compatibility.StackLayout
+	internal class IndicatorStackLayout : StackLayout
 	{
 		IndicatorView _indicatorView;
 		public IndicatorStackLayout(IndicatorView indicatorView)
@@ -98,11 +98,14 @@ namespace Microsoft.Maui.Controls
 				var position = _indicatorView.Position;
 				var selectedIndex = position >= maxVisible ? maxVisible - 1 : position;
 				bool isSelected = index == selectedIndex;
-				Children[index].BackgroundColor = isSelected
+				var visualElement = Children[index] as VisualElement;
+
+				visualElement.BackgroundColor = isSelected
 					? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Colors.Gray)
 					: GetColorOrDefault(_indicatorView.IndicatorColor, Colors.Silver);
 
-				VisualStateManager.GoToState(Children[index], isSelected
+
+				VisualStateManager.GoToState(visualElement, isSelected
 					? VisualStateManager.CommonStates.Selected
 					: VisualStateManager.CommonStates.Normal);
 

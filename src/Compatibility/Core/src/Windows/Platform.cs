@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static Task<string> s_currentPrompt;
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
-			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer),
+			typeof(IVisualElementRenderer), typeof(global::Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				if (bindable is IView view)

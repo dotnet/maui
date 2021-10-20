@@ -1,5 +1,4 @@
 #nullable enable
-using System.Net;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,21 +7,18 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		FrameworkElement? INativeViewHandler.NativeView => WrappedNativeView;
+		FrameworkElement? INativeViewHandler.NativeView => this.GetWrappedNativeView();
 		FrameworkElement? INativeViewHandler.ContainerView => ContainerView;
 
-		protected new FrameworkElement? WrappedNativeView =>
-			(FrameworkElement?)base.WrappedNativeView;
-
-		public new Border? ContainerView
+		public new WrapperView? ContainerView
 		{
-			get => (Border?)base.ContainerView;
+			get => (WrapperView?)base.ContainerView;
 			protected set => base.ContainerView = value;
 		}
 
 		public override void NativeArrange(Rectangle rect)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null)
 				return;
@@ -30,12 +26,12 @@ namespace Microsoft.Maui.Handlers
 			if (rect.Width < 0 || rect.Height < 0)
 				return;
 
-			nativeView.Arrange(new Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
+			nativeView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null)
 				return Size.Zero;
@@ -43,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;
 
-			var measureConstraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var measureConstraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			nativeView.Measure(measureConstraint);
 
@@ -60,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 			var oldIndex = oldParent?.Children.IndexOf(NativeView);
 			oldParent?.Children.Remove(NativeView);
 
-			ContainerView ??= new Border();
+			ContainerView ??= new WrapperView();
 			ContainerView.Child = NativeView;
 
 			if (oldIndex is int idx && idx >= 0)

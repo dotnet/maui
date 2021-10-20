@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 			set => SetValue(ElementOpacityProperty, value);
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			var result = base.MeasureOverride(availableSize);
 

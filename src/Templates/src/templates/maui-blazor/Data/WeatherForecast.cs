@@ -1,6 +1,6 @@
 using System;
 
-namespace MauiApp1.Data
+namespace MauiApp._1.Data
 {
 	public class WeatherForecast
 	{

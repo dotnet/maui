@@ -4,7 +4,7 @@
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI" ],
     "identity": "Microsoft.Maui.MauiLib",
     "groupIdentity": "Microsoft.Maui.Library",
-    "name": ".NET MAUI Class Library",
+    "name": ".NET MAUI Class Library (Preview)",
     "description": "A project for creating a .NET MAUI class library",
     "shortName": "mauilib",
     "tags": {
@@ -14,12 +14,6 @@
     "sourceName": "MauiLib1",
     "preferNameDirectory": true,
     "symbols": {
-      "windowsAppSdkVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "WINDOWSAPPSDK_VERSION",
-        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
-      }
     },
     "defaultName": "MauiLib1",
     "primaryOutputs": [

@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Compatibility.ControlGallery.WinUI": {
+    "Windows Machine": {
       "commandName": "MsixPackage"
     }
   }

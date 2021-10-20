@@ -1,4 +1,6 @@
 ﻿using System;
+using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -65,7 +67,24 @@ namespace Microsoft.Maui
 
 		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
 		{
-			textField.Placeholder = entry.Placeholder;
+			textField.UpdatePlaceholder(entry, null);
+		}
+
+		public static void UpdatePlaceholder(this UITextField textField, IEntry entry, Color? defaultPlaceholderColor)
+		{
+			var placeholder = entry.Placeholder;
+
+			if (placeholder == null)
+				return;
+
+			var placeholderColor = entry.PlaceholderColor;
+			var foregroundColor = placeholderColor ?? defaultPlaceholderColor;
+
+			textField.AttributedPlaceholder = foregroundColor == null
+ 				? new NSAttributedString(placeholder)
+ 				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToNative());
+
+			textField.AttributedPlaceholder.WithCharacterSpacing(entry.CharacterSpacing);
 		}
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)

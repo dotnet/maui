@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -16,33 +15,36 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
+			var applicationContext = new MauiContext(mauiApp.Services, this);
+
 			Services = mauiApp.Services;
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			var winuiWndow = CreateNativeWindow(args);
+			this.SetApplicationHandler(Application, applicationContext);
 
-			MainWindow = winuiWndow;
+			var winuiWndow = CreateNativeWindow(args, applicationContext);
 
-			MainWindow.Activate();
+			winuiWndow.Activate();
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
-		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs? args = null)
+		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs args, IMauiContext applicationContext)
 		{
 			var winuiWndow = new MauiWinUIWindow();
 
-			var mauiContext = new MauiContext(Services, winuiWndow);
+			var mauiContext = applicationContext.MakeScoped(winuiWndow);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);
 
-			winuiWndow.SetWindow(window, mauiContext);
+			winuiWndow.SetWindowHandler(window, mauiContext);
+
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
 
 			return winuiWndow;
@@ -51,8 +53,6 @@ namespace Microsoft.Maui
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
-
-		public UI.Xaml.Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

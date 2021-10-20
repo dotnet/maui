@@ -39,7 +39,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-	static class XamlLoader
+	static partial class XamlLoader
 	{
 		public static void Load(object view, Type callingType)
 		{
@@ -353,41 +353,12 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				var xaml = reader.ReadToEnd();
 
-				var pattern = String.Format("x:Class *= *\"{0}\"", type.FullName);
+				var pattern = $"x:Class *= *\"{type.FullName}\"";
 				var regex = new Regex(pattern, RegexOptions.ECMAScript);
-				if (regex.IsMatch(xaml) || xaml.Contains(String.Format("x:Class=\"{0}\"", type.FullName)))
+				if (regex.IsMatch(xaml) || xaml.Contains($"x:Class=\"{type.FullName}\""))
 					return xaml;
 			}
 			return null;
 		}
-
-		public class RuntimeRootNode : RootNode
-		{
-			public RuntimeRootNode(XmlType xmlType, object root, IXmlNamespaceResolver resolver) : base(xmlType, resolver)
-			{
-				Root = root;
-			}
-
-			public object Root { get; internal set; }
-		}
-
-		public struct FallbackTypeInfo
-		{
-			public string ClrNamespace { get; internal set; }
-			public string TypeName { get; internal set; }
-			public string AssemblyName { get; internal set; }
-			public string XmlNamespace { get; internal set; }
-		}
-
-		public struct CallbackTypeInfo
-		{
-			public string XmlNamespace { get; internal set; }
-			public string XmlTypeName { get; internal set; }
-
-		}
-
-		internal static Func<IList<FallbackTypeInfo>, Type, Type> FallbackTypeResolver { get; set; }
-		internal static Action<CallbackTypeInfo, object> ValueCreatedCallback { get; set; }
-		internal static Func<CallbackTypeInfo, Type, Exception, object> InstantiationFailedCallback { get; set; }
 	}
 }

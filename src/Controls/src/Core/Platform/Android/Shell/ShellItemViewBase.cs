@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (!target.Fragment.IsAdded)
 						t.AddEx(GetNavigationTarget().Id, target.Fragment);
-					t.Show(target.Fragment);
+					t.ShowEx(target.Fragment);
 					break;
 			}
 

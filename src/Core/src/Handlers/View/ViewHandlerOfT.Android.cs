@@ -9,11 +9,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		View? INativeViewHandler.NativeView => WrappedNativeView;
+		View? INativeViewHandler.NativeView => this.GetWrappedNativeView();
 		View? INativeViewHandler.ContainerView => ContainerView;
-
-		protected new View? WrappedNativeView =>
-			(View?)base.WrappedNativeView;
 
 		public new WrapperView? ContainerView
 		{
@@ -25,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle frame)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null || MauiContext == null || Context == null)
 			{
@@ -48,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null || VirtualView == null || Context == null)
 			{

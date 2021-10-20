@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Views;
 using Google.Android.Material.BottomNavigation;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests;
-using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using NUnit.Framework;
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests

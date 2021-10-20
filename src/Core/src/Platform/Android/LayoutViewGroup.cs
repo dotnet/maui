@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		public LayoutViewGroup(Context context) : base(context)
 		{
+			//Maui layouts should not impose clipping on their children
+			SetClipChildren(false);
 		}
 
 		public LayoutViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)

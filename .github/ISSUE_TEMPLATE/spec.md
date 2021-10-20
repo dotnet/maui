@@ -2,7 +2,7 @@
 name: Spec
 about: An official specification for enhancements
 title: "[Spec]  "
-labels: proposal-open, enhancement
+labels: ["proposal/open", "t/enhancement"]
 assignees: ''
 
 ---

@@ -14,8 +14,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			set => Handler = (IViewHandler)value;
 		}
 
-		IElement IElement.Parent => Parent;
-
 		public bool IsEnabled { get; set; } = true;
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
@@ -30,7 +28,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IShape Clip { get; set; }
 
-		public IView Parent { get; set; }
+		public IShadow Shadow { get; set; }
+
+		public IElement Parent { get; set; }
 
 		public Size DesiredSize { get; set; } = new Size(50, 50);
 

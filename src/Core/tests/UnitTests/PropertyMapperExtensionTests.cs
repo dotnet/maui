@@ -57,5 +57,26 @@ namespace Microsoft.Maui.UnitTests
 
 			Assert.True(additionalIndex < originalIndex);
 		}
+
+		[Fact]
+		public void ModifyMapping()
+		{
+			string log = string.Empty;
+
+			var msg1 = "original";
+			var msg2 = "modification";
+
+			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (r, v) => log += msg1
+			};
+
+			mapper1.ModifyMapping(nameof(IView.Background), (h, v, a) => log += msg2);
+
+			mapper1.UpdateProperties(null, new Button());
+
+			Assert.DoesNotContain(msg1, log);
+			Assert.Contains(msg2, log);
+		}
 	}
 }

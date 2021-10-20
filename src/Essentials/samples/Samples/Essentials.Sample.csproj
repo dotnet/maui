@@ -17,14 +17,11 @@
   <PropertyGroup>
     <ApplicationTitle>Essentials</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.essentials</ApplicationId>
-    <ApplicationVersion>1.0</ApplicationVersion>
-    <AndroidVersionCode>1</AndroidVersionCode>
+    <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows'))">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -37,7 +34,7 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
-    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appiconfg.svg" IsAppIcon="true" Color="#512BD4" />
+    <MauiIcon Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\AppIcons\appiconfg.svg" Color="#512BD4" />
   </ItemGroup>
 
