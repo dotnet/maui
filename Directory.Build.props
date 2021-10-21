@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
+    <IncludeWindowsTargetFrameworks>false</IncludeWindowsTargetFrameworks>
     <BuildForAndroidOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.Droid')) and '$(Packing)' == ''">true</BuildForAndroidOnly>
     <BuildForiOSOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.iOS')) and '$(Packing)' == ''">true</BuildForiOSOnly>
     <BuildForLegacy Condition="($(SolutionFileName.StartsWith('._')) or $(SolutionFileName.StartsWith('Comet'))) and !$(SolutionFileName.Contains('-net6')) and '$(Packing)' == ''">true</BuildForLegacy>
