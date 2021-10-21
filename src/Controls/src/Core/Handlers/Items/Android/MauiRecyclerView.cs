@@ -13,28 +13,14 @@ using System.ComponentModel;
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 
-	public interface IMauiRecyclerView<TItemsView>  where TItemsView : ItemsView
-	{
-		public void SetUpNewElement(TItemsView newElement);
-		public void TearDownOldElement(TItemsView oldElement);
-
-		public void UpdateItemTemplate();
-
-		public void UpdateSource();
-
-		public void UpdateScrollingMode();
-
-	}
-
 	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>
 		where TItemsView : ItemsView
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
 	{
-
 		protected TAdapter ItemsViewAdapter;
 
-		TItemsView ItemsView;
+		protected TItemsView ItemsView;
 		protected IItemsLayout ItemsLayout { get; private set; }
 
 		Func<IItemsLayout> GetItemsLayout;
@@ -51,9 +37,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = ScrollBarVisibility.Default;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = ScrollBarVisibility.Default;
 
-		RecyclerView.ItemDecoration _itemDecoration;
+		ItemDecoration _itemDecoration;
 
-		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter, TItemsView itemsView) : base(context)
+		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(context)
 		{
 			GetItemsLayout = getItemsLayout;
 			CreateAdapter = getAdapter;
@@ -65,147 +51,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			HorizontalScrollBarEnabled = false;
 		}
 
-		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener()
-		{
-			return new RecyclerViewScrollListener<TItemsView, TItemsViewSource>(ItemsView, ItemsViewAdapter);
-		}
-
-		protected virtual void UpdateSnapBehavior()
-		{
-			_snapManager = GetSnapManager();
-
-			_snapManager.UpdateSnapBehavior();
-		}
-
-		protected virtual SnapManager GetSnapManager()
-		{
-			if (_snapManager == null)
-			{
-				_snapManager = new SnapManager(ItemsLayout, this);
-			}
-			return _snapManager;
-		}
-
-		void AddOrUpdateScrollListener()
-		{
-			RemoveScrollListener();
-
-			_recyclerViewScrollListener = CreateScrollListener();
-			AddOnScrollListener(_recyclerViewScrollListener);
-		}
-
-		void RemoveScrollListener()
-		{
-			if (_recyclerViewScrollListener == null)
-				return;
-
-			_recyclerViewScrollListener.Dispose();
-			ClearOnScrollListeners();
-			_recyclerViewScrollListener = null;
-		}
-
-		// TODO hartez 2018/08/09 09:30:17 Package up background color and flow direction providers so we don't have to re-implement them here	
-		protected virtual void UpdateBackgroundColor(Color color = null)
-		{
-			if (ItemsView == null)
-				return;
-
-			var backgroundColor = color ?? ItemsView.BackgroundColor;
-
-			if (backgroundColor == null)
-				return;
-
-			SetBackgroundColor(backgroundColor.ToNative());
-		}
-
-		protected virtual void UpdateEmptyView()
-		{
-			if (ItemsViewAdapter == null || ItemsView == null)
-			{
-				return;
-			}
-
-			var emptyView = ItemsView?.EmptyView;
-			var emptyViewTemplate = ItemsView?.EmptyViewTemplate;
-
-			if (emptyView != null || emptyViewTemplate != null)
-			{
-				if (_emptyViewAdapter == null)
-				{
-					_emptyViewAdapter = new EmptyViewAdapter(ItemsView);
-				}
-
-				if (ItemsView is StructuredItemsView structuredItemsView)
-				{
-					_emptyViewAdapter.Header = structuredItemsView.Header;
-					_emptyViewAdapter.HeaderTemplate = structuredItemsView.HeaderTemplate;
-
-					_emptyViewAdapter.Footer = structuredItemsView.Footer;
-					_emptyViewAdapter.FooterTemplate = structuredItemsView.FooterTemplate;
-				}
-
-				_emptyViewAdapter.EmptyView = emptyView;
-				_emptyViewAdapter.EmptyViewTemplate = emptyViewTemplate;
-
-				_emptyCollectionObserver.Start(ItemsViewAdapter);
-
-				_emptyViewAdapter.NotifyDataSetChanged();
-			}
-			else
-			{
-				_emptyCollectionObserver.Stop(ItemsViewAdapter);
-			}
-
-			UpdateEmptyViewVisibility();
-		}
-
-
-		protected virtual void UpdateVerticalScrollBarVisibility()
-		{
-			if (_defaultVerticalScrollVisibility == ScrollBarVisibility.Default)
-				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
-
-			var newVerticalScrollVisibility = ItemsView.VerticalScrollBarVisibility;
-
-			if (newVerticalScrollVisibility == ScrollBarVisibility.Default)
-				newVerticalScrollVisibility = _defaultVerticalScrollVisibility;
-
-			VerticalScrollBarEnabled = newVerticalScrollVisibility == ScrollBarVisibility.Always;
-		}
-
-		protected virtual void UpdateHorizontalScrollBarVisibility()
-		{
-			if (_defaultHorizontalScrollVisibility == ScrollBarVisibility.Default)
-				_defaultHorizontalScrollVisibility =
-					HorizontalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
-
-			var newHorizontalScrollVisiblility = ItemsView.HorizontalScrollBarVisibility;
-
-			if (newHorizontalScrollVisiblility == ScrollBarVisibility.Default)
-				newHorizontalScrollVisiblility = _defaultHorizontalScrollVisibility;
-
-			HorizontalScrollBarEnabled = newHorizontalScrollVisiblility == ScrollBarVisibility.Always;
-		}
-
-		public void UpdateItemTemplate()
-		{
-			GetRecycledViewPool().Clear();
-			UpdateAdapter();
-		}
-
-		public void UpdateSource()
-		{
-			UpdateItemsSource();
-			ItemsLayout = GetItemsLayout();
-			SetLayoutManager(SelectLayoutManager(ItemsLayout));
-		}
-
-		public void UpdateScrollingMode()
-		{
-			UpdateItemsUpdatingScrollMode();
-		}
-
-
 		public void TearDownOldElement(TItemsView oldElement)
 		{
 			// Stop listening for layout property changes
@@ -213,9 +58,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				ItemsLayout.PropertyChanged -= LayoutPropertyChanged;
 			}
-
-			// Stop listening for property changes
-			//oldElement.PropertyChanged -= OnElementPropertyChanged;
 
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
@@ -257,11 +99,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ItemsView = newElement;
 
-
-			//UpdateSource();
-			//ItemsLayout = GetItemsLayout();
-			//SetLayoutManager(SelectLayoutManager(ItemsLayout));
-
 			UpdateBackgroundColor();
 			UpdateBackground();
 			UpdateFlowDirection();
@@ -286,6 +123,137 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateSnapBehavior();
 		}
 
+		public void UpdateItemTemplate()
+		{
+			GetRecycledViewPool().Clear();
+			UpdateAdapter();
+		}
+
+		public void UpdateSource()
+		{
+			UpdateItemsSource();
+			ItemsLayout = GetItemsLayout();
+			SetLayoutManager(SelectLayoutManager(ItemsLayout));
+		}
+
+		public void UpdateScrollingMode()
+		{
+			UpdateItemsUpdatingScrollMode();
+		}
+
+		public virtual void UpdateVerticalScrollBarVisibility()
+		{
+			if (_defaultVerticalScrollVisibility == ScrollBarVisibility.Default)
+				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+
+			var newVerticalScrollVisibility = ItemsView.VerticalScrollBarVisibility;
+
+			if (newVerticalScrollVisibility == ScrollBarVisibility.Default)
+				newVerticalScrollVisibility = _defaultVerticalScrollVisibility;
+
+			VerticalScrollBarEnabled = newVerticalScrollVisibility == ScrollBarVisibility.Always;
+		}
+
+		public virtual void UpdateHorizontalScrollBarVisibility()
+		{
+			if (_defaultHorizontalScrollVisibility == ScrollBarVisibility.Default)
+				_defaultHorizontalScrollVisibility =
+					HorizontalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+
+			var newHorizontalScrollVisiblility = ItemsView.HorizontalScrollBarVisibility;
+
+			if (newHorizontalScrollVisiblility == ScrollBarVisibility.Default)
+				newHorizontalScrollVisiblility = _defaultHorizontalScrollVisibility;
+
+			HorizontalScrollBarEnabled = newHorizontalScrollVisiblility == ScrollBarVisibility.Always;
+		}
+
+		public virtual void UpdateEmptyView()
+		{
+			if (ItemsViewAdapter == null || ItemsView == null)
+			{
+				return;
+			}
+
+			var emptyView = ItemsView?.EmptyView;
+			var emptyViewTemplate = ItemsView?.EmptyViewTemplate;
+
+			if (emptyView != null || emptyViewTemplate != null)
+			{
+				if (_emptyViewAdapter == null)
+				{
+					_emptyViewAdapter = new EmptyViewAdapter(ItemsView);
+				}
+
+				if (ItemsView is StructuredItemsView structuredItemsView)
+				{
+					_emptyViewAdapter.Header = structuredItemsView.Header;
+					_emptyViewAdapter.HeaderTemplate = structuredItemsView.HeaderTemplate;
+
+					_emptyViewAdapter.Footer = structuredItemsView.Footer;
+					_emptyViewAdapter.FooterTemplate = structuredItemsView.FooterTemplate;
+				}
+
+				_emptyViewAdapter.EmptyView = emptyView;
+				_emptyViewAdapter.EmptyViewTemplate = emptyViewTemplate;
+
+				_emptyCollectionObserver.Start(ItemsViewAdapter);
+
+				_emptyViewAdapter.NotifyDataSetChanged();
+			}
+			else
+			{
+				_emptyCollectionObserver.Stop(ItemsViewAdapter);
+			}
+
+			UpdateEmptyViewVisibility();
+		}
+
+		public virtual void UpdateFlowDirection()
+		{
+			if (ItemsView == null)
+			{
+				return;
+			}
+
+			this.UpdateFlowDirection(ItemsView);
+
+			ReconcileFlowDirectionAndLayout();
+		}
+
+		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener()
+			=> new(ItemsView, ItemsViewAdapter);
+
+		protected virtual void UpdateSnapBehavior()
+		{
+			_snapManager = GetSnapManager();
+
+			_snapManager.UpdateSnapBehavior();
+		}
+
+		protected virtual SnapManager GetSnapManager()
+		{
+			if (_snapManager == null)
+			{
+				_snapManager = new SnapManager(ItemsLayout, this);
+			}
+			return _snapManager;
+		}
+
+		// TODO hartez 2018/08/09 09:30:17 Package up background color and flow direction providers so we don't have to re-implement them here	
+		protected virtual void UpdateBackgroundColor(Color color = null)
+		{
+			if (ItemsView == null)
+				return;
+
+			var backgroundColor = color ?? ItemsView.BackgroundColor;
+
+			if (backgroundColor == null)
+				return;
+
+			SetBackgroundColor(backgroundColor.ToNative());
+		}
+
 		protected virtual void UpdateBackground(Brush brush = null)
 		{
 			if (ItemsView == null)
@@ -299,7 +267,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			recyclerView.UpdateBackground(background);
 		}
 
-	
 		protected virtual void UpdateItemsSource()
 		{
 			if (ItemsView == null)
@@ -325,10 +292,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void UpdateItemsUpdatingScrollMode()
 		{
 			if (ItemsViewAdapter == null || ItemsView == null)
-			{
 				return;
-			}
-
+		
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
 				// Keeping the current items in view is the default, so we don't need to watch for data changes
@@ -368,6 +333,113 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateItemSpacing();
 		}
 
+		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
+		{
+			if (ItemsView == null)
+				return;
+
+			var position = DetermineTargetPosition(args);
+
+			if (args.IsAnimated)
+			{
+				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
+			}
+			else
+			{
+				ScrollHelper.JumpScrollToPosition(position, args.ScrollToPosition);
+			}
+		}
+
+		protected virtual LayoutManager SelectLayoutManager(IItemsLayout layoutSpecification)
+		{
+			switch (layoutSpecification)
+			{
+				case GridItemsLayout gridItemsLayout:
+					return CreateGridLayout(gridItemsLayout);
+				case LinearItemsLayout listItemsLayout:
+					var orientation = listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? LinearLayoutManager.Horizontal
+						: LinearLayoutManager.Vertical;
+
+					return new LinearLayoutManager(Context, orientation, false);
+			}
+
+			// Fall back to plain old vertical list
+			// TODO hartez 2018/08/30 19:34:36 Log a warning when we have to fall back because of an unknown layout	
+			return new LinearLayoutManager(Context);
+		}
+
+		protected virtual int DetermineTargetPosition(ScrollToRequestEventArgs args)
+		{
+			if (args.Mode == ScrollToMode.Position)
+			{
+				// TODO hartez 2018/08/28 15:40:03 Need to handle group indices here as well	
+				return args.Index;
+			}
+
+			return ItemsViewAdapter.GetPositionForItem(args.Item);
+		}
+
+		protected virtual void UpdateItemSpacing()
+		{
+			if (ItemsLayout == null)
+			{
+				return;
+			}
+
+			if (_itemDecoration != null)
+			{
+				RemoveItemDecoration(_itemDecoration);
+			}
+
+			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
+			AddItemDecoration(_itemDecoration);
+		}
+
+		protected virtual ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
+		{
+			return new SpacingItemDecoration(itemsLayout);
+		}
+
+		protected virtual void ReconcileFlowDirectionAndLayout()
+		{
+			if (!(GetLayoutManager() is LinearLayoutManager linearLayoutManager))
+			{
+				return;
+			}
+
+			if (linearLayoutManager.CanScrollVertically())
+			{
+				return;
+			}
+		}
+
+		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
+		{
+			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
+			ScrollTo(args);
+		}
+
+		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
+		{
+			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
+			{
+				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
+				{
+					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
+				}
+			}
+			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
+			{
+				UpdateSnapBehavior();
+			}
+			else if (propertyChanged.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
+				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
+			{
+				UpdateItemSpacing();
+			}
+		}
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
@@ -380,8 +452,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollHelper?.AdjustScroll();
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+			if (disposing)
+			{
+				TearDownOldElement(ItemsView);
+			}
+		}
 
-		internal ScrollHelper ScrollHelper => _scrollHelper = _scrollHelper ?? new ScrollHelper(this);
+		internal ScrollHelper ScrollHelper => _scrollHelper ??= new ScrollHelper(this);
 
 		internal void UpdateEmptyViewVisibility()
 		{
@@ -429,42 +509,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
-		{
-			if (ItemsView == null)
-				return;
-
-			var position = DetermineTargetPosition(args);
-
-			if (args.IsAnimated)
-			{
-				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
-			}
-			else
-			{
-				ScrollHelper.JumpScrollToPosition(position, args.ScrollToPosition);
-			}
-		}
-
-		protected virtual LayoutManager SelectLayoutManager(IItemsLayout layoutSpecification)
-		{
-			switch (layoutSpecification)
-			{
-				case GridItemsLayout gridItemsLayout:
-					return CreateGridLayout(gridItemsLayout);
-				case LinearItemsLayout listItemsLayout:
-					var orientation = listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-						? LinearLayoutManager.Horizontal
-						: LinearLayoutManager.Vertical;
-
-					return new LinearLayoutManager(Context, orientation, false);
-			}
-
-			// Fall back to plain old vertical list
-			// TODO hartez 2018/08/30 19:34:36 Log a warning when we have to fall back because of an unknown layout	
-			return new LinearLayoutManager(Context);
-		}
-
 		GridLayoutManager CreateGridLayout(GridItemsLayout gridItemsLayout)
 		{
 			var gridLayoutManager = new GridLayoutManager(Context, gridItemsLayout.Span,
@@ -479,88 +523,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return gridLayoutManager;
 		}
 
-		protected virtual int DetermineTargetPosition(ScrollToRequestEventArgs args)
+		void AddOrUpdateScrollListener()
 		{
-			if (args.Mode == ScrollToMode.Position)
-			{
-				// TODO hartez 2018/08/28 15:40:03 Need to handle group indices here as well	
-				return args.Index;
-			}
+			RemoveScrollListener();
 
-			return ItemsViewAdapter.GetPositionForItem(args.Item);
+			_recyclerViewScrollListener = CreateScrollListener();
+			AddOnScrollListener(_recyclerViewScrollListener);
 		}
 
-		protected virtual void UpdateItemSpacing()
+		void RemoveScrollListener()
 		{
-			if (ItemsLayout == null)
-			{
+			if (_recyclerViewScrollListener == null)
 				return;
-			}
 
-			if (_itemDecoration != null)
-			{
-				RemoveItemDecoration(_itemDecoration);
-			}
-
-			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
-			AddItemDecoration(_itemDecoration);
+			_recyclerViewScrollListener.Dispose();
+			ClearOnScrollListeners();
+			_recyclerViewScrollListener = null;
 		}
-
-		protected virtual ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
-		{
-			return new SpacingItemDecoration(itemsLayout);
-		}
-
-		protected virtual void UpdateFlowDirection()
-		{
-			if (ItemsView == null)
-			{
-				return;
-			}
-
-			//this.UpdateFlowDirection(ItemsView);
-
-			ReconcileFlowDirectionAndLayout();
-		}
-
-		protected virtual void ReconcileFlowDirectionAndLayout()
-		{
-			if (!(GetLayoutManager() is LinearLayoutManager linearLayoutManager))
-			{
-				return;
-			}
-
-			if (linearLayoutManager.CanScrollVertically())
-			{
-				return;
-			}
-		}
-
-		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
-		{
-			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
-			ScrollTo(args);
-		}
-
-		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
-		{
-			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
-			{
-				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
-				{
-					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
-				}
-			}
-			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
-			{
-				UpdateSnapBehavior();
-			}
-			else if (propertyChanged.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
-				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
-			{
-				UpdateItemSpacing();
-			}
-		}
-
 	}
 }
