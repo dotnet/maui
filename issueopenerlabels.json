@@ -1,0 +1,7 @@
+{
+	"labels":
+	{
+		// Map of labels to arrays of GitHub users for whom that label will be applied on each issue and PR that they open
+		"partner": [ "jmongaras" ]
+    }
+}
