@@ -87,6 +87,8 @@ steps:
 
 
   # Prepare Both
+  - task: NuGetAuthenticate@0
+    displayName: 'Authenticate NuGet'
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
