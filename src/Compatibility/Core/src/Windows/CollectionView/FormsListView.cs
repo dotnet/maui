@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (_formsEmptyView != null)
 			{

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 
@@ -10,6 +11,9 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
+#if __IOS__
+			{ typeof(CollectionView), typeof(CollectionViewHandler) },
+#endif
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
@@ -51,11 +55,12 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
 			
 #endif
-#if WINDOWS
-			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+#if WINDOWS || ANDROID
+			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
+			{ typeof(Toolbar), typeof(Controls.Handlers.ToolbarHandler) },
 #endif
 #if __ANDROID__
-			//{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
+			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
 #endif
 		};
 
