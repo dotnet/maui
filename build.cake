@@ -18,18 +18,18 @@ PowerShell:
 //////////////////////////////////////////////////////////////////////
 // ADDINS
 //////////////////////////////////////////////////////////////////////
-#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=Cake.Android.SdkManager&version=3.0.2"
-#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=Cake.Boots&version=1.0.4.624"
-#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=Cake.AppleSimulator&version=0.2.0"
-#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=Cake.FileHelpers&version=3.2.1"
+#addin "nuget:https://nuget.org/api/v2/?package=Cake.Android.SdkManager&version=3.0.2"
+#addin "nuget:https://nuget.org/api/v2/?package=Cake.Boots&version=1.0.4.624"
+#addin "nuget:https://nuget.org/api/v2/?package=Cake.AppleSimulator&version=0.2.0"
+#addin "nuget:https://nuget.org/api/v2/?package=Cake.FileHelpers&version=3.2.1"
 #load "eng/cake/dotnet.cake"
 #load "eng/cake/helpers.cake"
 
 //////////////////////////////////////////////////////////////////////
 // TOOLS
 //////////////////////////////////////////////////////////////////////
-#tool "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=NUnit.ConsoleRunner&version=3.11.1"
-#tool "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=nuget.commandline&version=5.8.1"
+#tool "nuget:https://nuget.org/api/v2/?package=NUnit.ConsoleRunner&version=3.11.1"
+#tool "nuget:https://nuget.org/api/v2/?package=nuget.commandline&version=5.8.1"
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
