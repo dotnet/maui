@@ -1,24 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, Android.Views.View> where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, RecyclerView> where TItemsView : ItemsView
 	{
+
 		protected ItemsViewHandler(PropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper)
 		{
 		}
+		protected abstract IItemsLayout GetItemsLayout();
 
-		protected override Android.Views.View CreateNativeView()
+		protected virtual ItemsViewAdapter<TItemsView,IItemsViewSource> CreateAdapter()
 		{
-			throw new NotImplementedException();
+			return new ItemsViewAdapter<TItemsView, IItemsViewSource>(VirtualView);
+		}
+
+		protected override void ConnectHandler(RecyclerView nativeView)
+		{
+			base.ConnectHandler(nativeView);
+
+			var recycler = (nativeView as IMauiRecyclerView<TItemsView>);
+			recycler.SetUpNewElement(VirtualView);
+		}
+		protected override RecyclerView CreateNativeView()
+		{
+			var recycler = new MauiRecyclerView<TItemsView, ItemsViewAdapter<TItemsView, IItemsViewSource>, IItemsViewSource>(Context, GetItemsLayout, CreateAdapter, VirtualView);
+			return recycler;
 		}
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			//	handler.NativeView?.UpdateBackground(entry);
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateSource();
 		}
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
@@ -28,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateItemTemplate();
 		}
 		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
@@ -43,6 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateScrollingMode();
 		}
 	}
 }
