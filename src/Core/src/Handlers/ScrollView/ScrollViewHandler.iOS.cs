@@ -34,10 +34,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			var nativeView = this.GetWrappedNativeView();
 
-			if (nativeView == null)
+			if (nativeView == null || VirtualView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
+
+			VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 			var explicitWidth = VirtualView.Width;
 			var explicitHeight = VirtualView.Height;
