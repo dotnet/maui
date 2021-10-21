@@ -55,7 +55,7 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(UIView)}");
 			}
 
-			return result;
+			return (INativeViewHandler)handler;
 		}
 
 		public static void SetApplicationHandler(this UIApplicationDelegate nativeApplication, IApplication application, IMauiContext context) =>
