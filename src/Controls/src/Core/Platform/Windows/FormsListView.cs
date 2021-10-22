@@ -6,7 +6,7 @@ using UwpControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	
 

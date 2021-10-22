@@ -6,7 +6,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Microsoft.UI.Xaml.Data;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	// This is a facade we put between the "real" contents of the CarouselView and the 
 	// UWP ListViewBase to fool the ListViewBase into scrolling through the same set of

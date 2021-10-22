@@ -1,8 +1,9 @@
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ItemTemplateContext
 	{
 		public DataTemplate FormsDataTemplate { get; }
+		public IMauiContext MauiContext { get; }
 		public object Item { get; }
 		public BindableObject Container { get; }
 		public double ItemHeight { get; }
@@ -10,11 +11,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public Thickness ItemSpacing { get; }
 
 		public ItemTemplateContext(DataTemplate formsDataTemplate, object item, BindableObject container, 
-			double? height = null, double? width = null, Thickness? itemSpacing = null)
+			double? height = null, double? width = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null)
 		{
 			FormsDataTemplate = formsDataTemplate;
 			Item = item;
 			Container = container;
+			MauiContext = mauiContext;
 
 			if (height.HasValue)
 				ItemHeight = height.Value;

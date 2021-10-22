@@ -14,6 +14,11 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__
 			{ typeof(CollectionView), typeof(CollectionViewHandler) },
 #endif
+
+#if WINDOWS
+			{ typeof(CollectionView), typeof(CollectionViewHandler) },
+#endif
+
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif

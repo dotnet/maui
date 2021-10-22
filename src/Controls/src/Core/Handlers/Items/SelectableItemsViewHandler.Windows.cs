@@ -8,10 +8,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
-		protected override UserControl CreateNativeView()
-		{
-			throw new NotImplementedException();
-		}
 		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
 		}

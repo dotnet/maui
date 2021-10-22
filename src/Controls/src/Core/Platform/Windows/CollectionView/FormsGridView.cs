@@ -6,7 +6,7 @@ using UWPControls = Microsoft.UI.Xaml.Controls;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class FormsGridView : GridView, IEmptyView
 	{
