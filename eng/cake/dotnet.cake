@@ -85,7 +85,7 @@ Task("dotnet-templates")
         EnsureDirectoryExists(Directory("../templatesTest/"));
         FileWriteText(File("../templatesTest/Directory.Build.props"), "<Project/>");
         FileWriteText(File("../templatesTest/Directory.Build.targets"), "<Project/>");
-        CopyFileToDirectory(File("./NuGet.config"), File("../templatesTest/nuget.config"));
+        CopyFileToDirectory(File("./NuGet.config"), Directory("../templatesTest/"));
 
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
