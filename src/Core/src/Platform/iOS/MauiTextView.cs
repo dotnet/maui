@@ -40,10 +40,6 @@ namespace Microsoft.Maui.Platform.iOS
 			set => PlaceholderLabel.TextColor = value;
 		}
 
-		public void HidePlaceholder(bool hide)
-		{
-			PlaceholderLabel.Hidden = hide;
-		}
 
 		void InitPlaceholderLabel()
 		{
@@ -107,7 +103,7 @@ namespace Microsoft.Maui.Platform.iOS
 
 		void HidePlaceholderIfTextIsPresent(string? value)
 		{
-			HidePlaceholder(!String.IsNullOrEmpty(value));
+			PlaceholderLabel.Hidden = !String.IsNullOrEmpty(value);
 		}
 
 		void OnChanged(object? sender, EventArgs e)
