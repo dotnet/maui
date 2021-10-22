@@ -24,6 +24,12 @@
     <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoleft.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoright.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) ">
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Core\src\Core.csproj" />
