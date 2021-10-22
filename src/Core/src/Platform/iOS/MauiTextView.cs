@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform.iOS
 		// via code or user interaction.
 		public event EventHandler? TextSetOrChanged;
 
-		UILabel PlaceholderLabel { get; } = new UILabel
+		internal UILabel PlaceholderLabel { get; } = new UILabel
 		{
 			BackgroundColor = UIColor.Clear,
 			Lines = 0

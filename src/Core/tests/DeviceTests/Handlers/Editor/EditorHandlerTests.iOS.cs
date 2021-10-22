@@ -154,8 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UILabel GetNativePlaceholder(EditorHandler editorHandler) =>
-			GetNativeEditor(editorHandler).FindDescendantView<UILabel>() ??
-			throw new System.InvalidOperationException("Unable to find Native Placehold");
+			GetNativeEditor(editorHandler).PlaceholderLabel;
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).PlaceholderText;
