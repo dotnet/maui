@@ -11,12 +11,65 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+		[Fact(DisplayName = "Placeholder Toggles Correctly When Text Changes")]
+		public async Task PlaceholderTogglesCorrectlyWhenTextChanges()
+		{
+			var editor = new EditorStub();
+
+			bool testPassed = false;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(editor);
+
+				Assert.False(GetNativePlaceholder(handler).Hidden);
+				editor.Text = "test";
+				handler.UpdateValue(nameof(EditorStub.Text));
+				Assert.True(GetNativePlaceholder(handler).Hidden);
+				editor.Text = "";
+				Assert.False(GetNativePlaceholder(handler).Hidden);
+				testPassed = true;
+			});
+
+			Assert.True(testPassed);
+		}
+
 		[Fact(DisplayName = "Placeholder Hidden When Control Has Text")]
 		public async Task PlaceholderHiddenWhenControlHasText()
 		{
 			var editor = new EditorStub()
 			{
 				Text = "Text"
+			};
+
+			var isHidden = await GetValueAsync(editor, handler =>
+			{
+				return GetNativePlaceholder(handler).Hidden;
+			});
+
+			Assert.True(isHidden);
+		}
+
+		[Fact(DisplayName = "Placeholder Visible When Control No Text")]
+		public async Task PlaceholderVisibleWhenControlHasNoText()
+		{
+			var editor = new EditorStub();
+
+			var isHidden = await GetValueAsync(editor, handler =>
+			{
+				return GetNativePlaceholder(handler).Hidden;
+			});
+
+			Assert.False(isHidden);
+		}
+
+		[Fact(DisplayName = "Placeholder Hidden When Control Has Attributed Text")]
+		public async Task PlaceholderHiddenWhenControlHasAttributedText()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Text",
+				CharacterSpacing = 43
 			};
 
 			var isHidden = await GetValueAsync(editor, handler =>

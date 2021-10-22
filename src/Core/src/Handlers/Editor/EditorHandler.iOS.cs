@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 
 			nativeView.ShouldChangeText += OnShouldChangeText;
 			nativeView.Ended += OnEnded;
-			nativeView.TextPropertySet += OnTextPropertySet;
+			nativeView.TextSetOrChanged += OnTextPropertySet;
 		}
 
 		protected override void DisconnectHandler(MauiTextView nativeView)
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 
 			nativeView.ShouldChangeText -= OnShouldChangeText;
 			nativeView.Ended -= OnEnded;
-			nativeView.TextPropertySet -= OnTextPropertySet;
+			nativeView.TextSetOrChanged -= OnTextPropertySet;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>

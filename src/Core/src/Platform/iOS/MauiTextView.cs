@@ -7,6 +7,11 @@ namespace Microsoft.Maui.Platform.iOS
 {
 	public class MauiTextView : UITextView
 	{
+		// Native Changed doesn't fire when the Text Property is set in code
+		// We use this event as a way to fire changes whenever the Text changes
+		// via code or user interaction.
+		public event EventHandler? TextSetOrChanged;
+
 		UILabel PlaceholderLabel { get; } = new UILabel
 		{
 			BackgroundColor = UIColor.Clear,
@@ -77,7 +82,7 @@ namespace Microsoft.Maui.Platform.iOS
 
 				if (old != value)
 				{
-					TextPropertySet?.Invoke(this, EventArgs.Empty);
+					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 					HidePlaceholderIfTextIsPresent(value);
 				}
 			}
@@ -94,7 +99,7 @@ namespace Microsoft.Maui.Platform.iOS
 
 				if (old?.Value != value?.Value)
 				{
-					TextPropertySet?.Invoke(this, EventArgs.Empty);
+					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 					HidePlaceholderIfTextIsPresent(value?.Value);
 				}
 			}
@@ -108,9 +113,7 @@ namespace Microsoft.Maui.Platform.iOS
 		void OnChanged(object? sender, EventArgs e)
 		{
 			HidePlaceholderIfTextIsPresent(Text);
-			TextPropertySet?.Invoke(this, EventArgs.Empty);
+			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 		}
-
-		public event EventHandler? TextPropertySet;
 	}
 }
