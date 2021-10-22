@@ -41,11 +41,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_isInvokeRequired = isInvokeRequired;
 		}
 
-		public string GetHash(string input)
-		{
-			return Internals.Crc64.GetHash(input);
-		}
-
 		public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes)
 		{
 			switch (size)

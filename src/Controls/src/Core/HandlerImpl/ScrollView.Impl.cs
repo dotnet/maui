@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls
 			Frame = this.ComputeFrame(bounds);
 			Handler?.NativeArrange(Frame);
 
-			(this as IContentView).CrossPlatformArrange(Frame);
+			(this as IContentView).CrossPlatformArrange(new Rectangle(Point.Zero, Frame.Size));
 
 			return Frame.Size;
 		}
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls
 				bounds.Width = Math.Max(Frame.Width, presentedContent.DesiredSize.Width + padding.HorizontalThickness);
 				bounds.Height = Math.Max(Frame.Height, presentedContent.DesiredSize.Height + padding.VerticalThickness);
 
-				(this as IContentView).ArrangeContent(bounds);
+				this.ArrangeContent(bounds);
 			}
 
 			return bounds.Size;
