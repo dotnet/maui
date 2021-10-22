@@ -301,7 +301,7 @@ namespace Microsoft.Maui
 		{
 			if (editor.IsReadOnly)
 			{
-				editText.InputType = InputTypes.Null;
+				editText.InputType = InputTypes.Null | Android.Text.InputTypes.TextFlagMultiLine;
 			}
 			else
 			{
@@ -324,7 +324,7 @@ namespace Microsoft.Maui
 					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 				}
 
-				editText.InputType = nativeInputTypeToUpdate;
+				editText.InputType = nativeInputTypeToUpdate | Android.Text.InputTypes.TextFlagMultiLine;
 			}
 		}
 
