@@ -315,8 +315,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return AppDomain.CurrentDomain.GetAssemblies();
 			}
 
-			public string GetHash(string input) => Crc64.GetHash(input);
-
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
 				// We make these up anyway, so new sizes didn't really change
