@@ -145,10 +145,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return new TizenIsolatedStorageFile();
 		}
 
-		public string GetHash(string input) => Crc64.GetHash(input);
-
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
-
 		public void QuitApplication()
 		{
 			Forms.Context.Exit();
