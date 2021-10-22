@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 
 			_editText = searchView.GetFirstChildOfType<EditText>();
 
-			/*if (QueryEditor?.LayoutParameters is LinearLayout.LayoutParams layoutParams)
+			if (QueryEditor?.LayoutParameters is LinearLayout.LayoutParams layoutParams)
 			{
 				layoutParams.Height = LinearLayout.LayoutParams.MatchParent;
 				layoutParams.Gravity = GravityFlags.FillVertical;
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (image != null)
 					image.SetMinimumWidth((int?)searchView.Context?.ToPixels(44) ?? 0);
-			}*/
+			}
 
 			return searchView;
 		}
