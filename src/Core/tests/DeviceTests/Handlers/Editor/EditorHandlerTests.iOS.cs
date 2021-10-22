@@ -11,6 +11,22 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+		[Fact(DisplayName = "Placeholder Hidden When Control Has Text")]
+		public async Task PlaceholderHiddenWhenControlHasText()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Text"
+			};
+
+			var isHidden = await GetValueAsync(editor, handler =>
+			{
+				return GetNativePlaceholder(handler).Hidden;
+			});
+
+			Assert.True(isHidden);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -83,6 +99,10 @@ namespace Microsoft.Maui.DeviceTests
 			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
 			control.SelectedTextRange = control.GetTextRange(endPosition, endPosition);
 		}
+
+		UILabel GetNativePlaceholder(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).FindDescendantView<UILabel>() ??
+			throw new System.InvalidOperationException("Unable to find Native Placehold");
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).PlaceholderText;

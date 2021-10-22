@@ -75,7 +75,10 @@ namespace Microsoft.Maui.Platform.iOS
 				base.Text = value;
 
 				if (old != value)
+				{
 					TextPropertySet?.Invoke(this, EventArgs.Empty);
+					HidePlaceholderIfTextIsPresent();
+				}
 			}
 		}
 
@@ -89,8 +92,16 @@ namespace Microsoft.Maui.Platform.iOS
 				base.AttributedText = value;
 
 				if (old?.Value != value?.Value)
+				{
 					TextPropertySet?.Invoke(this, EventArgs.Empty);
+					HidePlaceholderIfTextIsPresent();
+				}
 			}
+		}
+
+		void HidePlaceholderIfTextIsPresent()
+		{
+
 		}
 
 		public event EventHandler? TextPropertySet;
