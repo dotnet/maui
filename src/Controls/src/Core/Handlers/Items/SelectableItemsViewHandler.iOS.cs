@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapSelectedItems(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			 (handler.Controller as SelectableItemsViewController<TItemsView>)?.UpdateNativeSelection();
+			(handler.Controller as SelectableItemsViewController<TItemsView>)?.UpdateNativeSelection();
 		}
 
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)

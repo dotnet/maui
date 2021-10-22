@@ -4,7 +4,7 @@ using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
-{ 
+{
 	public abstract class ItemsViewCell : UICollectionViewCell
 	{
 		[Export("initWithFrame:")]

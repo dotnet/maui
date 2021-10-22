@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ScrollToRequested(sender, args);
 		}
 
-		public static void MapIsGrouped(GroupableItemsViewHandler<TItemsView> handler, GroupableItemsView itemsView) 
+		public static void MapIsGrouped(GroupableItemsViewHandler<TItemsView> handler, GroupableItemsView itemsView)
 		{
 			handler.Controller?.UpdateItemsSource();
 		}

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CollectionViewHandler : GroupableItemsViewHandler<GroupableItemsView>
 	{
-		
+
 		protected override Android.Views.View CreateNativeView()
 		{
 			throw new NotImplementedException();
