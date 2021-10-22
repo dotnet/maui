@@ -94,6 +94,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
-  <ItemGroup />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
