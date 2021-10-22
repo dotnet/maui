@@ -3,7 +3,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Provides functionality to be able to customize Text.
 	/// </summary>
-	public interface IText : ITextStyle, IElement
+	public interface IText : ITextStyle
 	{
 		/// <summary>
 		/// Gets the text.
