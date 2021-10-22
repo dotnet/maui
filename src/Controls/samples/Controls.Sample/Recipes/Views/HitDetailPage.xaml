@@ -7,9 +7,6 @@
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:Page.UseSafeArea="true"
              >
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="{Binding AddRemoveItemText}" Command="{Binding AddRemoveItemCommand}" Clicked="AddItem_Clicked"/>
-    </ContentPage.ToolbarItems>
     <Grid Margin="15">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -17,6 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" />
             <RowDefinition Height="8*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,10">
             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" IsVisible="{Binding ImageUrlVisible}" />
@@ -53,5 +51,6 @@
                 </Frame>
             </StackLayout>
         </ScrollView>
+        <Button Grid.Row="2" Text="{Binding AddRemoveItemText}" Command="{Binding AddRemoveItemCommand}" Clicked="AddItem_Clicked"></Button>
     </Grid>
 </ContentPage>

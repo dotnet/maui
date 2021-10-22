@@ -155,8 +155,8 @@ namespace Recipes.ViewModels
             };
 
             await DataStore.AddItemAsync(newItem);
-			AddRemoveItemText = "Remove from My Recipes";
-			AddRemoveItemCommand = RemoveItemCommand;
+			//AddRemoveItemText = "Remove from My Recipes";
+			//AddRemoveItemCommand = RemoveItemCommand;
 		}
 
         public string HitId

@@ -34,7 +34,7 @@
                         </Grid.GestureRecognizers>
                         <Image HeightRequest="220" Source="{Binding Recipe.ImageUrl}" Aspect="AspectFill"/>
                         <Label Background="White" TextColor="Black"
-                                HorizontalOptions="End"
+                                Padding="5"
                                 VerticalOptions="End"
                                 Margin="0,0,0,100"
                                 x:Name="recipeName"
