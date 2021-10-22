@@ -53,8 +53,13 @@ namespace Microsoft.Maui
 			return (INativeViewHandler)handler;
 		}
 
+		public static void SetApplicationHandler(this UIApplicationDelegate nativeApplication, IApplication application, IMauiContext context) =>
+					SetHandler(nativeApplication, application, context);
 
-		public static void SetWindow(this UIWindow nativeWindow, IWindow window, IMauiContext mauiContext)
+		public static void SetWindowHandler(this UIWindow nativeWindow, IWindow window, IMauiContext context) =>
+			SetHandler(nativeWindow, window, context);
+
+		static void SetHandler(this NSObject nativeElement, IElement element, IMauiContext mauiContext)
 		{
 			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
 			_ = element ?? throw new ArgumentNullException(nameof(element));
