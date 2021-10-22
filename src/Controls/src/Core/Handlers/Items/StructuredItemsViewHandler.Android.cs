@@ -7,10 +7,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
-		protected override Android.Views.View CreateNativeView()
-		{
-			return new StructuredItemsViewAdapter<TItemsView, IItemsViewSource>(VirtualView);
-		}
+		IMauiRecyclerView<TItemsView> _mauiRecyclerView => NativeView as IMauiRecyclerView<TItemsView>;
+
+		protected override StructuredItemsViewAdapter<TItemsView, IItemsViewSource> CreateAdapter() => new(VirtualView);
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
@@ -23,18 +22,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
-		{
-
-		}
+			=> handler._mauiRecyclerView?.UpdateLayoutManager();
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
-		{
+			=> handler._mauiRecyclerView?.UpdateAdapter();
 
-		}
-
-		protected override IItemsLayout GetItemsLayout()
-		{
-			return VirtualView.ItemsLayout;
-		}
+		protected override IItemsLayout GetItemsLayout() => VirtualView.ItemsLayout;
 	}
 }

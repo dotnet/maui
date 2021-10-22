@@ -20,5 +20,9 @@
 
 		public void UpdateEmptyView();
 
+		public void UpdateLayoutManager();
+
+		public void UpdateAdapter();
+
 	}
 }

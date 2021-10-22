@@ -5,23 +5,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class SnapManager : IDisposable
 	{
-		readonly IItemsLayout _itemsLayout;
 		readonly RecyclerView _recyclerView;
 		SnapHelper _snapHelper;
 
-		public SnapManager(IItemsLayout itemsLayout, RecyclerView recyclerView)
+		public SnapManager(RecyclerView recyclerView)
 		{
-			_itemsLayout = itemsLayout;
 			_recyclerView = recyclerView;
 		}
 
-		internal void UpdateSnapBehavior()
+		internal void UpdateSnapBehavior(IItemsLayout iitemsLayout)
 		{
-			if (!(_itemsLayout is ItemsLayout itemsLayout))
-			{
+			if (iitemsLayout is not ItemsLayout itemsLayout)
 				return;
-			}
-
+		
 			var snapPointsType = itemsLayout.SnapPointsType;
 
 			// Clear our the existing snap helper (if any)
