@@ -14,25 +14,25 @@ namespace Microsoft.Maui.Handlers
 	{
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader ImageSourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView?.ImageSource, OnSetImageSource);
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => (VirtualView as IImageButton), OnSetImageSource);
 
-		public static IPropertyMapper<ITextStyle, IButtonHandler> TextStyleMapper = new PropertyMapper<ITextStyle, IButtonHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IImageButton, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImageButton, IButtonHandler>()
+		{
+			[nameof(IImageButton.Source)] = MapImageSource,
+		};
+
+		public static IPropertyMapper<ITextButton, IButtonHandler> TextButtonMapper = new PropertyMapper<ITextButton, IButtonHandler>()
 		{
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
-		};
-
-		public static IPropertyMapper<IText, IButtonHandler> TextMapper = new PropertyMapper<IText, IButtonHandler>(TextStyleMapper)
-		{
 			[nameof(IText.Text)] = MapText,
 		};
 
-		public static IPropertyMapper<IButton, IButtonHandler> Mapper = new PropertyMapper<IButton, IButtonHandler>(TextMapper)
+		public static IPropertyMapper<IButton, IButtonHandler> Mapper = new PropertyMapper<IButton, IButtonHandler>(TextButtonMapper, ImageButtonMapper, ViewHandler.ViewMapper)
 		{
 			[nameof(IButton.Background)] = MapBackground,
 			[nameof(IButton.Padding)] = MapPadding,
-			[nameof(IButton.ImageSource)] = MapImageSource
 		};
 
 		public ButtonHandler() : base(Mapper)

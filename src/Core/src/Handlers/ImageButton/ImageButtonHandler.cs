@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 #if __IOS__
 		UIKit.UIImageView IImageHandler.TypedNativeView => NativeView.ImageView;
 #elif WINDOWS
-		UI.Xaml.Controls.Image IImageHandler.TypedNativeView => (UI.Xaml.Controls.Image)NativeView.Content;
+		UI.Xaml.Controls.Image IImageHandler.TypedNativeView => NativeView.GetImage() ?? (UI.Xaml.Controls.Image)NativeView.Content;
 #elif __ANDROID__
 		Android.Widget.ImageView IImageHandler.TypedNativeView => NativeView;
 #else
