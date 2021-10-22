@@ -10,16 +10,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
-		
+		View _currentHeader;
+		View _currentFooter;
+
+		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			
+			handler.UpdateHeader();
 		}
 
 		public static void MapFooterTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			
+			handler.UpdateFooter();
 		}
 
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
@@ -31,8 +34,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		
 		}
-
-
 
 		protected override ListViewBase SelectListViewBase()
 		{
@@ -47,6 +48,104 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			throw new NotImplementedException("The layout is not implemented");
+		}
+
+		protected virtual void UpdateHeader()
+		{
+			if (ListViewBase == null)
+			{
+				return;
+			}
+
+			if (_currentHeader != null)
+			{
+				Element.RemoveLogicalChild(_currentHeader);
+				_currentHeader = null;
+			}
+
+			var header = ItemsView.Header;
+
+			switch (header)
+			{
+				case null:
+					ListViewBase.Header = null;
+					break;
+
+				case string text:
+					ListViewBase.HeaderTemplate = null;
+					ListViewBase.Header = new TextBlock { Text = text };
+					break;
+
+				case View view:
+					ListViewBase.HeaderTemplate = ViewTemplate;
+					_currentHeader = view;
+					Element.AddLogicalChild(_currentHeader);
+					ListViewBase.Header = view;
+					break;
+
+				default:
+					var headerTemplate = ItemsView.HeaderTemplate;
+					if (headerTemplate != null)
+					{
+						ListViewBase.HeaderTemplate = ItemsViewTemplate;
+						ListViewBase.Header = new ItemTemplateContext(headerTemplate, header, Element);
+					}
+					else
+					{
+						ListViewBase.HeaderTemplate = null;
+						ListViewBase.Header = null;
+					}
+					break;
+			}
+		}
+
+		protected virtual void UpdateFooter()
+		{
+			if (ListViewBase == null)
+			{
+				return;
+			}
+
+			if (_currentFooter != null)
+			{
+				Element.RemoveLogicalChild(_currentFooter);
+				_currentFooter = null;
+			}
+
+			var footer = ItemsView.Footer;
+
+			switch (footer)
+			{
+				case null:
+					ListViewBase.Footer = null;
+					break;
+
+				case string text:
+					ListViewBase.FooterTemplate = null;
+					ListViewBase.Footer = new TextBlock { Text = text };
+					break;
+
+				case View view:
+					ListViewBase.FooterTemplate = ViewTemplate;
+					_currentFooter = view;
+					Element.AddLogicalChild(_currentFooter);
+					ListViewBase.Footer = view;
+					break;
+
+				default:
+					var footerTemplate = ItemsView.FooterTemplate;
+					if (footerTemplate != null)
+					{
+						ListViewBase.FooterTemplate = ItemsViewTemplate;
+						ListViewBase.Footer = new ItemTemplateContext(footerTemplate, footer, Element);
+					}
+					else
+					{
+						ListViewBase.FooterTemplate = null;
+						ListViewBase.Footer = null;
+					}
+					break;
+			}
 		}
 
 		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)

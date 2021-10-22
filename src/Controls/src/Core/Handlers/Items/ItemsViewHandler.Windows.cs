@@ -11,20 +11,34 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.Maui.Controls.Internals;
 using WASDKDataTemplate = Microsoft.UI.Xaml.DataTemplate;
+using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WASDKApp = Microsoft.UI.Xaml.Application;
+using WRect = Windows.Foundation.Rect;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, ListViewBase>  where TItemsView : ItemsView
 	{
 		protected CollectionViewSource CollectionViewSource;
+		ScrollViewer _scrollViewer;
 		FrameworkElement _emptyView;
+		WASDKScrollBarVisibility? _defaultHorizontalScrollVisibility;
+		WASDKScrollBarVisibility? _defaultVerticalScrollVisibility;
 		View _formsEmptyView;
 		bool _emptyViewDisplayed;
+		double _previousHorizontalOffset;
+		double _previousVerticalOffset;
 		protected ListViewBase ListViewBase => NativeView;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
+		protected WASDKDataTemplate ViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["View"];
 		protected WASDKDataTemplate ItemsViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["ItemsViewDefaultTemplate"];
+
+		UIElement Control => NativeView;
+
+		protected abstract IItemsLayout Layout { get; }
 
 		protected override ListViewBase CreateNativeView()
 		{
@@ -38,9 +52,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			handler.UpdateHorizontalScrollBarVisibility();
 		}
+
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			handler.UpdateVerticalScrollBarVisibility();
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -55,6 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			handler.UpdateEmptyView();
 		}
 
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -241,6 +259,101 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateEmptyViewVisibility();
 		}
 
+		protected virtual void UpdateItemsLayout()
+		{
+			if (_scrollViewer != null)
+				_scrollViewer.ViewChanged -= OnScrollViewChanged;
+
+			if (ListViewBase != null)
+			{
+				ListViewBase.ItemsSource = null;
+				VirtualView.Handler = null;
+			}
+
+			VirtualView.ToNative(MauiContext);
+			ListViewBase.IsSynchronizedWithCurrentItem = false;
+
+			FindScrollViewer(ListViewBase);
+
+			_defaultHorizontalScrollVisibility = null;
+			_defaultVerticalScrollVisibility = null;
+
+			UpdateItemTemplate();
+			UpdateItemsSource();
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
+			UpdateEmptyView();
+		}
+
+		void FindScrollViewer(ListViewBase listView)
+		{
+			var scrollViewer = listView.GetFirstDescendant<ScrollViewer>();
+
+			if (scrollViewer != null)
+			{
+				OnScrollViewerFound(scrollViewer);
+				return;
+			}
+
+			void ListViewLoaded(object sender, RoutedEventArgs e)
+			{
+				var lv = (ListViewBase)sender;
+				lv.Loaded -= ListViewLoaded;
+				FindScrollViewer(listView);
+			}
+
+			listView.Loaded += ListViewLoaded;
+		}
+
+		void UpdateVerticalScrollBarVisibility()
+		{
+			if (_defaultVerticalScrollVisibility == null)
+				_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+
+			switch (Element.VerticalScrollBarVisibility)
+			{
+				case (ScrollBarVisibility.Always):
+					ScrollViewer.SetVerticalScrollBarVisibility(Control, WASDKScrollBarVisibility.Visible);
+					break;
+				case (ScrollBarVisibility.Never):
+					ScrollViewer.SetVerticalScrollBarVisibility(Control, WASDKScrollBarVisibility.Hidden);
+					break;
+				case (ScrollBarVisibility.Default):
+					ScrollViewer.SetVerticalScrollBarVisibility(Control, _defaultVerticalScrollVisibility.Value);
+					break;
+			}
+		}
+
+		void UpdateHorizontalScrollBarVisibility()
+		{
+			if (_defaultHorizontalScrollVisibility == null)
+				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);
+
+			switch (Element.HorizontalScrollBarVisibility)
+			{
+				case (ScrollBarVisibility.Always):
+					ScrollViewer.SetHorizontalScrollBarVisibility(Control, WASDKScrollBarVisibility.Visible);
+					break;
+				case (ScrollBarVisibility.Never):
+					ScrollViewer.SetHorizontalScrollBarVisibility(Control, WASDKScrollBarVisibility.Hidden);
+					break;
+				case (ScrollBarVisibility.Default):
+					ScrollViewer.SetHorizontalScrollBarVisibility(Control, _defaultHorizontalScrollVisibility.Value);
+					break;
+			}
+		}
+
+		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer)
+		{
+			_scrollViewer = scrollViewer;
+			_scrollViewer.ViewChanged += OnScrollViewChanged;
+		}
+
+		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+		{
+			HandleScroll(_scrollViewer);
+		}
+
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
 		{
 			if (emptyViewTemplate == null)
@@ -264,6 +377,110 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_formsEmptyView = view ?? throw new ArgumentNullException(nameof(view));
 			return view.GetOrCreateHandler(MauiContext).ContainerView as FrameworkElement;
+		}
+
+		internal void HandleScroll(ScrollViewer scrollViewer)
+		{
+			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
+			{
+				HorizontalOffset = scrollViewer.HorizontalOffset,
+				HorizontalDelta = scrollViewer.HorizontalOffset - _previousHorizontalOffset,
+				VerticalOffset = scrollViewer.VerticalOffset,
+				VerticalDelta = scrollViewer.VerticalOffset - _previousVerticalOffset,
+			};
+
+			_previousHorizontalOffset = scrollViewer.HorizontalOffset;
+			_previousVerticalOffset = scrollViewer.VerticalOffset;
+
+			var layoutOrientaton = ItemsLayoutOrientation.Vertical;
+			bool advancing = true;
+			switch (Layout)
+			{
+				case LinearItemsLayout linearItemsLayout:
+					layoutOrientaton = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical;
+					advancing = itemsViewScrolledEventArgs.HorizontalDelta > 0;
+					break;
+				case GridItemsLayout gridItemsLayout:
+					layoutOrientaton = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical;
+					advancing = itemsViewScrolledEventArgs.VerticalDelta > 0;
+					break;
+				default:
+					break;
+			}
+
+			itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, layoutOrientaton, advancing);
+
+			Element.SendScrolled(itemsViewScrolledEventArgs);
+		}
+
+		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)
+		{
+			var (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex) = GetVisibleIndexes(orientation, advancing);
+
+			args.FirstVisibleItemIndex = firstVisibleItemIndex;
+			args.CenterItemIndex = centerItemIndex;
+			args.LastVisibleItemIndex = lastVisibleItemIndex;
+
+			return args;
+		}
+
+		(int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(ItemsLayoutOrientation itemsLayoutOrientation, bool advancing)
+		{
+			int firstVisibleItemIndex = -1;
+			int lastVisibleItemIndex = -1;
+
+			if (ListViewBase.ItemsPanelRoot is ItemsStackPanel itemsPanel)
+			{
+				firstVisibleItemIndex = itemsPanel.FirstVisibleIndex;
+				lastVisibleItemIndex = itemsPanel.LastVisibleIndex;
+			}
+			else
+			{
+				var presenters = ListViewBase.GetChildren<ListViewItemPresenter>();
+
+				if (presenters != null && _scrollViewer != null)
+				{
+					int count = 0;
+					foreach (ListViewItemPresenter presenter in presenters)
+					{
+						if (IsElementVisibleInContainer(presenter, _scrollViewer, itemsLayoutOrientation))
+						{
+							if (firstVisibleItemIndex == -1)
+								firstVisibleItemIndex = count;
+
+							lastVisibleItemIndex = count;
+						}
+
+						count++;
+					}
+				}
+			}
+
+			double center = (lastVisibleItemIndex + firstVisibleItemIndex) / 2.0;
+			int centerItemIndex = advancing ? (int)Math.Ceiling(center) : (int)Math.Floor(center);
+
+			return (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex);
+		}
+
+		bool IsElementVisibleInContainer(FrameworkElement element, FrameworkElement container, ItemsLayoutOrientation itemsLayoutOrientation)
+		{
+			if (element == null || container == null)
+				return false;
+
+			if (element.Visibility != WVisibility.Visible)
+				return false;
+
+			var elementBounds = element.TransformToVisual(container).TransformBounds(new WRect(0, 0, element.ActualWidth, element.ActualHeight));
+			var containerBounds = new WRect(0, 0, container.ActualWidth, container.ActualHeight);
+
+			switch (itemsLayoutOrientation)
+			{
+				case ItemsLayoutOrientation.Vertical:
+					return elementBounds.Top < containerBounds.Bottom && elementBounds.Bottom > containerBounds.Top;
+
+				default:
+					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
+			};
 		}
 	}
 }
