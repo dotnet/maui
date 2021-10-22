@@ -65,6 +65,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var size = Context.FromPixels(r - l, b - t);
 
 			//TODO: RUI Is this the best way?
+			//View.Arrange(new Rectangle(Point.Zero, size));
+			//Arrange doesn't seem to work as expected
 
 			var mauiControlsView = View as View;
 			if (mauiControlsView == null)

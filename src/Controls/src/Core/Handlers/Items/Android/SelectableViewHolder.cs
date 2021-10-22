@@ -62,15 +62,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
-
-			//if (Forms.IsMarshmallowOrNewer)
-			//{
+			if(NativeVersion.IsAtLeast(Android.OS.BuildVersionCodes.M))
+			{
 				// We're looking for the foreground ripple effect, which is not available on older APIs
 				// Limiting this to Marshmallow and newer, because View.setForeground() is not available on lower APIs
 				_selectableItemDrawable = !isSelected ? null : (_selectableItemDrawable ?? GetSelectableItemDrawable());
 
 				ItemView.Foreground = _selectableItemDrawable;
-			//}
+			}
 
 			_selectedDrawable = !isSelected ? null : (_selectedDrawable ?? GetSelectedDrawable());
 
