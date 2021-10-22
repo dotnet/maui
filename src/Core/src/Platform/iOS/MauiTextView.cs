@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Platform.iOS
 		public MauiTextView(CGRect frame) : base(frame)
 		{
 			InitPlaceholderLabel();
+			this.Changed += OnChanged;
 		}
 
 		public string? PlaceholderText
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Platform.iOS
 				if (old != value)
 				{
 					TextPropertySet?.Invoke(this, EventArgs.Empty);
-					HidePlaceholderIfTextIsPresent();
+					HidePlaceholderIfTextIsPresent(value);
 				}
 			}
 		}
@@ -94,14 +95,20 @@ namespace Microsoft.Maui.Platform.iOS
 				if (old?.Value != value?.Value)
 				{
 					TextPropertySet?.Invoke(this, EventArgs.Empty);
-					HidePlaceholderIfTextIsPresent();
+					HidePlaceholderIfTextIsPresent(value?.Value);
 				}
 			}
 		}
 
-		void HidePlaceholderIfTextIsPresent()
+		void HidePlaceholderIfTextIsPresent(string? value)
 		{
+			HidePlaceholder(!String.IsNullOrEmpty(value));
+		}
 
+		void OnChanged(object? sender, EventArgs e)
+		{
+			HidePlaceholderIfTextIsPresent(Text);
+			TextPropertySet?.Invoke(this, EventArgs.Empty);
 		}
 
 		public event EventHandler? TextPropertySet;
