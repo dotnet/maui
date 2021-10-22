@@ -19,8 +19,8 @@ namespace Microsoft.Maui.Controls
 				[nameof(Padding)] = MapPadding,
 #endif
 #if WINDOWS
-			[nameof(IText.Text)] = MapText,
-			[nameof(IButton.ImageSource)] = MapImageSource
+				[nameof(IText.Text)] = MapText,
+				[nameof(ImageSource)] = MapImageSource
 #endif
 			};
 

@@ -1,7 +1,4 @@
-using System;
-using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using AndroidX.Fragment.App;
 using AView = Android.Views.View;
@@ -25,14 +22,16 @@ namespace Microsoft.Maui.Controls.Platform
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
-			var view = _page.ToNative(_mauiContext);
-			view.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
-			return view;
+			_ = _page.ToNative(_mauiContext);
+			return new ShellPageContainer(RequireContext(), (INativeViewHandler)_page.Handler, true)
+			{
+				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
+			};
 		}
 
 		public override void OnDestroyView()
 		{
-			base.OnDestroyView();
+			base.OnDestroyView();			
 			((IShellContentController)ShellContentTab).RecyclePage(_page);
 			_page = null;
 		}
