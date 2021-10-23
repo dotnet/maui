@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				ItemTemplate = itemTemplate,
 				AutomationId = "collectionview",
 				BackgroundColor = Colors.Red,
-				
+
 			};
 
 			var generator = new ItemsSourceGenerator(collectionView, initialItems: 2);
