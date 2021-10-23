@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			var generator = new ItemsSourceGenerator(collectionView);
 
 			layout.Children.Add(generator);
-			
+
 			Grid.SetRow(collectionView, 1);
 			layout.Children.Add(collectionView);
 
