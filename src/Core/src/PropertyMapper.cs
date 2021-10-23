@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 				return action;
 			else if (Chained is not null)
 			{
-				foreach(var ch in Chained)
+				foreach (var ch in Chained)
 				{
 					var returnValue = ch.GetProperty(key);
 					if (returnValue != null)
@@ -161,11 +161,11 @@ namespace Microsoft.Maui
 			{
 				if (v is TVirtualView vv)
 					action?.Invoke((TViewHandler)h, vv);
-				else if(Chained != null)
+				else if (Chained != null)
 				{
-					foreach(var chain in Chained)
+					foreach (var chain in Chained)
 					{
-						if(chain.GetProperty(key) != null)
+						if (chain.GetProperty(key) != null)
 						{
 							chain.UpdateProperty(h, v, key);
 							break;

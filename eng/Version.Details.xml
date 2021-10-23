@@ -12,25 +12,25 @@
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
       <Sha>b4d322c2ab32fe12d7edacfdbfc34c2283db365c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.101-preview.10.175">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.101-preview.10.232">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>313bc16bc76b41b29b520c1d43af03c0ea9db8d5</Sha>
+      <Sha>e9b66f4a8dc22af7810980c0e4cb29d1babf5f5a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.0.101-preview.10.175">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.0.101-preview.10.232">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>313bc16bc76b41b29b520c1d43af03c0ea9db8d5</Sha>
+      <Sha>e9b66f4a8dc22af7810980c0e4cb29d1babf5f5a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.0.101-preview.10.175">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.0.101-preview.10.232">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>313bc16bc76b41b29b520c1d43af03c0ea9db8d5</Sha>
+      <Sha>e9b66f4a8dc22af7810980c0e4cb29d1babf5f5a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.0.101-preview.10.175">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.0.101-preview.10.232">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>313bc16bc76b41b29b520c1d43af03c0ea9db8d5</Sha>
+      <Sha>e9b66f4a8dc22af7810980c0e4cb29d1babf5f5a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0-rtm.21514.1">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>73c8cd3619efc79364fef5fa81989f9e0dd2147b</Sha>
+      <Sha>1ec2e17fcfd86bdd6f7e7246b6d527e94e34c15a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.0" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
