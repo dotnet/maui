@@ -14,8 +14,7 @@
         </Grid.ColumnDefinitions>
         <ListView x:Name="List" />
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-        <ScrollViewer Grid.Column="2" x:Name="GraphicsViewer" Background="LightGray" 
-                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Column="2" Background="LightGray" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <skia:WDSkiaGraphicsView x:Name="GraphicsView" HorizontalAlignment="Left" VerticalAlignment="Top" />
         </ScrollViewer>
     </Grid>
