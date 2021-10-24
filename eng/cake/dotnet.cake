@@ -152,7 +152,7 @@ Task("dotnet-pack")
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
         {
             DiagnosticOutput = true,
-            ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
+            ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
         });
 
         // Download some additional symbols that need to be archived along with the maui symbols:
