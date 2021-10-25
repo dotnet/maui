@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				};
 				label.SetBinding(XLabel.TextProperty, new Binding(".", converter: new ToTextConverter()));
 
-				return new StackLayout
+				return new Controls.StackLayout
 				{
 					BackgroundColor = Colors.White,
 					Padding = 30,

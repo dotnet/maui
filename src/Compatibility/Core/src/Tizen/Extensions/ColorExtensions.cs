@@ -1,5 +1,6 @@
 using Microsoft.Maui.Graphics;
 using TColor = Tizen.UIExtensions.Common.Color;
+using NColor = Tizen.NUI.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -21,6 +22,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				return new TColor(c.Red, c.Green, c.Blue, c.Alpha);
 			}
+		}
+		public static NColor ToNativeNUI(this Color c)
+		{
+			return new NColor((float)c.Red, (float)c.Green, (float)c.Blue, (float)c.Alpha);
 		}
 
 		public static Color WithAlpha(this Color color, double alpha)

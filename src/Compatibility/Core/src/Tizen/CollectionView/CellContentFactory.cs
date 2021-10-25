@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			else
 			{
-				return new StackLayout
+				return new Controls.StackLayout
 				{
 					BackgroundColor = Colors.Red
 				};
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			text.SetBinding(Label.TextProperty, new Binding("Text", source: sectionCell));
 			text.SetBinding(Label.TextColorProperty, new Binding("TextColor", source: sectionCell));
 
-			var layout = new StackLayout
+			var layout = new Controls.StackLayout
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				BackgroundColor = Color.FromArgb("#e3f2fd"),
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			detail.FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label)) / 2;
 			detail.Margin = new Thickness(10, 0, 0, 0);
 
-			var layout = new StackLayout
+			var layout = new Controls.StackLayout
 			{
 				Spacing = 0,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var textcell = CreateContent((TextCell)imageCell);
 			textcell.HorizontalOptions = LayoutOptions.FillAndExpand;
-			var layout = new Grid
+			var layout = new Controls.Grid
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				ColumnDefinitions =
@@ -138,8 +138,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Aspect = Aspect.AspectFit,
 			};
 			img.SetBinding(Image.SourceProperty, new Binding("ImageSource", source: imageCell));
-			layout.Children.Add(img, 0, 0);
-			layout.Children.Add(textcell, 1, 0);
+			layout.Add(img, 0, 0);
+			layout.Add(textcell, 1, 0);
 			return layout;
 		}
 
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			label.SetBinding(Label.TextColorProperty, new Binding("LabelColor", source: entryCell));
 			label.FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label)) / 2;
 			label.Margin = new Thickness(20, 0, 0, 0);
-			var layout = new StackLayout
+			var layout = new Controls.StackLayout
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				Children =
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			sw.SetBinding(Switch.IsToggledProperty, new Binding("On", BindingMode.TwoWay, source: switchCell));
 			sw.SetBinding(Switch.OnColorProperty, new Binding("OnColor", source: switchCell));
 
-			var layout = new StackLayout
+			var layout = new Controls.StackLayout
 			{
 				Padding = new Thickness(10, 5),
 				Spacing = 0,
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				ControlTemplate = new ControlTemplate(() =>
 				{
-					var layout = new StackLayout
+					var layout = new Controls.StackLayout
 					{
 						Spacing = 0,
 						VerticalOptions = LayoutOptions.FillAndExpand,

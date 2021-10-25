@@ -37,7 +37,6 @@ namespace Microsoft.Maui.Handlers
 
 		public virtual void SetVirtualView(IElement view)
 		{
-			Console.WriteLine($"{this}::SetVirtualView : {view} - start");
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
 			if (VirtualView == view)
@@ -76,10 +75,7 @@ namespace Microsoft.Maui.Handlers
 					_mapper = map;
 				}
 			}
-
-			Console.WriteLine($"{this}::SetVirtualView : {view} - before UpdateProperties..");
 			_mapper.UpdateProperties(this, VirtualView);
-			Console.WriteLine($"{this}::SetVirtualView : {view} - after UpdateProperties..");
 		}
 
 		public virtual void UpdateValue(string property)

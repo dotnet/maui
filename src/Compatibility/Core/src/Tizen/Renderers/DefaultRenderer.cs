@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	}
 
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class FrameRenderer : DefaultRenderer { }
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EllipseRenderer : DefaultRenderer { }
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LineRenderer : DefaultRenderer { }

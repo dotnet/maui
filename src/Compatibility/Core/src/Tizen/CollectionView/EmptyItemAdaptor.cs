@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			var header = CreateHeaderView();
 			var footer = CreateFooterView();
-			var layout = new StackLayout();
+			var layout = new Controls.StackLayout();
 
 			if (header != null)
 			{
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return new TSize(widthConstraint, heightConstraint);
 		}
 
-		class EmptyView : StackLayout
+		class EmptyView : Controls.StackLayout
 		{
 			public EmptyView()
 			{
