@@ -44,11 +44,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
 		{
-			if (image.ImageSource == null)
-			{
-				return Task.CompletedTask;
-			}
-
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
@@ -79,7 +74,6 @@ namespace Microsoft.Maui.Handlers
 		void OnSetImageSource(Image? image)
 		{
 			NativeView.Image = image;
-			VirtualView.ImageSourceLoaded();
 		}
 	}
 }
