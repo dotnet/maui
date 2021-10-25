@@ -16,7 +16,7 @@
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
 
-            <Label FontSize="25" FontAttributes="Bold" Text="Edit recipe" />
+            <Label FontSize="25" FontAttributes="Bold" Text="Edit recipe" TextColor="{StaticResource Primary}" Margin="15" SemanticProperties.HeadingLevel="Level1"/>
             <Grid Grid.Row="1"  RowDefinitions="Auto,Auto,*,*,Auto">
                 <Entry Grid.Row="0"  Placeholder="Recipe Name" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeName, Mode=TwoWay}" IsSpellCheckEnabled="false" />
                 <Entry Grid.Row="1" Placeholder="Image URL" PlaceholderColor="{StaticResource Primary}" Text="{Binding ImageUrl, Mode=TwoWay}" IsSpellCheckEnabled="false" />
@@ -25,9 +25,9 @@
                 <Label Grid.Row="4" FontSize="Small" FormattedText="{Binding RecipeUrl}" FontAttributes="Italic" TextColor="Gray" />
             </Grid>
             <FlexLayout Grid.Row="2" AlignItems="Center" JustifyContent="SpaceEvenly">
-                <Button Padding="5" Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="LightGray" HorizontalOptions="FillAndExpand"/>
-                <Button Padding="5" Text="Delete" Command="{Binding DeleteCommand}" BackgroundColor="#BF2E2E" HorizontalOptions="FillAndExpand"/>
-                <Button Padding="5" Text="Update" Command="{Binding UpdateCommand}" HorizontalOptions="FillAndExpand"/>
+                <Button TextColor="Black" Padding="5" Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="LightGray" HorizontalOptions="FillAndExpand" SemanticProperties.HeadingLevel="Level2"/>
+                <Button TextColor="Black" Padding="5" Text="Delete" Command="{Binding DeleteCommand}" BackgroundColor="#BF2E2E" HorizontalOptions="FillAndExpand" SemanticProperties.HeadingLevel="Level2"/>
+                <Button TextColor="White" Padding="5" Text="Update" Command="{Binding UpdateCommand}" HorizontalOptions="FillAndExpand" SemanticProperties.HeadingLevel="Level2"/>
             </FlexLayout>
         </Grid>
     </ContentPage.Content>

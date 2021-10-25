@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-ios;net6.0-android</TargetFrameworks>
+    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <SingleProject>true</SingleProject>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
@@ -66,9 +66,7 @@
     <MauiImage Include="Resources\Images\search.png" BaseSize="23,23" />
     <MauiImage Include="Resources\Images\cookbook.png" BaseSize="23,23" />
   </ItemGroup>
-  
-  
-  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
+  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
 </Project>

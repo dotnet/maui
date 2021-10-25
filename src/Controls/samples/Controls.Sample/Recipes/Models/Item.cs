@@ -10,6 +10,6 @@ namespace Recipes.Models
         public string ImageUrl { get; set; }
         public List<Ingredient> Ingredients { get; set; }
         public string RecipeBody { get; set; }
-        public FormattedString RecipeUrl { get; set; }
+        public string RecipeUrl { get; set; }
     }
 }

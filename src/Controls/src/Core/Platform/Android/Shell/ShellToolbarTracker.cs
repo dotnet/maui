@@ -558,7 +558,15 @@ namespace Microsoft.Maui.Controls.Platform
 			var menu = toolbar.Menu;
 			var sortedItems = page.ToolbarItems.OrderBy(x => x.Order);
 
-			toolbar.UpdateMenuItems(sortedItems, MauiContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
+			// TODO RECIPES
+			Device.BeginInvokeOnMainThread(async () =>
+			{
+				if (!toolbar.IsAlive())
+					return;
+
+				await Task.Delay(10);
+				toolbar.UpdateMenuItems(sortedItems, MauiContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
+			});
 
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
@@ -614,7 +622,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			menu.Dispose();
+			// menu.Dispose();
 		}
 
 		void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)

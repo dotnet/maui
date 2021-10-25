@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Handlers
 		void OnSetImageSource(UIImage? obj)
 		{
 			NativeView.Image = obj;
+			VirtualView.InvalidateMeasure();
 		}
 
 		void OnWindowChanged(object? sender, EventArgs e)

@@ -16,7 +16,7 @@
         <ToolbarItem Text="New" Command="{Binding NewItemCommand}" />
     </ContentPage.ToolbarItems>
     <StackLayout Margin="20">
-        <Label Text="Your recipes" SemanticProperties.HeadingLevel="Level1" FontSize="30" FontAttributes="Bold"/>
+        <Label Text="Your recipes" SemanticProperties.HeadingLevel="Level1" FontSize="30" FontAttributes="Bold" />
         <vlv:VirtualListView
             x:Name="vMyRecipesListView"
             WidthRequest="350"

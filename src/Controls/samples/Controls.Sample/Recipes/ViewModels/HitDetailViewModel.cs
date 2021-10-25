@@ -8,6 +8,7 @@ using Recipes.Models;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui;
+using System.Collections.ObjectModel;
 
 namespace Recipes.ViewModels
 {
@@ -20,21 +21,38 @@ namespace Recipes.ViewModels
         string _hitId;
         string _recipeName;
         string _imageUrl;
-        string _ingredients;
+		string[] _ingredients;
         string _recipeBody;
-        FormattedString _recipeUrl;
+        string _recipeUrl;
+		public ObservableCollection<Ingredient> _ingredientCheckList;
 
-        public ICommand TapCommand { get; }
-        public Command AddItemCommand { get; }
+		bool _recipeNameVisible;
+		bool _imageUrlVisible;
+		bool _ingredientsVisible;
+		bool _recipeBodyVisible;
+		bool _recipeUrlVisible;
+		string _addRemoveItemText;
+		ICommand _addRemoveItemCommand;
 
-        public HitDetailViewModel()
+		public ICommand TapCommand { get; }
+		public Command AddItemCommand { get; }
+		public Command RemoveItemCommand { get; }
+
+		public HitDetailViewModel()
         {
             // Launcher.OpenAsync is provided by Microsoft.Maui.Essentials.
             TapCommand = new Command<string>(async (url) => await Launcher.OpenAsync(url));
             AddItemCommand = new Command(OnAddItem);
-        }
+			RemoveItemCommand = new Command(OnRemoveItem);
 
-        public string RecipeName
+			RecipeNameVisible = true;
+			ImageUrlVisible = true;
+			IngredientsVisible = true;
+			RecipeBodyVisible = true;
+			RecipeUrlVisible = true;
+		}
+
+		public string RecipeName
         {
             get => _recipeName;
             set => SetProperty(ref _recipeName, value);
@@ -46,7 +64,7 @@ namespace Recipes.ViewModels
             set => SetProperty(ref _imageUrl, value);
         }
 
-        public string Ingredients
+        public string[] Ingredients
         {
             get => _ingredients;
             set => SetProperty(ref _ingredients, value);
@@ -58,18 +76,72 @@ namespace Recipes.ViewModels
             set => SetProperty(ref _recipeBody, value);
         }
 
-        public FormattedString RecipeUrl
+        public string RecipeUrl
         {
             get => _recipeUrl;
             set => SetProperty(ref _recipeUrl, value);
-        }
+		}
 
-        private void OnAddItem()
+		public bool RecipeNameVisible
+		{
+			get => _recipeNameVisible;
+			set => SetProperty(ref _recipeNameVisible, value);
+		}
+
+		public bool ImageUrlVisible
+		{
+			get => _imageUrlVisible;
+			set => SetProperty(ref _imageUrlVisible, value);
+		}
+
+		public bool IngredientsVisible
+		{
+			get => _ingredientsVisible;
+			set => SetProperty(ref _ingredientsVisible, value);
+		}
+
+		public bool RecipeBodyVisible
+		{
+			get => _recipeBodyVisible;
+			set => SetProperty(ref _recipeBodyVisible, value);
+		}
+
+		public bool RecipeUrlVisible
+		{
+			get => _recipeUrlVisible;
+			set => SetProperty(ref _recipeUrlVisible, value);
+		}
+
+		public ObservableCollection<Ingredient> IngredientCheckList
+		{
+			get => _ingredientCheckList;
+			set => SetProperty(ref _ingredientCheckList, value);
+		}
+
+		public string AddRemoveItemText
+		{
+			get => _addRemoveItemText;
+			set => SetProperty(ref _addRemoveItemText, value);
+		}
+
+		public ICommand AddRemoveItemCommand
+		{
+			get => _addRemoveItemCommand;
+			set => SetProperty(ref _addRemoveItemCommand, value);
+		}
+
+
+		async void OnRemoveItem()
+		{
+			await DataStore.DeleteItemAsync(HitId);
+			AddRemoveItemText = "Add to My Recipes";
+			AddRemoveItemCommand = AddItemCommand;
+		}
+
+		async void OnAddItem()
         {
-
             List<Ingredient> ingredientList = new List<Ingredient>();
-            string[] ingredientStringList = Ingredients.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string ingredientString in ingredientStringList)
+            foreach (string ingredientString in Ingredients)
                 ingredientList.Add(new Ingredient { IngredientItem = ingredientString });
 
             Item newItem = new Item()
@@ -82,8 +154,10 @@ namespace Recipes.ViewModels
                 RecipeUrl = RecipeUrl
             };
 
-            DataStore.AddItemAsync(newItem);
-        }
+            await DataStore.AddItemAsync(newItem);
+			//AddRemoveItemText = "Remove from My Recipes";
+			//AddRemoveItemCommand = RemoveItemCommand;
+		}
 
         public string HitId
         {
@@ -97,6 +171,7 @@ namespace Recipes.ViewModels
                 LoadHitId(value);
             }
         }
+
 
         public void LoadHitId(string hitId)
         {
@@ -112,27 +187,51 @@ namespace Recipes.ViewModels
             }
         }
 
-        public void LoadHitDetails(Hit hit)
-        {
-            Title = Hit.Recipe.RecipeName;
+        public async void LoadHitDetails(Hit hit)
+		{
+			var emptyFormattedString = new FormattedString();
+			emptyFormattedString.Spans.Add(new Span { Text = "" });
+
+			Title = Hit.Recipe.RecipeName;
 
             RecipeName = Hit.Recipe.RecipeName;
             ImageUrl = Hit.Recipe.ImageUrl;
-            Ingredients = String.Join(Environment.NewLine, Hit.Recipe.Ingredients);
 
-            var recipeBodyFormattedString = new FormattedString();
-            recipeBodyFormattedString.Spans.Add(new Span { Text = "Click " });
+			//RecipeBody = Hit.Recipe;
+			Ingredients =  Hit.Recipe.Ingredients;
+			//var recipeBodyFormattedString = new FormattedString();
+			//         recipeBodyFormattedString.Spans.Add(new Span { Text = "Click " });
 
-            var recipeUrlFormattedString = new Span { Text = "here", TextColor = Colors.Blue, TextDecorations = TextDecorations.Underline };
-            recipeUrlFormattedString.GestureRecognizers.Add(new TapGestureRecognizer()
-            {
-                Command = TapCommand,
-                CommandParameter = Hit.Recipe.RecipeUrl
-            });
-            recipeBodyFormattedString.Spans.Add(recipeUrlFormattedString);
+			//         var recipeUrlFormattedString = new Span { Text = "here", TextColor = Colors.Blue, TextDecorations = TextDecorations.Underline };
+			//         recipeUrlFormattedString.GestureRecognizers.Add(new TapGestureRecognizer()
+			//         {
+			//             Command = TapCommand,
+			//             CommandParameter = Hit.Recipe.RecipeUrl
+			//         });
+			//         recipeBodyFormattedString.Spans.Add(recipeUrlFormattedString);
 
-            recipeBodyFormattedString.Spans.Add(new Span { Text = " to view full recipe." });
-            RecipeUrl = recipeBodyFormattedString;
-        }
+			//         recipeBodyFormattedString.Spans.Add(new Span { Text = " to view full recipe." });
+			//         RecipeUrl = recipeBodyFormattedString;
+
+			RecipeUrl = Hit.Recipe.RecipeUrl;
+			RecipeNameVisible = !String.IsNullOrEmpty(RecipeName);
+			ImageUrlVisible = !String.IsNullOrEmpty(ImageUrl);
+			IngredientsVisible = Hit.Recipe.Ingredients.Length > 0;
+			RecipeBodyVisible = !String.IsNullOrEmpty(RecipeBody);
+			RecipeUrlVisible = !(RecipeUrl == null || FormattedString.Equals(RecipeUrl, emptyFormattedString));
+
+			var item = await DataStore.GetItemAsync(HitId);
+
+			if (item == null)
+			{
+				AddRemoveItemText = "Add to My Recipes";
+				AddRemoveItemCommand = AddItemCommand;
+			}
+			else
+			{
+				AddRemoveItemText = "Remove from My Recipes";
+				AddRemoveItemCommand = RemoveItemCommand;
+			}
+		}
     }
 }

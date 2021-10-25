@@ -4,10 +4,10 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	public record PositionInfo
+	public partial record PositionInfo
 	{
 		internal static PositionInfo ForHeader(int position)
-			=> new () { Position = position, Kind = PositionKind.Header };
+			=> new() { Position = position, Kind = PositionKind.Header };
 
 		internal static PositionInfo ForFooter(int position)
 			=> new() { Position = position, Kind = PositionKind.Footer };

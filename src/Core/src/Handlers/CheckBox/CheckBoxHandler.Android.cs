@@ -1,5 +1,6 @@
 ﻿using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -17,6 +18,30 @@ namespace Microsoft.Maui.Handlers
 			nativeCheckBox.SetClipToOutline(true);
 
 			return nativeCheckBox;
+		}
+
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (!(widthConstraint < 44))
+			{
+				NativeView.SetMinimumWidth((int)Context.ToPixels(44));
+			}
+			else
+			{
+				NativeView.SetMinimumWidth(0);
+			}
+
+			if (!(heightConstraint < 44))
+			{
+				NativeView.SetMinimumHeight((int)Context.ToPixels(44));
+			}
+			else
+			{
+				NativeView.SetMinimumHeight(0);
+			}
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		protected override void ConnectHandler(AppCompatCheckBox nativeView)

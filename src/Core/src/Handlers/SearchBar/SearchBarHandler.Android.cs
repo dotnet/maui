@@ -1,6 +1,8 @@
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 using static AndroidX.AppCompat.Widget.SearchView;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -21,6 +23,27 @@ namespace Microsoft.Maui.Handlers
 			searchView.SetIconifiedByDefault(false);
 
 			_editText = searchView.GetFirstChildOfType<EditText>();
+
+			if (QueryEditor?.LayoutParameters is LinearLayout.LayoutParams layoutParams)
+			{
+				layoutParams.Height = LinearLayout.LayoutParams.MatchParent;
+				layoutParams.Gravity = GravityFlags.FillVertical;
+				QueryEditor.SetMinWidth(0);
+			}
+
+			if (QueryEditor?.Parent is View v)
+			{
+				v.SetPadding(0, 0, 0, 0);
+			}
+
+			var searchCloseButtonIdentifier = Resource.Id.search_close_btn;
+			if (searchCloseButtonIdentifier > 0)
+			{
+				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
+
+				if (image != null)
+					image.SetMinimumWidth((int?)searchView.Context?.ToPixels(44) ?? 0);
+			}
 
 			return searchView;
 		}

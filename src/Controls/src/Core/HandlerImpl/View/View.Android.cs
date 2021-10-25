@@ -10,5 +10,17 @@ namespace Microsoft.Maui.Controls
 		{
 			this.AddOrRemoveControlsAccessibilityDelegate();
 		}
+
+		public static void MapIsInAccessibleTree(IViewHandler handler, View view)
+		{
+			Platform.AutomationPropertiesProvider.SetImportantForAccessibility(
+				handler.NativeView as Android.Views.View, view);
+		}
+
+		public static void MapExcludedWithChildren(IViewHandler handler, View view)
+		{
+			Platform.AutomationPropertiesProvider.SetImportantForAccessibility(
+				handler.NativeView as Android.Views.View, view);
+		}
 	}
 }

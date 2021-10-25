@@ -7,8 +7,14 @@ namespace Microsoft.Maui
 		bool SectionHasHeader(int sectionIndex);
 		bool SectionHasFooter(int sectionIndex);
 
-		IView CreateView(PositionKind kind, object data, int sectionIndex, int itemIndex = -1);
-		void RecycleView(PositionKind kind, object data, IView view, int sectionIndex, int itemIndex = -1);
-		string GetReuseId(PositionKind kind, object data, int sectionIndex, int itemIndex);
+		IView CreateView(PositionInfo position, object data);
+		void RecycleView(PositionInfo position, object data, IView view);
+		string GetReuseId(PositionInfo position, object data);
+
+		void ViewDetached(PositionInfo position, IView view)
+		{ }
+
+		void ViewAttached(PositionInfo position, IView view)
+		{ }
 	}
 }

@@ -4,14 +4,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class VisualElement
 	{
-		public static IPropertyMapper<IView, ViewHandler> ControlsViewMapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IView, ViewHandler> VisualElementMapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(BackgroundColor)] = MapBackgroundColor,
 		};
 
 		public static void RemapForControls()
-		{
-			ViewHandler.ViewMapper = ControlsViewMapper;
+{
+			ViewHandler.ViewMapper = VisualElementMapper;
 		}
 
 		public static void MapBackgroundColor(ViewHandler handler, IView view)

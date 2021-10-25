@@ -7,6 +7,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -59,6 +60,31 @@ namespace Microsoft.Maui.Handlers
 			_touchListener.Handler = null;
 			_actionListener.Handler = null;
 		}
+
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (!(widthConstraint < 44))
+			{
+				NativeView.SetMinimumWidth((int)Context.ToPixels(44));
+			}
+			else
+			{
+				NativeView.SetMinimumWidth(0);
+			}
+
+			if (!(heightConstraint < 44))
+			{
+				NativeView.SetMinimumHeight((int)Context.ToPixels(44));
+			}
+			else
+			{
+				NativeView.SetMinimumHeight(0);
+			}
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
 
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
 			VirtualView.UpdateText(e);
