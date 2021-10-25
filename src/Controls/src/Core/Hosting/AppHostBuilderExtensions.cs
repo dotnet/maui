@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
 			// Update the mappings for IView/View to work specifically for Controls
+			Element.RemapForControls();
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
