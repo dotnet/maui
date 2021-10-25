@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
@@ -87,8 +86,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 			}
 		}
-
-		public string GetHash(string input) => Crc64.GetHash(input);
 
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
