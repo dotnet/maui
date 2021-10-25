@@ -11,52 +11,42 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2.5*" />
-            <RowDefinition Height="7.5*" />
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="7*" />
         </Grid.RowDefinitions>
         <Grid Grid.Column="0" Grid.Row="0" Margin="0,0,0,10">
             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill"  IsVisible="{Binding ImageUrlVisible}" />
             <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" TextColor="Black" BackgroundColor="White" FontSize="24" Padding="15" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" MaxLines="3" />
         </Grid>
-        <ScrollView Margin="0" Grid.Row="1">
-            <StackLayout Grid.Column="0" Grid.Row="1" Margin="0">
-                <Frame CornerRadius="10" Margin="0">
-                    <StackLayout Margin="0">
-                        <Label Text="Ingredients" Padding="0,10,0,5" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
-                        <StackLayout  BindableLayout.ItemsSource="{Binding IngredientCheckList}" Margin="0,5"
-                                      IsVisible="{Binding IngredientsVisible}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate>
-                                    <StackLayout Orientation="Horizontal">
-                                        <CheckBox SemanticProperties.Description="{Binding IngredientItem}" Color="{StaticResource Primary}" 
-                                                  IsChecked="{Binding IngredientChecked}"/>
-                                        <Label AutomationProperties.IsInAccessibleTree="False" Text="{Binding IngredientItem}" 
-                                               TextColor="Black" VerticalOptions="Center"/>
-                                    </StackLayout>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </StackLayout>
-                    </StackLayout>
-                </Frame>
-                <Frame CornerRadius="10"> 
-                    <StackLayout>
-                        <Label Text="Recipe" Padding="0,10,0,5" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
+        <!-- TODO: Fix ScrollView issue - currently scrolls over above controls -->
+        <ScrollView Grid.Row="1" >
+            <StackLayout BackgroundColor="White">
+                <Label Text="Ingredients" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
+                <StackLayout  BindableLayout.ItemsSource="{Binding IngredientCheckList}" Padding="15,0" IsVisible="{Binding IngredientsVisible}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Horizontal">
+                                <CheckBox SemanticProperties.Description="{Binding IngredientItem}" Color="{StaticResource Primary}" IsChecked="{Binding IngredientChecked}"/>
+                                <Label AutomationProperties.IsInAccessibleTree="False" Text="{Binding IngredientItem}" TextColor="Black" VerticalOptions="Center"/>
+                            </StackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
 
-                        <StackLayout  BindableLayout.ItemsSource="{Binding RecipeList}" Margin="0,5">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate>
-                                    <Label Text="{Binding .}" TextColor="Black" VerticalOptions="Center"/>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </StackLayout>
+                <Label Text="Recipe" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
+                <StackLayout  BindableLayout.ItemsSource="{Binding RecipeList}" Padding="20,5">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding .}" TextColor="Black" VerticalOptions="Center"/>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
 
-                        <Label TextColor="Black" FontAttributes="Italic" TextDecorations="Underline" Text="Click here to view full recipe." FontSize="Small" IsVisible="{Binding RecipeUrlVisible}">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="OpenUrl"></TapGestureRecognizer>
-                            </Label.GestureRecognizers>
-                        </Label>
-                    </StackLayout>
-                </Frame>
+                <Label SemanticProperties.HeadingLevel="Level2" TextColor="Black" FontAttributes="Italic" TextDecorations="Underline" Text="Click here to view full recipe." FontSize="Small" IsVisible="{Binding RecipeUrlVisible}" Padding="20,5">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="OpenUrl"></TapGestureRecognizer>
+                    </Label.GestureRecognizers>
+                </Label>
             </StackLayout>
         </ScrollView>
     </Grid>
