@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,8 +9,6 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	
-
 	internal class FormsListView : Microsoft.UI.Xaml.Controls.ListView, IEmptyView
 	{
 		ContentControl _emptyViewContentControl;
@@ -26,12 +25,28 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static readonly DependencyProperty EmptyViewVisibilityProperty =
 			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility),
-				typeof(FormsListView), new PropertyMetadata(WVisibility.Collapsed));
+				typeof(FormsListView), new PropertyMetadata(WVisibility.Collapsed, EmptyViewVisibilityChanged));
+
+		static void EmptyViewVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (d is FormsListView listView)
+			{
+				// Update this manually; normally we'd just bind this, but TemplateBinding doesn't seem to work
+				// for WASDK right now.
+				listView.UpdateEmptyViewVisibility((WVisibility)e.NewValue);
+			}
+		}
 
 		public WVisibility EmptyViewVisibility
 		{
-			get { return (WVisibility)GetValue(EmptyViewVisibilityProperty); }
-			set { SetValue(EmptyViewVisibilityProperty, value); }
+			get 
+			{ 
+				return (WVisibility)GetValue(EmptyViewVisibilityProperty); 
+			}
+			set 
+			{
+				SetValue(EmptyViewVisibilityProperty, value); 
+			}
 		}
 
 		public void SetEmptyView(FrameworkElement emptyView, View formsEmptyView)
@@ -42,6 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_emptyViewContentControl != null)
 			{
 				_emptyViewContentControl.Content = emptyView;
+				UpdateEmptyViewVisibility(EmptyViewVisibility);
 			}
 		}
 
@@ -54,6 +70,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_emptyView != null)
 			{
 				_emptyViewContentControl.Content = _emptyView;
+				UpdateEmptyViewVisibility(EmptyViewVisibility);
 			}
 		}
 
@@ -73,6 +90,14 @@ namespace Microsoft.Maui.Controls.Platform
 			base.PrepareContainerForItemOverride(element, item);
 		}
 
-		
+		void UpdateEmptyViewVisibility(WVisibility visibility)
+		{
+			if (_emptyViewContentControl == null)
+			{
+				return;
+			}
+
+			_emptyViewContentControl.Visibility = visibility;
+		}
 	}
 }

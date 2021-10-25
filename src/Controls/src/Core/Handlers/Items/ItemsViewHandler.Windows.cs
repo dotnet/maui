@@ -376,7 +376,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		FrameworkElement RealizeEmptyView(View view)
 		{
 			_formsEmptyView = view ?? throw new ArgumentNullException(nameof(view));
-			return view.GetOrCreateHandler(MauiContext).ContainerView as FrameworkElement;
+
+			var handler = view.GetOrCreateHandler(MauiContext);
+			var nativeView = handler.ContainerView ?? handler.NativeView;
+
+			return nativeView as FrameworkElement;
 		}
 
 		internal void HandleScroll(ScrollViewer scrollViewer)

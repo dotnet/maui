@@ -42,7 +42,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static readonly DependencyProperty EmptyViewVisibilityProperty =
 			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility),
-				typeof(FormsGridView), new PropertyMetadata(WVisibility.Collapsed));
+				typeof(FormsGridView), new PropertyMetadata(WVisibility.Collapsed, EmptyViewVisibilityChanged));
+
+		static void EmptyViewVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (d is FormsGridView gridView)
+			{
+				// Update this manually; normally we'd just bind this, but TemplateBinding doesn't seem to work
+				// for WASDK right now.
+				gridView.UpdateEmptyViewVisibility((WVisibility)e.NewValue);
+			}
+		}
 
 		public WVisibility EmptyViewVisibility
 		{
@@ -119,6 +129,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_emptyViewContentControl != null)
 			{
 				_emptyViewContentControl.Content = emptyView;
+				UpdateEmptyViewVisibility(EmptyViewVisibility);
 			}
 		}
 
@@ -131,6 +142,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_emptyView != null && _emptyViewContentControl != null)
 			{
 				_emptyViewContentControl.Content = _emptyView;
+				UpdateEmptyViewVisibility(EmptyViewVisibility);
 			}
 		}
 
@@ -148,6 +160,16 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			GroupFooterItemTemplateContext.EnsureSelectionDisabled(element, item);
 			base.PrepareContainerForItemOverride(element, item);
+		}
+
+		void UpdateEmptyViewVisibility(WVisibility visibility)
+		{
+			if (_emptyViewContentControl == null)
+			{
+				return;
+			}
+
+			_emptyViewContentControl.Visibility = visibility;
 		}
 	}
 }
