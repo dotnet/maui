@@ -9,11 +9,15 @@
     -->
     <Application.Resources>
         <ResourceDictionary>
-            <Color x:Key="Primary">#2BB0ED</Color>
+            <Color x:Key="Primary">#176515</Color>
             <LinearGradientBrush x:Key="BlueGradient" StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Color="White" Offset="0" />
                 <GradientStop Color="{StaticResource Primary}" Offset="1.0" />
             </LinearGradientBrush>
+            <RadialGradientBrush x:Key="BlueGradientRadial" Center="0,0">
+                <GradientStop Color="White" Offset="0.5" />
+                <GradientStop Color="{StaticResource Primary}" Offset="1.0" />
+            </RadialGradientBrush>
             <Style TargetType="Button" x:Key="DefaultButtonStyle">
                 <Setter Property="MinimumHeightRequest" Value="44"></Setter>
                 <Setter Property="FontSize" Value="16"/>
@@ -28,7 +32,7 @@
                             </VisualState>
                             <VisualState x:Name="Disabled">
                                 <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="#2BB0EDF3" />
+                                    <Setter Property="BackgroundColor" Value="#176515F3" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -56,16 +60,13 @@
                 <Setter Property="MinimumHeightRequest" Value="44"></Setter>
             </Style>
 
-
             <Style TargetType="Button" x:Key="RecipeCategoryButtonStyle" BasedOn="{StaticResource DefaultButtonStyle}">
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{StaticResource Primary}"/>
+                <Setter Property="Background" Value="#F7F7F7"/>
                 <Setter Property="ContentLayout" Value="Top,0"/>
                 <Setter Property="FontAttributes" Value="Bold"/>
-                <Setter Property="Padding" Value="5,10"/>
-
-                <!-- For accessibility contrast reasons do not make this font size any smaller or change the background -->
-                <Setter Property="Background" Value="#0000FF"></Setter>
-                <Setter Property="FontSize" Value="27"></Setter>
+                <Setter Property="Padding" Value="0,10"/>
+                <Setter Property="FontSize" Value="24"></Setter>
             </Style>
 
         </ResourceDictionary>

@@ -16,7 +16,7 @@
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
 
-            <Label FontSize="25" FontAttributes="Bold" Text="New recipe" SemanticProperties.HeadingLevel="Level1" Margin="15" TextColor="Black"/>
+            <Label FontSize="25" FontAttributes="Bold" Text="New recipe" SemanticProperties.HeadingLevel="Level1" Margin="15" TextColor="{StaticResource Primary}"/>
             <ScrollView Grid.Row="1">
                 <StackLayout>
                     <Entry Placeholder="Recipe Name" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeName, Mode=TwoWay}" IsSpellCheckEnabled="false" />
@@ -27,7 +27,7 @@
             </ScrollView>
             <FlexLayout Grid.Row="2" AlignItems="Center" JustifyContent="SpaceEvenly">
                 <Button TextColor="Black" Text="Cancel" SemanticProperties.HeadingLevel="Level2" Command="{Binding CancelCommand}" BackgroundColor="LightGray" HorizontalOptions="FillAndExpand"/>
-                <Button TextColor="Black" Text="Save" SemanticProperties.HeadingLevel="Level2" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"/>
+                <Button TextColor="White" Text="Save" SemanticProperties.HeadingLevel="Level2" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"/>
             </FlexLayout>
         </Grid>
     </ContentPage.Content>

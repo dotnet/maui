@@ -11,19 +11,19 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*" />
-            <RowDefinition Height="8*" />
+            <RowDefinition Height="2.5*" />
+            <RowDefinition Height="7.5*" />
         </Grid.RowDefinitions>
         <Grid Grid.Column="0" Grid.Row="0" Margin="0,0,0,10">
-            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" IsVisible="{Binding ImageUrlVisible}" />
-            <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" MaxLines="3" />
+            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill"  IsVisible="{Binding ImageUrlVisible}" />
+            <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" TextColor="Black" BackgroundColor="White" FontSize="24" Padding="15" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" MaxLines="3" />
         </Grid>
-        <ScrollView Grid.Column="0" Grid.Row="1" Padding="0,5,0,0">
-            <StackLayout>
-                <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False" Margin="0,5">
-                    <StackLayout Margin="2">
-                        <Label Text="Ingredients:" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
-                        <StackLayout  BindableLayout.ItemsSource="{Binding IngredientCheckList}"
+        <ScrollView Margin="0" Grid.Row="1">
+            <StackLayout Grid.Column="0" Grid.Row="1" Margin="0">
+                <Frame CornerRadius="10" Margin="0">
+                    <StackLayout Margin="0">
+                        <Label Text="Ingredients" Padding="0,10,0,5" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
+                        <StackLayout  BindableLayout.ItemsSource="{Binding IngredientCheckList}" Margin="0,5"
                                       IsVisible="{Binding IngredientsVisible}">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate>
@@ -38,11 +38,11 @@
                         </StackLayout>
                     </StackLayout>
                 </Frame>
-                <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False">
-                    <StackLayout Margin="2">
-                        <Label Text="Recipe:" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
+                <Frame CornerRadius="10"> 
+                    <StackLayout>
+                        <Label Text="Recipe" Padding="0,10,0,5" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
 
-                        <StackLayout  BindableLayout.ItemsSource="{Binding RecipeList}">
+                        <StackLayout  BindableLayout.ItemsSource="{Binding RecipeList}" Margin="0,5">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate>
                                     <Label Text="{Binding .}" TextColor="Black" VerticalOptions="Center"/>
@@ -50,13 +50,11 @@
                             </BindableLayout.ItemTemplate>
                         </StackLayout>
 
-                        <Label TextColor="Black" TextDecorations="Underline" Text="Click here to view full recipe." FontSize="Small" IsVisible="{Binding RecipeUrlVisible}">
+                        <Label TextColor="Black" FontAttributes="Italic" TextDecorations="Underline" Text="Click here to view full recipe." FontSize="Small" IsVisible="{Binding RecipeUrlVisible}">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="OpenUrl"></TapGestureRecognizer>
                             </Label.GestureRecognizers>
                         </Label>
-                        <!--<Label Text="{Binding RecipeBody}" IsVisible="{Binding RecipeBodyVisible}" TextColor="Black"/>
-                        <Label FormattedText="{Binding RecipeUrl}" IsVisible="{Binding RecipeUrlVisible}" TextColor="Black"/>-->
                     </StackLayout>
                 </Frame>
             </StackLayout>
