@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui;
+﻿/*
+using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 
@@ -57,3 +58,4 @@ namespace Maui.Controls.Sample.Controls
 		}
 	}
 }
+*/

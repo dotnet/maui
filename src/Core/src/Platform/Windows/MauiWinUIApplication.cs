@@ -27,9 +27,7 @@ namespace Microsoft.Maui
 
 			var winuiWndow = CreateNativeWindow(args, applicationContext);
 
-			MainWindow = winuiWndow;
-
-			MainWindow.Activate();
+			winuiWndow.Activate();
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
@@ -55,8 +53,6 @@ namespace Microsoft.Maui
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
-
-		public UI.Xaml.Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

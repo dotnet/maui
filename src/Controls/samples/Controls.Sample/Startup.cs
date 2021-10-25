@@ -40,6 +40,7 @@ namespace Maui.Controls.Sample
 
 			if (UseMauiGraphicsSkia)
 			{
+				/*
 				appBuilder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<GraphicsView, SkiaGraphicsViewHandler>();
@@ -52,6 +53,7 @@ namespace Maui.Controls.Sample
 					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
 					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
 				});
+				*/
 			}
 
 			appBuilder
