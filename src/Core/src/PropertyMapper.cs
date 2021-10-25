@@ -103,14 +103,29 @@ namespace Microsoft.Maui
 
 		public IEnumerable<string> GetKeys()
 		{
+			List<string> keys = new List<string>();
 			foreach (var key in _mapper.Keys)
+			{
+				if (keys.Contains(key))
+					continue;
+
+				keys.Add(key);
 				yield return key;
+			}
 
 			if (Chained is not null)
 			{
 				foreach (var chain in Chained)
+				{
 					foreach (var key in chain.GetKeys())
+					{
+						if (keys.Contains(key))
+							continue;
+
+						keys.Add(key);
 						yield return key;
+					}
+				}
 			}
 		}
 	}

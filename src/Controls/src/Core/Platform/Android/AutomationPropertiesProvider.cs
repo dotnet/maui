@@ -143,6 +143,12 @@ namespace Microsoft.Maui.Controls.Platform
 			SetBasicContentDescription(control, element, defaultContentDescription);
 		}
 
+		internal static void SetImportantForAccessibility(AView control, Element element)
+		{
+			ImportantForAccessibility? ignore = null;
+			SetImportantForAccessibility(control, element, ref ignore);
+		}
+
 		internal static void SetImportantForAccessibility(AView control, Element element, ref ImportantForAccessibility? defaultImportantForAccessibility)
 		{
 			if (element == null || control == null)
