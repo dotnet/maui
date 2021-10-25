@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				child.NativeView.SetBackgroundColor(new AColor(color));
 			}
+			child.NativeView.RemoveFromParent();
+			AddView(child.NativeView);
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

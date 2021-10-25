@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			// reflection will stop working
 			ResourceManager.Init(null);
 
-			Forms.Init(new MauiContext(MauiApplication.Current.Services, this), bundle);
+			Forms.Init(new MauiContext(MauiApplication.Current.Services, this));
 			FormsMaps.Init(this, bundle);
 
 			ViewHandler.ViewMapper

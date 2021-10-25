@@ -319,16 +319,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				throw new NotImplementedException();
 			}
-
-			public string GetHash(string input)
-			{
-				throw new NotImplementedException();
-			}
-
-			public string GetMD5Hash(string input)
-			{
-				throw new NotImplementedException();
-			}
 		}
 	}
 }

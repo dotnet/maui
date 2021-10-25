@@ -67,7 +67,7 @@ namespace Microsoft.Maui
 				image = contentImage;
 			}
 			// This means the users image hasn't loaded yet but we still want to setup the container for the user
-			else if (button.ImageSource != null)
+			else if (button is IImageButton ib && ib.Source != null)
 			{
 				image = nativeButton.GetImage() ?? new();
 			}

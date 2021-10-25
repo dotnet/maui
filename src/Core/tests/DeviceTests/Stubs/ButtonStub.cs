@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class ButtonStub : StubBase, IButton, IText
+	public partial class ButtonStub : StubBase, IButton, ITextButton, IImageButton
 	{
 		public string Text { get; set; }
 
@@ -16,6 +16,16 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Thickness Padding { get; set; }
 
 		public IImageSource ImageSource { get; set; }
+
+		Aspect IImage.Aspect => Aspect.Fill;
+
+		bool IImage.IsOpaque => true;
+
+		IImageSource IImageSourcePart.Source => ImageSource;
+
+		bool IImageSourcePart.IsAnimationPlaying => false;
+
+		void IImageSourcePart.UpdateIsLoading(bool isLoading) { }
 
 		public event EventHandler Pressed;
 		public event EventHandler Released;
