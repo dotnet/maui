@@ -4,6 +4,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
+		
+		protected override Tizen.UIExtensions.NUI.CollectionView CreateNativeView()
+		{
+			throw new NotImplementedException();
+		}
+
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
 			handler.PlatformView.UpdateAdaptor(itemsView);

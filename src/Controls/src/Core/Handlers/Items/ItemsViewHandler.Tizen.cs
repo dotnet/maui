@@ -5,13 +5,13 @@ using TCollectionView = Tizen.UIExtensions.ElmSharp.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, TCollectionView> where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, Tizen.UIExtensions.NUI.CollectionView> where TItemsView : ItemsView
 	{
 		protected ItemsViewHandler(PropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper)
 		{
 		}
 
-		protected override TCollectionView CreatePlatformView()
+		protected override Tizen.UIExtensions.NUI.CollectionView CreatePlatformView()
 		{
 			return new TCollectionView(PlatformParent);
 		}

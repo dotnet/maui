@@ -4,6 +4,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
+		
+		protected override Tizen.UIExtensions.NUI.CollectionView CreateNativeView()
+		{
+			throw new NotImplementedException();
+		}
+
 		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
 			if (itemsView.SelectionMode != SelectionMode.None && itemsView.SelectedItem != null)
