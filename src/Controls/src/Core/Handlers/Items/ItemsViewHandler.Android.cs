@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView?.UpdateSource();
+			handler._mauiRecyclerView?.UpdateItemsSource();
 		}
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)

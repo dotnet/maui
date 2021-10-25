@@ -8,7 +8,7 @@
 
 		public void UpdateItemTemplate();
 
-		public void UpdateSource();
+		public void UpdateItemsSource();
 
 		public void UpdateScrollingMode();
 

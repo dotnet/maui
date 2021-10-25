@@ -273,12 +273,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int GetHeight(ViewGroup parent)
 		{
 			var headerFooterHeight = parent.Context.ToPixels(_headerHeight + _footerHeight);
-			return Math.Abs((int)(parent.MeasuredHeight - headerFooterHeight));
+			return Math.Abs((int)(parent.Height - headerFooterHeight));
 		}
 
 		int GetWidth(ViewGroup parent)
 		{
-			return parent.MeasuredWidth;
+			return parent.Width;
 		}
 
 		void UpdateHeaderFooterHeight(object item, bool isHeader)

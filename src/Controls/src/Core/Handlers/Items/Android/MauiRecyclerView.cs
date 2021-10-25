@@ -118,12 +118,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateAdapter();
 		}
 
-		public void UpdateSource()
-		{
-			UpdateItemsSource();
-			UpdateLayoutManager();
-		}
-
 		public void UpdateScrollingMode()
 		{
 			UpdateItemsUpdatingScrollMode();
@@ -224,6 +218,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				SwapAdapter(ItemsViewAdapter, true);
 			}
+			
+			UpdateEmptyView();
 
 			oldItemViewAdapter?.Dispose();
 		}
@@ -290,7 +286,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			recyclerView.UpdateBackground(background);
 		}
 
-		protected virtual void UpdateItemsSource()
+		public virtual void UpdateItemsSource()
 		{
 			if (ItemsView == null)
 			{
