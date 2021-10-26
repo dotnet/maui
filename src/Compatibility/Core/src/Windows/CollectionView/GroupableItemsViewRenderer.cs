@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 

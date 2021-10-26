@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal interface IEmptyView
 	{

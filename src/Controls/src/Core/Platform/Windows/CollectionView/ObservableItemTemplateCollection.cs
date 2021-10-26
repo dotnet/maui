@@ -4,20 +4,21 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>
 	{
 		readonly IList _itemsSource;
 		readonly DataTemplate _itemTemplate;
 		readonly BindableObject _container;
+		readonly IMauiContext _mauiContext;
 		readonly double _itemHeight;
 		readonly double _itemWidth;
 		readonly Thickness _itemSpacing;
 		readonly INotifyCollectionChanged _notifyCollectionChanged;
 
 		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container, 
-			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null)
+			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null)
 		{
 			if (!(itemsSource is INotifyCollectionChanged notifyCollectionChanged))
 			{
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_itemsSource = itemsSource;
 			_itemTemplate = itemTemplate;
 			_container = container;
-
+			_mauiContext = mauiContext;
 			if (itemHeight.HasValue)
 				_itemHeight = itemHeight.Value;
 
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				// We're using this as a source for a ListViewBase, and we need INCC to work. So ListViewBase is going
 				// to iterate over the entire source list right off the bat, no matter what we do. Creating one
 				// ItemTemplateContext per item in the collection is unavoidable. Luckily, ITC is pretty cheap.
-				Add(new ItemTemplateContext(itemTemplate, itemsSource[n], container, _itemHeight, _itemWidth, _itemSpacing));
+				Add(new ItemTemplateContext(itemTemplate, itemsSource[n], container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
 			}
 
 			_notifyCollectionChanged.CollectionChanged += InnerCollectionChanged;
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			for(int n = 0; n < count; n++)
 			{
-				Insert(startIndex, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing));
+				Insert(startIndex, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
 			}
 		}
 
@@ -153,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					var index = args.OldStartingIndex + n;
 					var oldItem = this[index];
-					var newItem = new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing);
+					var newItem = new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext);
 					Items[index] = newItem;
 					var update = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItem, oldItem, index);
 					OnCollectionChanged(update);
@@ -172,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Items.Clear();
 			for (int n = 0; n < _itemsSource.Count; n++)
 			{
-				Items.Add(new ItemTemplateContext(_itemTemplate, _itemsSource[n], _container, _itemHeight, _itemWidth, _itemSpacing));
+				Items.Add(new ItemTemplateContext(_itemTemplate, _itemsSource[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
 			}
 
 			var reset = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);

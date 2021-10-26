@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml.Controls;
 using UWPListViewSelectionMode = Microsoft.UI.Xaml.Controls.ListViewSelectionMode;
 using UWPSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;

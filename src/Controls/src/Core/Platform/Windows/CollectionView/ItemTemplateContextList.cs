@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ItemTemplateContextList : IReadOnlyList<ItemTemplateContext>
 	{
 		readonly IList _itemsSource;
 		readonly DataTemplate _itemTemplate;
 		readonly BindableObject _container;
+		readonly IMauiContext _mauiContext;
 		readonly double _itemHeight;
 		readonly double _itemWidth;
 		readonly Thickness _itemSpacing;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_itemTemplateContexts[index] == null)
 				{
 					_itemTemplateContexts[index] = new ItemTemplateContext(_itemTemplate, _itemsSource[index], 
-						_container, _itemHeight, _itemWidth, _itemSpacing);
+						_container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext);
 				}
 
 				return _itemTemplateContexts[index];
@@ -31,12 +32,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 
 		public ItemTemplateContextList(IList itemsSource, DataTemplate itemTemplate, BindableObject container,
-			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null)
+			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null)
 		{
 			_itemsSource = itemsSource;
 			_itemTemplate = itemTemplate;
 			_container = container;
-
+			_mauiContext = mauiContext;
 			if (itemHeight.HasValue)
 				_itemHeight = itemHeight.Value;
 
