@@ -92,6 +92,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (NativeVersion.IsAtLeast(26))
 					view.SetFocusable(ViewFocusability.FocusableAuto);
+
+				if (view is ViewGroup vg)
+					vg.DescendantFocusability = DescendantFocusability.BeforeDescendants;
 			}
 
 			return source.Task;
@@ -108,8 +111,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (NativeVersion.IsAtLeast(26))
 					view.SetFocusable(ViewFocusability.NotFocusable);
+
+				if (view is ViewGroup vg)
+					vg.DescendantFocusability = DescendantFocusability.BlockDescendants;
 			}
 
+			
 			_navModel.PushModal(modal);
 
 			Task presentModal = PresentModal(modal, animated);
