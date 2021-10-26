@@ -16,6 +16,7 @@ using WASDKApp = Microsoft.UI.Xaml.Application;
 using WRect = Windows.Foundation.Rect;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.Maui.Controls;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -43,6 +44,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override ListViewBase CreateNativeView()
 		{
 			return SelectListViewBase();
+		}
+
+		protected override void ConnectHandler(ListViewBase nativeView)
+		{
+			base.ConnectHandler(nativeView);
+			VirtualView.ScrollToRequested += ScrollToRequested;
+		}
+
+		protected override void DisconnectHandler(ListViewBase nativeView)
+		{
+			VirtualView.ScrollToRequested -= ScrollToRequested;
+			base.DisconnectHandler(nativeView);
 		}
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView) 
@@ -77,14 +90,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			handler.NativeView.UpdateFlowDirection(itemsView);
 		}
 
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			handler.NativeView.UpdateVisibility(itemsView);
 		}
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
@@ -261,16 +277,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void UpdateItemsLayout()
 		{
-			if (_scrollViewer != null)
-				_scrollViewer.ViewChanged -= OnScrollViewChanged;
+			//if (_scrollViewer != null)
+			//	_scrollViewer.ViewChanged -= ScrollViewChanged;
 
-			if (ListViewBase != null)
-			{
-				ListViewBase.ItemsSource = null;
-				VirtualView.Handler = null;
-			}
+			//if (ListViewBase != null)
+			//{
+			//	ListViewBase.ItemsSource = null;
+			//	VirtualView.Handler = null;
+			//}
 
-			VirtualView.ToNative(MauiContext);
+			//VirtualView.ToNative(MauiContext);
 			ListViewBase.IsSynchronizedWithCurrentItem = false;
 
 			FindScrollViewer(ListViewBase);
@@ -346,10 +362,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer)
 		{
 			_scrollViewer = scrollViewer;
-			_scrollViewer.ViewChanged += OnScrollViewChanged;
+			_scrollViewer.ViewChanged += ScrollViewChanged;
 		}
 
-		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+		void ScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
 			HandleScroll(_scrollViewer);
 		}
@@ -485,6 +501,74 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				default:
 					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
 			};
+		}
+
+		async void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
+		{
+			await ScrollTo(args);
+		}
+
+		protected virtual async Task ScrollTo(ScrollToRequestEventArgs args)
+		{
+			if (!(Control is ListViewBase list))
+			{
+				return;
+			}
+
+			var item = FindBoundItem(args);
+
+			if (item == null)
+			{
+				// Item wasn't found in the list, so there's nothing to scroll to
+				return;
+			}
+
+			if (args.IsAnimated)
+			{
+				await ScrollHelpers.AnimateToItemAsync(list, item, args.ScrollToPosition);
+			}
+			else
+			{
+				await ScrollHelpers.JumpToItemAsync(list, item, args.ScrollToPosition);
+			}
+		}
+
+		object FindBoundItem(ScrollToRequestEventArgs args)
+		{
+			if (args.Mode == ScrollToMode.Position)
+			{
+				if (args.Index >= ItemCount)
+				{
+					return null;
+				}
+
+				return GetItem(args.Index);
+			}
+
+			if (Element.ItemTemplate == null)
+			{
+				return args.Item;
+			}
+
+			for (int n = 0; n < ItemCount; n++)
+			{
+				if (CollectionViewSource.View[n] is ItemTemplateContext pair)
+				{
+					if (pair.Item == args.Item)
+					{
+						return CollectionViewSource.View[n];
+					}
+				}
+			}
+
+			return null;
+		}
+
+		protected virtual int ItemCount => CollectionViewSource.View.Count;
+
+		protected virtual object GetItem(int index)
+		{
+			return CollectionViewSource.View[index];
 		}
 	}
 }

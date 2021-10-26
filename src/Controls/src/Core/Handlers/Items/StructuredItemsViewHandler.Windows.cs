@@ -27,12 +27,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-		
+			handler.UpdateItemsLayout();
 		}
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-		
+			
 		}
 
 		protected override ListViewBase SelectListViewBase()
