@@ -92,16 +92,14 @@ namespace Microsoft.Maui.Handlers
 			{
 				NativeView.SetImage(null, UIControlState.Normal);
 			}
-
-			VirtualView.ImageSourceLoaded();
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IButton image) =>
+		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
 		{
-			if (image.ImageSource == null)
+			if (image.Source == null)
 			{
 				return Task.CompletedTask;
 			}

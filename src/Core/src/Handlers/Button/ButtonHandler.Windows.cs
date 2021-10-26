@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 		static UI.Xaml.Media.Brush? DefaultBackground;
 
 		PointerEventHandler? _pointerPressedHandler;
+		PointerEventHandler? _pointerReleasedHandler;
 
 		protected override MauiButton CreateNativeView() 
 			=> new MauiButton();
@@ -26,9 +27,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiButton nativeView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
+			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
 
 			nativeView.Click += OnClick;
 			nativeView.AddHandler(UI.Xaml.UIElement.PointerPressedEvent, _pointerPressedHandler, true);
+			nativeView.AddHandler(UI.Xaml.UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
 
 			base.ConnectHandler(nativeView);
 		}
@@ -37,8 +40,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.Click -= OnClick;
 			nativeView.RemoveHandler(UI.Xaml.UIElement.PointerPressedEvent, _pointerPressedHandler);
+			nativeView.RemoveHandler(UI.Xaml.UIElement.PointerReleasedEvent, _pointerReleasedHandler);
 
 			_pointerPressedHandler = null;
+			_pointerReleasedHandler = null;
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -77,20 +82,14 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IButton image) =>
-			MapImageSourceAsync(handler, image).FireAndForget(handler);
-
-		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
-		{
-			if (image.ImageSource == null)
-			{
-				return Task.CompletedTask;
-			}
-
-			return handler.ImageSourceLoader.UpdateImageSourceAsync();
-		}
+			handler
+				.ImageSourceLoader
+				.UpdateImageSourceAsync()
+				.FireAndForget(handler);
 
 		void OnSetImageSource(ImageSource? obj)
 		{
+			NativeView.UpdateImageSource(VirtualView, obj);
 		}
 
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)
@@ -102,6 +101,11 @@ namespace Microsoft.Maui.Handlers
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
 			VirtualView?.Pressed();
+		}
+
+		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+		{
+			VirtualView?.Released();
 		}
 	}
 }

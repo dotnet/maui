@@ -7,7 +7,6 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -329,7 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					var mauiContext = Forms.MauiContext;
 
 					if (fragmentManager != null || layoutInflater != null)
-						mauiContext = new ScopedMauiContext(mauiContext, null, null, layoutInflater, fragmentManager);
+						mauiContext = mauiContext.MakeScoped(layoutInflater, fragmentManager);
 
 					handler = mauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(mauiContext);

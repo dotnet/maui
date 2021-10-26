@@ -5,6 +5,8 @@
     <PackageReference Include="Fizzler" Version="1.2.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.macOS" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Framework" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
@@ -53,10 +55,10 @@
     <_ResizetizerFiles Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.pdb" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.dll" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.pdb" />
-    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp)\runtimes\osx\native\libHarfBuzzSharp.dylib" />
-    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp)\runtimes\win-x86\native\libHarfBuzzSharp.dll" Link="x86\libHarfBuzzSharp.dll" Arch="x86/" />
-    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp)\runtimes\win-x64\native\libHarfBuzzSharp.dll" Link="x64\libHarfBuzzSharp.dll" Arch="x64/" />
-    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp)\runtimes\win-arm64\native\libHarfBuzzSharp.dll" Link="arm64\libHarfBuzzSharp.dll" Arch="arm64/" />
+    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_macOS)\runtimes\osx\native\libHarfBuzzSharp.dylib" />
+    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Win32)\runtimes\win-x86\native\libHarfBuzzSharp.dll" Link="x86\libHarfBuzzSharp.dll" Arch="x86/" />
+    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Win32)\runtimes\win-x64\native\libHarfBuzzSharp.dll" Link="x64\libHarfBuzzSharp.dll" Arch="x64/" />
+    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Win32)\runtimes\win-arm64\native\libHarfBuzzSharp.dll" Link="arm64\libHarfBuzzSharp.dll" Arch="arm64/" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-arm\native\libHarfBuzzSharp.so" Link="arm\libHarfBuzzSharp.so" Arch="arm/" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-arm64\native\libHarfBuzzSharp.so" Link="arm64\libHarfBuzzSharp.so" Arch="arm64/" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-musl-x64\native\libHarfBuzzSharp.so" Link="musl-x64\libHarfBuzzSharp.so" Arch="musl-x64/" />

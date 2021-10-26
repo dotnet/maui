@@ -3,9 +3,13 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
+using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui
 {
+	// This is needed by WinUI because of 
+	// https://github.com/microsoft/microsoft-ui-xaml/issues/2698#issuecomment-648751713
+	[Microsoft.UI.Xaml.Data.Bindable]
 	public class MauiButton : Button
 	{
 		public static readonly DependencyProperty BorderRadiusProperty =
@@ -94,31 +98,36 @@ namespace Microsoft.Maui
 			if (_contentPresenter != null)
 				_contentPresenter.CharacterSpacing = CharacterSpacing;
 
-			var textBlock = GetTextBlock(Content);
+			var textBlock = GetTextBlock();
 
 			if (textBlock != null)
 				textBlock.CharacterSpacing = CharacterSpacing;
 		}
 
-		public TextBlock? GetTextBlock(object content)
+		public TextBlock? GetTextBlock() => GetContent<TextBlock?>();
+
+
+		public WImage? GetImage() => GetContent<WImage?>();
+
+		internal T? GetContent<T>()
 		{
-			if (content is TextBlock tb)
+			if (Content is T t)
 			{
-				return tb;
+				return t;
 			}
 
-			if (content is StackPanel sp)
+			if (Content is StackPanel sp)
 			{
 				foreach (var item in sp.Children)
 				{
-					if (item is TextBlock textBlock)
+					if (item is T tChild)
 					{
-						return textBlock;
+						return tChild;
 					}
 				}
 			}
 
-			return null;
+			return default;
 		}
 	}
 }

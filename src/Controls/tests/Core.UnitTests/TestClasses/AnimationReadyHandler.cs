@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public IAnimationManager AnimationManager => ((AnimationReadyMauiContext)MauiContext).AnimationManager;
 
-		class AnimationReadyMauiContext : IMauiContext, IScopedMauiContext
+		class AnimationReadyMauiContext : IMauiContext, IServiceProvider
 		{
 			readonly IAnimationManager _animationManager;
 
@@ -72,11 +72,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				_animationManager = manager ?? new TestAnimationManager();
 			}
 
-			public IServiceProvider Services => throw new NotImplementedException();
+			public IServiceProvider Services => this;
 
 			public IMauiHandlersServiceProvider Handlers => throw new NotImplementedException();
 
 			public IAnimationManager AnimationManager => _animationManager;
+
+			public object GetService(Type serviceType)
+			{
+				if (serviceType == typeof(IAnimationManager))
+					return _animationManager;
+
+				throw new NotSupportedException();
+			}
 		}
 	}
 

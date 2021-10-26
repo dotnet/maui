@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using Microsoft.Maui.Platform.iOS;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -30,7 +31,12 @@ namespace Microsoft.Maui
 			if (textAttr != null)
 				textView.AttributedText = textAttr;
 
-			// TODO: Include AttributedText to Label Placeholder
+			if (textView is MauiTextView mauiTextView)
+			{
+				var phAttr = mauiTextView.PlaceholderLabel.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
+				if (phAttr != null)
+					mauiTextView.PlaceholderLabel.AttributedText = phAttr;
+			}
 		}
 
 		public static void UpdateMaxLength(this UITextView textView, IEditor editor)

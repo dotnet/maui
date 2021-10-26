@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			Svg.SvgDocument.SkipGdiPlusCapabilityCheck = true;
 
-			var images = ParseImageTaskItems(Images);
+			var images = ResizeImageInfo.Parse(Images);
 
 			var dpis = DpiPath.GetDpis(PlatformType);
 
@@ -195,58 +195,6 @@ namespace Microsoft.Maui.Resizetizer
 		void ILogger.Log(string message)
 		{
 			Log?.LogMessage(message);
-		}
-
-		List<ResizeImageInfo> ParseImageTaskItems(ITaskItem[] images)
-		{
-			var r = new List<ResizeImageInfo>();
-
-			if (images == null)
-				return r;
-
-			foreach (var image in images)
-			{
-				var info = new ResizeImageInfo();
-
-				var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
-				if (!fileInfo.Exists)
-					throw new FileNotFoundException("Unable to find background file: " + fileInfo.FullName, fileInfo.FullName);
-
-				info.Filename = fileInfo.FullName;
-
-				info.Alias = image.GetMetadata("Link");
-
-				info.BaseSize = Utils.ParseSizeString(image.GetMetadata("BaseSize"));
-
-				if (bool.TryParse(image.GetMetadata("Resize"), out var rz))
-					info.Resize = rz;
-
-				info.TintColor = Utils.ParseColorString(image.GetMetadata("TintColor"));
-				info.Color = Utils.ParseColorString(image.GetMetadata("Color"));
-
-				if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
-					info.IsAppIcon = iai;
-
-				if (float.TryParse(image.GetMetadata("ForegroundScale"), out var fsc))
-					info.ForegroundScale = fsc;
-
-				var fgFile = image.GetMetadata("ForegroundFile");
-				if (!string.IsNullOrEmpty(fgFile))
-				{
-					var fgFileInfo = new FileInfo(fgFile);
-					if (!fgFileInfo.Exists)
-						throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
-
-					info.ForegroundFilename = fgFileInfo.FullName;
-				}
-
-				// TODO:
-				// - Parse out custom DPI's
-
-				r.Add(info);
-			}
-
-			return r;
 		}
 	}
 }

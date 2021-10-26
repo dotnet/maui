@@ -908,8 +908,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			if (_disposed || _currentMenuItems == null)
 				return;
 
-			_currentMenuItems.Clear();
-			_currentMenuItems = new List<IMenuItem>();
 			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Element.FindMauiContext(), null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 

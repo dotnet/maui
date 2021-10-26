@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else
 			{
 				// Hide the soft keyboard; this matches the behavior of Forms on Android/iOS
-				Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
+				global::Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
 			}
 
 			((IEntryController)Element).SendCompleted();
@@ -357,6 +357,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.InputScope = Element.ReturnType.ToInputScope();
 		}
 
+		[PortHandler]
 		void SelectionChanged(object sender, RoutedEventArgs e)
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -382,6 +383,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateSelectionLength()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -413,6 +415,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateCursorPosition()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -447,6 +450,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void SetCursorPositionFromRenderer(int start)
 		{
 			try
@@ -464,6 +468,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void SetSelectionLengthFromRenderer(int selectionLength)
 		{
 			try
@@ -494,7 +499,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Children.Count == 0 || child == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
             child.Measure(constraint);
 			var result = FormsTextBox.GetCopyOfSize(child, constraint);
 			return new SizeRequest(result);

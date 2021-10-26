@@ -6,8 +6,9 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Tabbed Page">
     <ContentPage Title="Tab 1">
-        <StackLayout>
-            <Label Text="Welcome to Tab 1"></Label>
-        </StackLayout>
+        <VerticalStackLayout>
+            <Button Text="Set Tabbed Page as Root" Clicked="OnTabbedPageAsRoot"></Button>
+            <Button Text="Toggle Bottom Tabs (Android)" Clicked="OnSetToBottomTabs"></Button>
+        </VerticalStackLayout>
     </ContentPage>
 </TabbedPage>

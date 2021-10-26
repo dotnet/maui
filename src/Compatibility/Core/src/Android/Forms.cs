@@ -184,14 +184,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
-			Init(activationState.Context, activationState.SavedInstance, options);
+			Init(activationState.Context, options);
 
-		// Provide backwards compat for Forms.Init and AndroidActivity
-		// Why is bundle a param if never used?
-		public static void Init(Context activity, Bundle bundle) =>
-			Init(new MauiContext(activity), bundle);
-
-		public static void Init(IMauiContext context, Bundle bundle, InitializationOptions? options = null)
+		public static void Init(IMauiContext context, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
 
@@ -204,24 +199,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
-		public static void Init(Context activity, Bundle bundle, Assembly resourceAssembly) =>
-			Init(new MauiContext(activity), bundle, resourceAssembly);
-
-		public static void Init(IMauiContext context, Bundle bundle, Assembly resourceAssembly)
+		public static void Init(IMauiContext context, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
 			SetupInit(context, resourceAssembly, null);
-			Profile.FrameEnd();
-		}
-
-		public static void Init(InitializationOptions options)
-		{
-			Profile.FrameBegin();
-			SetupInit(
-				new MauiContext(options.Activity),
-				options.ResourceAssembly,
-				options
-			);
 			Profile.FrameEnd();
 		}
 
@@ -643,8 +624,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return AppDomain.CurrentDomain.GetAssemblies();
 			}
 
-			public string GetHash(string input) => Crc64.GetHash(input);
-
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
 				if (_smallSize == 0)
@@ -878,11 +857,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
 				}
 				return false;
-			}
-
-			public void QuitApplication()
-			{
-				Internals.Log.Warning(nameof(AndroidPlatformServices), "Platform doesn't implement QuitApp");
 			}
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)

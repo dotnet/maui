@@ -19,8 +19,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				=> resultPage = (ContentPage)sender;
 
 			NavigationPage nav = new NavigationPage(contentPage);
+
 			Assert.IsNull(resultPage);
-			nav.SendAppearing();
+			_ = new Window(nav);
 			Assert.AreEqual(resultPage, contentPage);
 		}
 
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				=> pageAppearing = (ContentPage)sender;
 
 			NavigationPage nav = new NavigationPage(initialPage);
+			_ = new Window(nav);
 			nav.SendAppearing();
 
 			await nav.PushAsync(pushedPage);
@@ -58,6 +60,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage pageDisappeared = null;
 
 			NavigationPage nav = new NavigationPage(initialPage);
+			_ = new Window(nav);
 			nav.SendAppearing();
 
 			initialPage.Appearing += (sender, _)
@@ -86,6 +89,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage pageDisappeared = null;
 
 			NavigationPage nav = new NavigationPage(initialPage);
+			_ = new Window(nav);
 			nav.SendAppearing();
 
 			initialPage.Appearing += (sender, _)
@@ -115,6 +119,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage pageDisappeared = null;
 
 			NavigationPage nav = new NavigationPage(initialPage);
+			_ = new Window(nav);
 			nav.SendAppearing();
 
 			var pageToRemove = new ContentPage();

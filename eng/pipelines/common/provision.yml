@@ -75,6 +75,7 @@ steps:
       displayName: 'Install PowerShell Core'
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Visual Studio'
+      condition: eq(variables['provisioningVS'], 'true')
       inputs:
         provisioning_script: $(provisionator.vs)
     - pwsh: |
@@ -89,3 +90,5 @@ steps:
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
+  - pwsh: dotnet nuget locals all --clear
+    displayName: 'Clear all NuGet caches'

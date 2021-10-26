@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 		WindowHeader _windowHeader;
 		public MauiNavigationView()
 		{
-			IsPaneVisible = true;
+			IsPaneVisible = false;
 			IsPaneToggleButtonVisible = false;
 			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 			Header = (_windowHeader = new WindowHeader());

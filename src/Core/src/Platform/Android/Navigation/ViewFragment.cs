@@ -14,12 +14,10 @@ namespace Microsoft.Maui
 		public ViewFragment(View aView)
 		{
 			_aView = aView;
-			_aView.RemoveFromParent();
 		}
 
 		public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
-			_aView.RemoveFromParent();
 			return _aView;
 		}
 	}

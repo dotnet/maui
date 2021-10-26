@@ -168,12 +168,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static bool IsInitializedRenderers { get; private set; }
 
-		public static void Init() =>
-			SetupInit(new MauiContext());
-
-		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), options);
-
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			SetupInit(activationState.Context, options);
 
@@ -320,8 +314,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				return AppDomain.CurrentDomain.GetAssemblies();
 			}
-
-			public string GetHash(string input) => Crc64.GetHash(input);
 
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
@@ -739,14 +731,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
+#if !__MOBILE__
 			public void QuitApplication()
 			{
-#if __MOBILE__
-				Log.Warning(nameof(IOSPlatformServices), "Platform doesn't implement QuitApp");
-#else
 				NSApplication.SharedApplication.Terminate(new NSObject());
-#endif
 			}
+#endif
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
