@@ -4,7 +4,7 @@
              x:Class="Recipes.Views.ItemDetailPage"
              Title="{Binding Title}">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Edit" Command="{Binding EditItemCommand}" SemanticProperties.HeadingLevel="Level2" />
+        <ToolbarItem Text="Edit" Command="{Binding EditItemCommand}" />
     </ContentPage.ToolbarItems>
     <Grid Margin="15">
         <Grid.ColumnDefinitions>
