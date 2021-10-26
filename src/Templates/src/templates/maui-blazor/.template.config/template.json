@@ -39,7 +39,7 @@
           {
             "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
             "rename": {
-               ".App.sln": ".sln"
+              ".App.sln": ".sln"
             }
           }
         ]

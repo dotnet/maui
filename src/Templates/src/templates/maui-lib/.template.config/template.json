@@ -16,7 +16,7 @@
       { "path": "MauiLib1.csproj" },
       {
         "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-          "path": "Class1.cs"
+        "path": "Class1.cs"
       }
     ],
     "postActions": [
