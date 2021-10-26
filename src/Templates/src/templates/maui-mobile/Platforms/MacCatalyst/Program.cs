@@ -1,4 +1,6 @@
-﻿namespace MauiApp._1;
+﻿using UIKit;
+
+namespace MauiApp._1;
 
 public class Program
 {

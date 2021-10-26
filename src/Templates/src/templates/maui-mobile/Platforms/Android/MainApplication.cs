@@ -1,4 +1,5 @@
-﻿using Android.Runtime;
+﻿using Android.App;
+using Android.Runtime;
 
 namespace MauiApp._1;
 
