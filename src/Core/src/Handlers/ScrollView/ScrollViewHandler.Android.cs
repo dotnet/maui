@@ -11,9 +11,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiScrollView CreateNativeView()
 		{
-			return new MauiScrollView(
+			var scrollView = new MauiScrollView(
 				new Android.Views.ContextThemeWrapper(MauiContext!.Context, Resource.Style.scrollViewTheme), null!,
 					Resource.Attribute.scrollViewStyle);
+
+			scrollView.ClipToOutline = true;
+
+			return scrollView;
 		}
 
 		protected override void ConnectHandler(MauiScrollView nativeView)
@@ -26,6 +30,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(nativeView);
 			nativeView.ScrollChange -= ScrollChange;
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			if (FindInsetPanel(this) == null)
+			{
+				VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			}
+
+			return result;
 		}
 
 		void ScrollChange(object? sender, AndroidX.Core.Widget.NestedScrollView.ScrollChangeEventArgs e)
@@ -129,6 +145,11 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
+		static ContentViewGroup? FindInsetPanel(ScrollViewHandler handler)
+		{
+			return handler.NativeView.FindViewWithTag(InsetPanelTag) as ContentViewGroup;
+		}
+
 		static void UpdateInsetView(IScrollView scrollView, ScrollViewHandler handler)
 		{
 			if (scrollView.PresentedContent == null || handler.MauiContext == null)
@@ -138,7 +159,7 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeContent = scrollView.PresentedContent.ToNative(handler.MauiContext);
 
-			if (handler.NativeView.FindViewWithTag(InsetPanelTag) is ContentViewGroup currentPaddingLayer)
+			if (FindInsetPanel(handler) is ContentViewGroup currentPaddingLayer)
 			{
 				if (currentPaddingLayer.ChildCount == 0 || currentPaddingLayer.GetChildAt(0) != nativeContent)
 				{

@@ -11,9 +11,14 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
-#if __IOS__
+#if __IOS__ || __ANDROID__
 			{ typeof(CollectionView), typeof(CollectionViewHandler) },
 #endif
+
+#if WINDOWS
+			{ typeof(CollectionView), typeof(CollectionViewHandler) },
+#endif
+
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif

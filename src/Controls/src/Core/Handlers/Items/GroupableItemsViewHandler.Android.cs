@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Maui.Handlers;
+using AndroidX.RecyclerView.Widget;
+
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class GroupableItemsViewHandler<TItemsView> : SelectableItemsViewHandler<TItemsView> where TItemsView : GroupableItemsView
+	public partial class GroupableItemsViewHandler<TItemsView> : SelectableItemsViewHandler<TItemsView>
+		where TItemsView : GroupableItemsView
 	{
-		
-		protected override Android.Views.View CreateNativeView()
-		{
-			throw new NotImplementedException();
-		}
+		new protected GroupableItemsViewAdapter<TItemsView, IGroupableItemsViewSource> CreateAdapter() => new(VirtualView);
+
+		protected override RecyclerView CreateNativeView() => 
+			new MauiRecyclerView<TItemsView, GroupableItemsViewAdapter<TItemsView, IGroupableItemsViewSource>, IGroupableItemsViewSource>(Context, GetItemsLayout, CreateAdapter);
 
 		public static void MapIsGrouped(GroupableItemsViewHandler<TItemsView> handler, GroupableItemsView itemsView)
 		{
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateItemsSource();
 		}
 	}
 }
