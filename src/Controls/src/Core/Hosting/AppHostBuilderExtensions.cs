@@ -93,6 +93,14 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			builder.ConfigureLifecycleEvents(lifeCycle =>
 			{
+				// We want the remap to happen as early as possible in the application lifecycle
+				// If users start interacting with mappers before they have been remapped it can cause unexpected behavior.
+				// We also want the Remap to happen before `InitializeComponent` runs because `InitializeComponent`
+				// will cause the remapped static mappers to instantiate pre-maturally.
+				// The remapping needs to happen in a specific order otherwise the remappings at the VisualElement and Element levels
+				// won't get added into the chain on the concrete controls correctly
+				// Application.RemapMappers() is called on the ctor of Application so these primarily serve as
+				// just in case hooks if the user isn't using our Application class
 #if ANDROID
 				lifeCycle.AddAndroid(android => android.OnApplicationCreating((_) => { Application.RemapMappers(); }));
 #elif WINDOWS

@@ -28,7 +28,14 @@ namespace Microsoft.Maui.Controls
 
 		public Application()
 		{
+			// We want the remap to happen as early as possible in the application lifecycle
+			// If users start interacting with mappers before they have been remapped it can cause unexpected behavior.
+			// We also want the Remap to happen before `InitializeComponent` runs because `InitializeComponent`
+			// will cause the remapped static mappers to instantiate pre-maturally.
+			// The remapping needs to happen in a specific order otherwise the remappings at the VisualElement and Element levels
+			// won't get added into the chain on the concrete controls correctly
 			RemapMappers();
+
 			SetCurrentApplication(this);
 			_systemResources = new Lazy<IResourceDictionary>(() =>
 			{
