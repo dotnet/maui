@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// If the App.Xaml class defines styles for 
 			_ = new Application();
 
-			VisualElement.Mapper.Add("ValidateCorrectChainingReplaced.VisualElement", (_, __) => { });
-			Element.Mapper.Add("ValidateCorrectChainingReplaced.Element", (_, __) => { });
+			VisualElement.ControlsVisualElementMapper.Add("ValidateCorrectChainingReplaced.VisualElement", (_, __) => { });
+			Element.ControlsElementMapper.Add("ValidateCorrectChainingReplaced.Element", (_, __) => { });
 
 
 			Assert.NotNull(LabelHandler.LabelMapper.GetProperty("ValidateCorrectChainingReplaced.VisualElement"));
@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_ = new Application();
 
 			LabelHandler.LabelMapper.Add("ValidateGetKeyWorksForPrependMapperExtensionMethod.LabelHandler.LabelMapper", (_, __) => { });
-			Element.Mapper.Add("ValidateGetKeyWorksForPrependMapperExtensionMethod.Element", (_, __) => { });
-			VisualElement.Mapper.Add("ValidateGetKeyWorksForPrependMapperExtensionMethod.VisualElement", (_, __) => { });
+			Element.ControlsElementMapper.Add("ValidateGetKeyWorksForPrependMapperExtensionMethod.Element", (_, __) => { });
+			VisualElement.ControlsVisualElementMapper.Add("ValidateGetKeyWorksForPrependMapperExtensionMethod.VisualElement", (_, __) => { });
 
 
 			Assert.NotNull(LabelHandler.LabelMapper.GetProperty("ValidateGetKeyWorksForPrependMapperExtensionMethod.VisualElement"));
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			_ = new Application();
 			Assert.NotNull(Label.ControlsLabelMapper.GetProperty(nameof(IView.MaximumHeight)));
-			Assert.NotNull(VisualElement.Mapper.GetProperty(nameof(IView.MaximumHeight)));
+			Assert.NotNull(VisualElement.ControlsVisualElementMapper.GetProperty(nameof(IView.MaximumHeight)));
 		}
 	}
 }
