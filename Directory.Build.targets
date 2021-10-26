@@ -7,7 +7,7 @@
   <Import Project="eng\Microsoft.Extensions.targets" />
 
   <PropertyGroup>
-     <!-- Allows for MAUI Xaml Hot Reload Samples to run without  -->
+     <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
     <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
   </PropertyGroup>
 
