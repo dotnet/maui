@@ -1,5 +1,6 @@
-$PACKAGEVERSION = "6.0.100-preview.4.9991"
+$PACKAGEVERSION = "6.0.101-preview.10.9991"
 
+& dotnet new -u "Microsoft.Maui.Templates"
 & dotnet new -u "../../artifacts/Microsoft.Maui.Templates.$PACKAGEVERSION.nupkg"
 
 Remove-Item -Force "../../artifacts/Microsoft.Maui.Templates.*.nupkg"
