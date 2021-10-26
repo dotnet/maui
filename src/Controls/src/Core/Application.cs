@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls
 
 		public Application()
 		{
+			RemapMappers();
 			SetCurrentApplication(this);
 			_systemResources = new Lazy<IResourceDictionary>(() =>
 			{

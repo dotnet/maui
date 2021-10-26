@@ -69,5 +69,14 @@ namespace Microsoft.Maui.Controls
 			if (window is NavigableElement ne)
 				ne.NavigationProxy.Inner = NavigationProxy;
 		}
+
+		internal static void RemapMappers()
+		{
+			// Update the mappings for IView/View to work specifically for Controls
+			VisualElement.RemapForControls();
+			Label.RemapForControls();
+			Button.RemapForControls();
+			Window.RemapForControls();
+		}
 	}
 }

@@ -18,16 +18,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			// This simulates mappers being initialized by the Application class early on
 			// If the App.Xaml class defines styles for 
-			_ = Label.ControlsLabelMapper;
-			_ = Label.Mapper;
-			_ = ViewHandler.ViewMapper;
+			_ = new Application();
 
 			VisualElement.Mapper.Add("ValidateCorrectChainingReplaced.VisualElement", (_, __) => { });
 			Element.Mapper.Add("ValidateCorrectChainingReplaced.Element", (_, __) => { });
-
-			Element.RemapForControls();
-			VisualElement.RemapForControls();
-			Label.RemapForControls();
 
 
 			Assert.NotNull(LabelHandler.LabelMapper.GetProperty("ValidateCorrectChainingReplaced.VisualElement"));
@@ -40,17 +34,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			// This simulates mappers being initialized by the Application class early on
 			// If the App.Xaml class defines styles for 
-			_ = Label.ControlsLabelMapper;
-			_ = Label.Mapper;
-			_ = ViewHandler.ViewMapper;
+			_ = new Application();
 
 			LabelHandler.LabelMapper.Add("ValidateGetKeyWorksForPrependMapperExtensionMethod.LabelHandler.LabelMapper", (_, __) => { });
 			Element.Mapper.Add("ValidateGetKeyWorksForPrependMapperExtensionMethod.Element", (_, __) => { });
 			VisualElement.Mapper.Add("ValidateGetKeyWorksForPrependMapperExtensionMethod.VisualElement", (_, __) => { });
 
-			Element.RemapForControls();
-			VisualElement.RemapForControls();
-			Label.RemapForControls();
 
 			Assert.NotNull(LabelHandler.LabelMapper.GetProperty("ValidateGetKeyWorksForPrependMapperExtensionMethod.VisualElement"));
 			Assert.NotNull(LabelHandler.LabelMapper.GetProperty("ValidateGetKeyWorksForPrependMapperExtensionMethod.LabelHandler.LabelMapper"));
@@ -61,6 +50,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ValidateParentKeyIsPresent()
 		{
+			_ = new Application();
 			Assert.NotNull(Label.ControlsLabelMapper.GetProperty(nameof(IView.MaximumHeight)));
 			Assert.NotNull(VisualElement.Mapper.GetProperty(nameof(IView.MaximumHeight)));
 		}

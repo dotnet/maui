@@ -60,21 +60,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-		static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
-		{
-			builder.ConfigureImageSources(services =>
-			{
-				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
-				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
-				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
-				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
-			});
-
-			return builder;
-		}
-
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
+			builder.ConfigureControlsLifecycleEvents();
 			builder.ConfigureCompatibilityLifecycleEvents();
 			builder.ConfigureImageSourceHandlers();
 			builder

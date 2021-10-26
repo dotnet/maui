@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
@@ -71,14 +73,36 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
-			// Update the mappings for IView/View to work specifically for Controls
-			Element.RemapForControls();
-			VisualElement.RemapForControls();
-			Label.RemapForControls();
-			Button.RemapForControls();
-			Window.RemapForControls();
-
 			return handlersCollection.AddHandlers(DefaultMauiControlHandlers);
+		}
+
+		internal static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
+		{
+			builder.ConfigureImageSources(services =>
+			{
+				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
+				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
+				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
+				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
+			});
+
+			return builder;
+		}
+
+		internal static MauiAppBuilder ConfigureControlsLifecycleEvents(this MauiAppBuilder builder)
+		{
+			builder.ConfigureLifecycleEvents(lifeCycle =>
+			{
+#if ANDROID
+				lifeCycle.AddAndroid(android => android.OnApplicationCreating((_) => { Application.RemapMappers(); }));
+#elif WINDOWS
+				lifeCycle.AddWindows(windows => windows.OnLaunching((_, __) => { Application.RemapMappers(); }));
+#elif IOS
+				lifeCycle.AddiOS(iOS => iOS.WillFinishLaunching((_, __) => { Application.RemapMappers(); return true; }));
+#endif
+			});
+
+			return builder;
 		}
 	}
 }
