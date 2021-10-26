@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public interface IMauiRecyclerView<TItemsView>  where TItemsView : ItemsView
+	public interface IMauiRecyclerView<TItemsView> where TItemsView : ItemsView
 	{
 		public void SetUpNewElement(TItemsView newElement);
 
@@ -23,6 +23,5 @@
 		public void UpdateLayoutManager();
 
 		public void UpdateAdapter();
-
 	}
 }

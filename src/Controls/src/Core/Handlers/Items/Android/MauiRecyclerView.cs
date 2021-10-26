@@ -38,11 +38,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ScrollBarVisibility _defaultVerticalScrollVisibility = ScrollBarVisibility.Default;
 
 		ItemDecoration _itemDecoration;
-
+	
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(context)
 		{
-			GetItemsLayout = getItemsLayout;
-			CreateAdapter = getAdapter;
+			GetItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
+			CreateAdapter = getAdapter ?? throw new ArgumentNullException(nameof(getAdapter));
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			ItemsView = newElement;
-	
+
 			UpdateBackgroundColor();
 			UpdateBackground();
 
@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				SwapAdapter(ItemsViewAdapter, true);
 			}
-			
+
 			UpdateEmptyView();
 
 			oldItemViewAdapter?.Dispose();
@@ -228,13 +228,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsLayout != null)
 				ItemsLayout.PropertyChanged -= LayoutPropertyChanged;
-			
+
 			ItemsLayout = GetItemsLayout();
 
 			// Keep track of the ItemsLayout's property changes
 			if (ItemsLayout != null)
 				ItemsLayout.PropertyChanged += LayoutPropertyChanged;
-		
+
 			SetLayoutManager(SelectLayoutManager(ItemsLayout));
 
 			UpdateFlowDirection();
@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsViewAdapter == null || ItemsView == null)
 				return;
-		
+
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
 				// Keeping the current items in view is the default, so we don't need to watch for data changes

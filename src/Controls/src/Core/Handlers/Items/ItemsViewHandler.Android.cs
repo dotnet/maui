@@ -8,8 +8,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, RecyclerView> where TItemsView : ItemsView
 	{
-
-		IMauiRecyclerView<TItemsView> _mauiRecyclerView => NativeView as IMauiRecyclerView<TItemsView>;
 		protected ItemsViewHandler(PropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper)
 		{
 		}
@@ -20,44 +18,44 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(RecyclerView nativeView)
 		{
 			base.ConnectHandler(nativeView);
-			_mauiRecyclerView?.SetUpNewElement(VirtualView);
+			(nativeView as IMauiRecyclerView<TItemsView>)?.SetUpNewElement(VirtualView);
 		}
 		protected override RecyclerView CreateNativeView() =>
 			new MauiRecyclerView<TItemsView, ItemsViewAdapter<TItemsView, IItemsViewSource>, IItemsViewSource>(Context, GetItemsLayout, CreateAdapter);
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView?.UpdateItemsSource();
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateItemsSource();
 		}
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView?.UpdateHorizontalScrollBarVisibility();
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateHorizontalScrollBarVisibility();
 		}
 
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView?.UpdateHorizontalScrollBarVisibility();
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateHorizontalScrollBarVisibility();
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView?.UpdateItemTemplate();
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateItemTemplate();
 		}
 
 		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView?.UpdateEmptyView();
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateEmptyView();
 		}
 
 		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView?.UpdateEmptyView();
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateEmptyView();
 		}
 
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView.UpdateFlowDirection();
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateFlowDirection();
 		}
 
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -66,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._mauiRecyclerView?.UpdateScrollingMode();
+			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateScrollingMode();
 		}
 	}
 }

@@ -36,6 +36,5 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
 			[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped
 		};
-	
 	}
 }
