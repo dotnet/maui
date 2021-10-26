@@ -53,6 +53,9 @@
             <Style TargetType="Entry">
                 <Setter Property="MinimumHeightRequest" Value="44"></Setter>
             </Style>
+            <Style TargetType="Editor">
+                <Setter Property="MinimumHeightRequest" Value="44"></Setter>
+            </Style>
             <Style TargetType="CheckBox">
                 <Setter Property="MinimumHeightRequest" Value="44"></Setter>
             </Style>
