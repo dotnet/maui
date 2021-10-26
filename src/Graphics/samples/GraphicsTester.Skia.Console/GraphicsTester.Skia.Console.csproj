@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>GraphicsTester.ConsoleApp</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia.csproj" />
+        <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="SkiaSharp" Version="2.80.3" />
+    </ItemGroup>
+
+</Project>
