@@ -11,6 +11,7 @@
         
         <SearchBar GridLayout.Row="0" x:Name="searchBar"
                    ios:SearchBar.SearchBarStyle="Default"
+                   SemanticProperties.HeadingLevel="Level3"
                    Placeholder="Search recipes"
                    CancelButtonColor="{StaticResource Primary}"
                    Text="{Binding SearchQuery}"

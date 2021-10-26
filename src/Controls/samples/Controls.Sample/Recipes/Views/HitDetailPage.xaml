@@ -20,9 +20,10 @@
             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" IsVisible="{Binding ImageUrlVisible}" />
             <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" SemanticProperties.HeadingLevel="Level1" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" FontSize="24" TextColor="Black" MaxLines="3" Padding="15" BackgroundColor="White"/>
         </Grid>
+        <!-- TODO: Fix ScrollView issue - currently scrolls over above controls -->
         <ScrollView Grid.Row="1" >
             <StackLayout BackgroundColor="White">
-                <Label Text="Ingredients" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
+                <Label Text="Ingredients:" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
                 <StackLayout BindableLayout.ItemsSource="{Binding Ingredients}" IsVisible="{Binding IngredientsVisible}" Padding="15,0">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate>
@@ -31,8 +32,8 @@
                     </BindableLayout.ItemTemplate>
                 </StackLayout>
 
-                <Label Text="Recipe" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
-                <Label TextColor="Black" SemanticProperties.HeadingLevel="Level2" FontAttributes="Italic" TextDecorations="Underline" Text="Click here to view full recipe." FontSize="Small" IsVisible="{Binding RecipeUrlVisible}" Padding="20,5">
+                <Label Text="Recipe:" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}" />
+                <Label TextColor="{StaticResource Primary}" SemanticProperties.HeadingLevel="Level2" FontAttributes="Italic" TextDecorations="Underline" Text="Click here to view full recipe." FontSize="Small" IsVisible="{Binding RecipeUrlVisible}" Padding="20,5">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="OpenUrl"></TapGestureRecognizer>
                     </Label.GestureRecognizers>
@@ -40,6 +41,6 @@
 
             </StackLayout>
         </ScrollView>
-        <Button Grid.Row="2" Text="{Binding AddRemoveItemText}" Command="{Binding AddRemoveItemCommand}" Clicked="AddItem_Clicked" TextColor="White" FontAttributes="Bold" />
+        <Button Grid.Row="2" Text="{Binding AddRemoveItemText}" Command="{Binding AddRemoveItemCommand}" Clicked="AddItem_Clicked" SemanticProperties.HeadingLevel="Level2" TextColor="White" FontAttributes="Bold" />
     </Grid>
 </ContentPage>

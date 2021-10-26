@@ -4,7 +4,7 @@
              x:Class="Recipes.Views.ItemDetailPage"
              Title="{Binding Title}">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Edit" Command="{Binding EditItemCommand}" />
+        <ToolbarItem Text="Edit" Command="{Binding EditItemCommand}" SemanticProperties.HeadingLevel="Level2" />
     </ContentPage.ToolbarItems>
     <Grid Margin="15">
         <Grid.ColumnDefinitions>
@@ -16,12 +16,12 @@
         </Grid.RowDefinitions>
         <Grid Grid.Column="0" Grid.Row="0" Margin="0,0,0,10">
             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill"  IsVisible="{Binding ImageUrlVisible}" />
-            <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" TextColor="Black" BackgroundColor="White" FontSize="24" Padding="15" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" MaxLines="3" />
+            <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" TextColor="Black" SemanticProperties.HeadingLevel="Level1" BackgroundColor="White" FontSize="24" Padding="15" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" MaxLines="3" />
         </Grid>
         <!-- TODO: Fix ScrollView issue - currently scrolls over above controls -->
         <ScrollView Grid.Row="1" >
             <StackLayout BackgroundColor="White">
-                <Label Text="Ingredients" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
+                <Label Text="Ingredients:" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
                 <StackLayout  BindableLayout.ItemsSource="{Binding IngredientCheckList}" Padding="15,0" IsVisible="{Binding IngredientsVisible}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate>
@@ -33,7 +33,7 @@
                     </BindableLayout.ItemTemplate>
                 </StackLayout>
 
-                <Label Text="Recipe" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" FontSize="Medium" TextColor="White" BackgroundColor="{StaticResource Primary}"/>
+                <Label Text="Recipe:" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
                 <StackLayout  BindableLayout.ItemsSource="{Binding RecipeList}" Padding="20,5">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate>
