@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using UWPPoint = Windows.Foundation.Point;
 using UWPSize = Windows.Foundation.Size;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ScrollHelpers
 	{
