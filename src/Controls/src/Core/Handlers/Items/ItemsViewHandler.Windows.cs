@@ -277,16 +277,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void UpdateItemsLayout()
 		{
-			//if (_scrollViewer != null)
-			//	_scrollViewer.ViewChanged -= ScrollViewChanged;
-
-			//if (ListViewBase != null)
-			//{
-			//	ListViewBase.ItemsSource = null;
-			//	VirtualView.Handler = null;
-			//}
-
-			//VirtualView.ToNative(MauiContext);
 			ListViewBase.IsSynchronizedWithCurrentItem = false;
 
 			FindScrollViewer(ListViewBase);
