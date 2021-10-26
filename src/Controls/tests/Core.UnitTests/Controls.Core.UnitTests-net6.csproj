@@ -31,4 +31,8 @@
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\..\Core\tests\UnitTests\TestClasses\DispatcherStub.cs" Link="TestClasses\DispatcherStub.cs" />
+  </ItemGroup>
+
 </Project>

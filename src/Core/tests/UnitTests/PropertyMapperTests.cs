@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core, TestCategory.PropertyMapping)]
-	public class PropertyMapperTests
+	public class PropertyMapperTests : TestBase
 	{
 		[Fact]
 		public void ChainingMappersOverrideBase()

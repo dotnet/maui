@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Controls.Internals
 					return;
 
 				IDispatcher dispatcher = (sender as BindableObject)?.Dispatcher;
-				dispatcher.BeginInvokeOnMainThread(() => _binding.Apply(false));
+				dispatcher.Dispatch(() => _binding.Apply(false));
 			}
 		}
 

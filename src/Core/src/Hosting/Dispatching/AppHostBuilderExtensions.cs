@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Hosting
 			builder.Services.TryAddScoped(svc =>
 			{
 				var provider = svc.GetRequiredService<IDispatcherProvider>();
-				if (Dispatcher.SetProvider(provider))
-					svc.CreateLogger<Dispatcher>()?.LogWarning("Replaced an existing Dispatcher with one from the service provider.");
+				if (DispatcherProvider.SetCurrent(provider))
+					svc.CreateLogger<Dispatcher>()?.LogWarning("Replaced an existing DispatcherProvider with one from the service provider.");
 
 				return Dispatcher.GetForCurrentThread()!;
 			});

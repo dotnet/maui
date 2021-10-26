@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (thread)
-				view.Dispatcher.BeginInvokeOnMainThread(update);
+				view.Dispatcher.Dispatch(update);
 			else
 				update();
 #else

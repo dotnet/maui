@@ -2,6 +2,6 @@
 {
 	public interface IDispatcherProvider
 	{
-		IDispatcher? GetForCurrentThread();
+		IDispatcher? CreateDispatcher();
 	}
 }

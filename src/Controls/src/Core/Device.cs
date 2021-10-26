@@ -83,31 +83,31 @@ namespace Microsoft.Maui.Controls
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsInvokeRequired =>
-			Application.Current.Dispatcher.IsInvokeRequired;
+			Application.Current.GetDispatcher().IsInvokeRequired;
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static void BeginInvokeOnMainThread(Action action) =>
-			Application.Current.Dispatcher.BeginInvokeOnMainThread(action);
+			Application.Current.GetDispatcher().BeginInvokeOnMainThread(action);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
-			Application.Current.Dispatcher.InvokeOnMainThreadAsync(func);
+			Application.Current.GetDispatcher().InvokeOnMainThreadAsync(func);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task InvokeOnMainThreadAsync(Action action) =>
-			Application.Current.Dispatcher.InvokeOnMainThreadAsync(action);
+			Application.Current.GetDispatcher().InvokeOnMainThreadAsync(action);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask) =>
-			Application.Current.Dispatcher.InvokeOnMainThreadAsync(funcTask);
+			Application.Current.GetDispatcher().InvokeOnMainThreadAsync(funcTask);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask) =>
-			Application.Current.Dispatcher.InvokeOnMainThreadAsync(funcTask);
+			Application.Current.GetDispatcher().InvokeOnMainThreadAsync(funcTask);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
-			Application.Current.Dispatcher.GetMainThreadSynchronizationContextAsync();
+			Application.Current.GetDispatcher().GetMainThreadSynchronizationContextAsync();
 
 		public static double GetNamedSize(NamedSize size, Element targetElement)
 		{
