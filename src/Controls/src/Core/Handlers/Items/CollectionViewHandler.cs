@@ -31,10 +31,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
-			[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
-			[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
-			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
-			[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped
+			//[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
+			//[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
+			//[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+			//[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped
 		};
 	}
 }

@@ -34,8 +34,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 			[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
-			[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped
+			[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
+#if WINDOWS || __ANDROID__
+			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapIsGrouped,
+			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapIsGrouped,
+#endif
 		};
-
 	}
 }

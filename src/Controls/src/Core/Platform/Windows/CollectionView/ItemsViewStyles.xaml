@@ -1,7 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.Maui.Controls.Compatibility.Platform.UWP" xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+    xmlns:local="using:Microsoft.Maui.Controls.Platform" xmlns:controls="using:Microsoft.UI.Xaml.Controls">
     
     <ItemsPanelTemplate x:Key="HorizontalListItemsPanel">
         <ItemsStackPanel Orientation="Horizontal"  />
@@ -22,6 +22,7 @@
     <DataTemplate x:Key="ItemsViewDefaultTemplate">
         <local:ItemContentControl 
             x:Name="ItemContentControl" 
+            MauiContext="{Binding MauiContext}" 
 			FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}"
             FormsContainer="{Binding Container}">
         </local:ItemContentControl>
@@ -30,6 +31,7 @@
     <DataTemplate x:Key="GroupHeaderTemplate">
         <local:ItemContentControl 
             x:Name="ItemContentControl" DataContext="{Binding HeaderItemTemplateContext}"
+            MauiContext="{Binding MauiContext}" 
 			FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}"
             FormsContainer="{Binding Container}">
         </local:ItemContentControl>
@@ -38,6 +40,7 @@
     <DataTemplate x:Key="CarouselItemsViewDefaultTemplate">
         <local:ItemContentControl
             x:Name="ItemContentControl" 
+            MauiContext="{Binding MauiContext}" 
 			FormsDataTemplate="{Binding FormsDataTemplate}" 
             FormsDataContext="{Binding Item}"
             FormsContainer="{Binding Container}"
@@ -60,7 +63,7 @@
     <ControlTemplate x:Key="FormsListViewTemplate" TargetType="local:FormsListView">
         <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
             <Grid>
-                <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"
+                <ContentControl x:Name="EmptyViewContentControl" 
                                 HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch"/>
                 <ScrollViewer x:Name="ScrollViewer" 
                                 TabNavigation="{TemplateBinding TabNavigation}"
@@ -130,7 +133,7 @@
                 <ControlTemplate TargetType="local:FormsGridView">
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid>
-                            <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"
+                            <ContentControl x:Name="EmptyViewContentControl" 
                                             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                             <ScrollViewer x:Name="ScrollViewer"
                             TabNavigation="{TemplateBinding TabNavigation}"
