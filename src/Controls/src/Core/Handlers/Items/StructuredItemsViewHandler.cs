@@ -32,6 +32,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy
 		};
-
+	
 	}
 }
