@@ -89,6 +89,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_navModel.Modals.Count == 0 && _renderer.ChildCount > 0 && _renderer.GetChildAt(0) is AView view)
 			{
 				view.ImportantForAccessibility = ImportantForAccessibility.Auto;
+
+				if (NativeVersion.IsAtLeast(26))
+					view.SetFocusable(ViewFocusability.FocusableAuto);
 			}
 
 			return source.Task;
@@ -102,6 +105,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_renderer.ChildCount > 0 && _renderer.GetChildAt(0) is AView view)
 			{
 				view.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+
+				if (NativeVersion.IsAtLeast(26))
+					view.SetFocusable(ViewFocusability.NotFocusable);
 			}
 
 			_navModel.PushModal(modal);
