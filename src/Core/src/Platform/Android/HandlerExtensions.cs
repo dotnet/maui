@@ -12,17 +12,25 @@ namespace Microsoft.Maui
 
 		public static AView ToNative(this IElement view, IMauiContext context)
 		{
+			var handler = view.ToHandler(context);
+
+			if (handler.NativeView is not AView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(AView)}");
+			}
+			return result;
+		}
+
+		public static IElementHandler ToHandler(this IElement view, IMauiContext context)
+		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
-			// This is how MVU works. It collapses views down
+			//This is how MVU works. It collapses views down
 			if (view is IReplaceableView ir)
 				view = ir.ReplacedView;
 
 			var handler = view.Handler;
-			if (handler?.MauiContext != null && handler.MauiContext != context)
-				handler = null;
-
 			if (handler == null)
 				handler = context.Handlers.GetHandler(view.GetType());
 
@@ -36,13 +44,7 @@ namespace Microsoft.Maui
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
 
-			if (handler is INativeViewHandler nvh && nvh.NativeView is AView)
-				return nvh.NativeView;
-
-			if (handler.NativeView is AView result)
-				return result;
-
-			throw new InvalidOperationException($"Unable to convert {view} to {typeof(AView)}");
+			return (IElementHandler)handler;
 		}
 
 		public static void SetApplicationHandler(this Application nativeApplication, IApplication application, IMauiContext context) =>

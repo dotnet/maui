@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override void OnDestroyView()
 		{
-			base.OnDestroyView();			
+			base.OnDestroyView();
 			((IShellContentController)ShellContentTab).RecyclePage(_page);
 			_page = null;
 		}

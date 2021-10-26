@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiScrollView CreateNativeView()
 		{
-			var scrollView =  new MauiScrollView(
+			var scrollView = new MauiScrollView(
 				new Android.Views.ContextThemeWrapper(MauiContext!.Context, Resource.Style.scrollViewTheme), null!,
 					Resource.Attribute.scrollViewStyle);
 
@@ -145,8 +145,8 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		static ContentViewGroup? FindInsetPanel(ScrollViewHandler handler) 
-		{ 
+		static ContentViewGroup? FindInsetPanel(ScrollViewHandler handler)
+		{
 			return handler.NativeView.FindViewWithTag(InsetPanelTag) as ContentViewGroup;
 		}
 

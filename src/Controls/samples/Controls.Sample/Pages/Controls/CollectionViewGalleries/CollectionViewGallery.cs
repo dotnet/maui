@@ -1,5 +1,4 @@
 
-using Microsoft.Maui.Controls;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.AlternateLayoutGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries;
@@ -9,6 +8,7 @@ using Maui.Controls.Sample.Pages.CollectionViewGalleries.ItemSizeGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 {
@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		{
 			PushAsync(new TemplateCodeCollectionViewGallery(LinearItemsLayout.Vertical));
 		}
-		
+
 	}
 	public class CollectionViewGallery : ContentPage
 	{
