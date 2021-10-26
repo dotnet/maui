@@ -6,6 +6,11 @@
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
+  <PropertyGroup>
+     <!-- Allows for MAUI Xaml Hot Reload Samples to run without  -->
+    <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
+  </PropertyGroup>
+
   <!-- platform version number information -->
   <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
