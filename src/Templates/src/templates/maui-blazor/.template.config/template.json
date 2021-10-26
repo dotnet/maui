@@ -15,17 +15,31 @@
     "primaryOutputs": [
       {
         "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-          "path": "Main.razor"
+        "path": "MainPage.xaml"
+      },
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+        "path": "Pages/Index.razor"
       }
     ],
     "postActions": [
       {
         "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-        "description": "Opens Main.razor in the editor.",
+        "description": "Opens MainPage.xaml in the editor.",
         "manualInstructions": [],
         "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
         "args": {
           "files": "0"
+        },
+        "continueOnError": true
+      },
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+        "description": "Opens Pages/Index.razor in the editor.",
+        "manualInstructions": [],
+        "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+        "args": {
+          "files": "1"
         },
         "continueOnError": true
       }
