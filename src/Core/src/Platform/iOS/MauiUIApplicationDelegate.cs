@@ -3,6 +3,7 @@ using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -37,30 +38,11 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
-			var uiWindow = CreateNativeWindow();
+			this.CreateNativeWindow(Application, application, launchOptions);
 
-			Window = uiWindow;
-
-			Window.MakeKeyAndVisible();
-
-			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 
 			return true;
-		}
-
-		UIWindow CreateNativeWindow()
-		{
-			var uiWindow = new UIWindow();
-
-			var mauiContext = _applicationContext.MakeScoped(uiWindow);
-
-			Services?.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
-
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-			uiWindow.SetWindowHandler(window, mauiContext);
-
-			return uiWindow;
 		}
 
 		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)

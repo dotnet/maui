@@ -18,13 +18,17 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static IWindow? GetWindow(this UIApplication application)
+		public static IWindow? GetWindow(this UIApplication application) =>
+			application.GetKeyWindow().GetWindow();
+
+		public static IWindow? GetWindow(this UIWindow? nativeWindow)
 		{
-			var windows = application.Windows;
+			if (nativeWindow is null)
+				return null;
 
 			foreach (var window in MauiUIApplicationDelegate.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView is UIWindow win && windows.IndexOf(win) != -1)
+				if (window?.Handler?.NativeView == nativeWindow)
 					return window;
 			}
 

@@ -122,8 +122,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		public string GetHash(string input) => Crc64.GetHash(input);
-
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			return size.GetFontSize();

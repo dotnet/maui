@@ -22,20 +22,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 
-			nativeView.Changed += OnChanged;
 			nativeView.ShouldChangeText += OnShouldChangeText;
 			nativeView.Ended += OnEnded;
-			nativeView.TextPropertySet += OnTextPropertySet;
+			nativeView.TextSetOrChanged += OnTextPropertySet;
 		}
 
 		protected override void DisconnectHandler(MauiTextView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 
-			nativeView.Changed -= OnChanged;
 			nativeView.ShouldChangeText -= OnShouldChangeText;
 			nativeView.Ended -= OnEnded;
-			nativeView.TextPropertySet -= OnTextPropertySet;
+			nativeView.TextSetOrChanged -= OnTextPropertySet;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -97,16 +95,6 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.NativeView?.UpdateFont(editor, fontManager);
-		}
-
-		void OnChanged(object? sender, EventArgs e) => OnTextChanged();
-
-		void OnTextChanged()
-		{
-			if (NativeView == null)
-				return;
-
-			NativeView.HidePlaceholder(!string.IsNullOrEmpty(NativeView.Text));
 		}
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)

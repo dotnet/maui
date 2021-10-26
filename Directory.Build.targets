@@ -28,8 +28,8 @@
     <TargetPlatformMinVersion>21.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows10'))">
-    <SupportedOSPlatformVersion>10.0.17763</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>10.0.17763</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <!--

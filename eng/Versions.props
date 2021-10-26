@@ -1,63 +1,63 @@
 <Project>
   <PropertyGroup>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-rtm.21476.2</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-rtm.21521.5</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-rtm.21472.13</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.101-preview.10.47</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.101-preview.11.56</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.10.175</MicrosoftiOSSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.10.175</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.10.175</MicrosoftmacOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.10.175</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.10.243</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.10.243</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.10.243</MicrosoftmacOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.10.243</MicrosofttvOSSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0-rtm.21514.1</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
+    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
     <!-- Everything else -->
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0-rtm.21475.9</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreComponentsFormsPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsFormsPackageVersion>
-    <MicrosoftAspNetCoreComponentsPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
-    <MicrosoftAspNetCoreMetadataPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersCompositePackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsFileProvidersCompositePackageVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.0-rtm.21475.9</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsHostingPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingEventLogPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingEventLogPackageVersion>
-    <MicrosoftExtensionsLoggingEventSourcePackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingEventSourcePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftJSInteropPackageVersion>6.0.0-rtm.21475.9</MicrosoftJSInteropPackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.0-rtm.21474.23</MicrosoftWindowsDesktopAppRuntimewinx64Version>
-    <SystemCodeDomPackageVersion>6.0.0-rtm.21472.13</SystemCodeDomPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0-rtm.21472.13</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>6.0.0-rtm.21472.13</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>6.0.0-rtm.21472.13</SystemIOPipelinesPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0-rtm.21472.13</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>6.0.0-rtm.21472.13</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>6.0.0-rtm.21472.13</SystemTextJsonPackageVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.0</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsPackageVersion>6.0.0</MicrosoftAspNetCoreComponentsFormsPackageVersion>
+    <MicrosoftAspNetCoreComponentsPackageVersion>6.0.0</MicrosoftAspNetCoreComponentsPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.0</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.0</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreMetadataPackageVersion>6.0.0</MicrosoftAspNetCoreMetadataPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>6.0.0</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>6.0.0</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>6.0.0</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>6.0.0</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>6.0.0</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>6.0.0</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersCompositePackageVersion>6.0.0</MicrosoftExtensionsFileProvidersCompositePackageVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.0</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>6.0.0</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>6.0.0</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>6.0.0</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingEventLogPackageVersion>6.0.0</MicrosoftExtensionsLoggingEventLogPackageVersion>
+    <MicrosoftExtensionsLoggingEventSourcePackageVersion>6.0.0</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>6.0.0</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>6.0.0</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>6.0.0</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>6.0.0</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftJSInteropPackageVersion>6.0.0</MicrosoftJSInteropPackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.0</MicrosoftWindowsDesktopAppRuntimewinx64Version>
+    <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>6.0.0</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>6.0.0</SystemIOPipelinesPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>6.0.0</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>6.0.0</SystemTextJsonPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->
