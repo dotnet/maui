@@ -18,6 +18,11 @@ namespace Microsoft.Maui
 			view.Gravity = alignment.ToVerticalGravityFlags() | orMask;
 		}
 
+		public static void UpdateVerticalAlignment(this TextView view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
+		{
+			view.Gravity = alignment.ToVerticalGravityFlags() | orMask;
+		}
+
 		public static void UpdateTextAlignment(this EditText view, TextAlignment horizontal, TextAlignment vertical)
 		{
 			if (view.Context != null && !view.Context.HasRtlSupport())

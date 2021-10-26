@@ -60,6 +60,14 @@ namespace Microsoft.Maui
 			queryTextBox.TextAlignment = searchBar.HorizontalTextAlignment.ToNative();
 		}
 
+		public static void UpdateVerticalTextAlignment(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		{
+			if (queryTextBox == null)
+				return;
+
+			queryTextBox.VerticalAlignment = searchBar.VerticalTextAlignment.ToNativeVerticalAlignment();
+		}
+
 		public static void UpdateMaxLength(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)

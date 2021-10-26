@@ -27,15 +27,13 @@ namespace Microsoft.Maui
 
 			var applicationContext = new MauiContext(mauiApp.Services, this);
 
-			MauiApplicationContext = applicationContext;
-
 			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(Application, MauiApplicationContext);
+			this.SetApplicationHandler(Application, applicationContext);
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
 
@@ -64,8 +62,6 @@ namespace Microsoft.Maui
 		}
 
 		public static MauiApplication Current { get; private set; } = null!;
-
-		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

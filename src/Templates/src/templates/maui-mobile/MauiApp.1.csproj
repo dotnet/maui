@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
-		<!-- <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks> -->
+		<!--<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>-->
 		<OutputType>Exe</OutputType>
 		<RootNamespace>MauiApp._1</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -24,15 +24,15 @@
 		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.18362.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiImage
+		<MauiIcon
 			Include="Resources\appicon.svg"
 			ForegroundFile="Resources\appiconfg.svg"
-			IsAppIcon="true"
 			Color="#512BD4" />
 
 		<!-- Splash Screen -->
@@ -48,9 +48,6 @@
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
 		<!-- Required - WinUI does not yet have buildTransitive for everything -->
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="WINDOWSAPPSDK_VERSION" />
-		<PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="WINDOWSAPPSDK_VERSION" />
-		<PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="WINDOWSAPPSDK_VERSION" />
-		<PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="WINDOWSAPPSDK_VERSION" NoWarn="NU1701" />
 		<PackageReference Include="Microsoft.Graphics.Win2D" Version="WIN2D_VERSION" />
 	</ItemGroup>
 

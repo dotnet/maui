@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Platform
 				InvalidateMeasure();
 			}
 
-			protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+			protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 			{
 				_view.IsInNativeLayout = true;
 				Compatibility.Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, finalSize.Width, finalSize.Height));
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return finalSize;
 			}
 
-			protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+			protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 			{
 				Size request = _view.Measure(availableSize.Width, availableSize.Height, MeasureFlags.IncludeMargins).Request;
 
@@ -104,14 +104,14 @@ namespace Microsoft.Maui.Controls.Platform
 					request.Height = availableSize.Height;
 				}
 
-				Windows.Foundation.Size result;
+				global::Windows.Foundation.Size result;
 				if (_view.HorizontalOptions.Alignment == LayoutAlignment.Fill && !double.IsInfinity(availableSize.Width) && availableSize.Width != 0)
 				{
-					result = new Windows.Foundation.Size(availableSize.Width, request.Height);
+					result = new global::Windows.Foundation.Size(availableSize.Width, request.Height);
 				}
 				else
 				{
-					result = new Windows.Foundation.Size(request.Width, request.Height);
+					result = new global::Windows.Foundation.Size(request.Width, request.Height);
 				}
 
 				FrameworkElement?.Measure(availableSize);

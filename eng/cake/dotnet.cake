@@ -85,16 +85,16 @@ Task("dotnet-templates")
         EnsureDirectoryExists(Directory("../templatesTest/"));
         FileWriteText(File("../templatesTest/Directory.Build.props"), "<Project/>");
         FileWriteText(File("../templatesTest/Directory.Build.targets"), "<Project/>");
+        CopyFileToDirectory(File("./NuGet.config"), Directory("../templatesTest/"));
 
-        // Create an empty NuGet.config
-        StartProcess(dn, "new nugetconfig -o ../templatesTest/");
-        // NOTE: this should be temporary until 'library-packs' are working for .msi-based installs
-        StartProcess(dn, "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json --name dotnet6 --configfile ../templatesTest/nuget.config");
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
             { "RestorePackagesPath", MakeAbsolute(File("../templatesTest/packages")).FullPath },
             { "RestoreConfigFile", MakeAbsolute(File("../templatesTest/nuget.config")).FullPath },
+
+            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+            { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
         };
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
@@ -102,7 +102,7 @@ Task("dotnet-templates")
             var name = template.Replace("-", "") + " Space-Dash";
             StartProcess(dn, $"new {template} -o \"../templatesTest/{name}\"");
 
-            RunMSBuildWithDotNet($"../templatesTest/{name}", properties);
+            RunMSBuildWithDotNet($"../templatesTest/{name}", properties, warningsAsError: true);
         }
     });
 
@@ -118,6 +118,7 @@ Task("dotnet-test")
             "**/Core.UnitTests-net6.csproj",
             "**/Essentials.UnitTests-net6.csproj",
             "**/Resizetizer.UnitTests-net6.csproj",
+            "**/Controls.Sample.Tests.csproj"
         };
 
         var success = true;
@@ -148,7 +149,7 @@ Task("dotnet-pack")
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
         {
             DiagnosticOutput = true,
-            ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
+            ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
         });
 
         // Download some additional symbols that need to be archived along with the maui symbols:
@@ -330,7 +331,7 @@ void StartVisualStudioForDotNet6(string sln = null)
 
 // NOTE: These methods work as long as the "dotnet" target has already run
 
-void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
+void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false, bool warningsAsError = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"\"{logDirectory}/{name}-{configuration}.binlog\"";
@@ -344,6 +345,10 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)
             .EnableBinaryLogger(binlog);
+        if (warningsAsError)
+        {
+            msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
+        }
 
         if (properties != null)
         {
@@ -375,6 +380,10 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
             .WithRestore()
             .SetConfiguration(configuration)
             .EnableBinaryLogger(binlog);
+        if (warningsAsError)
+        {
+            msbuildSettings.WarningsAsError = true;
+        }
 
         if (properties != null)
         {

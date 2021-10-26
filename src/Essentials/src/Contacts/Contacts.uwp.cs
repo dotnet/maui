@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		internal static Contact ConvertContact(Windows.ApplicationModel.Contacts.Contact contact)
+		internal static Contact ConvertContact(global::Windows.ApplicationModel.Contacts.Contact contact)
 		{
 			if (contact == null)
 				return default;

@@ -122,8 +122,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		public string GetHash(string input) => Crc64.GetHash(input);
-
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			return size.GetFontSize();
@@ -134,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
 				return KnownColor.Default;
 
-			return ((Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
+			return ((global::Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
 		}
 
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)

@@ -24,7 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="images\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="images\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="testdata\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

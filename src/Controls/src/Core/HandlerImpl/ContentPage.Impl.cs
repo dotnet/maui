@@ -24,14 +24,7 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			var content = (this as IContentView).PresentedContent;
-			var padding = Padding;
-
-			if (content != null)
-			{
-				_ = content.Measure(widthConstraint - padding.HorizontalThickness, heightConstraint - padding.VerticalThickness);
-			}
-
+			_ = this.MeasureContent(widthConstraint, heightConstraint);
 			return new Size(widthConstraint, heightConstraint);
 		}
 
