@@ -40,9 +40,9 @@ namespace Microsoft.Maui.UnitTests
 				[nameof(IView.Background)] = (r, v) => wasMapper1Called = true
 			};
 
-			var mapper2 = new PropertyMapper<ITextStyle>(mapper1)
+			var mapper2 = new PropertyMapper<ITextButton>(mapper1)
 			{
-				[nameof(ITextStyle.TextColor)] = (r, v) => wasMapper2Called = true
+				[nameof(ITextButton.TextColor)] = (r, v) => wasMapper2Called = true
 			};
 
 			mapper2.UpdateProperties(null, new Button());
@@ -50,6 +50,53 @@ namespace Microsoft.Maui.UnitTests
 			Assert.True(wasMapper1Called);
 			Assert.True(wasMapper2Called);
 		}
+
+
+		[Fact]
+		public void ConstructorChainingMappersWorks()
+		{
+			bool wasMapper1Called = false;
+			bool wasMapper2Called = false;
+			var mapper1 = new PropertyMapper<IView>
+			{
+				[nameof(IView.Background)] = (r, v) => wasMapper1Called = true
+			};
+
+			var mapper2 = new PropertyMapper<ITextButton>()
+			{
+				[nameof(ITextButton.TextColor)] = (r, v) => wasMapper2Called = true
+			};
+
+
+			new PropertyMapper<ITextButton>(mapper2, mapper1)
+				.UpdateProperties(null, new Button());
+
+			Assert.True(wasMapper1Called);
+			Assert.True(wasMapper2Called);
+		}
+
+		[Fact]
+		public void ConstructorChainingMappersOverrideBase()
+		{
+			bool wasMapper1Called = false;
+			bool wasMapper2Called = false;
+			var mapper1 = new PropertyMapper<IView>
+			{
+				[nameof(IView.Background)] = (r, v) => wasMapper1Called = true
+			};
+
+			var mapper2 = new PropertyMapper<IButton>()
+			{
+				[nameof(IView.Background)] = (r, v) => wasMapper2Called = true
+			};
+
+			new PropertyMapper<ITextButton>(mapper2, mapper1)
+				.UpdateProperties(null, new Button());
+
+			Assert.False(wasMapper1Called);
+			Assert.True(wasMapper2Called);
+		}
+
 
 		[Fact]
 		public void ChainingMappersStillAllowReplacingChainedRoot()
@@ -62,9 +109,9 @@ namespace Microsoft.Maui.UnitTests
 				[nameof(IView.Background)] = (r, v) => wasMapper1Called = true
 			};
 
-			var mapper2 = new PropertyMapper<ITextStyle>(mapper1)
+			var mapper2 = new PropertyMapper<ITextButton>(mapper1)
 			{
-				[nameof(ITextStyle.TextColor)] = (r, v) => wasMapper2Called = true
+				[nameof(ITextButton.TextColor)] = (r, v) => wasMapper2Called = true
 			};
 
 			mapper1[nameof(IView.Background)] = (r, v) => wasMapper3Called = true;

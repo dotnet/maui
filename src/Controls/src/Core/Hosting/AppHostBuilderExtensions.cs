@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 
@@ -10,6 +11,14 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
+#if __IOS__ || __ANDROID__
+			{ typeof(CollectionView), typeof(CollectionViewHandler) },
+#endif
+
+#if WINDOWS
+			{ typeof(CollectionView), typeof(CollectionViewHandler) },
+#endif
+
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif

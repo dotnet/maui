@@ -297,15 +297,15 @@ namespace Microsoft.Maui
 			return end;
 		}
 
-		internal static void SetInputType(this AppCompatEditText editText, IEditor editor)
+		internal static void SetInputType(this AppCompatEditText editText, ITextInput textInput)
 		{
-			if (editor.IsReadOnly)
+			if (textInput.IsReadOnly)
 			{
 				editText.InputType = InputTypes.Null;
 			}
 			else
 			{
-				var keyboard = editor.Keyboard;
+				var keyboard = textInput.Keyboard;
 				var nativeInputTypeToUpdate = keyboard.ToInputType();
 
 				if (keyboard is not CustomKeyboard)
@@ -314,7 +314,7 @@ namespace Microsoft.Maui
 
 					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 					{
-						if (!editor.IsTextPredictionEnabled)
+						if (!textInput.IsTextPredictionEnabled)
 							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
 					}
 				}
@@ -324,38 +324,7 @@ namespace Microsoft.Maui
 					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 				}
 
-				editText.InputType = nativeInputTypeToUpdate;
-			}
-		}
-
-		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
-		{
-			if (entry.IsReadOnly)
-			{
-				editText.InputType = InputTypes.Null;
-			}
-			else
-			{
-				var keyboard = entry.Keyboard;
-				var nativeInputTypeToUpdate = keyboard.ToInputType();
-
-				if (keyboard is not CustomKeyboard)
-				{
-					// TODO: IsSpellCheckEnabled handling must be here.
-
-					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
-					{
-						if (!entry.IsTextPredictionEnabled)
-							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
-					}
-				}
-
-				if (keyboard == Keyboard.Numeric)
-				{
-					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
-				}
-
-				if (entry.IsPassword)
+				if (textInput is IEntry entry && entry.IsPassword)
 				{
 					if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
 						nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
@@ -366,6 +335,9 @@ namespace Microsoft.Maui
 
 				editText.InputType = nativeInputTypeToUpdate;
 			}
+
+			if (textInput is IEditor)
+				editText.InputType |= InputTypes.TextFlagMultiLine;
 		}
 	}
 }
