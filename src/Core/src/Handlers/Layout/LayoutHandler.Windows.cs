@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Add(child.ToNative(MauiContext));
+			NativeView.Children.Add(child.ToNative(MauiContext, true));
 		}
 
 		public override void SetVirtualView(IView view)
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.Handler?.NativeView is UIElement view)
+			if (child.GetNative(true) is UIElement view)
 			{
 				NativeView.Children.Remove(view);
 			}
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Insert(index, child.ToNative(MauiContext));
+			NativeView.Children.Insert(index, child.ToNative(MauiContext, true));
 		}
 
 		public void Update(int index, IView child) 
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children[index] = child.ToNative(MauiContext);
+			NativeView.Children[index] = child.ToNative(MauiContext, true);
 		}
 
 		protected override LayoutPanel CreateNativeView()
