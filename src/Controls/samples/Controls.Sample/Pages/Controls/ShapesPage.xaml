@@ -30,6 +30,20 @@
                 WidthRequest="150"
                 HeightRequest="50"
                 HorizontalOptions="Start" />
+            
+            <Label
+                Text="RoundRectangle"
+                Style="{StaticResource Headline}" />
+            <RoundRectangle
+                CornerRadius="12"
+                Fill="DarkBlue"
+                Stroke="Red"
+                StrokeThickness="4"
+                StrokeDashArray="1,1"
+                StrokeDashOffset="6"
+                WidthRequest="150"
+                HeightRequest="50"
+                HorizontalOptions="Start" />
 
             <Label
                 Text="Line"
