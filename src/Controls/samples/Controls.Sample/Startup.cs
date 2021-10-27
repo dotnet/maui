@@ -140,7 +140,7 @@ namespace Maui.Controls.Sample
 				.ConfigureEssentials(essentials =>
 				{
 					essentials
-						.UseVersionTracking()
+						//.UseVersionTracking()
 						.UseMapServiceToken("YOUR-KEY-HERE")
 						.AddAppAction("test_action", "Test App Action")
 						.AddAppAction("second_action", "Second App Action")

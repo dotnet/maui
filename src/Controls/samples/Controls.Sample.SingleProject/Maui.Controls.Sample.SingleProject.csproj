@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>MSIX</WindowsPackageType>
+    <WindowsPackageType>None</WindowsPackageType>
     <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>

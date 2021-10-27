@@ -1,5 +1,6 @@
 using System.Globalization;
 using Windows.ApplicationModel;
+using System.Reflection;
 #if WINDOWS
 using Microsoft.UI.Xaml;
 #else
@@ -10,7 +11,17 @@ namespace Microsoft.Maui.Essentials
 {
 	public static partial class AppInfo
 	{
-		static string PlatformGetPackageName() => Package.Current.Id.Name;
+		static string PlatformGetPackageName()
+		{
+			try
+			{
+				return Package.Current.Id.Name;
+			}
+			catch
+			{
+				return Assembly.GetEntryAssembly().GetName().Name;
+			}
+		}
 
 		static string PlatformGetName() => Package.Current.DisplayName;
 
