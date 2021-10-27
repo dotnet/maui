@@ -47,8 +47,6 @@ namespace Microsoft.Maui.Hosting
 
 			if (useDefaults)
 			{
-				this.ConfigureCoreServices();
-
 				// Register required services
 				this.ConfigureMauiHandlers(configureDelegate: null);
 

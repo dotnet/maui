@@ -73,6 +73,10 @@
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true">
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true OR $(TargetFramework.StartsWith('net6.0-android')) == true ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.xml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.axml" />

@@ -6,14 +6,6 @@ namespace Microsoft.Maui
 	public interface IButton : IView, IPadding
 	{
 		/// <summary>
-		/// Allows you to display a bitmap image on the Button.
-		/// </summary>
-		IImageSource? ImageSource { get; }
-
-
-		void ImageSourceLoaded();
-
-		/// <summary>
 		/// Occurs when the Button is pressed.
 		/// </summary>
 		void Pressed();

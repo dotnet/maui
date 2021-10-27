@@ -183,9 +183,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
-			Init(activationState.Context, activationState.SavedInstance, options);
+			Init(activationState.Context, options);
 
-		public static void Init(IMauiContext context, Bundle bundle, InitializationOptions? options = null)
+		public static void Init(IMauiContext context, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
 
@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
-		public static void Init(IMauiContext context, Bundle bundle, Assembly resourceAssembly)
+		public static void Init(IMauiContext context, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
 			SetupInit(context, resourceAssembly, null);
