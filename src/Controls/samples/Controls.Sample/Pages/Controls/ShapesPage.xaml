@@ -4,6 +4,13 @@
     x:Class="Maui.Controls.Sample.Pages.ShapesPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Shapes">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+            
+            <Color x:Key="CustomColor">#2B0B98</Color>
+            
+        </ResourceDictionary>
+    </views:BasePage.Resources>
     <ScrollView>
         <VerticalStackLayout Padding="12" Spacing="6">
 
@@ -11,7 +18,7 @@
                 Text="Ellipse"
                 Style="{StaticResource Headline}" />
             <Ellipse
-                Fill="DarkBlue"
+                Fill="{StaticResource CustomColor}"
                 Stroke="Red"
                 StrokeThickness="4"
                 WidthRequest="150"
