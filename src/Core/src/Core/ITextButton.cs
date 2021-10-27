@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
+	/// <summary>
+	/// functionality related with the Button View text.
+	/// </summary>
 	public interface ITextButton : IView, IButton, IText
 	{
 	}
