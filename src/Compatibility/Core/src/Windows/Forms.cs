@@ -61,8 +61,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(mauiContext.GetFlowDirection());
 
-			Device.Info = new WindowsDeviceInfo();
-
 			//TODO WINUI3
 			//// use field and not property to avoid exception in getter
 			//if (Device.info != null)
