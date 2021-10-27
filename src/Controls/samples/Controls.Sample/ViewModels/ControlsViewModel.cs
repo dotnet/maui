@@ -21,8 +21,11 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(CheckBoxPage), "CheckBox",
 				"The CheckBox is a type of button that can either be checked or empty. When a checkbox is checked, it's considered to be on."),
 
+			new SectionModel(typeof(Pages.CollectionViewGalleries.CarouselViewGalleries.CarouselViewGallery), "CarouselView",
+				"CarouselView displays a scrollable list of data items."),
+
 			new SectionModel(typeof(Pages.CollectionViewGalleries.CollectionViewGallery), "CollectionView",
-				"CollectionView displays a scrollable list of selectable data items, using different layout specifications.It aims to provide a more flexible, and performant alternative to ListView. "),
+				"CollectionView displays a scrollable list of selectable data items, using different layout specifications. It aims to provide a more flexible, and performant alternative to ListView."),
 
 			new SectionModel(typeof(DatePickerPage), "DatePicker",
 				"A view that allows the user to select a date."),
