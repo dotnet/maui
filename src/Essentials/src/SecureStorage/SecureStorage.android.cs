@@ -13,43 +13,45 @@ namespace Microsoft.Maui.Essentials
 
 		static Task<string> PlatformGetAsync(string key)
 		{
-			string decryptedData = null;
-
 			try
 			{
-				lock (locker)
+				return Task.Run(() =>
 				{
-					decryptedData = GetEncryptedSharedPreferences().GetString(key, null);
-				}
+					lock (locker)
+					{
+						return GetEncryptedSharedPreferences().GetString(key, null);
+					}
+				});
 			}
 			catch (AEADBadTagException)
 			{
 				System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to an app uninstall. Removing old key and returning null.");
 				Remove(key);
-			}
 
-			return Task.FromResult(decryptedData);
+				return Task.FromResult<string>(null);
+			}
 		}
 
 		static Task PlatformSetAsync(string key, string data)
 		{
-			lock (locker)
+			return Task.Run(() =>
 			{
-				using (var editor = GetEncryptedSharedPreferences().Edit())
+				lock (locker)
 				{
-					if (data == null)
+					using (var editor = GetEncryptedSharedPreferences().Edit())
 					{
-						editor.Remove(key);
+						if (data == null)
+						{
+							editor.Remove(key);
+						}
+						else
+						{
+							editor.PutString(key, data);
+						}
+						editor.Apply();
 					}
-					else
-					{
-						editor.PutString(key, data);
-					}
-					editor.Apply();
 				}
-			}
-
-			return Task.CompletedTask;
+			});
 		}
 
 		static bool PlatformRemove(string key)
