@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Platform
 		Lazy<SkiaGraphicsView> _drawableCanvas;
 		Lazy<SKClipperView> _clipperView;
 		EvasObject? _content;
+		IShape? _shape;
 
 		public WrapperView(EvasObject parent) : base(parent)
 		{
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.Platform
 					PassEvents = true
 				};
 				view.Show();
+				view.PassEvents = true;
 				Children.Add(view);
 				view.Lower();
 				Content?.RaiseTop();
@@ -143,10 +145,6 @@ namespace Microsoft.Maui.Platform
 			}
 			canvas.FillPath(clipPath);
 			Content?.SetClipperCanvas(_clipperView.Value);
-			if (_drawableCanvas.IsValueCreated)
-			{
-				_drawableCanvas.Value.SetClipperCanvas(_clipperView.Value);
-			}
 		}
 
 		void OnLayout(object? sender, LayoutEventArgs e)
@@ -310,6 +308,10 @@ namespace Microsoft.Maui.Platform
 				target.SetClip(null); // To restore original image
 				evas_object_clip_set(target, realHandle);
 			}
+
+			var path = new PathF();
+			path.AppendRectangle(bounds);
+			return path;
 		}
 
 		[DllImport("libevas.so.1")]
