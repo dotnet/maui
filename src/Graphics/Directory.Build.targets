@@ -1,11 +1,13 @@
 <Project>
+
   <Import Project="eng\Git.Build.targets" />
   <Import Project="eng\Version.targets" />
-  <!-- Temporarily disable the linker for net6.0-ios and net6.0-maccatalyst until we get machine pools with Big Sur and Xcode 12.5 is stable -->
-  <PropertyGroup>
-    <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
-  </PropertyGroup>
-  <!-- HACK: Prevent the Platform checks -->
-  <Target Name="ValidateWinUIPlatform" />
-  <Target Name="BinPlaceBootstrapDll" />
+
+  <!-- HACK: Do not copy the native bootstrap files -->
+  <Target Name="_RemoveWasdkBootstrapDll" BeforeTargets="ResolveReferences">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'Microsoft.WindowsAppRuntime.Bootstrap.dll'" />
+    </ItemGroup>
+  </Target>
+
 </Project>

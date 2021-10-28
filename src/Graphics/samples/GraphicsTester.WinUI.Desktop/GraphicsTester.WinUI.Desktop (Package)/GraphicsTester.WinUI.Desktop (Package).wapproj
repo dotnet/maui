@@ -64,7 +64,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSdk" Version="[1.0.0-preview2]">
+    <PackageReference Include="Microsoft.WindowsAppSdk" Version="[1.0.0-preview3]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>

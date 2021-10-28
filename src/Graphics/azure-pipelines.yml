@@ -1,8 +1,8 @@
 variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
-  DotNet.Version: 6.0.100-rtm.21476.2
-  DotNet.Workloads: https://aka.ms/dotnet/maui/main.json
+  DotNet.Version: 6.0.100-rtm.21525.3
+  DotNet.Workloads: https://aka.ms/dotnet/maui/preview.10.json
   DotNet.Cli.Telemetry.OptOut: true
 
 parameters:
@@ -87,14 +87,6 @@ stages:
 
             - pwsh: |
                 $ProgressPreference = 'SilentlyContinue'
-                Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Redth/dotnet-maui-check/main/Clean-Old-DotNet6-Previews.ps1" -OutFile Clean-Old-DotNet6-Previews.ps1
-                & .\Clean-Old-DotNet6-Previews.ps1 -FullDelete -DotnetRoot "$env:DOTNET_ROOT"
-                & dotnet --list-sdks
-              displayName: remove old dotnet 6
-              errorActionPreference: stop
-
-            - pwsh: |
-                $ProgressPreference = 'SilentlyContinue'
                 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
                 & .\dotnet-install.ps1 -Version $(DotNet.Version) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
                 & dotnet --list-sdks
@@ -120,9 +112,13 @@ stages:
               displayName: Select JDK 11
 
             - pwsh: |
-                Invoke-WebRequest -Uri "$(DotNet.Workloads)" -OutFile rollback.json
-                & dotnet workload update --from-rollback-file rollback.json --source https://aka.ms/dotnet6/nuget/index.json
-                & dotnet workload install maui --skip-manifest-update --source https://aka.ms/dotnet6/nuget/index.json
+                & dotnet workload install maui `
+                  --from-rollback-file "$(DotNet.Workloads)" `
+                  --source https://aka.ms/dotnet6/nuget/index.json `
+                  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-aspnetcore-7c57ecbd-3/nuget/v3/index.json `
+                  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-4822e3c3-5/nuget/v3/index.json `
+                  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-windowsdesktop-59fea7da-4/nuget/v3/index.json `
+                  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-1ec2e17f-4/nuget/v3/index.json
               displayName: install dotnet workloads
               errorActionPreference: stop
 
