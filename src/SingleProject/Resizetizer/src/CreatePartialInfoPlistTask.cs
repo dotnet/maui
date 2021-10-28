@@ -16,9 +16,6 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string Storyboard { get; set; }
 
-		[Output]
-		public ITaskItem[] PlistFiles { get; set; }
-
 		const string plistHeader =
 @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <!DOCTYPE plist PUBLIC ""-//Apple//DTD PLIST 1.0//EN"" ""http://www.apple.com/DTDs/PropertyList-1.0.dtd"">
@@ -63,8 +60,6 @@ namespace Microsoft.Maui.Resizetizer
 
 					f.WriteLine(plistFooter);
 				}
-
-				PlistFiles = new[] { new TaskItem(plistFilename) };
 			}
 			catch (Exception ex)
 			{
