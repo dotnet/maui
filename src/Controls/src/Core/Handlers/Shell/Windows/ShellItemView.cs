@@ -210,13 +210,26 @@ namespace Microsoft.Maui.Controls.Platform
 			if (appearance != null)
 			{
 				var a = (IShellAppearanceElement)appearance;
-				tabBarBackgroundColor = a.EffectiveTabBarBackgroundColor.ToWindowsColor();
-				tabBarForegroundColor = a.EffectiveTabBarForegroundColor.ToWindowsColor();
+
+				if (a.EffectiveTabBarBackgroundColor != null)
+					tabBarBackgroundColor = a.EffectiveTabBarBackgroundColor.ToWindowsColor();
+
+				if (a.EffectiveTabBarForegroundColor != null)
+					tabBarForegroundColor = a.EffectiveTabBarForegroundColor.ToWindowsColor();
+
 				if (!appearance.TitleColor.IsDefault())
 					titleColor = appearance.TitleColor.ToWindowsColor();
 			}
-			_BottomBarArea.Background = _HeaderArea.Background =
-				new UwpSolidColorBrush(tabBarBackgroundColor);
+
+			_HeaderArea.Background = new UwpSolidColorBrush(tabBarBackgroundColor);
+
+			// Only color the bottom area if there are tabs present
+			if (ShellItem?.Items.Count > 1)
+			{
+				_BottomBarArea.Background = 
+					new UwpSolidColorBrush(tabBarBackgroundColor);
+			}
+
 			_Title.Foreground = new UwpSolidColorBrush(titleColor);
 			var tabbarForeground = new UwpSolidColorBrush(tabBarForegroundColor);
 			foreach (var button in _BottomBar.Children.OfType<AppBarButton>())
