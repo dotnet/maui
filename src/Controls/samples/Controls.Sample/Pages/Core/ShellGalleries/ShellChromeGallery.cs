@@ -67,5 +67,12 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 		{
 			Shell.SetNavBarIsVisible(this, !Shell.GetNavBarIsVisible(this));
 		}
+
+		void OnToggleBackButtonIsVisible(object sender, EventArgs e)
+		{
+			var backButtonBehavior = Shell.GetBackButtonBehavior(this) ?? new BackButtonBehavior();
+			backButtonBehavior.IsVisible = !backButtonBehavior.IsVisible;
+			Shell.SetBackButtonBehavior(this, backButtonBehavior);
+		}
 	}
 }

@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		IShellItemController ShellItemController => ShellItem;
 		IShellController ShellController => ShellContext?.Shell;
+		BackButtonBehavior BackButtonBehavior { get; set; }
 
 		public ShellItemView(ShellView shellContext)
 		{
@@ -344,6 +345,7 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdatePageTitle();
 			UpdateToolbar();
 			UpdateNavBarVisibility();
+			SetBackButtonBehavior(Shell.GetBackButtonBehavior(DisplayedPage));
 		}
 
 		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -360,6 +362,33 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				UpdateNavBarVisibility();
 			}
+			else if (e.PropertyName == Shell.BackButtonBehaviorProperty.PropertyName)
+			{
+				SetBackButtonBehavior(Shell.GetBackButtonBehavior(DisplayedPage));
+			}
+		}
+
+		void SetBackButtonBehavior(BackButtonBehavior value)
+		{
+			if (BackButtonBehavior == value)
+				return;
+
+			if (BackButtonBehavior != null)
+				BackButtonBehavior.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
+
+			BackButtonBehavior = value;
+
+			if (BackButtonBehavior != null)
+				BackButtonBehavior.PropertyChanged += OnBackButtonBehaviorPropertyChanged;
+
+			ShellContext.UpdateToolBar();
+			UpdateHeaderInsets();
+		}
+
+		void OnBackButtonBehaviorPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			ShellContext.UpdateToolBar();
+			UpdateHeaderInsets();
 		}
 
 		void UpdateNavBarVisibility()
@@ -374,6 +403,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			ShellContext.UpdateToolBar();
+			UpdateHeaderInsets();
 		}
 
 		void UpdatePageTitle()

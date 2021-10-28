@@ -21,6 +21,10 @@
                 Style="{StaticResource Headline}"/>
             <Button Text="Toggle Navbar Visibility" Clicked="OnToggleNavBarIsVisible" />
             <Label
+                Text="Toggle BackButton Visibility"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toggle Back Button Visibility" Clicked="OnToggleBackButtonIsVisible" />
+            <Label
                 Text="Push Page"
                 Style="{StaticResource Headline}"/>
             <Button Text="Push Page" Clicked="OnPushPage" />
