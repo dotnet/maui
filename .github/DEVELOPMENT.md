@@ -15,11 +15,9 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 2. Add this to your NuGet.config:  
    ```xml
     <add key="darc-pub-dotnet-runtime" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-6f411658/nuget/v3/index.json"  />
+    <add key="darc-pub-dotnet-emsdk" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-1ec2e17f/nuget/v3/index.json" />
     <add key="dotnet6" value="https://aka.ms/dotnet6/nuget/index.json" />
     ```
-    
-    
-    
    > NOTE: this is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds my disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes:  
    > `dotnet nuget locals all --clear`
 
@@ -65,7 +63,7 @@ iOS and MacCatalyst will require Xcode 13.1 Stable. You can get this [here](http
 
 ### Android
 
-Android API-31 (Android 12) is now the default in .NET 6 rc1.
+Android API-31 (Android 12) is now the default in .NET 6.
 
 
 
