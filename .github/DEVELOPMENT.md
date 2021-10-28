@@ -2,10 +2,6 @@
 
 This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui) to get started.
 
-## Requirements
-
-- [Install .NET6](https://github.com/dotnet/maui/wiki/Installing-.NET-6)
-
 ## Running
 
 ### .NET 6
