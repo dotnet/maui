@@ -15,12 +15,16 @@ namespace Microsoft.Maui
 		Lazy<SkiaGraphicsView> _drawableCanvas;
 		Lazy<SKClipperView> _clipperView;
 		EvasObject? _content;
+		IShape? _shape;
 
 		public WrapperView(EvasObject parent) : base(parent)
 		{
 			_drawableCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
-				var view = new SkiaGraphicsView(parent);
+				var view = new SkiaGraphicsView(parent)
+				{
+					IgnorePixelScaling = true
+				};
 				var _drawables = new WrapperViewDrawables();
 				_drawables.Invalidated += (s, e) =>
 				{
@@ -28,6 +32,7 @@ namespace Microsoft.Maui
 				};
 				view.Drawable = _drawables;
 				view.Show();
+				view.PassEvents = true;
 				Children.Add(view);
 				view.Lower();
 				Content?.RaiseTop();
@@ -50,9 +55,72 @@ namespace Microsoft.Maui
 			LayoutUpdated += OnLayout;
 		}
 
+		public void UpdateBackground(Paint? paint)
+		{
+			if (paint == null)
+			{
+				Drawables.BackgroundDrawable = null;
+			}
+			else
+			{
+				if (Drawables.BackgroundDrawable == null)
+				{
+					Drawables.BackgroundDrawable = paint.ToDrawable(GetBoundaryPath());
+				}
+				else
+				{
+					(Drawables.BackgroundDrawable as BackgroundDrawable)!.UpdatePaint(paint);
+				}
+			}
+			_drawableCanvas.Value.Invalidate();
+		}
+
+		public void UpdateShape(IShape? shape)
+		{
+			_shape = shape;
+			UpdateDrawableCanvas(false);
+		}
+
+		partial void ShadowChanged()
+		{
+			if (Shadow == null)
+			{
+				Drawables.ShadowDrawable = null;
+				return;
+			}
+
+			if (Drawables.ShadowDrawable == null)
+			{
+				Drawables.ShadowDrawable = new ShadowDrawable(Shadow, GetBoundaryPath());
+				_drawableCanvas.Value.SetClip(null);
+			}
+			UpdateDrawableCanvas(true);
+		}
+
 		partial void ClipChanged()
 		{
 			_clipperView.Value.Invalidate();
+			UpdateDrawableCanvas(false);
+		}
+
+		void UpdateDrawableCanvas(bool isShadowUpdated)
+		{
+			if (isShadowUpdated)
+			{
+				UpdateDrawableCanvasGeometry();
+			}
+			UpdateDrawables();
+			_drawableCanvas.Value.Invalidate();
+		}
+
+		void UpdateDrawables()
+		{
+			var path = GetBoundaryPath();
+			if (Shadow != null)
+			{
+				(Drawables.ShadowDrawable as ShadowDrawable)?.UpdateShadow(Shadow, path);
+			}
+			(Drawables.BackgroundDrawable as BackgroundDrawable)?.UpdatePath(path);
 		}
 
 		void OnClipPaint(object? sender, DrawClipEventArgs e)
@@ -75,10 +143,6 @@ namespace Microsoft.Maui
 
 			canvas.FillPath(clipPath);
 			Content?.SetClipperCanvas(_clipperView.Value);
-			if (_drawableCanvas.IsValueCreated)
-			{
-				_drawableCanvas.Value.SetClipperCanvas(_clipperView.Value);
-			}
 		}
 
 		void OnLayout(object? sender, LayoutEventArgs e)
@@ -90,7 +154,7 @@ namespace Microsoft.Maui
 
 			if (_drawableCanvas.IsValueCreated)
 			{
-				_drawableCanvas.Value.Geometry = Geometry;
+				UpdateDrawableCanvas(true);
 			}
 
 			if (_clipperView.IsValueCreated)
@@ -120,15 +184,42 @@ namespace Microsoft.Maui
 					}
 				}
 			}
-
 		}
 
-		public IWrapperViewDrawables Drawables
+		public IWrapperViewDrawables Drawables => (IWrapperViewDrawables)_drawableCanvas.Value.Drawable;
+
+		void UpdateDrawableCanvasGeometry()
 		{
-			get
+			if (_drawableCanvas.IsValueCreated)
 			{
-				return (_drawableCanvas.Value.Drawable as IWrapperViewDrawables)!;
+				_drawableCanvas.Value.Geometry = Geometry.ExpandTo(Shadow);
 			}
+		}
+
+		PathF GetBoundaryPath()
+		{
+			var drawableGeometry = _drawableCanvas.Value.Geometry;
+			var left = Geometry.Left - drawableGeometry.Left;
+			var top = Geometry.Top - drawableGeometry.Top;
+			var width = Geometry.Width;
+			var height = Geometry.Height;
+			var bounds = new Tizen.UIExtensions.Common.Rect(left, top, width, height).ToDP();
+
+			if (Clip != null)
+			{
+				var clipPath = Clip.PathForBounds(bounds);
+				clipPath.Move((float)bounds.Left, (float)bounds.Top);
+				return clipPath;
+			}
+
+			if (_shape != null)
+			{
+				return _shape.PathForBounds(bounds);
+			}
+
+			var path = new PathF();
+			path.AppendRectangle(bounds);
+			return path;
 		}
 	}
 

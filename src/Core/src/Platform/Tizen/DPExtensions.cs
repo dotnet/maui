@@ -65,6 +65,11 @@ namespace Microsoft.Maui
 			return pixel / DeviceInfo.ScalingFactor;
 		}
 
+		public static float ToScaledDP(this float pixel)
+		{
+			return pixel / (float)DeviceInfo.ScalingFactor;
+		}
+
 		public static double ToScaledDP(this double pixel)
 		{
 			return pixel / DeviceInfo.ScalingFactor;

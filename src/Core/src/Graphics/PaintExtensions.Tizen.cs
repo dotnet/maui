@@ -2,28 +2,9 @@
 {
 	public static partial class PaintExtensions
 	{
-		public static IDrawable ToDrawable(this Paint paint)
+		public static IDrawable ToDrawable(this Paint paint, PathF path)
 		{
-			return new BackgroundDrawable(paint);
-		}
-
-		class BackgroundDrawable : IDrawable
-		{
-			Paint _paint;
-			public BackgroundDrawable(Paint paint)
-			{
-				_paint = paint;
-			}
-
-			public void Draw(ICanvas canvas, RectangleF dirtyRect)
-			{
-				canvas.SaveState();
-
-				canvas.SetFillPaint(_paint, dirtyRect);
-				canvas.FillRectangle(dirtyRect);
-
-				canvas.RestoreState();
-			}
+			return new BackgroundDrawable(paint, path);
 		}
 	}
 }

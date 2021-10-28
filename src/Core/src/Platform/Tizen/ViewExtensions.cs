@@ -40,9 +40,9 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this EvasObject nativeView, IView view)
 		{
-			if (nativeView is IWrapperViewCanvas canvas)
+			if (nativeView is WrapperView wrapperView)
 			{
-				canvas.Drawables.BackgroundDrawable = view.Background?.ToDrawable() ?? null;
+				wrapperView.UpdateBackground(view.Background);
 			}
 			else
 			{
