@@ -45,13 +45,17 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
 		{
-			if (AppShell.FlyoutBackground == null ||
-				AppShell.FlyoutBackground.IsEmpty || 
+			AppShell.RemoveBinding(Shell.FlyoutBackgroundProperty);
+			if (AppShell.FlyoutBackground.IsEmpty || 
 				AppShell.FlyoutBackground == SolidColorBrush.Purple)
 			{
 				AppShell.FlyoutBackground = SolidColorBrush.Black;
 			}
 			else if (AppShell.FlyoutBackground == SolidColorBrush.Black)
+			{
+				AppShell.FlyoutBackground = SolidColorBrush.Purple;
+			}
+			else
 			{
 				AppShell.FlyoutBackground = SolidColorBrush.Purple;
 			}
