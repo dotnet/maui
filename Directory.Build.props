@@ -80,7 +80,7 @@
     <ProduceReferenceAssemblyInOutDir>True</ProduceReferenceAssemblyInOutDir>
     <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
     <!-- When setting UseInternalWinUIPackages=true, make sure to also uncomment the "wasdk-internal" nuget source in NuGet.config -->
-    <!-- <UseInternalWinUIPackages>true</UseInternalWinUIPackages> -->
+    <UseInternalWinUIPackages>true</UseInternalWinUIPackages>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
