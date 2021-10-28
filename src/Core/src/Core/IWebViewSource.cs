@@ -6,7 +6,7 @@
 	public interface IWebViewSource
 	{
 		/// <summary>
-		/// Load the Html content from the source.
+		/// Load the HTML content from the source.
 		/// </summary>
 		/// <param name="webViewDelegate">WebViewDelegate parameter.</param>
 		void Load(IWebViewDelegate webViewDelegate);
