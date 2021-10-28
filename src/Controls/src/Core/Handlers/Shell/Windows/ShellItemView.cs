@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 	// Responsible for rendering the content title, as well as the bottom bar list of shell sections
 	public class ShellItemView : UwpGrid, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
-		ShellSectionView SectionRenderer { get; }
+		ShellSectionView SectionView { get; }
 		TextBlock _Title;
 		WBorder _BottomBarArea;
 		UwpGrid _BottomBar;
@@ -70,10 +70,10 @@ namespace Microsoft.Maui.Controls.Platform
 			SetColumn(_Toolbar, 1);
 			_HeaderArea.Children.Add(_Toolbar);
 
-			SectionRenderer = shellContext.CreateShellSectionView();
-			SetRow(SectionRenderer, 1);
+			SectionView = shellContext.CreateShellSectionView();
+			SetRow(SectionView, 1);
 
-			Children.Add(SectionRenderer);
+			Children.Add(SectionView);
 
 			_BottomBar = new UwpGrid() { HorizontalAlignment = HorizontalAlignment.Center };
 			_BottomBarArea = new WBorder() { Child = _BottomBar };
@@ -126,8 +126,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Controls.NavigationView", "IsBackButtonVisible"))
 			{
 				if (ShellContext.IsBackButtonVisible != Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed &&
-					ShellContext.IsBackEnabled)
+					ShellContext.IsBackEnabled &&
+					ShellContext.Shell.FlyoutBehavior != FlyoutBehavior.Locked)
+				{
 					inset += 45;
+				}
 			}
 
 			_HeaderArea.Padding = WinUIHelpers.CreateThickness(inset, 0, 0, 0);
@@ -217,7 +220,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var tabbarForeground = new UwpSolidColorBrush(tabBarForegroundColor);
 			foreach (var button in _BottomBar.Children.OfType<AppBarButton>())
 				button.Foreground = tabbarForeground;
-			if (SectionRenderer is IAppearanceObserver iao)
+			if (SectionView is IAppearanceObserver iao)
 				iao.OnAppearanceChanged(appearance);
 		}
 
@@ -316,7 +319,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (newSection.CurrentItem == null)
 				throw new InvalidOperationException($"Content not found for active {newSection} - {newSection.Title}.");
 
-			SectionRenderer.NavigateToShellSection(newSection);
+			SectionView.NavigateToShellSection(newSection);
 		}
 
 		void OnShellStructureChanged(object sender, EventArgs e)
@@ -340,6 +343,7 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateBottomBarVisibility();
 			UpdatePageTitle();
 			UpdateToolbar();
+			UpdateNavBarVisibility();
 		}
 
 		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -363,13 +367,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (DisplayedPage == null || Shell.GetNavBarIsVisible(DisplayedPage))
 			{
 				_HeaderArea.Visibility = WVisibility.Visible;
-				Shell.SetFlyoutBehavior(Shell.Current, Microsoft.Maui.Controls.FlyoutBehavior.Flyout);
 			}
 			else
 			{
 				_HeaderArea.Visibility = WVisibility.Collapsed;
-				Shell.SetFlyoutBehavior(Shell.Current, Microsoft.Maui.Controls.FlyoutBehavior.Disabled);
 			}
+
+			ShellContext.UpdateToolBar();
 		}
 
 		void UpdatePageTitle()
@@ -390,7 +394,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
 		{
-			SectionRenderer.NavigateToContent(e, (ShellSection)sender);
+			SectionView.NavigateToContent(e, (ShellSection)sender);
 		}
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)

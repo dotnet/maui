@@ -7,7 +7,9 @@ using Windows.Foundation.Metadata;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using Microsoft.UI;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
@@ -16,7 +18,7 @@ using Microsoft.Maui.Controls.Platform;
 namespace Microsoft.Maui.Controls.Platform
 {
 	[Microsoft.UI.Xaml.Data.Bindable]
-	public class ShellView : Microsoft.UI.Xaml.Controls.NavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
+	public class ShellView : NavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
 		public static readonly DependencyProperty FlyoutBackgroundColorProperty = DependencyProperty.Register(
 			nameof(FlyoutBackgroundColor), typeof(Brush), typeof(ShellView),
@@ -26,8 +28,9 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static readonly global::Windows.UI.Color DefaultForegroundColor = Microsoft.UI.Colors.White;
 		internal static readonly global::Windows.UI.Color DefaultTitleColor = Microsoft.UI.Colors.White;
 		internal static readonly global::Windows.UI.Color DefaultUnselectedColor = global::Windows.UI.Color.FromArgb(180, 255, 255, 255);
-		const string TogglePaneButton = "TogglePaneButton";
-		const string NavigationViewBackButton = "NavigationViewBackButton";
+		Control TogglePaneButton { get; set; }
+		WButton NavigationViewBackButton { get; set; }
+
 		internal const string ShellStyle = "ShellNavigationView";
 		Shell _shell;
 		Brush _flyoutBackdrop;
@@ -77,9 +80,12 @@ namespace Microsoft.Maui.Controls.Platform
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
+			TogglePaneButton = (Control)GetTemplateChild("TogglePaneButton");
+			NavigationViewBackButton = (WButton)GetTemplateChild("NavigationViewBackButton");
+
 			UpdatePaneButtonColor(TogglePaneButton, !IsPaneOpen);
 			UpdatePaneButtonColor(NavigationViewBackButton, !IsPaneOpen);
-			(GetTemplateChild(TogglePaneButton) as FrameworkElement)?.SetAutomationPropertiesAutomationId("OK");
+			TogglePaneButton?.SetAutomationPropertiesAutomationId("OK");
 		}
 
 		void OnPaneOpening(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
@@ -217,7 +223,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				IsPaneOpen = Shell.FlyoutIsPresented;
 			}
-			else if (e.PropertyName == Shell.FlyoutBackgroundColorProperty.PropertyName)
+			else if (e.IsOneOf(Shell.FlyoutBackgroundColorProperty, Shell.FlyoutBackgroundProperty))
 			{
 				UpdateFlyoutBackgroundColor();
 			}
@@ -235,15 +241,15 @@ namespace Microsoft.Maui.Controls.Platform
 				switch (Shell.FlyoutVerticalScrollMode)
 				{
 					case ScrollMode.Disabled:
-						scrollViewer.VerticalScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode.Disabled;
+						scrollViewer.VerticalScrollMode = WScrollMode.Disabled;
 						scrollViewer.VerticalScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Hidden;
 						break;
 					case ScrollMode.Enabled:
-						scrollViewer.VerticalScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode.Enabled;
+						scrollViewer.VerticalScrollMode = WScrollMode.Enabled;
 						scrollViewer.VerticalScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Visible;
 						break;
 					default:
-						scrollViewer.VerticalScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode.Auto;
+						scrollViewer.VerticalScrollMode = WScrollMode.Auto;
 						scrollViewer.VerticalScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Auto;
 						break;
 				}
@@ -280,7 +286,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void UpdateFlyoutBackgroundColor()
 		{
-			if (_shell.FlyoutBackgroundColor.IsDefault())
+			if (_shell.FlyoutBackgroundColor == null &&
+				(_shell.FlyoutBackground == null ||
+				 _shell.FlyoutBackground.IsEmpty))
 			{
 				object color = null;
 				if (IsPaneOpen)
@@ -288,14 +296,19 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 					color = Resources["NavigationViewDefaultPaneBackground"];
 
-
 				if (color is WBrush brush)
 					FlyoutBackgroundColor = brush;
 				else if (color is global::Windows.UI.Color uiColor)
 					new WSolidColorBrush(uiColor);
 			}
 			else
-				FlyoutBackgroundColor = Maui.ColorExtensions.ToNative(_shell.FlyoutBackgroundColor);
+			{
+				if (_shell.FlyoutBackground != null)
+					FlyoutBackgroundColor = _shell.FlyoutBackground.ToBrush();
+				else if (_shell.FlyoutBackgroundColor != null)
+					FlyoutBackgroundColor = Maui.ColorExtensions.ToNative(_shell.FlyoutBackgroundColor);
+			}
+				
 		}
 
 		protected virtual void OnElementSet(Shell shell)
@@ -332,43 +345,49 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateToolBar();
 		}
 
-		void UpdateToolBar()
+		internal void UpdateToolBar()
 		{
 			if (SelectedItem == null)
 				return;
 
-			if (_shell.Navigation.NavigationStack.Count > 1)
+
+			var flyoutBehavior = _flyoutBehavior;
+			bool isNavBarVisible = true;
+			if (_shell.CurrentPage != null && !Shell.GetNavBarIsVisible(_shell.CurrentPage))
+			{
+				isNavBarVisible = false;
+			}
+
+			if (_shell.Navigation.NavigationStack.Count > 1 && isNavBarVisible)
 			{
 				IsBackEnabled = true;
-				IsBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible;
+				IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
 			}
 			else
 			{
 				IsBackEnabled = false;
-				IsBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed;
+				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 			}
 
-			switch (_flyoutBehavior)
+			switch (flyoutBehavior)
 			{
 				case FlyoutBehavior.Disabled:
-					IsPaneVisible = IsBackEnabled;
-					IsPaneToggleButtonVisible = !IsBackEnabled;
-					PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					IsPaneToggleButtonVisible = false;
 					IsPaneOpen = false;
 					break;
 
 				case FlyoutBehavior.Flyout:
-					IsPaneVisible = true;
-					IsPaneToggleButtonVisible = !IsBackEnabled;
+					IsPaneToggleButtonVisible = !IsBackEnabled && isNavBarVisible;
 					bool shouldOpen = Shell.FlyoutIsPresented;
-					PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal; //This will trigger opening the flyout
+					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal; //This will trigger opening the flyout
 					IsPaneOpen = shouldOpen;
 					break;
 
 				case FlyoutBehavior.Locked:
-					IsPaneVisible = true;
+					IsPaneOpen = true;
 					IsPaneToggleButtonVisible = false;
-					PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
+					PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
 					break;
 			}
 		}
@@ -441,10 +460,9 @@ namespace Microsoft.Maui.Controls.Platform
 			ItemRenderer.NavigateToShellItem(newItem, animate);
 		}
 
-		void UpdatePaneButtonColor(string name, bool overrideColor)
+		void UpdatePaneButtonColor(Control control, bool overrideColor)
 		{
-			var toggleButton = GetTemplateChild(name) as Control;
-			if (toggleButton != null)
+			if (NavigationViewBackButton != null)
 			{
 				// TODO WINUI
 				//var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
