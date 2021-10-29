@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	public class ShadowDrawable : IDrawable
 	{
