@@ -8,8 +8,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal class SimpleViewHolder : RecyclerView.ViewHolder
 	{
+		global::Android.Views.View _itemView;
 		public SimpleViewHolder(global::Android.Views.View itemView, View rootElement) : base(itemView)
 		{
+			_itemView = itemView;
 			View = rootElement;
 		}
 
@@ -17,6 +19,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void Recycle(ItemsView itemsView)
 		{
+			if(_itemView is SizedItemContentView _sizedItemContentView)
+			{
+				_sizedItemContentView.Recycle();
+			}
 			itemsView.RemoveLogicalChild(View);
 		}
 
