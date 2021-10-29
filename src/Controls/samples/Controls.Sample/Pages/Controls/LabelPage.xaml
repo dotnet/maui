@@ -41,6 +41,7 @@
                 Text="VerticalTextAlignment"
                 Style="{StaticResource Headline}" />
             <Label 
+                BackgroundColor="Pink"
                 VerticalTextAlignment="End"
                 Text="This should be at the bottom"
                 HeightRequest="100"/>

@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\SharedSource\QueryStringHelper.cs" Link="QueryStringHelper.cs" />
     <Compile Include="..\WebView2\Internal\StaticContentProvider.cs" Link="Windows\SharedSource\StaticContentProvider.cs" />
   </ItemGroup>
 
