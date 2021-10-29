@@ -559,7 +559,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutBackgroundColor), typeof(Color), typeof(Shell), null, BindingMode.OneTime);
 
 		public static readonly BindableProperty FlyoutBackgroundProperty =
-			BindableProperty.Create(nameof(FlyoutBackground), typeof(Brush), typeof(Shell), SolidColorBrush.White, BindingMode.OneTime);
+			BindableProperty.Create(nameof(FlyoutBackground), typeof(Brush), typeof(Shell), SolidColorBrush.Default, BindingMode.OneTime);
 
 		public static readonly BindableProperty FlyoutHeaderBehaviorProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderBehavior), typeof(FlyoutHeaderBehavior), typeof(Shell), FlyoutHeaderBehavior.Default, BindingMode.OneTime);
@@ -616,10 +616,8 @@ namespace Microsoft.Maui.Controls
 
 			if (Application.Current != null)
 			{
-				// This currently makes these two property unchangeable without clearing the binding
-				// Which is a bug in how AppTheme binding works. Once that bug is resolved we can uncomment these lines
-				//this.SetAppThemeColor(Shell.FlyoutBackgroundColorProperty, Colors.White, Colors.Black);
-				//this.SetOnAppTheme<Brush>(Shell.FlyoutBackgroundProperty, Brush.White, Brush.Black);
+				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
+					new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
 			}
 		}
 
