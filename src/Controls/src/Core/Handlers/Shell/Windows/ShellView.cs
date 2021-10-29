@@ -350,20 +350,17 @@ namespace Microsoft.Maui.Controls.Platform
 			if (SelectedItem == null)
 				return;
 
-
-			var flyoutBehavior = _flyoutBehavior;
 			bool isNavBarVisible = true;
 			if (_shell.CurrentPage != null && !Shell.GetNavBarIsVisible(_shell.CurrentPage))
 			{
 				isNavBarVisible = false;
 			}
 
-
 			bool backButtonEnabled = false;
 
 			// WinUI seems to reset these values if you modify Pane Properties
 			if (_shell.Navigation.NavigationStack.Count > 1 &&
-				(isNavBarVisible || flyoutBehavior == FlyoutBehavior.Locked))
+				(isNavBarVisible || _flyoutBehavior == FlyoutBehavior.Locked))
 			{
 				var backButtonBehavior = Shell.GetBackButtonBehavior(_shell.CurrentPage);
 				backButtonEnabled = backButtonBehavior?.IsVisible ?? true;
@@ -373,7 +370,7 @@ namespace Microsoft.Maui.Controls.Platform
 				backButtonEnabled = false;
 			}
 
-			switch (flyoutBehavior)
+			switch (_flyoutBehavior)
 			{
 				case FlyoutBehavior.Disabled:
 					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
@@ -394,8 +391,6 @@ namespace Microsoft.Maui.Controls.Platform
 					PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
 					break;
 			}
-
-
 			
 			// Don't move these above the pane display settings
 			// WinUI seems to reset these values if you modify Pane Properties
