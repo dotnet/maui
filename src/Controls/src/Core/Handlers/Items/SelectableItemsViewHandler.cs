@@ -36,6 +36,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
 		};
-	
+
 	}
 }

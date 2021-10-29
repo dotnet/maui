@@ -92,22 +92,19 @@
                 Grid.Row="6"
                 Text="Gradient"
                 Style="{StaticResource Headline}"/>
-            <Rectangle 
+            <RoundRectangle 
                 x:Name="ShadowView"
                 Grid.Row="7"
+                CornerRadius="12"
                 HeightRequest="50"
                 WidthRequest="75"
-                RadiusX="12"
-                RadiusY="12"
                 Margin="0"
                 Fill="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
-                Stroke="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
-                >
-                <Rectangle.Shadow>
-                    <Shadow 
-                            Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
-                            Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
-                            >
+                Stroke="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }">
+                <RoundRectangle.Shadow>
+                    <Shadow         
+                        Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                        Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }">
                         <Shadow.Brush>
                             <LinearGradientBrush EndPoint="1,0">
                                 <GradientStop Color="Yellow" Offset="0.1" />
@@ -115,8 +112,8 @@
                             </LinearGradientBrush>
                         </Shadow.Brush>
                     </Shadow>
-                </Rectangle.Shadow>
-            </Rectangle>
+                </RoundRectangle.Shadow>
+            </RoundRectangle>
         </Grid>
         <ScrollView
              Grid.Row="1">
