@@ -2,16 +2,16 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorder, ContentCanvas>
+	public partial class BorderHandler : ViewHandler<IBorder, BorderView>
 	{
 		INativeViewHandler? _contentHandler;
 
-		protected override ContentCanvas CreateNativeView()
+		protected override BorderView CreateNativeView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 
-			var view = new ContentCanvas(NativeParent, VirtualView)
+			var view = new BorderView(NativeParent, VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
@@ -46,13 +46,12 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Clear();
 			_contentHandler?.Dispose();
 			_contentHandler = null;
 
 			if (VirtualView.PresentedContent is IView view)
 			{
-				NativeView.Children.Add(view.ToNative(MauiContext));
+				NativeView.Content = view.ToNative(MauiContext);
 				if (view.Handler is INativeViewHandler thandler)
 				{
 					thandler?.SetParent(this);
