@@ -17,13 +17,13 @@
     <dependencies>
       <group targetFramework="net6.0-windows10.0.18362">
         <dependency id="Microsoft.Maui.Graphics" version="$version$" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.Graphics.Win2D" version="1.0.0.28-preview2" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.WindowsAppSdk" version="1.0.0-preview2" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Graphics.Win2D" version="1.0.0.29-preview3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.WindowsAppSdk" version="1.0.0-preview3" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll"/>
-    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pdb" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net5.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net5.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pdb" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pdb"/>
   </files>
 </package>

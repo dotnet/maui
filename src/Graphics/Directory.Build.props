@@ -33,6 +33,33 @@
     <PackageVersion>0.0.1-alpha1</PackageVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
   </PropertyGroup>
+
+  <!-- platform version number information -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-tvos'))">
+    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
+    <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-macos'))">
+    <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.14</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>21.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows10'))">
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
   <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
   <Target Name="GitVersion" />
   <Target Name="GitInfo" />

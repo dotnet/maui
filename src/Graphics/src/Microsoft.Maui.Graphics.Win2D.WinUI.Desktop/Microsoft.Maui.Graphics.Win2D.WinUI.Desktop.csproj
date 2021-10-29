@@ -1,16 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</AssemblyName>
+    <RuntimeFrameworkVersion>5.0.11</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="Microsoft.WindowsAppSdk" Version="1.0.0-preview2" />
-      <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.28-preview2" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.18" TargetingPackVersion="10.0.19041.18" />
+    <PackageReference Include="Microsoft.WindowsAppSdk" Version="1.0.0-preview3" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.29-preview3" />
   </ItemGroup>
 
   <ItemGroup>
