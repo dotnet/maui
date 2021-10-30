@@ -118,8 +118,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateKeyboard(editor);
 		}
-		
-		public static void MapCursorPosition(EditorHandler handler, IEditor editor)
+
+		public static void MapCursorPosition(EditorHandler handler, ITextInput editor)
 		{
 			handler.NativeView?.UpdateCursorPosition(editor);
 		}

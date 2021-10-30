@@ -237,7 +237,7 @@ namespace Microsoft.Maui
 		}
 
 		[PortHandler]
-		public static void UpdateCursorPosition(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateCursorPosition(this AppCompatEditText editText, ITextInput entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)
 				UpdateCursorSelection(editText, entry);
@@ -251,7 +251,7 @@ namespace Microsoft.Maui
 		}
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
-		static void UpdateCursorSelection(AppCompatEditText editText, IEntry entry)
+		static void UpdateCursorSelection(AppCompatEditText editText, ITextInput entry)
 		{
 			if (!entry.IsReadOnly)// && editText.HasFocus)// || editText.RequestFocus()))//&& editText.RequestFocus())
 			{
@@ -265,7 +265,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		static int GetSelectionStart(AppCompatEditText editText, IEntry entry)
+		static int GetSelectionStart(AppCompatEditText editText, ITextInput entry)
 		{
 			int start = editText.Length();
 			int cursorPosition = entry.CursorPosition;
@@ -285,7 +285,7 @@ namespace Microsoft.Maui
 			return start;
 		}
 
-		static int GetSelectionEnd(AppCompatEditText editText, IEntry entry, int start)
+		static int GetSelectionEnd(AppCompatEditText editText, ITextInput entry, int start)
 		{
 			int end = start;
 			int selectionLength = entry.SelectionLength;

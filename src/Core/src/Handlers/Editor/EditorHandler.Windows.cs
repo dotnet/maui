@@ -86,11 +86,14 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
 		}
 
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) 
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateKeyboard(editor); 
+			handler.NativeView?.UpdateKeyboard(editor);
 		}
-		
+
+		[MissingMapper]
+		public static void MapCursorPosition(IViewHandler handler, ITextInput editor) { }
+
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{
 			VirtualView?.Completed();

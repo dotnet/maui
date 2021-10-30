@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCursorPosition(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateCursorPosition(entry);
+			handler.NativeView?.UpdateCursorPosition(editor);
 		}
 
 		public static void MapFormatting(EditorHandler handler, IEditor editor)
