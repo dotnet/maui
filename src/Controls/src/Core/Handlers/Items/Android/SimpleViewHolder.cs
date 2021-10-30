@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void Recycle(ItemsView itemsView)
 		{
-			if(_itemView is SizedItemContentView _sizedItemContentView)
+			if (_itemView is SizedItemContentView _sizedItemContentView)
 			{
 				_sizedItemContentView.Recycle();
 			}
