@@ -81,5 +81,10 @@ namespace Microsoft.Maui.Handlers
 
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
+
+		public static void MapCursorPosition(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateCursorPosition(editor);
+		}
 	}
 }

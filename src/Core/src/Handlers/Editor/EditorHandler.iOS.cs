@@ -77,6 +77,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePredictiveText(editor);
 		}
 
+		public static void MapCursorPosition(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateCursorPosition(entry);
+		}
+
 		public static void MapFormatting(EditorHandler handler, IEditor editor)
 		{
 			handler.NativeView?.UpdateMaxLength(editor);
