@@ -13,7 +13,5 @@ namespace Microsoft.Maui
 		Color PlaceholderColor { get; set; }
 
 		int CursorPosition { get; set; }
-
-		int SelectionLength { get; set; }
 	}
 }
