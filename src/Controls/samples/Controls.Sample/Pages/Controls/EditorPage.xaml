@@ -34,6 +34,12 @@
                     Style="{StaticResource Headline}"/>
                 <Editor
                     Keyboard="Numeric"/>
+                <Label
+                    Text="Cursor position"
+                    Style="{StaticResource Headline}"/>
+                <Editor
+                    Text="Cursor position"
+                    CursorPosition="2"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

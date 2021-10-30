@@ -1,15 +1,8 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform.iOS;
-using UIKit;
-using Xunit;
+﻿using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class EditorHandlerTests
+    public partial class EditorHandlerTests
 	{
 		[Fact(DisplayName = "Placeholder Toggles Correctly When Text Changes")]
 		public async Task PlaceholderTogglesCorrectlyWhenTextChanges()
@@ -211,6 +204,16 @@ namespace Microsoft.Maui.DeviceTests
 			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
 				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
+		}
+
+		int GetNativeCursorPosition(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			if (nativeEditor != null && nativeEditor.SelectedTextRange != null)
+				return (int)nativeEditor.GetOffsetFromPosition(nativeEditor.BeginningOfDocument, nativeEditor.SelectedTextRange.Start);
+
+			return -1;
 		}
 	}
 }
