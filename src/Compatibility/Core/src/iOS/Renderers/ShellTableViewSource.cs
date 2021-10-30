@@ -1,8 +1,8 @@
-using Foundation;
 using System;
 using System.Collections.Generic;
-using UIKit;
+using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -66,10 +66,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			foreach (var group in newGroups)
 			{
-				foreach(var element in group)
+				foreach (var element in group)
 				{
 					UIContainerCell result;
-					if(oldList.TryGetValue(element, out result))
+					if (oldList.TryGetValue(element, out result))
 					{
 						_cells.Add(element, result);
 						oldList.Remove(element);
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var newGroups = ((IShellController)_context.Shell).GenerateFlyoutGrouping();
 
-			if(newGroups != _groups)
+			if (newGroups != _groups)
 			{
 				_groups = newGroups;
 				if (_cells != null)

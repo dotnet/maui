@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(BuildForNet6)' != 'true'">netcoreapp3.1</TargetFramework>
-    <TargetFramework Condition="'$(BuildForNet6)' == 'true'">net6.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework Condition="'$(BuildForLegacy)' == 'true'">netcoreapp3.1</TargetFramework>
     <AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
+    <!-- Solves: LifecycleEventsTests.cs(26,77): error CS8652: The feature 'inferred delegate type' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version. -->
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,14 +35,14 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildForNet6)' != 'true'">
+  <ItemGroup Condition="'$(BuildForLegacy)' == 'true'">
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils\src\TestUtils.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(BuildForNet6)' == 'true'">
+  <ItemGroup Condition="'$(BuildForLegacy)' != 'true'">
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils\src\TestUtils.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core-net6.csproj" />
   </ItemGroup>
 

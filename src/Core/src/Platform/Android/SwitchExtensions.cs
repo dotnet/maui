@@ -103,6 +103,5 @@ namespace Microsoft.Maui
 			new int[] { AAttribute.StateChecked },
 			new int[0],
 		};
-
 	}
 }

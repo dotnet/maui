@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -10,31 +11,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("Times New Roman")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var entry = new EntryStub
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var (services, nativeFont) = await GetValueAsync(entry, handler => (handler.Services, GetNativeEntry(handler).Font));
-
-			var fontManager = services.GetRequiredService<IFontManager>();
-
-			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
-
-			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-			else
-				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-		}
-
 		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
 		public async Task HorizontalTextAlignmentInitializesCorrectly()
 		{
@@ -58,6 +34,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		public async Task VerticalTextAlignmentInitializesCorrectily()
+		{
+			var xplatVerticalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				VerticalTextAlignment = xplatVerticalTextAlignment
+			};
+
+			UIControlContentVerticalAlignment expectedValue = UIControlContentVerticalAlignment.Bottom;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.VerticalTextAlignment,
+					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
@@ -117,14 +119,27 @@ namespace Microsoft.Maui.DeviceTests
 			return entry.AttributedText.GetCharacterSpacing();
 		}
 
-		UITextField GetNativeEntry(EntryHandler entryHandler) =>
+		static UITextField GetNativeEntry(EntryHandler entryHandler) =>
 			(UITextField)entryHandler.NativeView;
 
-		string GetNativeText(EntryHandler entryHandler) =>
+		static string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		void SetNativeText(EntryHandler entryHandler, string text) =>
+		static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
+
+		static int GetCursorStartPosition(EntryHandler entryHandler)
+		{
+			var control = GetNativeEntry(entryHandler);
+			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
+		}
+
+		static void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+		{
+			var control = GetNativeEntry(entryHandler);
+			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
+			control.SelectedTextRange = control.GetTextRange(endPosition, endPosition);
+		}
 
 		Color GetNativeTextColor(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextColor.ToColor();
@@ -171,22 +186,36 @@ namespace Microsoft.Maui.DeviceTests
 				nativeEntry.SpellCheckingType == UITextSpellCheckingType.No;
 		}
 
-		double GetNativeUnscaledFontSize(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Font.PointSize;
-
-		bool GetNativeIsBold(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
-
-		bool GetNativeIsItalic(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
-
 		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ClearButtonMode == UITextFieldViewMode.WhileEditing;
 
 		UITextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
+		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).VerticalAlignment;
+
 		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ReturnKeyType;
+
+		int GetNativeCursorPosition(EntryHandler entryHandler)
+		{
+			var textField = GetNativeEntry(entryHandler);
+
+			if (textField != null && textField.SelectedTextRange != null)
+				return (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.Start);
+
+			return -1;
+		}
+
+		int GetNativeSelectionLength(EntryHandler entryHandler)
+		{
+			var textField = GetNativeEntry(entryHandler);
+
+			if (textField != null && textField.SelectedTextRange != null)
+				return (int)textField.GetOffsetFromPosition(textField.SelectedTextRange.Start, textField.SelectedTextRange.End);
+
+			return -1;
+		}
 	}
 }

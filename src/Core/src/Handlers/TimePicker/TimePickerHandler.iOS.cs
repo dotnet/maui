@@ -1,10 +1,12 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
+		static UIColor? DefaultTextColor;
+
 		protected override MauiTimePicker CreateNativeView()
 		{
 			return new MauiTimePicker(() =>
@@ -16,18 +18,27 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTimePicker nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			if (nativeView != null)
 				nativeView.ValueChanged += OnValueChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			if (nativeView != null)
 			{
 				nativeView.RemoveFromSuperview();
 				nativeView.ValueChanged -= OnValueChanged;
 				nativeView.Dispose();
 			}
+		}
+
+		void SetupDefaults(MauiTimePicker nativeView)
+		{
+			DefaultTextColor = nativeView.TextColor;
 		}
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
@@ -52,8 +63,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(timePicker, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
+		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.NativeView?.UpdateTextColor(timePicker, DefaultTextColor);
+		}
 
 		void OnValueChanged(object? sender, EventArgs e)
 		{

@@ -2,15 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class ResizetizeImages : AsyncTask, ILogger
+	public class ResizetizeImages : MauiAsyncTask, ILogger
 	{
 		[Required]
 		public string PlatformType { get; set; } = "android";
@@ -29,33 +28,11 @@ namespace Microsoft.Maui.Resizetizer
 
 		public ILogger Logger => this;
 
-		public override bool Execute()
-		{
-			System.Threading.Tasks.Task.Run(async () =>
-			{
-				try
-				{
-					await DoExecute();
-				}
-				catch (Exception ex)
-				{
-					Log.LogErrorFromException(ex);
-				}
-				finally
-				{
-					Complete();
-				}
-
-			});
-
-			return base.Execute();
-		}
-
-		System.Threading.Tasks.Task DoExecute()
+		public override System.Threading.Tasks.Task ExecuteAsync()
 		{
 			Svg.SvgDocument.SkipGdiPlusCapabilityCheck = true;
 
-			var images = ParseImageTaskItems(Images);
+			var images = ResizeImageInfo.Parse(Images);
 
 			var dpis = DpiPath.GetDpis(PlatformType);
 
@@ -66,7 +43,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			var resizedImages = new ConcurrentBag<ResizedImageInfo>();
 
-			System.Threading.Tasks.Parallel.ForEach(images, img =>
+			this.ParallelForEach(images, img =>
 			{
 				try
 				{
@@ -102,11 +79,11 @@ namespace Microsoft.Maui.Resizetizer
 
 					opStopwatch.Stop();
 
-					Log.LogMessage(MessageImportance.Low, $"{op} took {opStopwatch.ElapsedMilliseconds}ms");
+					LogDebugMessage($"{op} took {opStopwatch.ElapsedMilliseconds}ms");
 				}
 				catch (Exception ex)
 				{
-					Log.LogWarningFromException(ex, true);
+					LogWarning("MAUI0000", ex.ToString());
 
 					throw;
 				}
@@ -125,7 +102,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				// Add DPI info to the itemspec so we can use it in the targets
 				attr.Add("_ResizetizerDpiPath", img.Dpi.Path);
-				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString());
+				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString("0.0", CultureInfo.InvariantCulture));
 
 				copiedResources.Add(new TaskItem(itemSpec, attr));
 			}
@@ -142,12 +119,12 @@ namespace Microsoft.Maui.Resizetizer
 			// Generate the actual bitmap app icons themselves
 			var appIconDpis = DpiPath.GetAppIconDpis(PlatformType, appIconName);
 
-			Log.LogMessage(MessageImportance.Low, $"App Icon");
+			LogDebugMessage($"App Icon");
 
 			// Apple and Android have special additional files to generate for app icons
 			if (PlatformType == "android")
 			{
-				Log.LogMessage(MessageImportance.Low, $"Android Adaptive Icon Generator");
+				LogDebugMessage($"Android Adaptive Icon Generator");
 
 				appIconName = appIconName.ToLowerInvariant();
 
@@ -159,7 +136,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			else if (PlatformType == "ios")
 			{
-				Log.LogMessage(MessageImportance.Low, $"iOS Icon Assets Generator");
+				LogDebugMessage($"iOS Icon Assets Generator");
 
 				var appleAssetGen = new AppleIconAssetsGenerator(img, appIconName, IntermediateOutputPath, appIconDpis, this);
 
@@ -169,20 +146,20 @@ namespace Microsoft.Maui.Resizetizer
 					resizedImages.Add(assetGenerated);
 			}
 
-			Log.LogMessage(MessageImportance.Low, $"Generating App Icon Bitmaps for DPIs");
+			LogDebugMessage($"Generating App Icon Bitmaps for DPIs");
 
 			var appTool = new SkiaSharpAppIconTools(img, this);
 
-			Log.LogMessage(MessageImportance.Low, $"App Icon: Intermediate Path " + IntermediateOutputPath);
+			LogDebugMessage($"App Icon: Intermediate Path " + IntermediateOutputPath);
 
 			foreach (var dpi in appIconDpis)
 			{
-				Log.LogMessage(MessageImportance.Low, $"App Icon: " + dpi);
+				LogDebugMessage($"App Icon: " + dpi);
 
 				var destination = Resizer.GetFileDestination(img, dpi, IntermediateOutputPath)
 					.Replace("{name}", appIconName);
 
-				Log.LogMessage(MessageImportance.Low, $"App Icon Destination: " + destination);
+				LogDebugMessage($"App Icon Destination: " + destination);
 
 				appTool.Resize(dpi, Path.ChangeExtension(destination, ".png"));
 			}
@@ -194,12 +171,12 @@ namespace Microsoft.Maui.Resizetizer
 
 			foreach (var dpi in dpis)
 			{
-				Log.LogMessage(MessageImportance.Low, $"Resizing {img.Filename}");
+				LogDebugMessage($"Resizing {img.Filename}");
 
 				var r = resizer.Resize(dpi, InputsFile);
 				resizedImages.Add(r);
 
-				Log.LogMessage(MessageImportance.Low, $"Resized {img.Filename}");
+				LogDebugMessage($"Resized {img.Filename}");
 			}
 		}
 
@@ -207,68 +184,17 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var resizer = new Resizer(img, IntermediateOutputPath, this);
 
-			Log.LogMessage(MessageImportance.Low, $"Copying {img.Filename}");
+			LogDebugMessage($"Copying {img.Filename}");
 
 			var r = resizer.CopyFile(originalScaleDpi, InputsFile, PlatformType.ToLower().Equals("android"));
 			resizedImages.Add(r);
 
-			Log.LogMessage(MessageImportance.Low, $"Copied {img.Filename}");
+			LogDebugMessage($"Copied {img.Filename}");
 		}
 
 		void ILogger.Log(string message)
 		{
 			Log?.LogMessage(message);
-		}
-
-		List<ResizeImageInfo> ParseImageTaskItems(ITaskItem[] images)
-		{
-			var r = new List<ResizeImageInfo>();
-
-			if (images == null)
-				return r;
-
-			foreach (var image in images)
-			{
-				var info = new ResizeImageInfo();
-
-				var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
-				if (!fileInfo.Exists)
-					throw new FileNotFoundException("Unable to find background file: " + fileInfo.FullName, fileInfo.FullName);
-
-				info.Filename = fileInfo.FullName;
-
-				info.Alias = image.GetMetadata("Link");
-
-				info.BaseSize = Utils.ParseSizeString(image.GetMetadata("BaseSize"));
-
-				if (bool.TryParse(image.GetMetadata("Resize"), out var rz))
-					info.Resize = rz;
-
-				info.TintColor = Utils.ParseColorString(image.GetMetadata("TintColor"));
-
-				if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
-					info.IsAppIcon = iai;
-
-				if (float.TryParse(image.GetMetadata("ForegroundScale"), out var fsc))
-					info.ForegroundScale = fsc;
-
-				var fgFile = image.GetMetadata("ForegroundFile");
-				if (!string.IsNullOrEmpty(fgFile))
-				{
-					var fgFileInfo = new FileInfo(fgFile);
-					if (!fgFileInfo.Exists)
-						throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
-
-					info.ForegroundFilename = fgFileInfo.FullName;
-				}
-
-				// TODO:
-				// - Parse out custom DPI's
-
-				r.Add(info);
-			}
-
-			return r;
 		}
 	}
 }

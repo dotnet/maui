@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 			return color.ToUIColor().CGColor;
 #else
-            return color.ToNSColor().CGColor;
+			return color.ToNSColor().CGColor;
 #endif
 		}
 

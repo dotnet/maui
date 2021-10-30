@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.Res;
 using Android.Provider;
@@ -35,7 +37,9 @@ namespace Microsoft.Maui.Essentials
 		{
 			using var displayMetrics = new DisplayMetrics();
 			var display = GetDefaultDisplay();
+#pragma warning disable CS0618 // Type or member is obsolete
 			display?.GetRealMetrics(displayMetrics);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return new DisplayInfo(
 				width: displayMetrics?.WidthPixels ?? 0,
@@ -92,9 +96,17 @@ namespace Microsoft.Maui.Essentials
 
 		static Display GetDefaultDisplay()
 		{
-			using var service = Platform.AppContext.GetSystemService(Context.WindowService);
-			using var windowManager = service?.JavaCast<IWindowManager>();
-			return windowManager?.DefaultDisplay;
+			try
+			{
+				using var service = Platform.AppContext.GetSystemService(Context.WindowService);
+				using var windowManager = service?.JavaCast<IWindowManager>();
+				return windowManager?.DefaultDisplay;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to get default display: {ex}");
+				return null;
+			}
 		}
 	}
 
@@ -105,6 +117,10 @@ namespace Microsoft.Maui.Essentials
 		internal Listener(Context context, Action handler)
 			: base(context) => onChanged = handler;
 
-		public override void OnOrientationChanged(int orientation) => onChanged();
+		public override async void OnOrientationChanged(int orientation)
+		{
+			await Task.Delay(500);
+			onChanged();
+		}
 	}
 }

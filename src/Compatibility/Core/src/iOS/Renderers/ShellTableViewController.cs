@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
-using System;
 using UIKit;
-using System.ComponentModel;
-using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -67,11 +67,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ShellFlyoutContentManager.UpdateVerticalScrollMode();
 		}
 
-		public void LayoutParallax() => 		
+		public void LayoutParallax() =>
 			ShellFlyoutContentManager.LayoutParallax();
 
 		public override void ViewDidLoad()
-		{			
+		{
 			base.ViewDidLoad();
 
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;

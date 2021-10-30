@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <attr name="maui_splash" format="string" />
+
+  <!-- 
+    This defines the collectionViewStyle attribute so that we can use it 
+    to add the scrollbars style to the CollectionView/CarouselView renderers.
+  -->
+  <declare-styleable name="ItemsViewRendererTheme">
+    <attr name="collectionViewStyle" format="reference"/>
+  </declare-styleable>
+
+  <declare-styleable name="ScrollViewRendererTheme">
+    <attr name="scrollViewStyle" format="reference"/>
+  </declare-styleable>
+  
+</resources>

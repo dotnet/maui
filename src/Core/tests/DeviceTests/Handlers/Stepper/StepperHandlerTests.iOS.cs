@@ -1,15 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class StepperHandlerTests
 	{
 		UIStepper GetNativeStepper(StepperHandler stepperHandler) =>
-			(UIStepper)stepperHandler.NativeView;
+			stepperHandler.NativeView;
 
 		double GetNativeValue(StepperHandler stepperHandler) =>
 			GetNativeStepper(stepperHandler).Value;
@@ -20,10 +20,14 @@ namespace Microsoft.Maui.DeviceTests
 		double GetNativeMinimum(StepperHandler stepperHandler) =>
 			GetNativeStepper(stepperHandler).MinimumValue;
 
-		async Task ValidateNativeBackgroundColor(IStepper stepper, Color color)
+		Task ValidateHasColor(IStepper stepper, Color color, Action action = null)
 		{
-			var expected = await GetValueAsync(stepper, handler => GetNativeStepper(handler).BackgroundColor.ToColor());
-			Assert.Equal(expected, color);
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeStepper = GetNativeStepper(CreateHandler(stepper));
+				action?.Invoke();
+				nativeStepper.AssertContainsColor(color);
+			});
 		}
 	}
 }

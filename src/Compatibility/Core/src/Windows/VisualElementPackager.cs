@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls;
 
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_renderer.Element.ChildRemoved += OnChildRemoved;
 			_renderer.Element.ChildrenReordered += OnChildrenReordered;
 
-			ReadOnlyCollection<Element> children = ElementController.LogicalChildren;
+			IReadOnlyList<Element> children = ElementController.LogicalChildren;
 			for (var i = 0; i < children.Count; i++)
 			{
 				var view = children[i] as VisualElement;

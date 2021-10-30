@@ -6,6 +6,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -108,21 +109,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			elementHolder.Element = item.Element;
 		}
 
-		class LinearLayoutWithFocus : LinearLayout, ITabStop, IVisualElementRenderer
+		class LinearLayoutWithFocus : LinearLayout, IVisualElementRenderer
 		{
 			public LinearLayoutWithFocus(global::Android.Content.Context context) : base(context)
 			{
 			}
-
-			AView ITabStop.TabStop => this;
 
 			#region IVisualElementRenderer
 
 			VisualElement IVisualElementRenderer.Element => Content?.BindingContext as VisualElement;
 
 			VisualElementTracker IVisualElementRenderer.Tracker => null;
-
-			ViewGroup IVisualElementRenderer.ViewGroup => this;
 
 			AView IVisualElementRenderer.View => this;
 
@@ -143,38 +140,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			internal View Content { get; set; }
 
-			public override AView FocusSearch([GeneratedEnum] FocusSearchDirection direction)
-			{
-				var element = Content?.BindingContext as ITabStopElement;
-				if (element == null)
-					return base.FocusSearch(direction);
-
-				int maxAttempts = 0;
-				var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
-				if (tabIndexes == null)
-					return base.FocusSearch(direction);
-
-				// use OS default--there's no need for us to keep going if there's one or fewer tab indexes!
-				if (tabIndexes.Count <= 1)
-					return base.FocusSearch(direction);
-
-				int tabIndex = element.TabIndex;
-				AView control = null;
-				int attempt = 0;
-				bool forwardDirection = !(
-					(direction & FocusSearchDirection.Backward) != 0 ||
-					(direction & FocusSearchDirection.Left) != 0 ||
-					(direction & FocusSearchDirection.Up) != 0);
-
-				do
-				{
-					element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-					var renderer = (element as BindableObject).GetValue(AppCompat.Platform.RendererProperty);
-					control = (renderer as ITabStop)?.TabStop;
-				} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
-
-				return control?.Focusable == true ? control : null;
-			}
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
@@ -297,16 +262,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			bool _disposed;
 			Shell _shell;
 
-			[Obsolete]
-			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback) : this(view, itemView, bar, selectedCallback, null)
-			{
-				_itemView = itemView;
-				itemView.Click += OnClicked;
-				View = view;
-				Bar = bar;
-				_selectedCallback = selectedCallback;
-			}
-
 			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback, Shell shell) : base(itemView)
 			{
 				_itemView = itemView;
@@ -330,7 +285,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_shell.RemoveLogicalChild(View);
 					if (_element != null && _element is BaseShellItem)
 					{
-						_element.ClearValue(AppCompat.Platform.RendererProperty);
+						_element.ClearValue(Platform.RendererProperty);
 						_element.PropertyChanged -= OnElementPropertyChanged;
 					}
 
@@ -342,8 +297,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (_element != null)
 					{
 						_shell.AddLogicalChild(View);
-						FastRenderers.AutomationPropertiesProvider.AccessibilitySettingsChanged(_itemView, value);
-						_element.SetValue(AppCompat.Platform.RendererProperty, _itemView);
+						AutomationPropertiesProvider.AccessibilitySettingsChanged(_itemView, value);
+						_element.SetValue(Platform.RendererProperty, _itemView);
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
 					}

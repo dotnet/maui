@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Internals;
 using WStyle = Microsoft.UI.Xaml.Style;
 using Microsoft.UI.Text;
+using FWeight = Windows.UI.Text.FontWeight;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return formsStyle;
 		}
 
-		static FontAttributes ToAttributes(FontWeight fontWeight)
+		static FontAttributes ToAttributes(FWeight fontWeight)
 		{
 			if (fontWeight.Weight == FontWeights.Bold.Weight || fontWeight.Weight == FontWeights.SemiBold.Weight 
 				|| fontWeight.Weight == FontWeights.ExtraBold.Weight)

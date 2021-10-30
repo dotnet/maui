@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
@@ -111,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 
 			if (ItemSelected != null)
-				ItemSelected(this, new SelectedItemChangedEventArgs(item, Items?.IndexOf(item) ?? -1));
+				ItemSelected(this, new SelectedItemChangedEventArgs(item, Items?.ToList().IndexOf($"{item}") ?? -1));
 		}
 
 		public NativeListView()
@@ -337,7 +338,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 
 			if (ItemSelected != null)
-				ItemSelected(this, new SelectedItemChangedEventArgs(item, Items?.IndexOf(item) ?? -1));
+				ItemSelected(this, new SelectedItemChangedEventArgs(item, Items?.ToList().IndexOf((DataSource)item) ?? -1));
 		}
 
 		public NativeListView2()

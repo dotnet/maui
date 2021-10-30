@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 #if UITEST
 using Xamarin.UITest;
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.WaitForElement(_failedText);
 			RunningApp.Tap(_button1);
 			RunningApp.Tap(_button2);
-#if __WINDOWS__
+#if WINDOWS
 			var label = RunningApp.WaitForElement(_failedText);
 			Assert.AreEqual(0, label[0].Rect.Height);
 			Assert.AreEqual(0, label[0].Rect.Width);

@@ -14,17 +14,18 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using ATextView = global::Android.Widget.TextView;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
-using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -56,14 +57,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected IShellContext ShellContext { get; private set; }
 		//assume the default
 		Color _tintColor = null;
-		Toolbar _toolbar;
+		AToolbar _toolbar;
 		AppBarLayout _appBar;
 		float _appBarElevation;
 		GenericGlobalLayoutListener _globalLayoutListener;
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
 
-		public ShellToolbarTracker(IShellContext shellContext, Toolbar toolbar, DrawerLayout drawerLayout)
+		public ShellToolbarTracker(IShellContext shellContext, AToolbar toolbar, DrawerLayout drawerLayout)
 		{
 			ShellContext = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
 			_toolbar = toolbar ?? throw new ArgumentNullException(nameof(toolbar));
@@ -332,9 +333,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return image;
 		}
 
-		protected virtual async void UpdateLeftBarButtonItem(Context context, Toolbar toolbar, DrawerLayout drawerLayout, Page page)
+		protected virtual async void UpdateLeftBarButtonItem(Context context, AToolbar toolbar, DrawerLayout drawerLayout, Page page)
 		{
-			if (_drawerToggle == null && !context.IsDesignerContext())
+			if (_drawerToggle == null)
 			{
 				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, R.String.Ok, R.String.Ok)
 				{
@@ -434,12 +435,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 
-		protected virtual Task UpdateDrawerArrow(Context context, Toolbar toolbar, DrawerLayout drawerLayout)
+		protected virtual Task UpdateDrawerArrow(Context context, AToolbar toolbar, DrawerLayout drawerLayout)
 		{
 			return Task.CompletedTask;
 		}
 
-		protected virtual void UpdateToolbarIconAccessibilityText(Toolbar toolbar, Shell shell)
+		protected virtual void UpdateToolbarIconAccessibilityText(AToolbar toolbar, Shell shell)
 		{
 			var backButtonHandler = Shell.GetBackButtonBehavior(Page);
 			var image = GetFlyoutIcon(backButtonHandler, Page);
@@ -458,7 +459,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		protected virtual Task UpdateDrawerArrowFromBackButtonBehavior(Context context, Toolbar toolbar, DrawerLayout drawerLayout, BackButtonBehavior backButtonHandler)
+		protected virtual Task UpdateDrawerArrowFromBackButtonBehavior(Context context, AToolbar toolbar, DrawerLayout drawerLayout, BackButtonBehavior backButtonHandler)
 		{
 			return Task.CompletedTask;
 		}
@@ -485,7 +486,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			});
 		}
 
-		protected virtual void UpdateNavBarVisible(Toolbar toolbar, Page page)
+		protected virtual void UpdateNavBarVisible(AToolbar toolbar, Page page)
 		{
 			var navBarVisible = Shell.GetNavBarIsVisible(page);
 			toolbar.Visibility = navBarVisible ? ViewStates.Visible : ViewStates.Gone;
@@ -509,12 +510,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		protected virtual void UpdatePageTitle(Toolbar toolbar, Page page)
+		protected virtual void UpdatePageTitle(AToolbar toolbar, Page page)
 		{
 			_toolbar.Title = page.Title;
 		}
 
-		protected virtual void UpdateTitleView(Context context, Toolbar toolbar, View titleView)
+		protected virtual void UpdateTitleView(Context context, AToolbar toolbar, View titleView)
 		{
 			if (titleView == null)
 			{
@@ -529,7 +530,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				_titleViewContainer = new ContainerView(context, titleView);
 				_titleViewContainer.MatchHeight = _titleViewContainer.MatchWidth = true;
-				_titleViewContainer.LayoutParameters = new Toolbar.LayoutParams(LP.MatchParent, LP.MatchParent)
+				_titleViewContainer.LayoutParameters = new AToolbar.LayoutParams(LP.MatchParent, LP.MatchParent)
 				{
 					LeftMargin = (int)context.ToPixels(titleView.Margin.Left),
 					TopMargin = (int)context.ToPixels(titleView.Margin.Top),
@@ -545,12 +546,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		protected virtual void UpdateToolbarItems(Toolbar toolbar, Page page)
+		protected virtual void UpdateToolbarItems(AToolbar toolbar, Page page)
 		{
 			var menu = toolbar.Menu;
 			var sortedItems = page.ToolbarItems.OrderBy(x => x.Order);
 
-			toolbar.UpdateMenuItems(sortedItems, ShellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
+			toolbar.UpdateMenuItems(sortedItems, page.FindMauiContext(), TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
 
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
@@ -612,7 +613,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var sortedItems = Page.ToolbarItems.OrderBy(x => x.Order).ToList();
-			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, sortedItems, ShellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
+			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, sortedItems, Page.FindMauiContext(), TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)

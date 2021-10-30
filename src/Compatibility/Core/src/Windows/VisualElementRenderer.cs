@@ -11,6 +11,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.
 using WRect = Windows.Foundation.Rect;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -22,7 +23,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		string _defaultAutomationPropertiesHelpText;
 		UIElement _defaultAutomationPropertiesLabeledBy;
 		bool _disposed;
-		FocusNavigationDirection focusDirection;
 		EventHandler<VisualElementChangedEventArgs> _elementChangedHandlers;
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 		event EventHandler _controlChanging;
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Children.Count == 0 || Control == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			TNativeElement child = Control;
 
 			child.Measure(constraint);
@@ -160,12 +160,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, Element));
 
-			if (_control != null && this is IDontGetFocus)
-			{
-				_control.GotFocus += OnGotFocus;
-				_control.GettingFocus += OnGettingFocus;
-			}
-
 			var controller = (IElementController)oldElement;
 			if (controller != null && (Panel)controller.EffectControlProvider == this)
 			{
@@ -175,14 +169,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			controller = element;
 			if (controller != null)
 				controller.EffectControlProvider = this;
-		}
-
-		void OnGettingFocus(UIElement sender, GettingFocusEventArgs args) => focusDirection = args.Direction;
-
-		void OnGotFocus(object sender, RoutedEventArgs e)
-		{
-			if (e.OriginalSource == Control)
-				FocusManager.TryMoveFocus(focusDirection != FocusNavigationDirection.None ? focusDirection : FocusNavigationDirection.Next);
 		}
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
@@ -203,7 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			remove { _controlChanged -= value; }
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null || finalSize.Width * finalSize.Height == 0)
 				return finalSize;
@@ -281,19 +267,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Packager?.Dispose();
 			Packager = null;
 
-			if (_control != null)
-			{
-				_control.GotFocus -= OnGotFocus;
-				_control.GettingFocus -= OnGettingFocus;
-			}
 			SetNativeControl(null);
 			SetElement(null);
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element == null || availableSize.Width * availableSize.Height == 0)
-				return new Windows.Foundation.Size(0, 0);
+				return new global::Windows.Foundation.Size(0, 0);
 
 			if (Element is Layout layout)
 			{
@@ -316,7 +297,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			double width = Math.Max(0, Element.Width);
 			double height = Math.Max(0, Element.Height);
-			var result = new Windows.Foundation.Size(width, height);
+			var result = new global::Windows.Foundation.Size(width, height);
 			if (Control != null)
 			{
 				double w = Element.Width;
@@ -327,7 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					h = availableSize.Height;
 				w = Math.Max(0, w);
 				h = Math.Max(0, h);
-				Control.Measure(new Windows.Foundation.Size(w, h));
+				Control.Measure(new global::Windows.Foundation.Size(w, h));
 			}
 
 			Element.IsInNativeLayout = false;
@@ -344,22 +325,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			EventHandler<ElementChangedEventArgs<TElement>> changed = ElementChanged;
 			if (changed != null)
 				changed(this, e);
-		}
-
-		protected void UpdateTabStop()
-		{
-			if (_control == null)
-				return;
-			_control.IsTabStop = Element.IsTabStop;
-
-			if (this is ITabStopOnDescendants)
-				_control?.GetChildren<Control>().ForEach(c => c.IsTabStop = Element.IsTabStop);
-		}
-
-		protected void UpdateTabIndex()
-		{
-			if (_control != null)
-				_control.TabIndex = Element.TabIndex;
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -386,19 +351,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					e.PropertyName == Specifics.AccessKeyHorizontalOffsetProperty.PropertyName ||
 					e.PropertyName == Specifics.AccessKeyVerticalOffsetProperty.PropertyName)
 				UpdateAccessKey();
-			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
-				UpdateTabStop();
-			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
-				UpdateTabIndex();
 
 			_elementPropertyChanged?.Invoke(this, e);
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
-			effect.SetControl(Control);
+			effect.Container = this;
+			effect.Control = Control;
 		}
+
 
 		protected virtual void SetAutomationId(string id)
 		{
@@ -434,7 +396,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control == null)
 				return;
 
-			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, _defaultAutomationPropertiesLabeledBy);
+			// TODO MAUI
+			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, null, _defaultAutomationPropertiesLabeledBy);
 		}
 
 		protected void SetNativeControl(TNativeElement control)
@@ -499,7 +462,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault())
 				{
-					_control.Background = backgroundColor.ToBrush();
+					_control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 				}
 				else
 				{
@@ -511,7 +474,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault())
 				{
-					backgroundLayer.Background = backgroundColor.ToBrush();
+					backgroundLayer.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 				}
 				else
 				{
@@ -539,7 +502,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					if (!backgroundColor.IsDefault())
-						_control.Background = backgroundColor.ToBrush();
+						_control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 					else
 					{
 						_control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
@@ -554,7 +517,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					if (!backgroundColor.IsDefault())
-						backgroundLayer.Background = backgroundColor.ToBrush();
+						backgroundLayer.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 					else
 						backgroundLayer.ClearValue(BackgroundProperty);
 				}
@@ -574,8 +537,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateEnabled();
 			UpdateInputTransparent();
 			UpdateAccessKey();
-			UpdateTabStop();
-			UpdateTabIndex();
 			SetAutomationPropertiesHelpText();
 			SetAutomationPropertiesName();
 			SetAutomationPropertiesAccessibilityView();
@@ -598,7 +559,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		internal void UnfocusControl(Control control)
 		{
-			if (control == null || !control.IsEnabled || !control.IsTabStop)
+			if (control == null || !control.IsEnabled)
 				return;
 
 			// "Unfocusing" doesn't really make sense on Windows; for accessibility reasons,
@@ -748,7 +709,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_tracker == null)
 				return;
 
-			_tracker.PreventGestureBubbling = PreventGestureBubbling;
 			_tracker.Control = Control;
 			_tracker.Element = Element;
 			_tracker.Container = ContainerElement;

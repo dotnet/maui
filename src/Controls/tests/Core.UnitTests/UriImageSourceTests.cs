@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Ignore("LoadImageFromStream")]
 		public void LoadImageFromStream()
 		{
-			var loader = new UriImageSource
+			IStreamImageSource loader = new UriImageSource
 			{
 				Uri = new Uri("http://foo.com/Images/crimson.jpg"),
 			};
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Ignore("SecondCallLoadFromCache")]
 		public void SecondCallLoadFromCache()
 		{
-			var loader = new UriImageSource
+			IStreamImageSource loader = new UriImageSource
 			{
 				Uri = new Uri("http://foo.com/Images/crimson.jpg"),
 			};
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Ignore("DoNotKeepFailedRetrieveInCache")]
 		public void DoNotKeepFailedRetrieveInCache()
 		{
-			var loader = new UriImageSource
+			IStreamImageSource loader = new UriImageSource
 			{
 				Uri = new Uri("http://foo.com/missing.png"),
 			};
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Ignore("ConcurrentCallsOnSameUriAreQueued")]
 		public void ConcurrentCallsOnSameUriAreQueued()
 		{
-			var loader = new UriImageSource
+			IStreamImageSource loader = new UriImageSource
 			{
 				Uri = new Uri("http://foo.com/Images/crimson.jpg"),
 			};
@@ -137,16 +137,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void UrlHashKeyAreTheSame()
 		{
-			var urlHash1 = Device.PlatformServices.GetHash("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd");
-			var urlHash2 = Device.PlatformServices.GetHash("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd");
+			var urlHash1 = Crc64.ComputeHashString("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd");
+			var urlHash2 = Crc64.ComputeHashString("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd");
 			Assert.IsTrue(urlHash1 == urlHash2);
 		}
 
 		[Test]
 		public void UrlHashKeyAreNotTheSame()
 		{
-			var urlHash1 = Device.PlatformServices.GetHash("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd");
-			var urlHash2 = Device.PlatformServices.GetHash("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasda");
+			var urlHash1 = Crc64.ComputeHashString("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd");
+			var urlHash2 = Crc64.ComputeHashString("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasda");
 			Assert.IsTrue(urlHash1 != urlHash2);
 		}
 

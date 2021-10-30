@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		where TItemsView : GroupableItemsView
 		where TViewController : GroupableItemsViewController<TItemsView>
 	{
-		public GroupableItemsViewDelegator(ItemsViewLayout itemsViewLayout, TViewController itemsViewController) 
+		public GroupableItemsViewDelegator(ItemsViewLayout itemsViewLayout, TViewController itemsViewController)
 			: base(itemsViewLayout, itemsViewController)
 		{
 		}

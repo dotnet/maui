@@ -16,11 +16,11 @@ namespace Microsoft.Maui.Controls.XamlC
 			INode sourceNode = null;
 			((IElementNode)node).Properties.TryGetValue(new XmlName("", "Source"), out sourceNode);
 			if (sourceNode == null)
-				((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.XFUri, "Source"), out sourceNode);
+				((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Source"), out sourceNode);
 
 			INode styleNode = null;
 			if (!((IElementNode)node).Properties.TryGetValue(new XmlName("", "Style"), out styleNode) &&
-				!((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.XFUri, "Style"), out styleNode) &&
+				!((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Style"), out styleNode) &&
 				((IElementNode)node).CollectionItems.Count == 1)
 				styleNode = ((IElementNode)node).CollectionItems[0];
 

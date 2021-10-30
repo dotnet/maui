@@ -5,14 +5,14 @@ using CoreGraphics;
 using CoreLocation;
 using Foundation;
 using MapKit;
-using UIKit;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-
-using Microsoft.Maui.Controls.Compatibility;
-using RectangleF = CoreGraphics.CGRect;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
+using UIKit;
+using RectangleF = CoreGraphics.CGRect;
 
 [assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]

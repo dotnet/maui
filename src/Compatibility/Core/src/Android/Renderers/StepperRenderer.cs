@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 using AButton = Android.Widget.Button;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

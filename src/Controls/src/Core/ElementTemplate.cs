@@ -4,9 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-#pragma warning disable 612
-	public class ElementTemplate : IElement, IDataTemplate
-#pragma warning restore 612
+	public class ElementTemplate : IElement
 	{
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 		Element _parent;
@@ -26,22 +24,9 @@ namespace Microsoft.Maui.Controls
 			LoadTemplate = () => Activator.CreateInstance(type);
 		}
 
-		internal ElementTemplate(Func<object> loadTemplate) : this()
-		{
-			if (loadTemplate == null)
-				throw new ArgumentNullException("loadTemplate");
+		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException("loadTemplate");
 
-			LoadTemplate = loadTemplate;
-		}
-
-		Func<object> LoadTemplate { get; set; }
-#pragma warning disable 0612
-		Func<object> IDataTemplate.LoadTemplate
-		{
-#pragma warning restore 0612
-			get { return LoadTemplate; }
-			set { LoadTemplate = value; }
-		}
+		public Func<object> LoadTemplate { get; set; }
 
 		void IElement.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{

@@ -10,10 +10,11 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Controls.Internals;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>, ITabStopOnDescendants
+	public class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>
 	{
 		WBrush _defaultBrush;
 		bool _fontApplied;
@@ -119,6 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
 
+		[PortHandler]
 		void OnControlDateChanged(object sender, DatePickerValueChangedEventArgs e)
 		{
 			if (Element == null)
@@ -144,6 +146,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return String.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d");
 		}
 
+		[PortHandler]
 		void UpdateDate(DateTime date)
 		{
 			if (Control != null)
@@ -154,6 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateYear();
 		}
 
+		[PortHandler]
 		void UpdateMonth()
 		{
 			Control.MonthVisible = true;
@@ -179,6 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateDay()
 		{
 			Control.DayVisible = true;
@@ -204,6 +209,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateYear()
 		{
 			Control.YearVisible = true;
@@ -232,11 +238,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			if (Control == null)
@@ -270,12 +278,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateMaximumDate()
 		{
 			if (Element != null && Control != null)
 				Control.MaxYear = new DateTimeOffset(new DateTime(Element.MaximumDate.Ticks, DateTimeKind.Unspecified));			
 		}
 
+		[PortHandler]
 		void UpdateMinimumDate()
 		{
 			DateTime mindate = Element.MinimumDate;
@@ -298,7 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTextColor()
 		{
 			Color color = Element.TextColor;
-			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? color.ToBrush()) : color.ToBrush();
+			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? Maui.ColorExtensions.ToNative(color)) : Maui.ColorExtensions.ToNative(color);
 		}
 	}
 }

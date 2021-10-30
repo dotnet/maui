@@ -12,11 +12,12 @@ using Android.Text.Style;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.View.Menu;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using NUnit.Framework;
 using AToolBar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -37,11 +38,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			};
 
 			var settings = new ToolbarSettings(sortedItems);
-			SetupToolBar(settings, Context);
+			SetupToolBar(settings, MauiContext);
 
 
 			int i = 0;
-			foreach(var textView in settings.TextViews)
+			foreach (var textView in settings.TextViews)
 			{
 				Assert.AreEqual(sortedItems[i].Text, textView.Text);
 				i++;
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			};
 
 			// If this doesn't crash test has passed
-			SetupToolBar(new ToolbarSettings(sortedItems), Context);
+			SetupToolBar(new ToolbarSettings(sortedItems), MauiContext);
 		}
 
 		[Test, Category("ToolbarExtensions")]
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				};
 
 				var settings = new ToolbarSettings(sortedItems) { TintColor = Colors.Red };
-				SetupToolBar(settings, Context);
+				SetupToolBar(settings, MauiContext);
 				AToolBar aToolBar = settings.ToolBar;
 				List<IMenuItem> menuItemsCreated = settings.MenuItemsCreated;
 				Assert.IsTrue(menuItemsCreated[2].IsEnabled, "Initial state of menu Item is not enabled");
@@ -107,12 +108,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 					Assert.AreEqual(sortedItems[i].Text, textViews[i].Text);
 				}
 			}
-			catch(Exception exc)
+			catch (Exception exc)
 			{
 				Assert.Fail(exc.ToString());
 			}
 		}
-				
+
 		[Test, Category("ToolbarExtensions")]
 		[Description("Secondary ToolBarItems don't Change Color based on ForegroundColor")]
 		public void SecondaryToolbarItemsDontChangeColor()
@@ -123,14 +124,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			};
 
 			var settings = new ToolbarSettings(sortedItems) { TintColor = Colors.Red };
-			SetupToolBar(settings, Context);
+			SetupToolBar(settings, MauiContext);
 			AToolBar aToolBar = settings.ToolBar;
 			IMenuItem menuItem = settings.MenuItemsCreated.First();
 
 			MenuItemImpl menuItemImpl = (MenuItemImpl)menuItem;
 			Assert.IsNotNull(menuItemImpl, "menuItem is not of type MenuItemImpl");
 
-			if(menuItemImpl.TitleFormatted is SpannableString tf)
+			if (menuItemImpl.TitleFormatted is SpannableString tf)
 			{
 				var colorSpan =
 					tf.GetSpans(0, tf.Length(), Java.Lang.Class.FromType(typeof(ForegroundColorSpan)))
@@ -147,15 +148,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			}
 		}
 
-		static void SetupToolBar(ToolbarSettings settings, Context context)
+		static void SetupToolBar(ToolbarSettings settings, MauiContext context)
 		{
-			foreach(var item in settings.ToolbarItems)
+			foreach (var item in settings.ToolbarItems)
 			{
 				if (String.IsNullOrWhiteSpace(item.AutomationId) && !String.IsNullOrWhiteSpace(item.Text))
 					item.AutomationId = item.Text;
 			}
 
-			settings.ToolBar = new AToolBar(context);
+			settings.ToolBar = new AToolBar(context.Context);
 
 			ToolbarExtensions.UpdateMenuItems(
 				settings.ToolBar,

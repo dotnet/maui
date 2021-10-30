@@ -1,40 +1,72 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : TestBase, IDisposable
-		where THandler : IViewHandler
+		where THandler : IViewHandler, new()
 		where TStub : StubBase, IView, new()
 	{
 		IApplication _app;
-		IAppHost _host;
+		MauiApp _mauiApp;
+		IServiceProvider _servicesProvider;
 		IMauiContext _context;
+		static readonly Random rnd = new Random();
 
 		public HandlerTestBase()
 		{
-			var appBuilder = AppHostBuilder
-				.CreateDefaultAppBuilder()
-				.ConfigureFonts((ctx, fonts) =>
+			var appBuilder = MauiApp
+				.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(ButtonWithContainerStub), typeof(ButtonWithContainerStubHandler));
+					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
+					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
+				})
+				.ConfigureImageSources(services =>
+				{
+					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();
+				})
+				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 
-			_host = appBuilder.Build();
+			_mauiApp = appBuilder.Build();
+			_servicesProvider = _mauiApp.Services;
 
 			_app = new ApplicationStub();
 
-			_context = new ContextStub(_host.Services);
+			_context = new ContextStub(_servicesProvider);
+		}
+
+		public static async Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000)
+		{
+			while ((timeout -= 100) > 0)
+			{
+				if (!exitCondition.Invoke())
+					await Task.Delay(rnd.Next(100, 200));
+				else
+					break;
+			}
+
+			return exitCondition.Invoke();
 		}
 
 		public void Dispose()
 		{
-			_host.Dispose();
-			_host = null;
+			((IDisposable)_mauiApp).Dispose();
+			_mauiApp = null;
+			_servicesProvider = null;
 			_app = null;
 			_context = null;
 		}
@@ -43,17 +75,27 @@ namespace Microsoft.Maui.DeviceTests
 
 		public IMauiContext MauiContext => _context;
 
-		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
+		protected THandler CreateHandler(IView view) =>
+			CreateHandler<THandler>(view);
 
-		protected Task InvokeOnMainThreadAsync(Action action) =>
-			MainThread.InvokeOnMainThreadAsync(action);
+		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
+			where TCustomHandler : THandler, new()
+		{
+			var handler = new TCustomHandler();
+			InitializeViewHandler(view, handler);
+			return handler;
+		}
 
-		protected Task InvokeOnMainThreadAsync(Func<Task> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
+		protected void InitializeViewHandler(IView view, IViewHandler handler)
+		{
+			handler.SetMauiContext(MauiContext);
 
-		public Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
+			handler.SetVirtualView(view);
+			view.Handler = handler;
+
+			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+			handler.NativeArrange(view.Frame);
+		}
 
 		protected async Task<THandler> CreateHandlerAsync(IView view)
 		{

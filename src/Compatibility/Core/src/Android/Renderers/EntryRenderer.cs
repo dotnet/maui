@@ -11,6 +11,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.Content;
 using Java.Lang;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
 
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.SetCursorVisible(isReadOnly);
 		}
 
+		[PortHandler]
 		protected override void UpdatePlaceholderColor()
 		{
 			_hintColorSwitcher = _hintColorSwitcher ?? new TextColorSwitcher(EditText.HintTextColors, Element.UseLegacyColorManagement());
@@ -76,6 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AutoPackage = false;
 		}
 
+		[PortHandler("Still pending the code related to Keyboard.")]
 		bool TextView.IOnEditorActionListener.OnEditorAction(TextView v, ImeAction actionId, KeyEvent e)
 		{
 			// Fire Completed and dismiss keyboard for hardware / physical keyboards
@@ -305,6 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.UpdateTextAlignment(Element.HorizontalTextAlignment, Element.VerticalTextAlignment);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			EditText.UpdateTextAlignment(Element.HorizontalTextAlignment, Element.VerticalTextAlignment);

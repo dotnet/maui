@@ -1,34 +1,25 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
-	public class FontRegistrar : IFontRegistrar
+	public partial class FontRegistrar : IFontRegistrar
 	{
-		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts =
-			new Dictionary<string, (string Filename, string? Alias, Assembly Assembly)>();
+		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts = new();
+		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts = new();
+		readonly Dictionary<string, string?> _fontLookupCache = new();
+		readonly ILogger<FontRegistrar>? _logger;
 
-		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts =
-			new Dictionary<string, (string Filename, string? Alias)>();
+		IEmbeddedFontLoader _fontLoader;
 
-		readonly Dictionary<string, (bool Success, string? Path)> _fontLookupCache =
-			new Dictionary<string, (bool Success, string? Path)>();
-
-		IEmbeddedFontLoader? _fontLoader;
-
-		public FontRegistrar(IEmbeddedFontLoader? fontLoader = null)
+		public FontRegistrar(IEmbeddedFontLoader fontLoader, ILogger<FontRegistrar>? logger = null)
 		{
 			_fontLoader = fontLoader;
-		}
-
-		public void SetFontLoader(IEmbeddedFontLoader? fontLoader)
-		{
-			_fontLoader = fontLoader;
+			_logger = logger;
 		}
 
 		public void Register(string filename, string? alias, Assembly assembly)
@@ -47,7 +38,7 @@ namespace Microsoft.Maui
 				_nativeFonts[alias!] = (filename, alias);
 		}
 
-		public (bool hasFont, string? fontPath) HasFont(string font)
+		public string? GetFont(string font)
 		{
 			if (_fontLookupCache.TryGetValue(font, out var foundResult))
 				return foundResult;
@@ -58,33 +49,22 @@ namespace Microsoft.Maui
 				{
 					using var stream = GetEmbeddedResourceStream(foundFont);
 
-					return TryLoadFont(font, foundFont.Filename, foundFont.Alias, stream);
+					return LoadEmbeddedFont(font, foundFont.Filename, foundFont.Alias, stream);
 				}
 				else if (_nativeFonts.TryGetValue(font, out var foundNativeFont))
 				{
-					if (CanUsePackagedNativeFonts)
-					{
-						var match = (true, GetNativeFontUri(foundNativeFont));
-						_fontLookupCache[font] = match;
-						return match;
-					}
-					else
-					{
-						using var stream = GetNativeFontStream(foundNativeFont);
-
-						return TryLoadFont(font, foundNativeFont.Filename, foundNativeFont.Alias, stream);
-					}
+					return LoadNativeAppFont(font, foundNativeFont.Filename, foundNativeFont.Alias);
 				}
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex);
+				_logger?.LogWarning(ex, "Unable to load font '{Font}'.", font);
 			}
 
-			return _fontLookupCache[font] = (false, null);
+			return _fontLookupCache[font] = null;
 		}
 
-		(bool hasFont, string? fontPath) TryLoadFont(string cacheKey, string filename, string? alias, Stream stream)
+		string? LoadEmbeddedFont(string cacheKey, string filename, string? alias, Stream stream)
 		{
 			var font = new EmbeddedFont { FontName = filename, ResourceStream = stream };
 
@@ -96,95 +76,18 @@ namespace Microsoft.Maui
 			return _fontLookupCache[cacheKey] = result;
 		}
 
-		Stream GetEmbeddedResourceStream((string Filename, string? Alias, Assembly Assembly) embeddedFont)
+		static Stream GetEmbeddedResourceStream((string Filename, string? Alias, Assembly Assembly) embeddedFont)
 		{
 			var resourceNames = embeddedFont.Assembly.GetManifestResourceNames();
+			var searchName = "." + embeddedFont.Filename;
 
-			var resourcePaths = resourceNames
-				.Where(x => x.EndsWith(embeddedFont.Filename, StringComparison.CurrentCultureIgnoreCase))
-				.ToArray();
+			foreach (var name in resourceNames)
+			{
+				if (name.EndsWith(searchName, StringComparison.CurrentCultureIgnoreCase))
+					return embeddedFont.Assembly.GetManifestResourceStream(name)!;
+			}
 
-			if (resourcePaths.Length == 0)
-				throw new FileNotFoundException($"Resource ending with {embeddedFont.Filename} not found.");
-
-			if (resourcePaths.Length > 1)
-				resourcePaths = resourcePaths.Where(x => IsFile(x, embeddedFont.Filename)).ToArray();
-
-			return embeddedFont.Assembly.GetManifestResourceStream(resourcePaths[0])!;
-		}
-
-		bool IsFile(string path, string file)
-		{
-			if (!path.EndsWith(file, StringComparison.Ordinal))
-				return false;
-
-			return path.Replace(file, "").EndsWith(".", StringComparison.Ordinal);
-		}
-
-		bool CanUsePackagedNativeFonts =>
-#if WINDOWS
-			true;
-#else
-			false;
-#endif
-
-		string GetNativeFontUri((string Filename, string? Alias) nativeFont)
-		{
-#if WINDOWS
-			var alias = nativeFont.Alias;
-			if (!string.IsNullOrEmpty(alias))
-				alias = "#" + alias;
-
-			var root = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
-
-			var packagePath = Path.Combine(root, "Assets", nativeFont.Filename);
-			if (File.Exists(packagePath))
-				return $"ms-appx:///Assets/{nativeFont.Filename}{alias}";
-
-			packagePath = Path.Combine(root, "Fonts", nativeFont.Filename);
-			if (File.Exists(packagePath))
-				return $"ms-appx:///Fonts/{nativeFont.Filename}{alias}";
-
-			packagePath = Path.Combine(root, "Assets", "Fonts", nativeFont.Filename);
-			if (File.Exists(packagePath))
-				return $"ms-appx:///Assets/Fonts/{nativeFont.Filename}{alias}";
-
-			// TODO: check other folders as well
-#endif
-
-			throw new FileNotFoundException($"Native font with the name {nativeFont.Filename} was not found.");
-		}
-
-		Stream GetNativeFontStream((string Filename, string? Alias) nativeFont)
-		{
-#if __IOS__ || IOS
-			var mainBundlePath = Foundation.NSBundle.MainBundle.BundlePath;
-
-			var fontBundlePath = Path.Combine(mainBundlePath, nativeFont.Filename);
-			if (File.Exists(fontBundlePath))
-				return File.OpenRead(fontBundlePath);
-
-			fontBundlePath = Path.Combine(mainBundlePath, "Resources", nativeFont.Filename);
-			if (File.Exists(fontBundlePath))
-				return File.OpenRead(fontBundlePath);
-
-			fontBundlePath = Path.Combine(mainBundlePath, "Fonts", nativeFont.Filename);
-			if (File.Exists(fontBundlePath))
-				return File.OpenRead(fontBundlePath);
-
-			fontBundlePath = Path.Combine(mainBundlePath, "Resources", "Fonts", nativeFont.Filename);
-			if (File.Exists(fontBundlePath))
-				return File.OpenRead(fontBundlePath);
-#elif __ANDROID__ || ANDROID
-			var assets = Android.App.Application.Context.Assets;
-
-			if (assets != null && assets.Open(nativeFont.Filename) is Stream assetStream)
-				return assetStream;
-
-			// TODO: check other folders as well
-#endif
-
-			throw new FileNotFoundException($"Native font with the name {nativeFont.Filename} was not found.");
+			throw new FileNotFoundException($"Resource ending with {embeddedFont.Filename} not found.");
 		}
 	}
 }

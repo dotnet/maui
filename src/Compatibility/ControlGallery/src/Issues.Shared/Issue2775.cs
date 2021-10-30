@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var listSemiTransparent = new ListView
 			{
 				ItemsSource = GetList("Normal BG SEMI Transparent"),
-				BackgroundColor = Color.FromHex("#801B2A39"),
+				BackgroundColor = Color.FromArgb("#801B2A39"),
 				ItemTemplate = new DataTemplate(typeof(NormalCell))
 			};
 
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var listContextActionsSemiTransparent = new ListView
 			{
 				ItemsSource = GetList("ContextActions BG Semi Transparent"),
-				BackgroundColor = Color.FromHex("#801B2A39"),
+				BackgroundColor = Color.FromArgb("#801B2A39"),
 				ItemTemplate = new DataTemplate(typeof(ContextActionsCell))
 			};
 

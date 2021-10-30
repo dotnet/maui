@@ -15,33 +15,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelHandlerTests
 	{
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("monospace")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var label = new LabelStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var handler = await CreateHandlerAsync(label);
-			var nativeLabel = GetNativeLabel(handler);
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
-
-			Assert.Equal(nativeFont, nativeLabel.Typeface);
-
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultTypeface, nativeLabel.Typeface);
-			else
-				Assert.NotEqual(fontManager.DefaultTypeface, nativeLabel.Typeface);
-		}
-
 		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
 		public async Task HorizontalTextAlignmentInitializesCorrectly()
 		{
@@ -124,25 +97,13 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
-			(TextView)labelHandler.NativeView;
+			labelHandler.NativeView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Text;
 
 		Color GetNativeTextColor(LabelHandler labelHandler) =>
 			((uint)GetNativeLabel(labelHandler).CurrentTextColor).ToColor();
-
-		double GetNativeUnscaledFontSize(LabelHandler labelHandler)
-		{
-			var textView = GetNativeLabel(labelHandler);
-			return textView.TextSize / textView.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Typeface.IsBold;
-
-		bool GetNativeIsItalic(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Typeface.IsItalic;
 
 		(GravityFlags gravity, ATextAlignemnt alignment) GetNativeHorizontalTextAlignment(LabelHandler labelHandler)
 		{
@@ -152,14 +113,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).MaxLines;
-
-		Task ValidateNativeBackgroundColor(ILabel label, Color color)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
-			});
-		}
 
 		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view)
 		{
@@ -177,5 +130,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		float GetNativeLineHeight(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).LineSpacingMultiplier;
+
+		Task ValidateHasColor(ILabel label, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				action?.Invoke();
+				nativeLabel.AssertContainsColor(color);
+			});
+		}
 	}
 }

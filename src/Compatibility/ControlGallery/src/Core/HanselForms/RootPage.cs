@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			grd.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grd.RowDefinitions.Add(new RowDefinition { Height = 5 });
 
-			var boxView = new BoxView { BackgroundColor = Color.FromHex("#03A9F4") };
+			var boxView = new BoxView { BackgroundColor = Color.FromArgb("#03A9F4") };
 			Grid.SetRowSpan(boxView, 4);
 			Grid.SetColumnSpan(boxView, 3);
 

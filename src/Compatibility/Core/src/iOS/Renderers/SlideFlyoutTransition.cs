@@ -1,5 +1,5 @@
-using CoreGraphics;
 using System;
+using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				flyoutWidth = (nfloat)(Math.Min(bounds.Width, bounds.Height) * 0.8);
 
 			if (Height == -1d)
-				flyoutHeight = bounds.Height;	
+				flyoutHeight = bounds.Height;
 			else
 				flyoutHeight = (nfloat)Height;
 
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var shellWidth = shell.Frame.Width;
 
-			if(shell.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+			if (shell.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
 			{
 				var positionY = shellWidth - openPixels;
 				flyout.Frame = new CGRect(positionY, 0, flyoutWidth, flyoutHeight);

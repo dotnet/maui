@@ -1,0 +1,19 @@
+﻿@page "/"
+
+<div>
+    Navigate: Home | <a href="/other">Other</a>
+</div>
+
+<h1>This is the count in the main app: @count</h1>
+<button @onclick="Increment">Increment</button>
+
+<MauiRazorClassLibrarySample.Component1 />
+
+@code {
+    int count = 0;
+
+    void Increment()
+    {
+        count++;
+    }
+}

@@ -111,9 +111,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (fgcolor == null)
 				fgcolor = ColorExtensions.LabelColor.ToColor();
 			UIColor spanFgColor;
-			UIColor spanBgColor;
+			UIColor spanBgColor = null;
 			spanFgColor = fgcolor.ToUIColor();
-			spanBgColor = span.BackgroundColor.ToUIColor();
+
+			spanBgColor = span.BackgroundColor?.ToUIColor();
 #else
 
 			if (fgcolor.IsDefault)

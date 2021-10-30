@@ -1,6 +1,6 @@
 using System;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -14,28 +14,23 @@ namespace Microsoft.Maui.Layouts
 		public ILayout Layout { get; }
 
 		public abstract Size Measure(double widthConstraint, double heightConstraint);
-		public abstract void ArrangeChildren(Rectangle childBounds);
+		public abstract Size ArrangeChildren(Rectangle bounds);
 
-		public static double ResolveConstraints(double externalConstraint, double desiredLength)
+		public static double ResolveConstraints(double externalConstraint, double explicitLength, double measuredLength, double min = Minimum, double max = Maximum)
 		{
-			if (desiredLength == -1)
+			var length = IsExplicitSet(explicitLength) ? explicitLength : measuredLength;
+
+			if (max < length)
 			{
-				return externalConstraint;
+				length = max;
 			}
 
-			return Math.Min(externalConstraint, desiredLength);
-		}
-
-		public static double ResolveConstraints(double externalConstraint, double desiredLength, double measuredLength)
-		{
-			if (desiredLength == -1)
+			if (min > length)
 			{
-				// No user-specified length, so the measured value will be limited by the external constraint
-				return Math.Min(measuredLength, externalConstraint);
+				length = min;
 			}
 
-			// User-specified length wins, subject to external constraints
-			return Math.Min(desiredLength, externalConstraint);
+			return Math.Min(length, externalConstraint);
 		}
 	}
 }

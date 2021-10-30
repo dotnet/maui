@@ -1,31 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-		<AssemblyName>Microsoft.Maui.Controls.Xaml.Design</AssemblyName>
+		<TargetFrameworks>net472</TargetFrameworks>
+		<AssemblyName>Microsoft.Maui.Controls.Xaml.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+		<IsPackable>False</IsPackable>
+		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
 	</PropertyGroup>
-	<PropertyGroup>
-		<PackageId>Microsoft.Maui.Controls.Xaml.Design</PackageId>
-		<Description>Provides the design-time metadata for the XAML language service.</Description>
-	</PropertyGroup>
-	<ItemGroup Condition=" '$(OS)' != 'Unix' ">
-		<Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-			<SpecificVersion>True</SpecificVersion>
-		</Reference>
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Xamarin.Forms.Design" Version="1.0.26-pre" Condition=" '$(OS)' != 'Unix' " />
-	</ItemGroup>
-	<ItemGroup Condition=" '$(OS)' != 'Unix' ">
+	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
+		<Reference Include="System.Xaml" />
 		<Compile Include="AttributeTableBuilder.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<Compile Include="RegisterMetadata.cs" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\Core\Controls.Core.csproj" />
-		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj">
-			<GenerateDesignMetadata>true</GenerateDesignMetadata>
-			<Private>False</Private>
-		</ProjectReference>
+    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
+      <Version>16.9.31025.104</Version>
+    </PackageReference>
 	</ItemGroup>
 </Project>

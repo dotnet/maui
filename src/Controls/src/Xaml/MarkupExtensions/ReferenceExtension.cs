@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
 
@@ -17,14 +18,6 @@ namespace Microsoft.Maui.Controls.Xaml
 			var value = referenceProvider?.FindByName(Name);
 			if (value != null)
 				return value;
-
-			//legacy path. could be hit by code processed by previous versions of XamlC
-#pragma warning disable CS0612 // Type or member is obsolete
-			value = serviceProvider.GetService<INameScopeProvider>()?.NameScope?.FindByName(Name);
-			if (value != null)
-				return value;
-
-#pragma warning restore CS0612 // Type or member is obsolete
 
 			//fallback
 			var valueProvider = serviceProvider.GetService<IProvideValueTarget>() as IProvideParentValues

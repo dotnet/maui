@@ -5,11 +5,7 @@ using Android.Content;
 using Android.OS;
 using AndroidEnvironment = Android.OS.Environment;
 using AndroidUri = Android.Net.Uri;
-#if __ANDROID_29__
 using ContentFileProvider = AndroidX.Core.Content.FileProvider;
-#else
-using ContentFileProvider = Android.Support.V4.Content.FileProvider;
-#endif
 
 namespace Microsoft.Maui.Essentials
 {

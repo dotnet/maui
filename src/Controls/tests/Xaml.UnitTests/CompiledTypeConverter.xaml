@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CompiledTypeConverter"
+             xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
 			 RectangleP="0,1,2,4"
 			 RectangleBP="4,8,16,32"
 			 BackgroundColor="Pink"
 			 List="Foo, Bar">
 	<Label x:Name="label"
 		HorizontalOptions="EndAndExpand"
-		RelativeLayout.XConstraint="2" Margin="2,3"/>
+		cmp:RelativeLayout.XConstraint="2" Margin="2,3"/>
 </ContentPage>

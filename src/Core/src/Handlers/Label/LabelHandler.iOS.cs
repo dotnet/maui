@@ -1,5 +1,3 @@
-using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Handlers
@@ -8,9 +6,20 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiLabel CreateNativeView() => new MauiLabel();
 
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
+
+		public static void MapBackground(LabelHandler handler, ILabel label)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			handler.GetWrappedNativeView()?.UpdateBackground(label);
+		}
+
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateText(label);
+			handler.NativeView?.UpdateTextPlainText(label);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, label);
@@ -30,6 +39,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 		}
+
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label) { }
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{

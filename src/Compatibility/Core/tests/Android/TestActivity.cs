@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 			if (visualElement != null)
 			{
-				var renderer = AppCompat.Platform.CreateRendererWithContext(visualElement, result);
-				AppCompat.Platform.SetRenderer(visualElement, renderer);
+				var renderer = Platform.CreateRendererWithContext(visualElement, result);
+				Platform.SetRenderer(visualElement, renderer);
 				result.SetContentView(renderer.View);
 			}
 

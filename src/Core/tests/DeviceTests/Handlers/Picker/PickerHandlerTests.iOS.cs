@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using Xunit;
@@ -7,8 +9,62 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class PickerHandlerTests
 	{
+		[Fact(DisplayName = "Title Color Initializes Correctly")]
+		public async Task TitleColorInitializesCorrectly()
+		{
+			var xplatTitleColor = Colors.CadetBlue;
+
+			var picker = new PickerStub
+			{
+				Title = "Select an Item",
+				TitleColor = xplatTitleColor
+			};
+
+			var expectedValue = xplatTitleColor.ToNative();
+
+			var values = await GetValueAsync(picker, (handler) =>
+			{
+				return new
+				{
+					ViewValue = picker.TitleColor,
+					NativeViewValue = GetNativeTitleColor(handler)
+				};
+			});
+
+			Assert.Equal(xplatTitleColor, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
+		[Fact(DisplayName = "Text Color Initializes Correctly")]
+		public async Task TextColorInitializesCorrectly()
+		{
+			var xplatTitleColor = Colors.CadetBlue;
+
+			var picker = new PickerStub
+			{
+				Title = "Select an Item",
+				TextColor = xplatTitleColor,
+				Items = new[] { "Item 1", "Item2", "Item3" },
+				SelectedIndex = 1
+			};
+
+			var expectedValue = xplatTitleColor.ToNative();
+
+			var values = await GetValueAsync(picker, (handler) =>
+			{
+				return new
+				{
+					ViewValue = picker.TextColor,
+					NativeViewValue = GetNativeTextColor(handler)
+				};
+			});
+
+			Assert.Equal(xplatTitleColor, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			(MauiPicker)pickerHandler.NativeView;
+			pickerHandler.NativeView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Text;
@@ -38,13 +94,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, selectedIndex);
 		}
 
-		double GetNativeUnscaledFontSize(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Font.PointSize;
+		UITextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).TextAlignment;
 
-		bool GetNativeIsBold(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
+		UIColor GetNativeTitleColor(PickerHandler pickerHandler)
+		{
+			var mauiPicker = GetNativePicker(pickerHandler);
+			return mauiPicker.AttributedPlaceholder.GetForegroundColor();
+		}
 
-		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+		UIColor GetNativeTextColor(PickerHandler pickerHandler)
+		{
+			var mauiPicker = GetNativePicker(pickerHandler);
+			return mauiPicker.TextColor;
+		}
+
+		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).VerticalAlignment;
 	}
 }

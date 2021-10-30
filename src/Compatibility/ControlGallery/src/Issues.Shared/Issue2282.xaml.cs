@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if APP
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2282, "ListView ItemTapped issue on Windows phone", PlatformAffected.WinPhone)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Issue2282 : ContentPage
 	{
 		public Issue2282()

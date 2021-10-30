@@ -1,25 +1,94 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
+#nullable enable
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : ViewHandler<IPicker, ComboBox>
+	public partial class PickerHandler : ViewHandler<IPicker, MauiComboBox>
 	{
-		protected override ComboBox CreateNativeView() => new ComboBox();
+		WBrush? _defaultForeground;
 
-		[MissingMapper]
-		public static void MapTitle(PickerHandler handler, IPicker view) { }
+		protected override MauiComboBox CreateNativeView()
+		{
+			var nativePicker = new MauiComboBox();
 
-		[MissingMapper]
-		public static void MapSelectedIndex(PickerHandler handler, IPicker view) { }
+			if (VirtualView != null)
+				nativePicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(PickerHandler handler, IPicker view) { }
+			return nativePicker;
+		}
 
-		[MissingMapper]
-		public static void MapFont(PickerHandler handler, IPicker view) { }
+		protected override void ConnectHandler(MauiComboBox nativeView)
+		{
+			nativeView.SelectionChanged += OnControlSelectionChanged;
+			SetupDefaults(nativeView);
+		}
 
-		[MissingMapper]
-		public static void MapTextColor(PickerHandler handler, IPicker view) { }
+		protected override void DisconnectHandler(MauiComboBox nativeView)
+		{
+			nativeView.SelectionChanged -= OnControlSelectionChanged;
+		}
+
+		void SetupDefaults(MauiComboBox nativeView)
+		{
+			_defaultForeground = nativeView.Foreground;
+		}
+
+		void Reload()
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
+		}
+
+		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
+
+		public static void MapTitle(PickerHandler handler, IPicker picker) 
+		{
+			handler.NativeView?.UpdateTitle(picker);
+		}
+
+		public static void MapTitleColor(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateTitle(picker);
+		}
+
+		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateSelectedIndex(picker);
+		}
+
+		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker) 
+		{
+			handler.NativeView?.UpdateCharacterSpacing(picker);
+		}
+
+		public static void MapFont(PickerHandler handler, IPicker picker) 
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(picker, fontManager);
+		}
+
+		public static void MapTextColor(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateTextColor(picker, handler._defaultForeground);
+		}
+
+		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+		}
+		
+		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(picker);
+		}
+
+		void OnControlSelectionChanged(object? sender, WSelectionChangedEventArgs e)
+		{
+			if (VirtualView != null && NativeView != null)
+				VirtualView.SelectedIndex = NativeView.SelectedIndex;
+		}
 	}
 }

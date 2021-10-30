@@ -1,10 +1,10 @@
 ﻿using System;
 using Foundation;
-using Xamarin.Forms;
-using Xamarin.Forms.Controls.GalleryPages.DateTimePickerGalleries;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DateTimePickerGalleries;
 
-[assembly: Dependency(typeof(Xamarin.Forms.ControlGallery.iOS.GalleryPages.RegionalLocale))]
-namespace Xamarin.Forms.ControlGallery.iOS.GalleryPages
+[assembly: Dependency(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.GalleryPages.RegionalLocale))]
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.GalleryPages
 {
 	public class RegionalLocale : ILocalize
 	{

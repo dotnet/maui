@@ -3,10 +3,12 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WShape = Microsoft.UI.Xaml.Shapes.Shape;
+using Microsoft.Maui.Controls.Platform;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class BoxViewBorderRenderer : ViewRenderer<BoxView, Border>
+	public class BoxViewBorderRenderer : ViewRenderer<BoxView, WBorder>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
 		{
@@ -16,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var rect = new Border
+					var rect = new WBorder
 					{
 						DataContext = Element
 					};
@@ -66,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				backgroundColor = Element.BackgroundColor;
 			}
 
-			Control.Background = backgroundColor.IsDefault() ? null : backgroundColor.ToBrush();
+			Control.Background = backgroundColor.IsDefault() ? null : Maui.ColorExtensions.ToNative(backgroundColor);
 		}
 
 		protected override void UpdateBackground()
@@ -81,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Color backgroundColor = Element.BackgroundColor;
 
 				if (!backgroundColor.IsDefault())
-					Control.Background = backgroundColor.ToBrush();
+					Control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 				else
 				{
 					if (Element.Color.IsDefault())
@@ -97,12 +99,35 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (color.IsDefault())
 				UpdateBackground();
 			else
-				Control.Background = color.ToBrush();
+				Control.Background = Maui.ColorExtensions.ToNative(color);
 		}
 
 		void SetCornerRadius(CornerRadius cornerRadius)
 		{
 			Control.CornerRadius = WinUIHelpers.CreateCornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft);
+		}
+
+		static Size DefaultSize = new(40, 40);
+
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			// Creating a custom override for measuring the BoxView on Windows; this reports the same default size that's 
+			// specified in the old OnMeasure method. Normally we'd just do this centrally in the xplat code or override
+			// GetDesiredSize in a BoxViewHandler. But BoxView is a legacy control (replaced by Shapes), so we don't want
+			// to bring that into the new stuff. 
+
+			if (Element != null)
+			{
+				var heightRequest = Element.HeightRequest;
+				var widthRequest = Element.WidthRequest;
+
+				heightRequest = heightRequest >= 0 ? heightRequest : 40;
+				widthRequest = widthRequest >= 0 ? widthRequest : 40;
+
+				return new Size(widthRequest, heightRequest);
+			}
+
+			return DefaultSize;
 		}
 	}
 }

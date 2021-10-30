@@ -8,10 +8,11 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class TimePickerRenderer : ViewRenderer<TimePicker, Microsoft.UI.Xaml.Controls.TimePicker>, ITabStopOnDescendants
+	public class TimePickerRenderer : ViewRenderer<TimePicker, Microsoft.UI.Xaml.Controls.TimePicker>
 	{
 		WBrush _defaultBrush;
 		bool _fontApplied;
@@ -129,6 +130,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			if (Control == null)
@@ -162,6 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateTime()
 		{
 			Control.Time = Element.Time;
@@ -175,6 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
@@ -183,7 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTextColor()
 		{
 			Color color = Element.TextColor;
-			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? color.ToBrush()) : color.ToBrush();
+			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? Maui.ColorExtensions.ToNative(color)) : Maui.ColorExtensions.ToNative(color);
 		}
 	}
 }

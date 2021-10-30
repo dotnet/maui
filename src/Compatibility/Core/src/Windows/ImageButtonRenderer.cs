@@ -10,6 +10,7 @@ using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// The size needs to be the entire size needed for the button (including padding, borders, etc.)
 			// Not just the size of the image.
 			var btn = Control;
-			btn.Measure(new Windows.Foundation.Size(widthConstraint, heightConstraint));
+			btn.Measure(new global::Windows.Foundation.Size(widthConstraint, heightConstraint));
 
 			var size = new Size(Math.Ceiling(btn.DesiredSize.Width), Math.Ceiling(btn.DesiredSize.Height));
 
@@ -251,14 +252,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateImageButtonBackground()
 		{
 			if (Brush.IsNullOrEmpty(Element.Background))
-				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Element.BackgroundColor.ToBrush() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Maui.ColorExtensions.ToNative(Element.BackgroundColor) : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
 			else
 				Control.BackgroundColor = Element.Background.ToBrush();
 		}
 
 		void UpdateBorderColor()
 		{
-			Control.BorderBrush = Element.BorderColor.IsNotDefault() ? Element.BorderColor.ToBrush() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+			Control.BorderBrush = Element.BorderColor.IsNotDefault() ? Maui.ColorExtensions.ToNative(Element.BorderColor) : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
 		void UpdateBorderRadius()

@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 43519, "[UWP] MasterDetail page ArguementException when nested in a TabbedPage and returning from modal page"
+	[Issue(IssueTracker.Bugzilla, 43519, "[UWP] FlyoutPage ArgumentException when nested in a TabbedPage and returning from modal page"
 		, PlatformAffected.UWP)]
 
 #if UITEST
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			});
 		}
 
-#if UITEST && __WINDOWS__
+#if UITEST && WINDOWS
 
 		[Test]
 		public void TabbedModalNavigation()

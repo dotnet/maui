@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					// volley the requests better up front so that if the same request comes in it isn't requeued
 					if (initialSource is UriImageSource uri && uri.CachingEnabled)
 					{
-						cacheKey = Device.PlatformServices.GetHash(uri.Uri.ToString());
+						cacheKey = Crc64.ComputeHashString(uri.Uri.ToString());
 						var cacheObject = await GetCache().GetAsync(cacheKey, uri.CacheValidity, async () =>
 						{
 							var drawable = await context.GetFormsDrawableAsync(initialSource, cancellationToken);
@@ -361,7 +361,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		static int IdFromTitle(string title, Type resourceType, string defType, Resources resource)
 		{
-			return IdFromTitle(title, resourceType, defType, resource, AppCompat.Platform.GetPackageName());
+			return IdFromTitle(title, resourceType, defType, resource, Platform.GetPackageName());
 		}
 
 		static int IdFromTitle(string title, Type resourceType, string defType, Context context)

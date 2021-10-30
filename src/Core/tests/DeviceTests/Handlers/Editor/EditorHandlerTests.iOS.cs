@@ -11,6 +11,75 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+		[Fact(DisplayName = "Placeholder Toggles Correctly When Text Changes")]
+		public async Task PlaceholderTogglesCorrectlyWhenTextChanges()
+		{
+			var editor = new EditorStub();
+
+			bool testPassed = false;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(editor);
+
+				Assert.False(GetNativePlaceholder(handler).Hidden);
+				editor.Text = "test";
+				handler.UpdateValue(nameof(EditorStub.Text));
+				Assert.True(GetNativePlaceholder(handler).Hidden);
+				editor.Text = "";
+				Assert.False(GetNativePlaceholder(handler).Hidden);
+				testPassed = true;
+			});
+
+			Assert.True(testPassed);
+		}
+
+		[Fact(DisplayName = "Placeholder Hidden When Control Has Text")]
+		public async Task PlaceholderHiddenWhenControlHasText()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Text"
+			};
+
+			var isHidden = await GetValueAsync(editor, handler =>
+			{
+				return GetNativePlaceholder(handler).Hidden;
+			});
+
+			Assert.True(isHidden);
+		}
+
+		[Fact(DisplayName = "Placeholder Visible When Control No Text")]
+		public async Task PlaceholderVisibleWhenControlHasNoText()
+		{
+			var editor = new EditorStub();
+
+			var isHidden = await GetValueAsync(editor, handler =>
+			{
+				return GetNativePlaceholder(handler).Hidden;
+			});
+
+			Assert.False(isHidden);
+		}
+
+		[Fact(DisplayName = "Placeholder Hidden When Control Has Attributed Text")]
+		public async Task PlaceholderHiddenWhenControlHasAttributedText()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Text",
+				CharacterSpacing = 43
+			};
+
+			var isHidden = await GetValueAsync(editor, handler =>
+			{
+				return GetNativePlaceholder(handler).Hidden;
+			});
+
+			Assert.True(isHidden);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -36,37 +105,56 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
 
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("Times New Roman")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
+		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
 		{
-			var editor = new EditorStub()
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var editorStub = new EditorStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize(family, 10)
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
 			};
 
-			var handler = await CreateHandlerAsync(editor);
-			var nativeFont = await GetValueAsync(editor, handler => GetNativeEditor(handler).Font);
+			UITextAlignment expectedValue = UITextAlignment.Right;
 
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+			var values = await GetValueAsync(editorStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editorStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+				};
+			});
 
-			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
-
-			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-			else
-				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
-		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
-			(MauiTextView)editorHandler.NativeView;
+		static MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
+			editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
+
+		static void SetNativeText(EditorHandler editorHandler, string text) =>
+			GetNativeEditor(editorHandler).Text = text;
+
+		static int GetCursorStartPosition(EditorHandler editorHandler)
+		{
+			var control = GetNativeEditor(editorHandler);
+			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
+		}
+
+		static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
+		{
+			var control = GetNativeEditor(editorHandler);
+			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
+			control.SelectedTextRange = control.GetTextRange(endPosition, endPosition);
+		}
+
+		UILabel GetNativePlaceholder(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).PlaceholderLabel;
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).PlaceholderText;
@@ -91,5 +179,38 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativeTextColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextColor.ToColor();
+
+		UITextAlignment GetNativeHorizontalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).TextAlignment;
+
+		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.DecimalPad;
+
+		bool GetNativeIsEmailKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.EmailAddress;
+
+		bool GetNativeIsTelephoneKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.PhonePad;
+
+		bool GetNativeIsUrlKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.Url;
+
+		bool GetNativeIsTextKeyboard(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+
+		bool GetNativeIsChatKeyboard(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
+		}
 	}
 }

@@ -7,10 +7,11 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.SearchBar;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class SearchBarRenderer : ViewRenderer<SearchBar, AutoSuggestBox>, ITabStopOnDescendants
+	public class SearchBarRenderer : ViewRenderer<SearchBar, AutoSuggestBox>
 	{
 		WBrush _defaultPlaceholderColorBrush;
 		WBrush _defaultPlaceholderColorFocusBrush;
@@ -136,6 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_queryTextBox.SetAutomationPropertiesAutomationId($"{id}_AutoSuggestBox");
 		}
 
+		[PortHandler]
 		void OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs e)
 		{
 			// Modifies the text of the control if it does not match the query.
@@ -146,6 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element.OnSearchButtonPressed();
 		}
 
+		[PortHandler]
 		void OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs e)
 		{
 			if (e.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
@@ -188,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else
 			{
 				// Determine whether the background should be black or white (in order to make the foreground color visible) 
-				var bcolor = cancelColor.ToWindowsColor().GetContrastingColor().ToFormsColor();
+				var bcolor = cancelColor.ToWindowsColor().GetContrastingColor().ToColor();
 				BrushHelpers.UpdateColor(bcolor, ref _defaultDeleteButtonBackgroundColorBrush,
 					() => _cancelButton.BackgroundBrush, brush => _cancelButton.BackgroundBrush = brush);
 			}
@@ -223,16 +226,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
+		[PortHandler]
 		void UpdatePlaceholder()
 		{
 			Control.PlaceholderText = Element.Placeholder ?? string.Empty;
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderColor()
 		{
 			if (_queryTextBox == null)
@@ -247,11 +253,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				() => _queryTextBox.PlaceholderForegroundFocusBrush, brush => _queryTextBox.PlaceholderForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			Control.Text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 		}
 
+		[PortHandler]
 		void UpdateTextColor()
 		{
 			if (_queryTextBox == null)
@@ -288,6 +296,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateInputScope()
 		{
 			if(_queryTextBox == null)
@@ -322,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			
 			if (!backgroundColor.IsDefault())
 			{
-				_queryTextBox.Background = backgroundColor.ToBrush();
+				_queryTextBox.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 			}
 			else
 			{

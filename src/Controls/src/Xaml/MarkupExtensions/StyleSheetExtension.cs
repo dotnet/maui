@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		public string Style { get; set; }
 
-		[TypeConverter(typeof(UriTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 		public Uri Source { get; set; }
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)

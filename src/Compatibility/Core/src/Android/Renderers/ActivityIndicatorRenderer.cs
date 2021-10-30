@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AProgressBar = Android.Widget.ProgressBar;
 

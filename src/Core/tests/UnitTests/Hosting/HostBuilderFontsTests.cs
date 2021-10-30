@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderFontsTests
@@ -12,17 +13,18 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void ConfigureFontsRegistersTheCorrectServices()
 		{
-			var host = new AppHostBuilder()
-				.ConfigureFonts()
-				.Build();
+			var builder = MauiApp
+				.CreateBuilder()
+				.ConfigureFonts();
+			var mauiApp = builder.Build();
 
-			var manager = host.Services.GetRequiredService<IFontManager>();
+			var manager = mauiApp.Services.GetRequiredService<IFontManager>();
 			Assert.NotNull(manager);
 
-			var registrar = host.Services.GetRequiredService<IFontRegistrar>();
+			var registrar = mauiApp.Services.GetRequiredService<IFontRegistrar>();
 			Assert.NotNull(registrar);
 
-			var loader = host.Services.GetRequiredService<IEmbeddedFontLoader>();
+			var loader = mauiApp.Services.GetRequiredService<IEmbeddedFontLoader>();
 			Assert.NotNull(loader);
 		}
 
@@ -33,19 +35,22 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var root = Path.Combine(Path.GetTempPath(), "Microsoft.Maui.UnitTests", "ConfigureFontsRegistersFonts", Guid.NewGuid().ToString());
 
-			var host = new AppHostBuilder()
-				.ConfigureFonts((_, fonts) => fonts.AddEmeddedResourceFont(GetType().Assembly, filename, alias))
-				.ConfigureServices((_, services) => services.AddSingleton<IEmbeddedFontLoader>(_ => new FileSystemEmbeddedFontLoader(root)))
-				.Build();
+			var builder = MauiApp
+				.CreateBuilder()
+				.ConfigureFonts(fonts => fonts.AddEmbeddedResourceFont(GetType().Assembly, filename, alias));
+			builder.Services.AddSingleton<IEmbeddedFontLoader>(_ => new FileSystemEmbeddedFontLoader(root));
+			var mauiApp = builder.Build();
 
-			var registrar = host.Services.GetRequiredService<IFontRegistrar>();
+			var registrar = mauiApp.Services.GetRequiredService<IFontRegistrar>();
 
-			Assert.True(registrar.TryGetFont(filename, out var path));
+			var path = registrar.GetFont(filename);
+			Assert.NotNull(path);
 			Assert.StartsWith(root, path);
 
 			if (alias != null)
 			{
-				Assert.True(registrar.TryGetFont(alias, out path));
+				path = registrar.GetFont(alias);
+				Assert.NotNull(path);
 				Assert.StartsWith(root, path);
 			}
 
@@ -57,8 +62,9 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void NullAssemblyForEmbeddedFontThrows()
 		{
-			var builder = new AppHostBuilder()
-				.ConfigureFonts((_, fonts) => fonts.AddEmeddedResourceFont(null, "test.ttf"));
+			var builder = MauiApp
+				.CreateBuilder()
+				.ConfigureFonts(fonts => fonts.AddEmbeddedResourceFont(null, "test.ttf"));
 
 			var ex = Assert.Throws<ArgumentNullException>(() => builder.Build());
 			Assert.Equal("assembly", ex.ParamName);
@@ -70,8 +76,9 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData(" ")]
 		public void BadFileNameForEmbeddedFontThrows(string filename)
 		{
-			var builder = new AppHostBuilder()
-				.ConfigureFonts((_, fonts) => fonts.AddEmeddedResourceFont(GetType().Assembly, filename));
+			var builder = MauiApp
+				.CreateBuilder()
+				.ConfigureFonts(fonts => fonts.AddEmbeddedResourceFont(GetType().Assembly, filename));
 
 			var ex = Assert.ThrowsAny<ArgumentException>(() => builder.Build());
 			Assert.Equal("filename", ex.ParamName);
@@ -83,9 +90,11 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void NullAliasForEmbeddedFontDoesNotThrow()
 		{
-			new AppHostBuilder()
-				.ConfigureFonts((_, fonts) => fonts.AddEmeddedResourceFont(GetType().Assembly, "test.ttf", null))
-				.Build();
+			var builder = MauiApp
+				.CreateBuilder()
+				.ConfigureFonts(fonts => fonts.AddEmbeddedResourceFont(GetType().Assembly, "test.ttf", null));
+
+			_ = builder.Build();
 		}
 	}
 }

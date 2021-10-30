@@ -2,80 +2,37 @@ parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  cakeArgs: '' # additional cake args
 
 steps:
-  - checkout: self
-    clean: true
 
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Xcode'
-      condition: ne(variables['REQUIRED_XCODE'], '')
-      inputs:
-        provisioning_script: $(provisionator.xcode)
+  - template: provision.yml
+    parameters:
+      platform: macos
+      skipXcode: ${{ eq(parameters.platform, 'android') }}
 
-    - script: |
-        echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
-        echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-      displayName: 'Setup SDK Paths'
-      condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release"
+    displayName: 'Install .NET'
 
-    - task: InstallAppleCertificate@2
-      displayName: 'Install an Apple certificate'
-      inputs:
-        certSecureFile: 'Maui.p12'
-        certPwd: $(P12password)
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
 
-    - task: InstallAppleProvisioningProfile@1
-      displayName: 'Install an Apple provisioning profile'
-      inputs:
-        provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
-
-  - task: xamops.azdevex.provisionator-task.provisionator@1
-    displayName: 'Provisionator'
-    condition: eq(variables['provisioning'], 'true')
-    inputs:
-      provisioning_script: $(provisionator.path)
-      provisioning_extra_args: $(provisionator.extraArguments)
-
-  - pwsh: |
-      ./build.ps1 --target provision --TeamProject="$(System.TeamProject)"
-    displayName: 'Cake Provision'
-    condition: eq(variables['provisioningCake'], 'true')
-
-  - task: UseDotNet@2
-    displayName: 'Install .net core $(DOTNET_VERSION)'
-    condition: ne(variables['DOTNET_VERSION'], '')
-    inputs:
-      version: $(DOTNET_VERSION)
-      packageType: 'sdk'
-
-  - pwsh: |
-      ./build.ps1 --target=BuildTasks --BUILD_CONFIGURATION=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
-    name: winbuild
+  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'
 
-  - ${{ if eq(parameters['platform'], 'android') }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
-      displayName: $(Agent.JobName)
-
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/ios.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
-      displayName: $(Agent.JobName)
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+    displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results
     condition: always()
     inputs:
       testResultsFormat: xUnit
-      testResultsFiles: 'output/testlogs/**/TestResults.xml'
+      testResultsFiles: '$(TestResultsDirectory)/**/TestResults.xml'
       testRunTitle: '$(System.PhaseName)'
 
   - task: PublishBuildArtifacts@1
-    displayName: Publish the $(System.PhaseName) logs
+    displayName: Publish Artifacts
     condition: always()
     inputs:
       artifactName: $(System.PhaseName)
-      pathToPublish: 'output/testlogs'

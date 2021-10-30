@@ -1,12 +1,17 @@
 #nullable enable
 using System;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public interface IMauiHandlersServiceProvider : IServiceProvider
+	public interface IMauiHandlersServiceProvider : IMauiServiceProvider
 	{
-		IViewHandler? GetHandler(Type type);
+		Type? GetHandlerType(Type iview);
 
-		IViewHandler? GetHandler<T>() where T : IView;
+		IElementHandler? GetHandler(Type type);
+
+		IElementHandler? GetHandler<T>() where T : IElement;
+
+		IMauiHandlersCollection GetCollection();
 	}
 }

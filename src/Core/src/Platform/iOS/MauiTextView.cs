@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 
@@ -6,7 +7,12 @@ namespace Microsoft.Maui.Platform.iOS
 {
 	public class MauiTextView : UITextView
 	{
-		UILabel PlaceholderLabel { get; } = new UILabel
+		// Native Changed doesn't fire when the Text Property is set in code
+		// We use this event as a way to fire changes whenever the Text changes
+		// via code or user interaction.
+		public event EventHandler? TextSetOrChanged;
+
+		internal UILabel PlaceholderLabel { get; } = new UILabel
 		{
 			BackgroundColor = UIColor.Clear,
 			Lines = 0
@@ -15,6 +21,7 @@ namespace Microsoft.Maui.Platform.iOS
 		public MauiTextView(CGRect frame) : base(frame)
 		{
 			InitPlaceholderLabel();
+			this.Changed += OnChanged;
 		}
 
 		public string? PlaceholderText
@@ -33,10 +40,6 @@ namespace Microsoft.Maui.Platform.iOS
 			set => PlaceholderLabel.TextColor = value;
 		}
 
-		public void HidePlaceholder(bool hide)
-		{
-			PlaceholderLabel.Hidden = hide;
-		}
 
 		void InitPlaceholderLabel()
 		{
@@ -62,6 +65,51 @@ namespace Microsoft.Maui.Platform.iOS
 
 			AddConstraints(hConstraints);
 			AddConstraints(vConstraints);
+		}
+
+		public override string? Text
+		{
+			get => base.Text;
+			set
+			{
+				var old = base.Text;
+
+				base.Text = value;
+
+				if (old != value)
+				{
+					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+					HidePlaceholderIfTextIsPresent(value);
+				}
+			}
+		}
+
+		public override NSAttributedString AttributedText
+		{
+			get => base.AttributedText;
+			set
+			{
+				var old = base.AttributedText;
+
+				base.AttributedText = value;
+
+				if (old?.Value != value?.Value)
+				{
+					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+					HidePlaceholderIfTextIsPresent(value?.Value);
+				}
+			}
+		}
+
+		void HidePlaceholderIfTextIsPresent(string? value)
+		{
+			PlaceholderLabel.Hidden = !String.IsNullOrEmpty(value);
+		}
+
+		void OnChanged(object? sender, EventArgs e)
+		{
+			HidePlaceholderIfTextIsPresent(Text);
+			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

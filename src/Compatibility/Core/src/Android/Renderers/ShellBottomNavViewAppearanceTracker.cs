@@ -2,6 +2,7 @@
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Google.Android.Material.BottomNavigation;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;

@@ -2,13 +2,15 @@
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(BrushTypeConverter))]
-	public abstract class Brush : Element
+	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
+	public abstract partial class Brush : Element
 	{
 		public static Brush Default
 		{
 			get { return new SolidColorBrush(null); }
 		}
+
+		public static implicit operator Brush(Color color) => new SolidColorBrush(color);
 
 		public abstract bool IsEmpty { get; }
 

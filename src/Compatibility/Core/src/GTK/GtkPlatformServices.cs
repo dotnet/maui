@@ -32,10 +32,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 			return AppDomain.CurrentDomain.GetAssemblies();
 		}
 
-		public string GetHash(string input) => Crc64.GetHash(input);
-
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
-
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			switch (size)
@@ -84,11 +80,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 		public IIsolatedStorageFile GetUserStoreForApplication()
 		{
 			return new GtkIsolatedStorageFile();
-		}
-
-		public void OpenUriAction(Uri uri)
-		{
-			System.Diagnostics.Process.Start(uri.AbsoluteUri);
 		}
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)

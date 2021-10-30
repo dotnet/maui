@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement
+	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement
 	{
 		public static readonly BindableProperty SourceProperty = ImageElement.SourceProperty;
 
@@ -35,7 +32,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsLoading
 		{
-			get { return (bool)GetValue(IsLoadingProperty); }
+			get => (bool)GetValue(IsLoadingProperty);
+			private set => SetValue(IsLoadingPropertyKey, value);
 		}
 
 		public bool IsOpaque
@@ -50,14 +48,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsAnimationPlayingProperty, value); }
 		}
 
-		[TypeConverter(typeof(ImageSourceConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource Source
 		{
 			get { return (ImageSource)GetValue(SourceProperty); }
 			set { SetValue(SourceProperty, value); }
 		}
-
-		bool IImageController.GetLoadAsAnimation() => ImageElement.GetLoadAsAnimation(this);
 
 		protected override void OnBindingContextChanged()
 		{
@@ -65,18 +61,10 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-			SizeRequest desiredSize = base.OnSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			SizeRequest desiredSize = base.OnMeasure(double.PositiveInfinity, double.PositiveInfinity);
 			return ImageElement.Measure(this, desiredSize, widthConstraint, heightConstraint);
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetIsLoading(bool isLoading)
-		{
-			SetValue(IsLoadingPropertyKey, isLoading);
 		}
 
 		public IPlatformElementConfiguration<T, Image> On<T>() where T : IConfigPlatform
@@ -84,9 +72,16 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
+		bool IImageController.GetLoadAsAnimation() =>
+			ImageElement.GetLoadAsAnimation(this);
+
+		void IImageController.SetIsLoading(bool isLoading) =>
+			IsLoading = isLoading;
+
 		void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
 			ImageElement.ImageSourceSourceChanged(this, e);
 
-		void IImageElement.RaiseImageSourcePropertyChanged() => OnPropertyChanged(nameof(Source));
+		void IImageElement.RaiseImageSourcePropertyChanged() =>
+			OnPropertyChanged(nameof(Source));
 	}
 }

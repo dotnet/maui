@@ -6,6 +6,7 @@ using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
 	{
-		readonly AutomationPropertiesProvider _automationPropertiesProvider;
+		readonly FastRenderers.AutomationPropertiesProvider _automationPropertiesProvider;
 		readonly EffectControlProvider _effectControlProvider;
 
 		protected TAdapter ItemsViewAdapter;
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			new ContextThemeWrapper(context, Microsoft.Maui.Controls.Compatibility.Resource.Style.collectionViewTheme), null,
 			Microsoft.Maui.Controls.Compatibility.Resource.Attribute.collectionViewStyle)
 		{
-			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
+			_automationPropertiesProvider = new FastRenderers.AutomationPropertiesProvider(this);
 			_effectControlProvider = new EffectControlProvider(this);
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
@@ -130,8 +131,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public global::Android.Views.View View => this;
 
-		public ViewGroup ViewGroup => null;
-
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -150,9 +149,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					TearDownOldElement(Element as ItemsView);
 
-					if (AppCompat.Platform.GetRenderer(Element) == this)
+					if (Platform.GetRenderer(Element) == this)
 					{
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+						Element.ClearValue(Platform.RendererProperty);
 					}
 				}
 			}
@@ -462,11 +461,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdateBackgroundColor(Color color = null)
 		{
 			if (Element == null)
-			{
 				return;
-			}
 
-			SetBackgroundColor((color ?? Element.BackgroundColor).ToAndroid());
+			var backgroundColor = color ?? Element.BackgroundColor;
+
+			if (backgroundColor == null)
+				return;
+
+			SetBackgroundColor(backgroundColor.ToAndroid());
 		}
 
 		protected virtual void UpdateBackground(Brush brush = null)

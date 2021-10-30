@@ -1,0 +1,72 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.VisualStatesPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="VisualStates">
+    <views:BasePage.Content>
+        <StackLayout
+            Margin="12">
+            <StackLayout.Resources>
+                <Style TargetType="Entry">
+                    <Setter Property="Margin"
+                        Value="20, 0" />
+                    <Setter Property="FontSize"
+                        Value="18" />
+                </Style>
+                <Style TargetType="Label">
+                    <Setter Property="Margin"
+                        Value="20, 30, 20, 0" />
+                    <Setter Property="FontSize"
+                        Value="Large" />
+                </Style>
+            </StackLayout.Resources>
+            <Label 
+                Text="Normal Entry:" 
+                Style="{StaticResource Headline}"/>
+            <Entry />
+            <Label 
+                Text="Entry with VisualStateManager:"
+                Style="{StaticResource Headline}" />
+            <Entry>
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="Lime" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Focused">
+                            <VisualState.Setters>
+                                <Setter Property="FontSize"                                
+                                        Value="36" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="Pink" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <Entry.Triggers>
+                    <DataTrigger TargetType="Entry"
+                                 Binding="{Binding Source={x:Reference entry3}, Path=Text.Length}"
+                                 Value="0">
+                        <Setter Property="IsEnabled"
+                                Value="False" />
+                    </DataTrigger>
+                </Entry.Triggers>
+            </Entry>
+            <Label
+                Text="Entry to enable 2nd Entry:" 
+                Style="{StaticResource Headline}" />
+            <Entry 
+                x:Name="entry3"
+                Text=""
+                Placeholder="Type something to enable 2nd Entry" />
+        </StackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

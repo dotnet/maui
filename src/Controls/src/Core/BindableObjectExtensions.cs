@@ -6,21 +6,21 @@ namespace Microsoft.Maui.Controls
 {
 	public static class BindableObjectExtensions
 	{
-		internal static void PropagateBindingContext<T>(this BindableObject self, IList<T> children)
+		internal static void PropagateBindingContext<T>(this BindableObject self, IEnumerable<T> children)
 		{
 			PropagateBindingContext(self, children, BindableObject.SetInheritedBindingContext);
 		}
 
-		internal static void PropagateBindingContext<T>(this BindableObject self, IList<T> children, Action<BindableObject, object> setChildBindingContext)
+		internal static void PropagateBindingContext<T>(this BindableObject self, IEnumerable<T> children, Action<BindableObject, object> setChildBindingContext)
 		{
-			if (children == null || children.Count == 0)
+			if (children == null)
 				return;
 
 			var bc = self.BindingContext;
 
-			for (var i = 0; i < children.Count; i++)
+			foreach (var child in children)
 			{
-				var bo = children[i] as BindableObject;
+				var bo = child as BindableObject;
 				if (bo == null)
 					continue;
 

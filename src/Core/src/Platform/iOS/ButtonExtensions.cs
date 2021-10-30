@@ -1,18 +1,20 @@
+using System;
+using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateText(this UIButton nativeButton, IButton button) =>
+		public static void UpdateText(this UIButton nativeButton, IText button) =>
 			nativeButton.SetTitle(button.Text, UIControlState.Normal);
 
-		public static void UpdateTextColor(this UIButton nativeButton, IButton button) =>
+		public static void UpdateTextColor(this UIButton nativeButton, ITextStyle button) =>
 			nativeButton.UpdateTextColor(button);
 
-		public static void UpdateTextColor(this UIButton nativeButton, IButton button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
+		public static void UpdateTextColor(this UIButton nativeButton, ITextStyle button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
 		{
-
 			if (button.TextColor == null)
 			{
 				nativeButton.SetTitleColor(buttonTextColorDefaultNormal, UIControlState.Normal);
@@ -38,16 +40,16 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this UIButton nativeButton, ITextStyle textStyle, IFontManager fontManager)
 		{
-			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager);
+			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 		}
 
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)
 		{
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)button.Padding.Top,
-				(float)button.Padding.Left,
-				(float)button.Padding.Bottom,
-				(float)button.Padding.Right);
+				(float)(button.Padding.Top),
+				(float)(button.Padding.Left),
+				(float)(button.Padding.Bottom),
+				(float)(button.Padding.Right));
 		}
 	}
 }

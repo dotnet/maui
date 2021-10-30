@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
-#if NETSTANDARD1_0 || NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD || NET6_0
 	public partial class EmailAttachment
 	{
 		string PlatformGetContentType(string extension) =>

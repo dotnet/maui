@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			button1.IsVisible = true;
 		}
 
-#if UITEST && __WINDOWS__
+#if UITEST && WINDOWS
 		[Test]
 		public void ReplaceRenderer()
 		{

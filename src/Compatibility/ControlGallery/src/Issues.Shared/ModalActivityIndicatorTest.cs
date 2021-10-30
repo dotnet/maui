@@ -104,13 +104,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					view: new BoxView
 					{
 						Opacity = .4,
-						BackgroundColor = Color.FromHex("#ccc")
+						BackgroundColor = Color.FromArgb("#ccc")
 					},
-					widthConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
+					widthConstraint: Compatibility.Constraint.RelativeToParent((parent) =>
 					{
 						return parent.Width;
 					}),
-					heightConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
+					heightConstraint: Compatibility.Constraint.RelativeToParent((parent) =>
 					{
 						return parent.Height;
 					})
@@ -139,19 +139,19 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				Children.Add(
 					view: content,
-					widthConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
+					widthConstraint: Compatibility.Constraint.RelativeToParent((parent) =>
 					{
 						return parent.Width / 2;
 					}),
-					heightConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
+					heightConstraint: Compatibility.Constraint.RelativeToParent((parent) =>
 					{
 						return parent.Width / 3;
 					}),
-					xConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
+					xConstraint: Compatibility.Constraint.RelativeToParent((parent) =>
 					{
 						return parent.Width / 4;
 					}),
-					yConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
+					yConstraint: Compatibility.Constraint.RelativeToParent((parent) =>
 					{
 						return (parent.Height / 2) - (parent.Width / 6);
 					})

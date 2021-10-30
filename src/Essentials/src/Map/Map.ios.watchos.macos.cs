@@ -23,15 +23,15 @@ namespace Microsoft.Maui.Essentials
 		internal static async Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
 		{
 #if __IOS__
-            var address = new MKPlacemarkAddress
-            {
-                CountryCode = placemark.CountryCode,
-                Country = placemark.CountryName,
-                State = placemark.AdminArea,
-                Street = placemark.Thoroughfare,
-                City = placemark.Locality,
-                Zip = placemark.PostalCode
-            }.Dictionary;
+			var address = new MKPlacemarkAddress
+			{
+				CountryCode = placemark.CountryCode,
+				Country = placemark.CountryName,
+				State = placemark.AdminArea,
+				Street = placemark.Thoroughfare,
+				City = placemark.Locality,
+				Zip = placemark.PostalCode
+			}.Dictionary;
 #else
 			var address = new NSMutableDictionary
 			{
@@ -52,11 +52,11 @@ namespace Microsoft.Maui.Essentials
 			else
 			{
 #if __IOS__ || __MACOS__
-                // https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html
-                var uri = $"http://maps.apple.com/?q={placemark.GetEscapedAddress()}";
-                var nsurl = NSUrl.FromString(uri);
+				// https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html
+				var uri = $"http://maps.apple.com/?q={placemark.GetEscapedAddress()}";
+				var nsurl = NSUrl.FromString(uri);
 
-                await Launcher.PlatformOpenAsync(nsurl);
+				await Launcher.PlatformOpenAsync(nsurl);
 #else
 				await OpenPlacemark(new MKPlacemark(default, address), options);
 #endif

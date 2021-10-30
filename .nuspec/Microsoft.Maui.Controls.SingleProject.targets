@@ -1,44 +1,91 @@
 <!-- "Single Project" support -->
 <Project>
+
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
+    <PlatformsProjectFolder Condition=" '$(PlatformsProjectFolder)' == '' ">Platforms\</PlatformsProjectFolder>
+    <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
+    <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
     <!-- Android -->
     <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
-    <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">Android\</AndroidProjectFolder>
-    <AndroidManifest>$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
-    <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
-    <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
+    <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">$(PlatformsProjectFolder)Android\</AndroidProjectFolder>
     <!-- iOS -->
     <EnableDefaultiOSItems>false</EnableDefaultiOSItems>
-    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">iOS\</iOSProjectFolder>
-    <IPhoneResourcePrefix Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
-    <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
-
+    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">$(PlatformsProjectFolder)\iOS\</iOSProjectFolder>
     <!-- MacCatalyst -->
     <EnableDefaultMacCatalystItems>false</EnableDefaultMacCatalystItems>
-    <MacCatalystProjectFolder Condition=" '$(MacCatalystProjectFolder)' == '' ">MacCatalyst\</MacCatalystProjectFolder>
-    <IPhoneResourcePrefix Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' ">$(MacCatalystProjectFolder)Resources</IPhoneResourcePrefix>
+    <MacCatalystProjectFolder Condition=" '$(MacCatalystProjectFolder)' == '' ">$(PlatformsProjectFolder)\MacCatalyst\</MacCatalystProjectFolder>
+    <!-- Windows -->
+    <EnableDefaultWindowsItems>false</EnableDefaultWindowsItems>
+    <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">$(PlatformsProjectFolder)\Windows\</WindowsProjectFolder>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
+    <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
+    <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
+    <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">
+    <IPhoneResourcePrefix>$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
+    <CodesignEntitlements Condition=" Exists('$(iOSProjectFolder)Entitlements.plist') ">$(iOSProjectFolder)Entitlements.plist</CodesignEntitlements>
+    <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' ">
+    <IPhoneResourcePrefix>$(MacCatalystProjectFolder)Resources</IPhoneResourcePrefix>
+    <CodesignEntitlements Condition=" Exists('$(MacCatalystProjectFolder)Entitlements.plist') ">$(MacCatalystProjectFolder)Entitlements.plist</CodesignEntitlements>
     <_SingleProjectMacCatalystExcludes>$(MacCatalystProjectFolder)/**/.*/**</_SingleProjectMacCatalystExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
+    <ApplicationManifest Condition=" Exists('$(WindowsProjectFolder)app.manifest') ">$(WindowsProjectFolder)app.manifest</ApplicationManifest>
+    <PackageManifest Condition=" Exists('$(WindowsProjectFolder)Package.appxmanifest') ">$(WindowsProjectFolder)Package.appxmanifest</PackageManifest>
+    <RuntimeIdentifiers Condition=" '$(RuntimeIdentifiers)' == '' ">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <EnableDefaultPageItems>False</EnableDefaultPageItems>
+    <EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
+    <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
+    <WindowsPackageType Condition="'$(EnablePreviewMsixTooling)' == 'true'">MSIX</WindowsPackageType>
   </PropertyGroup>
 
   <!-- Removals -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' != 'android' and '$(AndroidProjectFolder)' != '' "
-        Remove="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)"
-    />
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' != 'ios' and '$(iOSProjectFolder)' != '' "
-        Remove="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)"
-    />
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' != 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
-        Remove="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)"
-    />
+    <!-- Explicitly include the platform code -->
+    <_MauiCompileToAdd
+        Condition=" '$(TargetPlatformIdentifier)' == 'android' and '$(AndroidProjectFolder)' != '' "
+        Include="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <_MauiCompileToAdd
+        Condition=" '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' "
+        Include="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <_MauiCompileToAdd
+        Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
+        Include="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <_MauiCompileToAdd
+        Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' "
+        Include="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <None Include="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" Exclude="@(_MauiCompileToAdd)" />
+    <Compile Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <Compile Include="@(_MauiCompileToAdd)" />
+    <_MauiCompileToAdd Remove="@(_MauiCompileToAdd)" />
+
+    <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
+    <_MauiXamlToRemove
+        Condition="'$(WindowsProjectFolder)' != ''"
+        Include="$(WindowsProjectFolder)**/*.xaml" />
+    <EmbeddedResource Remove="@(_MauiXamlToRemove)" />
+    <MauiXaml Remove="@(_MauiXamlToRemove)" />
+    <None Include="@(_MauiXamlToRemove)" />
+    <_MauiXamlToRemove Remove="@(_MauiXamlToRemove)" />
   </ItemGroup>
 
   <!-- IDE capabilities -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
+    <ProjectCapability Include="Msix" />
     <ProjectCapability Include="MauiSingleProject" />
     <ProjectCapability Include="LaunchProfiles" />
+    <!-- If VS is older than Dev17 -->
+    <ProjectCapability Include="XamarinStaticLaunchProfiles" Condition=" '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' &lt; '17.0' " />
+    <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
+    <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
   </ItemGroup>
+
 </Project>

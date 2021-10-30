@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -33,6 +34,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(button, () => button.TextColor, GetNativeTextColor, button.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var button = new ButtonStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(button);
+		}
+
 		[Fact(DisplayName = "Click event fires Correctly")]
 		public async Task ClickEventFires()
 		{
@@ -49,37 +62,30 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(clicked);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
+		[Theory()]
+		[InlineData("red.png", "#FF0000")]
+		[InlineData("green.png", "#00FF00")]
+		[InlineData("black.png", "#000000")]
+		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
 		{
-			var button = new ButtonStub()
+			var image = new ButtonStub
 			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
+				Background = new SolidPaintStub(Colors.Black),
+				ImageSource = new FileImageSourceStub(filename),
 			};
 
-			await ValidatePropertyInitValue(button, () => button.Font.FontSize, GetNativeUnscaledFontSize, button.Font.FontSize);
-		}
+			var order = new List<string>();
 
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontAttributes.None, false, false)]
-		[InlineData(FontAttributes.Bold, true, false)]
-		[InlineData(FontAttributes.Italic, false, true)]
-		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
-		{
-			var button = new ButtonStub()
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
-			};
+				var handler = CreateHandler(image);
 
-			await ValidatePropertyInitValue(button, () => button.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(button, () => button.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
+				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
+
+				Assert.True(imageLoaded);
+				var expectedColor = Color.FromArgb(colorHex);
+				await handler.NativeView.AssertContainsColor(expectedColor);
+			});
 		}
 	}
 }

@@ -1,21 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(Font))]
 	public sealed class FontTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			var strValue = value?.ToString();
 			// string should be formatted as "[name],[attributes],[size]" there may be multiple attributes, e.g. "Georgia, Bold, Italic, 42"
-			if (value != null)
+			if (strValue != null)
 			{
 				// trim because mono implements Enum.Parse incorrectly and fails to trim correctly.
-				List<string> parts = value.Split(',').Select(s => s.Trim()).ToList();
+				List<string> parts = strValue.Split(',').Select(s => s.Trim()).ToList();
 
 				string name = null;
 				var bold = false;
@@ -52,7 +59,7 @@ namespace Microsoft.Maui.Controls
 					{
 						// they may have provided a font name
 						if (name != null)
-							throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Font)));
+							throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(Font)));
 
 						name = part;
 					}
@@ -69,29 +76,29 @@ namespace Microsoft.Maui.Controls
 				if (name != null)
 				{
 					if (size == -1)
-						return Font.OfSize(name, namedSize).WithAttributes(attributes);
+						size = Device.GetNamedSize(namedSize, null, false);
 					return Font.OfSize(name, size).WithAttributes(attributes);
 				}
 				if (size == -1)
-					return Font.SystemFontOfSize(namedSize, attributes);
-				return Font.SystemFontOfSize(size, attributes);
+					return Font.SystemFontOfSize(Device.GetNamedSize(namedSize, null, false)).WithAttributes(attributes);
+				return Font.SystemFontOfSize(size).WithAttributes(attributes);
 			}
 
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Font)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(Font)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Font font))
+			if (value is not Font font)
 				throw new NotSupportedException();
 			var parts = new List<string>();
-			if (!string.IsNullOrEmpty(font.FontFamily))
-				parts.Add(font.FontFamily);
-			if ((font.FontAttributes & FontAttributes.Bold) == FontAttributes.Bold)
+			if (!string.IsNullOrEmpty(font.Family))
+				parts.Add(font.Family);
+			if (font.Weight == FontWeight.Bold)
 				parts.Add("Bold");
-			if ((font.FontAttributes & FontAttributes.Italic) == FontAttributes.Italic)
+			if (font.Slant != FontSlant.Default)
 				parts.Add("Italic");
-			parts.Add($"{font.FontSize}");
+			parts.Add($"{font.Size}");
 			return string.Join(", ", parts);
 		}
 	}

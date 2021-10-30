@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		void Back()
 		{
-#if __IOS__ || __WINDOWS__
+#if __IOS__ || WINDOWS
 			RunningApp.Tap(q => q.Marked("Toggle"));
 #else
 			RunningApp.Back();

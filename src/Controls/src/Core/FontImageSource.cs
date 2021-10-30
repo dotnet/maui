@@ -2,7 +2,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class FontImageSource : ImageSource
+	public partial class FontImageSource : ImageSource
 	{
 		public override bool IsEmpty => string.IsNullOrEmpty(Glyph);
 
@@ -36,11 +36,21 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(double), typeof(FontImageSource), 30d,
 			propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double Size
 		{
 			get => (double)GetValue(SizeProperty);
 			set => SetValue(SizeProperty, value);
+		}
+
+		public static readonly BindableProperty FontAutoScalingEnabledProperty =
+			BindableProperty.Create("FontAutoScalingEnabled", typeof(bool), typeof(FontImageSource), false,
+				propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
+
+		public bool FontAutoScalingEnabled
+		{
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 	}
 }

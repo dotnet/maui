@@ -26,10 +26,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			StackLayout.Children.Add(TriggerButton);
 
 			relativeLayout.Children.Add(StackLayout,
-				Microsoft.Maui.Controls.Constraint.Constant(0),
-				Microsoft.Maui.Controls.Constraint.Constant(0),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(x => x.Width / 2),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(y => y.Height));
+				Compatibility.Constraint.Constant(0),
+				Compatibility.Constraint.Constant(0),
+				Compatibility.Constraint.RelativeToParent(x => x.Width / 2),
+				Compatibility.Constraint.RelativeToParent(y => y.Height));
 
 			Content = relativeLayout;
 		}
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			RelativeLayout.SetWidthConstraint(StackLayout, Microsoft.Maui.Controls.Constraint.Constant(0.0));
+			RelativeLayout.SetWidthConstraint(StackLayout, Compatibility.Constraint.Constant(0.0));
 		}
 	}
 }

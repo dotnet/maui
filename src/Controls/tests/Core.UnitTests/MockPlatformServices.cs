@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
@@ -23,37 +24,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
 		Action<Action> invokeOnMainThread;
-		Action<Uri> openUriAction;
 		Func<Uri, CancellationToken, Task<Stream>> getStreamAsync;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
 		readonly bool _isInvokeRequired;
 
-		public MockPlatformServices(Action<Action> invokeOnMainThread = null, Action<Uri> openUriAction = null,
+		public MockPlatformServices(Action<Action> invokeOnMainThread = null,
 			Func<Uri, CancellationToken, Task<Stream>> getStreamAsync = null,
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
 			bool useRealisticLabelMeasure = false, bool isInvokeRequired = false)
 		{
 			this.invokeOnMainThread = invokeOnMainThread;
-			this.openUriAction = openUriAction;
 			this.getStreamAsync = getStreamAsync;
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
 			_isInvokeRequired = isInvokeRequired;
-		}
-
-		public string GetHash(string input)
-		{
-			return Internals.Crc64.GetHash(input);
-		}
-
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
-
-		static int hex(int v)
-		{
-			if (v < 10)
-				return '0' + v;
-			return 'a' + v - 10;
 		}
 
 		public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes)
@@ -83,20 +68,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				case "SystemBlue":
 					return Color.FromRgb(0, 122, 255);
 				case "SystemChromeHighColor":
-					return Color.FromHex("#FF767676");
+					return Color.FromArgb("#FF767676");
 				case "HoloBlueBright":
-					return Color.FromHex("#ff00ddff");
+					return Color.FromArgb("#ff00ddff");
 				default:
 					return null;
 			}
-		}
-
-		public void OpenUriAction(Uri uri)
-		{
-			if (openUriAction != null)
-				openUriAction(uri);
-			else
-				throw new NotImplementedException();
 		}
 
 		public bool IsInvokeRequired
@@ -114,10 +91,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				invokeOnMainThread(action);
 		}
 
-		public Internals.Ticker CreateTicker()
-		{
-			return new MockTicker();
-		}
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
@@ -189,11 +162,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				return Task.FromResult(isolatedStorageFile.GetLastWriteTime(path));
 			}
-		}
-
-		public void QuitApplication()
-		{
-
 		}
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
@@ -276,21 +244,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	internal class MockTicker : Internals.Ticker
+	internal class MockTicker : Ticker
 	{
 		bool _enabled;
 
-		protected override void EnableTimer()
+		public override void Start()
 		{
 			_enabled = true;
 
 			while (_enabled)
 			{
-				SendSignals(16);
+				this.Fire?.Invoke();
 			}
 		}
-
-		protected override void DisableTimer()
+		public override void Stop()
 		{
 			_enabled = false;
 		}

@@ -6,6 +6,9 @@ namespace Microsoft.Maui.Controls
 {
 	public class PanGestureRecognizer : GestureRecognizer, IPanGestureController
 	{
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static AutoId CurrentId { get; } = new();
+
 		public static readonly BindableProperty TouchPointsProperty = BindableProperty.Create("TouchPoints", typeof(int), typeof(PanGestureRecognizer), 1);
 
 		public int TouchPoints
@@ -14,26 +17,22 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TouchPointsProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendPan(Element sender, double totalX, double totalY, int gestureId)
+		void IPanGestureController.SendPan(Element sender, double totalX, double totalY, int gestureId)
 		{
 			PanUpdated?.Invoke(sender, new PanUpdatedEventArgs(GestureStatus.Running, gestureId, totalX, totalY));
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendPanCanceled(Element sender, int gestureId)
+		void IPanGestureController.SendPanCanceled(Element sender, int gestureId)
 		{
 			PanUpdated?.Invoke(sender, new PanUpdatedEventArgs(GestureStatus.Canceled, gestureId));
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendPanCompleted(Element sender, int gestureId)
+		void IPanGestureController.SendPanCompleted(Element sender, int gestureId)
 		{
 			PanUpdated?.Invoke(sender, new PanUpdatedEventArgs(GestureStatus.Completed, gestureId));
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendPanStarted(Element sender, int gestureId)
+		void IPanGestureController.SendPanStarted(Element sender, int gestureId)
 		{
 			PanUpdated?.Invoke(sender, new PanUpdatedEventArgs(GestureStatus.Started, gestureId));
 		}

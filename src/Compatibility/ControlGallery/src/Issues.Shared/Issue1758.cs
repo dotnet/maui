@@ -40,15 +40,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var layout = new RelativeLayout();
 
 			layout.Children.Add(_list,
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.X),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Y),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Width),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Height)
+				Compatibility.Constraint.RelativeToParent(p => p.X),
+				Compatibility.Constraint.RelativeToParent(p => p.Y),
+				Compatibility.Constraint.RelativeToParent(p => p.Width),
+				Compatibility.Constraint.RelativeToParent(p => p.Height)
 			);
 
 			layout.Children.Add(_button,
-				Microsoft.Maui.Controls.Constraint.Constant(0),
-				Microsoft.Maui.Controls.Constraint.Constant(300));
+				Compatibility.Constraint.Constant(0),
+				Compatibility.Constraint.Constant(300));
 
 			return layout;
 		}

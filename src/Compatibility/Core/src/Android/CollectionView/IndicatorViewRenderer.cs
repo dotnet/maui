@@ -5,8 +5,10 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
+using AShapeDrawable = Android.Graphics.Drawables.ShapeDrawable;
 using AShapes = Android.Graphics.Drawables.Shapes;
 using AShapeType = Android.Graphics.Drawables.ShapeType;
 using AView = Android.Views.View;
@@ -40,8 +42,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public VisualElement Element => IndicatorView;
 
 		public VisualElementTracker Tracker => _visualElementTracker;
-
-		public ViewGroup ViewGroup => null;
 
 		public AView View => this;
 
@@ -115,9 +115,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					TearDownOldElement(Element as IndicatorView);
 
-					if (AppCompat.Platform.GetRenderer(Element) == this)
+					if (Platform.GetRenderer(Element) == this)
 					{
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+						Element.ClearValue(Platform.RendererProperty);
 					}
 				}
 			}
@@ -179,7 +179,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			SetBackgroundColor((color ?? Element.BackgroundColor).ToAndroid());
+			Color backgroundColor = color ?? Element.BackgroundColor;
+
+			if (backgroundColor != null)
+				SetBackgroundColor(backgroundColor.ToAndroid());
 		}
 
 		void SetUpNewElement(IndicatorView newElement)
@@ -289,17 +292,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateIndicatorTemplate()
 		{
-			if (IndicatorView.IndicatorLayout == null)
+			if (IndicatorView.IndicatorLayout is not VisualElement indicatorLayout)
 				return;
 
-			var renderer = IndicatorView.IndicatorLayout.GetRenderer() ?? AppCompat.Platform.CreateRendererWithContext(IndicatorView.IndicatorLayout, Context);
-			AppCompat.Platform.SetRenderer(IndicatorView.IndicatorLayout, renderer);
+			var renderer = indicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(indicatorLayout, Context);
+			Platform.SetRenderer(indicatorLayout, renderer);
 
 			RemoveAllViews();
 			AddView(renderer.View);
 
-			var indicatorLayoutSizeRequest = IndicatorView.IndicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			IndicatorView.IndicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
+			var indicatorLayoutSizeRequest = indicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+			indicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
 		}
 
 		void UpdateIndicators()
@@ -337,12 +340,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		Drawable GetShape(AColor color)
 		{
 			var indicatorSize = IndicatorView.IndicatorSize;
-			ShapeDrawable shape;
+			AShapeDrawable shape;
 
 			if (_shapeType == AShapeType.Oval)
-				shape = new ShapeDrawable(new AShapes.OvalShape());
+				shape = new AShapeDrawable(new AShapes.OvalShape());
 			else
-				shape = new ShapeDrawable(new AShapes.RectShape());
+				shape = new AShapeDrawable(new AShapes.RectShape());
 
 			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));

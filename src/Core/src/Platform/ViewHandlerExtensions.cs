@@ -1,23 +1,18 @@
-using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Handlers;
+﻿#if __IOS__ || MACCATALYST
+using NativeView = UIKit.UIView;
+#elif __ANDROID__
+using NativeView = Android.Views.View;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD
+using NativeView = System.Object;
+#endif
 
 namespace Microsoft.Maui
 {
-	internal static class ViewHandlerExtensions
+	public static class ViewHandlerExtensions
 	{
-		public static T GetRequiredService<T>(this ViewHandler handler)
-			where T : notnull
-		{
-			var context = handler.MauiContext ??
-				throw new InvalidOperationException($"Unable to find the context. The {nameof(ViewHandler.MauiContext)} property should have been set by the host.");
-
-			var services = context?.Services ??
-				throw new InvalidOperationException($"Unable to find the service provider. The {nameof(ViewHandler.MauiContext)} property should have been set by the host.");
-
-			var service = services.GetRequiredService<T>();
-
-			return service;
-		}
+		public static NativeView? GetWrappedNativeView(this IViewHandler viewHandler) =>
+			(NativeView?)(viewHandler.ContainerView ?? viewHandler.NativeView);
 	}
 }

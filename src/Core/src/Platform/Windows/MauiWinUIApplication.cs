@@ -1,79 +1,40 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {
-	public class MauiWinUIApplication<TStartup> : MauiWinUIApplication
-		where TStartup : IStartup, new()
+	public abstract class MauiWinUIApplication : UI.Xaml.Application
 	{
+		protected abstract MauiApp CreateMauiApp();
+
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			LaunchActivatedEventArgs = args;
 
-			// TODO: This should not be here. CreateWindow should do it.
-			MainWindow = new MauiWinUIWindow();
+			var mauiApp = CreateMauiApp();
 
-			var startup = new TStartup();
+			var applicationContext = new MauiContext(mauiApp.Services, this);
 
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
+			Services = applicationContext.Services;
 
-			Services = host.Services;
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+
 			Application = Services.GetRequiredService<IApplication>();
 
-			var mauiContext = new MauiContext(Services);
+			this.SetApplicationHandler(Application, applicationContext);
 
-			var activationState = new ActivationState(mauiContext, args);
-			var window = Application.CreateWindow(activationState);
-			window.MauiContext = mauiContext;
+			this.CreateNativeWindow(Application, args);
 
-			var content = (window.Page as IView) ?? window.Page.View;
-
-			var canvas = CreateRootContainer();
-
-			canvas.Children.Add(content.ToNative(window.MauiContext));
-
-			MainWindow.Content = canvas;
-
-			MainWindow.Activate();
-
-			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
-		}
-
-		Canvas CreateRootContainer()
-		{
-			// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-			Resources.TryGetValue("RootContainerStyle", out object style);
-
-			return new Canvas
-			{
-				Style = style as UI.Xaml.Style
-			};
-		}
-
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-		}
-	}
-
-	public abstract class MauiWinUIApplication : UI.Xaml.Application
-	{
-		protected MauiWinUIApplication()
-		{
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
-
-		public MauiWinUIWindow MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

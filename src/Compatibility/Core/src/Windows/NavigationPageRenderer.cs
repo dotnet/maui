@@ -16,6 +16,7 @@ using static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Page;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -34,10 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		WImageSource _titleIcon;
 		VisualElementTracker<Page, PageControl> _tracker;
 		EntranceThemeTransition _transition;
-		Platform _platform;
 		bool _parentsLookedUp = false;
-
-		Platform Platform => _platform ?? (_platform = Platform.Current);
 
 		public NavigationPage Element { get; private set; }
 
@@ -137,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			IVisualElementRenderer childRenderer = Platform.GetRenderer(Element.CurrentPage);
 			FrameworkElement child = childRenderer.ContainerElement;
 
@@ -173,11 +171,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				throw new InvalidOperationException(
 					"NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
 
-			if (oldElement != null)
+			if (oldElement is INavigationPageController navigationPageController)
 			{
-				oldElement.PushRequested -= OnPushRequested;
-				oldElement.PopRequested -= OnPopRequested;
-				oldElement.PopToRootRequested -= OnPopToRootRequested;
+				navigationPageController.PushRequested -= OnPushRequested;
+				navigationPageController.PopRequested -= OnPopRequested;
+				navigationPageController.PopToRootRequested -= OnPopToRootRequested;
 				oldElement.InternalChildren.CollectionChanged -= OnChildrenChanged;
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
@@ -220,9 +218,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Element.Appearing += OnElementAppearing;
 
 				Element.PropertyChanged += OnElementPropertyChanged;
-				Element.PushRequested += OnPushRequested;
-				Element.PopRequested += OnPopRequested;
-				Element.PopToRootRequested += OnPopToRootRequested;
+
+				if (Element is INavigationPageController newPageController)
+				{
+					newPageController.PushRequested += OnPushRequested;
+					newPageController.PopRequested += OnPopRequested;
+					newPageController.PopToRootRequested += OnPopToRootRequested;
+				}
+
 				Element.InternalChildren.CollectionChanged += OnChildrenChanged;
 
 				if (!string.IsNullOrEmpty(Element.AutomationId))
@@ -262,10 +265,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_parentFlyoutPage != null)
 				_parentFlyoutPage.PropertyChanged -= MultiPagePropertyChanged;
 
-			if (_navManager != null)
-			{
-				_navManager.AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
-			}
+			//if (_navManager != null)
+			//{
+			//	_navManager.AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
+			//}
 		}
 
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
@@ -281,7 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Element.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return Element.BarBackgroundColor.ToBrush();
+			return Maui.ColorExtensions.ToNative(Element.BarBackgroundColor);
 		}
 
 		WBrush GetBarBackgroundBrush()
@@ -303,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault())
 				return (WBrush)defaultColor;
-			return Element.BarTextColor.ToBrush();
+			return Maui.ColorExtensions.ToNative(Element.BarTextColor);
 		}
 
 		bool GetIsNavBarPossible()
@@ -313,7 +316,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void LookupRelevantParents()
 		{
-			IEnumerable<Page> parentPages = Element.GetParentPages();
+			var parentPages = Element.GetParentPages();
 
 			if (_parentTabbedPage != null)
 				_parentTabbedPage.PropertyChanged -= MultiPagePropertyChanged;
@@ -403,7 +406,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null)
 				return;
 
-			_navManager = SystemNavigationManager.GetForCurrentView();
+			//_navManager = SystemNavigationManager.GetForCurrentView();
 			Element.SendAppearing();
 			UpdateBackButton();
 			UpdateTitleOnParents();
@@ -429,7 +432,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (point == null)
 				return;
 
-			if (point.PointerDeviceType != PointerDeviceType.Mouse)
+			if (point.PointerDeviceType != Microsoft.UI.Input.PointerDeviceType.Mouse)
 				return;
 
 			if (point.Properties.IsXButton1Pressed)
@@ -462,7 +465,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void PushExistingNavigationStack()
 		{
-			foreach (var page in Element.Pages)
+			INavigationPageController navigationPageController = Element;
+			foreach (var page in navigationPageController.Pages)
 			{
 				SetPage(page, false, false);
 			}
@@ -614,7 +618,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		}
 
-		SystemNavigationManager _navManager;
+		//SystemNavigationManager _navManager;
 
 		public void BindForegroundColor(AppBar appBar)
 		{
@@ -665,17 +669,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateBackButton()
 		{
-			if (_navManager == null || _currentPage == null)
+			if (/*_navManager == null ||*/ _currentPage == null)
 			{
 				return;
 			}
 
 			bool showBackButton = Element.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
-			_navManager.AppViewBackButtonVisibility = showBackButton ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
+			//_navManager.AppViewBackButtonVisibility = showBackButton ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
 			_container.SetBackButtonTitle(Element);
 		}
 
-		async void UpdateTitleOnParents()
+		void UpdateTitleOnParents()
 		{
 			if (Element == null || _currentPage == null)
 				return;
@@ -709,10 +713,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (_showTitle || (render != null && render.ShowTitle))
 			{
-				if (Platform != null)
-				{
-					await Platform.UpdateToolbarItems();
-				}
+				//if (Platform != null)
+				//{
+				//	await Platform.UpdateToolbarItems();
+				//}
 			}
 		}
 	}

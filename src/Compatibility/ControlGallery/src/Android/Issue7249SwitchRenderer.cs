@@ -3,6 +3,7 @@ using Android.Graphics;
 using Android.OS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Platform;
 using static Android.Widget.CompoundButton;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android

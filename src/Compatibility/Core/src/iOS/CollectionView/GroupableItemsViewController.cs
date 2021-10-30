@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		Action _scrollAnimationEndedCallback;
 
-		public GroupableItemsViewController(TItemsView groupableItemsView, ItemsViewLayout layout) 
+		public GroupableItemsViewController(TItemsView groupableItemsView, ItemsViewLayout layout)
 			: base(groupableItemsView, layout)
 		{
 			_isGrouped = ItemsView.IsGrouped;
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override IItemsViewSource CreateItemsViewSource()
 		{
 			// Use the BindableProperty here (instead of _isGroupingEnabled) because the cached value might not be set yet
-			if (ItemsView.IsGrouped) 
+			if (ItemsView.IsGrouped)
 			{
 				return ItemsSourceFactory.CreateGrouped(ItemsView.ItemsSource, this);
 			}
@@ -116,8 +116,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		string DetermineViewReuseId(NSString elementKind)
 		{
-			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header 
-				? ItemsView.GroupHeaderTemplate 
+			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
+				? ItemsView.GroupHeaderTemplate
 				: ItemsView.GroupFooterTemplate);
 		}
 

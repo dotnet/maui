@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -32,6 +33,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.TextColor, GetNativeTextColor, entry.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(entry);
+		}
+
 		[Theory(DisplayName = "IsPassword Initializes Correctly")]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -50,10 +63,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var entry = new EntryStub()
 			{
-				Text = "Placeholder"
+				Placeholder = "Placeholder"
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, entry.Placeholder);
+			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, "Placeholder");
 		}
 
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
@@ -161,39 +174,6 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
-		{
-			var entry = new EntryStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontSize, GetNativeUnscaledFontSize, entry.Font.FontSize);
-		}
-
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontAttributes.None, false, false)]
-		[InlineData(FontAttributes.Bold, true, false)]
-		[InlineData(FontAttributes.Italic, false, true)]
-		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
-		{
-			var entry = new EntryStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
-		}
-
 		[Theory(DisplayName = "Validates clear button visibility.")]
 		[InlineData(ClearButtonVisibility.WhileEditing, true)]
 		[InlineData(ClearButtonVisibility.Never, false)]
@@ -207,50 +187,6 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeClearButtonVisibility, expected);
-		}
-
-		[Theory(DisplayName = "TextChanged Events Fire Correctly")]
-		// null/empty
-		[InlineData(null, null, false)]
-		[InlineData(null, "", false)]
-		[InlineData("", null, false)]
-		[InlineData("", "", false)]
-		// whitespace
-		[InlineData(null, " ", true)]
-		[InlineData("", " ", true)]
-		[InlineData(" ", null, true)]
-		[InlineData(" ", "", true)]
-		[InlineData(" ", " ", false)]
-		// text
-		[InlineData(null, "Hello", true)]
-		[InlineData("", "Hello", true)]
-		[InlineData(" ", "Hello", true)]
-		[InlineData("Hello", null, true)]
-		[InlineData("Hello", "", true)]
-		[InlineData("Hello", " ", true)]
-		[InlineData("Hello", "Goodbye", true)]
-		public async Task TextChangedEventsFireCorrectly(string initialText, string newText, bool eventExpected)
-		{
-			var entry = new EntryStub
-			{
-				Text = initialText,
-			};
-
-			var eventFiredCount = 0;
-			entry.TextChanged += (sender, e) =>
-			{
-				eventFiredCount++;
-
-				Assert.Equal(initialText, e.OldValue);
-				Assert.Equal(newText ?? string.Empty, e.NewValue);
-			};
-
-			await SetValueAsync(entry, newText, SetNativeText);
-
-			if (eventExpected)
-				Assert.Equal(1, eventFiredCount);
-			else
-				Assert.Equal(0, eventFiredCount);
 		}
 
 		[Theory(DisplayName = "Validates Numeric Keyboard")]
@@ -541,5 +477,125 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(IEntry.CharacterSpacing),
 				() => entry.CharacterSpacing = newSize);
 		}
+
+		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
+		[InlineData(0)]
+		public async Task CursorPositionInitializesCorrectly(int initialPosition)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				CursorPosition = initialPosition
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.CursorPosition, GetNativeCursorPosition, initialPosition);
+		}
+
+		[Theory(DisplayName = "CursorPosition Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new EntryStub
+			{
+				Text = text,
+			};
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.CursorPosition),
+				GetNativeCursorPosition,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "CursorPosition is Capped to Text's Length")]
+		[InlineData(30)]
+		public async Task CursorPositionIsCapped(int initialPosition)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new EntryStub
+			{
+				Text = text,
+				CursorPosition = initialPosition
+			};
+
+			int actualPosition = await GetValueAsync(entry, GetNativeCursorPosition);
+
+			Assert.Equal(text.Length, actualPosition);
+		}
+
+		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
+		[InlineData(0)]
+		public async Task SelectionLengthInitializesCorrectly(int initialLength)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				SelectionLength = initialLength
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.SelectionLength, GetNativeSelectionLength, initialLength);
+		}
+
+		[Theory(DisplayName = "SelectionLength Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task SelectionLengthUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new EntryStub
+			{
+				Text = text,
+			};
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.SelectionLength),
+				GetNativeSelectionLength,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "SelectionLength is Capped to Text Length")]
+		[InlineData(30)]
+		public async Task SelectionLengthIsCapped(int selectionLength)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new EntryStub
+			{
+				Text = text,
+				SelectionLength = selectionLength
+			};
+
+			var actualLength = await GetValueAsync(entry, GetNativeSelectionLength);
+
+			Assert.Equal(text.Length, actualLength);
+		}
+
+
+		[Category(TestCategory.Entry)]
+		public class EntryTextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
+		{
+			protected override void SetNativeText(EntryHandler entryHandler, string text)
+			{
+				EntryHandlerTests.SetNativeText(entryHandler, text);
+			}
+			protected override int GetCursorStartPosition(EntryHandler entryHandler)
+			{
+				return EntryHandlerTests.GetCursorStartPosition(entryHandler);
+			}
+
+			protected override void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+			{
+				EntryHandlerTests.UpdateCursorStartPosition(entryHandler, position);
+			}
+		}
+
 	}
 }

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage 
-    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
     x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.InlineCSS">
     <ContentPage.Resources>
         <StyleSheet>
@@ -17,8 +18,8 @@ label {
             ]]>
         </StyleSheet>
     </ContentPage.Resources>
-    <StackLayout x:Name="stack">
+    <cmp:StackLayout x:Name="stack">
         <Label x:Name="label"/>
         <Button x:Name="button"/>
-    </StackLayout>
+    </cmp:StackLayout>
 </ContentPage>

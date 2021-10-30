@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-#if WINDOWS_UWP
+#if WINDOWS
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using NativeSize = Windows.Foundation.Size;
@@ -12,7 +12,7 @@ using System.Windows.Documents;
 using NativeSize = System.Windows.Size;
 #endif
 
-#if WINDOWS_UWP
+#if WINDOWS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 #else
 namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF

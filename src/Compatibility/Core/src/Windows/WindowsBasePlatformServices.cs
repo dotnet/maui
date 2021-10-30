@@ -30,12 +30,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	{
 		const string WrongThreadError = "RPC_E_WRONG_THREAD";
 #pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-		readonly Microsoft.System.DispatcherQueue _dispatcher;
+		readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcher;
 #pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 		readonly UISettings _uiSettings = new UISettings();
 
 #pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-		protected WindowsBasePlatformServices(Microsoft.System.DispatcherQueue dispatcher)
+		protected WindowsBasePlatformServices(Microsoft.UI.Dispatching.DispatcherQueue dispatcher)
 #pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 		{
 			_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
@@ -58,11 +58,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			// WINUI3 
 			//await TryAllDispatchers(action);
-		}
-
-		public Ticker CreateTicker()
-		{
-			return new WindowsTicker();
 		}
 
 		public virtual Assembly[] GetAssemblies()
@@ -127,10 +122,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		public string GetHash(string input) => Crc64.GetHash(input);
-
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
-
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			return size.GetFontSize();
@@ -141,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
 				return KnownColor.Default;
 
-			return ((Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToFormsColor();
+			return ((global::Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
 		}
 
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
@@ -165,11 +156,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public string RuntimePlatform => Device.UWP;
 
-		public void OpenUriAction(Uri uri)
-		{
-			Launcher.LaunchUriAsync(uri).WatchForError();
-		}
-
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			var timerTick = 0L;
@@ -187,11 +173,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				CompositionTarget.Rendering -= renderingFrameEventHandler;
 			}
 			CompositionTarget.Rendering += renderingFrameEventHandler;
-		}
-
-		public void QuitApplication()
-		{
-			Log.Warning(nameof(WindowsBasePlatformServices), "Platform doesn't implement QuitApp");
 		}
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)

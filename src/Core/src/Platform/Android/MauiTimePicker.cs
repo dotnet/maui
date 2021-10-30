@@ -1,9 +1,11 @@
 ﻿using System;
 using Android.Content;
 using Android.Runtime;
+using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.Graphics.Drawable;
 using static Android.Views.View;
 
 namespace Microsoft.Maui
@@ -29,18 +31,34 @@ namespace Microsoft.Maui
 		{
 		}
 
-		private void Initialize()
-		{
-			Focusable = true;
-			SetOnClickListener(this);
-		}
-
 		public Action? ShowPicker { get; set; }
 		public Action? HidePicker { get; set; }
 
 		public void OnClick(View? v)
 		{
 			ShowPicker?.Invoke();
+		}
+
+		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect)
+		{
+			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
+
+			if (gainFocus)
+			{
+				if (Clickable)
+					CallOnClick();
+			}
+		}
+
+		void Initialize()
+		{
+			DrawableCompat.Wrap(Background);
+
+			Focusable = true;
+			Clickable = true;
+			InputType = InputTypes.Null;
+
+			SetOnClickListener(this);
 		}
 	}
 }

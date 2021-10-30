@@ -60,8 +60,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(DragStartingCommandParameterProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendDropCompleted(DropCompletedEventArgs args)
+		internal void SendDropCompleted(DropCompletedEventArgs args)
 		{
 			if (!_isDragActive)
 			{
@@ -78,8 +77,7 @@ namespace Microsoft.Maui.Controls
 			DropCompleted?.Invoke(this, args);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public DragStartingEventArgs SendDragStarting(VisualElement element)
+		internal DragStartingEventArgs SendDragStarting(IView element)
 		{
 			var args = new DragStartingEventArgs();
 

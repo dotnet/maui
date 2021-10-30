@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.InputView;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -186,22 +187,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Element.ReturnType == ReturnType.Next)
 			{
-				FocusManager.TryMoveFocus(FocusNavigationDirection.Next);
+				Control.TryMoveFocus(FocusNavigationDirection.Next);
 			}
 			else
 			{
 				// Hide the soft keyboard; this matches the behavior of Forms on Android/iOS
-				Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
+				global::Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
 			}
 
 			((IEntryController)Element).SendCompleted();
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
@@ -274,16 +277,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.InputScope = entry.Keyboard.ToInputScope();
 		}
 
+		[PortHandler]
 		void UpdateIsPassword()
 		{
 			Control.IsPassword = Element.IsPassword;
 		}
 
+		[PortHandler]
 		void UpdatePlaceholder()
 		{
 			Control.PlaceholderText = Element.Placeholder ?? "";
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;
@@ -295,6 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				() => Control.PlaceholderForegroundFocusBrush, brush => Control.PlaceholderForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			Control.Text = _transformedText = Element.UpdateFormsText(Element.Text, Element.TextTransform);
@@ -311,6 +318,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var maxLength = Element.MaxLength;
@@ -340,6 +348,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)
@@ -348,6 +357,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.InputScope = Element.ReturnType.ToInputScope();
 		}
 
+		[PortHandler]
 		void SelectionChanged(object sender, RoutedEventArgs e)
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -373,6 +383,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateSelectionLength()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -404,6 +415,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateCursorPosition()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -438,6 +450,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void SetCursorPositionFromRenderer(int start)
 		{
 			try
@@ -455,6 +468,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void SetSelectionLengthFromRenderer(int selectionLength)
 		{
 			try
@@ -472,6 +486,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateIsReadOnly()
 		{
 			Control.IsReadOnly = Element.IsReadOnly;
@@ -484,7 +499,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Children.Count == 0 || child == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
             child.Measure(constraint);
 			var result = FormsTextBox.GetCopyOfSize(child, constraint);
 			return new SizeRequest(result);

@@ -1,5 +1,5 @@
 using System;
-using Microsoft.UI.Xaml;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (value is int)
 				length = (int)value;
 
-			return length > 0 ? Visibility.Visible : Visibility.Collapsed;
+			return length > 0 ? WVisibility.Visible : WVisibility.Collapsed;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

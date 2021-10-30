@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 30835, "Navigating to and from the Carousel page with MasterDetail page creates an Out of memory exception")]
+	[Issue(IssueTracker.Bugzilla, 30835, "Navigating to and from the Carousel page with FlyoutPage creates an Out of memory exception")]
 	public class Bugzilla30835 : TestFlyoutPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				IconImageSource = "bank.png";
 				Title = "Carsousel Memory Bug";
-				BackgroundColor = Color.FromHex("#000000");
+				BackgroundColor = Color.FromArgb("#000000");
 
 				Menu = new MenuListView();
 
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Padding = new Thickness(10, 36, 0, 5),
 					Content = new Label
 					{
-						TextColor = Color.FromHex("#FFFFFF"),
+						TextColor = Color.FromArgb("#FFFFFF"),
 						Text = "Carsousel Memory Bug",
 					}
 				};

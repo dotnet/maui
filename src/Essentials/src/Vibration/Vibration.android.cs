@@ -16,11 +16,11 @@ namespace Microsoft.Maui.Essentials
 
 			var time = (long)duration.TotalMilliseconds;
 #if __ANDROID_26__
-            if (Platform.HasApiLevelO)
-            {
-                Platform.Vibrator.Vibrate(VibrationEffect.CreateOneShot(time, VibrationEffect.DefaultAmplitude));
-                return;
-            }
+			if (Platform.HasApiLevelO)
+			{
+				Platform.Vibrator.Vibrate(VibrationEffect.CreateOneShot(time, VibrationEffect.DefaultAmplitude));
+				return;
+			}
 #endif
 
 #pragma warning disable CS0618 // Type or member is obsolete

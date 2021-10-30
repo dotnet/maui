@@ -1,41 +1,59 @@
 <Project>
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
-    <Compile Remove="**\*.iOS.cs" />
-    <None Include="**\*.iOS.cs" />
-    <Compile Remove="**\iOS\*.cs" />
-    <None Include="**\iOS\*.cs" />
+    <Compile Remove="**\**\*.iOS.cs" />
+    <None Include="**\**\*.iOS.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\iOS\**\*.cs" />
+    <None Include="**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true ">
     <Compile Remove="**\*.Mac.cs" />
-    <None Include="**\*.Mac.cs" />
-    <Compile Remove="**\Mac\*.cs" />
-    <None Include="**\Mac\*.cs" />
+    <None Include="**\*.Mac.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Mac\**\*.cs" />
+    <None Include="**\Mac\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true AND $(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true">
     <Compile Remove="**\*.MaciOS.cs" />
-    <None Include="**\*.MaciOS.cs" />
-    <Compile Remove="**\MaciOS\*.cs" />
-    <None Include="**\MaciOS\*.cs" />
+    <None Include="**\*.MaciOS.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\MaciOS\**\*.cs" />
+    <None Include="**\MaciOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) != true AND $(TargetFramework.StartsWith('net6.0-android')) != true ">
-    <Compile Remove="**\*.Android.cs" />
-    <None Include="**\*.Android.cs" />
-    <Compile Remove="**\Android\*.cs" />
-    <None Include="**\Android\*.cs" />
+    <Compile Remove="**\**\*.Android.cs" />
+    <None Include="**\**\*.Android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Android\**\*.cs" />
+    <None Include="**\Android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true AND '$(TargetFramework)' != 'net6.0'">
     <Compile Remove="**\*.Standard.cs" />
-    <None Include="**\*.Standard.cs" />
-    <Compile Remove="**\Standard\*.cs" />
-    <None Include="**\Standard\*.cs" />
+    <None Include="**\*.Standard.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Standard\**\*.cs" />
+    <None Include="**\Standard\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true ">
     <Compile Remove="**\*.Windows.cs" />
-    <None Include="**\*.Windows.cs" />
-    <Compile Remove="**\Windows\*.cs" />
-    <None Include="**\Windows\*.cs" />
+    <None Include="**\*.Windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Windows\**\*.cs" />
+    <None Include="**\Windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\*.uwp.cs" />
+    <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <MauiXaml Remove="**\*.Windows.xaml" />
+    <None Include="**\*.Windows.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\*.Windows.xaml.cs" />
+    <None Include="**\*.Windows.xaml.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <MauiXaml Remove="**\Windows\**\*.xaml" />
+    <None Include="**\Windows\**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Windows\**\*.xaml.cs" />
+    <None Include="**\Windows\**\*.xaml.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
+    <Compile Remove="**\*.uwp.cs" />
+    <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="bin\**;obj\**" />
+    <None Remove="bin\**;obj\**" />
+  </ItemGroup>
+  
   <PropertyGroup>
     <!-- Windows -->
     <WindowsProjectFolder>Platform\Windows\</WindowsProjectFolder>
@@ -45,9 +63,18 @@
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
   </PropertyGroup>
 
+  <!-- .NET Standard or .NET 6 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
+  </PropertyGroup>
+
   <!-- Android -->
   <PropertyGroup Condition="$(TargetFramework.StartsWith('net6.0-android'))">
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true">
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true OR $(TargetFramework.StartsWith('net6.0-android')) == true ">
@@ -64,30 +91,25 @@
     <DefineConstants>$(DefineConstants);MACCATALYST;IOS</DefineConstants>
   </PropertyGroup>
 
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
   <!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true OR '$(TargetPlatformIdentifier)' == 'android' OR '$(TargetFramework)' == 'net6.0-android'">
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
   </ItemGroup>
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
+    <DefineConstants>WINDOWS_UWP;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PackageReference Include="Microsoft.ProjectReunion" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
   </ItemGroup>
-  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
 </Project>

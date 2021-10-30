@@ -3,11 +3,11 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckBox>
+	public partial class CheckBoxHandler : ViewHandler<ICheckBox, MauiCheckBox>
 	{
-		protected override CheckBox CreateNativeView() => new CheckBox();
+		protected override MauiCheckBox CreateNativeView() => new MauiCheckBox();
 
-		protected override void ConnectHandler(CheckBox nativeView)
+		protected override void ConnectHandler(MauiCheckBox nativeView)
 		{
 			base.ConnectHandler(nativeView);
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Unchecked += OnChecked;
 		}
 
-		protected override void DisconnectHandler(CheckBox nativeView)
+		protected override void DisconnectHandler(MauiCheckBox nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 
@@ -26,6 +26,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateIsChecked(check);
+		}
+
+		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateForeground(check);
 		}
 
 		void OnChecked(object sender, RoutedEventArgs e)

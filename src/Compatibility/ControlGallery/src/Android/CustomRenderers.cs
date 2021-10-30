@@ -16,17 +16,18 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
-using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
-using IOPath = System.IO.Path;
 using AView = Android.Views.View;
+using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
+using IOPath = System.IO.Path;
+using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]
@@ -58,20 +59,20 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellRenderer
+	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellView
 	{
 		public ShellWithCustomRendererDisabledAnimationsRenderer(Context context) : base(context)
 		{
 		}
 
-		protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
+		protected override IShellItemView CreateShellItemView(ShellItem shellItem)
 		{
 			return new ShellWithCustomRendererDisabledAnimationsShellItemRenderer(this);
 		}
 
-		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemRenderer
+		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemView
 		{
-			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(IShellContext shellContext) : base(shellContext)
+			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(Controls.Platform.IShellContext shellContext) : base(shellContext)
 			{
 			}
 
@@ -182,14 +183,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		}
 	}
 
-	public class NativeDroidFlyoutPage : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.MasterDetailPageRenderer
+	public class NativeDroidFlyoutPage : FlyoutPageRenderer
 	{
 		FlyoutPage _page;
 		bool _disposed;
 
 		public NativeDroidFlyoutPage(Context context) : base(context)
 		{
-			System.Diagnostics.Debug.WriteLine($">>>>> NativeDroidMasterDetail NativeDroidMasterDetail 53: This is the obsolete constructor being selected");
 		}
 
 		protected override void OnElementChanged(VisualElement oldElement, VisualElement newElement)
@@ -735,7 +735,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		bool AView.IOnTouchListener.OnTouch(AView v, MotionEvent e)
 		{
 			((Element.Children.First() as Layout).Children.First() as Label).Text = Issue1942.SuccessString;
-			ViewGroup.ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
+			ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
 			_gridChild.SetOnTouchListener(null);
 			return true;
 		}
@@ -745,7 +745,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			base.OnElementChanged(e);
 			if (e.NewElement != null)
 			{
-				ViewGroup.ViewTreeObserver.AddOnGlobalLayoutListener(this);
+				ViewTreeObserver.AddOnGlobalLayoutListener(this);
 			}
 		}
 
@@ -753,7 +753,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			if (disposing)
 			{
-				ViewGroup.ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
+				ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
 				_gridChild.SetOnTouchListener(null);
 				_gridChild = null;
 			}
@@ -763,7 +763,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		void ViewTreeObserver.IOnGlobalLayoutListener.OnGlobalLayout()
 		{
-			_gridChild = ViewGroup.GetChildAt(0);
+			_gridChild = GetChildAt(0);
 			_gridChild.SetOnTouchListener(this);
 		}
 	}

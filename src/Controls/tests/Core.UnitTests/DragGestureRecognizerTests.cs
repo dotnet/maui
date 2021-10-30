@@ -125,7 +125,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(typeof(Label), "LabelTest")]
 		[TestCase(typeof(Editor), "EditorTest")]
 		[TestCase(typeof(TimePicker), "01:00:00")]
-		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
 		[TestCase(typeof(CheckBox), "True")]
 		[TestCase(typeof(Switch), "True")]
 		[TestCase(typeof(RadioButton), "True")]
@@ -134,8 +133,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var dragRec = new DragGestureRecognizer();
 			var element = (VisualElement)Activator.CreateInstance(fieldType);
 			Assert.IsTrue(element.TrySetValue(result));
-			var args = dragRec.SendDragStarting(element);
+			var args = dragRec.SendDragStarting((IView)element);
 			Assert.AreEqual(result, args.Data.Text);
+		}
+
+		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
+		public void DateTextPackageCorrectlyExtractedFromCompatibleElement(Type fieldType, string result)
+		{
+			var date = DateTime.Parse(result);
+			result = date.ToString();
+			TextPackageCorrectlyExtractedFromCompatibleElement(fieldType, result);
 		}
 
 		[Test]

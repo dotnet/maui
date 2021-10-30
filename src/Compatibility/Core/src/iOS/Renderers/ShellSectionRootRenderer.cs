@@ -1,10 +1,10 @@
-using CoreAnimation;
-using CoreGraphics;
-using Foundation;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using CoreAnimation;
+using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			tracker.IsRootPage = true;
 			tracker.ViewController = this;
 
-			if(ShellSection.CurrentItem != null)
+			if (ShellSection.CurrentItem != null)
 				tracker.Page = ((IShellContentController)ShellSection.CurrentItem).GetOrCreateContent();
 			_tracker = tracker;
 			UpdateFlowDirection();
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_isDisposed)
 				return;
 
-				UpdateFlowDirection();
+			UpdateFlowDirection();
 			base.ViewWillAppear(animated);
 		}
 
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					var oldRenderer = renderer.Value;
 
-					if(oldRenderer.NativeView != null)
+					if (oldRenderer.NativeView != null)
 						oldRenderer.NativeView.RemoveFromSuperview();
 
 					if (oldRenderer.ViewController != null)
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_renderers.Clear();
 			}
 
-			if(disposing)
+			if (disposing)
 			{
 				_shellContext.Shell.PropertyChanged -= HandleShellPropertyChanged;
 			}
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (_renderers.TryGetValue(shellContent, out var renderer))
 				{
 					var view = renderer.NativeView;
-					if(view != null)
+					if (view != null)
 						view.Frame = new CGRect(0, 0, View.Bounds.Width, View.Bounds.Height);
 				}
 			}
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					continue;
 
 				Page page = null;
-				if(!createdPages.TryGetValue(item, out page))
+				if (!createdPages.TryGetValue(item, out page))
 				{
 					page = ((IShellContentController)item).GetOrCreateContent();
 					contentItems = ShellSectionController.GetItems();
@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 				}
 
-				if(removeMe != null)
+				if (removeMe != null)
 				{
 					foreach (var remove in removeMe)
 						_renderers.Remove(remove);
@@ -437,7 +437,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateFlowDirection()
 		{
-			if(_shellContext?.Shell?.CurrentItem?.CurrentItem == ShellSection)
+			if (_shellContext?.Shell?.CurrentItem?.CurrentItem == ShellSection)
 				this.View.UpdateFlowDirection(_shellContext.Shell);
 		}
 
@@ -465,7 +465,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					if (e.OldStartingIndex < _currentIndex)
 						_currentIndex--;
-					
+
 					_renderers.Remove(oldItem);
 					oldRenderer.NativeView.RemoveFromSuperview();
 					oldRenderer.ViewController.RemoveFromParentViewController();
@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		IVisualElementRenderer SetPageRenderer(Page page, ShellContent shellContent)
 		{
 			var oldRenderer = Platform.GetRenderer(page);
-			if(oldRenderer != null)
+			if (oldRenderer != null)
 				oldRenderer?.Dispose();
 
 			var renderer = Platform.CreateRenderer(page);

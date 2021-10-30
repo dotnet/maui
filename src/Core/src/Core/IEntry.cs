@@ -19,5 +19,20 @@
 		/// Gets an enumeration value that shows/hides clear button on the Entry.
 		/// </summary>
 		ClearButtonVisibility ClearButtonVisibility { get; }
+
+		/// <summary>
+		/// Gets or sets the position of the cursor.
+		/// </summary>
+		int CursorPosition { get; set; }
+
+		/// <summary>
+		/// Gets the length of the selection.
+		/// </summary>
+		int SelectionLength { get; set; }
+
+		/// <summary>
+		/// Occurs when the user finalizes the text in an entry with the return key.
+		/// </summary>
+		void Completed();
 	}
 }

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderAppConfigurationTests
@@ -12,17 +12,18 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void ConfigureAppConfigurationConfiguresValues()
 		{
-			var host = new AppHostBuilder()
+			var builder = MauiApp.CreateBuilder();
+			builder.Host
 				.ConfigureAppConfiguration((_, builder) =>
 				{
 					builder.AddInMemoryCollection(new Dictionary<string, string>
 					{
 						{ "key 1", "value 1" },
 					});
-				})
-				.Build();
+				});
+			var mauiApp = builder.Build();
 
-			var configuration = host.Services.GetRequiredService<IConfiguration>();
+			var configuration = mauiApp.Services.GetRequiredService<IConfiguration>();
 
 			Assert.Equal("value 1", configuration["key 1"]);
 		}
@@ -30,7 +31,8 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void ConfigureAppConfigurationOverwritesValues()
 		{
-			var host = new AppHostBuilder()
+			var builder = MauiApp.CreateBuilder();
+			builder.Host
 				.ConfigureAppConfiguration((_, builder) =>
 				{
 					builder.AddInMemoryCollection(new Dictionary<string, string>
@@ -45,10 +47,10 @@ namespace Microsoft.Maui.UnitTests
 					{
 						{ "key 1", "value a" },
 					});
-				})
-				.Build();
+				});
+			var mauiApp = builder.Build();
 
-			var configuration = host.Services.GetRequiredService<IConfiguration>();
+			var configuration = mauiApp.Services.GetRequiredService<IConfiguration>();
 
 			Assert.Equal("value a", configuration["key 1"]);
 			Assert.Equal("value 2", configuration["key 2"]);
@@ -59,19 +61,22 @@ namespace Microsoft.Maui.UnitTests
 		{
 			string value = null;
 
-			var host = new AppHostBuilder()
+			var builder = MauiApp.CreateBuilder();
+			builder.Host
 				.ConfigureAppConfiguration((_, builder) =>
 				{
 					builder.AddInMemoryCollection(new Dictionary<string, string>
 					{
 						{ "key 1", "value 1" },
 					});
-				})
+				});
+
+			builder.Host
 				.ConfigureServices((context, services) =>
 				{
 					value = context.Configuration["key 1"];
-				})
-				.Build();
+				});
+			var mauiApp = builder.Build();
 
 			Assert.Equal("value 1", value);
 		}

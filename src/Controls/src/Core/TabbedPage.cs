@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	[ContentProperty(nameof(Children))]
 	public class TabbedPage : MultiPage<Page>, IBarElement, IElementConfiguration<TabbedPage>
 	{
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;

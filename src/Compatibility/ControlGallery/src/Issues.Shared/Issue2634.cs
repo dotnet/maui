@@ -234,16 +234,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 
 				var rl = new RelativeLayout();
-				rl.Children.Add(bvBackground, Microsoft.Maui.Controls.Constraint.Constant(0), Microsoft.Maui.Controls.Constraint.Constant(0),
-					Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
+				rl.Children.Add(bvBackground, Compatibility.Constraint.Constant(0), Compatibility.Constraint.Constant(0),
+					Compatibility.Constraint.RelativeToParent((parent) =>
 					   parent.Width),
-					Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
+					Compatibility.Constraint.RelativeToParent((parent) =>
 					   parent.Height));
 
 				rl.Children.Add(addFrame,
-					Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) => (parent.Width * .25) / 2),
-					Microsoft.Maui.Controls.Constraint.Constant(Device.RuntimePlatform == Device.iOS ? 60 : 40),
-					Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) => parent.Width * .75));
+					Compatibility.Constraint.RelativeToParent((parent) => (parent.Width * .25) / 2),
+					Compatibility.Constraint.Constant(Device.RuntimePlatform == Device.iOS ? 60 : 40),
+					Compatibility.Constraint.RelativeToParent((parent) => parent.Width * .75));
 
 				Content = rl;
 			}

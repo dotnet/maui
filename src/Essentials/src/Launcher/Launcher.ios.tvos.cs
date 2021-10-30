@@ -1,9 +1,9 @@
 using System;
-using System.Diagnostics;
-using System.Drawing;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Native;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials
@@ -32,35 +32,35 @@ namespace Microsoft.Maui.Essentials
 		}
 
 #if __IOS__
-        static UIDocumentInteractionController documentController;
+		static UIDocumentInteractionController documentController;
 
-        static Task PlatformOpenAsync(OpenFileRequest request)
-        {
-            documentController = new UIDocumentInteractionController()
-            {
-                Name = request.File.FileName,
-                Url = NSUrl.FromFilename(request.File.FullPath),
-                Uti = request.File.ContentType
-            };
+		static Task PlatformOpenAsync(OpenFileRequest request)
+		{
+			documentController = new UIDocumentInteractionController()
+			{
+				Name = request.File.FileName,
+				Url = NSUrl.FromFilename(request.File.FullPath),
+				Uti = request.File.ContentType
+			};
 
-            var view = Platform.GetCurrentUIViewController().View;
+			var view = Platform.GetCurrentUIViewController().View;
 
-            CGRect rect;
+			CGRect rect;
 
-            if (request.PresentationSourceBounds != Rectangle.Empty)
-            {
-                rect = request.PresentationSourceBounds.ToPlatformRectangle();
-            }
-            else
-            {
-                rect = DeviceInfo.Idiom == DeviceIdiom.Tablet
-                    ? new CGRect(new CGPoint(view.Bounds.Width / 2, view.Bounds.Height), CGRect.Empty.Size)
-                    : view.Bounds;
-            }
+			if (request.PresentationSourceBounds != Rectangle.Zero)
+			{
+				rect = request.PresentationSourceBounds.AsCGRect();
+			}
+			else
+			{
+				rect = DeviceInfo.Idiom == DeviceIdiom.Tablet
+					? new CGRect(new CGPoint(view.Bounds.Width / 2, view.Bounds.Height), CGRect.Empty.Size)
+					: view.Bounds;
+			}
 
-            documentController.PresentOpenInMenu(rect, view, true);
-            return Task.CompletedTask;
-        }
+			documentController.PresentOpenInMenu(rect, view, true);
+			return Task.CompletedTask;
+		}
 
 #else
 		static Task PlatformOpenAsync(OpenFileRequest request) =>

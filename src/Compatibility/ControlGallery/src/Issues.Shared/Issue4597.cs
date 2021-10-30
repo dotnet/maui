@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Command = new Command(() =>
 						{
 							var activeImage = layout.Children.Last();
-							int nextIndex = imageControls.IndexOf(activeImage) + 1;
+							int nextIndex = imageControls.ToList().IndexOf(activeImage) + 1;
 
 							if(nextIndex >= imageControls.Length)
 								nextIndex = 0;
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 #if UITEST
 
-#if !__WINDOWS__
+#if !WINDOWS
 		[Test]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{

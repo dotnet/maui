@@ -1,0 +1,77 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
+    <Nullable>disable</Nullable>
+    <AndroidRoot>Android\</AndroidRoot>
+    <iOSRoot>iOS\</iOSRoot>
+    <WindowsRoot>Windows\</WindowsRoot>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+
+  <ItemGroup>
+    <Compile Remove="GTK\**" />
+    <Compile Remove="MacOS\**" />
+    <Compile Remove="Tizen\**" />
+    <Compile Remove="WPF\**" />
+    <EmbeddedResource Remove="GTK\**" />
+    <EmbeddedResource Remove="MacOS\**" />
+    <EmbeddedResource Remove="Tizen\**" />
+    <EmbeddedResource Remove="WPF\**" />
+    <None Remove="GTK\**" />
+    <None Remove="MacOS\**" />
+    <None Remove="Tizen\**" />
+    <None Remove="WPF\**" />
+    <Page Remove="**\WPF\**\*.xaml" />
+    <MauiXaml Remove="**\WPF\**\*.xaml" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) == true ">
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" />
+
+    <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
+    <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
+    <Reference Include="System" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+  </ItemGroup>
+
+  <ItemGroup>    
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="iOS\Resources\StringResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StringResources.resx</DependentUpon>
+    </None>
+  </ItemGroup>
+</Project>

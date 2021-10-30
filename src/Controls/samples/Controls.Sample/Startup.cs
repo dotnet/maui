@@ -1,89 +1,141 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
-using Maui.Controls.Sample.ViewModel;
-#if NET6_0_OR_GREATER
-using Microsoft.AspNetCore.Components.WebView.Maui;
-#endif
+using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
+
 namespace Maui.Controls.Sample
 {
-	public class Startup : IStartup
+	public class CustomButton : Button { }
+
+	public static class MauiProgram
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor }
-		private PageType _pageType = PageType.Main;
+		static bool UseMauiGraphicsSkia = false;
 
-		public readonly static bool UseXamlApp = true;
+		enum PageType { Main, Blazor, Shell, Template }
+		readonly static PageType _pageType = PageType.Main;
 
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
-			if (UseXamlApp)
+			var appBuilder = MauiApp.CreateBuilder();
+
+			appBuilder.UseMauiApp<XamlApp>();
+			var services = appBuilder.Services;
+
+			if (UseMauiGraphicsSkia)
 			{
-				// Use all the Forms features
-				appBuilder = appBuilder
-					.UseFormsCompatibility()
-					.UseMauiApp<XamlApp>();
-			}
-			else
-			{
-				// Use just the Forms renderers
-				appBuilder = appBuilder
-					.UseCompatibilityRenderers()
-					.UseMauiApp<MyApp>();
+				/*
+				appBuilder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<GraphicsView, SkiaGraphicsViewHandler>();
+					handlers.AddHandler<BoxView, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
+				});
+				*/
 			}
 
 			appBuilder
-#if NET6_0_OR_GREATER
-				.RegisterBlazorMauiWebView()
-#endif
-				.ConfigureAppConfiguration(config =>
+				.ConfigureMauiHandlers(handlers =>
 				{
-					config.AddInMemoryCollection(new Dictionary<string, string>
+#if __ANDROID__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+#elif __IOS__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+#elif WINDOWS
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+#endif
+				});
+
+			// Use a "third party" library that brings in a massive amount of controls
+			appBuilder.UseBordelessEntry();
+			appBuilder.ConfigureEffects(builder =>
+			{
+				builder.Add<FocusRoutingEffect, FocusPlatformEffect>();
+			});
+
+			appBuilder.Configuration.AddInMemoryCollection(
+				new Dictionary<string, string>
 					{
 						{"MyKey", "Dictionary MyKey Value"},
 						{":Title", "Dictionary_Title"},
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				})
-				.UseMauiServiceProviderFactory(true)
-				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureServices(services =>
-				{
-					services.AddSingleton<ITextService, TextService>();
-					services.AddTransient<MainPageViewModel>();
 
-					services.AddTransient(
-						serviceType: typeof(IPage),
-						implementationType: _pageType switch
-						{
-							PageType.Xaml => typeof(XamlPage),
-							PageType.Semantics => typeof(SemanticsPage),
-							PageType.Blazor =>
+#if NET6_0_OR_GREATER
+			appBuilder
+				.RegisterBlazorMauiWebView();
+			services.AddBlazorWebView();
+#endif
+
+			services.AddLogging(logging =>
+			{
+#if WINDOWS
+				logging.AddDebug();
+#else
+				logging.AddConsole();
+#endif
+			});
+
+			services.AddSingleton<ITextService, TextService>();
+			services.AddTransient<MainViewModel>();
+
+			services.AddTransient<IWindow, Window>();
+
+			services.AddTransient(
+				serviceType: typeof(Page),
+				implementationType: _pageType switch
+				{
+					PageType.Template => typeof(TemplatePage),
+					PageType.Shell => typeof(AppShell),
+					PageType.Main => typeof(CustomNavigationPage),
+					PageType.Blazor =>
 #if NET6_0_OR_GREATER
 								typeof(BlazorPage),
 #else
 								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
-							PageType.Main => typeof(MainPage),
-							_ => throw new Exception(),
-						});
+					_ => throw new Exception(),
+				});
 
-					services.AddTransient<IWindow, MainWindow>();
-				})
+			appBuilder
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
+					fonts.AddFont("ionicons.ttf", "Ionicons");
+					fonts.AddFont("SegoeUI.ttf", "Segoe UI");
+					fonts.AddFont("SegoeUI-Bold.ttf", "Segoe UI Bold");
+					fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
+					fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 				})
 				.ConfigureEssentials(essentials =>
 				{
@@ -164,6 +216,7 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
+						.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
@@ -175,17 +228,19 @@ namespace Maui.Controls.Sample
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
 						return true;
 					}
+
+#if __ANDROID__
+					Microsoft.Maui.Handlers.ButtonHandler.NativeViewFactory = (handler) => 
+					{
+						return new Google.Android.Material.Button.MaterialButton(handler.Context) 
+						{ 
+							CornerRadius = 50, SoundEffectsEnabled = true 
+						};
+					};
+#endif
 				});
-		}
 
-		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
-		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
-		{
-			public ServiceCollection CreateBuilder(IServiceCollection services)
-				=> new ServiceCollection { services };
-
-			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
-				=> containerBuilder.BuildServiceProvider();
+			return appBuilder.Build();
 		}
 	}
 }

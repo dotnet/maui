@@ -11,6 +11,7 @@ using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
@@ -379,7 +380,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		AView CreateContent()
 		{
 			var renderer = Element.Content.GetRenderer() ?? Platform.CreateRendererWithContext(Element.Content, Context);
-			AppCompat.Platform.SetRenderer(Element.Content, renderer);
+			Platform.SetRenderer(Element.Content, renderer);
 
 			return renderer?.View;
 		}
@@ -850,8 +851,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		AView CreateSwipeItemView(SwipeItemView swipeItemView)
 		{
-			var renderer = AppCompat.Platform.CreateRenderer(swipeItemView, _context);
-			AppCompat.Platform.SetRenderer(swipeItemView, renderer);
+			var renderer = Platform.CreateRenderer(swipeItemView, _context);
+			Platform.SetRenderer(swipeItemView, renderer);
 			var swipeItem = renderer?.View;
 			swipeItem.Visibility = swipeItemView.IsVisible ? ViewStates.Visible : ViewStates.Gone;
 

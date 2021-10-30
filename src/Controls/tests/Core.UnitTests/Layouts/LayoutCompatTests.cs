@@ -9,73 +9,54 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
+	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	public class LayoutCompatTests : BaseTestFixture
 	{
 		[Test]
 		public void BasicContentPage()
 		{
 			var page = new ContentPage() { IsPlatformEnabled = true };
-			var layout = new VerticalStackLayout() { IsPlatformEnabled = true };
 			var button = new Button() { IsPlatformEnabled = true };
 			var expectedSize = new Size(100, 100);
+			var expectedRect = new Rectangle(Point.Zero, expectedSize);
 
-			var view = Substitute.For<IViewHandler>();
-			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
-			button.Handler = view;
+			var buttonHandler = Substitute.For<IViewHandler>();
+			buttonHandler.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
+			button.Handler = buttonHandler;
 
-			layout.Add(button);
-			page.Content = layout;
-			(page as IFrameworkElement).Arrange(new Rectangle(0, 0, 100, 100));
+			page.Content = button;
+			(page as IContentView).CrossPlatformMeasure(expectedSize.Width, expectedSize.Height);
+			(page as IContentView).CrossPlatformArrange(expectedRect);
 
+			buttonHandler.Received().NativeArrange(expectedRect);
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
 		}
 
 		[Test]
-		public void VerticalStackLayoutInsideStackLayout()
-		{
-			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
-			var verticalStackLayout = new VerticalStackLayout() { IsPlatformEnabled = true };
-			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
-			var expectedSize = new Size(100, 100);
-
-			var view = Substitute.For<IViewHandler>();
-			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
-			button.Handler = view;
-
-			stackLayout.Children.Add(verticalStackLayout);
-			verticalStackLayout.Add(button);
-
-			var rect = new Rectangle(0, 0, 100, 100);
-			Layout.LayoutChildIntoBoundingRegion(stackLayout, rect);
-
-			// Normally this would get called from the native platform
-			(verticalStackLayout as IFrameworkElement).Arrange(rect);
-
-			Assert.AreEqual(expectedSize, button.Bounds.Size);
-		}
-
-
-		[Test]
-		public void StackLayoutInsideVerticalStackLayout()
+		public void GridInsideStackLayout()
 		{
 			ContentPage contentPage = new ContentPage();
 			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
-			var verticalStackLayout = new VerticalStackLayout() { IsPlatformEnabled = true };
-			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
-			var expectedSize = new Size(100, 100);
+			var grid = new Grid() { IsPlatformEnabled = true, HeightRequest = 50 };
+			var label = new Label() { IsPlatformEnabled = true };
+			var expectedSize = new Size(100, 50);
 
 			var view = Substitute.For<IViewHandler>();
 			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
-			button.Handler = view;
+			label.Handler = view;
 
-			verticalStackLayout.Add(stackLayout);
-			stackLayout.Children.Add(button);
-			contentPage.Content = verticalStackLayout;
+			stackLayout.Children.Add(grid);
+			grid.Children.Add(label);
+			contentPage.Content = stackLayout;
 
-			var rect = new Rectangle(0, 0, 100, 100);
-			(contentPage as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
-			(contentPage as IFrameworkElement).Arrange(rect);
-			Assert.AreEqual(expectedSize, button.Bounds.Size);
+			var rect = new Rectangle(Point.Zero, expectedSize);
+
+			(contentPage as Microsoft.Maui.IContentView).CrossPlatformMeasure(expectedSize.Width, expectedSize.Height);
+			(contentPage as Microsoft.Maui.IContentView).CrossPlatformArrange(rect);
+
+			Assert.AreEqual(expectedSize, grid.Bounds.Size);
 		}
 	}
 }

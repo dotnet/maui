@@ -6,10 +6,11 @@ using Microsoft.UI.Xaml.Controls;
 using WRect = Windows.Foundation.Rect;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>, IDontGetFocus
+	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>
 	{
 		VisualElement _currentView;
 		bool _checkedForRtlScroll = false;
@@ -26,9 +27,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return result;
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			if (Element == null)
+			if (Element == null || Control == null)
 				return finalSize;
 
 			Element.IsInNativeLayout = true;
@@ -46,17 +47,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.Dispose(disposing);
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element == null)
-				return new Windows.Foundation.Size(0, 0);
+				return new global::Windows.Foundation.Size(0, 0);
 
 			double width = Math.Max(0, Element.Width);
 			double height = Math.Max(0, Element.Height);
-			var result = new Windows.Foundation.Size(width, height);
+			var result = new global::Windows.Foundation.Size(width, height);
 
 			Control?.Measure(result);
-
+			
 			return result;
 		}
 

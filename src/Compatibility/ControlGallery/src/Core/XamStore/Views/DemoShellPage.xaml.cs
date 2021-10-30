@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -10,6 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 {
 	[Preserve(AllMembers = true)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class DemoShellPage : ContentPage
 	{
 
@@ -274,7 +275,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 		{
 			var colors = ((string)parameter).Split((';'));
 			var isSelected = (bool)value;
-			return (isSelected) ? Color.FromHex(colors[0]) : Color.FromHex(colors[1]);
+			return (isSelected) ? Color.FromArgb(colors[0]) : Color.FromArgb(colors[1]);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

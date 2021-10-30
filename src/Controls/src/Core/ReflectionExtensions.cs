@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	[PortHandler]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class ReflectionExtensions
 	{

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 		[Test, Category("CollectionView")]
 		[Description("EmtpySource should have a count of zero")]
-		public void EmptySourceCountIsZero() 
+		public void EmptySourceCountIsZero()
 		{
 			var emptySource = new EmptySource();
 			Assert.That(emptySource.Count, Is.Zero);

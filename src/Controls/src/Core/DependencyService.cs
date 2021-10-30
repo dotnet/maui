@@ -90,6 +90,14 @@ namespace Microsoft.Maui.Controls
 		static Type FindImplementor(Type target) =>
 			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t));
 
+		// Once we get essentials/cg converted to using startup.cs
+		// we will delete the initialize code from here and just use
+		// explicit assembly registration via startup code
+		internal static void SetToInitialized()
+		{
+			s_initialized = true;
+		}
+
 		static void Initialize()
 		{
 			if (s_initialized)
@@ -110,16 +118,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static void Initialize(Assembly[] assemblies)
+		public static void Register(Assembly[] assemblies)
 		{
-			if (s_initialized)
-				return;
-
 			lock (s_initializeLock)
 			{
-				if (s_initialized)
-					return;
-
 				// Don't use LINQ for performance reasons
 				// Naive implementation can easily take over a second to run
 				foreach (Assembly assembly in assemblies)
@@ -137,6 +139,20 @@ namespace Microsoft.Maui.Controls
 						}
 					}
 				}
+			}
+		}
+
+		internal static void Initialize(Assembly[] assemblies)
+		{
+			if (s_initialized)
+				return;
+
+			lock (s_initializeLock)
+			{
+				if (s_initialized)
+					return;
+
+				Register(assemblies);
 
 				s_initialized = true;
 			}

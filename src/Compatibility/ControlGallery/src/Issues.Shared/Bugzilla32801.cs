@@ -95,8 +95,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[TearDown]
-		public void TearDown()
+		public override void TearDown()
 		{
+			base.TearDown();
 			RunningApp.SetOrientationPortrait();
 		}
 #endif

@@ -1,6 +1,6 @@
-using NUnit.Framework;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
@@ -120,13 +120,13 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			remote.GoTo();
 
 #if __ANDROID__
-			var isBold = remote.GetProperty<bool> (Button.FontProperty);
-			Assert.True (isBold);
+			var isBold = remote.GetProperty<bool>(FontElement.FontProperty);
+			Assert.True(isBold);
 #elif __MACOS__
 			Assert.Inconclusive("needs testing");
 #else
-			var font = remote.GetProperty<Font>(Button.FontProperty);
-			Assert.True(font.FontAttributes.HasFlag(FontAttributes.Bold));
+			var font = remote.GetProperty<Font>(FontElement.FontProperty);
+			Assert.AreEqual (FontWeight.Bold, font.Weight);
 #endif
 		}
 
@@ -157,14 +157,14 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 #if __ANDROID__
 		[Test]
-		[UiTest (typeof (Button), "TextColor")]
-		public void TextColor ()
+		[UiTest(typeof(Button), "TextColor")]
+		public void TextColor()
 		{
-			var remote = new ViewContainerRemote (App, Test.Button.TextColor, PlatformViewType);
-			remote.GoTo ();
+			var remote = new ViewContainerRemote(App, Test.Button.TextColor, PlatformViewType);
+			remote.GoTo();
 
-			var buttonTextColor = remote.GetProperty<Color> (Button.TextColorProperty);
-			Assert.AreEqual (Colors.Pink, buttonTextColor);
+			var buttonTextColor = remote.GetProperty<Color>(Button.TextColorProperty);
+			Assert.AreEqual(Colors.Pink, buttonTextColor);
 		}
 #endif
 
@@ -179,12 +179,12 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public override void _Opacity() { }
 #endif
 
-#if __ANDROID__ || __IOS__ || __WINDOWS__
+#if __ANDROID__ || __IOS__ || WINDOWS
 		[Ignore("This is covered by the platform tests")]
 		public override void _IsEnabled() { }
 #endif
 
-#if __ANDROID__ || __IOS__ || __WINDOWS__
+#if __ANDROID__ || __IOS__ || WINDOWS
 		[Ignore("This is covered by the platform tests")]
 		public override void _Rotation() { }
 
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public override void _TranslationY() { }
 #endif
 
-#if __IOS__ || __WINDOWS__
+#if __IOS__ || WINDOWS
 		[Ignore("This is covered by the platform tests")]
 		public override void _Scale() { }
 #endif

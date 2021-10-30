@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
 using UIKit;
@@ -451,6 +452,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateTextPlainText()
 		{
 			_formatted = Element.FormattedText;
@@ -473,6 +475,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			UpdateLayout();
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateFormattedText()
 		{
 #if __MOBILE__
@@ -589,7 +592,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			// default value of color documented to be black in iOS docs
 #if __MOBILE__
-				Control.TextColor = textColor.ToUIColor(ColorExtensions.LabelColor);
+			Control.TextColor = textColor.ToUIColor(ColorExtensions.LabelColor);
 #else
 			var alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(ColorExtensions.TextColor), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });

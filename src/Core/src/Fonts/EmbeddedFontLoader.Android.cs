@@ -1,12 +1,8 @@
-using System.IO;
+#nullable enable
 
 namespace Microsoft.Maui
 {
-	public class EmbeddedFontLoader : FileSystemEmbeddedFontLoader
+	public partial class EmbeddedFontLoader : FileSystemEmbeddedFontLoader
 	{
-		public EmbeddedFontLoader()
-			: base(Path.GetTempPath())
-		{
-		}
 	}
 }

@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Detail")]
+	[ContentProperty(nameof(Detail))]
 	public class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
 	{
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
@@ -40,12 +40,19 @@ namespace Microsoft.Maui.Controls
 				if (value.RealParent != null)
 					throw new InvalidOperationException("Detail must not already have a parent.");
 
+				var previousDetail = _detail;
+				// TODO MAUI refine this to fire earlier
+				_detail?.SendNavigatingFrom(new NavigatingFromEventArgs());
+
 				OnPropertyChanging();
 				if (_detail != null)
 					InternalChildren.Remove(_detail);
 				_detail = value;
 				InternalChildren.Add(_detail);
 				OnPropertyChanged();
+
+				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail));
+				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail));
 			}
 		}
 
@@ -78,12 +85,20 @@ namespace Microsoft.Maui.Controls
 				if (value.RealParent != null)
 					throw new InvalidOperationException("Flyout must not already have a parent.");
 
+				// TODO MAUI refine this to fire earlier
+				var previousFlyout = _flyout;
+				// TODO MAUI refine this to fire earlier
+				_flyout?.SendNavigatingFrom(new NavigatingFromEventArgs());
+
 				OnPropertyChanging();
 				if (_flyout != null)
 					InternalChildren.Remove(_flyout);
 				_flyout = value;
 				InternalChildren.Add(_flyout);
 				OnPropertyChanged();
+
+				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout));
+				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
 			}
 		}
 
@@ -252,74 +267,5 @@ namespace Microsoft.Maui.Controls
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
-	}
-
-	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
-	public class MasterDetailPage : FlyoutPage, IMasterDetailPageController
-	{
-		public static readonly BindableProperty MasterBehaviorProperty = BindableProperty.Create(nameof(MasterBehavior), typeof(MasterBehavior), typeof(MasterDetailPage), default(MasterBehavior),
-			propertyChanged: OnMasterBehaviorPropertyChanged);
-
-		static void OnMasterBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			if ((int)bindable.GetValue(FlyoutLayoutBehaviorProperty) != (int)newValue)
-				bindable.SetValue(FlyoutLayoutBehaviorProperty, (FlyoutLayoutBehavior)((int)newValue));
-		}
-
-		public Page Master
-		{
-			get => base.Flyout;
-			set => base.Flyout = value;
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle MasterBounds
-		{
-			get => base.FlyoutBounds;
-			set => FlyoutBounds = value;
-		}
-
-		public MasterBehavior MasterBehavior
-		{
-			get => (MasterBehavior)GetValue(MasterBehaviorProperty);
-			set => SetValue(MasterBehaviorProperty, value);
-		}
-
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			base.OnPropertyChanged(propertyName);
-			if (propertyName == nameof(Flyout))
-				OnPropertyChanged(nameof(Master));
-
-			if (propertyName == nameof(FlyoutLayoutBehavior))
-				OnPropertyChanged(nameof(Flyout));
-		}
-
-		protected override void OnPropertyChanging([CallerMemberName] string propertyName = null)
-		{
-			base.OnPropertyChanging(propertyName);
-			if (propertyName == nameof(Flyout))
-				OnPropertyChanging(nameof(Master));
-
-			if (propertyName == nameof(FlyoutLayoutBehavior))
-				OnPropertyChanging(nameof(Flyout));
-		}
-
-
-		public MasterDetailPage()
-		{
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<MasterDetailPage>>(() => new PlatformConfigurationRegistry<MasterDetailPage>(this));
-		}
-
-		readonly Lazy<PlatformConfigurationRegistry<MasterDetailPage>> _platformConfigurationRegistry;
-
-		public new IPlatformElementConfiguration<T, MasterDetailPage> On<T>() where T : IConfigPlatform
-		{
-			return _platformConfigurationRegistry.Value.On<T>();
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void UpdateMasterBehavior() =>
-			(this as IFlyoutPageController).UpdateFlyoutLayoutBehavior();
 	}
 }

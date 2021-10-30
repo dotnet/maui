@@ -8,6 +8,13 @@ namespace Microsoft.Maui.LifecycleEvents
 {
 	public static class AndroidLifecycle
 	{
+		// Events called by the Application
+		public delegate void OnApplicationCreating(Application application);
+		public delegate void OnApplicationCreate(Application application);
+		public delegate void OnApplicationLowMemory(Application application);
+		public delegate void OnApplicationTrimMemory(Application application, TrimMemory level);
+		public delegate void OnApplicationConfigurationChanged(Application application, Configuration newConfig);
+
 		// Events called by the ActivityLifecycleCallbacks
 		public delegate void OnCreate(Activity activity, Bundle? savedInstanceState);
 		public delegate void OnStart(Activity activity);
@@ -32,5 +39,8 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		// Custom events
 		public delegate bool OnPressingBack(Activity activity);
+
+		// Internal events
+		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);
 	}
 }

@@ -1,8 +1,19 @@
-
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Line : Shape
+	public sealed partial class Line : Shape
 	{
+		public Line() : base()
+		{
+		}
+
+		public Line(double x1, double y1, double x2, double y2) : this()
+		{
+			X1 = x1;
+			Y1 = y1;
+			X2 = x2;
+			Y2 = y2;
+		}
+
 		public static readonly BindableProperty X1Property =
 			BindableProperty.Create(nameof(X1), typeof(double), typeof(Line), 0.0d);
 

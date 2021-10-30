@@ -22,27 +22,22 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
 		Action<Action> invokeOnMainThread;
-		Action<Uri> openUriAction;
 		Func<Uri, CancellationToken, Task<Stream>> getStreamAsync;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
 		readonly bool _isInvokeRequired;
 
-		public MockPlatformServices(Action<Action> invokeOnMainThread = null, Action<Uri> openUriAction = null,
+		public MockPlatformServices(Action<Action> invokeOnMainThread = null,
 			Func<Uri, CancellationToken, Task<Stream>> getStreamAsync = null,
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
 			bool useRealisticLabelMeasure = false, bool isInvokeRequired = false)
 		{
 			this.invokeOnMainThread = invokeOnMainThread;
-			this.openUriAction = openUriAction;
 			this.getStreamAsync = getStreamAsync;
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
 			_isInvokeRequired = isInvokeRequired;
 		}
-
-		public string GetHash(string input) => Internals.Crc64.GetHash(input);
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
 
 		static int hex(int v)
 		{
@@ -74,14 +69,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 		{
 			// Not supported on this platform
 			return Color.Default;
-		}
-
-		public void OpenUriAction(Uri uri)
-		{
-			if (openUriAction != null)
-				openUriAction(uri);
-			else
-				throw new NotImplementedException();
 		}
 
 		public bool IsInvokeRequired
@@ -174,11 +161,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			{
 				return Task.FromResult(isolatedStorageFile.GetLastWriteTime(path));
 			}
-		}
-
-		public void QuitApplication()
-		{
-
 		}
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)

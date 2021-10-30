@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.IO;
 using SkiaSharp;
 using Xunit;
@@ -110,7 +109,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
-				info.BaseSize = new Size(512, 512);
+				info.BaseSize = new SKSize(512, 512);
 				var tools = new SkiaSharpBitmapTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
@@ -132,7 +131,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
-				info.BaseSize = new Size(512, 512);
+				info.BaseSize = new SKSize(512, 512);
 				var tools = new SkiaSharpBitmapTools(info, Logger);
 				var dpiPath = new DpiPath("", 0.5m);
 
@@ -154,7 +153,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
-				info.TintColor = Color.Red;
+				info.TintColor = SKColors.Red;
 				var tools = new SkiaSharpBitmapTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
@@ -174,7 +173,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
-				info.TintColor = Color.FromArgb(127, Color.Red);
+				info.TintColor = SKColors.Red.WithAlpha(127);
 				var tools = new SkiaSharpBitmapTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
@@ -194,7 +193,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
-				info.TintColor = Color.FromName("Red");
+				info.TintColor = SKColors.Red;
 				var tools = new SkiaSharpBitmapTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
@@ -214,7 +213,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
-				info.TintColor = Color.Red;
+				info.TintColor = SKColors.Red;
 				var tools = new SkiaSharpBitmapTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
@@ -236,7 +235,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
-				info.TintColor = Color.FromArgb(127, Color.Red);
+				info.TintColor = SKColors.Red.WithAlpha(127);
 				var tools = new SkiaSharpBitmapTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 

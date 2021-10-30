@@ -9,6 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 

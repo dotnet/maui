@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -517,7 +518,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (e.NewSize.Width > 0 && e.NewSize.Height > 0)
 			{
 				ListViewBase.SizeChanged -= InitialSetup;
-				_scrollViewer.SizeChanged -= InitialSetup;
+				if (_scrollViewer != null)
+					_scrollViewer.SizeChanged -= InitialSetup;
 
 				UpdateItemsSource();
 				UpdateSnapPointsType();

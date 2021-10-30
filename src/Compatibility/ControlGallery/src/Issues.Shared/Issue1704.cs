@@ -490,7 +490,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				int.TryParse(_stressTestItertionEntry.Text, out _stressTestIterationCount);
 
-#if __UWP__
+#if WINDOWS
 				Task.Run(runStressTest);
 #else
 				ThreadPool.QueueUserWorkItem(delegate

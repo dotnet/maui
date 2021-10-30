@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public void TimePicker24H()
 		{
 			RunningApp.Tap(x => x.Marked("TimePicker"));
-#if !__WINDOWS__
+#if !WINDOWS
 			Assert.AreEqual("0.0.0 A", TimeString("H.m.s t", "0, 0"));
 			Assert.AreEqual("13:05 PM", TimeString("HH:mm tt", "13, 5"));
 			Assert.AreEqual("12 PM", TimeString("HH tt", "12, 0"));
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 		}
 
-#if !__WINDOWS__
+#if !WINDOWS
 		[Test]
 		public void TimePicker12H()
 		{
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public void DatePickerDMY()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));
-#if !__WINDOWS__
+#if !WINDOWS
 			Assert.AreEqual("31/1/99", DateString("d/M/y", "1999, 1, 31"));
 			Assert.AreEqual("02-29-00", DateString("MM-dd-yy", "2000, 2, 29"));
 			Assert.AreEqual("2010, Apr, Thu", DateString("yyy, MMM, ddd", "2010, 4, 15"));
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public void DatePickerMissing()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));
-#if !__WINDOWS__
+#if !WINDOWS
 			Assert.AreEqual("October 97", DateString("MMMM yy", "1997, 10, 30"));
 			Assert.AreEqual("Monday", DateString("dddd", "2020, 7, 20"));
 			Assert.AreEqual("2002: Dec", DateString("yyyy: MMM", "2002, 12, 31"));
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 		}
 
-#if !__WINDOWS__
+#if !WINDOWS
 		[Test]
 		public void DatePickerLetters()
 		{

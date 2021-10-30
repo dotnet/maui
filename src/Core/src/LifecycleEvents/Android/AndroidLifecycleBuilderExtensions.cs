@@ -2,6 +2,12 @@
 {
 	public static class AndroidLifecycleBuilderExtensions
 	{
+		public static IAndroidLifecycleBuilder OnApplicationCreating(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationCreating del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnApplicationCreate(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationCreate del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnApplicationLowMemory(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationLowMemory del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnApplicationTrimMemory(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationTrimMemory del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnApplicationConfigurationChanged(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationConfigurationChanged del) => lifecycle.OnEvent(del);
+
 		public static IAndroidLifecycleBuilder OnActivityResult(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnActivityResult del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnBackPressed(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnBackPressed del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnConfigurationChanged(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnConfigurationChanged del) => lifecycle.OnEvent(del);
@@ -19,5 +25,7 @@
 		public static IAndroidLifecycleBuilder OnSaveInstanceState(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnSaveInstanceState del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnStart(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnStart del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnStop(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnStop del) => lifecycle.OnEvent(del);
+
+		internal static IAndroidLifecycleBuilder OnMauiContextCreated(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnMauiContextCreated del) => lifecycle.OnEvent(del);
 	}
 }

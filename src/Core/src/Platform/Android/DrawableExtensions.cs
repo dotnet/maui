@@ -1,6 +1,5 @@
 using System;
 using Android.Graphics;
-using Microsoft.Maui;
 using AColor = Android.Graphics.Color;
 using AColorFilter = Android.Graphics.ColorFilter;
 using ADrawable = Android.Graphics.Drawables.Drawable;

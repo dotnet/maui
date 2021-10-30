@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <Import Project="..\..\src\WindowsForms\build\Microsoft.AspNetCore.Components.WebView.WindowsForms.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-windows</TargetFrameworks>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WindowsForms\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj" />
+    <ProjectReference Include="..\WebViewAppShared\WebViewAppShared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Import Project="..\..\src\WindowsForms\build\Microsoft.AspNetCore.Components.WebView.WindowsForms.targets" />
+
+</Project>

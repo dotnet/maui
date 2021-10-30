@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -8,9 +10,14 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(IVisual))]
 	public class VisualTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
 		static Dictionary<string, IVisual> _visualTypeMappings;
 		void InitMappings()
 		{
@@ -113,25 +120,26 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			var strValue = value?.ToString();
 			if (_visualTypeMappings == null)
 				InitMappings();
 
-			if (value != null)
+			if (strValue != null)
 			{
-				if (_visualTypeMappings.TryGetValue(value, out IVisual returnValue))
+				if (_visualTypeMappings.TryGetValue(strValue, out IVisual returnValue))
 					return returnValue;
 
 				return VisualMarker.Default;
 			}
 
-			throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(IVisual)}");
+			throw new XamlParseException($"Cannot convert \"{strValue}\" into {typeof(IVisual)}");
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is IVisual visual))
+			if (value is not IVisual visual)
 				throw new NotSupportedException();
 
 			if (_visualTypeMappings == null)
@@ -144,5 +152,14 @@ namespace Microsoft.Maui.Controls
 				return _visualTypeMappings.Keys.Skip(_visualTypeMappings.Values.IndexOf(visual)).First();
 			throw new NotSupportedException();
 		}
+
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+			=> false;
+
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+			=> true;
+
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+			=> new(new[] { "Default", "Material" });
 	}
 }

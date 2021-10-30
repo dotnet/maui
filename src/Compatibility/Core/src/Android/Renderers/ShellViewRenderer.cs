@@ -4,6 +4,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -127,7 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (!(_context.TryGetTarget(out context)))
 					return;
 
-				Renderer = AppCompat.Platform.CreateRenderer(view, context);
+				Renderer = Platform.CreateRenderer(view, context);
 				Platform.SetRenderer(view, Renderer);
 				NativeView = Renderer.View;
 

@@ -7,6 +7,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class ShellTests : ShellTestBase
 	{
@@ -55,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var item2 = shell.Items[1];
 
-			Assert.AreEqual(FindParentOfType<ShellItem>(shellElement), item2);
+			Assert.AreEqual(shellElement.FindParentOfType<ShellItem>(), item2);
 
 			if (useShellContent)
 				shell.CurrentItem = (ShellContent)shellElement;
@@ -63,7 +65,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				shell.CurrentItem = (ShellSection)shellElement;
 
 			Assert.AreEqual(2, shell.Items.Count);
-			Assert.AreEqual(FindParentOfType<ShellItem>(shellElement), item2);
+			Assert.AreEqual(shellElement.FindParentOfType<ShellItem>(), item2);
 			Assert.AreEqual(item2, shell.CurrentItem);
 		}
 
@@ -1176,7 +1178,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public async Task GetCurrentPageInShellNavigation()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
 
 			shell.Items.Add(item1);
@@ -1316,5 +1318,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Greater(count, previousCount, "StructureChanged not fired when adding Shell Content");
 		}
 
+		[Test]
+		public void VisualTreeHelperCount()
+		{
+			Shell shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+			shell.CurrentItem.Items.Add(CreateShellSection());
+			shell.CurrentItem.CurrentItem.Items.Add(CreateShellContent());
+			var shellCount = (shell as IVisualTreeElement).GetVisualChildren();
+			var shellItemCount = (shell.CurrentItem as IVisualTreeElement).GetVisualChildren();
+			Assert.AreEqual(shellCount.Count, 1);
+			Assert.AreEqual(shellItemCount.Count, 2);
+		}
 	}
 }

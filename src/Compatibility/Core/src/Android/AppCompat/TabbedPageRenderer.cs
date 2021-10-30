@@ -12,8 +12,10 @@ using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
+using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -28,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 #pragma warning disable CS0618 // Type or member is obsolete
 		TabLayout.IOnTabSelectedListener,
 #pragma warning restore CS0618 // Type or member is obsolete
-		ViewPager.IOnPageChangeListener, IManageFragments, BottomNavigationView.IOnNavigationItemSelectedListener
+		ViewPager.IOnPageChangeListener, IManageFragments, NavigationBarView.IOnItemSelectedListener
 	{
 		Drawable _backgroundDrawable;
 		Drawable _wrappedBackgroundDrawable;
@@ -192,7 +194,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 				if (_bottomNavigationView != null)
 				{
-					_bottomNavigationView.SetOnNavigationItemSelectedListener(null);
+					_bottomNavigationView.SetOnItemSelectedListener(null);
 					_bottomNavigationView.Dispose();
 					_bottomNavigationView = null;
 				}
@@ -242,8 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnElementChanged(e);
 
 			var activity = Context.GetActivity();
-			var isDesigner = Context.IsDesignerContext();
-			var themeContext = isDesigner ? Context : activity;
+			var themeContext = activity;
 
 			if (e.OldElement != null)
 				((IPageController)e.OldElement).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
@@ -262,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 						if (_bottomNavigationView != null)
 						{
 							_relativeLayout.RemoveView(_bottomNavigationView);
-							_bottomNavigationView.SetOnNavigationItemSelectedListener(null);
+							_bottomNavigationView.SetOnItemSelectedListener(null);
 						}
 
 						var bottomNavigationViewLayoutParams = new AWidget.RelativeLayout.LayoutParams(
@@ -297,7 +298,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					{
 						TabLayout tabs;
 
-						if (FormsAppCompatActivity.TabLayoutResource > 0 && !isDesigner)
+						if (FormsAppCompatActivity.TabLayoutResource > 0)
 							tabs = _tabLayout = activity.LayoutInflater.Inflate(FormsAppCompatActivity.TabLayoutResource, null).JavaCast<TabLayout>();
 						else
 							tabs = _tabLayout = new TabLayout(themeContext) { TabMode = TabLayout.ModeFixed, TabGravity = TabLayout.GravityFill };
@@ -325,11 +326,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				UpdateBarBackground();
 				UpdateBarTextColor();
 				UpdateItemIconColor();
-				if (!isDesigner)
-				{
-					UpdateSwipePaging();
-					UpdateOffscreenPageLimit();
-				}
+				UpdateSwipePaging();
+				UpdateOffscreenPageLimit();
 			}
 		}
 
@@ -465,7 +463,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				else
 				{
 					SetupBottomNavigationView(e);
-					bottomNavigationView.SetOnNavigationItemSelectedListener(this);
+					bottomNavigationView.SetOnItemSelectedListener(this);
 				}
 
 				UpdateIgnoreContainerAreas();
@@ -661,7 +659,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				items,
 				currentIndex,
 				_bottomNavigationView,
-				Context);
+				Element.FindMauiContext());
 
 			if (Element.CurrentPage == null && Element.Children.Count > 0)
 				Element.CurrentPage = Element.Children[0];
@@ -866,7 +864,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			if (id == BottomNavigationViewUtils.MoreTabId)
 			{
 				var items = CreateTabList();
-				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, Context, items, _bottomNavigationView.MaxItemCount);
+				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, Element.FindMauiContext(), items, _bottomNavigationView.MaxItemCount);
 				bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
 				bottomSheetDialog.Show();
 			}

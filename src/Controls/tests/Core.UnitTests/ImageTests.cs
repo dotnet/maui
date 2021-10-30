@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
-			var result = image.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = image.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(100, result.Request.Width);
 			Assert.AreEqual(20, result.Request.Height);
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
-			var result = image.GetSizeRequest(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10);
 
 			Assert.AreEqual(50, result.Request.Width);
 			Assert.AreEqual(10, result.Request.Height);
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
-			var result = image.GetSizeRequest(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity);
 
 			Assert.AreEqual(25, result.Request.Width);
 			Assert.AreEqual(5, result.Request.Height);
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.GetSizeRequest(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10);
 
 			Assert.AreEqual(50, result.Request.Width);
 			Assert.AreEqual(10, result.Request.Height);
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.GetSizeRequest(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity);
 
 			Assert.AreEqual(25, result.Request.Width);
 			Assert.AreEqual(5, result.Request.Height);
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.GetSizeRequest(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10);
 
 			Assert.AreEqual(50, result.Request.Width);
 			Assert.AreEqual(10, result.Request.Height);
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.GetSizeRequest(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity);
 
 			Assert.AreEqual(25, result.Request.Width);
 			Assert.AreEqual(5, result.Request.Height);
@@ -257,9 +257,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (initialLoad && Element.Source != null)
 				{
 					initialLoad = false;
-					Element.SetIsLoading(true);
-					await (Element.Source as UriImageSource).GetStreamAsync();
-					Element.SetIsLoading(false);
+					var controller = (IImageController)Element;
+					controller.SetIsLoading(true);
+					await ((IStreamImageSource)Element.Source).GetStreamAsync();
+					controller.SetIsLoading(false);
 				}
 			}
 

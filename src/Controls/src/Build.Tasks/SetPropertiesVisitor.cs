@@ -1524,7 +1524,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			IXmlLineInfo xmlLineInfo)
 		{
 			var module = parentContext.Module;
-			var dataTemplateType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "IDataTemplate");
+			var dataTemplateType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ElementTemplate");
 			var parentVar = parentContext.Variables[parentNode];
 			//Push the DataTemplate to the stack, for setting the template
 			parentContext.IL.Append(parentVar.LoadAs(module.GetTypeDefinition(dataTemplateType), module));

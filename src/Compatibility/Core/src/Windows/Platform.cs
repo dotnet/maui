@@ -11,6 +11,8 @@ using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProper
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -20,7 +22,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static Task<string> s_currentPrompt;
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
-			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer));
+			typeof(IVisualElementRenderer), typeof(global::Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer),
+			propertyChanged: (bindable, oldvalue, newvalue) =>
+			{
+				if (bindable is IView view)
+				{
+					if (view.Handler == null && newvalue is IVisualElementRenderer ver)
+						view.Handler = new RendererToHandlerShim(ver);
+				}
+			});
 
 		public static IVisualElementRenderer GetRenderer(VisualElement element)
 		{
@@ -57,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
@@ -88,6 +98,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
+					SetRenderer(element, renderer);
 				}
 			}
 
@@ -95,15 +107,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return renderer;
 		}
 
-		internal static Platform Current
-		{
-			get
-			{
-				var frame = Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
-				var wbp = frame?.Content as WindowsBasePage;
-				return wbp?.Platform;
-			}
-		}
+		//internal static Platform Current
+		//{
+		//	get
+		//	{
+		//		var frame = UI.Xaml.Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
+		//		var wbp = frame?.Content as WindowsBasePage;
+		//		return wbp?.Platform;
+		//	}
+		//}
 
 		internal Platform(Microsoft.UI.Xaml.Window page)
 		{
@@ -113,18 +125,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_page = page;
 
 			var current = Microsoft.UI.Xaml.Application.Current;
-
-			if (!current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
-			}
-
-			if (!current.Resources.ContainsKey(ShellRenderer.ShellStyle))
-			{
-				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Shell/ShellStyles.xbf");
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-			}
 
 			_container = new Canvas
 			{
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
 			{
 				Microsoft.UI.Xaml.Controls.ProgressBar indicator = GetBusyIndicator();
-				indicator.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+				indicator.Visibility = enabled ? WVisibility.Visible : WVisibility.Collapsed;
 			});
 
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
@@ -146,10 +146,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateBounds();
 
 			InitializeStatusBar();
+				
+			if(!NativeVersion.IsDesktop)
+				SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 
-			SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
-
-			// TODO WINUI
+			// TODO WINUI: This event is only available on UWP
 			// Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
 		}
 
@@ -270,6 +271,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer elementRenderer = GetRenderer(element);
 				if (elementRenderer != null)
 					return elementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
+				
+				if (element is IView iView)
+					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
 			}
 
 			return new SizeRequest();
@@ -315,7 +319,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_busyIndicator = new Microsoft.UI.Xaml.Controls.ProgressBar
 				{
 					IsIndeterminate = true,
-					Visibility = Visibility.Collapsed,
+					Visibility = WVisibility.Collapsed,
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Top
 				};
 
@@ -554,14 +558,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					button.Content = img;
 				}
 
-				// WINUUI FIX
+				// TODO WINUI FIX
 				//button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
 				button.SetAutomationPropertiesName(item);
 				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
-				button.SetAutomationPropertiesLabeledBy(item);
+
+				// TODO MAUI
+				button.SetAutomationPropertiesLabeledBy(item, null);
 
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
 				if (order == ToolbarItemOrder.Primary)

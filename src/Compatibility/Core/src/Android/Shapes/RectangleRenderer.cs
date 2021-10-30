@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
+using Microsoft.Maui.Controls.Platform;
 using APath = Android.Graphics.Path;
 using FormsRectangle = Microsoft.Maui.Controls.Shapes.Rectangle;
 

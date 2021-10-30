@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -34,7 +35,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		ViewGroup _container;
 		bool _defaultAutomationSet;
 		string _defaultContentDescription;
-		bool? _defaultFocusable;
 		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (isInViewCell)
 				{
-					Window window = Context.GetActivity().Window;
+					var window = Context.GetActivity().Window;
 					if (hasFocus)
 					{
 						_startingInputMode = window.Attributes.SoftInputMode;
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void OnRegisterEffect(PlatformEffect effect)
 		{
 			base.OnRegisterEffect(effect);
-			effect.SetControl(Control);
+			effect.Control = Control;
 		}
 
 		void SetupAutomationDefaults()
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!_defaultAutomationSet)
 			{
 				_defaultAutomationSet = true;
-				AutomationPropertiesProvider.SetupDefaults(ControlUsedForAutomation, ref _defaultContentDescription, ref _defaultHint);
+				Controls.Platform.AutomationPropertiesProvider.SetupDefaults(ControlUsedForAutomation, ref _defaultContentDescription, ref _defaultHint);
 			}
 		}
 
@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				ImportantForAccessibility = ImportantForAccessibility.No;
 			}
 
-			AutomationPropertiesProvider.SetAutomationId(ControlUsedForAutomation, Element, id);
+			Controls.Platform.AutomationPropertiesProvider.SetAutomationId(ControlUsedForAutomation, Element, id);
 		}
 
 		private protected void SetContentDescription(bool includeHint)
@@ -233,10 +233,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetupAutomationDefaults();
 
 			if (includeHint)
-				AutomationPropertiesProvider.SetContentDescription(
+				Controls.Platform.AutomationPropertiesProvider.SetContentDescription(
 					ControlUsedForAutomation, Element, _defaultContentDescription, _defaultHint);
 			else
-				AutomationPropertiesProvider.SetBasicContentDescription(
+				Controls.Platform.AutomationPropertiesProvider.SetBasicContentDescription(
 					ControlUsedForAutomation, Element, _defaultContentDescription);
 		}
 
@@ -251,15 +251,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetContentDescription(true);
 		}
 
-		protected override void SetFocusable()
+		protected override void SetImportantForAccessibility()
 		{
 			if (Control == null)
 			{
-				base.SetFocusable();
+				base.SetImportantForAccessibility();
 				return;
 			}
 
-			AutomationPropertiesProvider.SetFocusable(ControlUsedForAutomation, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(ControlUsedForAutomation, Element, ref _defaultImportantForAccessibility);
 		}
 
 		protected void SetNativeControl(TNativeView control)
@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control = control;
 			if (Control.Id == NoId)
 			{
-				Control.Id = AppCompat.Platform.GenerateViewId();
+				Control.Id = Platform.GenerateViewId();
 			}
 
 			AView toAdd = container == this ? control : (AView)container;
@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		void SetLabeledBy()
-			=> AutomationPropertiesProvider.SetLabeledBy(Control, Element);
+			=> Controls.Platform.AutomationPropertiesProvider.SetLabeledBy(Control, Element);
 
 		void UpdateIsEnabled()
 		{

@@ -2,8 +2,11 @@
 {
 	public partial class DatePickerHandler
 	{
-		public static PropertyMapper<IDatePicker, DatePickerHandler> DatePickerMapper = new PropertyMapper<IDatePicker, DatePickerHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IDatePicker, DatePickerHandler> DatePickerMapper = new PropertyMapper<IDatePicker, DatePickerHandler>(ViewHandler.ViewMapper)
 		{
+#if __ANDROID__
+			[nameof(IDatePicker.Background)] = MapBackground,
+#endif
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IDatePicker.Date)] = MapDate,
 			[nameof(IDatePicker.Font)] = MapFont,
@@ -18,7 +21,7 @@
 
 		}
 
-		public DatePickerHandler(PropertyMapper mapper) : base(mapper)
+		public DatePickerHandler(IPropertyMapper mapper) : base(mapper)
 		{
 
 		}

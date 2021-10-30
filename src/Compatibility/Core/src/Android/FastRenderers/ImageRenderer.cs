@@ -5,6 +5,7 @@ using Android.Graphics;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AImageView = Android.Widget.ImageView;
 using AView = Android.Views.View;
@@ -56,8 +57,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 				if (_element != null)
 				{
-					if (AppCompat.Platform.GetRenderer(_element) == this)
-						_element.ClearValue(AppCompat.Platform.RendererProperty);
+					if (Platform.GetRenderer(_element) == this)
+						_element.ClearValue(Platform.RendererProperty);
 				}
 			}
 
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
+			if (base.OnTouchEvent(e))
 			{
 				return true;
 			}
@@ -180,8 +181,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		AView IVisualElementRenderer.View => this;
 
 		AView ITabStop.TabStop => this;
-
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
 
 		void IImageRendererController.SkipInvalidate() => _skipInvalidate = true;
 		void IImageRendererController.SetFormsAnimationDrawable(IFormsAnimationDrawable value)

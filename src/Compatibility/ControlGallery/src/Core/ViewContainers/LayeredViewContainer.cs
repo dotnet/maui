@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {

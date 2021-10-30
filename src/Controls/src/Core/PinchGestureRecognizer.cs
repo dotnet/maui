@@ -7,51 +7,50 @@ namespace Microsoft.Maui.Controls
 {
 	public sealed class PinchGestureRecognizer : GestureRecognizer, IPinchGestureController
 	{
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IsPinching { get; set; }
+		bool IPinchGestureController.IsPinching { get; set; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendPinch(Element sender, double delta, Point currentScalePoint)
+		void IPinchGestureController.SendPinch(Element sender, double delta, Point currentScalePoint)
 		{
 			EventHandler<PinchGestureUpdatedEventArgs> handler = PinchUpdated;
 			if (handler != null)
 			{
 				handler(sender, new PinchGestureUpdatedEventArgs(GestureStatus.Running, delta, currentScalePoint));
 			}
-			IsPinching = true;
+
+			(this as IPinchGestureController).IsPinching = true;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendPinchCanceled(Element sender)
+		void IPinchGestureController.SendPinchCanceled(Element sender)
 		{
 			EventHandler<PinchGestureUpdatedEventArgs> handler = PinchUpdated;
 			if (handler != null)
 			{
 				handler(sender, new PinchGestureUpdatedEventArgs(GestureStatus.Canceled));
 			}
-			IsPinching = false;
+
+			(this as IPinchGestureController).IsPinching = false;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendPinchEnded(Element sender)
+		void IPinchGestureController.SendPinchEnded(Element sender)
 		{
 			EventHandler<PinchGestureUpdatedEventArgs> handler = PinchUpdated;
 			if (handler != null)
 			{
 				handler(sender, new PinchGestureUpdatedEventArgs(GestureStatus.Completed));
 			}
-			IsPinching = false;
+
+			(this as IPinchGestureController).IsPinching = false;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendPinchStarted(Element sender, Point initialScalePoint)
+		void IPinchGestureController.SendPinchStarted(Element sender, Point initialScalePoint)
 		{
 			EventHandler<PinchGestureUpdatedEventArgs> handler = PinchUpdated;
 			if (handler != null)
 			{
 				handler(sender, new PinchGestureUpdatedEventArgs(GestureStatus.Started, 1, initialScalePoint));
 			}
-			IsPinching = true;
+
+			(this as IPinchGestureController).IsPinching = true;
 		}
 
 		public event EventHandler<PinchGestureUpdatedEventArgs> PinchUpdated;

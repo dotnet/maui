@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			public MenuPage()
 			{
 				Title = "Menu";
-				BackgroundColor = Color.FromHex("333333");
+				BackgroundColor = Color.FromArgb("333333");
 
 				Menu = new MenuListView();
 
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Padding = new Thickness(10, 36, 0, 5),
 					Content = new Label
 					{
-						TextColor = Color.FromHex("AAAAAA"),
+						TextColor = Color.FromArgb("AAAAAA"),
 						Text = "MENU",
 					}
 				};

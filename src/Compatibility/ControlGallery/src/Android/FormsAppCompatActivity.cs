@@ -1,4 +1,6 @@
-﻿using Android.App;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
@@ -8,15 +10,14 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks;
 using Microsoft.Maui.Controls.Internals;
-using System.Threading.Tasks;
-using System.Net.Http;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	// This is the AppCompat version of Activity1
 
 	[Activity(Label = "Microsoft Maui Controls Compatibility Gallery", Icon = "@drawable/icon", Theme = "@style/MyTheme",
-		MainLauncher = true, HardwareAccelerated = true, 
+		MainLauncher = true, HardwareAccelerated = true,
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode)]
 	[IntentFilter(new[] { Intent.ActionView },
 		Categories = new[]
@@ -52,20 +53,20 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			// reflection will stop working
 			ResourceManager.Init(null);
 
-			Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
+			Forms.Init(new MauiContext(MauiApplication.Current.Services, this));
 			FormsMaps.Init(this, bundle);
 
-#if ENABLE_TEST_CLOUD
-			Handlers.ViewHandler
-				.ViewMapper[nameof(IView.AutomationId)] = (h, v) =>
+			ViewHandler.ViewMapper
+				.Add(nameof(IView.AutomationId), (h, v) =>
 				{
-					((global::Android.Views.View)h.NativeView).ContentDescription = v.AutomationId;
-				};
-#endif
+					if (h.NativeView is global::Android.Views.View nativeView)
+						nativeView.ContentDescription = v.AutomationId;
+				});
 
 			//FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
-			Microsoft.Maui.Controls.Compatibility.Forms.ViewInitialized += (sender, e) => {
+			Forms.ViewInitialized += (sender, e) =>
+			{
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
 				//					e.NativeView.ContentDescription = e.View.StyleId;
 				//				}
@@ -96,7 +97,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			SetUpForceRestartTest();
 
 			// Make the activity accessible to platform unit tests
-			DependencyResolver.ResolveUsing((t) => {
+			DependencyResolver.ResolveUsing((t) =>
+			{
 				if (t == typeof(Context))
 				{
 					return this;
@@ -106,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			});
 
 			DependencyService.Register<IMultiWindowService, MultiWindowService>();
-			
+
 			LoadApplication(_app);
 
 #if LEGACY_RENDERERS

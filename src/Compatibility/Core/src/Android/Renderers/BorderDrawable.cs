@@ -2,6 +2,7 @@
 using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using APath = Android.Graphics.Path;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -289,7 +290,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				path.AddRoundRect(rect, borderRadius, borderRadius, APath.Direction.Cw);
 				paint.StrokeWidth = borderWidth;
 				paint.SetStyle(Paint.Style.Stroke);
-				paint.Color = BorderElement.BorderColor.ToAndroid();
+				paint.Color = BorderElement.BorderColor.ToAndroid(Graphics.Colors.Black);
 
 				canvas.DrawPath(path, paint);
 			}

@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				do
 				{
-#if __WINDOWS__
+#if WINDOWS
 					RunningApp.TapCoordinates(target.X + target.Width - 10, target.Y + 2);
 #else
 					RunningApp.TapCoordinates(target.X + target.CenterX, target.Y + 2);
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.Tap($"TestSpan5");
 			RunningApp.TapCoordinates(target.X + 5, target.Y + 5);
 
-#if __WINDOWS__
+#if WINDOWS
 			RunningApp.TapCoordinates(target.X + target.Width - 10, target.Y + 2);
 #else
 			RunningApp.TapCoordinates(target.X + target.CenterX, target.Y + 2);

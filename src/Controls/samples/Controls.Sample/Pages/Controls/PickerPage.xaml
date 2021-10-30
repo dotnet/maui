@@ -1,0 +1,68 @@
+﻿<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.PickerPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="Picker">
+    <views:BasePage.Content>
+        <VerticalStackLayout
+            Margin="12">
+            <Label
+                Text="Basic"
+                Style="{StaticResource Headline}"/>
+            <Picker 
+                Title="Select an item">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+            <Label
+                Text="SelectedIndex"
+                Style="{StaticResource Headline}"/>
+            <Picker 
+                Title="Select an item"
+                SelectedIndex="1">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+            <Label
+                Text="SelectedIndexChanged"
+                Style="{StaticResource Headline}"/>
+            <Picker 
+                Title="Select an item"
+                SelectedIndex="1"
+                SelectedIndexChanged="OnSelectedIndexChanged">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <Label
+                Text="TextColor"
+                Style="{StaticResource Headline}"/>
+            <Picker TextColor="Blue"
+                Title="Select an item">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+        </VerticalStackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

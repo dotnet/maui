@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 			var colors = new[] {
-				Color.FromHex("#433DBA"),
-				Color.FromHex("#6461B7")
+				Color.FromArgb("#433DBA"),
+				Color.FromArgb("#6461B7")
 			};
 			var layout = new StackLayout()
 			{

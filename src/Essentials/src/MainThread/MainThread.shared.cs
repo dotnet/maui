@@ -26,11 +26,7 @@ namespace Microsoft.Maui.Essentials
 			if (IsMainThread)
 			{
 				action();
-#if NETSTANDARD1_0
-				return Task.FromResult(true);
-#else
-                return Task.CompletedTask;
-#endif
+				return Task.CompletedTask;
 			}
 
 			var tcs = new TaskCompletionSource<bool>();

@@ -74,13 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var bytes = await DownloadImageAsync(imageUrl);
 
-			string path;
-
-#if WINDOWS_UWP
-			path = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-#else
-			path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-#endif
+			string path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 			SecondImageSource = IOPath.Combine(path, "Issue8821.gif");
 			File.WriteAllBytes(SecondImageSource, bytes);
 

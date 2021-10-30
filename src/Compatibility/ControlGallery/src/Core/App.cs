@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			_testCloudService = DependencyService.Get<ITestCloudService>();
 
+			//TestMainPageSwitches();
+
 			SetMainPage(CreateDefaultMainPage());
 
 			//TestMainPageSwitches();

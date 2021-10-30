@@ -5,13 +5,8 @@ using System.Threading.Tasks;
 using Android;
 using Android.Content.PM;
 using Android.OS;
-#if __ANDROID_29__
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
-#else
-using Android.Support.V4.App;
-using Android.Support.V4.Content;
-#endif
 
 namespace Microsoft.Maui.Essentials
 {
@@ -249,9 +244,9 @@ namespace Microsoft.Maui.Essentials
 				{
 					var permissions = new List<(string, bool)>();
 #if __ANDROID_29__
-                    // Check if running and targeting Q
-                    if (Platform.HasApiLevelQ && Platform.AppContext.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
-                        permissions.Add((Manifest.Permission.AccessBackgroundLocation, true));
+					// Check if running and targeting Q
+					if (Platform.HasApiLevelQ && Platform.AppContext.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
+						permissions.Add((Manifest.Permission.AccessBackgroundLocation, true));
 #endif
 
 					permissions.Add((Manifest.Permission.AccessCoarseLocation, true));
@@ -318,19 +313,19 @@ namespace Microsoft.Maui.Essentials
 						permissions.Add((Manifest.Permission.UseSip, true));
 
 #if __ANDROID_26__
-                    if (Platform.HasApiLevelO)
-                    {
-                        if (IsDeclaredInManifest(Manifest.Permission.AnswerPhoneCalls))
-                            permissions.Add((Manifest.Permission.AnswerPhoneCalls, true));
-                    }
+					if (Platform.HasApiLevelO)
+					{
+						if (IsDeclaredInManifest(Manifest.Permission.AnswerPhoneCalls))
+							permissions.Add((Manifest.Permission.AnswerPhoneCalls, true));
+					}
 #endif
 
 #pragma warning disable CS0618 // Type or member is obsolete
 					if (IsDeclaredInManifest(Manifest.Permission.ProcessOutgoingCalls))
 					{
 #if __ANDROID_29__
-                        if (Platform.HasApiLevel(BuildVersionCodes.Q))
-                            System.Diagnostics.Debug.WriteLine($"{Manifest.Permission.ProcessOutgoingCalls} is deprecated in Android 10");
+						if (Platform.HasApiLevel(BuildVersionCodes.Q))
+							System.Diagnostics.Debug.WriteLine($"{Manifest.Permission.ProcessOutgoingCalls} is deprecated in Android 10");
 #endif
 						permissions.Add((Manifest.Permission.ProcessOutgoingCalls, true));
 					}

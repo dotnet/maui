@@ -9,7 +9,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (controller == null || control == null)
 				return;
-				
+
+			if (controller is IView v)
+			{
+				control.UpdateFlowDirection(v);
+				return;
+			}
+
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
 				control.FlowDirection = WFlowDirection.RightToLeft;
 			else if (controller.EffectiveFlowDirection.IsLeftToRight())

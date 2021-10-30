@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -91,6 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
 		}
 
+		[PortHandler]
 		void UpdateFlowDirection()
 		{
 			Control.UpdateFlowDirection(Element);

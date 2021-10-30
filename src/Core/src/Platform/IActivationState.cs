@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 #if __ANDROID__
 		Android.OS.Bundle? SavedInstance { get; }
 #elif WINDOWS
-		UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; }
+		UI.Xaml.LaunchActivatedEventArgs? LaunchActivatedEventArgs { get; }
 #endif
 	}
 }

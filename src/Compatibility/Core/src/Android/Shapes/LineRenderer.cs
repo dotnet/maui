@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Android.Content;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
 using APath = Android.Graphics.Path;
 

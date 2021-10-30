@@ -6,10 +6,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.MasterDetailPage;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					return;
 
 				_showTitle = value;
-				Control.DetailTitleVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
+				Control.DetailTitleVisibility = _showTitle ? WVisibility.Visible : WVisibility.Collapsed;
 			}
 		}
 
@@ -184,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				_defaultAutomationPropertiesName = Control.SetAutomationPropertiesName(Element, _defaultAutomationPropertiesName);
 				_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
-				_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, _defaultAutomationPropertiesLabeledBy);
+				_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, Element.Handler?.MauiContext ?? Forms.MauiContext,  _defaultAutomationPropertiesLabeledBy);
 				_defaultAutomationPropertiesAccessibilityView = Control.SetAutomationPropertiesAccessibilityView(Element, _defaultAutomationPropertiesAccessibilityView);
 			}
 		}
@@ -197,9 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateMaster();
 			else if (e.PropertyName == "Detail")
 				UpdateDetail();
-			else if (e.PropertyName == nameof(FlyoutPageControl.ShouldShowSplitMode)
-					 || e.PropertyName == Specifics.CollapseStyleProperty.PropertyName
-					 || e.PropertyName == Specifics.CollapsedPaneWidthProperty.PropertyName)
+			else if (e.PropertyName == nameof(FlyoutPageControl.ShouldShowSplitMode))
 				UpdateMode();
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
 				UpdateToolbarPlacement();
@@ -212,7 +211,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 				_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
 			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
-				_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, _defaultAutomationPropertiesLabeledBy);
+				_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, Element.Handler?.MauiContext ?? Forms.MauiContext, _defaultAutomationPropertiesLabeledBy);
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
 				_defaultAutomationPropertiesAccessibilityView = Control.SetAutomationPropertiesAccessibilityView(Element, _defaultAutomationPropertiesAccessibilityView);
 		}
@@ -300,8 +299,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateBounds()
 		{
-			Windows.Foundation.Size masterSize = Control.FlyoutSize;
-			Windows.Foundation.Size detailSize = Control.DetailSize;
+			global::Windows.Foundation.Size masterSize = Control.FlyoutSize;
+			global::Windows.Foundation.Size detailSize = Control.DetailSize;
 
 			Element.FlyoutBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
 			Element.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
@@ -444,10 +443,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			return _detail;
 		}
-	}
-
-	public class MasterDetailPageRenderer : FlyoutPageRenderer
-	{
-
 	}
 }

@@ -3,88 +3,83 @@ using System;
 
 namespace Microsoft.Maui
 {
-	public struct Font
+	public readonly struct Font : IEquatable<Font>
 	{
-		public string FontFamily { get; private set; }
+		public string? Family { get; }
 
-		public double FontSize { get; private set; }
+		public double Size { get; }
 
-		public NamedSize NamedSize { get; private set; }
+		public FontSlant Slant { get; }
 
-		public FontAttributes FontAttributes { get; private set; }
+		public bool IsDefault => Family == null && Size == 0 && Slant == FontSlant.Default && Weight == FontWeight.Regular;
 
-		public bool IsDefault
+		static Font _default = default(Font).WithWeight(FontWeight.Regular);
+		public static Font Default => _default;
+
+		readonly FontWeight _weight;
+
+		public FontWeight Weight
 		{
-			get { return FontFamily == null && FontSize == 0 && NamedSize == NamedSize.Default && FontAttributes == FontAttributes.None; }
+			get => _weight <= 0 ? FontWeight.Regular : _weight;
 		}
 
-		public bool UseNamedSize
+		private Font(string? family, double size, FontSlant slant, FontWeight weight, bool enableScaling) : this()
 		{
-			get { return FontSize <= 0; }
+			Family = family;
+			Size = size;
+			Slant = slant;
+			_weight = weight;
+			_disableScaling = !enableScaling;
 		}
 
-		public static Font Default
+
+		readonly bool _disableScaling;
+		public bool AutoScalingEnabled
 		{
-			get { return default(Font); }
+			get => !_disableScaling;
+		}
+
+		public Font WithAutoScaling(bool enabled)
+		{
+			return new Font(Family, Size, Slant, Weight, enabled);
 		}
 
 		public Font WithSize(double size)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = size, NamedSize = 0, FontAttributes = FontAttributes };
+			return new Font(Family, size, Slant, Weight, AutoScalingEnabled);
 		}
 
-		public Font WithSize(NamedSize size)
+		public Font WithSlant(FontSlant fontSlant)
 		{
-			if (size <= 0)
-				throw new ArgumentOutOfRangeException("size");
-
-			return new Font { FontFamily = FontFamily, FontSize = 0, NamedSize = size, FontAttributes = FontAttributes };
+			return new Font(Family, Size, fontSlant, Weight, AutoScalingEnabled);
 		}
 
-		public Font WithAttributes(FontAttributes fontAttributes)
+		public Font WithWeight(FontWeight weight)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, NamedSize = NamedSize, FontAttributes = fontAttributes };
+			return new Font(Family, Size, Slant, weight, AutoScalingEnabled);
 		}
 
-		public static Font OfSize(string name, double size)
+		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
-			var result = new Font { FontFamily = name, FontSize = size };
-			return result;
+			return new Font(Family, Size, fontSlant, weight, AutoScalingEnabled);
 		}
 
-		public static Font OfSize(string name, NamedSize size)
-		{
-			var result = new Font { FontFamily = name, NamedSize = size };
-			return result;
-		}
+		public static Font OfSize(string? name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+			new(name, size, fontSlant, weight, enableScaling);
 
-		public static Font SystemFontOfSize(double size)
-		{
-			var result = new Font { FontSize = size };
-			return result;
-		}
+		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+			new(null, size, fontSlant, weight, enableScaling);
 
-		public static Font SystemFontOfSize(NamedSize size)
-		{
-			var result = new Font { NamedSize = size };
-			return result;
-		}
-
-		public static Font SystemFontOfSize(double size, FontAttributes attributes)
-		{
-			var result = new Font { FontSize = size, FontAttributes = attributes };
-			return result;
-		}
-
-		public static Font SystemFontOfSize(NamedSize size, FontAttributes attributes)
-		{
-			var result = new Font { NamedSize = size, FontAttributes = attributes };
-			return result;
-		}
+		public static Font SystemFontOfWeight(FontWeight weight, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+			new(null, default(double), fontSlant, weight, enableScaling);
 
 		bool Equals(Font other)
 		{
-			return string.Equals(FontFamily, other.FontFamily) && FontSize.Equals(other.FontSize) && NamedSize == other.NamedSize && FontAttributes == other.FontAttributes;
+			return string.Equals(Family, other.Family)
+				&& Size.Equals(other.Size)
+				&& Weight == other.Weight
+				&& Slant == other.Slant
+				&& AutoScalingEnabled == other.AutoScalingEnabled;
 		}
 
 		public override bool Equals(object? obj)
@@ -100,18 +95,7 @@ namespace Microsoft.Maui
 			return Equals((Font)obj);
 		}
 
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				int hashCode = FontFamily != null ? FontFamily.GetHashCode() : 0;
-				hashCode = (hashCode * 397) ^ FontSize.GetHashCode();
-				hashCode = (hashCode * 397) ^ NamedSize.GetHashCode();
-				hashCode = (hashCode * 397) ^ FontAttributes.GetHashCode();
-
-				return hashCode;
-			}
-		}
+		public override int GetHashCode() => (Family, Size, Weight, Slant, AutoScalingEnabled).GetHashCode();
 
 		public static bool operator ==(Font left, Font right)
 		{
@@ -124,8 +108,11 @@ namespace Microsoft.Maui
 		}
 
 		public override string ToString()
+			=> $"Family: {Family}, Size: {Size}, Weight: {Weight}, Slant: {Slant}, AutoScalingEnabled: {AutoScalingEnabled}";
+
+		bool IEquatable<Font>.Equals(Font other)
 		{
-			return string.Format("FontFamily: {0}, FontSize: {1}, NamedSize: {2}, FontAttributes: {3}", FontFamily, FontSize, NamedSize, FontAttributes);
+			return Equals(other);
 		}
 	}
 }

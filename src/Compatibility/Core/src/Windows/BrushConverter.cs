@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var brush = value as Brush;
 			var color = (Color)parameter;
 
-			return Brush.IsNullOrEmpty(brush) ? color.ToBrush() : brush.ToBrush();
+			return Brush.IsNullOrEmpty(brush) ? Maui.ColorExtensions.ToNative(color) : brush.ToBrush();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

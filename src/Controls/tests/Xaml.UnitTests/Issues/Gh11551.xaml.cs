@@ -7,6 +7,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	using AbsoluteLayout = Microsoft.Maui.Controls.Compatibility.AbsoluteLayout;
+
 	public partial class Gh11551 : ContentPage
 	{
 		public Gh11551() => InitializeComponent();

@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class DetectInvalidResourceOutputFilenamesTask : AsyncTask
+	public class DetectInvalidResourceOutputFilenamesTask : Task
 	{
 		public ITaskItem[] Items { get; set; }
 
@@ -20,45 +17,49 @@ namespace Microsoft.Maui.Resizetizer
 		public string ErrorMessage { get; set; }
 
 		[Output]
-		public ITaskItem[] InvalidItems { get; set; }
+		public string[] InvalidItems { get; set; }
 
 		public override bool Execute()
 		{
-			System.Threading.Tasks.Task.Run(() =>
+			var invalidFilenames = new List<string>();
+			try
 			{
-				var invalidFilenames = new ConcurrentBag<string>();
-
-				try
+				if (Items != null)
 				{
-					if (Items != null)
+					foreach (var item in Items)
 					{
-						System.Threading.Tasks.Parallel.ForEach(Items, item =>
+						if (!Utils.IsValidResourceFilename(item.ItemSpec))
+							invalidFilenames.Add(item.ItemSpec);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.LogErrorFromException(ex);
+			}
+			finally
+			{
+				if (invalidFilenames.Count > 0)
+				{
+					InvalidItems = invalidFilenames.ToArray();
+
+					if (ThrowsError)
+					{
+						var builder = new StringBuilder();
+						builder.AppendLine(ErrorMessage);
+						foreach (var file in invalidFilenames)
 						{
-							var filename = item.ItemSpec;
+							builder.AppendLine();
+							builder.Append('\t');
+							builder.Append(Path.GetFileNameWithoutExtension(file));
+						}
 
-							if (!Utils.IsValidResourceFilename(filename))
-								invalidFilenames.Add(filename);
-						});
+						Log.LogError(builder.ToString());
 					}
 				}
-				catch (Exception ex)
-				{
-					Log.LogErrorFromException(ex);
-				}
-				finally
-				{
-					InvalidItems = invalidFilenames.Select(f => new TaskItem(f)).ToArray();
+			}
 
-					if (ThrowsError && invalidFilenames.Any())
-					{
-						Log.LogError($"{ErrorMessage}{Environment.NewLine}\t"
-							+ string.Join(Environment.NewLine + "\t", invalidFilenames.Select(f => Path.GetFileNameWithoutExtension(f))));
-					}
-					Complete();
-				}
-			});
-
-			return base.Execute();
+			return !Log.HasLoggedErrors;
 		}
 	}
 }

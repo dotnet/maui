@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Essentials
 				throw new FeatureNotSupportedException();
 
 #if __ANDROID_25__
-            return Task.FromResult(Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction()));
+			return Task.FromResult(Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction()));
 #else
 			return Task.FromResult < IEnumerable < AppAction >>> (null);
 #endif
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Essentials
 				throw new FeatureNotSupportedException();
 
 #if __ANDROID_25__
-            Platform.ShortcutManager.SetDynamicShortcuts(actions.Select(a => a.ToShortcutInfo()).ToList());
+			Platform.ShortcutManager.SetDynamicShortcuts(actions.Select(a => a.ToShortcutInfo()).ToList());
 #endif
 			return Task.CompletedTask;
 		}

@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -7,6 +8,7 @@ using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[PortHandler]
 	public class FormsButton : Microsoft.UI.Xaml.Controls.Button
 	{
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),

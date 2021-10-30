@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			public Resize()
 			{
-				DestinationFilename = Path.GetTempFileName();
+				DestinationFilename = Path.GetTempFileName() + ".png";
 				Logger = new TestLogger();
 			}
 
@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData(0.5, 2, "appicon.svg", "appiconfg.svg")]
 			[InlineData(1, 0.5, "appicon.svg", "appiconfg.svg")]
 			[InlineData(1, 1, "appicon.svg", "appiconfg.svg")]
+			[InlineData(1, 1, "dotnet_background.svg", "dotnet_logo.svg")]
 			[InlineData(1, 2, "appicon.svg", "appiconfg.svg")]
 			[InlineData(2, 0.5, "appicon.svg", "appiconfg.svg")]
 			[InlineData(2, 1, "appicon.svg", "appiconfg.svg")]

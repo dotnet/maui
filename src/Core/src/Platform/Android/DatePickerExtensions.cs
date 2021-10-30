@@ -1,10 +1,17 @@
 ﻿using System;
 using Android.App;
+using Android.Content.Res;
 
 namespace Microsoft.Maui
 {
 	public static class DatePickerExtensions
 	{
+		static readonly int[][] ColorStates =
+		{
+			new[] { Android.Resource.Attribute.StateEnabled },
+			new[] { -Android.Resource.Attribute.StateEnabled }
+		};
+
 		public static void UpdateFormat(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
 		{
 			nativeDatePicker.SetText(datePicker);
@@ -13,6 +20,32 @@ namespace Microsoft.Maui
 		public static void UpdateDate(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
 		{
 			nativeDatePicker.SetText(datePicker);
+		}
+
+		public static void UpdateTextColor(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
+		{
+			nativeDatePicker.UpdateTextColor(datePicker, null);
+		}
+
+		public static void UpdateTextColor(this MauiDatePicker nativeDatePicker, IDatePicker datePicker, ColorStateList? defaultTextColor)
+		{
+			var textColor = datePicker.TextColor;
+
+			if (textColor == null)
+			{
+				if (defaultTextColor != null)
+					nativeDatePicker.SetTextColor(defaultTextColor);
+			}
+			else
+			{
+				var androidColor = textColor.ToNative();
+
+				if (!nativeDatePicker.TextColors.IsOneColor(ColorStates, androidColor))
+				{
+					var acolor = androidColor.ToArgb();
+					nativeDatePicker.SetTextColor(new ColorStateList(ColorStates, new[] { acolor, acolor }));
+				}
+			}
 		}
 
 		public static void UpdateMinimumDate(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)

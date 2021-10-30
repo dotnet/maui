@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.UI.ViewManagement;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -34,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Element != null)
 				{
-					ReadOnlyCollection<Element> children = ((IElementController)Element).LogicalChildren;
+					IReadOnlyList<Element> children = ((IElementController)Element).LogicalChildren;
 					for (var i = 0; i < children.Count; i++)
 					{
 						var visualChild = children[i] as VisualElement;

@@ -1,5 +1,6 @@
 using System;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

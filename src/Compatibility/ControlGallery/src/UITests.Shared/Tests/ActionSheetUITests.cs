@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		{
 			var queryString = $"* text:'{actionSheet}'";
 			Func<AppQuery, AppQuery> actionSheetQuery = q => q.Raw(queryString);
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(actionSheetQuery);
 #elif __MACOS__
 			App.Tap(actionSheetQuery);

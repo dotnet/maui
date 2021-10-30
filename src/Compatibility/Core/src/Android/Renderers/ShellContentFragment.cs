@@ -7,20 +7,37 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Controls.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	public class ShellContentFragment : Fragment, AndroidAnimation.IAnimationListener, IShellObservableFragment, IAppearanceObserver
 	{
+		// AndroidX.Fragment packaged stopped calling CreateAnimation for every call
+		// of creating a fragment
+		bool _isAnimating = false;
+
 		#region IAnimationListener
 
 		void AndroidAnimation.IAnimationListener.OnAnimationEnd(AndroidAnimation animation)
 		{
 			View?.SetLayerType(LayerType.None, null);
 			AnimationFinished?.Invoke(this, EventArgs.Empty);
+			_isAnimating = false;
+		}
+
+		public override void OnResume()
+		{
+			base.OnResume();
+			if (!_isAnimating)
+			{
+				View?.SetLayerType(LayerType.None, null);
+				AnimationFinished?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		void AndroidAnimation.IAnimationListener.OnAnimationRepeat(AndroidAnimation animation)
@@ -52,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		AView _root;
 		ShellPageContainer _shellPageContainer;
 		ShellContent _shellContent;
-		Toolbar _toolbar;
+		AToolbar _toolbar;
 		IShellToolbarTracker _toolbarTracker;
 		bool _disposed;
 
@@ -75,6 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override AndroidAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
 			var result = base.OnCreateAnimation(transit, enter, nextAnim);
+			_isAnimating = true;
 
 			if (result == null && nextAnim != 0)
 			{
@@ -116,10 +134,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			_root = inflater.Inflate(Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
-			_toolbar = _root.FindViewById<Toolbar>(Resource.Id.shellcontent_toolbar);
+			_toolbar = _root.FindViewById<AToolbar>(Resource.Id.shellcontent_toolbar);
 
-			_renderer = AppCompat.Platform.CreateRenderer(_page, Context);
-			AppCompat.Platform.SetRenderer(_page, _renderer);
+			_renderer = Platform.CreateRenderer(_page, Context);
+			Platform.SetRenderer(_page, _renderer);
 
 			_shellPageContainer = new ShellPageContainer(Context, _renderer);
 
@@ -148,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_shellContent != null)
 			{
 				((IShellContentController)_shellContent).RecyclePage(_page);
-				_page.ClearValue(AppCompat.Platform.RendererProperty);
+				_page.ClearValue(Platform.RendererProperty);
 				_page = null;
 			}
 

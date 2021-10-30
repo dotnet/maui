@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
@@ -48,22 +49,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 			<ContentPage
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 			xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
+			xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 			Title=""Home"">
 				<local:TestCases.InnerView>
 					<Label x:Name=""innerView""/>
 				</local:TestCases.InnerView>
 				<ContentPage.Content>
-					<Grid RowSpacing=""9"" ColumnSpacing=""6"" Padding=""6,9"" VerticalOptions=""Fill"" HorizontalOptions=""Fill"" BackgroundColor=""Red"">
-						<Grid.Children>
+					<cmp:Grid RowSpacing=""9"" ColumnSpacing=""6"" Padding=""6,9"" VerticalOptions=""Fill"" HorizontalOptions=""Fill"" BackgroundColor=""Red"">
+						<cmp:Grid.Children>
 							<Label x:Name=""label0""/>
 							<Label x:Name=""label1""/>
 							<Label x:Name=""label2""/>
 							<Label x:Name=""label3""/>
-						</Grid.Children>
-					</Grid>
+						</cmp:Grid.Children>
+					</cmp:Grid>
 				</ContentPage.Content>
 			</ContentPage>";
 			var contentPage = new ContentPage().LoadFromXaml(xaml);
@@ -84,7 +86,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
             <local:BasePage
-                xmlns=""http://xamarin.com/schemas/2014/forms""
+                xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 			    xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
                 x:Class=""Tramchester.App.Views.HomeView"">
@@ -101,20 +103,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 				<ContentPage
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+					xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 					Title=""People"">
 
-					<StackLayout Spacing=""0"">
+					<cmp:StackLayout Spacing=""0"">
 						<SearchBar x:Name=""searchBar""/>
 						<ListView ItemsSource=""{Binding Path=.}"" RowHeight=""42"" x:Name=""listview"">
 							<ListView.ItemTemplate>
 								<DataTemplate>
 									<ViewCell>
 										<ViewCell.View>
-											<StackLayout Orientation=""Horizontal"" HorizontalOptions=""FillAndExpand"" VerticalOptions=""CenterAndExpand"" BackgroundColor=""#fff4f4f4"">
+											<cmp:StackLayout Orientation=""Horizontal"" HorizontalOptions=""FillAndExpand"" VerticalOptions=""CenterAndExpand"" BackgroundColor=""#fff4f4f4"">
 												<BoxView WidthRequest=""10""/>
-												<Grid WidthRequest=""42"" HeightRequest=""32"" VerticalOptions=""CenterAndExpand"" HorizontalOptions=""Start"">
+												<cmp:Grid WidthRequest=""42"" HeightRequest=""32"" VerticalOptions=""CenterAndExpand"" HorizontalOptions=""Start"">
 													<Image WidthRequest=""32"" HeightRequest=""32"" Aspect=""AspectFill"" HorizontalOptions=""FillAndExpand"" Source=""Images/icone_nopic_members_42.png""/>
 													<!--<Image WidthRequest=""32"" HeightRequest=""32"" Aspect=""AspectFill"" HorizontalOptions=""FillAndExpand"">
 														<Image.Source>
@@ -122,16 +125,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 														</Image.Source>
 													</Image>-->
 													<Image Source=""Images/cropcircle.png"" HorizontalOptions=""FillAndExpand"" VerticalOptions=""FillAndExpand"" WidthRequest=""32"" HeightRequest=""32"" Aspect=""Fill""/>
-												</Grid>
+												</cmp:Grid>
 												<Label Text=""{Binding FirstName}"" VerticalOptions=""CenterAndExpand""/>
 												<Label Text=""{Binding LastName}"" FontFamily=""HelveticaNeue-Bold"" FontSize=""Medium"" VerticalOptions=""CenterAndExpand"" />
-											</StackLayout>
+											</cmp:StackLayout>
 										</ViewCell.View>
 									</ViewCell>
 								</DataTemplate>
 							</ListView.ItemTemplate>
 						</ListView>
-					</StackLayout>
+					</cmp:StackLayout>
 				</ContentPage>";
 			var page = new ContentPage().LoadFromXaml(xaml);
 			var model = new List<object> {
@@ -155,7 +158,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 				<ContentPage
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 					<ContentPage.Content>
 					    <ScrollView Orientation=""Horizontal"">
@@ -185,8 +188,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<ContentPage 
-							xmlns=""http://xamarin.com/schemas/2014/forms"" 
+							xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+							xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 							xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 							<Label x:Name=""label"" Text=""{Binding Converter={x:Static local:ReverseConverter.Instance}, Mode=TwoWay}""/>
 						</ContentPage>";
@@ -205,10 +209,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<View 
-							xmlns=""http://xamarin.com/schemas/2014/forms"" 
+							xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							RelativeLayout.HeightConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.25}""
-							RelativeLayout.WidthConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
+							xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
+							cmp:RelativeLayout.HeightConstraint=""{cmp:ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.25}""
+							cmp:RelativeLayout.WidthConstraint=""{cmp:ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
 			View view = new View();
 			view.LoadFromXaml(xaml);
 			Assert.DoesNotThrow(() => view.LoadFromXaml(xaml));

@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return result ?? base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element?.ArrangeOverrideDelegate == null)
 			{
@@ -28,19 +29,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			// The user has specified a different implementation of ArrangeOverride
-			Windows.Foundation.Size? result = Element.ArrangeOverrideDelegate(this, finalSize);
+			global::Windows.Foundation.Size? result = Element.ArrangeOverrideDelegate(this, finalSize);
 
 			// If the delegate returns a Size, we use it; 
 			// if it returns null, fall back to the default implementation
 			return result ?? base.ArrangeOverride(finalSize);
 		}
 
-		protected Windows.Foundation.Size MeasureOverride()
+		protected global::Windows.Foundation.Size MeasureOverride()
 		{
-			return MeasureOverride(new Windows.Foundation.Size());
+			return MeasureOverride(new global::Windows.Foundation.Size());
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element?.MeasureOverrideDelegate == null)
 			{
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			// The user has specified a different implementation of MeasureOverride
-			Windows.Foundation.Size? result = Element.MeasureOverrideDelegate(this, availableSize);
+			global::Windows.Foundation.Size? result = Element.MeasureOverrideDelegate(this, availableSize);
 
 			// If the delegate returns a Size, we use it; 
 			// if it returns null, fall back to the default implementation

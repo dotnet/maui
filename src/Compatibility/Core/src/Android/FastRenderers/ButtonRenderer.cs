@@ -7,6 +7,7 @@ using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -47,7 +48,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		VisualElement IVisualElementRenderer.Element => Element;
 		AView IVisualElementRenderer.View => this;
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 
 		Button Button
@@ -182,8 +182,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 				if (Element != null)
 				{
-					if (AppCompat.Platform.GetRenderer(Element) == this)
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+					if (Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.RendererProperty);
 				}
 			}
 
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			{
 				UpdateTextColor();
 			}
-			else if (e.PropertyName == Button.FontProperty.PropertyName)
+			else if (e.PropertyName == FontElement.FontProperty.PropertyName)
 			{
 				UpdateFont();
 			}
@@ -316,7 +316,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				return;
 			}
 
-			Font font = Button.Font;
+			Font font = (Button as ITextStyle).Font;
 
 			if (font == Font.Default && _defaultFontSize == 0f)
 			{
@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			else
 			{
 				Typeface = font.ToTypeface();
-				SetTextSize(ComplexUnitType.Sp, font.ToScaledPixel());
+				SetTextSize(ComplexUnitType.Sp, (float)font.Size);
 			}
 		}
 

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task BasicModalBehaviorTest()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem());
 
 			await shell.GoToAsync("ModalTestPage");
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ModalPopsWhenSwitchingShellItem()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem());
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute"));
 
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ModalPopsWhenSwitchingShellSection()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem());
 			shell.Items[0].Items.Add(CreateShellSection(shellSectionRoute: "NewRoute"));
 
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task AbsoluteRoutingToRootPopsModalPages()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellContentRoute: "MainContent"));
 
 			await shell.GoToAsync($"ModalTestPage/ModalTestPage");
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task PoppingEntireModalStackDoesntFireAppearingOnMiddlePages()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellContentRoute: "MainContent"));
 
 			await shell.GoToAsync($"ModalTestPage2/ModalTestPage");
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task PoppingModalStackFiresAppearingOnRevealedModalPage()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellContentRoute: "MainContent"));
 
 			await shell.GoToAsync($"ModalTestPage2/ModalTestPage");
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ModalPopsWhenSwitchingShellContent()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem());
 			shell.Items[0].Items[0].Items.Add(CreateShellContent(shellContentRoute: "NewRoute"));
 
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ModalPopsWhenNavigatingWithoutModalRoute()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute"));
 
 			// pushes modal onto visible shell section
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ModalPopsWhenNavigatingToNewModalRoute()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute"));
 
 			// pushes modal onto visible shell section
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task PagesPushToModalStack()
 		{
 			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
 			await shell.GoToAsync("ModalNavigationTestPage/ContentPage");
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task MultipleModalStacks()
 		{
 			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
 			await shell.GoToAsync("ModalTestPage/ModalNavigationTestPage/ContentPage");
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task MultipleModalStacksWithContentPageAlreadyPushed()
 		{
 			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
 			await shell.GoToAsync("ContentPage/ModalNavigationTestPage/ContentPage/ModalNavigationTestPage/ContentPage");
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task SwitchingModalStackAbsoluteNavigation()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
 			await shell.GoToAsync("ModalNavigationTestPage/ContentPage/ModalNavigationTestPage/ContentPage");
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task SwitchingShellSectionsAndPushingModal()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content1"));
 			shell.Items[0].Items[0].Items.Add(CreateShellContent(shellContentRoute: "Content2"));
 			await shell.GoToAsync("//Content2/ModalNavigationTestPage");
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task PushingNonNavigationPage()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task PushingMultipleVersionsOfTheModalRoute()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task PushingContentPageToNonNavigationPageThrowsException()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task AppearingAndDisappearingFiresOnShellWithModal()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.NavigationProxy.Inner = new NavigationProxy();
 			var lifeCyclePage = new ShellLifeCycleTests.LifeCyclePage();
 			shell.Items.Add(CreateShellItem(lifeCyclePage, shellItemRoute: "item", shellSectionRoute: "section", shellContentRoute: "content"));
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task IsAppearingFiredOnLastModalPageOnly()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
 			await shell.GoToAsync("ModalTestPage/ModalTestPage2");
@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task BasicQueryStringTest()
 		{
-			var shell = new Shell();
+			var shell = new TestShell();
 
 			var item = CreateShellItem(shellSectionRoute: "section2");
 			shell.Items.Add(item);
@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task NavigatingAndNavigatedFiresForShellModal()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
 			ShellNavigatingEventArgs shellNavigatingEventArgs = null;
@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task GetCurrentPageInModalNavigation()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
 			Page page = null;
@@ -381,6 +381,55 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(page.GetType(), typeof(ModalTestPage));
 		}
 
+		[Test]
+		public async Task PopModalWithDots()
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem());
+
+			await shell.CurrentPage.Navigation.PushModalAsync(new ContentPage());
+			await shell.CurrentPage.Navigation.PushModalAsync(new ContentPage());
+			await shell.GoToAsync("..");
+			Assert.AreEqual(1, shell.Navigation.ModalStack.Count);
+			await shell.GoToAsync("..");
+			Assert.AreEqual(0, shell.Navigation.ModalStack.Count);
+		}
+
+		[Test]
+		public async Task CanCancelGoToModalAsync()
+		{
+			TestShell shell = new TestShell();
+			shell.Items.Add(CreateShellItem());
+
+			shell.Navigating += async (_, args) =>
+			{
+				var deferral = args.GetDeferral();
+				await Task.Delay(10);
+				args.Cancel();
+				deferral.Complete();
+			};
+
+			await shell.GoToAsync("ModalTestPage");
+			Assert.AreEqual(0, shell.Navigation.ModalStack.Count);
+		}
+
+		[Test]
+		public async Task CanCancelPushModalAsync()
+		{
+			TestShell shell = new TestShell();
+
+			shell.Items.Add(CreateShellItem());
+			shell.Navigating += async (_, args) =>
+			{
+				var deferral = args.GetDeferral();
+				await Task.Delay(10);
+				args.Cancel();
+				deferral.Complete();
+			};
+
+			await shell.CurrentPage.Navigation.PushModalAsync(new ContentPage());
+			Assert.AreEqual(0, shell.Navigation.ModalStack.Count);
+		}
 
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		public class ModalTestPageBase : ShellLifeCycleTests.LifeCyclePage

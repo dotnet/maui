@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class CreatePartialInfoPlistTask : AsyncTask
+	public class CreatePartialInfoPlistTask : Task
 	{
 		public ITaskItem[] CustomFonts { get; set; }
 
@@ -19,8 +14,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string PlistName { get; set; }
 
-		[Output]
-		public ITaskItem[] PlistFiles { get; set; }
+		public string Storyboard { get; set; }
 
 		const string plistHeader =
 @"<?xml version=""1.0"" encoding=""UTF-8""?>
@@ -33,16 +27,18 @@ namespace Microsoft.Maui.Resizetizer
 
 		public override bool Execute()
 		{
-			System.Threading.Tasks.Task.Run(() =>
+			try
 			{
-				try
+				Directory.CreateDirectory(IntermediateOutputPath);
+
+				var plistFilename = Path.Combine(IntermediateOutputPath, PlistName ?? "PartialInfo.plist");
+
+				using (var f = File.CreateText(plistFilename))
 				{
-					var plistFilename = Path.Combine(IntermediateOutputPath, PlistName ?? "PartialInfo.plist");
+					f.WriteLine(plistHeader);
 
-					using (var f = File.CreateText(plistFilename))
+					if (CustomFonts != null && CustomFonts.Length > 0)
 					{
-						f.WriteLine(plistHeader);
-
 						f.WriteLine("  <key>UIAppFonts</key>");
 						f.WriteLine("  <array>");
 
@@ -54,22 +50,23 @@ namespace Microsoft.Maui.Resizetizer
 						}
 
 						f.WriteLine("  </array>");
-						f.WriteLine(plistFooter);
 					}
 
-					PlistFiles = new[] { new TaskItem(plistFilename) };
-				}
-				catch (Exception ex)
-				{
-					Log.LogErrorFromException(ex);
-				}
-				finally
-				{
-					Complete();
-				}
-			});
+					if (!string.IsNullOrEmpty(Storyboard))
+					{
+						f.WriteLine("  <key>UILaunchStoryboardName</key>");
+						f.WriteLine($"  <string>{Path.GetFileNameWithoutExtension(Storyboard)}</string>");
+					}
 
-			return base.Execute();
+					f.WriteLine(plistFooter);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.LogErrorFromException(ex);
+			}
+
+			return !Log.HasLoggedErrors;
 		}
 	}
 }

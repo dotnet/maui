@@ -32,5 +32,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(EndPointProperty, value); }
 			get { return (Point)GetValue(EndPointProperty); }
 		}
+
+		public override void AppendPath(PathF path)
+		{
+			path.Move((float)StartPoint.X, (float)StartPoint.Y);
+			path.LineTo((float)EndPoint.X, (float)EndPoint.Y);
+		}
 	}
 }

@@ -25,30 +25,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return _defaultContentDescription;
 		}
 
-		public static bool? SetFocusable(this global::Android.Views.View Control, Element Element, bool? _defaultFocusable)
+		public static void SetImportantForAccessibility(this global::Android.Views.View Control, Element Element, ImportantForAccessibility? _defaultImportantForAccessibility = null)
 		{
-			return Control.SetFocusable(Element, _defaultFocusable, null);
-		}
-
-		public static bool? SetFocusable(this global::Android.Views.View Control, Element Element, bool? _defaultFocusable = null, ImportantForAccessibility? _defaultImportantForAccessibility = null)
-		{
-			if (Element == null)
-				return _defaultFocusable;
-
-			if (!_defaultFocusable.HasValue)
-			{
-				_defaultFocusable = Control.Focusable;
-			}
 			if (!_defaultImportantForAccessibility.HasValue)
 			{
 				_defaultImportantForAccessibility = Control.ImportantForAccessibility;
 			}
 
 			bool? isInAccessibleTree = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
-			Control.Focusable = (bool)(isInAccessibleTree ?? _defaultFocusable);
 			Control.ImportantForAccessibility = !isInAccessibleTree.HasValue ? (ImportantForAccessibility)_defaultImportantForAccessibility : (bool)isInAccessibleTree ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
 
-			return _defaultFocusable;
+			bool? excludedWithChildren = (bool?)Element.GetValue(AutomationProperties.ExcludedWithChildrenProperty);
+			if (excludedWithChildren == true)
+				Control.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 		}
 
 		public static string SetHint(this global::Android.Widget.TextView Control, Element Element, string _defaultHint)
@@ -80,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var id = Control.Id;
 				if (id == -1)
-					id = Control.Id = AppCompat.Platform.GenerateViewId();
+					id = Control.Id = Platform.GenerateViewId();
 
 				var renderer = elemValue?.GetRenderer();
 				renderer?.SetLabelFor(id);
@@ -113,28 +102,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Control.NavigationContentDescription = _defaultNavigationContentDescription;
 
 			return _defaultNavigationContentDescription;
-		}
-
-		public static void SetTitleOrContentDescription(this IMenuItem Control, ToolbarItem Element)
-		{
-			SetTitleOrContentDescription(Control, (MenuItem)Element);
-		}
-
-		public static void SetTitleOrContentDescription(this IMenuItem Control, MenuItem Element)
-		{
-			if (Element == null)
-				return;
-
-			var elemValue = ConcatenateNameAndHint(Element);
-
-			if (string.IsNullOrWhiteSpace(elemValue))
-				elemValue = Element.AutomationId;
-			else if (!String.IsNullOrEmpty(Element.Text))
-				elemValue = String.Join(". ", Element.Text, elemValue);
-
-			if (!string.IsNullOrWhiteSpace(elemValue))
-				AMenuItemCompat.SetContentDescription(Control, elemValue);
-
 		}
 
 		static string ConcatenateNameAndHint(Element Element)

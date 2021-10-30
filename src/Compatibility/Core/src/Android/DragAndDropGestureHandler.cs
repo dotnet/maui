@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using Android.Content;
 using Android.Views;
+using Microsoft.Maui.Controls.Platform;
 using ADragFlags = Android.Views.DragFlags;
 using AUri = Android.Net.Uri;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	internal class DragAndDropGestureHandler : Java.Lang.Object, AView.IOnDragListener
+	class DragAndDropGestureHandler : Java.Lang.Object, AView.IOnDragListener
 	{
 		bool _isDisposed;
 		CustomLocalStateData _currentCustomLocalStateData;
@@ -250,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					return;
 
 				var element = GetView();
-				var renderer = AppCompat.Platform.GetRenderer(element);
+				var renderer = Platform.GetRenderer(element);
 				var v = renderer.View;
 
 				if (v.Handle == IntPtr.Zero)
@@ -265,7 +266,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				customLocalStateData.DataPackage = args.Data;
 
 				//_dragSource[element] = args.Data;
-				string clipDescription = FastRenderers.AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
+				string clipDescription = AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
 				ClipData.Item item = null;
 				List<string> mimeTypes = new List<string>();
 

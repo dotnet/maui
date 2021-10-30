@@ -1,0 +1,84 @@
+
+stages:
+  - stage: localization_handback
+    displayName: Localization Handback
+    dependsOn: []
+    condition: and(succeeded(), eq(variables.isLocBranch, true))
+
+    jobs:
+      - job : generate_resx
+        displayName: 'Process incoming translations'
+        pool:  $(HostedWinVS2019)
+        steps:
+          - checkout: self
+            persistCredentials: true
+            clean: true
+
+          - powershell: |
+              #-- Import Invoke-Git Module function
+              Import-Module $(Build.SourcesDirectory)\eng\automation\scripts\Invoke-Git.psm1 -Force -DisableNameChecking
+              git config user.email "vs-mobiletools-engineering-service2@microsoft.com"
+              git config user.name "VS Mobile Engineering Serice Account"
+              Invoke-Git checkout main
+              Invoke-Git merge origin/$(LocBranch) --no-commit
+            displayName: 'Merge loc Branch'
+
+          - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
+            displayName: 'Localization Build'
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
+            inputs:
+              locProj: 'eng/automation/LocProject.json'
+              outDir: '$(Build.ArtifactStagingDirectory)'
+              packageSourceAuth: patAuth
+              patVariable: "$(OneLocBuildPAT)"
+              isCreatePrSelected: false
+              repoType: gitHub
+              prSourceBranchPrefix: $(LocBranchPrefix)
+              gitHubPatVariable: '$(GitHub.Token)'
+              gitHubPrMergeMethod: merge
+
+          - powershell: |
+              #-- Import Invoke-Git Module function
+              Import-Module $(Build.SourcesDirectory)\eng\automation\scripts\Invoke-Git.psm1 -Force -DisableNameChecking
+              #--Clear Stage
+              Invoke-Git reset HEAD -- .
+              #-- Create new branch
+              $branchName = "$(LocBranchPrefix)/$(new-guid)"
+              Invoke-Git checkout -B ${branchName}
+              Write-Host ("##vso[task.setvariable variable=HANDBACK_BRANCH_NAME;]$branchName")
+              #-- Stage Build Changes
+              Invoke-Git add src
+              #-- Only commit/push if there are changed files.
+              $changedFiles = $(git status --porcelain | Measure-Object | Select-Object -expand Count)
+              if ($changedFiles -gt 0)
+              {
+                #-- Commit Changes locally
+                Invoke-Git commit -m "[LOC_HB] string translations" --no-verify
+                #-- Push changes to VSTS
+                Invoke-Git push origin HEAD:${branchName}
+              }
+            displayName: 'Commit updates'
+
+          - powershell: |
+              $payload=@{
+                title = "[LOC_HB] checkin of localized string files"
+                head = "$(HANDBACK_BRANCH_NAME)"
+                base = "main"
+                maintainer_can_modify = $true
+              }
+
+              $headers = @{ Authorization = "token $(GitHub.Token)" }
+
+              # let it throw
+              $response = Invoke-WebRequest -UseBasicParsing -Method POST -Headers $headers -Uri "https://api.github.com/repos/dotnet/maui/pulls" -Body ($payload | ConvertTo-json)
+              $newPr =  $response.Content | ConvertFrom-Json
+
+              Write-Host "Response is $newPr"      
+            displayName: Open Pull Request
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'

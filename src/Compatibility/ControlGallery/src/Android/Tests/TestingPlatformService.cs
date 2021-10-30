@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.Tests
 		public async Task CreateRenderer(VisualElement visualElement)
 		{
 			await Device.InvokeOnMainThreadAsync(() =>
-				Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.CreateRendererWithContext(visualElement,
+				Platform.Android.Platform.CreateRendererWithContext(visualElement,
 					DependencyService.Resolve<Context>()));
 
 			await Task.CompletedTask;

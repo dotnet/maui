@@ -93,22 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return Color.Default;
 		}
 
-		public void OpenUriAction(Uri uri)
-		{
-			if (uri == null || uri.AbsoluteUri == null)
-			{
-				throw new ArgumentNullException(nameof(uri));
-			}
-			TAppControl tAppControl = new TAppControl() { Operation = "%", Uri = uri.AbsoluteUri };
-			var matchedApplications = TAppControl.GetMatchedApplicationIds(tAppControl);
-			if (matchedApplications.Any())
-			{
-				TAppControl.SendLaunchRequest(tAppControl);
-				return;
-			}
-			throw new PlatformNotSupportedException();
-		}
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			s_context.Post((o) => action(), null);
@@ -160,10 +144,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			return new TizenIsolatedStorageFile();
 		}
-
-		public string GetHash(string input) => Crc64.GetHash(input);
-
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
 
 		public void QuitApplication()
 		{

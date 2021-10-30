@@ -1,4 +1,7 @@
-﻿using UIKit;
+﻿using System;
+using Foundation;
+using Microsoft.Maui.Graphics;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -32,10 +35,19 @@ namespace Microsoft.Maui
 
 		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO: Update this when FlowDirection is available 
-			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
+			bool isLtr;
+
+			if (textAlignment is IView v && v.FlowDirection == FlowDirection.LeftToRight)
+				isLtr = true;
+			else
+				isLtr = false;
+
+			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(isLtr);
+		}
+
+		public static void UpdateVerticalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
+		{
+			textField.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNative();
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)
@@ -55,7 +67,24 @@ namespace Microsoft.Maui
 
 		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
 		{
-			textField.Placeholder = entry.Placeholder;
+			textField.UpdatePlaceholder(entry, null);
+		}
+
+		public static void UpdatePlaceholder(this UITextField textField, IEntry entry, Color? defaultPlaceholderColor)
+		{
+			var placeholder = entry.Placeholder;
+
+			if (placeholder == null)
+				return;
+
+			var placeholderColor = entry.PlaceholderColor;
+			var foregroundColor = placeholderColor ?? defaultPlaceholderColor;
+
+			textField.AttributedPlaceholder = foregroundColor == null
+ 				? new NSAttributedString(placeholder)
+ 				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToNative());
+
+			textField.AttributedPlaceholder.WithCharacterSpacing(entry.CharacterSpacing);
 		}
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
@@ -65,7 +94,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this UITextField textField, ITextStyle textStyle, IFontManager fontManager)
 		{
-			var uiFont = fontManager.GetFont(textStyle.Font);
+			var uiFont = fontManager.GetFont(textStyle.Font, UIFont.LabelFontSize);
 			textField.Font = uiFont;
 		}
 
@@ -91,6 +120,68 @@ namespace Microsoft.Maui
 				textField.UpdateIsTextPredictionEnabled(entry);
 
 			textField.ReloadInputViews();
+		}
+
+		[PortHandler]
+		public static void UpdateCursorPosition(this UITextField textField, IEntry entry)
+		{
+			var selectedTextRange = textField.SelectedTextRange;
+			if (selectedTextRange == null)
+				return;
+			if (textField.GetOffsetFromPosition(textField.BeginningOfDocument, selectedTextRange.Start) != entry.CursorPosition)
+				UpdateCursorSelection(textField, entry);
+		}
+
+		[PortHandler]
+		public static void UpdateSelectionLength(this UITextField textField, IEntry entry)
+		{
+			var selectedTextRange = textField.SelectedTextRange;
+			if (selectedTextRange == null)
+				return;
+			if (textField.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End) != entry.SelectionLength)
+				UpdateCursorSelection(textField, entry);
+		}
+
+		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
+		static void UpdateCursorSelection(this UITextField textField, IEntry entry)
+		{
+			if (!entry.IsReadOnly)
+			{
+				if (!textField.IsFirstResponder)
+					textField.BecomeFirstResponder();
+				UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
+				UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
+
+				textField.SelectedTextRange = textField.GetTextRange(start, end);
+			}
+		}
+
+		static UITextPosition GetSelectionStart(UITextField textField, IEntry entry, out int startOffset)
+		{
+			int cursorPosition = entry.CursorPosition;
+
+			UITextPosition start = textField.GetPosition(textField.BeginningOfDocument, cursorPosition) ?? textField.EndOfDocument;
+			startOffset = Math.Max(0, (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, start));
+
+			if (startOffset != cursorPosition)
+				entry.CursorPosition = startOffset;
+
+			return start;
+		}
+
+		static UITextPosition GetSelectionEnd(UITextField textField, IEntry entry, UITextPosition start, int startOffset)
+		{
+			int selectionLength = entry.SelectionLength;
+			int textFieldLength = textField.Text == null ? 0 : textField.Text.Length;
+			// Get the desired range in respect to the actual length of the text we are working with
+			UITextPosition end = textField.GetPosition(start, Math.Min(textFieldLength - entry.CursorPosition, selectionLength)) ?? start;
+			int endOffset = Math.Max(startOffset, (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, end));
+
+			int newSelectionLength = Math.Max(0, endOffset - startOffset);
+			if (newSelectionLength != selectionLength)
+				entry.SelectionLength = newSelectionLength;
+
+			return end;
 		}
 
 		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)

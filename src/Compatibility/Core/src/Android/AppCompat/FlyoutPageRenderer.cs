@@ -10,8 +10,10 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	using global::Android.Graphics.Drawables;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
+	using Microsoft.Maui.Controls.Platform;
 	using Microsoft.Maui.Graphics;
 
 	public class FlyoutPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
@@ -205,8 +207,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_tracker?.UpdateLayout();
 		}
 
-		ViewGroup IVisualElementRenderer.ViewGroup => this;
-
 		AView IVisualElementRenderer.View => this;
 
 		bool ILifeCycleState.MarkedForDispose { get; set; } = false;
@@ -216,20 +216,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!_defaultAutomationSet)
 			{
 				_defaultAutomationSet = true;
-				AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription);
+				Controls.Platform.AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription);
 			}
 		}
 
 		protected virtual void SetAutomationId(string id)
 		{
 			SetupAutomationDefaults();
-			AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+			Controls.Platform.AutomationPropertiesProvider.SetAutomationId(this, Element, id);
 		}
 
 		protected virtual void SetContentDescription()
 		{
 			SetupAutomationDefaults();
-			AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, null);
+			Controls.Platform.AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, null);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (Element != null)
 				{
-					Element.ClearValue(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform.RendererProperty);
+					Element.ClearValue(Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.RendererProperty);
 					Element = null;
 				}
 			}
@@ -415,17 +415,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateBackgroundColor(Page view)
 		{
 			Color backgroundColor = view.BackgroundColor;
-			if (backgroundColor == null)
+			if (backgroundColor != null)
 				SetBackgroundColor(backgroundColor.ToAndroid());
 		}
 
 		void UpdateBackgroundImage(Page view)
 		{
-			_ = this.ApplyDrawableAsync(view, Page.BackgroundImageSourceProperty, Context, drawable =>
+			this.ApplyDrawableAsync(view, Page.BackgroundImageSourceProperty, Context,
+				(Drawable drawable) =>
 			{
 				if (drawable != null)
 					this.SetBackground(drawable);
-			});
+			}).FireAndForget(e => Internals.Log.Warning(nameof(FlyoutPageRenderer), $"{e}"));
 		}
 
 		void UpdateDetail()
@@ -494,16 +495,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					SetScrimColor(isShowingSplit ? Colors.Transparent.ToAndroid() : (int)DefaultScrimColor);
 				}
 			}
-		}
-	}
-}
-
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
-{
-	public class MasterDetailPageRenderer : FlyoutPageRenderer
-	{
-		public MasterDetailPageRenderer(Context context) : base(context)
-		{
 		}
 	}
 }

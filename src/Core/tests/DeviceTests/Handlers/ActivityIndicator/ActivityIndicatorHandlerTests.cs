@@ -22,16 +22,15 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(activityIndicator, () => activityIndicator.IsRunning, GetNativeIsRunning, activityIndicator.IsRunning);
 		}
 
-		[Fact(DisplayName = "BackgroundColor Updates Correctly")]
-		public async Task BackgroundColorUpdatesCorrectly()
+		[Fact(DisplayName = "Background Updates Correctly")]
+		public async Task BackgroundUpdatesCorrectly()
 		{
 			var activityIndicator = new ActivityIndicatorStub()
 			{
-				BackgroundColor = Colors.Yellow,
 				IsRunning = true
 			};
 
-			await ValidateColor(activityIndicator, Colors.Yellow, () => activityIndicator.BackgroundColor = Colors.Yellow);
+			await ValidateHasColor(activityIndicator, Colors.Yellow, () => activityIndicator.Background = new SolidPaintStub(Colors.Yellow));
 		}
 	}
 }

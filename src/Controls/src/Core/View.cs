@@ -3,16 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
-
-
 
 namespace Microsoft.Maui.Controls
 {
-	public class View : VisualElement, IView, IViewController, IGestureController, IGestureRecognizers, IPropertyMapperView
+	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers
 	{
 		protected internal IGestureController GestureController => this;
 
@@ -81,9 +77,9 @@ namespace Microsoft.Maui.Controls
 		{
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
 			{
-				void AddItems()
+				void AddItems(IEnumerable<IElement> elements)
 				{
-					foreach (IElement item in args.NewItems.OfType<IElement>())
+					foreach (IElement item in elements)
 					{
 						ValidateGesture(item as IGestureRecognizer);
 						item.Parent = this;
@@ -91,9 +87,9 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				void RemoveItems()
+				void RemoveItems(IEnumerable<IElement> elements)
 				{
-					foreach (IElement item in args.OldItems.OfType<IElement>())
+					foreach (IElement item in elements)
 					{
 						item.Parent = null;
 						GestureController.CompositeGestureRecognizers.Remove(item as IGestureRecognizer);
@@ -103,20 +99,38 @@ namespace Microsoft.Maui.Controls
 				switch (args.Action)
 				{
 					case NotifyCollectionChangedAction.Add:
-						AddItems();
+						AddItems(args.NewItems.OfType<IElement>());
 						break;
 					case NotifyCollectionChangedAction.Remove:
-						RemoveItems();
+						RemoveItems(args.OldItems.OfType<IElement>());
 						break;
 					case NotifyCollectionChangedAction.Replace:
-						AddItems();
-						RemoveItems();
+						AddItems(args.NewItems.OfType<IElement>());
+						RemoveItems(args.OldItems.OfType<IElement>());
 						break;
 					case NotifyCollectionChangedAction.Reset:
+
+						List<IElement> remove = new List<IElement>();
+						List<IElement> add = new List<IElement>();
+
 						foreach (IElement item in _gestureRecognizers.OfType<IElement>())
+						{
+							if (!_gestureRecognizers.Contains((IGestureRecognizer)item))
+								add.Add(item);
 							item.Parent = this;
+						}
+
 						foreach (IElement item in GestureController.CompositeGestureRecognizers.OfType<IElement>())
-							item.Parent = this;
+						{
+							if (_gestureRecognizers.Contains((IGestureRecognizer)item))
+								item.Parent = this;
+							else
+								remove.Add(item);
+						}
+
+						AddItems(add);
+						RemoveItems(remove);
+
 						break;
 				}
 			};
@@ -175,30 +189,5 @@ namespace Microsoft.Maui.Controls
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
 		}
-
-		#region IView
-
-		protected override void OnSizeAllocated(double width, double height)
-		{
-			base.OnSizeAllocated(width, height);
-
-			if (IsArrangeValid)
-			{
-				Handler?.SetFrame(Bounds);
-			}
-		}
-
-		protected PropertyMapper propertyMapper;
-
-		protected PropertyMapper<T> GetRendererOverides<T>() where T : IView => (PropertyMapper<T>)(propertyMapper as PropertyMapper<T> ?? (propertyMapper = new PropertyMapper<T>()));
-		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => propertyMapper;
-
-		double IFrameworkElement.Width { get => WidthRequest; }
-		double IFrameworkElement.Height { get => HeightRequest; }
-
-		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => HorizontalOptions.ToCore();
-		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => VerticalOptions.ToCore();
-
-		#endregion
 	}
 }

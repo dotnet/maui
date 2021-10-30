@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 				VerticalOptions = LayoutOptions.StartAndExpand,
 				HorizontalOptions = LayoutOptions.Center,
 			};
-			layout.Children.Add(buttons, yConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => { return parent.Y; }));
-			layout.Children.Add(entry, yConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => { return parent.Height - 100; }));
+			layout.Children.Add(buttons, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Y; }));
+			layout.Children.Add(entry, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Height - 100; }));
 
 			Content = layout;
 			Title = "Application Features";

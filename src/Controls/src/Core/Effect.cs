@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {
@@ -9,6 +10,8 @@ namespace Microsoft.Maui.Controls
 		internal Effect()
 		{
 		}
+
+		internal PlatformEffect PlatformEffect { get; set; }
 
 		public Element Element { get; internal set; }
 
@@ -53,6 +56,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			OnAttached();
 			IsAttached = true;
+			PlatformEffect?.SendAttached();
 		}
 
 		internal virtual void SendDetached()
@@ -61,6 +65,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			OnDetached();
 			IsAttached = false;
+			PlatformEffect?.SendDetached();
 		}
 
 		internal virtual void SendOnElementPropertyChanged(PropertyChangedEventArgs args)

@@ -12,6 +12,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
 using Java.Lang;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
+using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using AImageButton = Android.Widget.ImageButton;
 using ASupportDrawable = AndroidX.AppCompat.Graphics.Drawable;
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual SearchHandlerAppearanceTracker CreateSearchHandlerAppearanceTracker()
 		{
-			return new SearchHandlerAppearanceTracker(this);
+			return new SearchHandlerAppearanceTracker(this, _shellContext);
 		}
 
 		#endregion IShellSearchView
@@ -314,7 +315,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
 			if (bindable.GetValue(property) is ImageSource image)
-				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
+				Controls.Platform.AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
 
 			_shellContext.ApplyDrawableAsync(bindable, property, drawable =>
 			{

@@ -19,6 +19,10 @@ indent_size = 2
 [*.cs]
 indent_style = tab
 
+# TODO: Disable platform compatibility analyzer until all CA1416 violations are fixed
+# https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1416
+dotnet_diagnostic.CA1416.severity = none
+
 # Modifier preferences
 dotnet_style_require_accessibility_modifiers = never:suggestion
 

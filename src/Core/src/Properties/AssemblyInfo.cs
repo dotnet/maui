@@ -1,7 +1,11 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.iOS")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Windows")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Core.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Xaml.UnitTests")]
@@ -12,3 +16,8 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Comet")]
 [assembly: InternalsVisibleTo("Comet.Tests")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
+[assembly: InternalsVisibleTo("Reloadify-emit")]

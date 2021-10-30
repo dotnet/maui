@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Essentials
 			manager.Delegate = listener;
 
 #if __IOS__
-            // we're only listening for a single update
-            manager.PausesLocationUpdatesAutomatically = false;
+			// we're only listening for a single update
+			manager.PausesLocationUpdatesAutomatically = false;
 #endif
 
 			manager.StartUpdatingLocation();

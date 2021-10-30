@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -31,7 +31,12 @@ namespace Microsoft.Maui
 			if (textAttr != null)
 				textView.AttributedText = textAttr;
 
-			// TODO: Include AttributedText to Label Placeholder
+			if (textView is MauiTextView mauiTextView)
+			{
+				var phAttr = mauiTextView.PlaceholderLabel.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
+				if (phAttr != null)
+					mauiTextView.PlaceholderLabel.AttributedText = phAttr;
+			}
 		}
 
 		public static void UpdateMaxLength(this UITextView textView, IEditor editor)
@@ -41,15 +46,18 @@ namespace Microsoft.Maui
 				textView.AttributedText = newText;
 		}
 
-		public static void UpdatePredictiveText(this UITextView textView, IEditor editor)
+		public static void UpdateIsTextPredictionEnabled(this UITextView textView, IEditor editor)
 		{
-			textView.AutocorrectionType = editor.IsTextPredictionEnabled
-				? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
+			if (editor.IsTextPredictionEnabled)
+				textView.AutocorrectionType = UITextAutocorrectionType.Yes;
+			else
+				textView.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
 		public static void UpdateFont(this UITextView textView, ITextStyle textStyle, IFontManager fontManager)
 		{
-			var uiFont = fontManager.GetFont(textStyle.Font);
+			var font = textStyle.Font;
+			var uiFont = fontManager.GetFont(font, UIFont.LabelFontSize);
 			textView.Font = uiFont;
 		}
 
@@ -58,62 +66,16 @@ namespace Microsoft.Maui
 			textView.UserInteractionEnabled = !editor.IsReadOnly;
 		}
 
-		//public static void UpdateCursorPosition(this UITextView textView, IEditor editor)
-		//{
-		//	var cursorPosition = editor.CursorPosition;
-		//	textView
-
-		//}
-
-		[PortHandler]
-		public static void UpdateCursorPosition(this UITextView textField, IEditor entry)
-			=> UpdateCursorSelection(textField, entry);
-
-		[PortHandler]
-		public static void UpdateSelectionLength(this UITextView textField, IEditor entry)
-			=> UpdateCursorSelection(textField, entry);
-
-		static void UpdateCursorSelection(this UITextView textField, IEditor entry)
+		public static void UpdateKeyboard(this UITextView textView, IEditor editor)
 		{
-			if (textField == null)
-				return;
+			var keyboard = editor.Keyboard;
 
-			if (!entry.IsReadOnly)
-			{
-				textField.BecomeFirstResponder();
-				UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
-				UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
+			textView.ApplyKeyboard(keyboard);
 
-				textField.SelectedTextRange = textField.GetTextRange(start, end);
-			}
-		}
+			if (keyboard is not CustomKeyboard)
+				textView.UpdateIsTextPredictionEnabled(editor);
 
-		static UITextPosition GetSelectionStart(UITextView textField, IEditor entry, out int startOffset)
-		{
-			int cursorPosition = entry.CursorPosition;
-
-			UITextPosition start = textField.GetPosition(textField.BeginningOfDocument, cursorPosition) ?? textField.EndOfDocument;
-			startOffset = Math.Max(0, (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, start));
-
-			if (startOffset != cursorPosition)
-				entry.CursorPosition = startOffset;
-
-			return start;
-		}
-
-		static UITextPosition GetSelectionEnd(UITextView textField, IEditor entry, UITextPosition start, int startOffset)
-		{
-			int selectionLength = entry.SelectionLength;
-			int textFieldLength = textField.Text == null ? 0 : textField.Text.Length;
-			// Get the desired range in respect to the actual length of the text we are working with
-			UITextPosition end = textField.GetPosition(start, Math.Min(textFieldLength - entry.CursorPosition, selectionLength)) ?? start;
-			int endOffset = Math.Max(startOffset, (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, end));
-
-			int newSelectionLength = Math.Max(0, endOffset - startOffset);
-			if (newSelectionLength != selectionLength)
-				entry.SelectionLength = newSelectionLength;
-
-			return end;
+			textView.ReloadInputViews();
 		}
 	}
 }

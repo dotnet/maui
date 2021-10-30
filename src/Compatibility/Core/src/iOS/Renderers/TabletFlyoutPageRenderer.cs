@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -321,7 +322,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateFlowDirection();
 			UpdateFlyoutLayoutBehavior(View.Bounds.Size);
 			_tracker = new VisualElementTracker(this);
-			_events = new EventTracker(this);
 			_events.LoadEvents(NativeView);
 		}
 
@@ -599,17 +599,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
 		}
-	}
-
-	public class TabletMasterDetailRenderer : TabletFlyoutPageRenderer
-	{
-		[Preserve(Conditional = true)]
-		public TabletMasterDetailRenderer()
-		{
-		}
-
-		[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
-		protected MasterDetailPage MasterDetailPage => (MasterDetailPage)base.FlyoutPage;
-
 	}
 }

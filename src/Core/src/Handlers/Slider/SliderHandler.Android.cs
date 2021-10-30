@@ -1,5 +1,6 @@
 using Android.Content.Res;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Widget;
 
 namespace Microsoft.Maui.Handlers
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 		static PorterDuff.Mode? DefaultProgressTintMode { get; set; }
 		static PorterDuff.Mode? DefaultProgressBackgroundTintMode { get; set; }
 		static ColorFilter? DefaultThumbColorFilter { get; set; }
+		static Drawable? DefaultThumb { get; set; }
 
 		SeekBarChangeListener ChangeListener { get; } = new SeekBarChangeListener();
 
@@ -35,13 +37,14 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SetOnSeekBarChangeListener(null);
 		}
 
-		protected override void SetupDefaults(SeekBar nativeView)
+		void SetupDefaults(SeekBar nativeView)
 		{
 			DefaultThumbColorFilter = nativeView.Thumb?.GetColorFilter();
 			DefaultProgressTintMode = nativeView.ProgressTintMode;
 			DefaultProgressBackgroundTintMode = nativeView.ProgressBackgroundTintMode;
 			DefaultProgressTintList = nativeView.ProgressTintList;
 			DefaultProgressBackgroundTintList = nativeView.ProgressBackgroundTintList;
+			DefaultThumb = nativeView.Thumb;
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
@@ -72,6 +75,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
 			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColorFilter);
+		}
+
+		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.NativeView?.UpdateThumbImageSourceAsync(slider, provider, DefaultThumb)
+				.FireAndForget(handler);
 		}
 
 		void OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)

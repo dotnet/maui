@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Controls.Xaml.Internals;
@@ -773,10 +775,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		void SetTemplate(ElementTemplate dt, INode node)
 		{
-#pragma warning disable 0612
-			((IDataTemplate)dt).LoadTemplate = () =>
+			dt.LoadTemplate = () =>
 			{
-#pragma warning restore 0612
 				var cnode = node.Clone();
 				var context = new HydrationContext { ParentContext = Context, RootAssembly = Context.RootAssembly, RootElement = Context.RootElement, ExceptionHandler = Context.ExceptionHandler };
 				cnode.Accept(new XamlNodeVisitor((n, parent) => n.Parent = parent), node.Parent); //set parents for {StaticResource}

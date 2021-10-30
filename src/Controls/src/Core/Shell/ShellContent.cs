@@ -14,7 +14,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class ShellContent : BaseShellItem, IShellContentController
+	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(ShellContent), null,
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(ContentTemplate), typeof(DataTemplate), typeof(ShellContent), null, BindingMode.OneTime);
 
 		internal static readonly BindableProperty QueryAttributesProperty =
-			BindableProperty.CreateAttached("QueryAttributes", typeof(IDictionary<string, string>), typeof(ShellContent), defaultValue: null, propertyChanged: OnQueryAttributesPropertyChanged);
+			BindableProperty.CreateAttached("QueryAttributes", typeof(ShellRouteParameters), typeof(ShellContent), defaultValue: null, propertyChanged: OnQueryAttributesPropertyChanged);
 
 		public MenuItemCollection MenuItems => (MenuItemCollection)GetValue(MenuItemsProperty);
 
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 			if (result == null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
 
-			if (GetValue(QueryAttributesProperty) is IDictionary<string, string> delayedQueryParams)
+			if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
 				result.SetValue(QueryAttributesProperty, delayedQueryParams);
 
 			return result;
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 		public ShellContent() => ((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
 
 		internal bool IsVisibleContent => Parent is ShellSection shellSection && shellSection.IsVisibleSection && shellSection.CurrentItem == this;
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
+		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
 
 		internal override void SendDisappearing()
 		{
@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls
 				}
 		}
 
-		internal override void ApplyQueryAttributes(IDictionary<string, string> query)
+		internal override void ApplyQueryAttributes(ShellRouteParameters query)
 		{
 			base.ApplyQueryAttributes(query);
 			SetValue(QueryAttributesProperty, query);
@@ -252,13 +252,13 @@ namespace Microsoft.Maui.Controls
 
 		static void OnQueryAttributesPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			ApplyQueryAttributes(bindable, newValue as IDictionary<string, string>, oldValue as IDictionary<string, string>);
+			ApplyQueryAttributes(bindable, newValue as ShellRouteParameters, oldValue as ShellRouteParameters);
 		}
 
-		static void ApplyQueryAttributes(object content, IDictionary<string, string> query, IDictionary<string, string> oldQuery)
+		static void ApplyQueryAttributes(object content, ShellRouteParameters query, ShellRouteParameters oldQuery)
 		{
-			query = query ?? new Dictionary<string, string>();
-			oldQuery = oldQuery ?? new Dictionary<string, string>();
+			query = query ?? new ShellRouteParameters();
+			oldQuery = oldQuery ?? new ShellRouteParameters();
 
 			if (content is IQueryAttributable attributable)
 				attributable.ApplyQueryAttributes(query);
@@ -286,10 +286,10 @@ namespace Microsoft.Maui.Controls
 
 					if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
 					{
-						if (prop.PropertyType == typeof(String))
+						if (prop.PropertyType == typeof(string))
 						{
 							if (value != null)
-								value = global::System.Net.WebUtility.UrlDecode(value);
+								value = global::System.Net.WebUtility.UrlDecode((string)value);
 
 							prop.SetValue(content, value);
 						}
@@ -309,5 +309,8 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> GetVisualChildren() => new List<Maui.IVisualTreeElement> { ((IShellContentController)this).Page }.AsReadOnly();
+
 	}
 }

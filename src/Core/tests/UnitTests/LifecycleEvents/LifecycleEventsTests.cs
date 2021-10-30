@@ -3,7 +3,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.LifecycleEvents
 {
 	[Category(TestCategory.Core, TestCategory.Lifecycle)]
 	public class LifecycleEventsTests
@@ -11,22 +11,22 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void ConfigureLifecycleEventsRegistersService()
 		{
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) => { })
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder => { })
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 			Assert.NotNull(service);
 		}
 
 		[Fact]
 		public void CanAddCustomEvent()
 		{
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) => builder.AddEvent("TestEvent", () => { }))
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder => builder.AddEvent("TestEvent", () => { }))
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 
 			Assert.True(service.ContainsEvent("TestEvent"));
 		}
@@ -34,11 +34,11 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanAddDelegateEvent()
 		{
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) => builder.AddEvent<CustomDelegate>("TestEvent", param => param++))
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder => builder.AddEvent<CustomDelegate>("TestEvent", param => param++))
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 
 			Assert.True(service.ContainsEvent("TestEvent"));
 		}
@@ -48,11 +48,11 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var eventFired = 0;
 
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) => builder.AddEvent("TestEvent", () => eventFired++))
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder => builder.AddEvent("TestEvent", () => eventFired++))
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 
 			service.InvokeEvents("AnotherEvent");
 
@@ -64,11 +64,11 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var eventFired = 0;
 
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) => builder.AddEvent("TestEvent", () => eventFired++))
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder => builder.AddEvent("TestEvent", () => eventFired++))
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 
 			service.InvokeEvents("TestEvent");
 
@@ -81,11 +81,11 @@ namespace Microsoft.Maui.UnitTests
 			var eventFired = 0;
 			var newValue = 0;
 
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) => builder.AddEvent<CustomDelegate>("TestEvent", param => param + 1))
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder => builder.AddEvent<CustomDelegate>("TestEvent", param => param + 1))
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 
 			service.InvokeEvents<CustomDelegate>("TestEvent", del =>
 			{
@@ -102,11 +102,11 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var eventFired = 0;
 
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) => builder.AddEvent<SimpleDelegate>("TestEvent", () => eventFired++))
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder => builder.AddEvent<SimpleDelegate>("TestEvent", () => eventFired++))
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 
 			Assert.True(service.ContainsEvent("TestEvent"));
 			Assert.Empty(service.GetEventDelegates<OtherSimpleDelegate>("TestEvent"));
@@ -122,12 +122,12 @@ namespace Microsoft.Maui.UnitTests
 			var event1Fired = 0;
 			var event2Fired = 0;
 
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) => builder.AddEvent("TestEvent", () => event1Fired++))
-				.ConfigureLifecycleEvents((_, builder) => builder.AddEvent("TestEvent", () => event2Fired++))
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder => builder.AddEvent("TestEvent", () => event1Fired++))
+				.ConfigureLifecycleEvents(builder => builder.AddEvent("TestEvent", () => event2Fired++))
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 
 			service.InvokeEvents("TestEvent");
 
@@ -141,15 +141,15 @@ namespace Microsoft.Maui.UnitTests
 			var event1Fired = 0;
 			var event2Fired = 0;
 
-			var host = new AppHostBuilder()
-				.ConfigureLifecycleEvents((_, builder) =>
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureLifecycleEvents(builder =>
 				{
 					builder.AddEvent("TestEvent", () => event1Fired++);
 					builder.AddEvent("TestEvent", () => event2Fired++);
 				})
 				.Build();
 
-			var service = host.Services.GetRequiredService<ILifecycleEventService>();
+			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
 
 			service.InvokeEvents("TestEvent");
 

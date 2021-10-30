@@ -1,25 +1,46 @@
-﻿using System.Linq;
+﻿using Microsoft.Maui.Layouts;
 
-// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+namespace Microsoft.Maui.Controls
 {
-	public abstract class StackLayout : Layout, IStackLayout
+	public abstract class StackBase : Layout, IStackLayout
 	{
-		public int Spacing { get; set; }
+		public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(StackBase), 0d,
+				propertyChanged: (bindable, oldvalue, newvalue) => ((IView)bindable).InvalidateMeasure());
 
-		bool _isMeasureValid;
-		public override bool IsMeasureValid
+		public double Spacing
 		{
-			get
-			{
-				return _isMeasureValid
-					&& Children.All(child => child.IsMeasureValid);
-			}
+			get { return (double)GetValue(SpacingProperty); }
+			set { SetValue(SpacingProperty, value); }
+		}
+	}
 
-			protected set
+	public class StackLayout : StackBase, IStackLayout
+	{
+		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
+			propertyChanged: OrientationChanged);
+
+		public StackOrientation Orientation
+		{
+			get { return (StackOrientation)GetValue(OrientationProperty); }
+			set { SetValue(OrientationProperty, value); }
+		}
+
+		static void OrientationChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var layout = (StackLayout)bindable;
+
+			// Clear out the current layout manager; when the layout system needs it again, it'll call CreateLayoutManager
+			layout._layoutManager = null;
+			layout.InvalidateMeasure();
+		}
+
+		protected override ILayoutManager CreateLayoutManager()
+		{
+			return Orientation switch
 			{
-				_isMeasureValid = value;
-			}
+				StackOrientation.Horizontal => new HorizontalStackLayoutManager(this),
+				_ => new VerticalStackLayoutManager(this),
+			};
 		}
 	}
 }

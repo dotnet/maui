@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class SimpleApp : Application
 	{
 		public SimpleApp()
@@ -39,4 +40,5 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			await Current.SavePropertiesAsync();
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }

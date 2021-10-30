@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Bz28545">
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<Style x:Key="TitleLabel" TargetType="Label">
-				<Setter Property="AbsoluteLayout.LayoutBounds" Value="1,1,AutoSize,AutoSize" />
-				<Setter Property="AbsoluteLayout.LayoutFlags" Value="PositionProportional" />
+				<Setter Property="cmp:AbsoluteLayout.LayoutBounds" Value="1,1,AutoSize,AutoSize" />
+                <Setter Property="cmp:AbsoluteLayout.LayoutFlags" Value="PositionProportional" />
 				<Setter Property="TextColor" Value="Pink" />
 			</Style>
 		</ResourceDictionary>
 	</ContentPage.Resources>
-	<AbsoluteLayout>
+	<cmp:AbsoluteLayout>
 		<Label x:Name="label"
 			   Style="{StaticResource TitleLabel}" />
-	</AbsoluteLayout>
+	</cmp:AbsoluteLayout>
 </ContentPage>
