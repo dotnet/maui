@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-    public partial class EditorHandlerTests
+	public partial class EditorHandlerTests
 	{
 		[Fact(DisplayName = "Placeholder Toggles Correctly When Text Changes")]
 		public async Task PlaceholderTogglesCorrectlyWhenTextChanges()
