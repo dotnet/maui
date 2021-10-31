@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	{
 		public IView Content { get; set; }
 
+		public IHighlightLayer HighlightLayer { get; }
+
 		public string Title { get; set; }
 
 		public bool IsCreated { get; set; }
