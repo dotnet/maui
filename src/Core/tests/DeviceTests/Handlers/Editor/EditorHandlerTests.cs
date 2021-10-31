@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-    [Category(TestCategory.Editor)]
+	[Category(TestCategory.Editor)]
 	public partial class EditorHandlerTests : HandlerTestBase<EditorHandler, EditorStub>
 	{
 		[Fact(DisplayName = "Text Initializes Correctly")]
