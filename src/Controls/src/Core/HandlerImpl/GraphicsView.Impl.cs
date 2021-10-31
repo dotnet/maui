@@ -13,8 +13,8 @@ namespace Microsoft.Maui.Controls
 			get { return (IDrawable)GetValue(DrawableProperty); }
 		}
 
-		public void Invalidate() 
-		{ 
+		public void Invalidate()
+		{
 			Handler?.Invoke(nameof(IGraphicsView.Invalidate));
 		}
 	}
