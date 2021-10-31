@@ -16,6 +16,8 @@
 		public bool IsResumed { get; set; }
 		public bool IsStopped { get; set; }
 
+		public IHighlightLayer HighlightLayer { get; }
+
 		public void Activated()
 		{
 			IsActivated = true;

@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
 			InternalChildren.CollectionChanged += OnCollectionChanged;
+			HighlightLayer = new HighlightLayer(this);
 		}
 
 		public Window(Page page)
@@ -98,6 +99,8 @@ namespace Microsoft.Maui.Controls
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
 		Application? Application => Parent as Application;
+
+		public IHighlightLayer HighlightLayer { get; }
 
 		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
