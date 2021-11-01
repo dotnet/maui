@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 
 		[Obsolete("ToFormsColor is obsolete. Please use ToColor instead")]
-		public static Graphics.Color ToFormsColor(this Windows.UI.Color color)
+		public static Graphics.Color ToFormsColor(this global::Windows.UI.Color color)
 		{
 			return color.ToColor();
 		}

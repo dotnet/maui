@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			// reflection will stop working
 			ResourceManager.Init(null);
 
-			Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
+			Forms.Init(new MauiContext(MauiApplication.Current.Services, this));
 			FormsMaps.Init(this, bundle);
 
 			ViewHandler.ViewMapper
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			//FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
-			Microsoft.Maui.Controls.Compatibility.Forms.ViewInitialized += (sender, e) =>
+			Forms.ViewInitialized += (sender, e) =>
 			{
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
 				//					e.NativeView.ContentDescription = e.View.StyleId;

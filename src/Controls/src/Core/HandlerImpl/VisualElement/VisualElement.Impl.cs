@@ -69,8 +69,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ShadowProperty, value); }
 		}
 
-		IView IView.Parent => Parent as IView;
-
 		public Size DesiredSize { get; protected set; }
 
 		public void Arrange(Rectangle bounds)

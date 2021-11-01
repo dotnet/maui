@@ -24,6 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 				.CreateBuilder()
 				.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler(typeof(ButtonWithContainerStub), typeof(ButtonWithContainerStubHandler));
 					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
 					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
 				})

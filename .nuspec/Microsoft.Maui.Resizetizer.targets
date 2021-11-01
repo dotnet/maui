@@ -4,6 +4,7 @@
     <ItemGroup>
         <AvailableItemName Include="MauiAsset" />
         <AvailableItemName Include="MauiImage" />
+        <AvailableItemName Include="MauiIcon" />
         <AvailableItemName Include="MauiFont" />
         <AvailableItemName Include="MauiSplashScreen" />
     </ItemGroup>
@@ -108,7 +109,8 @@
 
         <ResizetizeCollectItemsBeforeTargets>
             $(ResizetizeCollectItemsBeforeTargets);
-            _CollectBundleResources;_BeforeCoreCompileImageAssets;
+            _CollectBundleResources;
+            _BeforeCoreCompileImageAssets;
         </ResizetizeCollectItemsBeforeTargets>
 
         <ResizetizeAfterTargets>
@@ -119,8 +121,13 @@
         <ProcessMauiFontsBeforeTargets>
             $(ProcessMauiFontsBeforeTargets);
             _BeforeCoreCompileImageAssets;
-            _CompileAppManifest;
         </ProcessMauiFontsBeforeTargets>
+
+        <CollectAppManifestsDependsOn>
+            ProcessMauiFonts;
+            ProcessMauiSplashScreens;
+            $(CollectAppManifestsDependsOn)
+        </CollectAppManifestsDependsOn>
     </PropertyGroup>
 
     <!-- Android -->
@@ -180,6 +187,7 @@
         <ItemGroup>
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
+            <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" />
             <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
             <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" ProjectDirectory="$(MSBuildProjectDirectory)" />
             <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" />
@@ -223,6 +231,9 @@
             <MauiImage
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiImage'" />
+            <MauiIcon
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiIcon'" />
             <MauiFont
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiFont'" />
@@ -232,6 +243,11 @@
             <MauiSplashScreen
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiSplashScreen'" />
+        </ItemGroup>
+
+        <!-- Map @(MauiIcon) to @(MauiImage IsAppIcon=true) -->
+        <ItemGroup>
+            <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
         </ItemGroup>
 
         <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
@@ -372,15 +388,11 @@
             IntermediateOutputPath="$(_MauiIntermediateFonts)"
             PlistName="MauiInfo.plist"
             Storyboard="$(_MauiStoryboardForPList)"
-            CustomFonts="@(_MauiFontCopied)">
-            <Output
-                TaskParameter="PListFiles"
-                ItemName="_MauiFontPListFiles" />
-
-        </CreatePartialInfoPlistTask>
+            CustomFonts="@(_MauiFontCopied)" />
 
         <!-- iOS - Partial Info.plist for font registration  -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' ">
+            <_MauiFontPListFiles Include="$(_MauiIntermediateFonts)MauiInfo.plist" Condition="Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
             <PartialAppManifest Include="@(_MauiFontPListFiles)" Condition="'@(_MauiFontPListFiles)' != ''" />
             <FileWrites Include="@(_MauiFontPListFiles)" Condition="'@(_MauiFontPListFiles)' != ''" />
         </ItemGroup>
@@ -533,7 +545,9 @@
         </ItemGroup>
     </Target>
 
+
     <Target Name="_CleanResizetizer">
         <RemoveDir Directories="$(_ResizetizerIntermediateOutputRoot)" Condition="Exists ('$(_ResizetizerIntermediateOutputRoot)' )" />
     </Target>
+
 </Project>

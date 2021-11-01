@@ -1,20 +1,23 @@
 ﻿#nullable enable
+using System;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.System;
 
-﻿namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
-		Brush? _defaultPplaceholderBrush;
+		Brush? _defaultPlaceholderBrush;
 		Brush? _defaultPlaceholderColorFocusBrush;
-
+	
 		protected override MauiTextBox CreateNativeView()
 		{
 			var nativeEntry = new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
-			
-			_defaultPplaceholderBrush = nativeEntry.PlaceholderForeground;
+
+			_defaultPlaceholderBrush = nativeEntry.PlaceholderForeground;
 			_defaultPlaceholderColorFocusBrush = nativeEntry.PlaceholderForegroundFocusBrush;
 
 			return nativeEntry;
@@ -22,15 +25,23 @@ using Windows.System;
 
 		protected override void ConnectHandler(MauiTextBox nativeView)
 		{
+			NativeView.CursorPositionChangePending = VirtualView.CursorPosition > 0;
+			NativeView.SelectionLengthChangePending = VirtualView.SelectionLength > 0;
 			nativeView.KeyUp += OnNativeKeyUp;
+			nativeView.TextChanged += TextChanged;
+			nativeView.CursorPositionChanged += OnCursorPositionChanged;
+			nativeView.SelectionLengthChanged += OnSelectionLengthChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTextBox nativeView)
 		{
 			nativeView.KeyUp -= OnNativeKeyUp;
+			nativeView.TextChanged -= TextChanged;
+			nativeView.CursorPositionChanged -= OnCursorPositionChanged;
+			nativeView.SelectionLengthChanged -= OnSelectionLengthChanged;
 		}
 
-		public static void MapText(EntryHandler handler, IEntry entry) 
+		public static void MapText(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateText(entry);
 		}
@@ -40,7 +51,7 @@ using Windows.System;
 			handler.NativeView?.UpdateTextColor(entry);
 		}
 
-		public static void MapIsPassword(EntryHandler handler, IEntry entry) 
+		public static void MapIsPassword(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateIsPassword(entry);
 		}
@@ -72,7 +83,7 @@ using Windows.System;
 
 		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdatePlaceholderColor(entry, handler._defaultPplaceholderBrush, handler._defaultPlaceholderColorFocusBrush);
+			handler.NativeView?.UpdatePlaceholderColor(entry, handler._defaultPlaceholderBrush, handler._defaultPlaceholderColorFocusBrush);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
@@ -103,8 +114,8 @@ using Windows.System;
 		}
 
 		public static void MapKeyboard(EntryHandler handler, IEntry entry)
-		{ 
-			handler.NativeView?.UpdateKeyboard(entry); 
+		{
+			handler.NativeView?.UpdateKeyboard(entry);
 		}
 
 		void OnNativeKeyUp(object? sender, KeyRoutedEventArgs args)
@@ -124,10 +135,30 @@ using Windows.System;
 			VirtualView?.Completed();
 		}
 
-		[MissingMapper]
-		public static void MapCursorPosition(IViewHandler handler, IEntry entry) { }
+		void TextChanged(object sender, TextChangedEventArgs args)
+		{
+			VirtualView?.UpdateText(NativeView.Text);
+		}
 
-		[MissingMapper]
-		public static void MapSelectionLength(IViewHandler handler, IEntry entry) { }
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView.CursorPosition = entry.CursorPosition;
+		}
+
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView.ViewSelectionLength = entry.SelectionLength;
+		}
+
+		void OnCursorPositionChanged(object? sender, EventArgs e)
+		{
+			VirtualView.CursorPosition = NativeView.CursorPosition;
+		}
+
+		void OnSelectionLengthChanged(object? sender, EventArgs e)
+		{
+			VirtualView.SelectionLength = NativeView.ViewSelectionLength;
+		}
+
 	}
 }

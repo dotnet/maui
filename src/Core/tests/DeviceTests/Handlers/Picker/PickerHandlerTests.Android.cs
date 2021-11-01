@@ -35,6 +35,20 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(picker, () => picker.TitleColor, GetNativeTitleColor, picker.TitleColor);
 		}
 
+		[Fact(DisplayName = "Text Color Initializes Correctly")]
+		public async Task TextColorInitializesCorrectly()
+		{
+			var picker = new PickerStub
+			{
+				Title = "Select an Item",
+				TextColor = Colors.CadetBlue,
+				Items = new[] { "Item 1", "Item2", "Item3" },
+				SelectedIndex = 1
+			};
+
+			await ValidatePropertyInitValue(picker, () => picker.TextColor, GetNativeTextColor, picker.TextColor);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -95,6 +109,13 @@ namespace Microsoft.Maui.DeviceTests
 		Color GetNativeTitleColor(PickerHandler pickerHandler)
 		{
 			var currentTextColorInt = GetNativePicker(pickerHandler).CurrentHintTextColor;
+			var currentTextColor = new AColor(currentTextColorInt);
+			return currentTextColor.ToColor();
+		}
+
+		Color GetNativeTextColor(PickerHandler pickerHandler)
+		{
+			var currentTextColorInt = GetNativePicker(pickerHandler).CurrentTextColor;
 			var currentTextColor = new AColor(currentTextColorInt);
 			return currentTextColor.ToColor();
 		}

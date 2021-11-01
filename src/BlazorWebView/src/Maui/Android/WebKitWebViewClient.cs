@@ -65,6 +65,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 
+			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
+
 			if (requestUri != null &&
 				_webViewHandler != null &&
 				_webViewHandler.WebviewManager != null &&

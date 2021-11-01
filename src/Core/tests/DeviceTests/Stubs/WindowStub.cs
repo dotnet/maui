@@ -1,7 +1,11 @@
 ﻿namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class WindowStub : StubBase, IWindow
+	public class WindowStub : IWindow
 	{
+		public IElementHandler Handler { get; set; }
+
+		public IElement Parent { get; set; }
+
 		public IView Content { get; set; }
 
 		public string Title { get; set; }
@@ -47,6 +51,6 @@
 			IsResumed = false;
 		}
 
-		public bool BackButtonPressed() => true;
+		public bool BackButtonClicked() => true;
 	}
 }
