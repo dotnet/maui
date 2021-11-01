@@ -81,8 +81,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(searchBar, handler._defaultTextColorBrush, handler._defaultTextColorFocusBrush, handler._queryTextBox);
 		}
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) 
+		{
+			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar, handler._queryTextBox);
+		}
 
 		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
 		{

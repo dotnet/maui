@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
-		
+
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
