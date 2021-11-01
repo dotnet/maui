@@ -1,8 +1,6 @@
-﻿using MauiApplication = Microsoft.Maui.Controls.Application;
+﻿namespace MauiApp._1;
 
-namespace MauiApp._1;
-
-public partial class App : MauiApplication
+public partial class App : Application
 {
 	public App()
 	{
