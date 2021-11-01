@@ -3,11 +3,10 @@ using Android.Content;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
-
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -71,7 +70,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var mauiControlsView = View as View;
 			if (mauiControlsView == null)
 				return;
-		
+
 			mauiControlsView.Layout(new Rectangle(Point.Zero, size));
 
 			UpdateContentLayout();

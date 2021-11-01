@@ -121,8 +121,13 @@
         <ProcessMauiFontsBeforeTargets>
             $(ProcessMauiFontsBeforeTargets);
             _BeforeCoreCompileImageAssets;
-            _CompileAppManifest;
         </ProcessMauiFontsBeforeTargets>
+
+        <CollectAppManifestsDependsOn>
+            ProcessMauiFonts;
+            ProcessMauiSplashScreens;
+            $(CollectAppManifestsDependsOn)
+        </CollectAppManifestsDependsOn>
     </PropertyGroup>
 
     <!-- Android -->
@@ -383,15 +388,11 @@
             IntermediateOutputPath="$(_MauiIntermediateFonts)"
             PlistName="MauiInfo.plist"
             Storyboard="$(_MauiStoryboardForPList)"
-            CustomFonts="@(_MauiFontCopied)">
-            <Output
-                TaskParameter="PListFiles"
-                ItemName="_MauiFontPListFiles" />
-
-        </CreatePartialInfoPlistTask>
+            CustomFonts="@(_MauiFontCopied)" />
 
         <!-- iOS - Partial Info.plist for font registration  -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' ">
+            <_MauiFontPListFiles Include="$(_MauiIntermediateFonts)MauiInfo.plist" Condition="Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
             <PartialAppManifest Include="@(_MauiFontPListFiles)" Condition="'@(_MauiFontPListFiles)' != ''" />
             <FileWrites Include="@(_MauiFontPListFiles)" Condition="'@(_MauiFontPListFiles)' != ''" />
         </ItemGroup>
