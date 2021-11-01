@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (iitemsLayout is not ItemsLayout itemsLayout)
 				return;
-		
+
 			var snapPointsType = itemsLayout.SnapPointsType;
 
 			// Clear our the existing snap helper (if any)

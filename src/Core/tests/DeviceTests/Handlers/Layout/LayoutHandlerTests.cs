@@ -160,5 +160,35 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			Assert.Equal(1, children.Count);
 			Assert.Same(button.Handler.NativeView, children[0]);
 		}
+
+		[Fact]
+		public async Task ContainerViewAddedToLayout()
+		{
+			var layout = new LayoutStub();
+			var addedSlider = new ButtonWithContainerStub();
+			var insertedSlider = new ButtonWithContainerStub();
+
+			layout.Add(addedSlider);
+
+			var handler = await CreateHandlerAsync(layout);
+
+			var children = await InvokeOnMainThreadAsync(() =>
+			{
+				return GetNativeChildren(handler);
+			});
+
+			Assert.Equal(1, children.Count);
+			Assert.Same(addedSlider.Handler.ContainerView, children[0]);
+
+			children = await InvokeOnMainThreadAsync(() =>
+			{
+				handler.Insert(0, insertedSlider);
+				return GetNativeChildren(handler);
+			});
+
+			Assert.Equal(2, children.Count);
+			Assert.Same(insertedSlider.Handler.ContainerView, children[0]);
+			Assert.Same(addedSlider.Handler.ContainerView, children[1]);
+		}
 	}
 }

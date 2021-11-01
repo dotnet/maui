@@ -6,6 +6,26 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
+		internal static UIView? GetNative(this IElement view, bool returnWrappedIfPresent)
+		{
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return (view.Handler?.NativeView as UIView);
+
+		}
+
+		internal static UIView ToNative(this IElement view, IMauiContext context, bool returnWrappedIfPresent)
+		{
+			var nativeView = view.ToNative(context);
+
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return nativeView;
+
+		}
+
 		public static UIViewController ToUIViewController(this IElement view, IMauiContext context)
 		{
 			var nativeView = view.ToNative(context);
