@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
@@ -17,10 +17,15 @@ namespace BlazorWpfApp
 
 		public MainWindow()
 		{
-			var serviceCollection = new ServiceCollection();
-			serviceCollection.AddBlazorWebView();
-			serviceCollection.AddSingleton<AppState>(_appState);
-			Resources.Add("services", serviceCollection.BuildServiceProvider());
+			var services1 = new ServiceCollection();
+			services1.AddBlazorWebView();
+			services1.AddSingleton<AppState>(_appState);
+			Resources.Add("services1", services1.BuildServiceProvider());
+
+			var services2 = new ServiceCollection();
+			services2.AddBlazorWebView();
+			services2.AddSingleton<AppState>(_appState);
+			Resources.Add("services2", services2.BuildServiceProvider());
 
 			InitializeComponent();
 
