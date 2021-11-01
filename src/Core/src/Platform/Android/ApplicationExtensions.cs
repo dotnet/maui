@@ -21,7 +21,8 @@ namespace Microsoft.Maui.Platform
 			var intent = pm.GetLaunchIntentForPackage(nativeApplication.PackageName!)!;
 			intent.AddFlags(ActivityFlags.NewTask);
 			intent.AddFlags(ActivityFlags.MultipleTask);
-			intent.AddFlags(ActivityFlags.LaunchAdjacent);
+			if (NativeVersion.Supports(NativeApis.LaunchAdjacent))
+				intent.AddFlags(ActivityFlags.LaunchAdjacent);
 			intent.PutExtras(bundle);
 
 			nativeApplication.StartActivity(intent);
