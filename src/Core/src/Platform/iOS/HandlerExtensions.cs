@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 				return nativeHandler.NativeView;
 
 			return nativeView;
-			
+
 		}
 
 		public static UIViewController ToUIViewController(this IElement view, IMauiContext context)
