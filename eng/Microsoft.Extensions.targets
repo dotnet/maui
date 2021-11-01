@@ -13,7 +13,7 @@
    <!-- WINUI related Packages -->
   <PropertyGroup>
     <_MicrosoftWindowsAppSdkVersion>1.0.0-preview3</_MicrosoftWindowsAppSdkVersion>
-    <_MicrosoftWindowsAppSdkVersion Condition="'$(UseInternalWinUIPackages)' == 'true'">1.0.0-20211012.0-CI-experimental</_MicrosoftWindowsAppSdkVersion>
+    <_MicrosoftWindowsAppSdkVersion Condition="'$(UseInternalWinUIPackages)' == 'true'">1.0.0-20211030.0-CI-experimental</_MicrosoftWindowsAppSdkVersion>
     <_MicrosoftWebWebView2Version>1.0.961.33</_MicrosoftWebWebView2Version>
   </PropertyGroup>
   <!-- Android related Packages -->
