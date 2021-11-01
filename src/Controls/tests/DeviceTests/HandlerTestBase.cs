@@ -16,6 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 				.CreateBuilder()
 				.Build();
 
+			Microsoft.Maui.Controls.Application.RemapMappers();
 			MauiContext = new ContextStub(_mauiApp.Services);
 		}
 
