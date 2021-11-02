@@ -85,5 +85,16 @@ namespace Microsoft.Maui.Controls.Hosting
 
 			return builder;
 		}
+
+		internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
+		{
+			// Update the mappings for IView/View to work specifically for Controls
+			VisualElement.RemapForControls();
+			Label.RemapForControls();
+			Button.RemapForControls();
+			Window.RemapForControls();
+
+			return builder;
+		}
 	}
 }

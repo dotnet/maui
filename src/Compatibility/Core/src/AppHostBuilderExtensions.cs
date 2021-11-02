@@ -148,12 +148,7 @@ namespace Microsoft.Maui.Controls.Hosting
 				});
 
 			builder.AddMauiCompat();
-
-			// Update the mappings for IView/View to work specifically for Controls
-			VisualElement.RemapForControls();
-			Label.RemapForControls();
-			Button.RemapForControls();
-			Window.RemapForControls();
+			builder.RemapForControls();			
 
 			return builder;
 		}
