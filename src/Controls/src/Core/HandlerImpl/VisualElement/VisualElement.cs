@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 			[nameof(BackgroundColor)] = MapBackgroundColor,
 		};
 
-		public static void RemapForControls()
+		internal static void RemapForControls()
 		{
 			ViewHandler.ViewMapper = ControlsVisualElementMapper;
 		}
