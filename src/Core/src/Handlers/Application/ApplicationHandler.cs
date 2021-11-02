@@ -21,7 +21,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IApplication, ApplicationHandler> CommandMapper = new(ElementCommandMapper)
 		{
-			[TerminateCommandKey] = MapTerminate
+			[TerminateCommandKey] = MapTerminate,
+			[nameof(IApplication.OpenWindow)] = MapOpenWindow
 		};
 
 		ILogger<ApplicationHandler>? _logger;
