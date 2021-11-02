@@ -1,4 +1,5 @@
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeView = UIKit.UIView;
 

@@ -4,6 +4,7 @@ using CoreGraphics;
 using CoreText;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui

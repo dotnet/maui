@@ -5,6 +5,7 @@ using CoreGraphics;
 using Foundation;
 using MediaPlayer;
 using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

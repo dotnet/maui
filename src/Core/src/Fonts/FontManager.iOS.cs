@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui

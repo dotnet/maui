@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Foundation;
 using NUnit.Framework;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests

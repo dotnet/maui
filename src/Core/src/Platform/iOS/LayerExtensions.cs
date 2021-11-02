@@ -1,4 +1,5 @@
 ﻿using CoreAnimation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
