@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -13,15 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			var mockDeviceInfo = new TestDeviceInfo();
-			Device.Info = mockDeviceInfo;
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.Info = null;
+			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
 		}
 
 		[Test]

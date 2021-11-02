@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -362,7 +363,8 @@ namespace Microsoft.Maui.Controls
 			var minimumSize = new Size(40, 40);
 			Size request;
 
-			double width = Math.Min(Device.Info.ScaledScreenSize.Width, Device.Info.ScaledScreenSize.Height);
+			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			double width = Math.Min(scaled.Width, scaled.Height);
 
 			var list = ItemsSource as IList;
 			if (list != null && HasUnevenRows == false && RowHeight > 0 && !IsGroupingEnabled)
@@ -373,7 +375,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				// probably not worth it
-				request = new Size(width, Math.Max(Device.Info.ScaledScreenSize.Width, Device.Info.ScaledScreenSize.Height));
+				request = new Size(width, Math.Max(scaled.Width, scaled.Height));
 			}
 
 			return new SizeRequest(request, minimumSize);

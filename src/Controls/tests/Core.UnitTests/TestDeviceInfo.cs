@@ -1,32 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
+﻿#nullable enable
+using System;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class TestDeviceInfo : DeviceInfo
+	internal class TestDeviceDisplay : IDeviceDisplay
 	{
-		public TestDeviceInfo()
+		DisplayInfo _mainDisplayInfo = new(
+			100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation0);
+
+		public bool KeepScreenOn { get; set; }
+
+		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
+
+		public DisplayInfo GetMainDisplayInfo() => _mainDisplayInfo;
+
+		public void UpdateMainDisplayInfo(DisplayInfo displayInfo)
 		{
-			CurrentOrientation = DeviceOrientation.Portrait;
-		}
-		public override Size PixelScreenSize
-		{
-			get { return new Size(100, 200); }
+			_mainDisplayInfo = displayInfo;
+			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(displayInfo));
 		}
 
-		public override Size ScaledScreenSize
+		public void StartScreenMetricsListeners()
 		{
-			get { return new Size(50, 100); }
 		}
 
-		public override double ScalingFactor
+		public void StopScreenMetricsListeners()
 		{
-			get { return 2; }
+		}
+
+		public void SetMainDisplayOrientation(DisplayOrientation portrait)
+		{
+			var info = new DisplayInfo(
+				_mainDisplayInfo.Width,
+				_mainDisplayInfo.Height,
+				_mainDisplayInfo.Density,
+				portrait,
+				_mainDisplayInfo.Rotation);
+
+			UpdateMainDisplayInfo(info);
 		}
 	}
 }
