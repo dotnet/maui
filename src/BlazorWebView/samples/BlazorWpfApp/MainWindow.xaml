@@ -13,10 +13,22 @@
             <Button Click="Button_Click" Margin="4" Padding="4">Check counter</Button>
             <Button Click="WebViewAlertButton_Click" Margin="4" Padding="4">WebView alert</Button>
         </StackPanel>
-        <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{StaticResource services}" x:Name="blazorWebView1">
-            <blazor:BlazorWebView.RootComponents>
-                <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
-            </blazor:BlazorWebView.RootComponents>
-        </blazor:BlazorWebView>
+
+        <TabControl>
+            <TabItem Header="BlazorWebView">
+                <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{StaticResource services1}" x:Name="blazorWebView1">
+                    <blazor:BlazorWebView.RootComponents>
+                        <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+                    </blazor:BlazorWebView.RootComponents>
+                </blazor:BlazorWebView>
+            </TabItem>
+            <TabItem Header="Custom Files BlazorWebView">
+                <local:CustomFilesBlazorWebView HostPage="wwwroot\customindex.html" Services="{StaticResource services2}" x:Name="blazorWebView2">
+                    <blazor:BlazorWebView.RootComponents>
+                        <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+                    </blazor:BlazorWebView.RootComponents>
+                </local:CustomFilesBlazorWebView>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>

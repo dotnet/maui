@@ -12,6 +12,8 @@ namespace Microsoft.Maui
 	{
 		IMauiContext _applicationContext = null!;
 
+		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
+
 		protected MauiUIApplicationDelegate()
 		{
 			Current = this;
@@ -40,12 +42,17 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
-			this.CreateNativeWindow(Application, application, launchOptions);
+			// iOS 13+ uses scene delegates, so skip this
+			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+				this.CreateNativeWindow(Application, application, launchOptions);
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 
 			return true;
 		}
+
+		public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
+			=> new("Default Configuration", connectingSceneSession.Role);
 
 		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
 		{

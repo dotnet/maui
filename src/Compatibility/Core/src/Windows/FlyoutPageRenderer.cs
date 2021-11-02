@@ -11,6 +11,7 @@ using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -133,8 +134,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			Size size = Device.Info.ScaledScreenSize;
-			return new SizeRequest(new Size(size.Width, size.Height));
+			var size = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			return new SizeRequest(size);
 		}
 
 		UIElement IVisualElementRenderer.GetNativeElement()

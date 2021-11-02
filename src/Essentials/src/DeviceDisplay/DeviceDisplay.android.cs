@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -10,11 +11,13 @@ using Android.Views;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceDisplay
+	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
-		static OrientationEventListener orientationListener;
+		OrientationEventListener? orientationListener;
 
-		static bool PlatformKeepScreenOn
+		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
+
+		public bool KeepScreenOn
 		{
 			get
 			{
@@ -33,7 +36,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static DisplayInfo GetMainDisplayInfo()
+		public DisplayInfo GetMainDisplayInfo()
 		{
 			using var displayMetrics = new DisplayMetrics();
 			var display = GetDefaultDisplay();
@@ -50,26 +53,26 @@ namespace Microsoft.Maui.Essentials
 				rate: display?.RefreshRate ?? 0);
 		}
 
-		static void StartScreenMetricsListeners()
+		public void StartScreenMetricsListeners()
 		{
 			orientationListener = new Listener(Platform.AppContext, OnScreenMetricsChanged);
 			orientationListener.Enable();
 		}
 
-		static void StopScreenMetricsListeners()
+		public void StopScreenMetricsListeners()
 		{
 			orientationListener?.Disable();
 			orientationListener?.Dispose();
 			orientationListener = null;
 		}
 
-		static void OnScreenMetricsChanged()
+		void OnScreenMetricsChanged()
 		{
 			var metrics = GetMainDisplayInfo();
-			OnMainDisplayInfoChanged(metrics);
+			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
 		}
 
-		static DisplayRotation CalculateRotation()
+		DisplayRotation CalculateRotation()
 		{
 			var display = GetDefaultDisplay();
 
@@ -83,7 +86,7 @@ namespace Microsoft.Maui.Essentials
 			};
 		}
 
-		static DisplayOrientation CalculateOrientation()
+		DisplayOrientation CalculateOrientation()
 		{
 			return Platform.AppContext.Resources?.Configuration?.Orientation switch
 			{
@@ -94,7 +97,7 @@ namespace Microsoft.Maui.Essentials
 			};
 		}
 
-		static Display GetDefaultDisplay()
+		Display? GetDefaultDisplay()
 		{
 			try
 			{

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 	{
 		const string PropertyStoreFile = "PropertyStore.forms";
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
 		{
 			IsolatedStorageFile isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
@@ -42,6 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			}
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		public async Task SerializePropertiesAsync(IDictionary<string, object> properties)
 		{
 			try
