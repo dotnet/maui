@@ -8,11 +8,15 @@ Task("Clean")
     {
         foreach(string f in System.IO.Directory.GetDirectories(".", item, SearchOption.AllDirectories))
         {
-            if(f.StartsWith(@".\bin") || f.StartsWith(@".\tools"))
+            var directorySeparatorChar = System.IO.Path.DirectorySeparatorChar;
+            if(f.StartsWith($".{directorySeparatorChar}bin") || f.StartsWith($".{directorySeparatorChar}tools"))
+                continue;
+
+            if(f.StartsWith($".{directorySeparatorChar}bin") || f.StartsWith($".{directorySeparatorChar}tools"))
                 continue;
 
             // this is here as a safety check
-            if(!f.StartsWith(@".\src"))
+            if(!f.StartsWith($".{directorySeparatorChar}src"))
                 continue;
 
             CleanDirectories(f);
