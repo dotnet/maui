@@ -46,7 +46,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
 		{
 			AppShell.RemoveBinding(Shell.FlyoutBackgroundProperty);
-			if (AppShell.FlyoutBackground.IsEmpty || 
+			if (AppShell.FlyoutBackground.IsEmpty ||
 				AppShell.FlyoutBackground == SolidColorBrush.Purple)
 			{
 				AppShell.FlyoutBackground = SolidColorBrush.Black;
