@@ -51,6 +51,10 @@ namespace Microsoft.Maui
 				view = ir.ReplacedView;
 
 			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
 			if (handler == null)
 				handler = context.Handlers.GetHandler(view.GetType());
 
