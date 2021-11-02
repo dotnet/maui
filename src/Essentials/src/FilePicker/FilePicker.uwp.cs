@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Essentials
 				SuggestedStartLocation = PickerLocationId.DocumentsLibrary
 			};
 
+			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(Platform.CurrentWindow);
+			WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
 			SetFileTypes(options, picker);
 
 			var resultList = new List<StorageFile>();
