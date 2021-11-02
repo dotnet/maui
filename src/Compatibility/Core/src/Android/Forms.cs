@@ -325,18 +325,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.PlatformServices = androidServices;
 			Device.PlatformInvalidator = androidServices;
 
-			// use field and not property to avoid exception in getter
-			if (Device.info != null)
-			{
-				((AndroidDeviceInfo)Device.info).Dispose();
-				Device.info = null;
-			}
-
-			// We want this to be updated when we have a new activity (e.g. on a configuration change)
-			// because Device.Info watches for orientation changes and we need a current activity for that
-			Profile.FramePartition("create AndroidDeviceInfo");
-			Device.Info = new AndroidDeviceInfo(activity);
-
 			Profile.FramePartition("RegisterAll");
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
@@ -463,103 +451,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 			return rc;
-		}
-
-		class AndroidDeviceInfo : DeviceInfo
-		{
-			bool _disposed;
-			readonly Context _formsActivity;
-			Size _scaledScreenSize;
-			Size _pixelScreenSize;
-			double _scalingFactor;
-
-			Orientation _previousOrientation = Orientation.Undefined;
-			IDualScreenService DualScreenService => DependencyService.Get<IDualScreenService>();
-
-			public AndroidDeviceInfo(Context formsActivity)
-			{
-				CheckOrientationChanged(formsActivity);
-
-				// This will not be an implementation of IDeviceInfoProvider when running inside the context
-				// of layoutlib, which is what the Android Designer does.
-				// It also won't be IDeviceInfoProvider when using Page Embedding
-				if (formsActivity is IDeviceInfoProvider)
-				{
-					_formsActivity = formsActivity;
-					((IDeviceInfoProvider)_formsActivity).ConfigurationChanged += ConfigurationChanged;
-				}
-			}
-
-			public override Size PixelScreenSize
-			{
-				get { return _pixelScreenSize; }
-			}
-
-			public override Size ScaledScreenSize => _scaledScreenSize;
-
-			public override double ScalingFactor
-			{
-				get { return _scalingFactor; }
-			}
-
-
-			public override double DisplayRound(double value) =>
-				Math.Round(ScalingFactor * value) / ScalingFactor;
-
-			protected override void Dispose(bool disposing)
-			{
-				if (_disposed)
-				{
-					return;
-				}
-
-				_disposed = true;
-
-				if (disposing)
-				{
-					var provider = _formsActivity as IDeviceInfoProvider;
-					if (provider != null)
-						provider.ConfigurationChanged -= ConfigurationChanged;
-				}
-
-				base.Dispose(disposing);
-			}
-
-			void UpdateScreenMetrics(Context formsActivity)
-			{
-				using (DisplayMetrics display = formsActivity.Resources.DisplayMetrics)
-				{
-					_scalingFactor = display.Density;
-					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
-					_scaledScreenSize = new Size(_pixelScreenSize.Width / _scalingFactor, _pixelScreenSize.Height / _scalingFactor);
-				}
-			}
-
-			void CheckOrientationChanged(Context formsActivity)
-			{
-				Orientation orientation;
-
-				if (DualScreenService?.IsSpanned == true)
-				{
-					orientation = (DualScreenService.IsLandscape) ? Orientation.Landscape : Orientation.Portrait;
-				}
-				else
-				{
-					orientation = formsActivity.Resources.Configuration.Orientation;
-				}
-
-				if (!_previousOrientation.Equals(orientation))
-					CurrentOrientation = orientation.ToDeviceOrientation();
-
-				_previousOrientation = orientation;
-
-				UpdateScreenMetrics(formsActivity);
-			}
-
-			void ConfigurationChanged(object sender, EventArgs e)
-			{
-				CheckOrientationChanged(_formsActivity);
-			}
 		}
 
 		class AndroidExpressionSearch : ExpressionVisitor, IExpressionSearch
