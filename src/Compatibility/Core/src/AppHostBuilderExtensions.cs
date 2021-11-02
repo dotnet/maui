@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static class MauiAppBuilderExtensions
 	{
-		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder)
+		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
 		{
 			builder.Services.TryAddSingleton<IApplication, TApp>();
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
+		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication
 		{
 			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
