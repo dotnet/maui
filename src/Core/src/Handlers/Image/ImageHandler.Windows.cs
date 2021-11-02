@@ -10,11 +10,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override Image CreateNativeView() => new Image();
 
-		protected override void ConnectHandler(Image nativeView)
-		{
-			base.ConnectHandler(nativeView);
-		}
-
 		protected override void DisconnectHandler(Image nativeView)
 		{
 			base.DisconnectHandler(nativeView);
@@ -28,7 +23,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-
 			handler.GetWrappedNativeView()?.UpdateBackground(image);
 		}
 
