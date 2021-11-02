@@ -93,7 +93,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
+			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
 			var mauiAssetFileProvider = new AndroidMauiAssetFileProvider(Context.Assets, contentRootDir);
+			IFileProvider fileProvider = customFileProvider == null
+				? mauiAssetFileProvider
+				: new CompositeFileProvider(customFileProvider, mauiAssetFileProvider);
 
 			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, ComponentsDispatcher, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath);
 

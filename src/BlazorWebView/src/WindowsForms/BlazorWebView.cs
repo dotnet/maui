@@ -153,7 +153,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			// unclear there's any other use case. We can add more options later if so.
 			var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
-			var fileProvider = new PhysicalFileProvider(contentRootDir);
+
+			var customFileProvider = CreateFileProvider(contentRootDir);
+			var assetFileProvider = new PhysicalFileProvider(contentRootDir);
+			IFileProvider fileProvider = customFileProvider == null
+				? assetFileProvider
+				: new CompositeFileProvider(customFileProvider, assetFileProvider);
 
 			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
 
@@ -187,6 +192,17 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 					}
 				});
 			}
+		}
+
+		/// <summary>
+		/// Creates a file provider for static assets used in the <see cref="BlazorWebView"/>. Override
+		/// this method to return a custom <see cref="IFileProvider"/> to serve assets such as <c>wwwroot/index.html</c>.
+		/// </summary>
+		/// <param name="contentRootDir">The base directory to use for all requested assets, such as <c>wwwroot</c>.</param>
+		/// <returns>Returns a <see cref="IFileProvider"/> for static assets, or <c>null</c> if there is no custom provider.</returns>
+		public virtual IFileProvider CreateFileProvider(string contentRootDir)
+		{
+			return null;
 		}
 
 		/// <inheritdoc />
