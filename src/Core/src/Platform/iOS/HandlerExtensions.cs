@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 
 			var handler = view.Handler;
 			if (handler == null)
-				handler = context.Handlers.GetHandler(view.GetType());
+				handler = context.Handlers.GetHandler(TrimmerHelper.GetType(view));
 
 			if (handler == null)
 				throw new Exception($"Handler not found for view {view}.");
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 
 			var handler = element.Handler;
 			if (handler == null)
-				handler = mauiContext.Handlers.GetHandler(element.GetType());
+				handler = mauiContext.Handlers.GetHandler(TrimmerHelper.GetType(element));
 
 			if (handler == null)
 				throw new Exception($"Handler not found for window {element}.");

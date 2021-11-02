@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +52,8 @@ namespace Microsoft.Maui.HotReload
 				return false;
 			return newView.GetType() == newViewType;
 		}
+
+		[UnconditionalSuppressMessage("Trimming", "IL2062", Justification = "Hot Reload is not supported in Release (trimmed) scenarios.")]
 		public static IView GetReplacedView(IHotReloadableView view)
 		{
 			if (!IsEnabled)

@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,42 +10,22 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class ReflectionExtensions
 	{
-		public static FieldInfo? GetField(this Type type, Func<FieldInfo, bool> predicate)
-		{
-			return GetFields(type).FirstOrDefault(predicate);
-		}
+		const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
-		public static FieldInfo? GetField(this Type type, string name)
-		{
-			return type.GetField(fi => fi.Name == name);
-		}
+		public static FieldInfo? GetField([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)] this Type type, Func<FieldInfo, bool> predicate) =>
+			GetFields(type).FirstOrDefault(predicate);
 
-		public static IEnumerable<FieldInfo> GetFields(this Type type)
-		{
-			return GetParts(type, i => i.DeclaredFields);
-		}
+		public static FieldInfo? GetField([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)] this Type type, string name) =>
+			type.GetField(name, flags);
 
-		public static IEnumerable<PropertyInfo> GetProperties(this Type type)
-		{
-			return GetParts(type, ti => ti.DeclaredProperties);
-		}
+		public static IEnumerable<FieldInfo> GetFields([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)] this Type type) =>
+			type.GetFields(flags);
 
-		public static PropertyInfo? GetProperty(this Type type, string name)
-		{
-			Type? t = type;
-			while (t != null)
-			{
-				TypeInfo ti = t.GetTypeInfo();
-				PropertyInfo? property = ti.GetDeclaredProperty(name);
+		public static IEnumerable<PropertyInfo> GetProperties([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] this Type type) =>
+			type.GetProperties(flags);
 
-				if (property != null)
-					return property;
-
-				t = ti.BaseType;
-			}
-
-			return null;
-		}
+		public static PropertyInfo? GetProperty([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] this Type type, string name) =>
+			type.GetProperty(name, flags);
 
 		internal static object[]? GetCustomAttributesSafe(this Assembly assembly, Type attrType)
 		{
@@ -73,18 +54,6 @@ namespace Microsoft.Maui.Platform
 		public static bool IsInstanceOfType(this Type self, object o)
 		{
 			return self.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
-		}
-
-		static IEnumerable<T> GetParts<T>(Type type, Func<TypeInfo, IEnumerable<T>> selector)
-		{
-			Type? t = type;
-			while (t != null)
-			{
-				TypeInfo ti = t.GetTypeInfo();
-				foreach (T f in selector(ti))
-					yield return f;
-				t = ti.BaseType;
-			}
 		}
 	}
 }

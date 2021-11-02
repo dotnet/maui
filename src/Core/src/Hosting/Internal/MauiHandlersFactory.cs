@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
@@ -24,13 +25,13 @@ namespace Microsoft.Maui.Hosting.Internal
 			return collection;
 		}
 
-		public IElementHandler? GetHandler(Type type)
+		public IElementHandler? GetHandler([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 			=> GetService(type) as IElementHandler;
 
-		public IElementHandler? GetHandler<T>() where T : IElement
+		public IElementHandler? GetHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T>() where T : IElement
 			=> GetHandler(typeof(T));
 
-		public Type? GetHandlerType(Type iview)
+		public Type? GetHandlerType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type iview)
 		{
 			foreach (var descriptor in GetServiceDescriptors(iview))
 			{

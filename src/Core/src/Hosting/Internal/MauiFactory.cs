@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,9 +12,7 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	class MauiFactory : IMauiFactory
 	{
-		static readonly Type ServiceProviderType = typeof(IServiceProvider);
 		static readonly Type EnumerableType = typeof(IEnumerable<>);
-		static readonly Type ListType = typeof(List<>);
 
 		readonly IMauiServiceCollection _collection;
 		readonly bool _constructorInjection;
@@ -32,15 +32,16 @@ namespace Microsoft.Maui.Hosting.Internal
 			collection.AddSingleton<IServiceProvider>(this);
 		}
 
-		public object? GetService(Type serviceType)
+		[UnconditionalSuppressMessage("Trimming", "IL2092", Justification = "We cannot specify DynamicallyAccessedMemberTypes.Interfaces on IServiceProvider.GetService().")]
+		public object? GetService([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type serviceType)
 		{
 			if (!TryGetServiceDescriptors(ref serviceType, out var single, out var enumerable))
 				return default;
 
-			return GetService(serviceType, single, enumerable);
+			return GetService(single, enumerable);
 		}
 
-		protected ServiceDescriptor? GetServiceDescriptor(Type serviceType)
+		protected ServiceDescriptor? GetServiceDescriptor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type serviceType)
 		{
 			if (serviceType == null)
 				throw new ArgumentNullException(nameof(serviceType));
@@ -56,24 +57,26 @@ namespace Microsoft.Maui.Hosting.Internal
 			return null;
 		}
 
-		protected IEnumerable<ServiceDescriptor> GetServiceDescriptors(Type serviceType)
+		protected IEnumerable<ServiceDescriptor> GetServiceDescriptors([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type serviceType)
 		{
 			if (serviceType == null)
 				throw new ArgumentNullException(nameof(serviceType));
 
 			var types = GetServiceBaseTypes(serviceType);
-
+			var list = new List<ServiceDescriptor>();
 			foreach (var type in types)
 			{
 				foreach (var descriptor in _collection)
 				{
 					if (descriptor.ServiceType == serviceType)
-						yield return descriptor;
+						list.Add(descriptor);
 				}
 			}
+			return list;
 		}
 
-		bool TryGetServiceDescriptors(ref Type serviceType, out ServiceDescriptor? single, out IEnumerable<ServiceDescriptor>? enumerable)
+		[UnconditionalSuppressMessage("Trimming", "IL2062", Justification = "'ref Type serviceType' causes several IL2062 to be emitted.")]
+		bool TryGetServiceDescriptors([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] ref Type serviceType, out ServiceDescriptor? single, out IEnumerable<ServiceDescriptor>? enumerable)
 		{
 			// fast path for exact match
 			{
@@ -102,7 +105,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			return false;
 		}
 
-		static List<Type> GetServiceBaseTypes(Type serviceType)
+		static List<Type> GetServiceBaseTypes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type serviceType)
 		{
 			var types = new List<Type> { serviceType };
 
@@ -139,24 +142,27 @@ namespace Microsoft.Maui.Hosting.Internal
 			return typeInstance;
 		}
 
-		object? GetService(Type serviceType, ServiceDescriptor? single, IEnumerable<ServiceDescriptor>? enumerable)
+		object? GetService(ServiceDescriptor? single, IEnumerable<ServiceDescriptor>? enumerable)
 		{
 			if (single != null)
 				return GetService(single);
 
-			if (enumerable != null)
+			if (enumerable != null && enumerable.Any())
 			{
-				var values = (IList)Activator.CreateInstance(ListType.MakeGenericType(serviceType))!;
-
-				foreach (var descriptor in enumerable)
-				{
-					values.Add(GetService(descriptor));
-				}
-
-				if (values.Count > 0)
-					return values;
+				return GetServices (enumerable);
 			}
+
 			return default;
+		}
+
+		IEnumerable GetServices(IEnumerable<ServiceDescriptor> enumerable)
+		{
+			foreach (var descriptor in enumerable)
+			{
+				var service = GetService(descriptor);
+				if (service != null)
+					yield return service;
+			}
 		}
 
 		object? CreateInstance(ServiceDescriptor item)
@@ -178,10 +184,10 @@ namespace Microsoft.Maui.Hosting.Internal
 			throw new InvalidOperationException($"You need to provide an {nameof(item.ImplementationType)}, an {nameof(item.ImplementationFactory)} or an {nameof(item.ImplementationInstance)}.");
 		}
 
-		object? CreateInstance(Type implementationType)
+		object? CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
 		{
 			// get constructors ordered by parameter count
-			var constructors = implementationType.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			var constructors = implementationType.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
 			var matches = new (ConstructorInfo? Constructor, ParameterInfo[]? Parameters)[constructors.Length];
 			var matchesCounts = new int[constructors.Length];
 			var found = false;
@@ -219,7 +225,7 @@ namespace Microsoft.Maui.Hosting.Internal
 					for (var i = 0; i < paramCount; i++)
 					{
 						var param = parameters[i];
-						var paramType = param.ParameterType;
+						var paramType = GetParameterType(param);
 
 						var isValid = TryGetServiceDescriptors(ref paramType, out var single, out var enumerable);
 						if (isValid)
@@ -241,7 +247,7 @@ namespace Microsoft.Maui.Hosting.Internal
 						{
 							var descriptor = paramDescriptors[i];
 							if (descriptor.Single != null || descriptor.Enumerable != null)
-								paramValues[i] = GetService(descriptor.ServiceType, descriptor.Single, descriptor.Enumerable);
+								paramValues[i] = GetService(descriptor.Single, descriptor.Enumerable);
 							else
 								paramValues[i] = descriptor.Value;
 						}
@@ -252,5 +258,9 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			throw new InvalidOperationException($"Could not match any constructors for '{implementationType.Name}'.");
 		}
+
+		[UnconditionalSuppressMessage("Trimming", "IL2073", Justification = "We cannot specify DynamicallyAccessedMemberTypes.Interfaces on ParameterInfo.ParameterType.")]
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+		static Type GetParameterType(ParameterInfo p) => p.ParameterType;
 	}
 }

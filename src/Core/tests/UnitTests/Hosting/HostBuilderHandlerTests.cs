@@ -78,7 +78,13 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			};
 
 			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandlers(dic))
+				.ConfigureMauiHandlers(handlers =>
+				{
+					foreach (var pair in dic)
+					{
+						handlers.AddHandler(pair.Key, pair.Value);
+					}
+				})
 				.Build();
 
 			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetHandler(typeof(IViewStub));

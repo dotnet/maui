@@ -1,5 +1,7 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
+[assembly: AssemblyMetadata ("IsTrimmable", "True")]
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]

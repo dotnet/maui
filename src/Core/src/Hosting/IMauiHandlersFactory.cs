@@ -1,16 +1,17 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
 	public interface IMauiHandlersFactory : IMauiFactory
 	{
-		Type? GetHandlerType(Type iview);
+		Type? GetHandlerType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type iview);
 
-		IElementHandler? GetHandler(Type type);
+		IElementHandler? GetHandler([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type);
 
-		IElementHandler? GetHandler<T>() where T : IElement;
+		IElementHandler? GetHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T>() where T : IElement;
 
 		IMauiHandlersCollection GetCollection();
 	}

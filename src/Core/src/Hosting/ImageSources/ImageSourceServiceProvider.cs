@@ -2,13 +2,16 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Hosting.Internal;
 
 namespace Microsoft.Maui.Hosting
 {
 	class ImageSourceServiceProvider : MauiFactory, IImageSourceServiceProvider
 	{
-		static readonly string ImageSourceInterface = typeof(IImageSource).FullName!;
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+		static readonly Type ImageSourceInterfaceType = typeof(IImageSource);
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 		static readonly Type ImageSourceServiceType = typeof(IImageSourceService<>);
 
 		readonly ConcurrentDictionary<Type, Type> _imageSourceCache = new ConcurrentDictionary<Type, Type>();
@@ -22,40 +25,59 @@ namespace Microsoft.Maui.Hosting
 
 		public IServiceProvider HostServiceProvider { get; }
 
-		public IImageSourceService? GetImageSourceService(Type imageSource) =>
+		public IImageSourceService? GetImageSourceService([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type imageSource) =>
 			(IImageSourceService?)GetService(GetImageSourceServiceType(imageSource));
 
-		public Type GetImageSourceServiceType(Type imageSource) =>
-			_serviceCache.GetOrAdd(imageSource, type =>
-			{
-				var genericConcreteType = ImageSourceServiceType.MakeGenericType(type);
+		[UnconditionalSuppressMessage("Trimming", "IL2073", Justification = TrimmerHelper.ConcurrentDictionary)]
+		[UnconditionalSuppressMessage("Trimming", "IL2111", Justification = TrimmerHelper.MakeGenericType)]
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+		public Type GetImageSourceServiceType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type imageSource) =>
+			_serviceCache.GetOrAdd(imageSource, CreateImageSourceServiceType);
 
-				if (genericConcreteType != null && GetServiceDescriptor(genericConcreteType) != null)
-					return genericConcreteType;
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+		Type CreateImageSourceServiceType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
+		{
+			var genericConcreteType = MakeGenericType(ImageSourceServiceType, type);
 
-				return ImageSourceServiceType.MakeGenericType(GetImageSourceType(type));
-			});
+			if (genericConcreteType != null && GetServiceDescriptor(genericConcreteType) != null)
+				return genericConcreteType;
 
-		public Type GetImageSourceType(Type imageSource) =>
+			return MakeGenericType(ImageSourceServiceType, GetImageSourceType(type));
+		}
+
+		[UnconditionalSuppressMessage("Trimming", "IL2073", Justification = TrimmerHelper.ConcurrentDictionary)]
+		[UnconditionalSuppressMessage("Trimming", "IL2111", Justification = TrimmerHelper.MakeGenericType)]
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+		public Type GetImageSourceType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type imageSource) =>
 			_imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);
 
-		Type CreateImageSourceTypeCacheEntry(Type type)
+		[UnconditionalSuppressMessage("Trimming", "IL2065", Justification = "'directInterface.GetInterface(fullName)' can not be statically determined and may not meet 'DynamicallyAccessedMembersAttribute' requirements.")]
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+		Type CreateImageSourceTypeCacheEntry([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
 		{
-			if (type.IsInterface)
+			var fullName = ImageSourceInterfaceType.FullName;
+			if (!string.IsNullOrEmpty(fullName))
 			{
-				if (type.GetInterface(ImageSourceInterface) != null)
-					return type;
-			}
-			else
-			{
-				foreach (var directInterface in type.GetInterfaces())
+				if (type.IsInterface)
 				{
-					if (directInterface.GetInterface(ImageSourceInterface) != null)
-						return directInterface;
+					if (type.GetInterface(fullName) != null)
+						return type;
+				}
+				else
+				{
+					foreach (var directInterface in type.GetInterfaces())
+					{
+						if (directInterface.GetInterface(fullName) != null)
+							return directInterface;
+					}
 				}
 			}
 
 			throw new InvalidOperationException($"Unable to find the image source type because none of the interfaces on {type.Name} were derived from {nameof(IImageSource)}.");
 		}
+
+		[UnconditionalSuppressMessage("Trimming", "IL2055", Justification = TrimmerHelper.MakeGenericType)]
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+		static Type MakeGenericType ([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type a, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type b) => a.MakeGenericType(b);
 	}
 }

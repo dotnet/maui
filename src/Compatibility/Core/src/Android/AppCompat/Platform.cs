@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (fragmentManager != null || layoutInflater != null)
 						mauiContext = mauiContext.MakeScoped(layoutInflater, fragmentManager);
 
-					handler = mauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
+					handler = mauiContext.Handlers.GetHandler(TrimmerHelper.GetType(element)) as IViewHandler;
 					handler.SetMauiContext(mauiContext);
 				}
 				catch

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Android.App;
 using Android.Content;
 using AView = Android.Views.View;
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Platform
 				handler = null;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(view.GetType());
+				handler = context.Handlers.GetHandler(TrimmerHelper.GetType(view));
 
 			if (handler == null)
 				throw new Exception($"Handler not found for view {view}.");
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Platform
 				handler = null;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(element.GetType());
+				handler = context.Handlers.GetHandler(TrimmerHelper.GetType(element));
 
 			if (handler == null)
 				throw new Exception($"Handler not found for window {element}.");
