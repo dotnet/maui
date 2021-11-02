@@ -21,12 +21,12 @@ namespace Microsoft.Maui.Controls
 
 		public IReadOnlyList<Window> Windows => _windows;
 
-		IWindow IApplication.CreateWindow(IActivationState activationState)
+		IWindow IApplication.CreateWindow(IActivationState? activationState)
 		{
 			Window? window = null;
 
 			// try get the window that is pending
-			if (activationState.State?.TryGetValue(MauiWindowIdKey, out var requestedWindowId) ?? false)
+			if (activationState?.State?.TryGetValue(MauiWindowIdKey, out var requestedWindowId) ?? false)
 			{
 				if (requestedWindowId != null && _requestedWindows.TryGetValue(requestedWindowId, out var w))
 					window = w;
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
 		}
 
-		protected virtual Window CreateWindow(IActivationState activationState)
+		protected virtual Window CreateWindow(IActivationState? activationState)
 		{
 			if (Windows.Count > 0)
 				return Windows[0];

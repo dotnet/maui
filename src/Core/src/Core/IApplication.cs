@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="activationState">Argument containing specific information on each platform.</param>
 		/// <returns>The created window.</returns>
-		IWindow CreateWindow(IActivationState activationState);
+		IWindow CreateWindow(IActivationState? activationState);
 
 		void OpenWindow(IWindow window);
 
