@@ -124,6 +124,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
 		private void OnServicesPropertyChanged() => StartWebViewCoreIfPossible();
 
+		private bool RequiredStartupPropertiesSet =>
+			Created &&
+			_webview != null &&
+			HostPage != null &&
+			Services != null;
+
 		private bool IsAncestorSiteInDesignMode2 =>
 			GetSitedParentSite(this) is ISite parentSite && parentSite.DesignMode;
 
@@ -134,17 +140,17 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 					? control.Site
 					: GetSitedParentSite(control.Parent);
 
-		private bool RequiredStartupPropertiesSet =>
-			Created &&
-			_webview != null &&
-			HostPage != null &&
-			Services != null;
-
 		private void StartWebViewCoreIfPossible()
 		{
 			// We never start the Blazor code in design time because it doesn't make sense to run
 			// a Blazor component in the designer.
-			if (!IsAncestorSiteInDesignMode2 && (!RequiredStartupPropertiesSet || _webviewManager != null))
+			if (IsAncestorSiteInDesignMode)
+			{
+				return;
+			}
+
+			// If we don't have all the required properties, or if there's already a WebViewManager, do nothing
+			if (!RequiredStartupPropertiesSet || _webviewManager != null)
 			{
 				return;
 			}
