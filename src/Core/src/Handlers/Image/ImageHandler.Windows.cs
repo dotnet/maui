@@ -13,21 +13,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Image nativeView)
 		{
 			base.ConnectHandler(nativeView);
-
-			nativeView.Loaded += OnNativeViewLoaded;
-			nativeView.Unloaded += OnNativeViewUnloaded;
 		}
 
 		protected override void DisconnectHandler(Image nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-
-			if (nativeView.XamlRoot != null)
-				nativeView.XamlRoot.Changed -= OnXamlRootChanged;
-
-			nativeView.Loaded -= OnNativeViewLoaded;
-			nativeView.Unloaded -= OnNativeViewUnloaded;
-
 			SourceLoader.Reset();
 		}
 
@@ -63,25 +53,6 @@ namespace Microsoft.Maui.Handlers
 		void OnSetImageSource(ImageSource? obj)
 		{
 			NativeView.Source = obj;
-		}
-
-		void OnNativeViewLoaded(object sender = null!, RoutedEventArgs e = null!)
-		{
-			if (NativeView?.XamlRoot != null)
-			{
-				NativeView.XamlRoot.Changed += OnXamlRootChanged;
-			}
-		}
-
-		void OnNativeViewUnloaded(object sender = null!, RoutedEventArgs e = null!)
-		{
-			if (NativeView?.XamlRoot != null)
-				NativeView.XamlRoot.Changed -= OnXamlRootChanged;
-		}
-
-		void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args)
-		{
-			UpdateValue(nameof(IImage.Source));
 		}
 	}
 }
