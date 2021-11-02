@@ -12,9 +12,6 @@ Task("Clean")
             if(f.StartsWith($".{directorySeparatorChar}bin") || f.StartsWith($".{directorySeparatorChar}tools"))
                 continue;
 
-            if(f.StartsWith($".{directorySeparatorChar}bin") || f.StartsWith($".{directorySeparatorChar}tools"))
-                continue;
-
             // this is here as a safety check
             if(!f.StartsWith($".{directorySeparatorChar}src"))
                 continue;
