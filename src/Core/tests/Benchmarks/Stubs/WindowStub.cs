@@ -50,6 +50,10 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			IsResumed = false;
 		}
 
+		public void Backgrounding(IPersistedState state)
+		{
+		}
+
 		public bool BackButtonClicked() => true;
 	}
 }

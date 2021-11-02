@@ -8,7 +8,10 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Application : IApplication
 	{
+		const string MauiWindowIdKey = "__MAUI_WINDOW_ID__";
+
 		readonly List<Window> _windows = new();
+		readonly Dictionary<string, Window> _requestedWindows = new();
 		ILogger<Application>? _logger;
 
 		ILogger<Application>? Logger =>
@@ -18,9 +21,18 @@ namespace Microsoft.Maui.Controls
 
 		public IReadOnlyList<Window> Windows => _windows;
 
-		IWindow IApplication.CreateWindow(IActivationState activationState)
+		IWindow IApplication.CreateWindow(IActivationState? activationState)
 		{
 			Window? window = null;
+
+			// try get the window that is pending
+			if (activationState?.State?.TryGetValue(MauiWindowIdKey, out var requestedWindowId) ?? false)
+			{
+				if (requestedWindowId != null && _requestedWindows.TryGetValue(requestedWindowId, out var w))
+					window = w;
+			}
+
+			// create a new one if there is no pending windows
 			if (window == null)
 			{
 				window = CreateWindow(activationState);
@@ -39,12 +51,32 @@ namespace Microsoft.Maui.Controls
 			return window;
 		}
 
+		void IApplication.OpenWindow(IWindow window)
+		{
+			if (window is Window cwindow)
+				OpenWindow(cwindow);
+		}
+
+		public virtual void OpenWindow(Window window)
+		{
+			var id = Guid.NewGuid().ToString();
+
+			_requestedWindows[id] = window;
+
+			var state = new PersistedState
+			{
+				[MauiWindowIdKey] = id
+			};
+
+			Handler?.Invoke(nameof(IApplication.OpenWindow), new OpenWindowRequest(State: state));
+		}
+
 		public void ThemeChanged()
 		{
 			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
 		}
 
-		protected virtual Window CreateWindow(IActivationState activationState)
+		protected virtual Window CreateWindow(IActivationState? activationState)
 		{
 			if (Windows.Count > 0)
 				return Windows[0];

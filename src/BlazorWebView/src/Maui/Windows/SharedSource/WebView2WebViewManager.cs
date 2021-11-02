@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.AspNetCore.Components.WebView.WebView2.Internal;
 using Microsoft.Extensions.FileProviders;
 using Windows.ApplicationModel;
@@ -102,10 +103,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
 				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
 
+			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
+
 			// First, call into WebViewManager to see if it has a framework file for this request. It will
 			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
 			// return a file.
-			if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 			{
 				// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams
 				var memStream = new MemoryStream();

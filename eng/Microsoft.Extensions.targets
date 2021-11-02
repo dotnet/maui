@@ -7,13 +7,13 @@
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
-    <MicrosoftGraphicsWin2DVersion>1.0.0.28-preview2</MicrosoftGraphicsWin2DVersion>
-    <MicrosoftMauiGraphicsVersion>6.0.101-preview.10.566</MicrosoftMauiGraphicsVersion>
+    <MicrosoftGraphicsWin2DVersion>1.0.0.29-preview3</MicrosoftGraphicsWin2DVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.101-preview.10.640</MicrosoftMauiGraphicsVersion>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
-    <_MicrosoftWindowsAppSdkVersion>1.0.0-preview2</_MicrosoftWindowsAppSdkVersion>
-    <_MicrosoftWindowsAppSdkVersion Condition="'$(UseInternalWinUIPackages)' == 'true'">1.0.0-20211012.0-CI-experimental</_MicrosoftWindowsAppSdkVersion>
+    <_MicrosoftWindowsAppSdkVersion>1.0.0-preview3</_MicrosoftWindowsAppSdkVersion>
+    <_MicrosoftWindowsAppSdkVersion Condition="'$(UseInternalWinUIPackages)' == 'true'">1.0.0-20211030.0-CI-experimental</_MicrosoftWindowsAppSdkVersion>
     <_MicrosoftWebWebView2Version>1.0.961.33</_MicrosoftWebWebView2Version>
   </PropertyGroup>
   <!-- Android related Packages -->
@@ -22,9 +22,9 @@
   </PropertyGroup>
   <!-- SkiaSharp related Packages -->
   <PropertyGroup>
-    <_SkiaSharpVersion>2.88.0-preview.145</_SkiaSharpVersion>
-    <_HarfBuzzSharpVersion>2.8.2-preview.145</_HarfBuzzSharpVersion>
-    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.7533b54bb17a4dbc0c837e47eb4615b3ff2d26ed.145</_SkiaSharpNativeAssetsVersion>
+    <_SkiaSharpVersion>2.88.0-preview.155</_SkiaSharpVersion>
+    <_HarfBuzzSharpVersion>2.8.2-preview.155</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.85613e728cab06a91973522a54bbbbba24db72bc.155</_SkiaSharpNativeAssetsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
     <!-- Debugger workaround -->
