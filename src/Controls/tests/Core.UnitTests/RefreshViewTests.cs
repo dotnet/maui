@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -14,20 +15,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class RefreshViewTests : BaseTestFixture
 	{
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-			Device.Info = null;
-		}
-
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
-			Device.Info = new TestDeviceInfo();
+			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
 		}
 
 		[Test]
