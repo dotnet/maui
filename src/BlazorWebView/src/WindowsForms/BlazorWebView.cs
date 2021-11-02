@@ -130,16 +130,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			HostPage != null &&
 			Services != null;
 
-		private bool IsAncestorSiteInDesignMode2 =>
-			GetSitedParentSite(this) is ISite parentSite && parentSite.DesignMode;
-
-		private ISite GetSitedParentSite(Control control) =>
-			control is null
-				? throw new ArgumentNullException(nameof(control))
-				: control.Site != null || control.Parent is null
-					? control.Site
-					: GetSitedParentSite(control.Parent);
-
 		private void StartWebViewCoreIfPossible()
 		{
 			// We never start the Blazor code in design time because it doesn't make sense to run
