@@ -10,6 +10,6 @@ namespace Microsoft.Maui.Controls
 			new Size(info.Width / info.Density, info.Height / info.Density);
 
 		public static double DisplayRound(this DisplayInfo info, double value) =>
-			Math.Round(info.Density * value) / info.Density;
+			Math.Round(value);
 	}
 }
