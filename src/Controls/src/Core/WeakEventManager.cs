@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
 
-			if (handler?.Target == null)
+			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
 
-			if (handler?.Target == null)
+			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
 
-			if (handler?.Target == null)
+			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
@@ -92,13 +92,13 @@ namespace Microsoft.Maui.Controls
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
 
-			if (handler?.Target == null)
+			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		void AddEventHandler(string eventName, object handlerTarget, MethodInfo methodInfo)
+		void AddEventHandler(string eventName, object? handlerTarget, MethodInfo methodInfo)
 		{
 			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription>? targets))
 			{
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls
 			targets.Add(new Subscription(new WeakReference(handlerTarget), methodInfo));
 		}
 
-		void RemoveEventHandler(string eventName, object handlerTarget, MemberInfo methodInfo)
+		void RemoveEventHandler(string eventName, object? handlerTarget, MemberInfo methodInfo)
 		{
 			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription>? subscriptions))
 				return;
