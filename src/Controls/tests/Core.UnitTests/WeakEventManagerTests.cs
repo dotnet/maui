@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.ComponentModel;
 using NUnit.Framework;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		static int s_count;
 		readonly WeakEventManager _propertyChangedWeakEventManager = new WeakEventManager();
 
-		static void Handler(object sender, EventArgs eventArgs)
+		static void Handler(object? sender, EventArgs eventArgs)
 		{
 			s_count++;
 		}
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 
-			void EventSource_TestEvent(object sender, EventArgs e)
+			void EventSource_TestEvent(object? sender, EventArgs e)
 			{
 				Count++;
 			}
@@ -74,13 +75,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				source.TestEvent += SourceOnTestEvent;
 			}
 
-			void SourceOnTestEvent(object sender, EventArgs eventArgs)
+			void SourceOnTestEvent(object? sender, EventArgs eventArgs)
 			{
 				Assert.Fail();
 			}
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged
+		public event PropertyChangedEventHandler? PropertyChanged
 		{
 			add => _propertyChangedWeakEventManager.AddEventHandler(value);
 			remove => _propertyChangedWeakEventManager.RemoveEventHandler(value);
@@ -255,7 +256,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			PropertyChanged += HandleDelegateTest;
 			bool didEventFire = false;
 
-			void HandleDelegateTest(object sender, PropertyChangedEventArgs e)
+			void HandleDelegateTest(object? sender, PropertyChangedEventArgs e)
 			{
 				Assert.IsNotNull(sender);
 				Assert.AreEqual(this.GetType(), sender?.GetType());
