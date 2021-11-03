@@ -1,6 +1,5 @@
 ﻿using System;
 using Tizen.UIExtensions.ElmSharp;
-using SmartEvent = ElmSharp.SmartEvent;
 using EEntry = ElmSharp.Entry;
 
 namespace Microsoft.Maui.Handlers
@@ -29,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EntryLayoutFocused += OnFocused;
 			platformView.EntryLayoutUnfocused += OnUnfocused;
 			platformView.PrependMarkUpFilter(MaxLengthFilter);
+
 
 
 			// TODO: Fix me later
