@@ -140,15 +140,6 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (xpe == null && TryAddToResourceDictionary(source as ResourceDictionary, value, xKey, node, out xpe))
 					return;
 
-				// Collection element, implicit content, or implicit collection element.
-				if (xpe == null && typeof(IEnumerable).IsAssignableFrom(Context.Types[parentElement]) && Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1))
-				{
-					var addMethod =
-						Context.Types[parentElement].GetRuntimeMethods().First(mi => mi.Name == "Add" && mi.GetParameters().Length == 1);
-
-					addMethod.Invoke(source, new[] { value });
-					return;
-				}
 				if (xpe == null && (contentProperty = GetContentPropertyName(Context.Types[parentElement].GetTypeInfo())) != null)
 				{
 					var name = new XmlName(node.NamespaceURI, contentProperty);
@@ -160,6 +151,17 @@ namespace Microsoft.Maui.Controls.Xaml
 					SetPropertyValue(source, name, value, Context.RootElement, node, Context, node);
 					return;
 				}
+
+				// Collection element, implicit content, or implicit collection element.
+				if (xpe == null && typeof(IEnumerable).IsAssignableFrom(Context.Types[parentElement]) && Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1))
+				{
+					var addMethod =
+						Context.Types[parentElement].GetRuntimeMethods().First(mi => mi.Name == "Add" && mi.GetParameters().Length == 1);
+
+					addMethod.Invoke(source, new[] { value });
+					return;
+				}
+			
 				xpe = xpe ?? new XamlParseException($"Can not set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
 				if (Context.ExceptionHandler != null)
 					Context.ExceptionHandler(xpe);
