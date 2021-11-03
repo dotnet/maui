@@ -102,6 +102,9 @@ namespace Microsoft.Maui
 		[PortHandler]
 		public static void UpdateSelectionLength(this Entry nativeEntry, IEntry entry)
 		{
+			if (nativeEntry.IsUpdatingCursorPosition)
+				return;
+
 			int start = GetSelectionStart(nativeEntry, entry);
 			int end = GetSelectionEnd(nativeEntry, entry, start);
 

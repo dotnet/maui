@@ -1,6 +1,5 @@
 ﻿using System;
 using Tizen.UIExtensions.ElmSharp;
-using SmartEvent = ElmSharp.SmartEvent;
 using EEntry = ElmSharp.Entry;
 
 namespace Microsoft.Maui.Handlers
@@ -21,18 +20,17 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Entry nativeView)
 		{
 			nativeView.Activated += OnCompleted;
-			nativeView.CursorChanged += OnCursorChanged;
+			nativeView.CursorPositionChanged += OnCursorChanged;
 
-			// In order to know when the selection is cleared, "selecton,cleared" event has been used.
+			// In order to know when the selection is cleared, SelectionCleared event has been used.
 			// Because CursorChanged event is still invoked with the selected text when an user clears selection. It is an known issue in EFL.
-			SmartEvent selectionCleared = new SmartEvent(nativeView, nativeView.RealHandle, ThemeConstants.Entry.Signals.SelectionCleared);
-			selectionCleared.On += OnSelectionCleared;
+			nativeView.SelectionCleared += OnSelectionCleared;
 
 			nativeView.TextChanged += OnTextChanged;
 			nativeView.EntryLayoutFocused += OnFocused;
 			nativeView.EntryLayoutUnfocused += OnUnfocused;
-
 			nativeView.PrependMarkUpFilter(MaxLengthFilter);
+
 
 			// TODO: Fix me later
 			// An initial CursorPosition is set after layouting to avoid timing issue when the EditField entry is initialized.
@@ -48,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(Entry nativeView)
 		{
 			nativeView.Activated -= OnCompleted;
-			nativeView.CursorChanged -= OnCursorChanged;
+			nativeView.CursorPositionChanged -= OnCursorChanged;
 			nativeView.TextChanged -= OnTextChanged;
 			nativeView.EntryLayoutFocused -= OnFocused;
 			nativeView.EntryLayoutUnfocused -= OnUnfocused;
