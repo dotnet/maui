@@ -4,6 +4,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -176,7 +177,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override CoreGraphics.CGSize SizeThatFits(CoreGraphics.CGSize size)
 		{
 			if (nfloat.IsInfinity(size.Width))
-				size.Width = (nfloat)(Element?.Parent is VisualElement parent ? parent.Width : Device.Info.ScaledScreenSize.Width);
+				size.Width = (nfloat)(Element?.Parent is VisualElement parent ? parent.Width : DeviceDisplay.MainDisplayInfo.GetScaledScreenSize().Width);
 
 			var sizeThatFits = Control.SizeThatFits(size);
 

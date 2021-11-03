@@ -4,7 +4,6 @@
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using System.Windows;
 using WindowsDispatcher = System.Windows.Threading.Dispatcher;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
@@ -13,12 +12,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 	{
 		private readonly WindowsDispatcher _windowsDispatcher;
 
-		private WpfDispatcher(WindowsDispatcher windowsDispatcher)
+		public WpfDispatcher(WindowsDispatcher windowsDispatcher)
 		{
 			_windowsDispatcher = windowsDispatcher ?? throw new ArgumentNullException(nameof(windowsDispatcher));
 		}
-
-		public static Dispatcher Instance { get; } = new WpfDispatcher(Application.Current.Dispatcher);
 
 		private static Action<Exception> RethrowException = exception =>
 			ExceptionDispatchInfo.Capture(exception).Throw();

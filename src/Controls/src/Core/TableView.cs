@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -120,8 +121,9 @@ namespace Microsoft.Maui.Controls
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var minimumSize = new Size(40, 40);
-			double width = Math.Min(Device.Info.ScaledScreenSize.Width, Device.Info.ScaledScreenSize.Height);
-			var request = new Size(width, Math.Max(Device.Info.ScaledScreenSize.Width, Device.Info.ScaledScreenSize.Height));
+			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			double width = Math.Min(scaled.Width, scaled.Height);
+			var request = new Size(width, Math.Max(scaled.Width, scaled.Height));
 
 			return new SizeRequest(request, minimumSize);
 		}

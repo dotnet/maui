@@ -6,6 +6,10 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	{
 		readonly List<IWindow> _windows = new List<IWindow>();
 
+		public IElementHandler Handler { get; set; }
+
+		public IElement Parent { get; set; }
+
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		public IWindow CreateWindow(IActivationState state)
@@ -13,6 +17,11 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			_windows.Add(new WindowStub());
 
 			return _windows[0];
+		}
+
+		public void OpenWindow(IWindow window)
+		{
+			throw new System.NotImplementedException();
 		}
 
 		public void ThemeChanged() { }

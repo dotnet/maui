@@ -22,8 +22,8 @@ namespace Microsoft.Maui.Essentials
 		static void ReportUpdated(object sender, object e)
 			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
-		static Windows.Devices.Power.Battery DefaultBattery =>
-			Windows.Devices.Power.Battery.AggregateBattery;
+		static global::Windows.Devices.Power.Battery DefaultBattery =>
+			global::Windows.Devices.Power.Battery.AggregateBattery;
 
 		static double PlatformChargeLevel
 		{
@@ -88,6 +88,6 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		static EnergySaverStatus PlatformEnergySaverStatus =>
-			PowerManager.EnergySaverStatus == Windows.System.Power.EnergySaverStatus.On ? EnergySaverStatus.On : EnergySaverStatus.Off;
+			PowerManager.EnergySaverStatus == global::Windows.System.Power.EnergySaverStatus.On ? EnergySaverStatus.On : EnergySaverStatus.Off;
 	}
 }

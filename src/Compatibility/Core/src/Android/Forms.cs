@@ -184,14 +184,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
-			Init(activationState.Context, activationState.SavedInstance, options);
+			Init(activationState.Context, options);
 
-		// Provide backwards compat for Forms.Init and AndroidActivity
-		// Why is bundle a param if never used?
-		public static void Init(Context activity, Bundle bundle) =>
-			Init(new MauiContext(activity), bundle);
-
-		public static void Init(IMauiContext context, Bundle bundle, InitializationOptions? options = null)
+		public static void Init(IMauiContext context, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
 
@@ -204,24 +199,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
-		public static void Init(Context activity, Bundle bundle, Assembly resourceAssembly) =>
-			Init(new MauiContext(activity), bundle, resourceAssembly);
-
-		public static void Init(IMauiContext context, Bundle bundle, Assembly resourceAssembly)
+		public static void Init(IMauiContext context, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
 			SetupInit(context, resourceAssembly, null);
-			Profile.FrameEnd();
-		}
-
-		public static void Init(InitializationOptions options)
-		{
-			Profile.FrameBegin();
-			SetupInit(
-				new MauiContext(options.Activity),
-				options.ResourceAssembly,
-				options
-			);
 			Profile.FrameEnd();
 		}
 
@@ -343,18 +324,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.PlatformServices = androidServices;
 			Device.PlatformInvalidator = androidServices;
-
-			// use field and not property to avoid exception in getter
-			if (Device.info != null)
-			{
-				((AndroidDeviceInfo)Device.info).Dispose();
-				Device.info = null;
-			}
-
-			// We want this to be updated when we have a new activity (e.g. on a configuration change)
-			// because Device.Info watches for orientation changes and we need a current activity for that
-			Profile.FramePartition("create AndroidDeviceInfo");
-			Device.Info = new AndroidDeviceInfo(activity);
 
 			Profile.FramePartition("RegisterAll");
 
@@ -484,103 +453,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return rc;
 		}
 
-		class AndroidDeviceInfo : DeviceInfo
-		{
-			bool _disposed;
-			readonly Context _formsActivity;
-			Size _scaledScreenSize;
-			Size _pixelScreenSize;
-			double _scalingFactor;
-
-			Orientation _previousOrientation = Orientation.Undefined;
-			IDualScreenService DualScreenService => DependencyService.Get<IDualScreenService>();
-
-			public AndroidDeviceInfo(Context formsActivity)
-			{
-				CheckOrientationChanged(formsActivity);
-
-				// This will not be an implementation of IDeviceInfoProvider when running inside the context
-				// of layoutlib, which is what the Android Designer does.
-				// It also won't be IDeviceInfoProvider when using Page Embedding
-				if (formsActivity is IDeviceInfoProvider)
-				{
-					_formsActivity = formsActivity;
-					((IDeviceInfoProvider)_formsActivity).ConfigurationChanged += ConfigurationChanged;
-				}
-			}
-
-			public override Size PixelScreenSize
-			{
-				get { return _pixelScreenSize; }
-			}
-
-			public override Size ScaledScreenSize => _scaledScreenSize;
-
-			public override double ScalingFactor
-			{
-				get { return _scalingFactor; }
-			}
-
-
-			public override double DisplayRound(double value) =>
-				Math.Round(ScalingFactor * value) / ScalingFactor;
-
-			protected override void Dispose(bool disposing)
-			{
-				if (_disposed)
-				{
-					return;
-				}
-
-				_disposed = true;
-
-				if (disposing)
-				{
-					var provider = _formsActivity as IDeviceInfoProvider;
-					if (provider != null)
-						provider.ConfigurationChanged -= ConfigurationChanged;
-				}
-
-				base.Dispose(disposing);
-			}
-
-			void UpdateScreenMetrics(Context formsActivity)
-			{
-				using (DisplayMetrics display = formsActivity.Resources.DisplayMetrics)
-				{
-					_scalingFactor = display.Density;
-					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
-					_scaledScreenSize = new Size(_pixelScreenSize.Width / _scalingFactor, _pixelScreenSize.Height / _scalingFactor);
-				}
-			}
-
-			void CheckOrientationChanged(Context formsActivity)
-			{
-				Orientation orientation;
-
-				if (DualScreenService?.IsSpanned == true)
-				{
-					orientation = (DualScreenService.IsLandscape) ? Orientation.Landscape : Orientation.Portrait;
-				}
-				else
-				{
-					orientation = formsActivity.Resources.Configuration.Orientation;
-				}
-
-				if (!_previousOrientation.Equals(orientation))
-					CurrentOrientation = orientation.ToDeviceOrientation();
-
-				_previousOrientation = orientation;
-
-				UpdateScreenMetrics(formsActivity);
-			}
-
-			void ConfigurationChanged(object sender, EventArgs e)
-			{
-				CheckOrientationChanged(_formsActivity);
-			}
-		}
-
 		class AndroidExpressionSearch : ExpressionVisitor, IExpressionSearch
 		{
 			List<object> _results;
@@ -642,8 +514,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				return AppDomain.CurrentDomain.GetAssemblies();
 			}
-
-			public string GetHash(string input) => Crc64.GetHash(input);
 
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
@@ -878,11 +748,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
 				}
 				return false;
-			}
-
-			public void QuitApplication()
-			{
-				Internals.Log.Warning(nameof(AndroidPlatformServices), "Platform doesn't implement QuitApp");
 			}
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)

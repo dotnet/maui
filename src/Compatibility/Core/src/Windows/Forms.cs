@@ -37,18 +37,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, state.Context.Window, maybeOptions: options);
+			SetupInit(state.Context, state.Context.GetOptionalNativeWindow(), maybeOptions: options);
 		}
-
-		public static void Init(
-			UI.Xaml.Window mainWindow,
-			IEnumerable<Assembly> rendererAssemblies = null)
-		{
-			SetupInit(new MauiContext(), mainWindow, rendererAssemblies);
-		}
-
-		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), null, null, options);
 
 		static void SetupInit(
 			IMauiContext mauiContext,
@@ -70,17 +60,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(mauiContext.GetFlowDirection());
-
-			Device.Info = new WindowsDeviceInfo();
-
-			//TODO WINUI3
-			//// use field and not property to avoid exception in getter
-			//if (Device.info != null)
-			//{
-			//	Device.info.Dispose();
-			//	Device.info = null;
-			//}
-			//Device.Info = new WindowsDeviceInfo();
 
 			//TODO WINUI3
 			//switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)

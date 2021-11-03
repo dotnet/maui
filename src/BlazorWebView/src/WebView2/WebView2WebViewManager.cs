@@ -74,7 +74,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 					eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
 					eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
 
-				if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+				var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
+
+				if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
 					var headerString = GetHeaderString(headers);
 					eventArgs.SetResponse(content, statusCode, statusMessage, headerString);

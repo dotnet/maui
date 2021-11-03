@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 	// Responsible for rendering the content title, as well as the bottom bar list of shell sections
 	public class ShellItemView : UwpGrid, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
-		ShellSectionView SectionRenderer { get; }
+		ShellSectionView SectionView { get; }
 		TextBlock _Title;
 		WBorder _BottomBarArea;
 		UwpGrid _BottomBar;
@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		IShellItemController ShellItemController => ShellItem;
 		IShellController ShellController => ShellContext?.Shell;
+		BackButtonBehavior BackButtonBehavior { get; set; }
 
 		public ShellItemView(ShellView shellContext)
 		{
@@ -70,10 +71,10 @@ namespace Microsoft.Maui.Controls.Platform
 			SetColumn(_Toolbar, 1);
 			_HeaderArea.Children.Add(_Toolbar);
 
-			SectionRenderer = shellContext.CreateShellSectionView();
-			SetRow(SectionRenderer, 1);
+			SectionView = shellContext.CreateShellSectionView();
+			SetRow(SectionView, 1);
 
-			Children.Add(SectionRenderer);
+			Children.Add(SectionView);
 
 			_BottomBar = new UwpGrid() { HorizontalAlignment = HorizontalAlignment.Center };
 			_BottomBarArea = new WBorder() { Child = _BottomBar };
@@ -123,11 +124,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ShellContext.IsPaneToggleButtonVisible)
 				inset += 45;
 
-			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Controls.NavigationView", "IsBackButtonVisible"))
+			if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Controls.NavigationView", "IsBackButtonVisible"))
 			{
 				if (ShellContext.IsBackButtonVisible != Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed &&
-					ShellContext.IsBackEnabled)
+					ShellContext.IsBackEnabled &&
+					ShellContext.Shell.FlyoutBehavior != FlyoutBehavior.Locked)
+				{
 					inset += 45;
+				}
 			}
 
 			_HeaderArea.Padding = WinUIHelpers.CreateThickness(inset, 0, 0, 0);
@@ -206,18 +210,31 @@ namespace Microsoft.Maui.Controls.Platform
 			if (appearance != null)
 			{
 				var a = (IShellAppearanceElement)appearance;
-				tabBarBackgroundColor = a.EffectiveTabBarBackgroundColor.ToWindowsColor();
-				tabBarForegroundColor = a.EffectiveTabBarForegroundColor.ToWindowsColor();
+
+				if (a.EffectiveTabBarBackgroundColor != null)
+					tabBarBackgroundColor = a.EffectiveTabBarBackgroundColor.ToWindowsColor();
+
+				if (a.EffectiveTabBarForegroundColor != null)
+					tabBarForegroundColor = a.EffectiveTabBarForegroundColor.ToWindowsColor();
+
 				if (!appearance.TitleColor.IsDefault())
 					titleColor = appearance.TitleColor.ToWindowsColor();
 			}
-			_BottomBarArea.Background = _HeaderArea.Background =
-				new UwpSolidColorBrush(tabBarBackgroundColor);
+
+			_HeaderArea.Background = new UwpSolidColorBrush(tabBarBackgroundColor);
+
+			// Only color the bottom area if there are tabs present
+			if (ShellItem?.Items.Count > 1)
+			{
+				_BottomBarArea.Background = 
+					new UwpSolidColorBrush(tabBarBackgroundColor);
+			}
+
 			_Title.Foreground = new UwpSolidColorBrush(titleColor);
 			var tabbarForeground = new UwpSolidColorBrush(tabBarForegroundColor);
 			foreach (var button in _BottomBar.Children.OfType<AppBarButton>())
 				button.Foreground = tabbarForeground;
-			if (SectionRenderer is IAppearanceObserver iao)
+			if (SectionView is IAppearanceObserver iao)
 				iao.OnAppearanceChanged(appearance);
 		}
 
@@ -316,7 +333,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (newSection.CurrentItem == null)
 				throw new InvalidOperationException($"Content not found for active {newSection} - {newSection.Title}.");
 
-			SectionRenderer.NavigateToShellSection(newSection);
+			SectionView.NavigateToShellSection(newSection);
 		}
 
 		void OnShellStructureChanged(object sender, EventArgs e)
@@ -340,6 +357,8 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateBottomBarVisibility();
 			UpdatePageTitle();
 			UpdateToolbar();
+			UpdateNavBarVisibility();
+			SetBackButtonBehavior(Shell.GetBackButtonBehavior(DisplayedPage));
 		}
 
 		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -356,6 +375,33 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				UpdateNavBarVisibility();
 			}
+			else if (e.PropertyName == Shell.BackButtonBehaviorProperty.PropertyName)
+			{
+				SetBackButtonBehavior(Shell.GetBackButtonBehavior(DisplayedPage));
+			}
+		}
+
+		void SetBackButtonBehavior(BackButtonBehavior value)
+		{
+			if (BackButtonBehavior == value)
+				return;
+
+			if (BackButtonBehavior != null)
+				BackButtonBehavior.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
+
+			BackButtonBehavior = value;
+
+			if (BackButtonBehavior != null)
+				BackButtonBehavior.PropertyChanged += OnBackButtonBehaviorPropertyChanged;
+
+			ShellContext.UpdateToolBar();
+			UpdateHeaderInsets();
+		}
+
+		void OnBackButtonBehaviorPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			ShellContext.UpdateToolBar();
+			UpdateHeaderInsets();
 		}
 
 		void UpdateNavBarVisibility()
@@ -363,13 +409,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (DisplayedPage == null || Shell.GetNavBarIsVisible(DisplayedPage))
 			{
 				_HeaderArea.Visibility = WVisibility.Visible;
-				Shell.SetFlyoutBehavior(Shell.Current, Microsoft.Maui.Controls.FlyoutBehavior.Flyout);
 			}
 			else
 			{
 				_HeaderArea.Visibility = WVisibility.Collapsed;
-				Shell.SetFlyoutBehavior(Shell.Current, Microsoft.Maui.Controls.FlyoutBehavior.Disabled);
 			}
+
+			ShellContext.UpdateToolBar();
+			UpdateHeaderInsets();
 		}
 
 		void UpdatePageTitle()
@@ -390,7 +437,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
 		{
-			SectionRenderer.NavigateToContent(e, (ShellSection)sender);
+			SectionView.NavigateToContent(e, (ShellSection)sender);
 		}
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)

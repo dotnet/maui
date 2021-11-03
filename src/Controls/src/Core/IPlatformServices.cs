@@ -17,8 +17,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 		void BeginInvokeOnMainThread(Action action);
 
-		string GetHash(string input);
-
 		double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes);
 
 		Color GetNamedColor(string name);
@@ -32,8 +30,6 @@ namespace Microsoft.Maui.Controls.Internals
 		void StartTimer(TimeSpan interval, Func<bool> callback);
 
 		string RuntimePlatform { get; }
-
-		void QuitApplication();
 
 		SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint);
 	}

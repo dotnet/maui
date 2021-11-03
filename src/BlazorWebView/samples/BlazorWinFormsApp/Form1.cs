@@ -3,7 +3,6 @@
 
 using System;
 using System.Windows.Forms;
-using BlazorWinFormsApp.Pages;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,15 +16,24 @@ namespace BlazorWinFormsApp
 
 		public Form1()
 		{
-			var serviceCollection = new ServiceCollection();
-			serviceCollection.AddBlazorWebView();
-			serviceCollection.AddSingleton<AppState>(_appState);
+			var services1 = new ServiceCollection();
+			services1.AddBlazorWebView();
+			services1.AddSingleton<AppState>(_appState);
+
+			var services2 = new ServiceCollection();
+			services2.AddBlazorWebView();
+			services2.AddSingleton<AppState>(_appState);
+
 			InitializeComponent();
 
 			blazorWebView1.HostPage = @"wwwroot\index.html";
-			blazorWebView1.Services = serviceCollection.BuildServiceProvider();
+			blazorWebView1.Services = services1.BuildServiceProvider();
 			blazorWebView1.RootComponents.Add<Main>("#app");
 			blazorWebView1.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
+
+			customFilesBlazorWebView.HostPage = @"wwwroot\customindex.html";
+			customFilesBlazorWebView.Services = services2.BuildServiceProvider();
+			customFilesBlazorWebView.RootComponents.Add<Main>("#app");
 		}
 
 		private void button1_Click(object sender, EventArgs e)

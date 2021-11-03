@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 		IView? _currentPage;
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
-		protected WindowManager WindowManager => _mauiContext.GetWindowManager();
+		protected NavigationRootManager WindowManager => _mauiContext.GetNavigationRootManager();
 		private protected INavigationView? NavigationView { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; set; } = new List<IView>();
 		public IMauiContext MauiContext => _mauiContext;
@@ -36,6 +36,9 @@ namespace Microsoft.Maui
 			navigationFrame.Navigated += OnNavigated;
 			_navigationFrame = navigationFrame;
 			NavigationView = (INavigationView)navigationView;
+
+			if (WindowManager?.RootView is NavigationView nv)
+				nv.IsPaneVisible = true;
 		}
 
 		public virtual void Disconnect(IView navigationView, Frame navigationFrame)

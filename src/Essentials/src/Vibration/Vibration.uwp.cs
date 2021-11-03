@@ -1,12 +1,13 @@
 using System;
 using Windows.Devices.Haptics;
+using Windows.Foundation.Metadata;
 
 namespace Microsoft.Maui.Essentials
 {
 	public static partial class Vibration
 	{
 		internal static bool IsSupported
-			=> Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.Devices.Notification.VibrationDevice") && DefaultDevice != null;
+			=> ApiInformation.IsTypePresent("Windows.Phone.Devices.Notification.VibrationDevice") && DefaultDevice != null;
 
 		static VibrationDevice DefaultDevice =>
 			throw new NotImplementedException("WINUI"); //VibrationDevice.GetDefault();

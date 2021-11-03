@@ -8,6 +8,7 @@ using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -1299,7 +1300,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_isDragging = true;
 				}
 
-				if (_isDragging && scrollView.ContentOffset.Y < -10f && _uiTableViewController._usingLargeTitles && Device.Info.CurrentOrientation.IsPortrait())
+				if (_isDragging && scrollView.ContentOffset.Y < -10f && _uiTableViewController._usingLargeTitles && DeviceDisplay.MainDisplayInfo.Orientation.IsPortrait())
 				{
 					_uiTableViewController.ForceRefreshing();
 				}

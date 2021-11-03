@@ -214,8 +214,8 @@ namespace Microsoft.Maui.Controls.Platform
 						MauiContext,
 						(result) =>
 						{
-							image.SetImageDrawable(result.Value);
-							if (result.Value != null)
+							image.SetImageDrawable(result?.Value);
+							if (result?.Value != null)
 							{
 								var color = Colors.Black.MultiplyAlpha(0.6f).ToNative();
 								result.Value.SetTint(color);

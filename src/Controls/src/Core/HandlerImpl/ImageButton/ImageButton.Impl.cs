@@ -26,11 +26,5 @@ namespace Microsoft.Maui.Controls
 		{
 			(this as IButtonController).SendReleased();
 		}
-
-		void IButton.ImageSourceLoaded()
-		{
-		}
-
-		IImageSource IButton.ImageSource => Source;
 	}
 }

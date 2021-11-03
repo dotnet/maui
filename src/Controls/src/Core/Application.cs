@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		public void Quit()
 		{
-			Device.PlatformServices?.QuitApplication();
+			Handler?.Invoke(ApplicationHandler.TerminateCommandKey);
 		}
 
 		public IAppLinks AppLinks

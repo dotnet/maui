@@ -11,5 +11,10 @@ namespace Microsoft.Maui
 		/// Define the drawing content.
 		/// </summary>
 		IDrawable Drawable { get; }
+
+		/// <summary>
+		/// Informs the canvas that it needs to redraw itself.
+		/// </summary>
+		void Invalidate();
 	}
 }

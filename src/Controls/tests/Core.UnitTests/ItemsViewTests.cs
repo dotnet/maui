@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -11,15 +12,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			var mockDeviceInfo = new TestDeviceInfo();
-			Device.Info = mockDeviceInfo;
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.Info = null;
+			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
 		}
 
 		[Test]
@@ -29,8 +22,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var sizeRequest = itemsView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.That(sizeRequest.Request.Height, Is.EqualTo(Device.Info.ScaledScreenSize.Height));
-			Assert.That(sizeRequest.Request.Width, Is.EqualTo(Device.Info.ScaledScreenSize.Width));
+			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			Assert.That(sizeRequest.Request.Height, Is.EqualTo(scaled.Height));
+			Assert.That(sizeRequest.Request.Width, Is.EqualTo(scaled.Width));
 		}
 
 		[Test]
@@ -42,8 +36,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var sizeRequest = itemsView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.That(sizeRequest.Request.Height, Is.EqualTo(Device.Info.ScaledScreenSize.Height));
-			Assert.That(sizeRequest.Request.Width, Is.EqualTo(Device.Info.ScaledScreenSize.Width));
+			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			Assert.That(sizeRequest.Request.Height, Is.EqualTo(scaled.Height));
+			Assert.That(sizeRequest.Request.Width, Is.EqualTo(scaled.Width));
 		}
 
 		[Test]
