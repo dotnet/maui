@@ -1,6 +1,6 @@
 using System;
 using System.Numerics;
-
+using ObjCRuntime;
 using CoreGraphics;
 
 namespace Microsoft.Maui.Graphics.Native

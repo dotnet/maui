@@ -9,12 +9,16 @@
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
   <PropertyGroup>
+    <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
     <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
     <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
-    <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
-    <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
-    <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
-    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
+    <DotNetDirectory Condition="'$(DotNetDirectory)' == ''">$(DotNetOutputPath)dotnet/</DotNetDirectory>
+    <DotNetDirectoryWithSlash>$([MSBuild]::EnsureTrailingSlash('$(DotNetDirectory)'))</DotNetDirectoryWithSlash>
+    <DotNetToolPath>$(DotNetDirectoryWithSlash)dotnet</DotNetToolPath>
+    <DotNetPacksDirectory>$(DotNetDirectoryWithSlash)packs/</DotNetPacksDirectory>
+    <DotNetLibraryPacksDirectory>$(DotNetDirectoryWithSlash)library-packs/</DotNetLibraryPacksDirectory>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectoryWithSlash)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
+    <DotNetTemplatePacksDirectory>$(DotNetDirectoryWithSlash)template-packs/</DotNetTemplatePacksDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>

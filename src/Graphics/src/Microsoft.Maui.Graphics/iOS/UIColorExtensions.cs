@@ -1,4 +1,5 @@
 using System;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Native

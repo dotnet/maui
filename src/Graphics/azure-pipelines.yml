@@ -1,8 +1,6 @@
 variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
-  DotNet.Version: 6.0.100-rtm.21525.3
-  DotNet.Workloads: https://aka.ms/dotnet/maui/preview.10.json
   DotNet.Cli.Telemetry.OptOut: true
 
 parameters:
@@ -81,16 +79,10 @@ stages:
                 versionSpec: '5.x'
 
             - pwsh: |
-                echo "##vso[task.setvariable variable=DOTNET_ROOT]$env:ProgramFiles\dotnet"
-              displayName: set DOTNET_ROOT
-              errorActionPreference: stop
-
-            - pwsh: |
-                $ProgressPreference = 'SilentlyContinue'
-                Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-                & .\dotnet-install.ps1 -Version $(DotNet.Version) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-                & dotnet --list-sdks
-              displayName: install .NET $(DotNet.Version)
+                $DOTNET_ROOT = "$env:ProgramFiles\dotnet"
+                $env:DOTNET_ROOT = $DOTNET_ROOT
+                echo "##vso[task.setvariable variable=DOTNET_ROOT]$DOTNET_ROOT"
+              displayName: set up the .NET root envvar
               errorActionPreference: stop
 
             - pwsh: dotnet tool restore
@@ -101,24 +93,22 @@ stages:
                 dotnet vs where
               displayName: update vs
 
-            - pwsh: |
-                $uri = 'https://go.microsoft.com/fwlink/?linkid=2083338'
-                Invoke-WebRequest -Uri $uri -OutFile winsdksetup.exe
-                .\winsdksetup.exe /norestart /quiet | Out-Null
-                dir "C:\Program Files (x86)\Windows Kits\10\References\"
-              displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
-
             - pwsh: echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
               displayName: Select JDK 11
 
             - pwsh: |
-                & dotnet workload install maui `
-                  --from-rollback-file "$(DotNet.Workloads)" `
-                  --source https://aka.ms/dotnet6/nuget/index.json `
-                  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-aspnetcore-7c57ecbd-3/nuget/v3/index.json `
-                  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-4822e3c3-5/nuget/v3/index.json `
-                  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-windowsdesktop-59fea7da-4/nuget/v3/index.json `
-                  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-1ec2e17f-4/nuget/v3/index.json
+                [xml] $fileXml = Get-Content "eng\Versions.props"
+                $DotNetVersion = $fileXml.SelectSingleNode("Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion").InnerText
+                echo "Installing .NET $DotNetVersion"
+
+                Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+                & .\dotnet-install.ps1 -Version $DotNetVersion -InstallDir "$env:DOTNET_ROOT" -Verbose
+                & dotnet --list-sdks
+              displayName: install .NET
+              errorActionPreference: stop
+
+            - pwsh: |
+                dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT" -p:InstallDotNet=false
               displayName: install dotnet workloads
               errorActionPreference: stop
 
@@ -126,6 +116,13 @@ stages:
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
                 .\workload-install.ps1
               displayName: install tizen
+
+            - pwsh: |
+                $uri = 'https://go.microsoft.com/fwlink/?linkid=2083338'
+                Invoke-WebRequest -Uri $uri -OutFile winsdksetup.exe
+                .\winsdksetup.exe /norestart /quiet | Out-Null
+                dir "C:\Program Files (x86)\Windows Kits\10\References\"
+              displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
 
             - pwsh: |
                 $vs = & dotnet vs where --preview --prop=InstallationPath
