@@ -41,8 +41,8 @@ namespace Microsoft.Maui
 		void Destroying();
 
 		/// <summary>
-    /// Occurs when the Window is entering a background state.
-    /// </summary>
+		/// Occurs when the Window is entering a background state.
+		/// </summary>
 		void Backgrounding(IPersistedState state);
 
 		/// <summary>
