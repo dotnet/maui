@@ -116,16 +116,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return s_navigationViewFlyoutItemFontSize = DeviceInfo.CalculateDoubleScaledSizeInLargeScreen(ThemeConstants.Shell.Resources.TV.DefaultFlyoutItemfontSize);
 		}
 
-		public static double GetTvFlyoutRatioMin(this INavigationDrawer drawer)
-		{
-			return ThemeConstants.Shell.Resources.TV.DefaultFlyoutRatioMin;
-		}
-
-		public static Graphics.Color GetTvDefaultBackgroundColor(this ITNavigtaionView nav)
-		{
-			return ThemeConstants.Shell.ColorClass.TV.DefaultBackgroundColor;
-		}
-
 		public static Graphics.Color GetTvFlyoutItemColor(this ITNavigtaionView nav)
 		{
 			return ThemeConstants.Shell.ColorClass.TV.DefaultFlyoutItemColor;
@@ -134,14 +124,6 @@ namespace Microsoft.Maui.Controls.Platform
 		public static Graphics.Color GetTvFlyoutItemFocusedColor(this ITNavigtaionView nav)
 		{
 			return ThemeConstants.Shell.ColorClass.TV.DefaultFlyoutItemFocusedColor;
-		}
-		#endregion
-
-		#region TVNavigationDrawer
-		static double s_navigationDrawerRatio = -1;
-		public static double GetTvFlyoutRatio(this INavigationDrawer drawer, int width, int height)
-		{
-			return s_navigationDrawerRatio = (width > height) ? ThemeConstants.Shell.Resources.TV.DefaultFlyoutRatio : ThemeConstants.Shell.Resources.DefaultFlyoutRatio;
 		}
 		#endregion
 	}

@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
 
-			_navigationDrawer.IsSplit = (Element.FlyoutBehavior == FlyoutBehavior.Locked) ? true : false;
+			_navigationDrawer.DrawerBehavior = Element.FlyoutBehavior.ToNative();
 		}
 
 		protected virtual void BuildMenu()
