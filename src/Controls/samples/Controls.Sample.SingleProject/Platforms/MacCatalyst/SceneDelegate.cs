@@ -9,6 +9,6 @@ namespace Maui.Controls.Sample
 	public class SceneDelegate : MauiUISceneDelegate
 	{
 
-		
+
 	}
 }
