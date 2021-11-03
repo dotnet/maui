@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		public void AddEventHandler(Delegate handler, [CallerMemberName] string eventName = null)
+		public void AddEventHandler(Delegate? handler, [CallerMemberName] string eventName = null)
 		{
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		public void RemoveEventHandler(Delegate handler, [CallerMemberName] string eventName = null)
+		public void RemoveEventHandler(Delegate? handler, [CallerMemberName] string eventName = null)
 		{
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
