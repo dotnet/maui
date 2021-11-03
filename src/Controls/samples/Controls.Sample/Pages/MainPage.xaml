@@ -40,7 +40,7 @@
                 <Setter Property="FlexLayout.Basis" Value="50%"/>
                 <Setter Property="FlexLayout.Grow" Value="0"/>
             </Style>
-            
+
             <Style x:Key="FooterStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Small" />
                 <Setter Property="FontFamily" Value="Segoe UI" />
@@ -51,11 +51,6 @@
 
         </ResourceDictionary>
     </views:BasePage.Resources>
-    <views:BasePage.ToolbarItems>
-        <ToolbarItem
-            IconImageSource="settings.png"
-            Text="Settings" />
-    </views:BasePage.ToolbarItems>
     <ScrollView>
         <Grid
             RowDefinitions="150, *, Auto"
@@ -68,7 +63,7 @@
             <Grid
                 RowSpacing="0"
                 Grid.Row="0"
-                RowDefinitions="Auto,*,Auto">
+                RowDefinitions="Auto,*">
                 <Label
                     Text=".NET MAUI"
                     Style="{StaticResource TitleStyle}"/>
@@ -76,10 +71,6 @@
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
                     Style="{StaticResource SubTitleStyle}"/>
-                <Button
-                    Grid.Row="2"
-                    Text="One more window"
-                    Clicked="ShowNewWindow" />
             </Grid>
             <!-- SECTIONS -->
             <Grid
