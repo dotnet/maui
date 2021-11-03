@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var wem = new WeakEventManager();
 			wem.RemoveEventHandler((EventHandler)((sender, args) => { }), "fake");
-			wem.RemoveEventHandler(Handler, "alsofake");
+			wem.RemoveEventHandler((Action<object?, EventArgs>)Handler, "alsofake");
 		}
 
 		[Test]
