@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Essentials
 
 			dataTransferManager.DataRequested += ShareTextHandler;
 
-			DataTransferManager.ShowShareUI();
+			DataTransferManagerHelper.ShowShare(hwnd);
 
 			void ShareTextHandler(DataTransferManager sender, DataRequestedEventArgs e)
 			{
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Essentials
 
 			dataTransferManager.DataRequested += ShareTextHandler;
 
-			DataTransferManager.ShowShareUI();
+			DataTransferManagerHelper.ShowShare(hwnd);
 
 			void ShareTextHandler(DataTransferManager sender, DataRequestedEventArgs e)
 			{
@@ -87,6 +87,12 @@ namespace Microsoft.Maui.Essentials
 			result = interop.GetForWindow(appWindow, id);
 			DataTransferManager dataTransferManager = MarshalInterface<DataTransferManager>.FromAbi(result);
 			return (dataTransferManager);
+		}
+
+		public static void ShowShare(IntPtr appWindow)
+		{
+			var interop = DataTransferManager.As<IDataTransferManagerInterop>();
+			interop.ShowShareUIForWindow(appWindow);
 		}
 	}
 }
