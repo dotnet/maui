@@ -105,7 +105,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void AddHandlerWithNullEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 			Assert.Throws<ArgumentNullException>(() => wem.AddEventHandler((EventHandler)((sender, args) => { }), null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
 
 		[Test]
@@ -187,7 +189,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void RemoveHandlerWithNullEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 			Assert.Throws<ArgumentNullException>(() => wem.RemoveEventHandler((EventHandler)((sender, args) => { }), null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
 
 		[Test]
@@ -229,7 +233,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void VerifySubscriberCanBeCollected()
 		{
-			WeakReference wr = null;
+			WeakReference? wr = null;
 			var source = new TestEventSource();
 			new Action(() =>
 			{
@@ -242,7 +246,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.WaitForPendingFinalizers();
 
 			Assert.IsNotNull(wr);
-			Assert.IsFalse(wr.IsAlive);
+			Assert.IsFalse(wr?.IsAlive);
 
 			// The handler for this calls Assert.Fail, so if the subscriber has not been collected
 			// the handler will be called and the test will fail
