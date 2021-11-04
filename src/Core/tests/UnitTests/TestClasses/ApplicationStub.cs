@@ -19,6 +19,11 @@ namespace Microsoft.Maui.UnitTests
 			throw new System.NotImplementedException();
 		}
 
+		public void OpenWindow(IWindow window)
+		{
+			throw new System.NotImplementedException();
+		}
+
 		public void ThemeChanged() { }
 	}
 }

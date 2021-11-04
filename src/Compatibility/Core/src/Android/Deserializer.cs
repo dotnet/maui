@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (properties.Count <= 0)
 				return Task.CompletedTask;
 
-			return Task.Factory.StartNew (SerializeProperties, properties);
+			return Task.Factory.StartNew(SerializeProperties, properties);
 		}
 
 		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]

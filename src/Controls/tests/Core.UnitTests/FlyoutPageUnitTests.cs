@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -8,12 +9,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class FlyoutPageUnitTests : BaseTestFixture
 	{
+		TestDeviceDisplay mockDeviceDisplay;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			var mockDeviceInfo = new TestDeviceInfo();
-			Device.Info = mockDeviceInfo;
+			mockDeviceDisplay = new TestDeviceDisplay();
+			DeviceDisplay.SetCurrent(mockDeviceDisplay);
 		}
 
 		[Test]
@@ -281,7 +284,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ThorwsInSetIsPresentOnSplitPortraitModeOnTablet()
 		{
 			Device.Idiom = TargetIdiom.Tablet;
-			Device.Info.CurrentOrientation = DeviceOrientation.Portrait;
+			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Portrait);
 
 			var page = new FlyoutPage
 			{
@@ -297,7 +300,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestSetIsPresentedOnPopoverMode()
 		{
-			Device.Info.CurrentOrientation = DeviceOrientation.Landscape;
+			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Landscape);
 
 			var page = new FlyoutPage
 			{
