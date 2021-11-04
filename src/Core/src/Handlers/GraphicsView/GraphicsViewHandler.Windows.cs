@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Graphics.Win2D;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -9,6 +11,26 @@ namespace Microsoft.Maui.Handlers
 			return new W2DGraphicsView();
 		}
 
+		protected override void ConnectHandler(W2DGraphicsView nativeView)
+		{
+			base.ConnectHandler(nativeView);
+
+			nativeView.PointerPressed += OnPointerPressed;
+			nativeView.PointerMoved += OnPointerMoved;
+			nativeView.PointerReleased += OnPointerReleased;
+			nativeView.PointerCanceled += OnPointerCanceled;
+		}
+
+		protected override void DisconnectHandler(W2DGraphicsView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+
+			nativeView.PointerPressed -= OnPointerPressed;
+			nativeView.PointerMoved -= OnPointerMoved;
+			nativeView.PointerReleased -= OnPointerReleased;
+			nativeView.PointerCanceled -= OnPointerCanceled;
+		}
+
 		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
 			handler.NativeView?.UpdateDrawable(graphicsView);
@@ -17,6 +39,42 @@ namespace Microsoft.Maui.Handlers
 		public static void MapInvalidate(GraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
 			handler.NativeView?.Invalidate();
+		}
+
+		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			var currentPoint = e.GetCurrentPoint(NativeView);
+			var currentPosition = currentPoint.Position;
+			var point = new Point(currentPosition.X, currentPosition.Y);
+
+			VirtualView?.OnTouch(new TouchEventArgs(TouchAction.Pressed, point));
+		}
+
+		void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+		{
+			var currentPoint = e.GetCurrentPoint(NativeView);
+			var currentPosition = currentPoint.Position;
+			var point = new Point(currentPosition.X, currentPosition.Y);
+
+			VirtualView?.OnTouch(new TouchEventArgs(TouchAction.Moved, point));
+		}
+
+		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+		{
+			var currentPoint = e.GetCurrentPoint(NativeView);
+			var currentPosition = currentPoint.Position;
+			var point = new Point(currentPosition.X, currentPosition.Y);
+
+			VirtualView?.OnTouch(new TouchEventArgs(TouchAction.Released, point));
+		}
+
+		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
+		{
+			var currentPoint = e.GetCurrentPoint(NativeView);
+			var currentPosition = currentPoint.Position;
+			var point = new Point(currentPosition.X, currentPosition.Y);
+
+			VirtualView?.OnTouch(new TouchEventArgs(TouchAction.Cancelled, point));
 		}
 	}
 }

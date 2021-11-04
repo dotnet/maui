@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,9 +14,16 @@ namespace Microsoft.Maui.Controls
 			get { return (IDrawable)GetValue(DrawableProperty); }
 		}
 
+		public event EventHandler<TouchEventArgs> Touch;
+
 		public void Invalidate()
 		{
 			Handler?.Invoke(nameof(IGraphicsView.Invalidate));
+		}
+
+		public virtual void OnTouch(TouchEventArgs e)
+		{
+			Touch?.Invoke(this, e);
 		}
 	}
 }

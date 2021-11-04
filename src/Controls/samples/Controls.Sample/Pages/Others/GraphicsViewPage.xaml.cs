@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
@@ -8,6 +10,25 @@ namespace Maui.Controls.Sample.Pages
 		public GraphicsViewPage()
 		{
 			InitializeComponent();
+		}
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			GraphicsView.Touch += OnTouch;
+		}
+
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
+
+			GraphicsView.Touch -= OnTouch;
+		}
+
+		private void OnTouch(object sender, TouchEventArgs e)
+		{
+			Debug.WriteLine($"ActionType: {e.ActionType} - Location: {e.Location}");
 		}
 
 		void OnButtonClicked(object sender, EventArgs e)

@@ -7,5 +7,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public IDrawable Drawable { get; set; }
 
 		public void Invalidate() { }
+
+		public virtual void OnTouch(TouchEventArgs e) { }
 	}
 }

@@ -1,12 +1,24 @@
-﻿using Microsoft.Maui.Graphics.Native;
-
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
-	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, NativeGraphicsView>
+	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, CustomNativeGraphicsView>
 	{
-		protected override NativeGraphicsView CreateNativeView()
+		protected override CustomNativeGraphicsView CreateNativeView()
 		{
-			return new NativeGraphicsView();
+			return new CustomNativeGraphicsView { UserInteractionEnabled = true };
+		}
+
+		protected override void ConnectHandler(CustomNativeGraphicsView nativeView)
+		{
+			base.ConnectHandler(nativeView);
+
+			nativeView.Touch += OnTouch;
+		}
+
+		protected override void DisconnectHandler(CustomNativeGraphicsView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+
+			nativeView.Touch -= OnTouch;
 		}
 
 		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)
@@ -17,6 +29,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapInvalidate(GraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
 			handler.NativeView?.InvalidateDrawable();
+		}
+
+		void OnTouch(object? sender, TouchEventArgs e)
+		{
+			VirtualView?.OnTouch(e);
 		}
 	}
 }
