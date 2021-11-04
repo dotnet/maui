@@ -4,8 +4,11 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
+using NSubstitute;
+using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -620,6 +623,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual("//animals/domestic/cats/catdetails", shell.CurrentState.Location.ToString());
 		}
 
+		[TestCase(typeof(PageWithDependency), typeof(PageWithDependency))]
+		[TestCase(typeof(PageWithDependency), typeof(Dependency))]
+		public async Task GlobalRouteWithDependencyResolution(Type typeForRouteName, Type type)
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem(asImplicit: true, shellItemRoute: "animals", shellSectionRoute: "domestic", shellContentRoute: "dogs");
+			shell.Items.Add(item1);
+
+			var serviceCollection = new ServiceCollection();
+			serviceCollection.AddTransient<Dependency>();
+			IServiceProvider services = serviceCollection.BuildServiceProvider();
+			var fakeMauiContext = Substitute.For<IMauiContext>();
+			var fakeHandler = Substitute.For<IElementHandler>();
+			fakeMauiContext.Services.Returns(services);
+			fakeHandler.MauiContext.Returns(fakeMauiContext);
+			var fakeApplication = new Application();
+			fakeApplication.Handler = fakeHandler;
+			Application.Current = fakeApplication;
+
+			var routeName = typeForRouteName.AssemblyQualifiedName;
+			Routing.RegisterRoute(routeName, type);
+			shell.GoToAsync(routeName);
+
+			Assert.IsNotNull(shell.Navigation);
+			Assert.IsNotNull(shell.Navigation.NavigationStack);
+			var page = shell.Navigation.NavigationStack[1];
+			Assert.That(page, Is.Not.Null);
+			Assert.IsInstanceOf<PageWithDependency>(page);
+			Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
+		}
+
 		[Test]
 		public async Task AbsoluteRoutingToPage()
 		{
@@ -929,5 +963,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		ShellNavigatingEventArgs CreateShellNavigatedEventArgs() =>
 			new ShellNavigatingEventArgs("..", "../newstate", ShellNavigationSource.Push, true);
+
+		public class PageWithDependency : ContentPage
+		{
+			public Dependency TestDependency { get; set; }
+
+			public PageWithDependency(Dependency dependency)
+			{
+				TestDependency = dependency;
+			}
+		}
+
+		public class Dependency
+		{
+			public int Test { get; set; }
+		} 
 	}
 }

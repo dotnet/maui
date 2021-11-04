@@ -21,7 +21,14 @@ namespace Microsoft.Maui.Controls
 
 			_canRecycle = true;
 
-			LoadTemplate = () => Activator.CreateInstance(type);
+			LoadTemplate = () =>
+			{
+				if (Application.Current?.Handler?.MauiContext?.Services != null)
+				{
+					return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(Application.Current.Handler.MauiContext.Services, type);
+				}
+				return Activator.CreateInstance(type);
+			};
 		}
 
 		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException("loadTemplate");

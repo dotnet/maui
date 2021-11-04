@@ -143,7 +143,16 @@ namespace Microsoft.Maui.Controls
 				// okay maybe its a type, we'll try that just to be nice to the user
 				var type = Type.GetType(route);
 				if (type != null)
-					result = Activator.CreateInstance(type) as Element;
+				{
+					if (Application.Current?.Handler?.MauiContext?.Services != null)
+					{
+						result = Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(Application.Current.Handler.MauiContext.Services, type) as Element;
+					}
+					else
+					{
+						result = Activator.CreateInstance(type) as Element;
+					}
+				}
 			}
 
 			if (result != null)
@@ -234,8 +243,13 @@ namespace Microsoft.Maui.Controls
 
 			public override Element GetOrCreate()
 			{
-				return (Element)Activator.CreateInstance(_type);
+				if (Application.Current?.Handler?.MauiContext?.Services != null)
+				{
+					return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(Application.Current.Handler.MauiContext.Services, _type) as Element;
+				}
+				return Activator.CreateInstance(_type) as Element;
 			}
+
 			public override bool Equals(object obj)
 			{
 				if ((obj is TypeRouteFactory typeRouteFactory))
