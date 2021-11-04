@@ -1,5 +1,6 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
@@ -127,12 +128,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 			// in case of the screen rotation we may need to update the choice between split
 			// and popover behaviors and reconfigure the layout
-			Device.Info.PropertyChanged += (s, e) =>
+			DeviceDisplay.MainDisplayInfoChanged += (s, e) =>
 			{
-				if (e.PropertyName == nameof(Device.Info.CurrentOrientation))
-				{
-					UpdateFlyoutLayoutBehavior();
-				}
+				UpdateFlyoutLayoutBehavior();
 			};
 		}
 
@@ -352,7 +350,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			// Screen orientation affects those 2 behaviors
 			if (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.SplitOnPortrait)
 			{
-				var orientation = Device.Info.CurrentOrientation;
+				var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
 
 				if ((orientation.IsLandscape() && behavior == FlyoutLayoutBehavior.SplitOnLandscape) || (orientation.IsPortrait() && behavior == FlyoutLayoutBehavior.SplitOnPortrait))
 				{

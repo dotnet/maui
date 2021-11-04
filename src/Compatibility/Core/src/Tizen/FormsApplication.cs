@@ -9,7 +9,6 @@ using Tizen.Applications;
 using Tizen.Common;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using DeviceOrientation = Microsoft.Maui.Controls.Internals.DeviceOrientation;
 using EWindow = ElmSharp.Window;
 using ELayout = ElmSharp.Layout;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
@@ -225,13 +224,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Exit();
 			};
 
-			Device.Info.CurrentOrientation = MainWindow.GetDeviceOrientation();
-
-			MainWindow.RotationChanged += (sender, e) =>
-			{
-				Device.Info.CurrentOrientation = MainWindow.GetDeviceOrientation();
-			};
-
 			MainWindow.BackButtonPressed += (sender, e) =>
 			{
 				if (_platform != null)
@@ -274,27 +266,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 
 			base.Exit();
-		}
-	}
-	static class WindowExtension
-	{
-		public static DeviceOrientation GetDeviceOrientation(this EWindow window)
-		{
-			DeviceOrientation orientation = DeviceOrientation.Other;
-			var isPortraitDevice = Forms.NaturalOrientation.IsPortrait();
-			switch (window.Rotation)
-			{
-				case 0:
-				case 180:
-					orientation = isPortraitDevice ? DeviceOrientation.Portrait : DeviceOrientation.Landscape;
-					break;
-
-				case 90:
-				case 270:
-					orientation = isPortraitDevice ? DeviceOrientation.Landscape : DeviceOrientation.Portrait;
-					break;
-			}
-			return orientation;
 		}
 	}
 }

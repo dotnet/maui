@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			using (IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
 			{
 				// No need to write 0 properties if no file exists
-				if (properties.Count == 0 && !store.FileExists(PropertyStoreFile))
+				if (!store.FileExists(PropertyStoreFile))
 				{
 					return;
 				}

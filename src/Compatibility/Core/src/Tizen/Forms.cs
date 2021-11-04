@@ -10,7 +10,7 @@ using Tizen.Applications;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Controls.Shapes;
-using DeviceOrientation = Microsoft.Maui.Controls.Internals.DeviceOrientation;
+using Microsoft.Maui.Essentials;
 using ELayout = ElmSharp.Layout;
 using TSystemInfo = Tizen.System.Information;
 using Size = Microsoft.Maui.Graphics.Size;
@@ -142,92 +142,41 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return ThemeManager.GetBaseScale(s_deviceType.Value);
 		});
 
-		class TizenDeviceInfo : DeviceInfo
+		static Lazy<double> s_scalingFactor = new Lazy<double>(() =>
 		{
-			readonly Size pixelScreenSize;
+			int width = 0;
+			int height = 0;
 
-			readonly Size scaledScreenSize;
+			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out width);
+			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out height);
 
-			readonly double scalingFactor;
-
-			readonly string profile;
-
-			public override Size PixelScreenSize
+			var scalingFactor = 1.0;  // scaling is disabled, we're using pixels as Xamarin's geometry units
+			if (DisplayResolutionUnit.UseVP && DisplayResolutionUnit.ViewportWidth > 0)
 			{
-				get
-				{
-					return this.pixelScreenSize;
-				}
+				scalingFactor = width / DisplayResolutionUnit.ViewportWidth;
 			}
-
-			public override Size ScaledScreenSize
+			else
 			{
-				get
+				if (DisplayResolutionUnit.UseDP)
 				{
-					return this.scaledScreenSize;
+					scalingFactor = s_dpi.Value / 160.0;
 				}
-			}
 
-			public Size PhysicalScreenSize { get; }
-
-			public override double ScalingFactor
-			{
-				get
+				if (DisplayResolutionUnit.UseDeviceScale)
 				{
-					return this.scalingFactor;
-				}
-			}
-
-			public string Profile
-			{
-				get
-				{
-					return this.profile;
-				}
-			}
-
-			public TizenDeviceInfo()
-			{
-				int width = 0;
-				int height = 0;
-
-				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out width);
-				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out height);
-
-				var physicalScale = s_dpi.Value / 160.0;
-				PhysicalScreenSize = new Size(width / physicalScale, height / physicalScale);
-
-				scalingFactor = 1.0;  // scaling is disabled, we're using pixels as Xamarin's geometry units
-				if (DisplayResolutionUnit.UseVP && DisplayResolutionUnit.ViewportWidth > 0)
-				{
-					scalingFactor = width / DisplayResolutionUnit.ViewportWidth;
-				}
-				else
-				{
-					if (DisplayResolutionUnit.UseDP)
+					var portraitSize = Math.Min(PhysicalScreenSize.Width, PhysicalScreenSize.Height);
+					if (portraitSize > 2000)
 					{
-						scalingFactor = s_dpi.Value / 160.0;
+						scalingFactor *= 4;
 					}
-
-					if (DisplayResolutionUnit.UseDeviceScale)
+					else if (portraitSize > 1000)
 					{
-						var portraitSize = Math.Min(PhysicalScreenSize.Width, PhysicalScreenSize.Height);
-						if (portraitSize > 2000)
-						{
-							scalingFactor *= 4;
-						}
-						else if (portraitSize > 1000)
-						{
-							scalingFactor *= 2.5;
-						}
+						scalingFactor *= 2.5;
 					}
 				}
-
-				pixelScreenSize = new Size(width, height);
-				scaledScreenSize = new Size(width / scalingFactor, height / scalingFactor);
-				profile = s_profile.Value;
 			}
-		}
+			return scalingFactor;
+		});
 
 		static StaticRegistrarStrategy s_staticRegistrarStrategy = StaticRegistrarStrategy.None;
 
@@ -273,8 +222,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			private set;
 		}
 
-		public static DeviceOrientation NaturalOrientation { get; } = GetDeviceOrientation();
-
 		public static StaticRegistrarStrategy StaticRegistrarStrategy => s_staticRegistrarStrategy;
 
 		public static PlatformType PlatformType => s_platformType;
@@ -289,29 +236,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static int ScreenDPI => s_dpi.Value;
 
-		public static Size PhysicalScreenSize => (Device.info as TizenDeviceInfo).PhysicalScreenSize;
+		public static Size PhysicalScreenSize => DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 
 		internal static TizenTitleBarVisibility TitleBarVisibility
 		{
 			get;
 			private set;
-		}
-
-		static DeviceOrientation GetDeviceOrientation()
-		{
-			int width = 0;
-			int height = 0;
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.width", out width);
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.height", out height);
-
-			if (height >= width)
-			{
-				return DeviceOrientation.Portrait;
-			}
-			else
-			{
-				return DeviceOrientation.Landscape;
-			}
 		}
 
 		internal static void SendViewInitialized(this VisualElement self, EvasObject nativeView)
@@ -431,13 +361,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			Device.PlatformServices = new TizenPlatformServices();
-			if (Device.info != null)
-			{
-				((TizenDeviceInfo)Device.info).Dispose();
-				Device.info = null;
-			}
-
-			Device.Info = new Forms.TizenDeviceInfo();
 
 			if (options?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers(options);
@@ -567,7 +490,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static int ConvertToScaledPixel(double dp)
 		{
-			return (int)Math.Round(dp * Device.Info.ScalingFactor);
+			return (int)Math.Round(dp * s_scalingFactor.Value);
 		}
 
 		/// <summary>
@@ -582,7 +505,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			if (pixel == int.MaxValue)
 				return double.PositiveInfinity;
-			return pixel / Device.Info.ScalingFactor;
+			return pixel / s_scalingFactor.Value;
 		}
 
 		/// <summary>
@@ -597,7 +520,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			if (pixel == double.PositiveInfinity)
 				return double.PositiveInfinity;
-			return pixel / Device.Info.ScalingFactor;
+			return pixel / s_scalingFactor.Value;
 		}
 
 		/// <summary>
