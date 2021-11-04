@@ -19,7 +19,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="ArcFlattener.cs">
