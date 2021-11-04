@@ -4,4 +4,4 @@
     "defaultItemExtension": "xaml",
     "itemHierarchyPaths": [ ".NET MAUI" ],
     "icon": "ide/MauiContentViewXamlFile.ico"
-}    
+}
