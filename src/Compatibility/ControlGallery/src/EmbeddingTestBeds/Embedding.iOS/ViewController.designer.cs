@@ -7,6 +7,7 @@
 using Foundation;
 using System;
 using System.CodeDom.Compiler;
+using ObjCRuntime;
 using UIKit;
 
 namespace Embedding.iOS

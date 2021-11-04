@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue6368;
 

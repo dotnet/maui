@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.HotReload;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui

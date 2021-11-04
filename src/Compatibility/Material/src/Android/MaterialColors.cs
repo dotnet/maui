@@ -450,7 +450,7 @@ internal static class MaterialColors
 #if __ANDROID__
 			return color.A;
 #elif __IOS__
-			System.nfloat alpha;
+			ObjCRuntime.nfloat alpha;
 			color.GetRGBA(out _, out _, out _, out alpha);
 			return (int)alpha;
 

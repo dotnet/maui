@@ -5,6 +5,7 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Graphics;
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using UIKit;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using SizeF = CoreGraphics.CGSize;
