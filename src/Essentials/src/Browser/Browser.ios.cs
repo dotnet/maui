@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Graphics.Native;
-using SafariServices;
 using ObjCRuntime;
+using SafariServices;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials
