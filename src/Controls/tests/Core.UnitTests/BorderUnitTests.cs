@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestHasVisualChildrenWhenContentIsSet()
+		public void HasVisualChildrenWhenContentIsSet()
 		{
 			var border = new Border();
 
