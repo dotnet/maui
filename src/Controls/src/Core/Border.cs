@@ -17,14 +17,14 @@ namespace Microsoft.Maui.Controls
 		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
-		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView),
+		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(Border), null, propertyChanged: ContentChanged);
 
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		public IView Content
+		public View? Content
 		{
-			get { return (IView)GetValue(ContentProperty); }
+			get { return (View?)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
 		}
 
@@ -60,16 +60,16 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(StrokeMiterLimit), typeof(double), typeof(Layout), 10.0);
 
 		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
-		public IShape StrokeShape
+		public IShape? StrokeShape
 		{
 			set { SetValue(StrokeShapeProperty, value); }
-			get { return (IShape)GetValue(StrokeShapeProperty); }
+			get { return (IShape?)GetValue(StrokeShapeProperty); }
 		}
 
-		public Brush Stroke
+		public Brush? Stroke
 		{
 			set { SetValue(StrokeProperty, value); }
-			get { return (Brush)GetValue(StrokeProperty); }
+			get { return (Brush?)GetValue(StrokeProperty); }
 		}
 
 		public double StrokeThickness
@@ -78,10 +78,10 @@ namespace Microsoft.Maui.Controls
 			get { return (double)GetValue(StrokeThicknessProperty); }
 		}
 
-		public DoubleCollection StrokeDashArray
+		public DoubleCollection? StrokeDashArray
 		{
 			set { SetValue(StrokeDashArrayProperty, value); }
-			get { return (DoubleCollection)GetValue(StrokeDashArrayProperty); }
+			get { return (DoubleCollection?)GetValue(StrokeDashArrayProperty); }
 		}
 
 		public double StrokeDashOffset
@@ -108,9 +108,9 @@ namespace Microsoft.Maui.Controls
 			get { return (double)GetValue(StrokeMiterLimitProperty); }
 		}
 
-		IShape IBorderStroke.Shape => StrokeShape;
+		IShape? IBorderStroke.Shape => StrokeShape;
 
-		Paint IStroke.Stroke => Stroke;
+		Paint? IStroke.Stroke => Stroke;
 
 		LineCap IStroke.StrokeLineCap =>
 			StrokeLineCap switch
@@ -130,30 +130,16 @@ namespace Microsoft.Maui.Controls
 				_ => LineJoin.Round
 			};
 
-		public float[] StrokeDashPattern
-		{
-			get
-			{
-				var count = StrokeDashArray.Count;
-				var pattern = new float[count];
-
-				for (int n = 0; n < count; n++)
-				{
-					pattern[n] = (float)StrokeDashArray[n];
-				}
-
-				return pattern;
-			}
-		}
+		public float[]? StrokeDashPattern => StrokeDashArray?.ToFloatArray();
 
 		float IStroke.StrokeDashOffset => (float)StrokeDashOffset;
 
 		float IStroke.StrokeMiterLimit => (float)StrokeMiterLimit;
 
 
-		object IContentView.Content => Content;
+		object? IContentView.Content => Content;
 
-		IView IContentView.PresentedContent => Content;
+		IView? IContentView.PresentedContent => Content;
 
 		public Size CrossPlatformArrange(Graphics.Rectangle bounds)
 		{
