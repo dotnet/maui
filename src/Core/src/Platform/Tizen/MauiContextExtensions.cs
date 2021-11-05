@@ -18,9 +18,7 @@ namespace Microsoft.Maui
 
 		public static IMauiContext MakeScoped(this IMauiContext mauiContext, CoreUIAppContext context)
 		{
-			var scopedContext = new MauiContext(mauiContext.Services, context, mauiContext);
-			scopedContext.AddSpecific(context);
-			return scopedContext;
+			return new MauiContext(mauiContext.Services, context, mauiContext);
 		}
 	}
 }

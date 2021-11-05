@@ -8,5 +8,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView.Exit();
 		}
+
+		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+		}
 	}
 }

@@ -10,17 +10,6 @@ namespace Microsoft.Maui
 {
 	public abstract class MauiApplication : CoreUIApplication
 	{
-		internal WeakReference<IWindow>? _virtualWindow;
-		internal IWindow? VirtualWindow
-		{
-			get
-			{
-				IWindow? window = null;
-				_virtualWindow?.TryGetTarget(out window);
-				return window;
-			}
-		}
-
 		protected MauiApplication()
 		{
 			Current = this;
@@ -52,31 +41,9 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, MauiApplicationContext);
 
-			MainWindow = CreateNativeWindow();
-			MainWindow.Show();
+			this.CreateNativeWindow(Application);
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
-		}
-
-		Window CreateNativeWindow()
-		{
-			var context = CoreUIAppContext.GetInstance(this);
-			var mauiContext = MauiApplicationContext.MakeScoped(context);
-
-			Services.InvokeLifecycleEvents<TizenLifecycle.OnMauiContextCreated>(del => del(mauiContext));
-
-			var tizenWindow = mauiContext.Context?.MainWindow;
-
-			if (tizenWindow == null)
-				throw new InvalidOperationException($"The {nameof(tizenWindow)} instance was not found.");
-
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-
-			_virtualWindow = new WeakReference<IWindow>(window);
-			tizenWindow.SetWindowHandler(window, mauiContext);
-
-			return tizenWindow;
 		}
 
 		protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
@@ -136,8 +103,6 @@ namespace Microsoft.Maui
 		public static new MauiApplication Current { get; private set; } = null!;
 
 		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
-
-		public Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 
