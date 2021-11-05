@@ -19,9 +19,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFont(this Label platformLabel, ILabel label, IFontManager fontManager)
 		{
-			platformLabel.FontSize = label.Font.Size > 0 ? label.Font.Size.ToScaledPoint() : 25d.ToScaledPoint();
+			platformLabel.FontSize = label.Font.Size > 0 ? label.Font.Size.ToScaledPoint() : 14d.ToScaledPoint();
 			platformLabel.FontAttributes = label.Font.GetFontAttributes();
-			platformLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family)??"";
+			platformLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family) ?? "";
 		}
 
 		public static void UpdateHorizontalTextAlignment(this Label platformLabel, ILabel label)
