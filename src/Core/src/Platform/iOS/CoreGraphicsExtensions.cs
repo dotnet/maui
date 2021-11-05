@@ -2,6 +2,7 @@ using System;
 using CoreGraphics;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 
 namespace Microsoft.Maui
 {

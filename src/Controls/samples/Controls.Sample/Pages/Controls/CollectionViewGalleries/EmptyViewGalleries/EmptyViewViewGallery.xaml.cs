@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			 {
 				 if (e.PropertyName == nameof(SearchBar.Text))
 				 {
-					if (string.IsNullOrEmpty(SearchBar.Text))
+					 if (string.IsNullOrEmpty(SearchBar.Text))
 					 {
 						 _demoFilteredItemSource.FilterItems(SearchBar.Text);
 					 }

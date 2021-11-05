@@ -19,6 +19,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Animations;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using TNativeView = UIKit.UIView;
@@ -218,18 +219,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.PlatformServices = platformServices;
 
-			// use field and not property to avoid exception in getter
-			if (Device.info is IDisposable infoDisposable)
-			{
-				infoDisposable.Dispose();
-				Device.info = null;
-			}
-
 #if __MOBILE__
 			Device.PlatformInvalidator = platformServices;
-			Device.Info = new IOSDeviceInfo();
-#else
-			Device.Info = new Platform.macOS.MacDeviceInfo();
 #endif
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers();

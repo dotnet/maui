@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 	{
 		const string PropertyStoreFile = "PropertyStore.forms";
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
 		{
 			try
@@ -54,6 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 			}
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		public Task SerializePropertiesAsync(IDictionary<string, object> properties)
 		{
 			try

@@ -1,7 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
-using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -15,6 +16,11 @@ namespace Microsoft.Maui.Handlers
 #else
 			handler.Logger?.LogWarning("iOS does not support programmatically terminating the app.");
 #endif
+		}
+
+		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
 		}
 
 #if __MACCATALYST__

@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls

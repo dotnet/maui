@@ -2,6 +2,7 @@ using System;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeView = UIKit.UIView;
 using NativeViewController = UIKit.UIViewController;

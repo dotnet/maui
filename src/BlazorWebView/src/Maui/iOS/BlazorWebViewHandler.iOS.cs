@@ -11,6 +11,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using ObjCRuntime;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -113,9 +114,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
+			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
 			var mauiAssetFileProvider = new iOSMauiAssetFileProvider(contentRootDir);
+			IFileProvider fileProvider = customFileProvider == null
+				? mauiAssetFileProvider
+				: new CompositeFileProvider(customFileProvider, mauiAssetFileProvider);
 
-			_webviewManager = new IOSWebViewManager(this, NativeView, Services!, ComponentsDispatcher, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new IOSWebViewManager(this, NativeView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
 
 			if (RootComponents != null)
 			{
@@ -180,6 +185,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			private byte[] GetResponseBytes(string url, out string contentType, out int statusCode)
 			{
 				var allowFallbackOnHostPage = url.EndsWith("/");
+				url = QueryStringHelper.RemovePossibleQueryString(url);
 				if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
 				{
 					statusCode = 200;

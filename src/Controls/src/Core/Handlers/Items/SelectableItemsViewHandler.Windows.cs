@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ItemsView != null)
 			{
-				ItemsView.SelectionChanged += FormsSelectionChanged;
+				ItemsView.SelectionChanged += VirtualSelectionChanged;
 			}
 
 			var newListViewBase = ListViewBase;
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ItemsView != null)
 			{
-				ItemsView.SelectionChanged -= FormsSelectionChanged;
+				ItemsView.SelectionChanged -= VirtualSelectionChanged;
 			}
 
 
@@ -128,17 +128,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_ignoreNativeSelectionChange = false;
 		}
 
-		void FormsSelectionChanged(object sender, SelectionChangedEventArgs e)
+		void VirtualSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			UpdateNativeSelection();
 		}
 
 		void NativeSelectionChanged(object sender, WASDKSelectionChangedEventArgs args)
 		{
-			UpdateFormsSelection();
+			UpdateVirtualSelection();
 		}
 
-		void UpdateFormsSelection()
+		void UpdateVirtualSelection()
 		{
 			if (_ignoreNativeSelectionChange || ItemsView == null)
 			{
@@ -150,10 +150,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case WASDKListViewSelectionMode.None:
 					break;
 				case WASDKListViewSelectionMode.Single:
-					UpdateFormsSingleSelection();
+					UpdateVirtualSingleSelection();
 					break;
 				case WASDKListViewSelectionMode.Multiple:
-					UpdateFormsMultipleSelection();
+					UpdateVirtualMultipleSelection();
 					break;
 				default:
 					break;
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		void UpdateFormsSingleSelection()
+		void UpdateVirtualSingleSelection()
 		{
 			var selectedItem = ListViewBase.SelectedItem is ItemTemplateContext itemPair
 				? itemPair.Item
@@ -176,16 +176,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ItemsView != null)
 			{
-				ItemsView.SelectionChanged -= FormsSelectionChanged;
+				ItemsView.SelectionChanged -= VirtualSelectionChanged;
 				ItemsView.SelectedItem = selectedItem;
 
-				ItemsView.SelectionChanged += FormsSelectionChanged;
+				ItemsView.SelectionChanged += VirtualSelectionChanged;
 			}
 		}
 
-		void UpdateFormsMultipleSelection()
+		void UpdateVirtualMultipleSelection()
 		{
-			ItemsView.SelectionChanged -= FormsSelectionChanged;
+			ItemsView.SelectionChanged -= VirtualSelectionChanged;
 
 			var selection = new List<object>();
 			for (int n = 0; n < ListViewBase.SelectedItems.Count; n++)
@@ -196,7 +196,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ItemsView.UpdateSelectedItems(selection);
 
-			ItemsView.SelectionChanged += FormsSelectionChanged;
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+		}
+
+		protected override void UpdateItemsSource()
+		{
+			_ignoreNativeSelectionChange = true;
+
+			base.UpdateItemsSource();
+			UpdateNativeSelection();
+
+			_ignoreNativeSelectionChange = false;
 		}
 
 		class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter

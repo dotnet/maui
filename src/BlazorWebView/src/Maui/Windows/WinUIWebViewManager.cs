@@ -42,10 +42,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
 			using var deferral = eventArgs.GetDeferral();
 
+			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
+
 			// First, call into WebViewManager to see if it has a framework file for this request. It will
 			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
 			// return a file.
-			if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers)
+			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers)
 				&& statusCode != 404)
 			{
 				// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams.
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			else
 			{
 				// Next, try to go through WinUI Storage to find a static web asset
-				var uri = new Uri(eventArgs.Request.Uri);
+				var uri = new Uri(requestUri);
 				if (new Uri(AppOrigin).IsBaseOf(uri))
 				{
 					var relativePath = new Uri(AppOrigin).MakeRelativeUri(uri).ToString();

@@ -10,6 +10,7 @@ using Microsoft.Maui.Platform.iOS;
 using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeLabel = UIKit.UILabel;
 #else

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Platform.iOS;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
