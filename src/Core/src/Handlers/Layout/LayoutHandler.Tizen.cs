@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Handlers
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
 
-			view.Show();
 			return view;
 		}
 
@@ -138,81 +137,32 @@ namespace Microsoft.Maui.Handlers
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			if (targetIndex > currentIndex)
 			{
-				child.ToPlatform(MauiContext!).RaiseTop();
-				for (int i = targetIndex + 1; i < PlatformView.Children.Count; i++)
-				{
-					PlatformView.Children[i].RaiseTop();
-				}
-			}
-			else
-			{
-				child.ToPlatform(MauiContext!).Lower();
-				for (int i = targetIndex - 1; i >= 0; i--)
-				{
-					PlatformView.Children[i].Lower();
-				}
-			}
-		}
-
-		public void Update(int index, IView child)
-		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
-			var toBeRemoved = PlatformView.Children[index];
-			PlatformView.Children.RemoveAt(index);
-			toBeRemoved.Unrealize();
-
-			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
-			if (child.Handler is IPlatformViewHandler childHandler)
-			{
-				childHandler?.SetParent(this);
-			}
-		}
-
-		public void UpdateZIndex(IView child)
-		{
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
-			EnsureZIndexOrder(child);
-		}
-
-		void EnsureZIndexOrder(IView child)
-		{
-			if (PlatformView.Children.Count == 0)
-			{
-				return;
-			}
-
-			var nativeChildView = child.ToPlatform(MauiContext!);
-			var currentIndex = PlatformView.Children.IndexOf(nativeChildView);
-
-			if (currentIndex == -1)
-			{
-				return;
-			}
-
-			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			if (targetIndex > currentIndex)
-			{
-				child.ToPlatform(MauiContext!).RaiseTop();
+				child.ToPlatform(MauiContext!).RaiseToTop();
 				for (int i = targetIndex+1; i < PlatformView.Children.Count; i++)
 				{
-					PlatformView.Children[i].RaiseTop();
+					PlatformView.Children[i].RaiseToTop();
 				}
 			}
 			else
 			{
-				child.ToPlatform(MauiContext!).Lower();
+				child.ToPlatform(MauiContext!).LowerToBottom();
 				for (int i = targetIndex-1; i >= 0; i--)
 				{
-					PlatformView.Children[i].Lower();
+					PlatformView.Children[i].LowerToBottom();
 				}
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				foreach (var child in VirtualView)
+				{
+					(child.Handler as IPlatformViewHandler)?.Dispose();
+				}
+			}
+			base.Dispose(disposing);
 		}
 	}
 }

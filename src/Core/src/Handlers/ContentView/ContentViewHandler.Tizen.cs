@@ -1,7 +1,4 @@
 ﻿using System;
-using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.NUI;
-using TColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -69,6 +66,13 @@ namespace Microsoft.Maui.Handlers
 					_contentHandler = thandler;
 				}
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				_contentHandler?.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

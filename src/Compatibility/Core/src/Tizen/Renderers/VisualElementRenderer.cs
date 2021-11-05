@@ -644,7 +644,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				containerObject.Children.Remove(renderer.NativeView);
 			}
-			renderer.Dispose();
+			renderer?.Dispose();
 		}
 
 		void OnChildAdded(object sender, ElementEventArgs e)
