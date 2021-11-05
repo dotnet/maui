@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class BorderUnitTests : BaseTestFixture
 	{
 		[Test]
-		public void TestHasVisualNOChildrenWhenNoContentIsSet()
+		public void HasNoVisualChildrenWhenNoContentIsSet()
 		{
 			var border = new Border();
 
