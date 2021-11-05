@@ -135,8 +135,6 @@ namespace Microsoft.Maui
 
 		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
 
-		public Window MainWindow { get; protected set; } = null!;
-
 		public IServiceProvider Services { get; protected set; } = null!;
 
 		public IApplication Application { get; protected set; } = null!;

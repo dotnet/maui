@@ -21,5 +21,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.Invalidate();
 		}
+
+		public static void MapInvalidate(GraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
+		{
+			handler.NativeView?.Invalidate();
+		}
 	}
 }

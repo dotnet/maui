@@ -21,5 +21,10 @@ namespace Microsoft.Maui.Handlers
 				//TODO : Need to implementation
 			}
 		}
+
+		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+		}
 	}
 }
