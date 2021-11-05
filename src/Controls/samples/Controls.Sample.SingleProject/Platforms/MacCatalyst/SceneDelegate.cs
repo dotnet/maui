@@ -1,7 +1,7 @@
 using Foundation;
+using Microsoft.Maui;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui;
 
 namespace Maui.Controls.Sample
 {

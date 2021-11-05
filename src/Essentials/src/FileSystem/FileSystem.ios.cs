@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using Photos;
 using ObjCRuntime;
+using Photos;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials
