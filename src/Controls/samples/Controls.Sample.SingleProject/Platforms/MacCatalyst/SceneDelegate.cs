@@ -1,4 +1,5 @@
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui;
 
@@ -8,6 +9,6 @@ namespace Maui.Controls.Sample
 	public class SceneDelegate : MauiUISceneDelegate
 	{
 
-		
+
 	}
 }

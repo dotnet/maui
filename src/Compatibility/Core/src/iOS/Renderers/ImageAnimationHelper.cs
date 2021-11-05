@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CoreAnimation;
 using Foundation;
 using ImageIO;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers

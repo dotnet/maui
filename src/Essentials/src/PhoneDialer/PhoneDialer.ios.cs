@@ -1,6 +1,7 @@
 using System;
 using CoreTelephony;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials

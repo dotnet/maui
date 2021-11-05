@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 		/// Gets a bool that indicate if the View is loading or not.
 		/// </summary>
 		bool IsRefreshing { get; set; }
-		
+
 		/// <summary>
 		/// Gets the loading indicator color.
 		/// </summary>

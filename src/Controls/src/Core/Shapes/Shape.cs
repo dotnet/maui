@@ -1,5 +1,7 @@
+#nullable enable
 using System;
 using System.Linq;
+using System.Numerics;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -131,7 +133,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			};
 
 		public float[] StrokeDashPattern
-			=> StrokeDashArray?.Select(a => (float)a)?.ToArray();
+			=> StrokeDashArray.Select(a => (float)a).ToArray();
 
 		float IStroke.StrokeDashOffset => (float)StrokeDashOffset;
 
@@ -168,7 +170,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				Internals.Log.Warning(nameof(Shape), $"Exception while getting shape Bounds: {exc}");
 			}
 
-			AffineTransform transform = null;
+			var transform = Matrix3x2.Identity;
 
 			if (Aspect != Stretch.None)
 			{
@@ -190,32 +192,32 @@ namespace Microsoft.Maui.Controls.Shapes
 					var translateX = (float)((viewBounds.Width - width) / 2 + viewBounds.X);
 					var translateY = (float)((viewBounds.Height - height) / 2 + viewBounds.Y);
 
-					transform = AffineTransform.GetTranslateInstance(-pathBounds.X, -pathBounds.Y);
-					transform.Translate(translateX, translateY);
-					transform.Scale(factor, factor);
+					transform = Matrix3x2.CreateTranslation(-pathBounds.X, -pathBounds.Y);
+					transform *= Matrix3x2.CreateTranslation(translateX, translateY);
+					transform *= Matrix3x2.CreateScale(factor, factor);
 				}
 				else if (Aspect == Stretch.UniformToFill)
 				{
 					var factor = (float)Math.Max(factorX, factorY);
 
-					transform = AffineTransform.GetScaleInstance(factor, factor);
+					transform = Matrix3x2.CreateScale(factor, factor);
 
 					var translateX = (float)(viewBounds.Left - factor * pathBounds.Left);
 					var translateY = (float)(viewBounds.Top - factor * pathBounds.Top);
 
-					transform.Translate(translateX, translateY);
+					transform *= Matrix3x2.CreateTranslation(translateX, translateY);
 				}
 				else if (Aspect == Stretch.Fill)
 				{
-					transform = AffineTransform.GetScaleInstance(factorX, factorY);
+					transform = Matrix3x2.CreateScale(factorX, factorY);
 
 					var translateX = (float)(viewBounds.Left - factorX * pathBounds.Left);
 					var translateY = (float)(viewBounds.Top - factorY * pathBounds.Top);
 
-					transform.Translate(translateX, translateY);
+					transform *= Matrix3x2.CreateTranslation(translateX, translateY);
 				}
 
-				if (transform != null && !transform.IsIdentity)
+				if (!transform.IsIdentity)
 					path.Transform(transform);
 			}
 #endif

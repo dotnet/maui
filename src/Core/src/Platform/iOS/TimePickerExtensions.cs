@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui

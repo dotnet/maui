@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using ObjCRuntime;
+using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui

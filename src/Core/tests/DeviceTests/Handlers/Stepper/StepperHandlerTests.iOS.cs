@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.DeviceTests

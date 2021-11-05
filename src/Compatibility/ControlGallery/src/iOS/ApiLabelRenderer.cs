@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportRenderer(typeof(ApiLabel), typeof(ApiLabelRenderer))]

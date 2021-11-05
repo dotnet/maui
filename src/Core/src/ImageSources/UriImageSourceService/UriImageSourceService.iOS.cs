@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
