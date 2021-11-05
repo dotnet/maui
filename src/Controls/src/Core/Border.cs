@@ -1,4 +1,7 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+﻿#nullable enable
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -7,6 +10,13 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("Content")]
 	public class Border : View, IContentView, IBorder, IPaddingElement
 	{
+		ReadOnlyCollection<Element>? _logicalChildren;
+
+		internal ObservableCollection<Element> InternalChildren { get; } = new();
+
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
+			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
+
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView),
 			typeof(Border), null, propertyChanged: ContentChanged);
 
@@ -160,6 +170,14 @@ namespace Microsoft.Maui.Controls
 
 		public static void ContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			if (bindable is Border border)
+			{
+				if (oldValue is Element oldElement)
+					border.InternalChildren.Remove(oldElement);
+				if (newValue is Element newElement)
+					border.InternalChildren.Add(newElement);
+			}
+
 			((IBorder)bindable).InvalidateMeasure();
 		}
 
