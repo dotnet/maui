@@ -13,5 +13,19 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.CreateNativeWindow(application, args as OpenWindowRequest);
 		}
+
+		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			if (args is IWindow window)
+			{
+				// TODO: Get native window and close it
+			}
+		}
+
+		public static void MapOnWindowClosed(ApplicationHandler handler, IApplication application, object? args)
+		{
+			if (args is IWindow window)
+				application.OnWindowClosed(window);
+		}
 	}
 }

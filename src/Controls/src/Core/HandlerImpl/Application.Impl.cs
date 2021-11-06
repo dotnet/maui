@@ -57,6 +57,22 @@ namespace Microsoft.Maui.Controls
 				OpenWindow(cwindow);
 		}
 
+		void IApplication.CloseWindow(IWindow window)
+		{
+			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
+		}
+
+		void IApplication.OnWindowClosed(IWindow window)
+		{
+			var controlsWindow = window as Window;
+
+			if (controlsWindow is null)
+				return;
+
+			// Window was closed, stop tracking it
+			_windows.RemoveAll(w => w.Id == controlsWindow.Id);
+		}
+
 		public virtual void OpenWindow(Window window)
 		{
 			var id = Guid.NewGuid().ToString();

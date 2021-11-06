@@ -17,6 +17,16 @@ namespace Microsoft.Maui
 			this.CreateNativeWindow(MauiUIApplicationDelegate.Current.Application, scene, session, connectionOptions);
 		}
 
+		public override void DidDisconnect(UIScene scene)
+		{
+			var window = (scene as UIWindowScene)?.KeyWindow?.GetWindow() ?? Window?.GetWindow();
+
+			if (window is not null)
+			{
+				MauiUIApplicationDelegate.Current?.Application?.Handler?.Invoke(nameof(IApplication.OnWindowClosed), window);
+			}
+		}
+
 		public override NSUserActivity? GetStateRestorationActivity(UIScene scene)
 		{
 			var window = Window.GetWindow();
