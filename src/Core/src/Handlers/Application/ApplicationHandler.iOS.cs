@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers

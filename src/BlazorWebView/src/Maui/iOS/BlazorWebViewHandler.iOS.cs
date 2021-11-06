@@ -11,6 +11,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using ObjCRuntime;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;

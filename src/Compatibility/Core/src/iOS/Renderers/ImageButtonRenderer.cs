@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using ObjCRuntime;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
 

@@ -1,5 +1,6 @@
 using Foundation;
 #if __IOS__
+using ObjCRuntime;
 using UIKit;
 #elif __WATCHOS__
 using UIDevice = WatchKit.WKInterfaceDevice;

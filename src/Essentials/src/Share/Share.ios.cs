@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials

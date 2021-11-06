@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
+using ObjCRuntime;
 using UIKit;
 
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.NativeBindingService))]

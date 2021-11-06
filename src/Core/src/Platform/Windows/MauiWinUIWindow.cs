@@ -54,6 +54,12 @@ namespace Microsoft.Maui
 		#region Native Window
 
 		IntPtr _hwnd = IntPtr.Zero;
+		
+		/// <summary>
+		/// Returns a pointer to the underlying platform window handle (hWnd).
+		/// </summary>
+		public IntPtr WindowHandle => _hwnd;
+		
 		delegate IntPtr WinProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 		WinProc? newWndProc = null;
 		IntPtr oldWndProc = IntPtr.Zero;
