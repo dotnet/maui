@@ -30,20 +30,6 @@ namespace Microsoft.Maui
 			base.OnCreate(savedInstanceState);
 
 			this.CreateNativeWindow(MauiApplication.Current.Application, savedInstanceState);
-
-			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnCreate>(del => del(this, savedInstanceState));
-		}
-
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-
-			var window = this.GetWindow();
-
-			if (window is not null)
-				window.Handler?.Invoke(nameof(IApplication.OnWindowClosed), window);
-			
-			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnDestroy>(del => del(this));
 		}
 	}
 }
