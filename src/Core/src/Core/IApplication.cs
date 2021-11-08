@@ -28,12 +28,6 @@ namespace Microsoft.Maui
 		void CloseWindow(IWindow window);
 
 		/// <summary>
-		/// Notifies a window was closed
-		/// </summary>
-		/// <param name="window">The closed window.</param>
-		void OnWindowClosed(IWindow window);
-
-		/// <summary>
 		/// Notify a theme change.
 		/// </summary>
 		void ThemeChanged();

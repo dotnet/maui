@@ -62,15 +62,24 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
 		}
 
-		void IApplication.OnWindowClosed(IWindow window)
+		internal void RemoveWindow(Window window)
 		{
-			var controlsWindow = window as Window;
-
-			if (controlsWindow is null)
+			// Window was closed, stop tracking it
+			if (window is null)
 				return;
 
-			// Window was closed, stop tracking it
-			_windows.RemoveAll(w => w.Id == controlsWindow.Id);
+			if (window is NavigableElement ne)
+				ne.NavigationProxy.Inner = null;
+
+			if (window is Element windowElement)
+			{
+				var oldIndex = InternalChildren.IndexOf(windowElement);
+				InternalChildren.Remove(windowElement);
+				windowElement.Parent = null;
+				OnChildRemoved(windowElement, oldIndex);
+			}
+
+			_windows.Remove(window);
 		}
 
 		public virtual void OpenWindow(Window window)

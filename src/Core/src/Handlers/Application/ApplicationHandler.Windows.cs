@@ -21,11 +21,5 @@ namespace Microsoft.Maui.Handlers
 				// TODO: Get native window and close it
 			}
 		}
-
-		public static void MapOnWindowClosed(ApplicationHandler handler, IApplication application, object? args)
-		{
-			if (args is IWindow window)
-				application.OnWindowClosed(window);
-		}
 	}
 }

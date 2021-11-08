@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Handlers
 			[TerminateCommandKey] = MapTerminate,
 			[nameof(IApplication.OpenWindow)] = MapOpenWindow,
 			[nameof(IApplication.CloseWindow)] = MapCloseWindow,
-			[nameof(IApplication.OnWindowClosed)] = MapOnWindowClosed,
 		};
 
 		ILogger<ApplicationHandler>? _logger;
