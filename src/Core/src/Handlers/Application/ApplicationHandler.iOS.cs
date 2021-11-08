@@ -41,12 +41,6 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-		public static void MapOnWindowClosed(ApplicationHandler handler, IApplication application, object? args)
-		{
-			if (args is IWindow window)
-				application.OnWindowClosed(window);
-		}
-
 #if __MACCATALYST__
 		class NSApplication
 		{
