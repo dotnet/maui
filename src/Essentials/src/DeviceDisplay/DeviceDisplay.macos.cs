@@ -1,15 +1,19 @@
+#nullable enable
+using System;
 using AppKit;
 using CoreVideo;
 using Foundation;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceDisplay
+	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
-		static uint keepScreenOnId = 0;
-		static NSObject screenMetricsObserver;
+		uint keepScreenOnId = 0;
+		NSObject? screenMetricsObserver;
 
-		static bool PlatformKeepScreenOn
+		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
+
+		public bool KeepScreenOn
 		{
 			get
 			{
@@ -33,7 +37,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static DisplayInfo GetMainDisplayInfo()
+		public DisplayInfo GetMainDisplayInfo()
 		{
 			var mainScreen = NSScreen.MainScreen;
 			var frame = mainScreen.Frame;
@@ -57,7 +61,7 @@ namespace Microsoft.Maui.Essentials
 				rate: (float)refreshRate);
 		}
 
-		static void StartScreenMetricsListeners()
+		public void StartScreenMetricsListeners()
 		{
 			if (screenMetricsObserver == null)
 			{
@@ -65,15 +69,15 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void StopScreenMetricsListeners()
+		public void StopScreenMetricsListeners()
 		{
 			screenMetricsObserver?.Dispose();
 		}
 
-		static void OnDidChangeScreenParameters(NSNotification notification)
+		public void OnDidChangeScreenParameters(NSNotification notification)
 		{
 			var metrics = GetMainDisplayInfo();
-			OnMainDisplayInfoChanged(metrics);
+			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
 		}
 	}
 }
