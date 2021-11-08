@@ -79,7 +79,8 @@ namespace Microsoft.Maui
 					visualElements.AddRange(testList.Select(n => (IVisualTreeElement)n));
 			}
 
-			return visualElements.Reverse().ToList();
+			visualElements.Reverse();
+			return visualElements;
 		}
 #endif
 
