@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
-using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -17,12 +13,14 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiRefreshView nativeView)
 		{
 			nativeView.RefreshControl.ValueChanged += OnRefresh;
+
 			base.ConnectHandler(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiRefreshView nativeView)
 		{
 			nativeView.RefreshControl.ValueChanged -= OnRefresh;
+
 			base.DisconnectHandler(nativeView);
 		}
 
@@ -61,6 +59,5 @@ namespace Microsoft.Maui.Handlers
 			if (color != null)
 				NativeView.RefreshControl.TintColor = color;
 		}
-
 	}
 }

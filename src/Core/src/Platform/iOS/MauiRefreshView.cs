@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 using WebKit;
 
