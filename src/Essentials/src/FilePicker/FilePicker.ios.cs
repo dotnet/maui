@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using MobileCoreServices;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials

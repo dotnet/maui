@@ -8,6 +8,7 @@ using Foundation;
 #if __IOS__
 using SafariServices;
 #endif
+using ObjCRuntime;
 using UIKit;
 using WebKit;
 

@@ -4,12 +4,16 @@
     x:Class="Maui.Controls.Sample.Pages.AppShell"
     xmlns:controls="using:Maui.Controls.Sample.Controls"
     xmlns:pages="using:Maui.Controls.Sample.Pages"
-    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
-    xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:shellPages="clr-namespace:Maui.Controls.Sample.Pages.ShellGalleries"
+    FlyoutBackground="{AppThemeBinding Dark=Black, Light=White}"
     >
+    <Shell.FlyoutHeader>
+        <Image Source="dotnet_bot.png"></Image>
+    </Shell.FlyoutHeader>
     <FlyoutItem Title = "Flyout Item 1">
-        <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
+        <ShellContent Title = "Flyout Gallery" ContentTemplate="{DataTemplate shellPages:ShellChromeGallery}"></ShellContent>
         <ShellContent Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
+        <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
     </FlyoutItem>
     <ShellSection Title="Flyout Item 3">
         <ShellContent Title = "Semantics Page" ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>

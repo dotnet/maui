@@ -20,9 +20,6 @@ namespace Microsoft.Maui.Controls
 		public const string Tizen = "Tizen";
 		public const string WPF = "WPF";
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static DeviceInfo info;
-
 		static IPlatformServices s_platformServices;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -34,18 +31,6 @@ namespace Microsoft.Maui.Controls
 		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 
 		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static DeviceInfo Info
-		{
-			get
-			{
-				if (info == null)
-					throw new InvalidOperationException("You must call Microsoft.Maui.Controls.Forms.Init(); prior to using this property.");
-				return info;
-			}
-			set { info = value; }
-		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetFlowDirection(FlowDirection value) => FlowDirection = value;

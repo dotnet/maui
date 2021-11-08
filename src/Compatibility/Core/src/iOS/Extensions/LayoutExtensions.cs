@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using CoreGraphics;
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

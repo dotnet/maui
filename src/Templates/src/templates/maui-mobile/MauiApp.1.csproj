@@ -8,7 +8,7 @@
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-
+    
 		<!-- Display name -->
 		<ApplicationTitle>MauiApp.1</ApplicationTitle>
 
@@ -30,10 +30,7 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon
-			Include="Resources\appicon.svg"
-			ForegroundFile="Resources\appiconfg.svg"
-			Color="#512BD4" />
+		<MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -35,35 +36,37 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				ud.SetString(str, PropertyStoreKey);
 		}
 
-		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
+		public Task<IDictionary<string, object>> DeserializePropertiesAsync() => Task.Factory.StartNew(DeserializeProperties);
+
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
+		IDictionary<string, object> DeserializeProperties()
 		{
 			// Deserialize property dictionary to local storage
 			// Make sure to use Internal
-			return Task.Run(() =>
-			{
-				var str = LoadSerialized();
+			var str = LoadSerialized();
 
-				if (string.IsNullOrEmpty(str))
-					return null;
-
-				using var stringReader = new StringReader(str);
-				using var reader = XmlReader.Create(stringReader);
-
-				try
-				{
-					var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));
-					return (IDictionary<string, object>)dcs.ReadObject(reader);
-				}
-				catch (Exception e)
-				{
-					Debug.WriteLine("Could not deserialize properties: " + e.Message);
-					Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while reading Application properties: {e}");
-				}
-
+			if (string.IsNullOrEmpty(str))
 				return null;
-			});
+
+			using var stringReader = new StringReader(str);
+			using var reader = XmlReader.Create(stringReader);
+
+			try
+			{
+				var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));
+				return (IDictionary<string, object>)dcs.ReadObject(reader);
+			}
+			catch (Exception e)
+			{
+				Debug.WriteLine("Could not deserialize properties: " + e.Message);
+				Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while reading Application properties: {e}");
+			}
+
+			return null;
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		public Task SerializePropertiesAsync(IDictionary<string, object> properties)
 		{
 			properties = new Dictionary<string, object>(properties);
@@ -72,30 +75,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (properties.Count <= 0)
 				return Task.CompletedTask;
 
+			return Task.Factory.StartNew(SerializeProperties, properties);
+		}
+
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
+		void SerializeProperties(object properties)
+		{
 			// Serialize property dictionary to local storage
 			// Make sure to use Internal
-			return Task.Run(() =>
+			using var stringWriter = new StringWriter();
+			using var xmlWriter = XmlWriter.Create(stringWriter);
+
+			try
 			{
-				using var stringWriter = new StringWriter();
-				using var xmlWriter = XmlWriter.Create(stringWriter);
+				var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));
+				dcs.WriteObject(xmlWriter, properties);
+				xmlWriter.Flush();
 
-				try
-				{
-					var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));
-					dcs.WriteObject(xmlWriter, properties);
-					xmlWriter.Flush();
+				var str = stringWriter.ToString();
 
-					var str = stringWriter.ToString();
-
-					SaveSerialized(str);
-				}
-				catch (Exception e)
-				{
-					Debug.WriteLine("Could not serialize properties: " + e.Message);
-					Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while writing Application properties: {e}");
-					return;
-				}
-			});
+				SaveSerialized(str);
+			}
+			catch (Exception e)
+			{
+				Debug.WriteLine("Could not serialize properties: " + e.Message);
+				Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while writing Application properties: {e}");
+				return;
+			}
 		}
 	}
 }

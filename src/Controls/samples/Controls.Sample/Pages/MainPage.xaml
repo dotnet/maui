@@ -40,7 +40,7 @@
                 <Setter Property="FlexLayout.Basis" Value="50%"/>
                 <Setter Property="FlexLayout.Grow" Value="0"/>
             </Style>
-            
+
             <Style x:Key="FooterStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Small" />
                 <Setter Property="FontFamily" Value="Segoe UI" />
@@ -51,11 +51,6 @@
 
         </ResourceDictionary>
     </views:BasePage.Resources>
-    <views:BasePage.ToolbarItems>
-        <ToolbarItem
-            IconImageSource="settings.png"
-            Text="Settings" />
-    </views:BasePage.ToolbarItems>
     <ScrollView>
         <Grid
             RowDefinitions="150, *, Auto"
@@ -67,11 +62,8 @@
                 Source="header_background"/>
             <Grid
                 RowSpacing="0"
-                Grid.Row="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                Grid.Row="0"
+                RowDefinitions="Auto,*">
                 <Label
                     Text=".NET MAUI"
                     Style="{StaticResource TitleStyle}"/>
