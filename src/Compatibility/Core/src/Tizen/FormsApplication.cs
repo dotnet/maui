@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Tizen.Common;
 using Tizen.NUI;
-using DeviceOrientation = Microsoft.Maui.Controls.Internals.DeviceOrientation;
 using NWindow = Tizen.NUI.Window;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -147,12 +146,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			MainWindow.AddAvailableOrientation(NWindow.WindowOrientation.LandscapeInverse);
 			MainWindow.AddAvailableOrientation(NWindow.WindowOrientation.Portrait);
 			MainWindow.AddAvailableOrientation(NWindow.WindowOrientation.PortraitInverse);
-			MainWindow.Resized += (s, e) =>
-			{
-				Device.Info.CurrentOrientation = MainWindow.GetDeviceOrientation();
-			};
-
-			Device.Info.CurrentOrientation = MainWindow.GetDeviceOrientation();
 
 			_platform = new DefaultPlatform();
 			MainWindow.GetDefaultLayer().Add(_platform.GetRootNativeView());
@@ -184,29 +177,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 
 			base.Exit();
-		}
-	}
-	static class WindowExtension
-	{
-		public static DeviceOrientation GetDeviceOrientation(this NWindow window)
-		{
-			DeviceOrientation orientation = DeviceOrientation.Other;
-			switch (window.GetCurrentOrientation())
-			{
-				case NWindow.WindowOrientation.Landscape:
-					orientation = DeviceOrientation.Landscape;
-					break;
-				case NWindow.WindowOrientation.LandscapeInverse:
-					orientation = DeviceOrientation.LandscapeLeft;
-					break;
-				case NWindow.WindowOrientation.Portrait:
-					orientation = DeviceOrientation.Portrait;
-					break;
-				case NWindow.WindowOrientation.PortraitInverse:
-					orientation = DeviceOrientation.PortraitDown;
-					break;
-			}
-			return orientation;
 		}
 	}
 }

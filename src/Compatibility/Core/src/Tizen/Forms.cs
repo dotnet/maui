@@ -6,9 +6,9 @@ using System.Reflection;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Essentials;
 using Tizen.Applications;
 using Color = Microsoft.Maui.Graphics.Color;
-using DeviceOrientation = Microsoft.Maui.Controls.Internals.DeviceOrientation;
 using NView = Tizen.NUI.BaseComponents.View;
 using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
@@ -83,15 +83,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 #pragma warning disable CS0612 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 	{
-		static Lazy<DeviceOrientation> s_naturalOrientation = new Lazy<DeviceOrientation>(() => GetDeviceNaturalOrientation());
-
 		static IReadOnlyList<string> s_flags;
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
 		public static bool IsInitialized { get; private set; }
-
-		public static DeviceOrientation NaturalOrientation => s_naturalOrientation.Value;
 
 		public static StaticRegistrarStrategy StaticRegistrarStrategy { get; private set; }
 
@@ -103,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static int ScreenDPI => TDeviceInfo.DPI;
 
-		public static Size PhysicalScreenSize => (Device.info as TizenDeviceInfo).PhysicalScreenSize;
+		public static Size PhysicalScreenSize => DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 
 		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
 
@@ -114,22 +110,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get;
 			private set;
 		}
-
-		static DeviceOrientation GetDeviceNaturalOrientation()
-		{
-			int width = TDeviceInfo.ScreenWidth;
-			int height = TDeviceInfo.ScreenHeight;
-
-			if (height >= width)
-			{
-				return DeviceOrientation.Portrait;
-			}
-			else
-			{
-				return DeviceOrientation.Landscape;
-			}
-		}
-
 
 		internal static void SendViewInitialized(this VisualElement self, NView nativeView)
 		{
@@ -249,13 +229,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
-
-			if (Device.info != null)
-			{
-				((TizenDeviceInfo)Device.info).Dispose();
-				Device.info = null;
-			}
-			Device.Info = new TizenDeviceInfo();
 
 			if (options?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers(options);
@@ -452,29 +425,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static string GetDeviceType()
 		{
 			return TDeviceInfo.DeviceType.ToString();
-		}
-
-		class TizenDeviceInfo : DeviceInfo
-		{
-			public override Size PixelScreenSize => new Size(TDeviceInfo.PixelScreenSize.Width, TDeviceInfo.PixelScreenSize.Height);
-
-			public override Size ScaledScreenSize => new Size(TDeviceInfo.ScaledDPScreenSize.Width, TDeviceInfo.ScaledDPScreenSize.Height);
-
-			public Size PhysicalScreenSize
-			{
-				get
-				{
-					int width = TDeviceInfo.ScreenWidth;
-					int height = TDeviceInfo.ScreenHeight;
-
-					var physicalScale = TDeviceInfo.DPI / 160.0;
-					return new Size(width / physicalScale, height / physicalScale);
-				}
-			}
-
-			public override double ScalingFactor => TDeviceInfo.ScalingFactor;
-
-			public string Profile => TDeviceInfo.Profile;
 		}
 	}
 
