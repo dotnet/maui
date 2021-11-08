@@ -3,6 +3,7 @@ using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -25,6 +26,14 @@ namespace Maui.Controls.Sample.Pages
 		{
 			var mvm = _services.GetService<MainViewModel>();
 			Application.Current.OpenWindow(new Window(new CustomNavigationPage(_services, mvm)));
+		}
+
+		void TestVisualTreeHelper(object sender, EventArgs e)
+		{
+			//var frame = TestLabel.GetNativeViewBounds();
+			//var frame2 = HomeSections.GetNativeViewBounds();
+			var test = this.Parent.Parent as IVisualTreeElement;
+			var children = test.GetVisualTreeElements(452, 92);
 		}
 	}
 }

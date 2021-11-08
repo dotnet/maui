@@ -58,7 +58,7 @@
     </views:BasePage.ToolbarItems>
     <ScrollView>
         <Grid
-            RowDefinitions="150, *, Auto"
+            RowDefinitions="150, *, Auto, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
@@ -70,6 +70,7 @@
                 Grid.Row="0"
                 RowDefinitions="Auto,*,Auto">
                 <Label
+                    x:Name="TestLabel"
                     Text=".NET MAUI"
                     Style="{StaticResource TitleStyle}"/>
                 <Label
@@ -78,8 +79,8 @@
                     Style="{StaticResource SubTitleStyle}"/>
                 <Button
                     Grid.Row="2"
-                    Text="One more window"
-                    Clicked="ShowNewWindow" />
+                    Text="Test Visual Tree Helper"
+                    Clicked="TestVisualTreeHelper" />
             </Grid>
             <!-- SECTIONS -->
             <Grid
