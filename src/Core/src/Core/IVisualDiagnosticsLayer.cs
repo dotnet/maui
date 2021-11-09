@@ -84,8 +84,8 @@ namespace Microsoft.Maui
 		/// Initialize the native touch and drawing layer.
 		/// </summary>
 		/// <param name="context"><see cref="IMauiContext"/>.</param>
-		/// <param name="nativeLayer">Native OS ViewGroup.</param>
-		void InitializeNativeLayer(IMauiContext context, UIKit.UIViewController nativeLayer);
+		/// <param name="nativeLayer">Native OS Window.</param>
+		void InitializeNativeLayer(IMauiContext context, UIKit.UIWindow nativeLayer);
 #elif WINDOWS
 		/// <summary>
 		/// Initialize the native touch and drawing layer.
