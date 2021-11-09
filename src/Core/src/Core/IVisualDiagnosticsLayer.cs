@@ -66,6 +66,10 @@ namespace Microsoft.Maui
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/>.</param>
 		void RemoveAdorners(IVisualTreeElement visualElement);
 
+		void AddScrollableElementHandlers();
+
+		void RemoveScrollableElementHandler();
+
 		void Invalidate();
 
 #if ANDROID || IOS

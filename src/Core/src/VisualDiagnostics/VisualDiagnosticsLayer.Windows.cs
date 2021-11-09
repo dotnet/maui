@@ -24,6 +24,14 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public void AddScrollableElementHandlers()
+		{
+		}
+
+		public void RemoveScrollableElementHandler()
+		{
+		}
+
 		public W2DGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
 
 		public void InitializeNativeLayer(IMauiContext context, Microsoft.Maui.RootPanel nativeLayer)

@@ -31,6 +31,7 @@ namespace Microsoft.Maui
 
 		public void AddAdorner(IAdornerBorder adornerBorder)
 		{
+			this.AddScrollableElementHandlers();
 			this.AdornerBorders.Add(adornerBorder);
 			this.Invalidate();
 		}
@@ -44,17 +45,21 @@ namespace Microsoft.Maui
 
 			this.AdornerBorders.RemoveWhere(n => n.VisualView == view);
 			this.AdornerBorders.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
+			this.AddScrollableElementHandlers();
 			this.Invalidate();
 		}
 
 		public void RemoveAdorner(IAdornerBorder adornerBorder)
 		{
 			this.AdornerBorders.RemoveWhere(n => n == adornerBorder);
+			if (!this.AdornerBorders.Any())
+				this.RemoveScrollableElementHandler();
 			this.Invalidate();
 		}
 
 		public void RemoveAdorners()
 		{
+			this.RemoveScrollableElementHandler();
 			this.AdornerBorders.Clear();
 			this.Invalidate();
 		}
@@ -80,6 +85,14 @@ namespace Microsoft.Maui
 		public bool DisableUITouchEventPassthrough { get; set; }
 
 		public void Invalidate()
+		{
+		}
+
+		public void AddScrollableElementHandlers()
+		{
+		}
+
+		public void RemoveScrollableElementHandler()
 		{
 		}
 #endif

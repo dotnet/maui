@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.CoreGraphics;
 using Microsoft.Maui.Graphics.Native;
@@ -14,28 +16,83 @@ namespace Microsoft.Maui
 		public bool DisableUITouchEventPassthrough { get; set; }
 
 		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
+		private UIWindow? _window;
+		private UIView? _uiView;
+		private HashSet<Tuple<UIScrollView, IDisposable>> _scrollViews = new HashSet<Tuple<UIScrollView, IDisposable>>();
+
+		public void AddScrollableElementHandlers()
+		{
+			if (this._window != null && this._window.RootViewController != null && this._window.RootViewController.View != null)
+			{
+				var scrolls = this.GetUIScrollViews(this._window.RootViewController.View);
+				foreach (var scroll in scrolls)
+				{
+					if (!this._scrollViews.Any(n => n.Item1 == scroll))
+					{
+						var testing = scroll.AddObserver("contentOffset", Foundation.NSKeyValueObservingOptions.New, HandleAction);
+						this._scrollViews.Add(new Tuple<UIScrollView, IDisposable>(scroll, testing));
+					}
+				}
+			}
+		}
+
+		private void Scroll_Scrolled(object? sender, EventArgs e)
+		{
+			this.Invalidate();
+		}
+
+		public void RemoveScrollableElementHandler()
+		{
+			foreach(var scroll in this._scrollViews)
+			{
+				scroll.Item2.Dispose();
+			}
+
+			this._scrollViews.Clear();
+		}
 
 		public void InitializeNativeLayer(IMauiContext context, UIKit.UIWindow nativeLayer)
 		{
+			
 			if (nativeLayer.RootViewController == null || nativeLayer.RootViewController.View == null)
 				return;
 
-			this.VisualDiagnosticsGraphicsView = new NativeGraphicsView(nativeLayer.RootViewController.View.Frame, this, new DirectRenderer());
+			this._window = nativeLayer;
+
+
+			_uiView = new PassthroughView(nativeLayer.RootViewController.View.Frame);
+			_uiView.UserInteractionEnabled = false;
+			this.VisualDiagnosticsGraphicsView = new NativeGraphicsView(_uiView.Frame, this, new DirectRenderer());
+			_uiView.AddSubview(this.VisualDiagnosticsGraphicsView);
 			if (this.VisualDiagnosticsGraphicsView == null)
 			{
 				System.Diagnostics.Debug.WriteLine("VisualDiagnosticsLayer: Could not set up touch layer canvas.");
 				return;
 			}
 
+			
 			var observer = nativeLayer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, HandleAction);
 			this.VisualDiagnosticsGraphicsView.UserInteractionEnabled = false;
 			this.VisualDiagnosticsGraphicsView.BackgroundColor = UIColor.FromWhiteAlpha(1, 0.0f);
-			var subviewFrames = nativeLayer.RootViewController.View.Subviews.Select(n => n.Frame).ToArray();
-			var height = subviewFrames[1].Height + subviewFrames[2].Height;
-			this.Offset = new Rectangle(0, height, 0, 0);
-			nativeLayer.RootViewController.View.AddSubview(this.VisualDiagnosticsGraphicsView);
-			nativeLayer.RootViewController.View.BringSubviewToFront(this.VisualDiagnosticsGraphicsView);
+			nativeLayer.RootViewController.View.AddSubview(_uiView);
+			nativeLayer.RootViewController.View.BringSubviewToFront(_uiView);
 			this.IsNativeViewInitialized = true;
+		}
+
+
+		public List<UIScrollView> GetUIScrollViews(UIView view, List<UIScrollView>? views = null)
+		{
+			System.Diagnostics.Debug.WriteLine(view.GetType().Name);
+			if (views == null)
+				views = new List<UIScrollView>();
+
+			if (view is UIScrollView scrollView)
+				views.Add(scrollView);
+
+			foreach (var children in view.Subviews)
+				GetUIScrollViews(children, views);
+
+			return views;
 		}
 
 		private void HandleAction(Foundation.NSObservedChange obj)
@@ -48,5 +105,30 @@ namespace Microsoft.Maui
 			this.VisualDiagnosticsGraphicsView?.InvalidateIntrinsicContentSize();
 			this.VisualDiagnosticsGraphicsView?.InvalidateDrawable();
 		}
+	}
+
+	internal class PassthroughView : UIView
+	{
+		public PassthroughView()
+		{
+		}
+
+		public PassthroughView(NSCoder coder) : base(coder)
+		{
+		}
+
+		public PassthroughView(CGRect frame) : base(frame)
+		{
+		}
+
+		protected PassthroughView(NSObjectFlag t) : base(t)
+		{
+		}
+
+		protected internal PassthroughView(IntPtr handle) : base(handle)
+		{
+		}
+
+
 	}
 }

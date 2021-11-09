@@ -42,27 +42,34 @@ namespace Microsoft.Maui
 				return new Rectangle();
 			}
 
+			var uiWindow = nativeView.GetUIWindow();
+			if (uiWindow == null)
+				return new Rectangle();
+
 			nfloat X;
 			nfloat Y;
 			nfloat Width;
 			nfloat Height;
+			
+			var convertPoint = nativeView.ConvertRectToView(nativeView.Bounds, uiWindow);
 
-			if (!nativeView.Transform.IsIdentity)
-			{
-				X = nativeView.Bounds.X;
-				Y = nativeView.Bounds.Y;
-				Width = nativeView.Bounds.Width;
-				Height = nativeView.Bounds.Height;
-			}
-			else
-			{
-				X = nativeView.Frame.X;
-				Y = nativeView.Frame.Y;
-				Width = nativeView.Frame.Width;
-				Height = nativeView.Frame.Height;
-			}
+			X = convertPoint.X;
+			Y = convertPoint.Y;
+			Width = convertPoint.Width;
+			Height = convertPoint.Height;
 
 			return new Rectangle(X, Y, Width, Height);
+		}
+
+		internal static UIKit.UIWindow? GetUIWindow(this UIKit.UIView view)
+		{
+			if (view is UIKit.UIWindow window)
+				return window;
+
+			if (view.Superview != null)
+				return GetUIWindow(view.Superview);
+
+			return null;
 		}
 #elif WINDOWS
 		internal static Rectangle GetNativeViewBounds(this IView view)

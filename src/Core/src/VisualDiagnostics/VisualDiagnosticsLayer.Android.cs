@@ -16,6 +16,14 @@ namespace Microsoft.Maui
 		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
 		Activity? _nativeActivity;
 
+		public void AddScrollableElementHandlers()
+		{
+		}
+
+		public void RemoveScrollableElementHandler()
+		{
+		}
+
 		public void InitializeNativeLayer(IMauiContext context, ViewGroup nativeLayer)
 		{
 			if (nativeLayer == null || nativeLayer.Context == null)
