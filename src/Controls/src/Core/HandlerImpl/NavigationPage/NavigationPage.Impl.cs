@@ -13,9 +13,15 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage : INavigationView
 	{
+		// If the user is making overlapping navigation requests this is used to fire once all navigation 
+		// events have been processed
 		TaskCompletionSource<object> _allPendingNavigationCompletionSource;
+
+		// This is used to process the currently active navigation request
 		TaskCompletionSource<object> _currentNavigationCompletionSource;
+
 		int _waitingCount = 0;
+		readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
 
 		partial void Init()
 		{
@@ -55,8 +61,9 @@ namespace Microsoft.Maui.Controls
 		// with the new native Navigation Stack
 		void INavigationView.NavigationFinished(IReadOnlyList<IView> newStack)
 		{
-			// If the user is performing multiple navigation then we don't want to sync the native stack yet
-			// We wait until the last requested navigation completes to sync native stack to xplat
+			// If the user is performing multiple overlapping navigations then we don't want to sync the native stack to our xplat stack
+			// We wait until we get to the end of the queue and then we sync up.
+			// Otherwise intermediate results will wipe out the navigationstack
 			if (_waitingCount == 1)
 			{
 				SyncToNavigationStack(newStack);
@@ -120,9 +127,6 @@ namespace Microsoft.Maui.Controls
 			if (window?.Toolbar != null)
 				window.Toolbar.ApplyNavigationPage(this);
 		}
-
-
-		readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
 
 		// This is used for navigation events that don't effect the currently visible page
 		// InsertPageBefore/RemovePage
