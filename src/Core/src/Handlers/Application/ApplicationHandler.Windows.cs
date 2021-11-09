@@ -1,4 +1,5 @@
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is IWindow window)
 			{
-				// TODO: Get native window and close it
+				(window.Handler?.NativeView as Window)?.Close();
 			}
 		}
 	}
