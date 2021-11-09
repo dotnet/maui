@@ -284,8 +284,10 @@ namespace Microsoft.Maui
 			_ = fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
 			_ = NavigationView ?? throw new InvalidOperationException($"VirtualView cannot be null");
 
-			_navHost = (NavHostFragment)
-				fragmentManager.FindFragmentById(Resource.Id.nav_host);
+			var navHostFragment = fragmentManager.FindFragmentById(Resource.Id.nav_host);
+			_navHost = (NavHostFragment)navHostFragment;
+
+			System.Diagnostics.Debug.WriteLine($"_navHost: {_navHost} {_navHost.GetHashCode()}");
 
 			_fragmentNavigator =
 				(FragmentNavigator)NavHost

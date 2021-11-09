@@ -17,6 +17,7 @@
 		public const string ImageSource = "ImageSource";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
+		public const string NavigationView = "NavigationView";
 		public const string Page = "Page";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";

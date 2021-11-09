@@ -83,6 +83,8 @@ namespace Microsoft.Maui
 				NavigationStack = new List<IView>(newPageStack);
 				NavigationFrame.GoBack(transition);
 			}
+
+			//NavigationView?.NavigationFinished(NavigationStack);
 		}
 
 		protected virtual Type GetDestinationPageType() =>

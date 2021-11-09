@@ -10,6 +10,7 @@
       src/Controls/tests/Core.UnitTests/TemplatedItemsListTests.cs(543,11): error CS0121: The call is ambiguous between the following methods or properties: 'Assert.That(TestDelegate, IResolveConstraint)' and 'Assert.That<TActual>(TActual, IResolveConstraint)'
     -->
     <LangVersion>9.0</LangVersion>
+    <RootNamespace>Microsoft.Maui.Controls.Core.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
