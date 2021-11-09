@@ -250,6 +250,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						controller.SetIsLoading(true);
 						await ((IStreamImageSource)Element.Source).GetStreamAsync();
 					}
+					catch (OperationCanceledException)
+					{
+						// this is expected
+					}
 					finally
 					{
 						controller.SetIsLoading(false);
