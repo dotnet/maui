@@ -7,7 +7,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Content")]
+	[ContentProperty(nameof(Content))]
 	public class Border : View, IContentView, IBorder, IPaddingElement
 	{
 		ReadOnlyCollection<Element>? _logicalChildren;
