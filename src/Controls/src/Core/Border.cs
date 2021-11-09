@@ -145,18 +145,6 @@ namespace Microsoft.Maui.Controls
 
 		IView IContentView.PresentedContent => Content;
 
-		protected override void OnBindingContextChanged()
-		{
-			base.OnBindingContextChanged();
-
-			BindableObject content = Content as BindableObject;
-
-			if (content != null)
-			{
-				SetInheritedBindingContext(content, BindingContext);
-			}
-		}
-
 		public Size CrossPlatformArrange(Graphics.Rectangle bounds)
 		{
 			bounds = bounds.Inset(StrokeThickness / 2);
