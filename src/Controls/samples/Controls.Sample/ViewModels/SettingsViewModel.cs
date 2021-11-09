@@ -4,6 +4,6 @@ namespace Maui.Controls.Sample.ViewModels
 {
 	public class SettingsViewModel : BaseViewModel
 	{
-		
+
 	}
 }
