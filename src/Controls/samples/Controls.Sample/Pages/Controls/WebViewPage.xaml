@@ -5,15 +5,36 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="WebView">
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
-            <Label
-                Text="UrlWebViewSource"
-                Style="{StaticResource Headline}"/>
-            <WebView 
-                Source="https://github.com/dotnet/maui"
-                HeightRequest="300"
-                WidthRequest="300" />
-        </VerticalStackLayout>
+        <ScrollView>
+            <VerticalStackLayout    
+                Margin="12">
+                <Label
+                    Text="UrlWebViewSource"
+                    Style="{StaticResource Headline}"/>
+                <WebView 
+                    x:Name="MauiWebView"
+                    Source="https://github.com/dotnet/maui"
+                    HeightRequest="300"
+                    WidthRequest="300" />
+                <Label
+                    Text="Go Back"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="GoBack"
+                    Clicked="OnGoBackClicked"/>
+                <Label
+                    Text="Go Forward"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="GoForward"
+                    Clicked="OnGoForwardClicked"/>
+                <Label
+                    Text="Reload"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Reload"
+                    Clicked="OnReloadClicked"/>
+            </VerticalStackLayout>
+        </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>

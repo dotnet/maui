@@ -117,13 +117,22 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public void GoBack()
-			=> GoBackRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.GoBack));
+			GoBackRequested?.Invoke(this, EventArgs.Empty);
+		}
 
 		public void GoForward()
-			=> GoForwardRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.GoForward));
+			GoForwardRequested?.Invoke(this, EventArgs.Empty);
+		}
 
 		public void Reload()
-			=> ReloadRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.Reload));
+			ReloadRequested?.Invoke(this, EventArgs.Empty);
+		}
 
 		public event EventHandler<WebNavigatedEventArgs> Navigated;
 
