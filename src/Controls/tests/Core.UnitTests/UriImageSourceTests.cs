@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices(getStreamAsync: GetStreamAsync);
+			Device.PlatformServices = new MockPlatformServices();
 			networkcalls = 0;
 		}
 

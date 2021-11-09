@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var image = new ImageButton();
 			var mockImageRenderer = new MockImageRenderer(image);
-			var loader = new UriImageSource { Uri = new Uri("http://www.public-domain-image.com/free-images/miscellaneous/big-high-border-fence.jpg") };
+			var loader = new StreamImageSource { Stream = GetStreamAsync };
 			
 			image.Source = loader;
 			Assert.IsTrue(image.IsLoading);
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsFalse(image.IsLoading);
 			Assert.IsTrue(cancelled);
 
-			async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
+			async Task<Stream> GetStreamAsync(CancellationToken cancellationToken)
 			{
 				try
 				{
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					throw new TaskCanceledException();
 				}
 
-				var stream = typeof(ImageTests).Assembly.GetManifestResourceStream(uri.LocalPath.Substring(1));
+				var stream = typeof(ImageTests).Assembly.GetManifestResourceStream("dummy");
 				return stream;
 			}
 		}
