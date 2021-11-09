@@ -26,6 +26,8 @@ namespace Microsoft.Maui
 				System.Diagnostics.Debug.WriteLine("VisualDiagnosticsLayer: Could not set up touch layer canvas.");
 				return;
 			}
+
+			var observer = nativeLayer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, HandleAction);
 			this.VisualDiagnosticsGraphicsView.UserInteractionEnabled = false;
 			this.VisualDiagnosticsGraphicsView.BackgroundColor = UIColor.FromWhiteAlpha(1, 0.0f);
 			var subviewFrames = nativeLayer.RootViewController.View.Subviews.Select(n => n.Frame).ToArray();
@@ -34,6 +36,11 @@ namespace Microsoft.Maui
 			nativeLayer.RootViewController.View.AddSubview(this.VisualDiagnosticsGraphicsView);
 			nativeLayer.RootViewController.View.BringSubviewToFront(this.VisualDiagnosticsGraphicsView);
 			this.IsNativeViewInitialized = true;
+		}
+
+		private void HandleAction(Foundation.NSObservedChange obj)
+		{
+			this.Invalidate();
 		}
 
 		public void Invalidate()
