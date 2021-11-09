@@ -36,6 +36,7 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.WillTerminate(app =>
 				{
+					// By this point if we were a multi window app, the GetWindow would be null anyway
 					app.GetWindow()?.Destroying();
 				})
 				.SceneDidDisconnect(scene =>
