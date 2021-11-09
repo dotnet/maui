@@ -96,6 +96,11 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(IApplication.OpenWindow), new OpenWindowRequest(State: state));
 		}
 
+		public virtual void CloseWindow(Window window)
+		{
+			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
+		}
+
 		public void ThemeChanged()
 		{
 			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
