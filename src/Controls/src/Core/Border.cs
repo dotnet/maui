@@ -4,7 +4,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Content")]
+	[ContentProperty(nameof(Content))]
 	public class Border : View, IContentView, IBorder, IPaddingElement
 	{
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView),
@@ -144,6 +144,18 @@ namespace Microsoft.Maui.Controls
 		object IContentView.Content => Content;
 
 		IView IContentView.PresentedContent => Content;
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+
+			BindableObject content = Content as BindableObject;
+
+			if (content != null)
+			{
+				SetInheritedBindingContext(content, BindingContext);
+			}
+		}
 
 		public Size CrossPlatformArrange(Graphics.Rectangle bounds)
 		{
