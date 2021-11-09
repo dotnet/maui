@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			if (args is IWindow window)
 			{
 				// See if the window's handler has an associated UIWindowScene and UISceneSession
-				var sceneSession = window.Handler?.MauiContext?.GetNativeWindow()?.WindowScene?.Session;
+				var sceneSession = (window.Handler?.NativeView as UIWindow)?.WindowScene?.Session;
 
 				if (sceneSession != null)
 				{
