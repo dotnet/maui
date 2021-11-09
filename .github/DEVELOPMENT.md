@@ -30,6 +30,7 @@ For example, the "preview.10" branch:
 dotnet workload install maui `
    --from-rollback-file https://aka.ms/dotnet/maui/preview.10.json `
    --source https://aka.ms/dotnet6/nuget/index.json `
+   --source https://api.nuget.org/v3/index.json `
    --source https://api.nuget.org/v3/index.json
 ```
 
