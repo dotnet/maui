@@ -23,18 +23,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
 		Action<Action> invokeOnMainThread;
-		Func<Uri, CancellationToken, Task<Stream>> getStreamAsync;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
 		readonly bool _isInvokeRequired;
 
 		public MockPlatformServices(Action<Action> invokeOnMainThread = null,
-			Func<Uri, CancellationToken, Task<Stream>> getStreamAsync = null,
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
 			bool useRealisticLabelMeasure = false, bool isInvokeRequired = false)
 		{
 			this.invokeOnMainThread = invokeOnMainThread;
-			this.getStreamAsync = getStreamAsync;
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
 			_isInvokeRequired = isInvokeRequired;
@@ -102,18 +99,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				timer.Dispose();
 			});
 			timer = new Timer(onTimeout, null, interval, interval);
-		}
-
-		public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			if (getStreamAsync == null)
-				throw new NotImplementedException();
-			return getStreamAsync(uri, cancellationToken);
-		}
-
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
 		}
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
