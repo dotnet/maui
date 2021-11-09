@@ -90,18 +90,7 @@ namespace Microsoft.Maui
 			var visualElements = new List<IVisualTreeElement>();
 			if (visualElement is IWindow window)
 			{
-				// DIRTY HACK!!!
-				// GetNative() returns a FrameworkElement
-				// Window is a UI Window, not a FrameworkElement so it's always null.
-				// For now, get the handler and cast it right.
-
-				var testElement = window as IElement;
-				if (testElement != null && testElement.Handler != null)
-				{
-					var testWindow = testElement.Handler.NativeView as Window;
-					if (testWindow != null)
-						uiElement = testWindow.Content;
-				}
+				uiElement = window.Content.GetNative(true);
 			}
 			else if (visualElement is IView view)
 			{

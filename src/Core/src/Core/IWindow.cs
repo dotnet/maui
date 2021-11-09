@@ -6,9 +6,14 @@ namespace Microsoft.Maui
 	public interface IWindow : ITitledElement
 	{
 		/// <summary>
-		/// Gets or sets the current Page displayed in the Window.
+		/// Gets the current Page displayed in the Window.
 		/// </summary>
 		IView Content { get; }
+		
+		/// <summary>
+		/// Gets the current visual diagnostics layer for the Window.
+		/// </summary>
+		IVisualDiagnosticsLayer VisualDiagnosticsLayer { get; }
 
 		/// <summary>
 		/// Occurs when the Window is created.

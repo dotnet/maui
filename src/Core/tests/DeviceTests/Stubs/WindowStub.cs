@@ -8,6 +8,8 @@
 
 		public IView Content { get; set; }
 
+		public IVisualDiagnosticsLayer VisualDiagnosticsLayer { get; }
+
 		public string Title { get; set; }
 		public bool IsCreated { get; set; }
 		public bool IsActivated { get; set; }

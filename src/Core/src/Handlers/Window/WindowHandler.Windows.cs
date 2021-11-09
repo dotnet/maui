@@ -45,7 +45,11 @@ namespace Microsoft.Maui.Handlers
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
 			windowManager.Connect(handler.VirtualView);
 			handler?._rootPanel?.Children?.Clear();
+
 			handler?._rootPanel?.Children?.Add(windowManager.RootView);
+
+			if (window.VisualDiagnosticsLayer != null && handler != null && handler._rootPanel != null)
+				window.VisualDiagnosticsLayer.InitializeNativeLayer(handler.MauiContext, handler._rootPanel);
 		}
 	}
 }

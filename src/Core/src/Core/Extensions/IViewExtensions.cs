@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Graphics;
+
+#if WINDOWS
+using Microsoft.UI.Xaml.Media;
+#endif
+
 #if __IOS__
 using CoreGraphics;
 using ObjCRuntime;
@@ -58,6 +63,20 @@ namespace Microsoft.Maui
 			}
 
 			return new Rectangle(X, Y, Width, Height);
+		}
+#elif WINDOWS
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view.GetNative(true);
+			if (nativeView != null)
+			{
+				var root = nativeView.XamlRoot;
+				var offset = nativeView.TransformToVisual(root.Content) as MatrixTransform;
+				if (offset != null)
+					return new Rectangle(offset.Matrix.OffsetX, offset.Matrix.OffsetY, nativeView.ActualWidth, nativeView.ActualHeight);
+			}
+
+			return new Rectangle();
 		}
 #else
 		internal static Rectangle GetNativeViewBounds(this IView view) => view.Frame;
