@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Graphics.Win2D
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             // Explicitly remove references to allow the Win2D controls to get garbage collected
-            if (_canvasControl != null)
+            if (_canvasControl != null && !_canvasControl.IsLoaded)
             {
                 _canvasControl.RemoveFromVisualTree();
                 _canvasControl = null;
