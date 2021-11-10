@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -653,24 +652,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return null;
 			}
 
-			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-			{
-				using (var client = new HttpClient())
-				{
-					// Do not remove this await otherwise the client will dispose before
-					// the stream even starts
-					var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
-
-					return result;
-				}
-			}
-
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				throw new NotImplementedException("GetUserStoreForApplication currently not available https://github.com/dotnet/runtime/issues/52332");
-				//return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
-			}
-
 			public string RuntimePlatform => Device.Android;
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
@@ -761,49 +742,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 						default:
 							return OSAppTheme.Unspecified;
 					};
-				}
-			}
-
-			public class _IsolatedStorageFile : IIsolatedStorageFile
-			{
-				readonly IsolatedStorageFile _isolatedStorageFile;
-
-				public _IsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-				{
-					_isolatedStorageFile = isolatedStorageFile;
-				}
-
-				public Task CreateDirectoryAsync(string path)
-				{
-					_isolatedStorageFile.CreateDirectory(path);
-					return Task.FromResult(true);
-				}
-
-				public Task<bool> GetDirectoryExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.DirectoryExists(path));
-				}
-
-				public Task<bool> GetFileExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.FileExists(path));
-				}
-
-				public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
-					return Task.FromResult(stream);
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
-					return Task.FromResult(stream);
 				}
 			}
 		}

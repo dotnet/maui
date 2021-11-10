@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.IsolatedStorage;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,18 +21,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
 		readonly IDispatcher _dispatcher;
-		Func<Uri, CancellationToken, Task<Stream>> getStreamAsync;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
 
 		public MockPlatformServices(
 			IDispatcher dispatcher = null,
-			Func<Uri, CancellationToken, Task<Stream>> getStreamAsync = null,
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
 			bool useRealisticLabelMeasure = false)
 		{
 			_dispatcher = dispatcher ?? new MockDispatcher();
-			this.getStreamAsync = getStreamAsync;
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
 		}
@@ -86,65 +82,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				timer.Dispose();
 			});
 			timer = new Timer(onTimeout, null, interval, interval);
-		}
-
-		public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			if (getStreamAsync == null)
-				throw new NotImplementedException();
-			return getStreamAsync(uri, cancellationToken);
-		}
-
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
-		public Internals.IIsolatedStorageFile GetUserStoreForApplication()
-		{
-			return new MockIsolatedStorageFile(IsolatedStorageFile.GetUserStoreForAssembly());
-		}
-
-		public class MockIsolatedStorageFile : Internals.IIsolatedStorageFile
-		{
-			readonly IsolatedStorageFile isolatedStorageFile;
-			public MockIsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-			{
-				this.isolatedStorageFile = isolatedStorageFile;
-			}
-
-			public Task<bool> GetDirectoryExistsAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.DirectoryExists(path));
-			}
-
-			public Task CreateDirectoryAsync(string path)
-			{
-				isolatedStorageFile.CreateDirectory(path);
-				return Task.FromResult(true);
-			}
-
-			public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-			{
-				Stream stream = isolatedStorageFile.OpenFile(path, mode, access);
-				return Task.FromResult(stream);
-			}
-
-			public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-			{
-				Stream stream = isolatedStorageFile.OpenFile(path, mode, access, share);
-				return Task.FromResult(stream);
-			}
-
-			public Task<bool> GetFileExistsAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.FileExists(path));
-			}
-
-			public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.GetLastWriteTime(path));
-			}
 		}
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)

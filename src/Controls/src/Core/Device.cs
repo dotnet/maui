@@ -126,11 +126,6 @@ namespace Microsoft.Maui.Controls
 			return PlatformServices.GetNamedColor(name);
 		}
 
-		internal static Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			return PlatformServices.GetStreamAsync(uri, cancellationToken);
-		}
-
 		public static class Styles
 		{
 			public static readonly string TitleStyleKey = "TitleStyle";
