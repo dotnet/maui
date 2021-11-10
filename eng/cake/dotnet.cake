@@ -79,7 +79,7 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        var templatesTest = "../templatesTest/" + Guid.NewGuid();
+        var templatesTest = $"../templatesTest/{Guid.NewGuid()}/";
 
         try
         {
