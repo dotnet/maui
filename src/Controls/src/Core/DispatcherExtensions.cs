@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls
 
 			// no dispatchers found at all
 			if (dispatcher is null)
-				throw new InvalidOperationException("The current application have a dispatcher.");
+				throw new InvalidOperationException("The dispatcher was not found and the current application does not have a dispatcher.");
 
 			if (dispatcher.IsInvokeRequired)
 			{
