@@ -28,8 +28,6 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Assert.Equal(2, GetNativeNavigationStackCount(handler));
 				return Task.CompletedTask;
-
-
 			});
 		}
 
