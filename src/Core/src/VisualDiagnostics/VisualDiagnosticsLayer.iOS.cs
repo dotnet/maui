@@ -98,7 +98,6 @@ namespace Microsoft.Maui
 
 		public List<UIScrollView> GetUIScrollViews(UIView view, List<UIScrollView>? views = null)
 		{
-			System.Diagnostics.Debug.WriteLine(view.GetType().Name);
 			if (views == null)
 				views = new List<UIScrollView>();
 
