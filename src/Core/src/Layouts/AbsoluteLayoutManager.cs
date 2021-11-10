@@ -33,13 +33,15 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var measure = child.Measure(availableWidth, availableHeight);
-
 				var bounds = AbsoluteLayout.GetLayoutBounds(child);
 				var flags = AbsoluteLayout.GetLayoutFlags(child);
-
 				bool isWidthProportional = HasFlag(flags, AbsoluteLayoutFlags.WidthProportional);
 				bool isHeightProportional = HasFlag(flags, AbsoluteLayoutFlags.HeightProportional);
+
+				var measureWidth = ResolveChildMeasureConstraint(bounds.Width, isWidthProportional, widthConstraint);
+				var measureHeight = ResolveChildMeasureConstraint(bounds.Height, isHeightProportional, heightConstraint);
+
+				var measure = child.Measure(measureWidth, measureHeight);
 
 				var width = ResolveDimension(isWidthProportional, bounds.Width, availableWidth, measure.Width);
 				var height = ResolveDimension(isHeightProportional, bounds.Height, availableHeight, measure.Height);
@@ -121,6 +123,22 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			return value;
+		}
+
+		static double ResolveChildMeasureConstraint(double boundsValue, bool proportional, double constraint) 
+		{
+			if (boundsValue < 0)
+			{
+				// If the child view doesn't have bounds set by the AbsoluteLayout, then we'll measure using the full constraint value
+				return constraint;
+			}
+
+			if (proportional)
+			{
+				return boundsValue * constraint;
+			}
+
+			return boundsValue;
 		}
 	}
 }
