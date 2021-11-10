@@ -1,6 +1,7 @@
 using Android.App;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -14,6 +15,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
 			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+		}
+
+		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			if (args is IWindow window)
+			{
+				if (window.Handler?.NativeView is Activity activity)
+					activity.Finish();
+			}
 		}
 	}
 }

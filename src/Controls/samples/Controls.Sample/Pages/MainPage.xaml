@@ -29,18 +29,16 @@
 
             <Color x:Key="SectionItemBorderColor">#C8C8C8</Color>
 
-            <Style x:Key="SectionItemContainerStyle" TargetType="Frame">
+            <Style x:Key="SectionItemContainerStyle" TargetType="Border">
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
-                <Setter Property="BorderColor" Value="{StaticResource SectionItemBorderColor}" />
-                <Setter Property="CornerRadius" Value="0" />
-                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="Stroke" Value="{StaticResource SectionItemBorderColor}" />
                 <Setter Property="HeightRequest" Value="120" />
                 <Setter Property="Padding" Value="12" />
                 <Setter Property="Margin" Value="0, 0, 12, 12" />
                 <Setter Property="FlexLayout.Basis" Value="50%"/>
                 <Setter Property="FlexLayout.Grow" Value="0"/>
             </Style>
-            
+
             <Style x:Key="FooterStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Small" />
                 <Setter Property="FontFamily" Value="Segoe UI" />
@@ -51,11 +49,6 @@
 
         </ResourceDictionary>
     </views:BasePage.Resources>
-    <views:BasePage.ToolbarItems>
-        <ToolbarItem
-            IconImageSource="settings.png"
-            Text="Settings" />
-    </views:BasePage.ToolbarItems>
     <ScrollView>
         <Grid
             RowDefinitions="150, *, Auto"
@@ -68,7 +61,7 @@
             <Grid
                 RowSpacing="0"
                 Grid.Row="0"
-                RowDefinitions="Auto,*,Auto">
+                RowDefinitions="Auto,*">
                 <Label
                     Text=".NET MAUI"
                     Style="{StaticResource TitleStyle}"/>
@@ -76,10 +69,6 @@
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
                     Style="{StaticResource SubTitleStyle}"/>
-                <Button
-                    Grid.Row="2"
-                    Text="One more window"
-                    Clicked="ShowNewWindow" />
             </Grid>
             <!-- SECTIONS -->
             <Grid
@@ -102,8 +91,12 @@
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame
+                            <Border
                                Style="{StaticResource SectionItemContainerStyle}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle 
+                                        CornerRadius="0" />
+                                </Border.StrokeShape>
                                 <Grid
                                    RowSpacing="0"
                                    RowDefinitions="Auto, *">
@@ -115,7 +108,7 @@
                                        Text="{Binding Description}"
                                        Style="{StaticResource GalleryItemDescriptionStyle}"/>
                                 </Grid>
-                            </Frame>
+                            </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>

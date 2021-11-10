@@ -13,8 +13,6 @@
 		<AndroidUseDefaultAotProfile Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(AndroidUseDefaultAotProfile)' == ''">false</AndroidUseDefaultAotProfile>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
-
 	<ItemGroup>
 		<ProjectCapability Include="Maui" Condition="'$(_ExcludeMauiProjectCapability)' != 'true'" />
 		<AvailableItemName Include="MauiXaml" />

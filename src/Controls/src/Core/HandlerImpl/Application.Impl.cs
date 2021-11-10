@@ -57,6 +57,31 @@ namespace Microsoft.Maui.Controls
 				OpenWindow(cwindow);
 		}
 
+		void IApplication.CloseWindow(IWindow window)
+		{
+			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
+		}
+
+		internal void RemoveWindow(Window window)
+		{
+			// Window was closed, stop tracking it
+			if (window is null)
+				return;
+
+			if (window is NavigableElement ne)
+				ne.NavigationProxy.Inner = null;
+
+			if (window is Element windowElement)
+			{
+				var oldIndex = InternalChildren.IndexOf(windowElement);
+				InternalChildren.Remove(windowElement);
+				windowElement.Parent = null;
+				OnChildRemoved(windowElement, oldIndex);
+			}
+
+			_windows.Remove(window);
+		}
+
 		public virtual void OpenWindow(Window window)
 		{
 			var id = Guid.NewGuid().ToString();
@@ -69,6 +94,11 @@ namespace Microsoft.Maui.Controls
 			};
 
 			Handler?.Invoke(nameof(IApplication.OpenWindow), new OpenWindowRequest(State: state));
+		}
+
+		public virtual void CloseWindow(Window window)
+		{
+			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
 		}
 
 		public void ThemeChanged()

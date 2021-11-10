@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -49,6 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isiOS12OrNewer;
 		static bool? s_isiOS13OrNewer;
 		static bool? s_isiOS14OrNewer;
+		static bool? s_isiOS15OrNewer;
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
 		internal static bool IsiOS9OrNewer
@@ -109,6 +109,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 				if (!s_isiOS14OrNewer.HasValue)
 					s_isiOS14OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(14, 0);
 				return s_isiOS14OrNewer.Value;
+			}
+		}
+
+		internal static bool IsiOS15OrNewer
+		{
+			get
+			{
+				if (!s_isiOS15OrNewer.HasValue)
+					s_isiOS15OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(15, 0);
+				return s_isiOS15OrNewer.Value;
 			}
 		}
 
@@ -637,11 +647,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
-			}
-
 			public bool IsInvokeRequired => !NSThread.IsMain;
 
 #if __MOBILE__
@@ -677,49 +682,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				if (v < 10)
 					return '0' + v;
 				return 'a' + v - 10;
-			}
-
-			public class _IsolatedStorageFile : IIsolatedStorageFile
-			{
-				readonly IsolatedStorageFile _isolatedStorageFile;
-
-				public _IsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-				{
-					_isolatedStorageFile = isolatedStorageFile;
-				}
-
-				public Task CreateDirectoryAsync(string path)
-				{
-					_isolatedStorageFile.CreateDirectory(path);
-					return Task.FromResult(true);
-				}
-
-				public Task<bool> GetDirectoryExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.DirectoryExists(path));
-				}
-
-				public Task<bool> GetFileExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.FileExists(path));
-				}
-
-				public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
-					return Task.FromResult(stream);
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
-					return Task.FromResult(stream);
-				}
 			}
 
 #if !__MOBILE__

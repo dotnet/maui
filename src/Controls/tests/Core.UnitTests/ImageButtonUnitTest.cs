@@ -7,23 +7,8 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	[TestFixture]
-	public class ImageButtonTests
-		: CommandSourceTests<ImageButton>
+	public class ImageButtonTests : CommandSourceTests<ImageButton>
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices(getStreamAsync: GetStreamAsync);
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void TestSizing()
 		{
@@ -205,38 +190,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestImageSourceToNullCancelsLoading()
 		{
+			var cancelled = false;
+
 			var image = new ImageButton();
 			var mockImageRenderer = new MockImageRenderer(image);
-			var loader = new UriImageSource { Uri = new Uri("http://www.public-domain-image.com/free-images/miscellaneous/big-high-border-fence.jpg") };
+			var loader = new StreamImageSource { Stream = GetStreamAsync };
+			
 			image.Source = loader;
 			Assert.IsTrue(image.IsLoading);
+
 			image.Source = null;
 			Assert.IsFalse(image.IsLoading);
 			Assert.IsTrue(cancelled);
-		}
 
-		static bool cancelled;
-
-		static async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			try
+			async Task<Stream> GetStreamAsync(CancellationToken cancellationToken)
 			{
-				await Task.Delay(5000, cancellationToken);
-			}
-			catch (TaskCanceledException ex)
-			{
-				cancelled = true;
-				throw ex;
-			}
+				try
+				{
+					await Task.Delay(5000, cancellationToken);
+				}
+				catch (TaskCanceledException ex)
+				{
+					cancelled = true;
+					throw ex;
+				}
 
-			if (cancellationToken.IsCancellationRequested)
-			{
-				cancelled = true;
-				throw new TaskCanceledException();
-			}
+				if (cancellationToken.IsCancellationRequested)
+				{
+					cancelled = true;
+					throw new TaskCanceledException();
+				}
 
-			var stream = typeof(ImageTests).Assembly.GetManifestResourceStream(uri.LocalPath.Substring(1));
-			return stream;
+				var stream = typeof(ImageTests).Assembly.GetManifestResourceStream("dummy");
+				return stream;
+			}
 		}
 
 		class MockImageRenderer
@@ -258,9 +245,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (initialLoad && Element.Source != null)
 				{
 					initialLoad = false;
-					Element.SetIsLoading(true);
-					await ((IStreamImageSource)Element.Source).GetStreamAsync();
-					Element.SetIsLoading(false);
+					try
+					{
+						Element.SetIsLoading(true);
+						await ((IStreamImageSource)Element.Source).GetStreamAsync();
+					}
+					catch (OperationCanceledException)
+					{
+						// this is expected
+					}
+					finally
+					{
+						Element.SetIsLoading(false);
+					}
 				}
 			}
 
