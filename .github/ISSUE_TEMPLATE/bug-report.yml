@@ -39,28 +39,29 @@ body:
         - Preview 9
         - Preview 10
         - RC 1
-        - Unknown
+        - Unknown/Other (please specify)
     validations:
       required: true
   - type: dropdown
     id: version-that-worked
     attributes:
       label: Last version that worked well
-      description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown`.
+      description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.
       options:
         - Preview 7
         - Preview 8
         - Preview 9
         - Preview 10
         - RC 1
-        - Unknown
+        - Unknown/Other
     validations:
       required: true
-  - type: checkboxes
+  - type: dropdown
     id: platforms-affected
     attributes:
       label: Affected platforms
-      description: Select all or any platform that you see this issue on. This helps us determine if it's something platform-specific or in the core. If you were only able to test on 1 platform, please check the last checkbox to inform us about that.
+      description: Select all or any platform that you see this issue on. This helps us determine if it's something platform-specific or in the core. If you were only able to test on 1 platform, please check the last option to inform us about that.
+      multiple: true
       options:
         - label: iOS
         - label: Android
@@ -68,6 +69,17 @@ body:
         - label: macOS
         - label: Other (Tizen, Linux, etc. not supported by Microsoft directly)
         - label: I was *not* able test on other platforms
+    validations:
+      required: true
+  - type: input
+    id: platform-versions
+    attributes:
+      label: Affected platform versions
+      description: Please provide the version numbers of the platforms you see this issue on.
+      placeholder: E.g. iOS 15, Android 11 and up, Windows SDK 10.0.17134.0, etc.
+    validations:
+      required: true
+      email: true
   - type: textarea
     id: workaround
     attributes:
@@ -83,7 +95,6 @@ body:
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/dotnet/maui/blob/main/.github/CODE_OF_CONDUCT.md)
       options:
-        - label: I agree to follow this project's Code of Conduct
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/dotnet/maui/blob/main/.github/CODE_OF_CONDUCT.md)
           required: true
