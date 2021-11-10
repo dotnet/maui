@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -11,39 +10,97 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Visual Diagnostics Layer.
+	/// </summary>
 	public partial class VisualDiagnosticsLayer : IVisualDiagnosticsLayer, IDrawable
 	{
 		private bool disableUITouchEventPassthrough;
+		private PassthroughView? _passthroughView;
+		private IDisposable? _frameObserver;
+
+		/// <inheritdoc/>
+		public HashSet<Tuple<IScrollView, IDisposable>> ScrollViews { get; } = new HashSet<Tuple<IScrollView, IDisposable>>();
+
+		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough
 		{
 			get { return disableUITouchEventPassthrough; }
 			set
 			{
 				disableUITouchEventPassthrough = value;
-				if (this._uiView != null)
-					this._uiView.DisableUITouchEventPassthrough = value;
+				if (this._passthroughView != null)
+					this._passthroughView.DisableUITouchEventPassthrough = value;
 			}
 		}
 
+		/// <inheritdoc/>
 		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
-		private UIWindow? _window;
-		private PassthroughView? _uiView;
-		private HashSet<Tuple<UIScrollView, IDisposable>> _scrollViews = new HashSet<Tuple<UIScrollView, IDisposable>>();
 
-		public void AddScrollableElementHandlers()
+		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
-			if (this._window != null && this._window.RootViewController != null && this._window.RootViewController.View != null)
+			var nativeScroll = scrollBar.GetNative(true);
+			if (nativeScroll != null)
 			{
-				var scrolls = this.GetUIScrollViews(this._window.RootViewController.View);
-				foreach (var scroll in scrolls)
-				{
-					if (!this._scrollViews.Any(n => n.Item1 == scroll))
-					{
-						var testing = scroll.AddObserver("contentOffset", Foundation.NSKeyValueObservingOptions.New, HandleAction);
-						this._scrollViews.Add(new Tuple<UIScrollView, IDisposable>(scroll, testing));
-					}
-				}
+				var dispose = nativeScroll.AddObserver("contentOffset", Foundation.NSKeyValueObservingOptions.New, FrameAction);
+				this.ScrollViews.Add(new Tuple<IScrollView, IDisposable>(scrollBar, dispose));
 			}
+		}
+
+		/// <inheritdoc/>
+		public void RemoveScrollableElementHandler()
+		{
+			foreach (var scroll in this.ScrollViews)
+			{
+				scroll.Item2.Dispose();
+			}
+
+			this.ScrollViews.Clear();
+		}
+
+		/// <inheritdoc/>
+		public void InitializeNativeLayer(IMauiContext context, UIKit.UIWindow nativeLayer)
+		{
+
+			if (nativeLayer.RootViewController == null || nativeLayer.RootViewController.View == null)
+				return;
+
+			// Create a passthrough view for holding the canvas and other diagnostics tools.
+			_passthroughView = new PassthroughView(nativeLayer.RootViewController.View.Frame);
+
+			this.VisualDiagnosticsGraphicsView = new NativeGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
+			_passthroughView.AddSubview(this.VisualDiagnosticsGraphicsView);
+
+			if (this.VisualDiagnosticsGraphicsView == null)
+			{
+				System.Diagnostics.Debug.WriteLine("VisualDiagnosticsLayer: Could not set up touch layer canvas.");
+				return;
+			}
+
+			// Any time the frame gets a new value, we need to update and invalidate the canvas.
+			this._frameObserver = nativeLayer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
+
+			// Disable the graphics view from user input.
+			// This will be handled by the passthrough view.
+			this.VisualDiagnosticsGraphicsView.UserInteractionEnabled = false;
+			
+			// Make the canvas view transparent.
+			this.VisualDiagnosticsGraphicsView.BackgroundColor = UIColor.FromWhiteAlpha(1, 0.0f);
+
+			// Add the passthrough view to the front of the stack.
+			nativeLayer.RootViewController.View.AddSubview(_passthroughView);
+			nativeLayer.RootViewController.View.BringSubviewToFront(_passthroughView);
+
+			// Any time the passthrough view is touched, handle it.
+			this._passthroughView.OnTouch += _uiView_OnTouch;
+			this.IsNativeViewInitialized = true;
+		}
+
+		/// <inheritdoc/>
+		public void Invalidate()
+		{
+			this.VisualDiagnosticsGraphicsView?.InvalidateIntrinsicContentSize();
+			this.VisualDiagnosticsGraphicsView?.InvalidateDrawable();
 		}
 
 		private void Scroll_Scrolled(object? sender, EventArgs e)
@@ -51,100 +108,35 @@ namespace Microsoft.Maui
 			this.Invalidate();
 		}
 
-		public void RemoveScrollableElementHandler()
+		private void _uiView_OnTouch(object? sender, CGPoint e) 
+			=> OnTouchInternal(new Point(e.X, e.Y), true);
+
+		private void FrameAction(Foundation.NSObservedChange obj)
 		{
-			foreach(var scroll in this._scrollViews)
-			{
-				scroll.Item2.Dispose();
-			}
+			if (this.AdornerBorders.Any())
+				this.RemoveAdorners();
 
-			this._scrollViews.Clear();
-		}
-
-		public void InitializeNativeLayer(IMauiContext context, UIKit.UIWindow nativeLayer)
-		{
-			
-			if (nativeLayer.RootViewController == null || nativeLayer.RootViewController.View == null)
-				return;
-
-			this._window = nativeLayer;
-
-
-			_uiView = new PassthroughView(nativeLayer.RootViewController.View.Frame);
-			this.VisualDiagnosticsGraphicsView = new NativeGraphicsView(_uiView.Frame, this, new DirectRenderer());
-			this.VisualDiagnosticsGraphicsView.UserInteractionEnabled = false;
-			_uiView.AddSubview(this.VisualDiagnosticsGraphicsView);
-			if (this.VisualDiagnosticsGraphicsView == null)
-			{
-				System.Diagnostics.Debug.WriteLine("VisualDiagnosticsLayer: Could not set up touch layer canvas.");
-				return;
-			}
-
-			
-			var observer = nativeLayer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, HandleAction);
-			this.VisualDiagnosticsGraphicsView.UserInteractionEnabled = false;
-			this.VisualDiagnosticsGraphicsView.BackgroundColor = UIColor.FromWhiteAlpha(1, 0.0f);
-			nativeLayer.RootViewController.View.AddSubview(_uiView);
-			nativeLayer.RootViewController.View.BringSubviewToFront(_uiView);
-			this._uiView.OnTouch += _uiView_OnTouch;
-			this.IsNativeViewInitialized = true;
-		}
-
-		private void _uiView_OnTouch(object? sender, CGPoint e)
-		{
-			var point = new Point(e.X, e.Y);
-			OnTouchInternal(point, true);
-		}
-
-		public List<UIScrollView> GetUIScrollViews(UIView view, List<UIScrollView>? views = null)
-		{
-			if (views == null)
-				views = new List<UIScrollView>();
-
-			if (view is UIScrollView scrollView)
-				views.Add(scrollView);
-
-			foreach (var children in view.Subviews)
-				GetUIScrollViews(children, views);
-
-			return views;
-		}
-
-		private void HandleAction(Foundation.NSObservedChange obj)
-		{
 			this.Invalidate();
-		}
-
-		public void Invalidate()
-		{
-			this.VisualDiagnosticsGraphicsView?.InvalidateIntrinsicContentSize();
-			this.VisualDiagnosticsGraphicsView?.InvalidateDrawable();
 		}
 	}
 
 	internal class PassthroughView : UIView
 	{
+		/// <summary>
+		/// Gets or sets a value whether to enable or disable the UI layer from handling touch events.
+		/// </summary>
 		public bool DisableUITouchEventPassthrough { get; set; }
 
+		/// <summary>
+		/// Event Handler for handling on touch events on the Passthrough View.
+		/// </summary>
 		public event EventHandler<CGPoint>? OnTouch;
 
-		public PassthroughView()
-		{
-		}
-
-		public PassthroughView(NSCoder coder) : base(coder)
-		{
-		}
-
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PassthroughView"/> class.
+		/// </summary>
+		/// <param name="frame">Base Frame.</param>
 		public PassthroughView(CGRect frame) : base(frame)
-		{
-		}
-
-		protected PassthroughView(NSObjectFlag t) : base(t)
-		{
-		}
-
-		protected internal PassthroughView(IntPtr handle) : base(handle)
 		{
 		}
 

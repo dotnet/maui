@@ -1,80 +1,88 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Visual Diagnostics Layer.
+	/// </summary>
 	public partial class VisualDiagnosticsLayer : IVisualDiagnosticsLayer, IDrawable
 	{
+		private W2DGraphicsView? _visualDiagnosticsGraphicsView;
 		private bool disableUITouchEventPassthrough;
+
+		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough
 		{
 			get { return disableUITouchEventPassthrough; }
 			set 
 			{ 
 				disableUITouchEventPassthrough = value;
-				if (this.VisualDiagnosticsGraphicsView != null)
-					this.VisualDiagnosticsGraphicsView.IsHitTestVisible = value;
+				if (this._visualDiagnosticsGraphicsView != null)
+					this._visualDiagnosticsGraphicsView.IsHitTestVisible = value;
 			}
 		}
 
-		private HashSet<Tuple<IScrollView, ScrollViewer>> _scrollViews = new HashSet<Tuple<IScrollView, ScrollViewer>>();
+		/// <inheritdoc/>
+		public HashSet<Tuple<IScrollView, Microsoft.UI.Xaml.Controls.ScrollViewer>> ScrollViews { get; } = new HashSet<Tuple<IScrollView, ScrollViewer>>();
 
-		public void AddScrollableElementHandlers()
-		{
-			var scrollBars = this.GetScrollViews();
-			foreach (var scrollBar in scrollBars)
-			{
-				if (!_scrollViews.Any(x => x.Item1 == scrollBar))
-				{
-					var nativeScroll = ((IScrollView)scrollBar).GetNative(true);
-					if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
-					{
-						viewer.ViewChanging += Viewer_ViewChanging;
-						this._scrollViews.Add(new Tuple<IScrollView, ScrollViewer>(scrollBar, viewer));
-					}
-				}
-			}
-		}
-
-		private void Viewer_ViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
-		{
-			this.Invalidate();
-		}
-
-		public void RemoveScrollableElementHandler()
-		{
-			foreach (var scrollBar in this._scrollViews)
-			{
-				scrollBar.Item2.ViewChanging -= Viewer_ViewChanging;
-			}
-
-			this._scrollViews.Clear();
-		}
-
-		public W2DGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
-
+		/// <inheritdoc/>
 		public void InitializeNativeLayer(IMauiContext context, Microsoft.Maui.RootPanel nativeLayer)
 		{
 			var nativeWindow = this.Window.Content.GetNative(true);
+
+			// Capture when the frame is navigating.
+			// When it is, we will clear existing adorners.
 			if (nativeWindow != null && nativeWindow is Frame frame)
 			{
 				frame.Navigating += Frame_Navigating;
 			}
 
-			this.VisualDiagnosticsGraphicsView = new W2DGraphicsView() { Drawable = this };
-			this.VisualDiagnosticsGraphicsView.Tapped += VisualDiagnosticsGraphicsView_Tapped;
-			this.VisualDiagnosticsGraphicsView.SetValue(Canvas.ZIndexProperty, 99);
-			this.VisualDiagnosticsGraphicsView.IsHitTestVisible = false;
-			nativeLayer.Children.Add(this.VisualDiagnosticsGraphicsView);
+
+			this._visualDiagnosticsGraphicsView = new W2DGraphicsView() { Drawable = this };
+			this._visualDiagnosticsGraphicsView.Tapped += VisualDiagnosticsGraphicsView_Tapped;
+			this._visualDiagnosticsGraphicsView.SetValue(Canvas.ZIndexProperty, 99);
+			this._visualDiagnosticsGraphicsView.IsHitTestVisible = false;
+			nativeLayer.Children.Add(this._visualDiagnosticsGraphicsView);
 			this.IsNativeViewInitialized = true;
+		}
+
+		/// <inheritdoc/>
+		public void AddScrollableElementHandler(IScrollView scrollBar)
+		{
+			var nativeScroll = scrollBar.GetNative(true);
+			if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
+			{
+				viewer.ViewChanging += Viewer_ViewChanging;
+				this.ScrollViews.Add(new Tuple<IScrollView, ScrollViewer>(scrollBar, viewer));
+			}
+		}
+
+		/// <inheritdoc/>
+		public void RemoveScrollableElementHandler()
+		{
+			foreach (var scrollBar in this.ScrollViews)
+			{
+				scrollBar.Item2.ViewChanging -= Viewer_ViewChanging;
+			}
+
+			this.ScrollViews.Clear();
+		}
+
+		/// <inheritdoc/>
+		public void Invalidate()
+		{
+			this._visualDiagnosticsGraphicsView?.Invalidate();
+		}
+
+
+		private void Viewer_ViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
+		{
+			this.Invalidate();
 		}
 
 		private void Frame_Navigating(object sender, UI.Xaml.Navigation.NavigatingCancelEventArgs e)
@@ -90,29 +98,11 @@ namespace Microsoft.Maui
 			if (e == null)
 				return;
 
-			var position = e.GetPosition(this.VisualDiagnosticsGraphicsView);
+			e.Handled = this.DisableUITouchEventPassthrough;
+			var position = e.GetPosition(this._visualDiagnosticsGraphicsView);
 
 			var point = new Point(position.X, position.Y);
-
-			var elements = new List<IVisualTreeElement>();
-			if (!this.DisableUITouchEventPassthrough)
-			{
-				return;
-			}
-			else
-			{
-				e.Handled = true;
-				var visualWindow = this.Window as IVisualTreeElement;
-				if (visualWindow != null)
-					elements.AddRange(visualWindow.GetVisualTreeElements(point));
-			}
-
-			this.OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements));
-		}
-
-		public void Invalidate()
-		{
-			this.VisualDiagnosticsGraphicsView?.Invalidate();
+			this.OnTouchInternal(point, true);
 		}
 	}
 }

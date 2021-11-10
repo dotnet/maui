@@ -17,12 +17,27 @@ namespace Microsoft.Maui
 		/// </summary>
 		bool DisableUITouchEventPassthrough { get; set; }
 
+		/// <summary>
+		/// Gets the hash set for Adroner Borders. When filled, they will be drawn on the screen.
+		/// </summary>
 		HashSet<IAdornerBorder> AdornerBorders { get; }
 
+		/// <summary>
+		/// Gets the containing <see cref="IWindow"/>.
+		/// </summary>
 		IWindow Window { get; }
 
+		/// <summary>
+		/// Gets the offset rectangle used to adjust the native drawing bounds for a given adorner border.
+		/// Used when the underlying operating system may not give exact placement for where elements are.
+		/// Ex. Android and the Status Bar.
+		/// </summary>
 		public Rectangle Offset { get; }
 
+		/// <summary>
+		/// Gets the DPI for the layer.
+		/// Can be used to pass through DPI settings to underlying Adorner Borders.
+		/// </summary>
 		public float DPI { get; }
 
 		/// <summary>
@@ -66,10 +81,27 @@ namespace Microsoft.Maui
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/>.</param>
 		void RemoveAdorners(IVisualTreeElement visualElement);
 
+		/// <summary>
+		/// Adds scrollable element handles attached to <see cref="IScrollView"/>.
+		/// Used for tracking when a user has scrolled, in order to update the layer to redraw.
+		/// </summary>
 		void AddScrollableElementHandlers();
 
+		/// <summary>
+		/// Adds scrollable element handle attached to <see cref="IScrollView"/>.
+		/// Used for tracking when a user has scrolled, in order to update the layer to redraw.
+		/// </summary>
+		void AddScrollableElementHandler(IScrollView view);
+
+		/// <summary>
+		/// Removes any existing scrollable element handles attached to <see cref="IScrollView"/>.
+		/// </summary>
 		void RemoveScrollableElementHandler();
 
+		/// <summary>
+		/// Invalidates the layer.
+		/// Call to force the layer to redraw.
+		/// </summary>
 		void Invalidate();
 
 #if ANDROID || IOS
@@ -83,6 +115,12 @@ namespace Microsoft.Maui
 		/// <param name="context"><see cref="IMauiContext"/>.</param>
 		/// <param name="nativeLayer">Native OS ViewGroup.</param>
 		void InitializeNativeLayer(IMauiContext context, Android.Views.ViewGroup nativeLayer);
+
+		/// <summary>
+		/// Gets the Scroll Views in a given window, to be handled by the layer for
+		/// when they scroll to update the underlying adorners.
+		/// </summary>
+		HashSet<Tuple<IScrollView, Android.Views.View>> ScrollViews { get; }
 #elif IOS
 		/// <summary>
 		/// Initialize the native touch and drawing layer.
@@ -90,6 +128,12 @@ namespace Microsoft.Maui
 		/// <param name="context"><see cref="IMauiContext"/>.</param>
 		/// <param name="nativeLayer">Native OS Window.</param>
 		void InitializeNativeLayer(IMauiContext context, UIKit.UIWindow nativeLayer);
+
+		/// <summary>
+		/// Gets the Scroll Views in a given window, to be handled by the layer for
+		/// when they scroll to update the underlying adorners.
+		/// </summary>
+		HashSet<Tuple<IScrollView, IDisposable>> ScrollViews { get; }
 #elif WINDOWS
 		/// <summary>
 		/// Initialize the native touch and drawing layer.
@@ -97,6 +141,18 @@ namespace Microsoft.Maui
 		/// <param name="context"><see cref="IMauiContext"/>.</param>
 		/// <param name="nativeLayer">Native OS ViewGroup.</param>
 		void InitializeNativeLayer(IMauiContext context, Microsoft.Maui.RootPanel nativeLayer);
+
+		/// <summary>
+		/// Gets the Scroll Views in a given window, to be handled by the layer for
+		/// when they scroll to update the underlying adorners.
+		/// </summary>
+		HashSet<Tuple<IScrollView, Microsoft.UI.Xaml.Controls.ScrollViewer>> ScrollViews { get; }
+#else
+		/// <summary>
+		/// Gets the Scroll Views in a given window, to be handled by the layer for
+		/// when they scroll to update the underlying adorners.
+		/// </summary>
+		HashSet<Tuple<IScrollView, object>> ScrollViews { get; }
 #endif
 	}
 

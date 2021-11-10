@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Android.App;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
@@ -10,47 +9,45 @@ using Microsoft.Maui.Graphics.Native;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Visual Diagnostics Layer.
+	/// </summary>
 	public partial class VisualDiagnosticsLayer : IVisualDiagnosticsLayer, IDrawable
 	{
+		Activity? _nativeActivity;
+
+		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough { get; set; }
 
+		/// <inheritdoc/>
 		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
-		Activity? _nativeActivity;
-		private HashSet<Tuple<IScrollView, Android.Views.View>> _scrollViews = new HashSet<Tuple<IScrollView, Android.Views.View>>();
 
-		public void AddScrollableElementHandlers()
+		/// <inheritdoc/>
+		public HashSet<Tuple<IScrollView, Android.Views.View>> ScrollViews { get; } = new HashSet<Tuple<IScrollView, View>>();
+
+		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
-			var scrollBars = this.GetScrollViews();
-			foreach(var scrollBar in scrollBars)
+			var nativeScroll = scrollBar.GetNative(true);
+			if (nativeScroll != null)
 			{
-				if (!_scrollViews.Any(x => x.Item1 == scrollBar))
-				{
-					var nativeScroll = ((IScrollView)scrollBar).GetNative(true);
-					if (nativeScroll != null)
-					{
-						nativeScroll.ScrollChange += scroll_ScrollChange;
-						this._scrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
-					}
-				}
+				nativeScroll.ScrollChange += scroll_ScrollChange;
+				this.ScrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
 			}
 		}
 
-		private void scroll_ScrollChange(object? sender, View.ScrollChangeEventArgs e)
-		{
-			this.Invalidate();
-		}
-
+		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach(var scrollBar in this._scrollViews)
+			foreach (var scrollBar in this.ScrollViews)
 			{
 				if (!scrollBar.Item2.IsDisposed())
 					scrollBar.Item2.ScrollChange -= scroll_ScrollChange;
 			}
 
-			this._scrollViews.Clear();
+			this.ScrollViews.Clear();
 		}
 
+		/// <inheritdoc/>
 		public void InitializeNativeLayer(IMauiContext context, ViewGroup nativeLayer)
 		{
 			if (nativeLayer == null || nativeLayer.Context == null)
@@ -87,16 +84,33 @@ namespace Microsoft.Maui
 			this.IsNativeViewInitialized = true;
 		}
 
-		private Rectangle GenerateAdornerOffset(Activity _nativeActivity, NativeGraphicsView graphicsView)
+		/// <inheritdoc/>
+		public void Invalidate()
 		{
-			if (_nativeActivity.Resources == null || _nativeActivity.Resources.DisplayMetrics == null)
+			this.VisualDiagnosticsGraphicsView?.Invalidate();
+		}
+
+		private void scroll_ScrollChange(object? sender, View.ScrollChangeEventArgs e)
+		{
+			this.Invalidate();
+		}
+
+		/// <summary>
+		/// Generates the Adorner Offset.
+		/// </summary>
+		/// <param name="nativeActivity">Android Activity, <see cref="Activity"/>.</param>
+		/// <param name="graphicsView"><see cref="NativeGraphicsView"/>.</param>
+		/// <returns>Offset Rectangle.</returns>
+		private Rectangle GenerateAdornerOffset(Activity nativeActivity, NativeGraphicsView graphicsView)
+		{
+			if (nativeActivity.Resources == null || nativeActivity.Resources.DisplayMetrics == null)
 				return new Rectangle();
 
 			if (graphicsView == null)
 				return new Rectangle();
 
-			float dpi = _nativeActivity.Resources.DisplayMetrics.Density;
-			float heightPixels = _nativeActivity.Resources.DisplayMetrics.HeightPixels;
+			float dpi = nativeActivity.Resources.DisplayMetrics.Density;
+			float heightPixels = nativeActivity.Resources.DisplayMetrics.HeightPixels;
 
 			return new Rectangle(0, -(heightPixels - graphicsView.MeasuredHeight) / dpi, 0, 0);
 		}
@@ -120,11 +134,6 @@ namespace Microsoft.Maui
 				this.Offset = GenerateAdornerOffset(this._nativeActivity, this.VisualDiagnosticsGraphicsView);
 
 			this.Invalidate();
-		}
-
-		public void Invalidate()
-		{
-			this.VisualDiagnosticsGraphicsView?.Invalidate();
 		}
 	}
 }
