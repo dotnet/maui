@@ -8,9 +8,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4822e3c3aa77eb82b2fb33c9321f923cf11ddde6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.101-preview.11.82">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.101-preview.11.86">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>a299ebd48737ea41db877a9a192ac00386c90d08</Sha>
+      <Sha>b45bff542e3589e17fec89bd4551123c713e31f2</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.101-preview.11.415">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -32,7 +32,7 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>1ec2e17fcfd86bdd6f7e7246b6d527e94e34c15a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK">
+    <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.0" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
