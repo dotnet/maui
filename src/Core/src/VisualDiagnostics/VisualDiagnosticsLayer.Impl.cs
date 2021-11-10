@@ -82,9 +82,6 @@ namespace Microsoft.Maui
 
 		internal void OnTouchInternal(Point point, bool addAdorners = false)
 		{
-			if (addAdorners)
-				this.RemoveAdorners();
-
 			var elements = new List<IVisualTreeElement>();
 			if (this.DisableUITouchEventPassthrough)
 			{

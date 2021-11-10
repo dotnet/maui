@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Android.App;
 using Android.Views;
@@ -15,13 +16,45 @@ namespace Microsoft.Maui
 
 		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
 		Activity? _nativeActivity;
+		private HashSet<Tuple<IScrollView, Android.Views.View>> _scrollViews = new HashSet<Tuple<IScrollView, Android.Views.View>>();
 
 		public void AddScrollableElementHandlers()
 		{
+			if (this.Window == null)
+				return;
+			var content = this.Window.Content as IVisualTreeElement;
+			if (content == null)
+				return;
+
+			var scrollBars = content.GetEntireVisualTreeElementChildren().Where(n => n is IScrollView).Cast<IScrollView>();
+			foreach(var scrollBar in scrollBars)
+			{
+				if (!_scrollViews.Any(x => x.Item1 == scrollBar))
+				{
+					var nativeScroll = ((IScrollView)scrollBar).GetNative(true);
+					if (nativeScroll != null)
+					{
+						nativeScroll.ScrollChange += scroll_ScrollChange;
+						this._scrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
+					}
+				}
+			}
+		}
+
+		private void scroll_ScrollChange(object? sender, View.ScrollChangeEventArgs e)
+		{
+			this.Invalidate();
 		}
 
 		public void RemoveScrollableElementHandler()
 		{
+			foreach(var scrollBar in this._scrollViews)
+			{
+				if (!scrollBar.Item2.IsDisposed())
+					scrollBar.Item2.ScrollChange -= scroll_ScrollChange;
+			}
+
+			this._scrollViews.Clear();
 		}
 
 		public void InitializeNativeLayer(IMauiContext context, ViewGroup nativeLayer)
@@ -57,8 +90,6 @@ namespace Microsoft.Maui
 			this.VisualDiagnosticsGraphicsView.Touch += TouchLayer_Touch;
 			nativeLayer.AddView(this.VisualDiagnosticsGraphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
 			this.VisualDiagnosticsGraphicsView.BringToFront();
-			if (_nativeActivity != null && this.VisualDiagnosticsGraphicsView != null)
-				this.Offset = GenerateAdornerOffset(_nativeActivity, this.VisualDiagnosticsGraphicsView);
 			this.IsNativeViewInitialized = true;
 		}
 
@@ -83,13 +114,18 @@ namespace Microsoft.Maui
 
 			e.Handled = this.DisableUITouchEventPassthrough;
 			var point = new Point(e.Event.RawX, e.Event.RawY);
-			OnTouchInternal(point);
+			OnTouchInternal(point, true);
 		}
 
 		private void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
 		{
+			if (this.AdornerBorders.Any())
+				this.RemoveAdorners();
+
 			if (this.VisualDiagnosticsGraphicsView != null && this._nativeActivity != null)
 				this.Offset = GenerateAdornerOffset(this._nativeActivity, this.VisualDiagnosticsGraphicsView);
+
+			this.Invalidate();
 		}
 
 		public void Invalidate()
