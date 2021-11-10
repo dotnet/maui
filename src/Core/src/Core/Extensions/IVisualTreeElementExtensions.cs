@@ -54,6 +54,37 @@ namespace Microsoft.Maui
 		/// Gets list of a Visual Tree Elements children based off of a given x, y point.
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
+		/// <param name="x1">The X point.</param>
+		/// <param name="y1">The Y point.</param>
+		/// <param name="x2">The X point.</param>
+		/// <param name="y2">The Y point.</param>
+		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Elements Frame.</param>
+		/// <returns>List of Children Elements.</returns>
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x1, double y1, double x2, double y2, bool useNativeViewBounds = true) => GetVisualTreeElements(visualElement, new Rectangle(x1, y1, x2 - x1, y2 - y1), useNativeViewBounds);
+
+		/// <summary>
+		/// Gets list of a Visual Tree Elements children based off of a rectangle.
+		/// </summary>
+		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
+		/// <param name="rectangle">The rectangle.</param>
+		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Elements Frame.</param>
+		/// <returns>List of Children Elements.</returns>
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rectangle rectangle, bool useNativeViewBounds = true) 
+			=> GetVisualTreeElementsInternal(visualElement, 
+				new List<Point> 
+				{ 
+					new Point(rectangle.X, rectangle.Y), 
+					new Point(rectangle.X + rectangle.Width, rectangle.Y + rectangle.Height),
+					new Point(rectangle.X + rectangle.Width, rectangle.Y),
+					new Point(rectangle.X, rectangle.Y + rectangle.Height)
+				}
+				, useNativeViewBounds);
+
+
+		/// <summary>
+		/// Gets list of a Visual Tree Elements children based off of a given x, y point.
+		/// </summary>
+		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <param name="x">The X point.</param>
 		/// <param name="y">The Y point.</param>
 		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Elements Frame.</param>
