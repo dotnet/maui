@@ -10,6 +10,12 @@
             <Button 
                 Clicked="OnNewWindowClicked"
                 Text="Open new Window" />
+
+            <Button 
+                Clicked="OnCloseWindowClicked"
+                Text="Close this Window" />
+
+            <Label Text="Window Count: 0" x:Name="label" />
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>
