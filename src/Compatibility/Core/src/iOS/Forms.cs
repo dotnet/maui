@@ -19,6 +19,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Animations;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using TNativeView = UIKit.UIView;

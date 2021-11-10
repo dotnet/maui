@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using MobileCoreServices;
+using ObjCRuntime;
 using Photos;
 using UIKit;
 

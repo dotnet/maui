@@ -7,6 +7,7 @@ using CoreAnimation;
 using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeImage = UIKit.UIImage;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

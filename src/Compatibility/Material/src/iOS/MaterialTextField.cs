@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using MaterialComponents;
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Internals;
 using MTextField = MaterialComponents.TextField;

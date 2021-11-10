@@ -4,6 +4,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 

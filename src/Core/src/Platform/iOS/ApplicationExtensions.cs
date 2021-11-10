@@ -3,6 +3,7 @@ using Foundation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.LifecycleEvents;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform

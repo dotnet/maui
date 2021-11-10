@@ -20,6 +20,9 @@ namespace Microsoft.Maui
 				var data = NSData.FromStream(font.ResourceStream);
 				var provider = new CGDataProvider(data);
 				var cgFont = CGFont.CreateFromProvider(provider);
+				if (cgFont == null)
+					throw new InvalidOperationException("Unable to load font from the stream.");
+
 				var name = cgFont.PostScriptName;
 
 				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))

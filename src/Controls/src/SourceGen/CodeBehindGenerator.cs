@@ -39,10 +39,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		public void Initialize(IncrementalGeneratorInitializationContext initContext)
 		{
-//#if DEBUG
-//			if (!System.Diagnostics.Debugger.IsAttached)
-//				System.Diagnostics.Debugger.Launch();
-//#endif
+			//#if DEBUG
+			//			if (!System.Diagnostics.Debugger.IsAttached)
+			//				System.Diagnostics.Debugger.Launch();
+			//#endif
 			var projectItemProvider = initContext.AdditionalTextsProvider
 				.Combine(initContext.AnalyzerConfigOptionsProvider)
 				.Select(ComputeProjectItem);
@@ -55,19 +55,21 @@ namespace Microsoft.Maui.Controls.SourceGen
 				.Combine(initContext.CompilationProvider)
 				.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right));
 
-			initContext.RegisterSourceOutput(sourceProvider, static (sourceProductionContext, provider) => {
+			initContext.RegisterSourceOutput(sourceProvider, static (sourceProductionContext, provider) =>
+			{
 				var (projectItem, xmlnsDefinitions, compilation) = provider;
 				if (projectItem == null)
 					return;
-				switch (projectItem.Kind) {
-				case "Xaml":
-					GenerateXamlCodeBehind(projectItem, compilation, sourceProductionContext, xmlnsDefinitions);
-					break;
-				case "Css":
-					GenerateCssCodeBehind(projectItem, sourceProductionContext);
-					break;
+				switch (projectItem.Kind)
+				{
+					case "Xaml":
+						GenerateXamlCodeBehind(projectItem, compilation, sourceProductionContext, xmlnsDefinitions);
+						break;
+					case "Css":
+						GenerateCssCodeBehind(projectItem, sourceProductionContext);
+						break;
 				}
-			}); 
+			});
 		}
 
 		static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
@@ -115,10 +117,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 					return;
 
 				var sb = new StringBuilder();
-				var hintName =  $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
+				var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
 				if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
-				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+					sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
 
 				if (XamlResourceIdOnly)
 				{
@@ -131,7 +133,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				sb.AppendLine($"namespace {rootClrNamespace}");
 				sb.AppendLine("{");
-					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
+				sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
 				if (addXamlCompilationAttribute)
 					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
 				if (hideFromIntellisense)
@@ -357,7 +359,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", null)]");
 
 			sourceProductionContext.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
-			
+
 		}
 
 		class ProjectItem

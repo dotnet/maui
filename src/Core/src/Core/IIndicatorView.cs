@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 		int Position { get; set; }
 
 		/// <summary>
-		/// S				ize of the indicators
+		/// Size of the indicators
 		/// </summary>
 		double IndicatorSize { get; }
 
