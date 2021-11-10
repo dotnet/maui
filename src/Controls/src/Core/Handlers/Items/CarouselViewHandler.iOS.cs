@@ -53,6 +53,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.NativeView.Frame.Size);
 			handler.Controller.Layout.InvalidateLayout();
 		}
-		
+
+		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
+		{
+
+		}
+
+		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
+		{
+
+		}
+
 	}
 }

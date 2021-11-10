@@ -23,5 +23,9 @@
 		public void UpdateLayoutManager();
 
 		public void UpdateAdapter();
+
+		public void ScrollTo(ScrollToRequestEventArgs args);
+
+		public IItemsLayout ItemsLayout { get; }
 	}
 }

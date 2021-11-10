@@ -21,5 +21,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 
 		}
+
+		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
+		{
+
+		}
+
+		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
+		{
+
+		}
 	}
 }
