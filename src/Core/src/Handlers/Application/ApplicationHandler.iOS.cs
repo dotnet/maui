@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
-#if __MACCATALYST__ || __IOS__
 			if (args is IWindow window)
 			{
 				// See if the window's handler has an associated UIWindowScene and UISceneSession
@@ -38,7 +37,6 @@ namespace Microsoft.Maui.Handlers
 					UIApplication.SharedApplication.RequestSceneSessionDestruction(sceneSession, null, null);
 				}
 			}
-#endif
 		}
 
 #if __MACCATALYST__
