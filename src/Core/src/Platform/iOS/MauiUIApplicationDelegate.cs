@@ -41,9 +41,15 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
-			// iOS 13+ uses scene delegates, so skip this
-			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+			// If < iOS 13, or we're not on mac/ipad, or the Info.plist does not have a scene manifest entry
+			// we need to assume no multi window, and no UISceneDelegate
+			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0)
+				|| (UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac
+					&& UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Pad)
+				|| !NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString("UIApplicationSceneManifest")))
+			{
 				this.CreateNativeWindow(Application, application, launchOptions);
+			}
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 
