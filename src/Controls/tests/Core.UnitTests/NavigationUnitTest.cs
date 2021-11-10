@@ -453,7 +453,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		[TestCase(false)]
 		[TestCase(true)]
-		public void SendsBackButtonEventToCurrentPage(bool useMaui)
+		public async Task SendsBackButtonEventToCurrentPage(bool useMaui)
 		{
 			var current = new BackButtonPage();
 			var navPage = new TestNavigationPage(useMaui, current);
@@ -461,14 +461,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var emitted = false;
 			current.BackPressed += (sender, args) => emitted = true;
 
-			navPage.SendBackButtonPressed();
+			await navPage.SendBackButtonPressedAsync();
 
 			Assert.True(emitted);
 		}
 
 		[TestCase(false)]
 		[TestCase(true)]
-		public void DoesNotSendBackEventToNonCurrentPage(bool useMaui)
+		public async Task DoesNotSendBackEventToNonCurrentPage(bool useMaui)
 		{
 			var current = new BackButtonPage();
 			var navPage = new TestNavigationPage(useMaui, current);
@@ -477,7 +477,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var emitted = false;
 			current.BackPressed += (sender, args) => emitted = true;
 
-			navPage.SendBackButtonPressed();
+			await navPage.SendBackButtonPressedAsync();
 
 			Assert.False(emitted);
 		}
@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await navPage.PushAsync(new ContentPage());
 
-			var result = navPage.SendBackButtonPressed();
+			var result = await navPage.SendBackButtonPressedAsync();
 
 			Assert.AreEqual(root, navPage.CurrentPage);
 			Assert.True(result);
@@ -507,19 +507,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await navPage.PushAsync(second);
 
-			navPage.SendBackButtonPressed();
+			await navPage.SendBackButtonPressedAsync();
 
 			Assert.AreEqual(second, navPage.CurrentPage);
 		}
 
 		[TestCase(false)]
 		[TestCase(true)]
-		public void DoesNotHandleBackButtonWhenNoNavStack(bool useMaui)
+		public async Task DoesNotHandleBackButtonWhenNoNavStack(bool useMaui)
 		{
 			var root = new ContentPage { Title = "Root" };
 			var navPage = new TestNavigationPage(useMaui, root);
 
-			var result = navPage.SendBackButtonPressed();
+			var result = await navPage.SendBackButtonPressedAsync();
 			Assert.False(result);
 		}
 

@@ -27,6 +27,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			if (Handler is TestNavigationHandler nh)
 				Assert.IsNull(nh.CurrentNavigationRequest);
 		}
+
+		public async Task<bool> SendBackButtonPressedAsync()
+		{
+			var result = base.SendBackButtonPressed();
+			var task = base.CurrentNavigationTask;
+			if (task != null)
+				await task;
+
+			return result;
+		}
 	}
 
 	public class TestNavigationHandler : ViewHandler<NavigationPage, object>
