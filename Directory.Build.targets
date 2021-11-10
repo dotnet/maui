@@ -8,7 +8,7 @@
 
   <PropertyGroup>
      <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
-    <IgnoreMauiXamlHotReloadCompatibilityCheck>False</IgnoreMauiXamlHotReloadCompatibilityCheck>
+    <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
   </PropertyGroup>
 
   <!-- platform version number information -->
