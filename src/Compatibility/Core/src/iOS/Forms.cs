@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isiOS12OrNewer;
 		static bool? s_isiOS13OrNewer;
 		static bool? s_isiOS14OrNewer;
+		static bool? s_isiOS15OrNewer;
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
 		internal static bool IsiOS9OrNewer
@@ -108,6 +109,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 				if (!s_isiOS14OrNewer.HasValue)
 					s_isiOS14OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(14, 0);
 				return s_isiOS14OrNewer.Value;
+			}
+		}
+
+		internal static bool IsiOS15OrNewer
+		{
+			get
+			{
+				if (!s_isiOS15OrNewer.HasValue)
+					s_isiOS15OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(15, 0);
+				return s_isiOS15OrNewer.Value;
 			}
 		}
 
