@@ -15,12 +15,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Mono.Cecil" Version="0.11.3" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="System.CodeDom" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
+		<PackageReference Include="Mono.Cecil" Version="0.11.3" GeneratePathProperty="true" />
+		<PackageReference Include="System.CodeDom" GeneratePathProperty="true" />
+		<PackageReference Include="Microsoft.Build" Version="15.9.20" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" />
+		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" />
 		<PackageReference Include="Microsoft.Maui.Graphics" GeneratePathProperty="true" />
 	</ItemGroup>
 
@@ -53,9 +53,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Core\Controls.Core-net6.csproj" PrivateAssets="all" />
-		<ProjectReference Include="..\Xaml\Controls.Xaml-net6.csproj" PrivateAssets="all" />
-		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\Core\Controls.Core-net6.csproj" />
+		<ProjectReference Include="..\Xaml\Controls.Xaml-net6.csproj" />
+		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -84,4 +84,9 @@
 
 	<Import Project="$(MauiRootDirectory)src\Workload\Shared\LibraryPacks.targets" />
 
+	<ItemGroup>
+		<!-- Ensure all references are PrivateAssets=all, so they are not transitive to end-user projects. -->
+		<PackageReference Update="@(PackageReference)" PrivateAssets="all" />
+		<ProjectReference Update="@(ProjectReference)" PrivateAssets="all" />
+	</ItemGroup>
 </Project>
