@@ -36,6 +36,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ModalPage), "Modal",
 				"Allows you to push and pop Modal Pages."),
 
+			new SectionModel(typeof(MultiWindowPage), "Multi-Window",
+				"Allows you to open a new Window in the App."),
+
 			new SectionModel(typeof(NavigationGallery), "Navigation Page",
 				"Play with the different Navigation APIs."),
 
