@@ -100,23 +100,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return ((global::Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
 		}
 
-		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			using (var client = new HttpClient())
-			{
-				// Do not remove this await otherwise the client will dispose before
-				// the stream even starts
-				var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
-
-				return result;
-			}
-		}
-
-		public IIsolatedStorageFile GetUserStoreForApplication()
-		{
-			return new WindowsIsolatedStorage(ApplicationData.Current.LocalFolder);
-		}
-
 		public string RuntimePlatform => Device.UWP;
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
