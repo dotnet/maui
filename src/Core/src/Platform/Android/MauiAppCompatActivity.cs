@@ -28,6 +28,7 @@ namespace Microsoft.Maui
 
 			base.OnCreate(savedInstanceState);
 
+			Microsoft.Maui.Essentials.Platform.Init(this, savedInstanceState);
 			this.CreateNativeWindow(MauiApplication.Current.Application, savedInstanceState);
 		}
 	}
