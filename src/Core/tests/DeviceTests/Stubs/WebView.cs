@@ -4,6 +4,6 @@
 	{
 		public IWebViewSource Source { get; set; }
 
-		public void Eval() { }
+		public void Eval(string script) { }
 	}
 }
