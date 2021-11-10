@@ -63,12 +63,12 @@ body:
       description: Select all or any platform that you see this issue on. This helps us determine if it's something platform-specific or in the core. If you were only able to test on 1 platform, please check the last option to inform us about that.
       multiple: true
       options:
-        - label: iOS
-        - label: Android
-        - label: Windows
-        - label: macOS
-        - label: Other (Tizen, Linux, etc. not supported by Microsoft directly)
-        - label: I was *not* able test on other platforms
+        - iOS
+        - Android
+        - Windows
+        - macOS
+        - Other (Tizen, Linux, etc. not supported by Microsoft directly)
+        - I was *not* able test on other platforms
     validations:
       required: true
   - type: input
