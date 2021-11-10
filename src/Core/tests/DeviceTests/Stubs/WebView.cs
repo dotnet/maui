@@ -3,5 +3,7 @@
 	public class WebViewStub : StubBase, IWebView
 	{
 		public IWebViewSource Source { get; set; }
+
+		public void Eval() { }
 	}
 }

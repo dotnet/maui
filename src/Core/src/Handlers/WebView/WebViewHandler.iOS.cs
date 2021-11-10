@@ -17,6 +17,14 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateSource(webView, webViewDelegate);
 		}
 
+		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
+				return;
+
+			handler.NativeView?.EvaluateJavaScriptAsync(script);
+		}
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var size = base.GetDesiredSize(widthConstraint, heightConstraint);

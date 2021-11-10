@@ -1,4 +1,5 @@
-﻿using Android.Webkit;
+﻿using System;
+using Android.Webkit;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
 
@@ -6,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, AWebView>
 	{
+		public const string AssetBaseUrl = "file:///android_asset/";
+
 		WebViewClient? _webViewClient;
 		WebChromeClient? _webChromeClient;
 		bool _firstRun = true;
@@ -45,9 +48,27 @@ namespace Microsoft.Maui.Handlers
 		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
 		{
 			handler.NativeView.SetWebChromeClient(handler._webChromeClient ??= new WebChromeClient());
-
 		}
 
+		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
+				return;
+
+			string url = "javascript:" + script;
+
+			if (url != null)
+			{
+				if (!url.StartsWith('/') && !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+				{
+					// URLs like "index.html" can't possibly load, so try "file:///android_asset/index.html"
+					url = AssetBaseUrl + url;
+				}
+
+				handler.NativeView?.LoadUrl(url);
+			}
+		}
+	
 		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
 		{
 			handler.NativeView.UpdateSettings(webView, true, true);

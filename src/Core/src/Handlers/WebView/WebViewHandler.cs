@@ -16,12 +16,18 @@ namespace Microsoft.Maui.Handlers
 #endif
 		};
 
-		public WebViewHandler() : base(WebViewMapper)
+		public static CommandMapper<IWebView, WebViewHandler> WebViewCommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(IWebView.Eval)] = MapEval
+		};
+
+		public WebViewHandler() : base(WebViewMapper, WebViewCommandMapper)
 		{
 
 		}
 
-		public WebViewHandler(PropertyMapper mapper) : base(mapper ?? WebViewMapper)
+		public WebViewHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
+			: base(mapper ?? WebViewMapper, commandMapper ?? WebViewCommandMapper)
 		{
 
 		}

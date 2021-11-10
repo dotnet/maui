@@ -12,5 +12,13 @@ namespace Microsoft.Maui.Handlers
 
 			handler.NativeView?.UpdateSource(webView, webViewDelegate);
 		}
+
+		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
+				return;
+
+			handler.NativeView?.ExecuteScriptAsync(script);
+		}
 	}
 }

@@ -11,9 +11,16 @@
                 Text="UrlWebViewSource"
                 Style="{StaticResource Headline}"/>
             <WebView 
+                x:Name="MauiWebView"
                 Source="https://github.com/dotnet/maui"
                 HeightRequest="300"
                 WidthRequest="300" />
+            <Label
+                Text="Eval Script"
+                Style="{StaticResource Headline}"/>
+            <Button
+                Text="Eval"
+                Clicked="OnEvalClicked"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
