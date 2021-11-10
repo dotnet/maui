@@ -20,13 +20,7 @@ namespace Microsoft.Maui
 
 		public void AddScrollableElementHandlers()
 		{
-			if (this.Window == null)
-				return;
-			var content = this.Window.Content as IVisualTreeElement;
-			if (content == null)
-				return;
-
-			var scrollBars = content.GetEntireVisualTreeElementChildren().Where(n => n is IScrollView).Cast<IScrollView>();
+			var scrollBars = this.GetScrollViews();
 			foreach(var scrollBar in scrollBars)
 			{
 				if (!_scrollViews.Any(x => x.Item1 == scrollBar))

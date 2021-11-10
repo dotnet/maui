@@ -30,10 +30,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void TestVisualTreeHelper(object sender, EventArgs e)
 		{
-			var frame = TestLabel;
-			//var frame2 = HomeSections.GetNativeViewBounds();
-			var test = this.Parent.Parent as IWindow;
-			test.VisualDiagnosticsLayer.AddAdorner(TestLabel as IVisualTreeElement);
+			((IWindow)this.Parent.Parent).VisualDiagnosticsLayer.AddAdorner(TestLabel as IVisualTreeElement);
 		}
 	}
 }

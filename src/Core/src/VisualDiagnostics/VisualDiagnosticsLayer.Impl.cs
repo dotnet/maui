@@ -80,6 +80,17 @@ namespace Microsoft.Maui
 				border.Draw(canvas, dirtyRect);
 		}
 
+		internal List<IScrollView> GetScrollViews ()
+		{
+			if (this.Window == null)
+				return new List<IScrollView>();
+			var content = this.Window.Content as IVisualTreeElement;
+			if (content == null)
+				return new List<IScrollView>();
+
+			return content.GetEntireVisualTreeElementChildren().Where(n => n is IScrollView).Cast<IScrollView>().ToList();
+		}
+
 		internal void OnTouchInternal(Point point, bool addAdorners = false)
 		{
 			var elements = new List<IVisualTreeElement>();
