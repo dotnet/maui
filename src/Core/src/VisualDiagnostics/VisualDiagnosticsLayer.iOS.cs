@@ -13,11 +13,21 @@ namespace Microsoft.Maui
 {
 	public partial class VisualDiagnosticsLayer : IVisualDiagnosticsLayer, IDrawable
 	{
-		public bool DisableUITouchEventPassthrough { get; set; }
+		private bool disableUITouchEventPassthrough;
+		public bool DisableUITouchEventPassthrough
+		{
+			get { return disableUITouchEventPassthrough; }
+			set
+			{
+				disableUITouchEventPassthrough = value;
+				if (this._uiView != null)
+					this._uiView.DisableUITouchEventPassthrough = value;
+			}
+		}
 
 		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
 		private UIWindow? _window;
-		private UIView? _uiView;
+		private PassthroughView? _uiView;
 		private HashSet<Tuple<UIScrollView, IDisposable>> _scrollViews = new HashSet<Tuple<UIScrollView, IDisposable>>();
 
 		public void AddScrollableElementHandlers()
@@ -61,8 +71,8 @@ namespace Microsoft.Maui
 
 
 			_uiView = new PassthroughView(nativeLayer.RootViewController.View.Frame);
-			_uiView.UserInteractionEnabled = false;
 			this.VisualDiagnosticsGraphicsView = new NativeGraphicsView(_uiView.Frame, this, new DirectRenderer());
+			this.VisualDiagnosticsGraphicsView.UserInteractionEnabled = false;
 			_uiView.AddSubview(this.VisualDiagnosticsGraphicsView);
 			if (this.VisualDiagnosticsGraphicsView == null)
 			{
@@ -76,9 +86,15 @@ namespace Microsoft.Maui
 			this.VisualDiagnosticsGraphicsView.BackgroundColor = UIColor.FromWhiteAlpha(1, 0.0f);
 			nativeLayer.RootViewController.View.AddSubview(_uiView);
 			nativeLayer.RootViewController.View.BringSubviewToFront(_uiView);
+			this._uiView.OnTouch += _uiView_OnTouch;
 			this.IsNativeViewInitialized = true;
 		}
 
+		private void _uiView_OnTouch(object? sender, CGPoint e)
+		{
+			var point = new Point(e.X, e.Y);
+			OnTouchInternal(point, true);
+		}
 
 		public List<UIScrollView> GetUIScrollViews(UIView view, List<UIScrollView>? views = null)
 		{
@@ -109,6 +125,10 @@ namespace Microsoft.Maui
 
 	internal class PassthroughView : UIView
 	{
+		public bool DisableUITouchEventPassthrough { get; set; }
+
+		public event EventHandler<CGPoint>? OnTouch;
+
 		public PassthroughView()
 		{
 		}
@@ -129,6 +149,10 @@ namespace Microsoft.Maui
 		{
 		}
 
-
+		public override bool PointInside(CGPoint point, UIEvent? uievent)
+		{
+			this.OnTouch?.Invoke(this, point);
+			return !DisableUITouchEventPassthrough;
+		}
 	}
 }

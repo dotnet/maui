@@ -155,9 +155,11 @@ namespace Microsoft.Maui
 
 			if (visualElement is IView view)
 			{
-				if (useNativeViewBounds && points.All(n => view.GetNativeViewBounds().Contains(n)))
+				if (useNativeViewBounds)
 				{
-					elements.Add(visualElement);
+					var bounds = view.GetNativeViewBounds();
+					if (points.All(n => bounds.Contains(n)))
+						elements.Add(visualElement);
 				}
 				else if (points.All(n => view.Frame.Contains(n)))
 				{

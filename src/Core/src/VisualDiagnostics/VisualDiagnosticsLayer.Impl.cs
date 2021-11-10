@@ -80,6 +80,27 @@ namespace Microsoft.Maui
 				border.Draw(canvas, dirtyRect);
 		}
 
+		internal void OnTouchInternal(Point point, bool addAdorners = false)
+		{
+			if (addAdorners)
+				this.RemoveAdorners();
+
+			var elements = new List<IVisualTreeElement>();
+			if (this.DisableUITouchEventPassthrough)
+			{
+				var visualWindow = this.Window as IVisualTreeElement;
+				if (visualWindow != null)
+					elements.AddRange(visualWindow.GetVisualTreeElements(point));
+			}
+
+			if (addAdorners && elements.Any())
+			{
+				this.AddAdorner(elements.First());
+			}
+
+			this.OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements));
+		}
+
 #if NETSTANDARD || NET6
 
 		public bool DisableUITouchEventPassthrough { get; set; }

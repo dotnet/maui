@@ -81,21 +81,9 @@ namespace Microsoft.Maui
 			if (e == null || e.Event == null)
 				return;
 
+			e.Handled = this.DisableUITouchEventPassthrough;
 			var point = new Point(e.Event.RawX, e.Event.RawY);
-			var elements = new List<IVisualTreeElement>();
-			if (!this.DisableUITouchEventPassthrough)
-			{
-				e.Handled = false;
-			}
-			else
-			{
-				e.Handled = true;
-				var visualWindow = this.Window as IVisualTreeElement;
-				if (visualWindow != null)
-					elements.AddRange(visualWindow.GetVisualTreeElements(point));
-			}
-
-			this.OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements));
+			OnTouchInternal(point);
 		}
 
 		private void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
