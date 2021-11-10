@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (modalRenderer != null)
 			{
 				// TODO. Need to implement animated
-				await _modalStack.Pop(animated);
+				await _modalStack!.Pop(animated);
 				CurrentPageController?.SendAppearing();
 			}
 			return modal;

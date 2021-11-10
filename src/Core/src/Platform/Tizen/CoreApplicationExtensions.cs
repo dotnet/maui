@@ -5,9 +5,6 @@ using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
 using Tizen.Common;
 using Tizen.NUI;
-using Tizen.NUI.BaseComponents;
-using Tizen.UIExtensions.NUI;
-using TColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Platform
 {
