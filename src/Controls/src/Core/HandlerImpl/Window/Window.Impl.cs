@@ -209,6 +209,8 @@ namespace Microsoft.Maui.Controls
 		{
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
+
+			Application?.RemoveWindow(this);
 		}
 
 		void IWindow.Resumed()

@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (s_platformServices == null)
-					throw new InvalidOperationException("You must call Microsoft.Maui.Controls.Forms.Init(); prior to using this property.");
+					throw new InvalidOperationException($"You must call Microsoft.Maui.Controls.Compatibility.Forms.Init(); prior to using this property ({nameof(PlatformServices)}).");
 				return s_platformServices;
 			}
 			set
@@ -167,11 +167,6 @@ namespace Microsoft.Maui.Controls
 		public static Color GetNamedColor(string name)
 		{
 			return PlatformServices.GetNamedColor(name);
-		}
-
-		internal static Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			return PlatformServices.GetStreamAsync(uri, cancellationToken);
 		}
 
 		public static class Styles

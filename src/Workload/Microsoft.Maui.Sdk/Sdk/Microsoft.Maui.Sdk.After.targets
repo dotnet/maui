@@ -14,4 +14,5 @@
     <ProjectCapability Include="MauiCore"       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
     <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
   </ItemGroup>
+  <Import Project="Microsoft.Maui.Controls.DefaultItems.targets" />
 </Project>

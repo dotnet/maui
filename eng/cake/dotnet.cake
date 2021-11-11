@@ -79,30 +79,62 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        CleanDirectories("../templatesTest/");
+        var templatesTest = $"../templatesTest/{Guid.NewGuid()}/";
 
-        // Create empty Directory.Build.props/targets
-        EnsureDirectoryExists(Directory("../templatesTest/"));
-        FileWriteText(File("../templatesTest/Directory.Build.props"), "<Project/>");
-        FileWriteText(File("../templatesTest/Directory.Build.targets"), "<Project/>");
-        CopyFileToDirectory(File("./NuGet.config"), Directory("../templatesTest/"));
-
-        var properties = new Dictionary<string, string> {
-            // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-            { "RestoreNoCache", "true" },
-            { "RestorePackagesPath", MakeAbsolute(File("../templatesTest/packages")).FullPath },
-            { "RestoreConfigFile", MakeAbsolute(File("../templatesTest/nuget.config")).FullPath },
-
-            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
-            { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
-        };
-
-        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+        try
         {
-            var name = template.Replace("-", "") + " Space-Dash";
-            StartProcess(dn, $"new {template} -o \"../templatesTest/{name}\"");
+            CleanDirectories(templatesTest);
 
-            RunMSBuildWithDotNet($"../templatesTest/{name}", properties, warningsAsError: true);
+            // Create empty Directory.Build.props/targets
+            EnsureDirectoryExists(Directory(templatesTest));
+            FileWriteText(File(templatesTest + "Directory.Build.props"), "<Project/>");
+            FileWriteText(File(templatesTest + "Directory.Build.targets"), "<Project/>");
+            CopyFileToDirectory(File("./NuGet.config"), Directory(templatesTest));
+
+            // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
+            var designTime = new Dictionary<string, string> {
+                { "DesignTimeBuild", "true" },
+                { "BuildingInsideVisualStudio", "true" },
+                { "SkipCompilerExecution", "true" },
+                // NOTE: this overrides a default setting that supports VS Mac
+                // See: https://github.com/xamarin/xamarin-android/blob/94c2a3d86a2e0e74863b57e3c5c61dbd29daa9ea/src/Xamarin.Android.Build.Tasks/Xamarin.Android.Common.props.in#L19
+                { "AndroidUseManagedDesignTimeResourceGenerator", "true" },
+            };
+
+            var properties = new Dictionary<string, string> {
+                // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
+                { "RestoreNoCache", "true" },
+                { "RestorePackagesPath", MakeAbsolute(File(templatesTest + "packages")).FullPath },
+                { "RestoreConfigFile", MakeAbsolute(File(templatesTest + "nuget.config")).FullPath },
+
+                // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+                { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
+            };
+
+            var frameworks = new [] {
+                "net6.0-android",
+                "net6.0-ios",
+                "net6.0-maccatalyst",
+            };
+
+            foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+            {
+                var name = template.Replace("-", "") + " Space-Dash";
+                StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
+
+                // Design-time build without restore
+                foreach (var framework in frameworks)
+                {
+                    RunMSBuildWithDotNet($"{templatesTest}{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
+                }
+
+                // Build
+                RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
+            }
+        }
+        finally 
+        {
+            CleanDirectories(templatesTest);
         }
     });
 
@@ -231,7 +263,7 @@ Task("SAMPLE-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", target: "Run");
     });
 
 Task("SAMPLE-IOS")
@@ -240,7 +272,7 @@ Task("SAMPLE-IOS")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", target: "Run");
     });
 
 Task("SAMPLE-MAC")
@@ -249,7 +281,7 @@ Task("SAMPLE-MAC")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj",  target: "Run");
     });
 
 
@@ -331,19 +363,28 @@ void StartVisualStudioForDotNet6(string sln = null)
 
 // NOTE: These methods work as long as the "dotnet" target has already run
 
-void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false, bool warningsAsError = false)
+void RunMSBuildWithDotNet(
+    string sln,
+    Dictionary<string, string> properties = null,
+    string target = "Build",
+    bool warningsAsError = false,
+    bool restore = true,
+    string targetFramework = null)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
-    var binlog = $"\"{logDirectory}/{name}-{configuration}.binlog\"";
+    var binlog = string.IsNullOrEmpty(targetFramework) ?
+        $"\"{logDirectory}/{name}-{configuration}-{target}.binlog\"" :
+        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
     // If we're not on Windows, use ./bin/dotnet/dotnet
-    if (!IsRunningOnWindows() || deployAndRun)
+    if (!IsRunningOnWindows() || target == "Run")
     {
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)
+            .WithTarget(target)
             .EnableBinaryLogger(binlog);
         if (warningsAsError)
         {
@@ -358,12 +399,19 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
             }
         }
 
-        if (deployAndRun)
-            msbuildSettings.WithTarget("Run");
-
         var dotnetBuildSettings = new DotNetCoreBuildSettings
         {
             MSBuildSettings = msbuildSettings,
+        };
+        dotnetBuildSettings.ArgumentCustomization = args =>
+        {
+            if (!restore)
+                args.Append("--no-restore");
+
+            if (!string.IsNullOrEmpty(targetFramework))
+                args.Append($"-f {targetFramework}");
+
+            return args;
         };
 
         if (localDotnet)
@@ -377,12 +425,20 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
         var msbuild = FindMSBuild();
         Information("Using MSBuild: {0}", msbuild);
         var msbuildSettings = new MSBuildSettings { ToolPath = msbuild }
-            .WithRestore()
             .SetConfiguration(configuration)
+            .WithTarget(target)
             .EnableBinaryLogger(binlog);
         if (warningsAsError)
         {
             msbuildSettings.WarningsAsError = true;
+        }
+        if (restore)
+        {
+            msbuildSettings.WithRestore();
+        }
+        if (!string.IsNullOrEmpty(targetFramework))
+        {
+            msbuildSettings.WithProperty("TargetFramework", targetFramework);
         }
 
         if (properties != null)
