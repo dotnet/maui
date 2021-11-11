@@ -30,6 +30,18 @@ namespace Microsoft.Maui.Essentials
 
 				return Task.FromResult<string>(null);
 			}
+			catch (Java.Lang.SecurityException)
+			{
+				System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to key corruption. Removing old key and returning null.");
+				Remove(key);
+
+				return Task.FromResult<string>(null);
+			}
+			catch (System.Exception e)
+			{
+				System.Diagnostics.Debug.WriteLine($"Exception thrown: {e}");
+				return Task.FromResult<string>(null);
+			}
 		}
 
 		static Task PlatformSetAsync(string key, string data)
@@ -71,7 +83,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			lock (locker)
 			{
-				using (var editor = GetEncryptedSharedPreferences().Edit())
+				using (var editor = Preferences.GetSharedPreferences(Alias).Edit())
 				{
 					editor.Clear().Apply();
 				}
