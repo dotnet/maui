@@ -21,9 +21,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 #if __ANDROID__
 					services = MauiTestInstrumentation.Current?.Services ?? MauiApplication.Current.Services;
 #elif __IOS__
-					var app = MauiTestApplicationDelegate.Current?.Services ?? MauiUIApplicationDelegate.Current.Services;
+					services = MauiTestApplicationDelegate.Current?.Services ?? MauiUIApplicationDelegate.Current.Services;
 #elif WINDOWS
-					var app = MauiWinUIApplication.Current.Services;
+					services = MauiWinUIApplication.Current.Services;
 #endif
 
 					s_dispatcher = services?.GetService<IDispatcher>();
