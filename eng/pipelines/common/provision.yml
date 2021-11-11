@@ -4,10 +4,11 @@ parameters:
 
 steps:
 
-  - task: NuGetAuthenticate@0
-    displayName: 'Authenticate NuGet sources'
-    inputs:
-      nuGetServiceConnections: Project.Reunion.nuget.internal
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - task: NuGetAuthenticate@0
+      displayName: 'Authenticate NuGet sources'
+      inputs:
+        nuGetServiceConnections: Project.Reunion.nuget.internal
 
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
