@@ -1,3 +1,4 @@
+using ObjCRuntime;
 using UIKit;
 
 namespace Samples.iOS

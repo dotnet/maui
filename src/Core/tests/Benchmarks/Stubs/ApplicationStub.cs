@@ -19,6 +19,16 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			return _windows[0];
 		}
 
+		public void OpenWindow(IWindow window)
+		{
+			_windows.Add(window);
+		}
+
+		public void CloseWindow(IWindow window)
+		{
+			_windows.Remove(window);
+		}
+
 		public void ThemeChanged() { }
 	}
 }

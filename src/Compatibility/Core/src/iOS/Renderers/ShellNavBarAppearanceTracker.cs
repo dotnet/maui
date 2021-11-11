@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_defaultTint != null)
 			{
 				var navBar = controller.NavigationBar;
+				navBar.BarTintColor = _defaultBarTint;
 				navBar.TintColor = _defaultTint;
 				navBar.TitleTextAttributes = _defaultTitleAttributes;
 			}
@@ -29,10 +31,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetAppearance(UINavigationController controller, ShellAppearance appearance)
 		{
-			var background = appearance.BackgroundColor;
-			var foreground = appearance.ForegroundColor;
-			var titleColor = appearance.TitleColor;
-
 			var navBar = controller.NavigationBar;
 
 			if (_defaultTint == null)
@@ -42,20 +40,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
 			}
 
-			if (background != null)
-				navBar.BarTintColor = background.ToUIColor();
-			if (foreground != null)
-				navBar.TintColor = foreground.ToUIColor();
-			if (titleColor != null)
-			{
-				navBar.TitleTextAttributes = new UIStringAttributes
-				{
-					ForegroundColor = titleColor.ToUIColor()
-				};
-			}
+			if (Forms.IsiOS15OrNewer)
+				UpdateiOS15NavigationBarAppearance(controller, appearance);
+			else
+				UpdateNavigationBarAppearance(controller, appearance);
 		}
 
 		#region IDisposable Support
+
 		protected virtual void Dispose(bool disposing)
 		{
 		}
@@ -89,6 +81,58 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				navigationBar.Layer.ShadowOpacity = _shadowOpacity;
 			}
 		}
+
 		#endregion
+
+		void UpdateiOS15NavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
+		{
+			var navBar = controller.NavigationBar;
+
+			var navigationBarAppearance = new UINavigationBarAppearance();
+			navigationBarAppearance.ConfigureWithOpaqueBackground();
+
+			navBar.Translucent = false;
+
+			// Set ForegroundColor
+			var foreground = appearance.ForegroundColor;
+
+			if (foreground != null)
+				navBar.TintColor = foreground.ToUIColor();
+
+			// Set BackgroundColor
+			var background = appearance.BackgroundColor;
+
+			if (background != null)
+				navigationBarAppearance.BackgroundColor = background.ToUIColor();
+
+			// Set TitleColor
+			var titleColor = appearance.TitleColor;
+
+			if (titleColor != null)
+				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToUIColor() };
+
+			navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
+		}
+
+		void UpdateNavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
+		{
+			var background = appearance.BackgroundColor;
+			var foreground = appearance.ForegroundColor;
+			var titleColor = appearance.TitleColor;
+
+			var navBar = controller.NavigationBar;
+
+			if (background != null)
+				navBar.BarTintColor = background.ToUIColor();
+			if (foreground != null)
+				navBar.TintColor = foreground.ToUIColor();
+			if (titleColor != null)
+			{
+				navBar.TitleTextAttributes = new UIStringAttributes
+				{
+					ForegroundColor = titleColor.ToUIColor()
+				};
+			}
+		}
 	}
 }

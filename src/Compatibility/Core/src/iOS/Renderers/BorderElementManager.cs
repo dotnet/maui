@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

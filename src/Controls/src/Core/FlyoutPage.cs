@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -146,7 +147,7 @@ namespace Microsoft.Maui.Controls
 					return false;
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
-				DeviceOrientation orientation = Device.Info.CurrentOrientation;
+				var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
 
 				bool isSplitOnLandscape = (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.Default) && orientation.IsLandscape();
 				bool isSplitOnPortrait = behavior == FlyoutLayoutBehavior.SplitOnPortrait && orientation.IsPortrait();
@@ -162,7 +163,7 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
-			DeviceOrientation orientation = Device.Info.CurrentOrientation;
+			var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
 
 			bool isSplitOnLandscape = (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.Default) && orientation.IsLandscape();
 			bool isSplitOnPortrait = behavior == FlyoutLayoutBehavior.SplitOnPortrait && orientation.IsPortrait();

@@ -305,11 +305,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				throw new NotImplementedException();
 			}
 
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				throw new NotImplementedException();
-			}
-
 			public void QuitApplication()
 			{
 				throw new NotImplementedException();

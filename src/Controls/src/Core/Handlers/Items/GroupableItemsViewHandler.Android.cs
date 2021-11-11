@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		new protected GroupableItemsViewAdapter<TItemsView, IGroupableItemsViewSource> CreateAdapter() => new(VirtualView);
 
-		protected override RecyclerView CreateNativeView() => 
+		protected override RecyclerView CreateNativeView() =>
 			new MauiRecyclerView<TItemsView, GroupableItemsViewAdapter<TItemsView, IGroupableItemsViewSource>, IGroupableItemsViewSource>(Context, GetItemsLayout, CreateAdapter);
 
 		public static void MapIsGrouped(GroupableItemsViewHandler<TItemsView> handler, GroupableItemsView itemsView)

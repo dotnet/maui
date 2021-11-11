@@ -1,4 +1,5 @@
 ﻿using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.LifecycleEvents
@@ -15,6 +16,11 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler);
 		public delegate void WillEnterForeground(UIApplication application);
 		public delegate void WillTerminate(UIApplication application);
+
+
+		// Scene
+		public delegate void SceneWillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions);
+		public delegate void SceneDidDisconnect(UIScene scene);
 
 		// Internal events
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);

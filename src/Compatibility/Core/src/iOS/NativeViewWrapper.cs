@@ -1,4 +1,5 @@
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else

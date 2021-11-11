@@ -1,5 +1,6 @@
 using System;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -23,7 +24,7 @@ namespace Microsoft.Maui
 				return nativeHandler.NativeView;
 
 			return nativeView;
-			
+
 		}
 
 		public static UIViewController ToUIViewController(this IElement view, IMauiContext context)
