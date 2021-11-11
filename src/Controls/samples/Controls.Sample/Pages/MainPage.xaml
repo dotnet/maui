@@ -51,7 +51,7 @@
     </views:BasePage.Resources>
     <ScrollView>
         <Grid
-            RowDefinitions="150, *, Auto"
+            RowDefinitions="150, *, Auto, Auto, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
@@ -63,6 +63,7 @@
                 Grid.Row="0"
                 RowDefinitions="Auto,*">
                 <Label
+                    x:Name="MauiTextLabel"
                     Text=".NET MAUI"
                     Style="{StaticResource TitleStyle}"/>
                 <Label
@@ -114,8 +115,11 @@
                 </CollectionView>
             </Grid>
             <!-- FOOTER -->
+
+            <Button Margin="5"  Grid.Row="2" Text="Add Adorner to MauiTextLabel" Clicked="TestVisualTreeHelper" />
+            <Button Margin="5"  Grid.Row="3" Text="Enable Visual Diagnostics Element Picker (Will disable UI!)" Clicked="EnableElementPicker" />
             <Label
-                Grid.Row="2"
+                Grid.Row="4"
                 Text="Microsoft Corporation © 2021"
                 Style="{StaticResource FooterStyle}" />
         </Grid>

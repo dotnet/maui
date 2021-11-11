@@ -23,6 +23,9 @@ namespace Microsoft.Maui
 #pragma warning restore CS0067
 
 		/// <inheritdoc/>
+		public bool AutoScrollToElement { get; set; }
+
+		/// <inheritdoc/>
 		public bool IsNativeViewInitialized { get; internal set; }
 
 		/// <inheritdoc/>
@@ -50,24 +53,30 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public void AddAdorner(IAdornerBorder adornerBorder)
+		public void AddAdorner(IAdornerBorder adornerBorder, bool scrollToView = false)
 		{
 			this.AddScrollableElementHandlers();
 			this.AdornerBorders.Add(adornerBorder);
+
+			if (this.AutoScrollToElement || scrollToView)
+				this.ScrollToView((IVisualTreeElement)adornerBorder.VisualView);
+
 			this.Invalidate();
 		}
 
 		/// <inheritdoc/>
-		public void AddAdorner(IVisualTreeElement visualElement)
+		public void AddAdorner(IVisualTreeElement visualElement, bool scrollToView = false)
 		{
 			if (visualElement is not IView view)
-			{
 				return;
-			}
 
 			this.AdornerBorders.RemoveWhere(n => n.VisualView == view);
 			this.AdornerBorders.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
 			this.AddScrollableElementHandlers();
+
+			if (this.AutoScrollToElement || scrollToView)
+				this.ScrollToView(visualElement);
+
 			this.Invalidate();
 		}
 
@@ -103,6 +112,20 @@ namespace Microsoft.Maui
 		{
 			foreach (var border in this.AdornerBorders) 
 				border.Draw(canvas, dirtyRect);
+		}
+
+		/// <inheritdoc/>
+		public void ScrollToView(IVisualTreeElement element)
+		{
+			var parentScrollView = GetParentScrollView(element);
+			if (parentScrollView == null)
+				return;
+
+			if (element is not IView view)
+				return;
+
+			var nativeView = view.GetNativeViewBounds();
+			parentScrollView.RequestScrollTo(nativeView.X, nativeView.Y, true);
 		}
 
 		/// <summary>
@@ -145,6 +168,18 @@ namespace Microsoft.Maui
 			}
 
 			this.OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements));
+		}
+
+		private IScrollView? GetParentScrollView(IVisualTreeElement element)
+		{
+			if (element is IScrollView scrollView)
+				return scrollView;
+			if (element == null)
+				return null;
+			var parent = element.GetVisualParent();
+			if (parent != null)
+				return GetParentScrollView(parent);
+			return null;
 		}
 
 #if NETSTANDARD || NET6

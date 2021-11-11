@@ -79,7 +79,6 @@ namespace Microsoft.Maui
 			this._visualDiagnosticsGraphicsView?.Invalidate();
 		}
 
-
 		private void Viewer_ViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
 		{
 			this.Invalidate();

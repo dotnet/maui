@@ -27,7 +27,12 @@ namespace Maui.Controls.Sample.Pages
 
 		void TestVisualTreeHelper(object sender, EventArgs e)
 		{
-			((IWindow)this.Parent.Parent).VisualDiagnosticsLayer.AddAdorner(TestLabel as IVisualTreeElement);
+			((IWindow)this.Parent.Parent).VisualDiagnosticsLayer.AddAdorner(MauiTextLabel as IVisualTreeElement, true);
+		}
+
+		void EnableElementPicker(object sender, EventArgs e)
+		{
+			((IWindow)this.Parent.Parent).VisualDiagnosticsLayer.DisableUITouchEventPassthrough = true;
 		}
 	}
 }
