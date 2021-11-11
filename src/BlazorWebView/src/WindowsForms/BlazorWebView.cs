@@ -213,7 +213,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				_webviewManager?
 					.DisposeAsync()
 					.AsTask()
-					.ConfigureAwait(false)
 					.GetAwaiter()
 					.GetResult();
 			}
