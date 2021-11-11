@@ -1,6 +1,10 @@
+using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Essentials;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
