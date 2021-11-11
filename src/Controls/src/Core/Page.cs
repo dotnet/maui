@@ -287,10 +287,7 @@ namespace Microsoft.Maui.Controls
 			var canceled = false;
 			EventHandler handler = (sender, args) => { canceled = true; };
 			window.PopCanceled += handler;
-			Navigation
-				.PopModalAsync()
-				.ContinueWith(t => { throw t.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext())
-				.FireAndForget(this.Handler);
+			Navigation.PopModalAsync().ContinueWith(t => { throw t.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext());
 
 			window.PopCanceled -= handler;
 			return !canceled;

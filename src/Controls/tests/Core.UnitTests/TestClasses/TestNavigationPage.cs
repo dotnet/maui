@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		public new TestNavigationHandler Handler =>
-			Handler as TestNavigationHandler;
+			base.Handler as TestNavigationHandler;
 
 		public void ValidateNavigationCompleted()
 		{
@@ -37,6 +37,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			return result;
 		}
+
+		
 	}
 
 	public class TestNavigationHandler : ViewHandler<NavigationPage, object>

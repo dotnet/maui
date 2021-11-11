@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls
 						Owner?.Popped?.Invoke(Owner, new NavigationEventArgs(currentPage));
 					});
 
-				return newCurrentPage;
+				return currentPage;
 			}
 
 			protected override Task OnPopToRootAsync(bool animated)
