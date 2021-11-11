@@ -11,9 +11,17 @@ namespace Microsoft.Maui.Controls
 		public static readonly LayoutOptions Center = new LayoutOptions(LayoutAlignment.Center, false);
 		public static readonly LayoutOptions End = new LayoutOptions(LayoutAlignment.End, false);
 		public static readonly LayoutOptions Fill = new LayoutOptions(LayoutAlignment.Fill, false);
+
+		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions StartAndExpand = new LayoutOptions(LayoutAlignment.Start, true);
+
+		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions CenterAndExpand = new LayoutOptions(LayoutAlignment.Center, true);
+
+		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions EndAndExpand = new LayoutOptions(LayoutAlignment.End, true);
+
+		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions FillAndExpand = new LayoutOptions(LayoutAlignment.Fill, true);
 
 		public LayoutOptions(LayoutAlignment alignment, bool expands)
