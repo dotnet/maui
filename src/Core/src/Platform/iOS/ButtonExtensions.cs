@@ -1,13 +1,12 @@
 using System;
-using CoreGraphics;
-using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
+		static nfloat DefaultCornerRadius = 5;
+
 		public static void UpdateText(this UIButton nativeButton, IText button) =>
 			nativeButton.SetTitle(button.Text, UIControlState.Normal);
 
@@ -47,10 +46,31 @@ namespace Microsoft.Maui
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)
 		{
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)(button.Padding.Top),
-				(float)(button.Padding.Left),
-				(float)(button.Padding.Bottom),
-				(float)(button.Padding.Right));
+				(float)button.Padding.Top,
+				(float)button.Padding.Left,
+				(float)button.Padding.Bottom,
+				(float)button.Padding.Right);
+		}
+
+		public static void UpdateBorderColor(this UIButton nativeButton, IButton button)
+		{
+			if (button.BorderColor != null)
+				nativeButton.Layer.BorderColor = button.BorderColor.ToCGColor();
+		}
+
+		public static void UpdateBorderWidth(this UIButton nativeButton, IButton button)
+		{
+			nativeButton.Layer.BorderWidth = Math.Max(0f, (float)button.BorderWidth);
+		}
+
+		public static void UpdateCornerRadius(this UIButton nativeButton, IButton button)
+		{
+			nfloat cornerRadius = DefaultCornerRadius;
+
+			if (cornerRadius != button.CornerRadius)
+				cornerRadius = button.CornerRadius;
+
+			nativeButton.Layer.CornerRadius = cornerRadius;
 		}
 	}
 }

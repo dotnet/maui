@@ -55,6 +55,21 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, button);
 		}
 
+		public static void MapBorderColor(IButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateBorderColor(button);
+		}
+
+		public static void MapBorderWidth(IButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateBorderWidth(button);
+		}
+
+		public static void MapCornerRadius(IButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateCornerRadius(button);
+		}
+
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
 			handler.TypedNativeView?.UpdateTextColor(button, ButtonTextColorDefaultNormal, ButtonTextColorDefaultHighlighted, ButtonTextColorDefaultDisabled);

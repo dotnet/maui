@@ -1,8 +1,6 @@
 #nullable enable
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
@@ -32,6 +30,21 @@ namespace Microsoft.Maui
 			UpdateContent(nativeButton, button, nativeImageSource);
 		}
 
+		public static void UpdateBorderColor(this MauiButton nativeButton, IButton button)
+		{
+			nativeButton.UpdateBorderColor(button.BorderColor);
+		}
+
+		public static void UpdateBorderWidth(this MauiButton nativeButton, IButton button)
+		{
+			nativeButton.UpdateBorderWidth(button.BorderWidth);
+		}
+
+		public static void UpdateCornerRadius(this MauiButton nativeButton, IButton button)
+		{
+			nativeButton.UpdateCornerRadius(button.CornerRadius);
+		}
+	
 		static void UpdateContent(this MauiButton nativeButton, IButton button, object? content)
 		{
 			WImage? image = null;

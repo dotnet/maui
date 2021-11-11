@@ -12,9 +12,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFont(IButtonHandler handler, ITextStyle button) { }
 		public static void MapPadding(IButtonHandler handler, IButton button) { }
 		public static void MapImageSource(IButtonHandler handler, IButton image) { }
-		void OnSetImageSource(object? obj)
-		{
-			throw new NotImplementedException();
-		}
+		public static void MapBorderWidth(IButtonHandler handler, IButton image) { }
+		public static void MapBorderColor(IButtonHandler handler, IButton image) { }
+		public static void MapCornerRadius(IButtonHandler handler, IButton image) { }
+
+		void OnSetImageSource(object? obj) { }
 	}
 }

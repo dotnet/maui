@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class ButtonHandler : IButtonHandler
 	{
 		ImageSourcePartLoader? _imageSourcePartLoader;
+
 		public ImageSourcePartLoader ImageSourceLoader =>
 			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => (VirtualView as IImageButton), OnSetImageSource);
 
@@ -29,7 +30,14 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IText.Text)] = MapText,
 		};
 
-		public static IPropertyMapper<IButton, IButtonHandler> Mapper = new PropertyMapper<IButton, IButtonHandler>(TextButtonMapper, ImageButtonMapper, ViewHandler.ViewMapper)
+		public static IPropertyMapper<IButton, IButtonHandler> BorderMapper = new PropertyMapper<IButton, IButtonHandler>(TextButtonMapper, ImageButtonMapper, ViewHandler.ViewMapper)
+		{
+			[nameof(IButtonBorder.BorderWidth)] = MapBorderWidth,
+			[nameof(IButtonBorder.BorderColor)] = MapBorderColor,
+			[nameof(IButtonBorder.CornerRadius)] = MapCornerRadius
+		};
+
+		public static IPropertyMapper<IButton, IButtonHandler> Mapper = new PropertyMapper<IButton, IButtonHandler>(TextButtonMapper, ImageButtonMapper, BorderMapper, ViewHandler.ViewMapper)
 		{
 			[nameof(IButton.Background)] = MapBackground,
 			[nameof(IButton.Padding)] = MapPadding,
@@ -42,6 +50,7 @@ namespace Microsoft.Maui.Handlers
 
 		public ButtonHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
+
 		}
 
 		IButton IButtonHandler.TypedVirtualView => VirtualView;

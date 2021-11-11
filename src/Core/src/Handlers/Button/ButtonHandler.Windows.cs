@@ -17,13 +17,6 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiButton CreateNativeView() 
 			=> new MauiButton();
 
-		void SetupDefaults(MauiButton nativeView)
-		{
-			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
-			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
-			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
-		}
-
 		protected override void ConnectHandler(MauiButton nativeView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
@@ -33,7 +26,16 @@ namespace Microsoft.Maui.Handlers
 			nativeView.AddHandler(UI.Xaml.UIElement.PointerPressedEvent, _pointerPressedHandler, true);
 			nativeView.AddHandler(UI.Xaml.UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
 
+			SetupDefaults(nativeView);
+
 			base.ConnectHandler(nativeView);
+		}
+
+		void SetupDefaults(MauiButton nativeView)
+		{
+			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
+			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
+			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
 		}
 
 		protected override void DisconnectHandler(MauiButton nativeView)
@@ -54,6 +56,21 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateBackground(button, DefaultBackground);
 		}
 
+		public static void MapBorderColor(IButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateBorderColor(button);
+		}
+
+		public static void MapBorderWidth(IButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateBorderWidth(button);
+		}
+
+		public static void MapCornerRadius(IButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateCornerRadius(button);
+		}
+		
 		public static void MapText(IButtonHandler handler, IText button)
 		{
 			handler.TypedNativeView?.UpdateText(button);

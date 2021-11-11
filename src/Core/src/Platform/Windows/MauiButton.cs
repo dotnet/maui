@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
@@ -104,8 +105,22 @@ namespace Microsoft.Maui
 				textBlock.CharacterSpacing = CharacterSpacing;
 		}
 
-		public TextBlock? GetTextBlock() => GetContent<TextBlock?>();
+		public void UpdateBorderColor(Color borderColor)
+		{
+			BorderBrush = (borderColor != null) ? ColorExtensions.ToNative(borderColor) : (WBrush)Application.Current.Resources["ButtonBorderThemeBrush"];
+		}
 
+		public void UpdateBorderWidth(double borderWidth)
+		{
+			BorderThickness = WinUIHelpers.CreateThickness(borderWidth);
+		}
+
+		public void UpdateCornerRadius(int cornerRadius)
+		{
+			BorderRadius = cornerRadius;
+		}
+				
+		public TextBlock? GetTextBlock() => GetContent<TextBlock?>();
 
 		public WImage? GetImage() => GetContent<WImage?>();
 

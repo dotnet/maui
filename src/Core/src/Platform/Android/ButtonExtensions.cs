@@ -1,10 +1,4 @@
-using System;
-using Android.Content;
-using Android.Views;
 using AndroidX.AppCompat.Widget;
-using AndroidX.Core.Widget;
-using Google.Android.Material.Button;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
@@ -30,6 +24,21 @@ namespace Microsoft.Maui
 				(int)padding.Top,
 				(int)padding.Right,
 				(int)padding.Bottom);
+		}
+
+		public static void UpdateBorderColor(this AppCompatButton appCompatButton, IButton button)
+		{
+			// TODO:
+		}
+
+		public static void UpdateBorderWidth(this AppCompatButton appCompatButton, IButton button)
+		{
+			// TODO:
+		}
+
+		public static void UpdateCornerRadius(this AppCompatButton appCompatButton, IButton button)
+		{
+			// TODO:
 		}
 	}
 }
