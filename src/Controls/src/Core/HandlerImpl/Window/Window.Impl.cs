@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
 			InternalChildren.CollectionChanged += OnCollectionChanged;
-			this.VisualDiagnosticsLayer = new VisualDiagnosticsLayer(this);
+			VisualDiagnosticsLayer = new VisualDiagnosticsLayer(this);
 		}
 
 		public Window(Page page)
