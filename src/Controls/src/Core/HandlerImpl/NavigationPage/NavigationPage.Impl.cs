@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 			// If the user is performing multiple overlapping navigations then we don't want to sync the native stack to our xplat stack
 			// We wait until we get to the end of the queue and then we sync up.
 			// Otherwise intermediate results will wipe out the navigationstack
-			if (_waitingCount == 1)
+			if (_waitingCount <= 1)
 			{
 				SyncToNavigationStack(newStack);
 				CurrentPage = (Page)newStack[newStack.Count - 1];

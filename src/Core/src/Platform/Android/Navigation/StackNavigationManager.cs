@@ -320,9 +320,7 @@ namespace Microsoft.Maui
 		protected virtual void OnToolbarBackButtonClicked()
 		{
 			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
-			var stack = new List<IView>(NavigationStack);
-			stack.RemoveAt(stack.Count - 1);
-			ApplyNavigationRequest(new NavigationRequest(stack, true));
+			_ = MauiContext.GetActivity().GetWindow()?.BackButtonClicked();
 		}
 
 		internal void ToolbarBackButtonClicked() => OnToolbarBackButtonClicked();
