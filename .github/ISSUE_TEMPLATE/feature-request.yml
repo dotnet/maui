@@ -41,10 +41,7 @@ body:
       placeholder: In my app I have a situation where I would really want a shiny button to make it stand out from the rest of the plain and boring buttons.
     validations:
       required: true
-  - type: checkboxes
-    id: terms
+  - type: markdown
     attributes:
-      label: Code of Conduct
-      options:
-        - label: I agree to follow this project's [Code of Conduct](https://github.com/dotnet/maui/blob/main/.github/CODE_OF_CONDUCT.md)
-          required: true
+      value: |
+        By opening the issue you agree to follow this project's [Code of Conduct](https://github.com/dotnet/maui/blob/main/.github/CODE_OF_CONDUCT.md)
