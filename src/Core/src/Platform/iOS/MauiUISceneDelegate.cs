@@ -1,8 +1,8 @@
 ﻿using Foundation;
+using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {

@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		public void SetAppearance(UINavigationController controller, ShellAppearance appearance)
-		{ 	
+		{
 			var navBar = controller.NavigationBar;
 
 			if (_defaultTint == null)
