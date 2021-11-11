@@ -1,4 +1,4 @@
-#addin nuget:?package=Cake.AppleSimulator&version=0.2.0
+#addin nuget:dotnet-public?package=Cake.AppleSimulator&version=0.2.0
 #load "../cake/helpers.cake"
 
 string TARGET = Argument("target", "Test");

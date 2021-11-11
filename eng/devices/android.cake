@@ -1,5 +1,5 @@
-#addin nuget:?package=Cake.Android.Adb&version=3.2.0
-#addin nuget:?package=Cake.Android.AvdManager&version=2.2.0
+#addin nuget:dotnet-public?package=Cake.Android.Adb&version=3.2.0
+#addin nuget:dotnet-public?package=Cake.Android.AvdManager&version=2.2.0
 #load "../cake/helpers.cake"
 
 string TARGET = Argument("target", "Test");
