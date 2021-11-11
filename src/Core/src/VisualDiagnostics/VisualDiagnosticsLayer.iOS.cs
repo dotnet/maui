@@ -142,8 +142,19 @@ namespace Microsoft.Maui
 
 		public override bool PointInside(CGPoint point, UIEvent? uievent)
 		{
+			// If we don't have a UI event, return.
+			if (uievent == null)
+				return false;
+
+			if (uievent.Type == UIEventType.Hover)
+				return false;
+
+			// If we are not pressing down, return.
+			if (uievent.Type != UIEventType.Touches)
+				return false;
+
 			this.OnTouch?.Invoke(this, point);
-			return !DisableUITouchEventPassthrough;
+			return DisableUITouchEventPassthrough;
 		}
 	}
 }
