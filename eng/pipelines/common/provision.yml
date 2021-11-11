@@ -4,6 +4,9 @@ parameters:
 
 steps:
 
+  - task: NuGetAuthenticate@0
+    displayName: 'Authenticate NuGet sources'
+
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
     # Provision Xcode
@@ -92,5 +95,3 @@ steps:
     condition: eq(variables['provisioningCake'], 'true')
   - pwsh: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
-  - task: NuGetAuthenticate@0
-    displayName: 'Authenticate NuGet sources'
