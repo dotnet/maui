@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (s_platformServices == null)
-					throw new InvalidOperationException("You must call Microsoft.Maui.Controls.Forms.Init(); prior to using this property.");
+					throw new InvalidOperationException($"You must call Microsoft.Maui.Controls.Compatibility.Forms.Init(); prior to using this property ({nameof(PlatformServices)}).");
 				return s_platformServices;
 			}
 			set

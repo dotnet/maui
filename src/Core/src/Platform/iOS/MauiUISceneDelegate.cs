@@ -1,4 +1,5 @@
 ﻿using Foundation;
+using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -11,10 +12,17 @@ namespace Microsoft.Maui
 
 		public override void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
-			if (session.Configuration.Name != MauiUIApplicationDelegate.MauiSceneConfigurationKey)
-				return;
+			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
 
-			this.CreateNativeWindow(MauiUIApplicationDelegate.Current.Application, scene, session, connectionOptions);
+			if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && MauiUIApplicationDelegate.Current?.Application != null)
+			{
+				this.CreateNativeWindow(MauiUIApplicationDelegate.Current.Application, scene, session, connectionOptions);
+			}
+		}
+
+		public override void DidDisconnect(UIScene scene)
+		{
+			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
 		}
 
 		public override NSUserActivity? GetStateRestorationActivity(UIScene scene)
