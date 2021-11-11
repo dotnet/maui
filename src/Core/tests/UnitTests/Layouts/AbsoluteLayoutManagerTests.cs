@@ -407,7 +407,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void ChildMeasureRespectsAbsoluteBounds() 
+		public void ChildMeasureRespectsAbsoluteBounds()
 		{
 			double expectedWidth = 115;
 			double expectedHeight = 230;
