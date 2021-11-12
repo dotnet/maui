@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Controls
 
 		public TableView(TableRoot root)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 			Model = _tableModel = new TableSectionModel(this, root);
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<TableView>>(() => new PlatformConfigurationRegistry<TableView>(this));
 		}
