@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Visual Diagnostics Layer.
+	/// Visual Diagnostics Overlay.
 	/// </summary>
 	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
 	{
@@ -57,8 +57,10 @@ namespace Microsoft.Maui
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
 			{
-				viewer.ViewChanging += Viewer_ViewChanging;
-				this.ScrollViews.Add(new Tuple<IScrollView, ScrollViewer>(scrollBar, viewer));
+				if (this.ScrollViews.Add(new Tuple<IScrollView, ScrollViewer>(scrollBar, viewer)))
+				{
+					viewer.ViewChanging += Viewer_ViewChanging;
+				}
 			}
 		}
 
