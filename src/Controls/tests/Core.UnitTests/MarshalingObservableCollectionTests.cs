@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			readonly List<MarshalingTestDispatcher> _allDispatchers = new();
 
-			public IDispatcher CreateDispatcher()
+			public IDispatcher GetForCurrentThread()
 			{
 				var dispatcher = new MarshalingTestDispatcher();
 				_allDispatchers.Add(dispatcher);
