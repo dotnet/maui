@@ -245,14 +245,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// this allows us to test IsInvokeRequired/BeginInvoke without having to be on an actual device
 		class MarshalingTestDispatcherProvider : IDispatcherProvider
 		{
+			[ThreadStatic]
+			static IDispatcher? s_dispatcherInstance;
+
 			readonly List<MarshalingTestDispatcher> _allDispatchers = new();
 
 			public IDispatcher GetForCurrentThread()
 			{
-				var dispatcher = new MarshalingTestDispatcher();
-				_allDispatchers.Add(dispatcher);
-				dispatcher.Start();
-				return dispatcher;
+				if (s_dispatcherInstance == null)
+				{
+					s_dispatcherInstance = new MarshalingTestDispatcher();
+					_allDispatchers.Add(s_dispatcherInstance);
+					s_dispatcherInstance.Start();
+				}
+
+				return s_dispatcherInstance;
 			}
 
 			public void StopAllDispatchers()
