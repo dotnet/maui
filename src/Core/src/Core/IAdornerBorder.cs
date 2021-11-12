@@ -19,11 +19,11 @@ namespace Microsoft.Maui
 		IView VisualView { get; }
 
 		/// <summary>
-		/// Gets the offset rectangle value for where to draw the border.
+		/// Gets the offset point value for where to draw the border.
 		/// Used to override the default Frame/Bounds controls of the underlying native element.
 		/// Ex. Android's Status Bar height that does not reflect in the underlying APIs.
 		/// </summary>
-		Rectangle Offset { get; }
+		Point Offset { get; }
 
 		/// <summary>
 		/// Gets the fill color for the Adorner Border.

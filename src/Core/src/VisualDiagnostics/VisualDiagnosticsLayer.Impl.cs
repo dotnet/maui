@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 		public HashSet<IAdornerBorder> AdornerBorders { get; internal set; } = new HashSet<IAdornerBorder>();
 
 		/// <inheritdoc/>
-		public Rectangle Offset { get; internal set; }
+		public Point Offset { get; internal set; }
 
 		/// <inheritdoc/>
 		public float DPI { get; internal set; } = 1;

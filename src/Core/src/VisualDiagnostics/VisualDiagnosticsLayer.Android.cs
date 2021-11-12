@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null)
 			{
-				nativeScroll.ScrollChange += scroll_ScrollChange;
+				nativeScroll.ScrollChange += Scroll_ScrollChange;
 				this.ScrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
 			}
 		}
@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 			foreach (var scrollBar in this.ScrollViews)
 			{
 				if (!scrollBar.Item2.IsDisposed())
-					scrollBar.Item2.ScrollChange -= scroll_ScrollChange;
+					scrollBar.Item2.ScrollChange -= Scroll_ScrollChange;
 			}
 
 			this.ScrollViews.Clear();
@@ -57,27 +57,20 @@ namespace Microsoft.Maui
 				_nativeActivity = activity;
 
 			if (_nativeActivity == null || _nativeActivity.WindowManager == null || _nativeActivity.WindowManager.DefaultDisplay == null)
-			{
-				System.Diagnostics.Debug.WriteLine("VisualDiagnosticsLayer: Could not cast native Android activity.");
 				return;
-			}
 
 			var measuredHeight = nativeLayer.MeasuredHeight;
 
 			if (_nativeActivity.Window != null)
-			{
 				_nativeActivity.Window.DecorView.LayoutChange += DecorView_LayoutChange;
-			}
 
 			if (_nativeActivity != null && _nativeActivity.Resources != null && _nativeActivity.Resources.DisplayMetrics != null)
 				this.DPI = _nativeActivity.Resources.DisplayMetrics.Density;
 
 			this.VisualDiagnosticsGraphicsView = new NativeGraphicsView(nativeLayer.Context, this);
 			if (this.VisualDiagnosticsGraphicsView == null)
-			{
-				System.Diagnostics.Debug.WriteLine("VisualDiagnosticsLayer: Could not set up touch layer canvas.");
 				return;
-			}
+
 			this.VisualDiagnosticsGraphicsView.Touch += TouchLayer_Touch;
 			nativeLayer.AddView(this.VisualDiagnosticsGraphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
 			this.VisualDiagnosticsGraphicsView.BringToFront();
@@ -90,7 +83,7 @@ namespace Microsoft.Maui
 			this.VisualDiagnosticsGraphicsView?.Invalidate();
 		}
 
-		private void scroll_ScrollChange(object? sender, View.ScrollChangeEventArgs e)
+		private void Scroll_ScrollChange(object? sender, View.ScrollChangeEventArgs e)
 		{
 			this.Invalidate();
 		}
@@ -101,18 +94,18 @@ namespace Microsoft.Maui
 		/// <param name="nativeActivity">Android Activity, <see cref="Activity"/>.</param>
 		/// <param name="graphicsView"><see cref="NativeGraphicsView"/>.</param>
 		/// <returns>Offset Rectangle.</returns>
-		private Rectangle GenerateAdornerOffset(Activity nativeActivity, NativeGraphicsView graphicsView)
+		private Point GenerateAdornerOffset(Activity nativeActivity, NativeGraphicsView graphicsView)
 		{
 			if (nativeActivity.Resources == null || nativeActivity.Resources.DisplayMetrics == null)
-				return new Rectangle();
+				return new Point();
 
 			if (graphicsView == null)
-				return new Rectangle();
+				return new Point();
 
 			float dpi = nativeActivity.Resources.DisplayMetrics.Density;
 			float heightPixels = nativeActivity.Resources.DisplayMetrics.HeightPixels;
 
-			return new Rectangle(0, -(heightPixels - graphicsView.MeasuredHeight) / dpi, 0, 0);
+			return new Point(0, -(heightPixels - graphicsView.MeasuredHeight) / dpi);
 		}
 
 		private void TouchLayer_Touch(object? sender, View.TouchEventArgs e)

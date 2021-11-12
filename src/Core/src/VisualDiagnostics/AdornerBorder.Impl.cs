@@ -17,10 +17,10 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="view">An <see cref="IView"/> to create the Adorner Border around.</param>
 		/// <param name="dpi">Override DPI setting. Default: 1</param>
-		/// <param name="offset">Offset Rectangle used for positioning drawable object. Default: null</param>
+		/// <param name="offset">Offset point used for positioning drawable object. Default: null</param>
 		/// <param name="fillColor">Canvas Fill Color.</param>
 		/// <param name="strokeColor">Canvas Stroke Color.</param>
-		public AdornerBorder(IView view, float dpi = 1, Rectangle? offset = null, Color? fillColor = null, Color? strokeColor = null)
+		public AdornerBorder(IView view, float dpi = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
 		{
 			if (fillColor != null)
 				this.FillColor = fillColor;
@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 				this.StrokeColor = strokeColor;
 
 			if (offset == null)
-				this.Offset = new Rectangle();
+				this.Offset = new Point();
 			else
 				this.Offset = offset.Value;
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 		public IView VisualView { get; }
 
 		/// <inheritdoc/>
-		public Rectangle Offset { get; }
+		public Point Offset { get; }
 
 		/// <inheritdoc/>
 		public Color FillColor { get; } = Color.FromRgba(225, 0, 0, 125);

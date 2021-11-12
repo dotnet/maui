@@ -33,11 +33,11 @@ namespace Microsoft.Maui
 		IWindow Window { get; }
 
 		/// <summary>
-		/// Gets the offset rectangle used to adjust the native drawing bounds for a given adorner border.
+		/// Gets the offset point used to adjust the native drawing bounds for a given adorner border.
 		/// Used when the underlying operating system may not give exact placement for where elements are.
 		/// Ex. Android and the Status Bar.
 		/// </summary>
-		public Rectangle Offset { get; }
+		public Point Offset { get; }
 
 		/// <summary>
 		/// Gets the DPI for the layer.
@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 		public float DPI { get; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the native touch and drawing layer has been initialized.
+		/// Gets a value indicating whether the native touch and drawing layer has been initialized.
 		/// If it has not, you will be unable to draw or use hit testing on the visual diagnostics layer.
 		/// </summary>
 		bool IsNativeViewInitialized { get; }
