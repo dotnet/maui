@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		class MarshalingTestDispatcherProvider : IDispatcherProvider
 		{
 			[ThreadStatic]
-			static IDispatcher? s_dispatcherInstance;
+			static IDispatcher s_dispatcherInstance;
 
 			readonly List<MarshalingTestDispatcher> _allDispatchers = new();
 
@@ -254,9 +254,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				if (s_dispatcherInstance == null)
 				{
-					s_dispatcherInstance = new MarshalingTestDispatcher();
-					_allDispatchers.Add(s_dispatcherInstance);
-					s_dispatcherInstance.Start();
+					var dispatcher = new MarshalingTestDispatcher();
+					s_dispatcherInstance = dispatcher;
+
+					_allDispatchers.Add(dispatcher);
+					dispatcher.Start();
 				}
 
 				return s_dispatcherInstance;
