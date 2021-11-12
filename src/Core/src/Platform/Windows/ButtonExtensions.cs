@@ -1,127 +1,141 @@
 #nullable enable
-using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
-using WStretch = Microsoft.UI.Xaml.Media.Stretch;
-using WThickness = Microsoft.UI.Xaml.Thickness;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateText(this MauiButton nativeButton, IText textButton)
+		public static void UpdateText(this Button nativeButton, IText text)
 		{
-			if (textButton is IButton button)
-				UpdateContent(nativeButton, button, nativeButton.GetImage());
+			if (nativeButton.GetContent<TextBlock>() is TextBlock textBlock)
+			{
+				var actualText = text.Text;
+				textBlock.Text = actualText;
+				textBlock.Visibility = string.IsNullOrEmpty(actualText)
+					? UI.Xaml.Visibility.Collapsed
+					: UI.Xaml.Visibility.Visible;
+			}
+		}
+
+		public static void UpdateBackground(this Button nativeButton, IButton button)
+		{
+			var brush = button.Background?.ToNative();
+			if (brush is null)
+			{
+				nativeButton.Resources.Remove("ButtonBackground");
+				nativeButton.Resources.Remove("ButtonBackgroundPointerOver");
+				nativeButton.Resources.Remove("ButtonBackgroundPressed");
+				nativeButton.Resources.Remove("ButtonBackgroundDisabled");
+			}
 			else
-				nativeButton.Content = textButton.Text;
-		}
-
-		public static void UpdateTextColor(this MauiButton nativeButton, ITextStyle button, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeButton.UpdateForegroundColor(button.TextColor, defaultBrush);
-
-		public static void UpdateCharacterSpacing(this MauiButton nativeButton, ITextStyle button) =>
-			nativeButton.UpdateCharacterSpacing((int)button.CharacterSpacing);
-
-		public static void UpdateImageSource(this MauiButton nativeButton, IButton button, WImageSource? nativeImageSource)
-		{
-			UpdateContent(nativeButton, button, nativeImageSource);
-		}
-
-		static void UpdateContent(this MauiButton nativeButton, IButton button, object? content)
-		{
-			WImage? image = null;
-
-			var text = (button as IText)?.Text;
-
-			if (content is WImageSource nativeImageSource)
 			{
-				var imageSourceSize = nativeImageSource.GetImageSourceSize();
-				image = nativeButton.GetImage() ?? new();
-				image.Source = nativeImageSource;
-				image.Width = imageSourceSize.Width;
-				image.Height = imageSourceSize.Height;
+				nativeButton.Resources["ButtonBackground"] = brush;
+				nativeButton.Resources["ButtonBackgroundPointerOver"] = brush;
+				nativeButton.Resources["ButtonBackgroundPressed"] = brush;
+				nativeButton.Resources["ButtonBackgroundDisabled"] = brush;
+			}
+		}
 
-				// BitmapImage is a special case that has an event when the image is loaded
-				// when this happens, we want to resize the button
-				if (nativeImageSource is BitmapImage bitmapImage)
+		public static void UpdateTextColor(this Button nativeButton, ITextStyle button)
+		{
+			var brush = button.TextColor?.ToNative();
+			if (brush is null)
+			{
+				nativeButton.Resources.Remove("ButtonForeground");
+				nativeButton.Resources.Remove("ButtonForegroundPointerOver");
+				nativeButton.Resources.Remove("ButtonForegroundPressed");
+				nativeButton.Resources.Remove("ButtonForegroundDisabled");
+			}
+			else
+			{
+				nativeButton.Resources["ButtonForeground"] = brush;
+				nativeButton.Resources["ButtonForegroundPointerOver"] = brush;
+				nativeButton.Resources["ButtonForegroundPressed"] = brush;
+				nativeButton.Resources["ButtonForegroundDisabled"] = brush;
+			}
+		}
+
+		public static void UpdatePadding(this Button nativeButton, IPadding padding) =>
+			nativeButton.UpdatePadding(padding, nativeButton.GetResource<UI.Xaml.Thickness>("ButtonPadding"));
+
+		public static void UpdateCharacterSpacing(this Button nativeButton, ITextStyle button)
+		{
+			var characterSpacing = button.CharacterSpacing.ToEm();
+
+			nativeButton.CharacterSpacing = characterSpacing;
+
+			if (nativeButton.GetContent<TextBlock>() is TextBlock textBlock)
+				textBlock.CharacterSpacing = characterSpacing;
+		}
+
+		public static void UpdateImageSource(this Button nativeButton, WImageSource? nativeImageSource)
+		{
+			if (nativeButton.GetContent<WImage>() is WImage nativeImage)
+			{
+				nativeImage.Source = nativeImageSource;
+
+				if (nativeImageSource is not null)
 				{
-					bitmapImage.ImageOpened += OnImageOpened;
-
-					void OnImageOpened(object sender, RoutedEventArgs e)
+					// set the base size if we can
 					{
-						bitmapImage.ImageOpened -= OnImageOpened;
+						var imageSourceSize = nativeImageSource.GetImageSourceSize(nativeButton);
+						nativeImage.Width = imageSourceSize.Width;
+						nativeImage.Height = imageSourceSize.Height;
+					}
 
-						var actualImageSourceSize = nativeImageSource.GetImageSourceSize();
-						image.Width = actualImageSourceSize.Width;
-						image.Height = actualImageSourceSize.Height;
-					};
+					// BitmapImage is a special case that has an event when the image is loaded
+					// when this happens, we want to resize the button
+					if (nativeImageSource is BitmapImage bitmapImage)
+					{
+						bitmapImage.ImageOpened += OnImageOpened;
+
+						void OnImageOpened(object sender, RoutedEventArgs e)
+						{
+							bitmapImage.ImageOpened -= OnImageOpened;
+
+							// check if the image that just loaded is still the current image
+							var actualImageSource = sender as BitmapImage;
+							if (actualImageSource is not null && nativeImage.Source == actualImageSource)
+							{
+								// do the actual resize
+								var imageSourceSize = actualImageSource.GetImageSourceSize(nativeButton);
+								nativeImage.Width = imageSourceSize.Width;
+								nativeImage.Height = imageSourceSize.Height;
+							}
+						};
+					}
 				}
-			}
-			else if (content is WImage contentImage)
-			{
-				image = contentImage;
-			}
-			// This means the users image hasn't loaded yet but we still want to setup the container for the user
-			else if (button is IImageButton ib && ib.Source != null)
-			{
-				image = nativeButton.GetImage() ?? new();
-			}
 
-			// No text, just the image
-			if (string.IsNullOrEmpty(text))
-			{
-				nativeButton.Content = image;
-				return;
-			}
-			else if (image == null)
-			{
-				nativeButton.Content = text;
-				return;
-			}
-
-			if (image != null)
-			{
-				image.VerticalAlignment = VerticalAlignment.Center;
-				image.HorizontalAlignment = HorizontalAlignment.Center;
-				image.Stretch = WStretch.Uniform;
-
-				if (nativeButton.Content is not StackPanel)
-				{
-					// Both image and text, so we need to build a container for them
-					var container = CreateButtonContentContainer(image, text);
-					nativeButton.Content = container;
-				}
+				nativeImage.Visibility = nativeImageSource == null
+					? UI.Xaml.Visibility.Collapsed
+					: UI.Xaml.Visibility.Visible;
 			}
 		}
 
-		internal static StackPanel CreateButtonContentContainer(WImage image, string text)
+		public static T? GetContent<T>(this Button nativeButton)
+			where T : FrameworkElement
 		{
-			var container = new StackPanel();
+			if (nativeButton.Content is null)
+				return null;
 
-			var textBlock = new TextBlock
+			if (nativeButton.Content is T t)
+				return t;
+
+			if (nativeButton.Content is Panel panel)
 			{
-				Text = text,
-				VerticalAlignment = VerticalAlignment.Center,
-				HorizontalAlignment = HorizontalAlignment.Center
-			};
+				foreach (var child in panel.Children)
+				{
+					if (child is T c)
+						return c;
+				}
+			}
 
-			container.HorizontalAlignment = HorizontalAlignment.Center;
-			container.VerticalAlignment = VerticalAlignment.Center;
-
-			// TODO: Use ButtonContentLayout when available
-			// Defaults to image on the left
-			container.Orientation = Orientation.Horizontal;
-			image.Margin = new WThickness(0);
-
-			container.Children.Add(image);
-			container.Children.Add(textBlock);
-
-			return container;
+			return null;
 		}
 	}
 }
