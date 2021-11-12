@@ -103,6 +103,15 @@ namespace Microsoft.Maui
 			this.VisualDiagnosticsGraphicsView?.InvalidateDrawable();
 		}
 
+		/// <summary>
+		/// Disposes the native event hooks and handlers used to drive the overlay.
+		/// </summary>
+		private void DisposeNativeDependencies()
+		{
+			this._frameObserver?.Dispose();
+			this._passthroughView?.Dispose();
+		}
+
 		private void Scroll_Scrolled(object? sender, EventArgs e)
 		{
 			this.Invalidate();

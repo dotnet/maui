@@ -9,6 +9,7 @@ namespace Microsoft.Maui
 	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
 	{
 		private HashSet<IAdornerBorder> _adornerBorders = new HashSet<IAdornerBorder>();
+		bool _disposedValue;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="VisualDiagnosticsOverlay"/> class.
@@ -184,6 +185,27 @@ namespace Microsoft.Maui
 			return null;
 		}
 
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					this.RemoveScrollableElementHandler();
+					this.DisposeNativeDependencies();
+				}
+
+				_disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
 #if NETSTANDARD || NET6
 
 		/// <inheritdoc/>
@@ -204,6 +226,13 @@ namespace Microsoft.Maui
 
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
+		{
+		}
+
+		/// <summary>
+		/// Disposes the native event hooks and handlers used to drive the overlay.
+		/// </summary>
+		private void DisposeNativeDependencies()
 		{
 		}
 #endif

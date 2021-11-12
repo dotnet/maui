@@ -84,6 +84,15 @@ namespace Microsoft.Maui
 			this.VisualDiagnosticsGraphicsView?.Invalidate();
 		}
 
+		/// <summary>
+		/// Disposes the native event hooks and handlers used to drive the overlay.
+		/// </summary>
+		private void DisposeNativeDependencies()
+		{
+			if (_nativeActivity?.Window != null)
+				_nativeActivity.Window.DecorView.LayoutChange -= DecorView_LayoutChange;
+		}
+
 		private void Scroll_ScrollChange(object? sender, View.ScrollChangeEventArgs e)
 		{
 			this.Invalidate();

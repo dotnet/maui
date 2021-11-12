@@ -14,7 +14,8 @@ namespace Microsoft.Maui
 	{
 		private W2DGraphicsView? _visualDiagnosticsGraphicsView;
 		private bool disableUITouchEventPassthrough;
-		HashSet<Tuple<IScrollView, ScrollViewer>> _scrollViews = new HashSet<Tuple<IScrollView, ScrollViewer>>();
+		private Frame? _frame;
+		private HashSet<Tuple<IScrollView, ScrollViewer>> _scrollViews = new HashSet<Tuple<IScrollView, ScrollViewer>>();
 
 		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough
@@ -40,7 +41,8 @@ namespace Microsoft.Maui
 			// When it is, we will clear existing adorners.
 			if (nativeWindow is Frame frame)
 			{
-				frame.Navigating += Frame_Navigating;
+				_frame = frame;
+				_frame.Navigating += Frame_Navigating;
 			}
 
 
@@ -80,6 +82,15 @@ namespace Microsoft.Maui
 		public void Invalidate()
 		{
 			this._visualDiagnosticsGraphicsView?.Invalidate();
+		}
+
+		/// <summary>
+		/// Disposes the native event hooks and handlers used to drive the overlay.
+		/// </summary>
+		private void DisposeNativeDependencies()
+		{
+			if (_frame != null)
+				_frame.Navigating -= Frame_Navigating;
 		}
 
 		private void Viewer_ViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
