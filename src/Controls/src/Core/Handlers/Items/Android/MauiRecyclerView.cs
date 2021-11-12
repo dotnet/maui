@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
-using ARect = Android.Graphics.Rect;
-using AViewCompat = AndroidX.Core.View.ViewCompat;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using System.ComponentModel;
+using ARect = Android.Graphics.Rect;
+using AViewCompat = AndroidX.Core.View.ViewCompat;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

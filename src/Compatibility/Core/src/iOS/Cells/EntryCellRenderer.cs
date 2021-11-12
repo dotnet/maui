@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 

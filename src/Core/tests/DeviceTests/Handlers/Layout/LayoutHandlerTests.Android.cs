@@ -10,7 +10,6 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
 	public partial class LayoutHandlerTests
 	{
-
 		[Fact(DisplayName = "Shadow Initializes Correctly")]
 		public async Task ShadowInitializesCorrectly()
 		{

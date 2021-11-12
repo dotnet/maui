@@ -31,6 +31,9 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnNavigatedTo(NavigatedToEventArgs args) { }
 		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
 		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { }
+
+		public virtual Window GetParentWindow()
+			=> this.FindParentOfType<Window>();
 	}
 
 	public sealed class NavigatingFromEventArgs : EventArgs

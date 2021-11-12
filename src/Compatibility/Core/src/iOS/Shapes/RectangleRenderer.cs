@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using FormsRectangle = Microsoft.Maui.Controls.Shapes.Rectangle;
 
 #if __MOBILE__

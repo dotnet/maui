@@ -28,6 +28,7 @@ namespace Maui.Controls.Sample.Pages
 			grid.Add(headerLabel);
 			GridLayout.SetRow(headerLabel, 0);
 
+			// You can replace this BlazorWebView with CustomBlazorWebView to see loading custom static assets
 			var bwv = new BlazorWebView
 			{
 				// General properties

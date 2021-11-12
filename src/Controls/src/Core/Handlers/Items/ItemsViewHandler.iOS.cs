@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Handlers;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
 	{
 		ItemsViewLayout _layout;
-	
+
 		protected override void DisconnectHandler(UIView nativeView)
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;

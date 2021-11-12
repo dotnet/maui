@@ -75,8 +75,9 @@
     <Compile Remove="**\Windows\**\*.cs" />
   </ItemGroup>
 
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.targets" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
 
 </Project>

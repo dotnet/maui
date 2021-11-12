@@ -63,6 +63,16 @@
                 VerticalTextAlignment="Start"
                 Text="at the bottom"
                 HeightRequest="100"/>
+                <Label
+                Text="IsTextPredictionEnabled=True"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                IsTextPredictionEnabled="True"/>
+                <Label
+                Text="IsTextPredictionEnabled=False"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                IsTextPredictionEnabled="False"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
