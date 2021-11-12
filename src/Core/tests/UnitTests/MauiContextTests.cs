@@ -15,7 +15,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var collection = new MauiServiceCollection();
 			collection.AddSingleton(obj);
-			var services = new MauiServiceProvider(collection, false);
+			var services = new MauiFactory(collection, false);
 
 			var first = new MauiContext(services);
 			var second = new MauiContext(first);
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var collection = new MauiServiceCollection();
 			collection.AddSingleton(baseObj);
-			var services = new MauiServiceProvider(collection, false);
+			var services = new MauiFactory(collection, false);
 
 			var specificObj = new TestThing();
 			var context = new MauiContext(services);
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var collection = new MauiServiceCollection();
 			collection.AddSingleton(baseObj);
-			var services = new MauiServiceProvider(collection, false);
+			var services = new MauiFactory(collection, false);
 
 			var specificObj = new TestThing();
 			var context = new MauiContext(services);
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.UnitTests
 			var specificObj = new TestThing();
 
 			var collection = new MauiServiceCollection();
-			var services = new MauiServiceProvider(collection, false);
+			var services = new MauiFactory(collection, false);
 			var context = new MauiContext(services);
 			context.AddSpecific(() => { count++; return specificObj; });
 
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.UnitTests
 		public void AddSpecificIsNotWeak()
 		{
 			var collection = new MauiServiceCollection();
-			var services = new MauiServiceProvider(collection, false);
+			var services = new MauiFactory(collection, false);
 			var context = new MauiContext(services);
 
 			DoAdd(context);
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.UnitTests
 		public void AddWeakSpecificIsWeak()
 		{
 			var collection = new MauiServiceCollection();
-			var services = new MauiServiceProvider(collection, false);
+			var services = new MauiFactory(collection, false);
 			var context = new MauiContext(services);
 
 			DoAdd(context);
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var collection = new MauiServiceCollection();
 			collection.AddSingleton(obj);
-			var services = new MauiServiceProvider(collection, false);
+			var services = new MauiFactory(collection, false);
 
 			var first = new MauiContext(services);
 

@@ -37,8 +37,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return _services.GetService(serviceType);
 		}
 
-		public IMauiHandlersServiceProvider Handlers =>
-			Services.GetRequiredService<IMauiHandlersServiceProvider>();
+		public IMauiHandlersFactory Handlers =>
+			Services.GetRequiredService<IMauiHandlersFactory>();
 
 #if __ANDROID__
 		public Android.Content.Context Context =>

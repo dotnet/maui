@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	class MauiServiceProvider : IMauiServiceProvider
+	class MauiFactory : IMauiFactory
 	{
 		static readonly Type ServiceProviderType = typeof(IServiceProvider);
 		static readonly Type EnumerableType = typeof(IEnumerable<>);
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		// TODO: do this properly and support scopes
 		readonly IDictionary<ServiceDescriptor, object?> _singletons;
 
-		public MauiServiceProvider(IMauiServiceCollection collection, bool constructorInjection)
+		public MauiFactory(IMauiServiceCollection collection, bool constructorInjection)
 		{
 			_collection = collection ?? throw new ArgumentNullException(nameof(collection));
 			_constructorInjection = constructorInjection;
