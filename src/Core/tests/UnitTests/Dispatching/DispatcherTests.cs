@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Dispatching
 {
-	// All these tests should run in a separate thread/task to avoid pollouting the other tests.
+	// All these tests should run in a separate thread/task to avoid polluting the other tests.
 	// This is only because the dispatcher and dispatcher provider are both "static" classes.
 	[Category(TestCategory.Core, TestCategory.Dispatching)]
 	public class DispatcherTests : TestBase
