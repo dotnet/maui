@@ -13,35 +13,30 @@ namespace Microsoft.Maui.Essentials
 
 		static Task<string> PlatformGetAsync(string key)
 		{
-			try
+			return Task.Run(() =>
 			{
-				return Task.Run(() =>
+				try
 				{
 					lock (locker)
 					{
 						return GetEncryptedSharedPreferences().GetString(key, null);
 					}
-				});
-			}
-			catch (AEADBadTagException)
-			{
-				System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to an app uninstall. Removing old key and returning null.");
-				Remove(key);
+				}
+				catch (AEADBadTagException)
+				{
+					System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to an app uninstall. Removing old key and returning null.");
+					Remove(key);
 
-				return Task.FromResult<string>(null);
-			}
-			catch (Java.Lang.SecurityException)
-			{
-				System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to key corruption. Removing old key and returning null.");
-				Remove(key);
+					return null;
+				}
+				catch (Java.Lang.SecurityException)
+				{
+					System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to key corruption. Removing old key and returning null.");
+					Remove(key);
 
-				return Task.FromResult<string>(null);
-			}
-			catch (System.Exception e)
-			{
-				System.Diagnostics.Debug.WriteLine($"Exception thrown: {e}");
-				return Task.FromResult<string>(null);
-			}
+					return null;
+				}
+			});
 		}
 
 		static Task PlatformSetAsync(string key, string data)
