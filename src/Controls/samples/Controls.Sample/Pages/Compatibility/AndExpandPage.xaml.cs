@@ -10,6 +10,7 @@
 
 			Toggle.Clicked += (sender, args) => {
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				switch (_counter % 5)
 				{
 					case 1:
@@ -33,6 +34,7 @@
 						ExpandLabel.Text = "Not Expanded";
 						break;
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				_counter += 1;
 			};
