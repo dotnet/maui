@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
             Assert.Equal(data, b);
 #endif
-
 			await SecureStorage.SetAsync(key, data);
 
 			var c = await SecureStorage.GetAsync(key);
@@ -66,21 +65,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
             // simulate corrupt the key
             var corruptData = "A2PfJSNdEDjM+422tpu7FqFcVQQbO3ti/DvnDnIqrq9CFwaBi6NdXYcicjvMW6nF7X/Clpto5xerM41U1H4qtWJDO0Ijc5QNTHGZl9tDSbXJ6yDCDDnEDryj2uTa8DiHoNcNX68QtcV3at4kkJKXXAwZXSC88a73/xDdh1u5gUdCeXJzVc5vOY6QpAGUH0bjR5NHrqEQNNGDdquFGN9n2ZJPsEK6C9fx0QwCIL+uldpAYSWrpmUIr+/0X7Y0mJpN84ldygEVxHLBuVrzB4Bbu5XGLUN/0Sr2plWcKm7XhM6wp3JRW6Eae2ozys42p1YLeM0HXWrhTqP6FRPkS6mOtw==";
-
-
 			var all = Preferences.GetSharedPreferences(SecureStorage.Alias).All;
-
 			Preferences.Set(all.Keys.First(x => !x.StartsWith("_")), corruptData, SecureStorage.Alias);
 
 			var c = await SecureStorage.GetAsync(key);
-
 			Assert.Null(c);
 
 			// try to reset and get again
 			await SecureStorage.SetAsync(key, data);
-
 			c = await SecureStorage.GetAsync(key);
-
 			Assert.Equal(data, c);
         }
 #endif
@@ -89,7 +82,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task Non_Existent_Key_Returns_Null()
 		{
 			var v = await SecureStorage.GetAsync("THIS_KEY_SHOULD_NOT_EXIST");
-
 			Assert.Null(v);
 		}
 
@@ -101,11 +93,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			await SecureStorage.SetAsync(key, "Irrelevant Data");
 
 			var result = SecureStorage.Remove(key);
-
 			Assert.True(result);
 
 			var v = await SecureStorage.GetAsync(key);
-
 			Assert.Null(v);
 		}
 
