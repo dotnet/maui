@@ -44,7 +44,7 @@ Implements #
 - [ ] Adds the property to the appropriate interface
 - [ ] Avoids any changes not essential to the handler property
 - [ ] Adds the mapping to the PropertyMapper in the handler
-- [ ] Adds the mapping method to the Android, iOS, and Standard aspects of the handler
+- [ ] Adds the mapping method to the WinUI, Android, iOS, and Standard aspects of the handler
 - [ ] Implements the actual property updates (usually in extension methods in the Platform section of Core)
 - [ ] Tags ported renderer methods with [PortHandler]
 - [ ] Adds an example of the property to the sample project (MainPage)
