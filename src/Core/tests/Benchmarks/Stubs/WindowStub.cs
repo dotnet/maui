@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	{
 		public IView Content { get; set; }
 
-		public IVisualDiagnosticsLayer VisualDiagnosticsLayer { get; }
+		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
 		public string Title { get; set; }
 
