@@ -13,7 +13,7 @@ body:
     id: description
     attributes:
       label: Description
-      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots, videos and reproduction projects (zipped) here as well.
+      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots and videos as well. We love reproduction projects, please provide them through a GitHub repo and link that here.
       placeholder: Tell us what you see!
     validations:
       required: true
