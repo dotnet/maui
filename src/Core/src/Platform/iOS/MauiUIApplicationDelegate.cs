@@ -11,9 +11,9 @@ namespace Microsoft.Maui
 {
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
-		IMauiContext _applicationContext = null!;
-
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
+
+		IMauiContext _applicationContext = null!;
 
 		protected MauiUIApplicationDelegate()
 		{

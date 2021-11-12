@@ -15,14 +15,14 @@ namespace Microsoft.Maui.Controls
 				context.Services.GetService<IDispatcher>() is IDispatcher handlerDispatcher)
 				return handlerDispatcher;
 
+			// maybe this thread has a dispatcher
+			if (Dispatcher.GetForCurrentThread() is IDispatcher globalDispatcher)
+				return globalDispatcher;
+
 			// try looking on the app
 			if (bindableObject is not Application &&
 				Application.Current?.Dispatcher is IDispatcher appDispatcher)
 				return appDispatcher;
-
-			// maybe this thread has a dispatcher
-			if (Dispatcher.GetForCurrentThread() is IDispatcher globalDispatcher)
-				return globalDispatcher;
 
 			// no dispatchers found at all
 			throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
