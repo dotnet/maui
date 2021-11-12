@@ -25,7 +25,7 @@ Implements #
 
 - Adds `Thickness Padding { get; }` to the `ILabel` interface
 - Adds Padding property map to LabelHandler
-- Adds Padding mapping methods to LabelHandler for WinUi, Android, and iOS
+- Adds Padding mapping methods to LabelHandler for WinUI, Android, and iOS
 - Adds extension methods to apply Padding on WinUI/Android/iOS
 - Adds UILabel subclass MauiLabel (to support Padding, since UILabel doesn't by default)
 - Adds DeviceTests for initial Padding values on WinUI, iOS, and Android
