@@ -4,11 +4,8 @@ namespace Microsoft.Maui.Dispatching
 {
 	public partial class Dispatcher : IDispatcher
 	{
-		[ThreadStatic]
-		static IDispatcher? s_instance;
-
 		public static IDispatcher? GetForCurrentThread() =>
-			s_instance ??= DispatcherProvider.Current.CreateDispatcher();
+			DispatcherProvider.Current.GetForCurrentThread();
 
 		public bool IsInvokeRequired =>
 			IsInvokeRequiredImplementation();

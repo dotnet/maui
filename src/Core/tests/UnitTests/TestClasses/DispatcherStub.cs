@@ -31,7 +31,7 @@ namespace Microsoft.Maui.UnitTests
 
 	class DispatcherProviderStub : IDispatcherProvider
 	{
-		public IDispatcher? CreateDispatcher() =>
+		public IDispatcher? GetForCurrentThread() =>
 			DispatcherProviderStubOptions.SkipDispatcherCreation
 				? null
 				: new DispatcherStub(

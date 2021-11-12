@@ -1,28 +1,30 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Dispatching
 {
 	public partial class DispatcherProvider : IDispatcherProvider
 	{
+		[ThreadStatic]
+		static IDispatcher? s_dispatcherInstance;
+
 		// this is mainly settable for unit testing purposes
-		static IDispatcherProvider? s_current;
+		static IDispatcherProvider? s_currentProvider;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IDispatcherProvider Current =>
-			s_current ??= new DispatcherProvider();
+			s_currentProvider ??= new DispatcherProvider();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool SetCurrent(IDispatcherProvider? provider)
 		{
-			if (s_current == provider)
+			if (s_currentProvider == provider)
 				return false;
 
-			var old = s_current;
-			s_current = provider;
+			var old = s_currentProvider;
+			s_currentProvider = provider;
 			return old != null;
 		}
 
-		public IDispatcher? CreateDispatcher() =>
-			GetForCurrentThreadImplementation();
+		public IDispatcher? GetForCurrentThread() =>
+			s_dispatcherInstance ??= GetForCurrentThreadImplementation();
 	}
 }
