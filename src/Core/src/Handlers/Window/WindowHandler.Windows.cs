@@ -48,8 +48,8 @@ namespace Microsoft.Maui.Handlers
 
 			handler?._rootPanel?.Children?.Add(windowManager.RootView);
 
-			if (window.VisualDiagnosticsLayer != null && handler != null && handler._rootPanel != null)
-				window.VisualDiagnosticsLayer.InitializeNativeLayer(handler.MauiContext, handler._rootPanel);
+			if (window.VisualDiagnosticsOverlay != null && handler != null && handler._rootPanel != null)
+				window.VisualDiagnosticsOverlay.InitializeNativeLayer(handler.MauiContext, handler._rootPanel);
 		}
 	}
 }

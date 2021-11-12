@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Visual Diagnostics Layer.
 	/// </summary>
-	public partial class VisualDiagnosticsLayer : IVisualDiagnosticsLayer, IDrawable
+	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
 	{
 		Activity? _nativeActivity;
 

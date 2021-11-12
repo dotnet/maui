@@ -11,9 +11,9 @@ namespace Microsoft.Maui
 		IView Content { get; }
 		
 		/// <summary>
-		/// Gets the current visual diagnostics layer for the Window.
+		/// Gets the current visual diagnostics overlay for the Window.
 		/// </summary>
-		IVisualDiagnosticsLayer VisualDiagnosticsLayer { get; }
+		IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
 		/// <summary>
 		/// Occurs when the Window is created.

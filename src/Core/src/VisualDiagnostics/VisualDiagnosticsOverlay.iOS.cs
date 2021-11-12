@@ -11,9 +11,9 @@ using UIKit;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Visual Diagnostics Layer.
+	/// Visual Diagnostics Overlay.
 	/// </summary>
-	public partial class VisualDiagnosticsLayer : IVisualDiagnosticsLayer, IDrawable
+	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
 	{
 		private bool disableUITouchEventPassthrough;
 		private PassthroughView? _passthroughView;
@@ -73,7 +73,6 @@ namespace Microsoft.Maui
 
 			if (this.VisualDiagnosticsGraphicsView == null)
 			{
-				System.Diagnostics.Debug.WriteLine("VisualDiagnosticsLayer: Could not set up touch layer canvas.");
 				return;
 			}
 

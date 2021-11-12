@@ -6,13 +6,13 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	public partial class VisualDiagnosticsLayer : IVisualDiagnosticsLayer, IDrawable
+	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="VisualDiagnosticsLayer"/> class.
+		/// Initializes a new instance of the <see cref="VisualDiagnosticsOverlay"/> class.
 		/// </summary>
 		/// <param name="window">The parent Window.</param>
-		public VisualDiagnosticsLayer(IWindow window)
+		public VisualDiagnosticsOverlay(IWindow window)
 		{
 			this.Window = window;
 		}

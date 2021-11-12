@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics.Native;
 
 namespace Microsoft.Maui
 {
-	public interface IVisualDiagnosticsLayer
+	public interface IVisualDiagnosticsOverlay
 	{
 		/// <summary>
 		/// Gets or sets a value indicating whether to disable UI Touch Event Passthrough.

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Toolbar Toolbar { get; }
 
-		public IVisualDiagnosticsLayer VisualDiagnosticsLayer { get; }
+		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
 		public Window()
 		{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
 			InternalChildren.CollectionChanged += OnCollectionChanged;
-			VisualDiagnosticsLayer = new VisualDiagnosticsLayer(this);
+			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
 		}
 
 		public Window(Page page)

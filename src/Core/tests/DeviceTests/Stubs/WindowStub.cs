@@ -8,7 +8,7 @@
 
 		public IView Content { get; set; }
 
-		public IVisualDiagnosticsLayer VisualDiagnosticsLayer { get; }
+		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
 		public string Title { get; set; }
 		public bool IsCreated { get; set; }
