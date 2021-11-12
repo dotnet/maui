@@ -14,6 +14,7 @@ namespace Microsoft.Maui
 	{
 		private W2DGraphicsView? _visualDiagnosticsGraphicsView;
 		private bool disableUITouchEventPassthrough;
+		HashSet<Tuple<IScrollView, ScrollViewer>> _scrollViews = new HashSet<Tuple<IScrollView, ScrollViewer>>();
 
 		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough
@@ -28,7 +29,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public HashSet<Tuple<IScrollView, Microsoft.UI.Xaml.Controls.ScrollViewer>> ScrollViews { get; } = new HashSet<Tuple<IScrollView, ScrollViewer>>();
+		public IReadOnlyCollection<Tuple<IScrollView, ScrollViewer>> ScrollViews => this._scrollViews.ToList().AsReadOnly();
 
 		/// <inheritdoc/>
 		public void InitializeNativeLayer(IMauiContext context, Microsoft.Maui.RootPanel nativeLayer)
@@ -37,7 +38,7 @@ namespace Microsoft.Maui
 
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
-			if (nativeWindow != null && nativeWindow is Frame frame)
+			if (nativeWindow is Frame frame)
 			{
 				frame.Navigating += Frame_Navigating;
 			}
@@ -57,7 +58,7 @@ namespace Microsoft.Maui
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
 			{
-				if (this.ScrollViews.Add(new Tuple<IScrollView, ScrollViewer>(scrollBar, viewer)))
+				if (this._scrollViews.Add(new Tuple<IScrollView, ScrollViewer>(scrollBar, viewer)))
 				{
 					viewer.ViewChanging += Viewer_ViewChanging;
 				}
@@ -72,7 +73,7 @@ namespace Microsoft.Maui
 				scrollBar.Item2.ViewChanging -= Viewer_ViewChanging;
 			}
 
-			this.ScrollViews.Clear();
+			this._scrollViews.Clear();
 		}
 
 		/// <inheritdoc/>
@@ -88,7 +89,7 @@ namespace Microsoft.Maui
 
 		private void Frame_Navigating(object sender, UI.Xaml.Navigation.NavigatingCancelEventArgs e)
 		{
-			if (this.AdornerBorders.Any())
+			if (this._adornerBorders.Any())
 				this.RemoveAdorners();
 
 			this.Invalidate();

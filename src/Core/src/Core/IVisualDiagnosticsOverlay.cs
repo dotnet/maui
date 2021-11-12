@@ -23,9 +23,9 @@ namespace Microsoft.Maui
 		bool AutoScrollToElement { get; set; }
 
 		/// <summary>
-		/// Gets the hash set for Adroner Borders. When filled, they will be drawn on the screen.
+		/// Gets a read only collection of the Adroner Borders in the overlay.
 		/// </summary>
-		HashSet<IAdornerBorder> AdornerBorders { get; }
+		IReadOnlyCollection<IAdornerBorder> AdornerBorders { get; }
 
 		/// <summary>
 		/// Gets the containing <see cref="IWindow"/>.
@@ -133,7 +133,7 @@ namespace Microsoft.Maui
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		HashSet<Tuple<IScrollView, Android.Views.View>> ScrollViews { get; }
+		IReadOnlyCollection<Tuple<IScrollView, Android.Views.View>> ScrollViews { get; }
 #elif IOS
 		/// <summary>
 		/// Initialize the native touch and drawing layer.
@@ -146,7 +146,7 @@ namespace Microsoft.Maui
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		HashSet<Tuple<IScrollView, IDisposable>> ScrollViews { get; }
+		IReadOnlyCollection<Tuple<IScrollView, IDisposable>> ScrollViews { get; }
 #elif WINDOWS
 		/// <summary>
 		/// Initialize the native touch and drawing layer.
@@ -159,13 +159,13 @@ namespace Microsoft.Maui
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		HashSet<Tuple<IScrollView, Microsoft.UI.Xaml.Controls.ScrollViewer>> ScrollViews { get; }
+		IReadOnlyCollection<Tuple<IScrollView, Microsoft.UI.Xaml.Controls.ScrollViewer>> ScrollViews { get; }
 #else
 		/// <summary>
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		HashSet<Tuple<IScrollView, object>> ScrollViews { get; }
+		IReadOnlyCollection<Tuple<IScrollView, object>> ScrollViews { get; }
 #endif
 	}
 

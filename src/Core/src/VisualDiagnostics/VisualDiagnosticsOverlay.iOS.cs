@@ -18,9 +18,7 @@ namespace Microsoft.Maui
 		private bool disableUITouchEventPassthrough;
 		private PassthroughView? _passthroughView;
 		private IDisposable? _frameObserver;
-
-		/// <inheritdoc/>
-		public HashSet<Tuple<IScrollView, IDisposable>> ScrollViews { get; } = new HashSet<Tuple<IScrollView, IDisposable>>();
+		private HashSet<Tuple<IScrollView, IDisposable>> _scrollViews = new HashSet<Tuple<IScrollView, IDisposable>>();
 
 		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough
@@ -37,25 +35,28 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
 
+		/// <inheritdoc/>
+		public IReadOnlyCollection<Tuple<IScrollView, IDisposable>> ScrollViews => this._scrollViews.ToList().AsReadOnly();
+
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null)
 			{
 				var dispose = nativeScroll.AddObserver("contentOffset", Foundation.NSKeyValueObservingOptions.New, FrameAction);
-				this.ScrollViews.Add(new Tuple<IScrollView, IDisposable>(scrollBar, dispose));
+				this._scrollViews.Add(new Tuple<IScrollView, IDisposable>(scrollBar, dispose));
 			}
 		}
 
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach (var scroll in this.ScrollViews)
+			foreach (var scroll in this._scrollViews)
 			{
 				scroll.Item2.Dispose();
 			}
 
-			this.ScrollViews.Clear();
+			this._scrollViews.Clear();
 		}
 
 		/// <inheritdoc/>
@@ -112,7 +113,7 @@ namespace Microsoft.Maui
 
 		private void FrameAction(Foundation.NSObservedChange obj)
 		{
-			if (this.AdornerBorders.Any())
+			if (this._adornerBorders.Any())
 				this.RemoveAdorners();
 
 			this.Invalidate();

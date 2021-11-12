@@ -10,11 +10,12 @@ using Microsoft.Maui.Graphics.Native;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Visual Diagnostics Layer.
+	/// Visual Diagnostics Overlay.
 	/// </summary>
 	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
 	{
-		Activity? _nativeActivity;
+		private Activity? _nativeActivity;
+		private HashSet<Tuple<IScrollView, Android.Views.View>> _scrollViews = new HashSet<Tuple<IScrollView, Android.Views.View>>();
 
 		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough { get; set; }
@@ -23,7 +24,7 @@ namespace Microsoft.Maui
 		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
 
 		/// <inheritdoc/>
-		public HashSet<Tuple<IScrollView, Android.Views.View>> ScrollViews { get; } = new HashSet<Tuple<IScrollView, View>>();
+		public IReadOnlyCollection<Tuple<IScrollView, Android.Views.View>> ScrollViews => this._scrollViews.ToList().AsReadOnly();
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
@@ -31,7 +32,7 @@ namespace Microsoft.Maui
 			if (nativeScroll != null)
 			{
 				nativeScroll.ScrollChange += Scroll_ScrollChange;
-				this.ScrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
+				this._scrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
 			}
 		}
 
@@ -44,7 +45,7 @@ namespace Microsoft.Maui
 					scrollBar.Item2.ScrollChange -= Scroll_ScrollChange;
 			}
 
-			this.ScrollViews.Clear();
+			this._scrollViews.Clear();
 		}
 
 		/// <inheritdoc/>
@@ -120,7 +121,7 @@ namespace Microsoft.Maui
 
 		private void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
 		{
-			if (this.AdornerBorders.Any())
+			if (this._adornerBorders.Any())
 				this.RemoveAdorners();
 
 			if (this.VisualDiagnosticsGraphicsView != null && this._nativeActivity != null)

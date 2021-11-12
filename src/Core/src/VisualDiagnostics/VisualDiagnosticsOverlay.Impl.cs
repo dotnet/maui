@@ -8,6 +8,8 @@ namespace Microsoft.Maui
 {
 	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
 	{
+		private HashSet<IAdornerBorder> _adornerBorders = new HashSet<IAdornerBorder>();
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="VisualDiagnosticsOverlay"/> class.
 		/// </summary>
@@ -32,7 +34,7 @@ namespace Microsoft.Maui
 		public IWindow Window { get; internal set; }
 
 		/// <inheritdoc/>
-		public HashSet<IAdornerBorder> AdornerBorders { get; internal set; } = new HashSet<IAdornerBorder>();
+		public IReadOnlyCollection<IAdornerBorder> AdornerBorders => this._adornerBorders.ToList().AsReadOnly();
 
 		/// <inheritdoc/>
 		public Point Offset { get; internal set; }
@@ -56,7 +58,7 @@ namespace Microsoft.Maui
 		public void AddAdorner(IAdornerBorder adornerBorder, bool scrollToView = false)
 		{
 			this.AddScrollableElementHandlers();
-			this.AdornerBorders.Add(adornerBorder);
+			this._adornerBorders.Add(adornerBorder);
 
 			if (this.AutoScrollToElement || scrollToView)
 				this.ScrollToView((IVisualTreeElement)adornerBorder.VisualView);
@@ -70,8 +72,8 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return;
 
-			this.AdornerBorders.RemoveWhere(n => n.VisualView == view);
-			this.AdornerBorders.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
+			this._adornerBorders.RemoveWhere(n => n.VisualView == view);
+			this._adornerBorders.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
 			this.AddScrollableElementHandlers();
 
 			if (this.AutoScrollToElement || scrollToView)
@@ -83,8 +85,8 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void RemoveAdorner(IAdornerBorder adornerBorder)
 		{
-			this.AdornerBorders.RemoveWhere(n => n == adornerBorder);
-			if (!this.AdornerBorders.Any())
+			this._adornerBorders.RemoveWhere(n => n == adornerBorder);
+			if (!this._adornerBorders.Any())
 				this.RemoveScrollableElementHandler();
 			this.Invalidate();
 		}
@@ -93,7 +95,7 @@ namespace Microsoft.Maui
 		public void RemoveAdorners()
 		{
 			this.RemoveScrollableElementHandler();
-			this.AdornerBorders.Clear();
+			this._adornerBorders.Clear();
 			this.Invalidate();
 		}
 
@@ -103,14 +105,14 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return;
 
-			this.AdornerBorders.RemoveWhere(n => n.VisualView == view);
+			this._adornerBorders.RemoveWhere(n => n.VisualView == view);
 			this.Invalidate();
 		}
 
 		/// <inheritdoc/>
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
-			foreach (var border in this.AdornerBorders) 
+			foreach (var border in this._adornerBorders) 
 				border.Draw(canvas, dirtyRect);
 		}
 
@@ -188,7 +190,7 @@ namespace Microsoft.Maui
 		public bool DisableUITouchEventPassthrough { get; set; }
 
 		/// <inheritdoc/>
-		public HashSet<Tuple<IScrollView, object>> ScrollViews { get; } = new HashSet<Tuple<IScrollView, object>>();
+		public IReadOnlyCollection<Tuple<IScrollView, object>> ScrollViews { get; } = new List<Tuple<IScrollView, object>>().AsReadOnly();
 
 		/// <inheritdoc/>
 		public void Invalidate()
