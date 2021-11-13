@@ -5,7 +5,7 @@
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>6.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.101-preview.11.89</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.101-preview.11.90</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftiOSSdkPackageVersion>15.0.101-preview.11.443</MicrosoftiOSSdkPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.11.443</MicrosoftMacCatalystSdkPackageVersion>
