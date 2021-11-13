@@ -32,7 +32,7 @@ namespace Microsoft.Maui.UnitTests
 	class DispatcherProviderStub : IDispatcherProvider
 	{
 		[ThreadStatic]
-		static IDispatcher? s_dispatcherInstance;
+		IDispatcher? s_dispatcherInstance;
 
 		public IDispatcher? GetForCurrentThread() =>
 			s_dispatcherInstance ??= DispatcherProviderStubOptions.SkipDispatcherCreation
