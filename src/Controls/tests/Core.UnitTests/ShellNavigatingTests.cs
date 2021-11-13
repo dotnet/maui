@@ -644,7 +644,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var routeName = typeForRouteName.AssemblyQualifiedName;
 			Routing.RegisterRoute(routeName, type);
-			shell.GoToAsync(routeName);
+			await shell.GoToAsync(routeName);
 
 			Assert.IsNotNull(shell.Navigation);
 			Assert.IsNotNull(shell.Navigation.NavigationStack);
