@@ -79,53 +79,62 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        CleanDirectories("../templatesTest/");
+        var templatesTest = $"../templatesTest/{Guid.NewGuid()}/";
 
-        // Create empty Directory.Build.props/targets
-        EnsureDirectoryExists(Directory("../templatesTest/"));
-        FileWriteText(File("../templatesTest/Directory.Build.props"), "<Project/>");
-        FileWriteText(File("../templatesTest/Directory.Build.targets"), "<Project/>");
-        CopyFileToDirectory(File("./NuGet.config"), Directory("../templatesTest/"));
-
-        // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
-        var designTime = new Dictionary<string, string> {
-            { "DesignTimeBuild", "true" },
-            { "BuildingInsideVisualStudio", "true" },
-            { "SkipCompilerExecution", "true" },
-            // NOTE: this overrides a default setting that supports VS Mac
-            // See: https://github.com/xamarin/xamarin-android/blob/94c2a3d86a2e0e74863b57e3c5c61dbd29daa9ea/src/Xamarin.Android.Build.Tasks/Xamarin.Android.Common.props.in#L19
-            { "AndroidUseManagedDesignTimeResourceGenerator", "true" },
-        };
-
-        var properties = new Dictionary<string, string> {
-            // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-            { "RestoreNoCache", "true" },
-            { "RestorePackagesPath", MakeAbsolute(File("../templatesTest/packages")).FullPath },
-            { "RestoreConfigFile", MakeAbsolute(File("../templatesTest/nuget.config")).FullPath },
-
-            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
-            { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
-        };
-
-        var frameworks = new [] {
-            "net6.0-android",
-            "net6.0-ios",
-            "net6.0-maccatalyst",
-        };
-
-        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+        try
         {
-            var name = template.Replace("-", "") + " Space-Dash";
-            StartProcess(dn, $"new {template} -o \"../templatesTest/{name}\"");
+            CleanDirectories(templatesTest);
 
-            // Design-time build without restore
-            foreach (var framework in frameworks)
+            // Create empty Directory.Build.props/targets
+            EnsureDirectoryExists(Directory(templatesTest));
+            FileWriteText(File(templatesTest + "Directory.Build.props"), "<Project/>");
+            FileWriteText(File(templatesTest + "Directory.Build.targets"), "<Project/>");
+            CopyFileToDirectory(File("./NuGet.config"), Directory(templatesTest));
+
+            // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
+            var designTime = new Dictionary<string, string> {
+                { "DesignTimeBuild", "true" },
+                { "BuildingInsideVisualStudio", "true" },
+                { "SkipCompilerExecution", "true" },
+                // NOTE: this overrides a default setting that supports VS Mac
+                // See: https://github.com/xamarin/xamarin-android/blob/94c2a3d86a2e0e74863b57e3c5c61dbd29daa9ea/src/Xamarin.Android.Build.Tasks/Xamarin.Android.Common.props.in#L19
+                { "AndroidUseManagedDesignTimeResourceGenerator", "true" },
+            };
+
+            var properties = new Dictionary<string, string> {
+                // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
+                { "RestoreNoCache", "true" },
+                { "RestorePackagesPath", MakeAbsolute(File(templatesTest + "packages")).FullPath },
+                { "RestoreConfigFile", MakeAbsolute(File(templatesTest + "nuget.config")).FullPath },
+
+                // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+                { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
+            };
+
+            var frameworks = new [] {
+                "net6.0-android",
+                "net6.0-ios",
+                "net6.0-maccatalyst",
+            };
+
+            foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
             {
-                RunMSBuildWithDotNet($"../templatesTest/{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
-            }
+                var name = template.Replace("-", "") + " Space-Dash";
+                StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
 
-            // Build
-            RunMSBuildWithDotNet($"../templatesTest/{name}", properties, warningsAsError: true);
+                // Design-time build without restore
+                foreach (var framework in frameworks)
+                {
+                    RunMSBuildWithDotNet($"{templatesTest}{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
+                }
+
+                // Build
+                RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
+            }
+        }
+        finally 
+        {
+            CleanDirectories(templatesTest);
         }
     });
 

@@ -30,7 +30,11 @@ namespace Microsoft.Maui
 				if (stream == null)
 					throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
 
-				var image = UIImage.LoadFromData(NSData.FromStream(stream), scale);
+				var data = NSData.FromStream(stream);
+				if (data == null)
+					throw new InvalidOperationException("Unable to load image stream data.");
+
+				var image = UIImage.LoadFromData(data, scale);
 
 				if (image == null)
 					throw new InvalidOperationException($"Unable to decode image from URI '{imageSource.Uri}'.");

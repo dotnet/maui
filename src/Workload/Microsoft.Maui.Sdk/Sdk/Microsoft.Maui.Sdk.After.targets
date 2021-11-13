@@ -14,5 +14,9 @@
     <ProjectCapability Include="MauiCore"       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
     <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
   </ItemGroup>
+  <!-- Remove platform-based @(Using) unless $(MauiEnablePlatformUsings) flag is set -->
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(MauiEnablePlatformUsings)' != 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') ">
+    <Using Remove="@(Using->HasMetadata('Platform'))" />
+  </ItemGroup>
   <Import Project="Microsoft.Maui.Controls.DefaultItems.targets" />
 </Project>

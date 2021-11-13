@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			LastMoveToRegion = region;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			_pins.CollectionChanged += PinsOnCollectionChanged;
 		}
