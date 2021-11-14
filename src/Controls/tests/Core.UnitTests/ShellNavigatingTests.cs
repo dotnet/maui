@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.Navigation.PushAsync(new ContentPage());
 			await shell.Navigation.PushAsync(new ContentPage());
 
-			ShellNavigatingDeferral _token = null;
+			IDeferralToken _token = null;
 			shell.Navigating += async (_, args) =>
 			{
 				_token = args.GetDeferral();
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = { CreateShellItem<FlyoutItem>() }
 			};
 
-			ShellNavigatingDeferral _token = null;
+			IDeferralToken _token = null;
 			shell.Navigating += async (_, args) =>
 			{
 				_token = args.GetDeferral();

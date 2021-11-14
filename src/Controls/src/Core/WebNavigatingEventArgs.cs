@@ -1,14 +1,19 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigatingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebNavigatingEventArgs']/Docs" />
-	public class WebNavigatingEventArgs : WebNavigationEventArgs
+	public class WebNavigatingEventArgs : DeferrableEventArgs, IWebNavigationEventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigatingEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public WebNavigatingEventArgs(WebNavigationEvent navigationEvent, WebViewSource source, string url) : base(navigationEvent, source, url)
+		public WebNavigatingEventArgs(WebNavigationEvent navigationEvent, WebViewSource source, string url, bool canCancel)
+			: base(canCancel)
 		{
+			this.NavigationEvent = navigationEvent;
+			this.Source = source;
+			this.Url = url;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigatingEventArgs.xml" path="//Member[@MemberName='Cancel']/Docs" />
-		public bool Cancel { get; set; }
+		public WebNavigationEvent NavigationEvent { get; private set; }
+
+		public WebViewSource Source { get; private set; }
+
+		public string Url { get; private set; }
 	}
 }

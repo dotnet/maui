@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Controls
 
 		public void HandleNavigating(ShellNavigatingEventArgs args)
 		{
-			if (!args.DeferredEventArgs)
+			if (!args.DeferralRequested)
 			{
 				Navigating?.Invoke(this, args);
 			}
