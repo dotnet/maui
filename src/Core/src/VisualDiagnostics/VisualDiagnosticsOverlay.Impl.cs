@@ -17,7 +17,6 @@ namespace Microsoft.Maui
 		public VisualDiagnosticsOverlay(IWindow window)
 			: base(window)
 		{
-			this.IsVisible = true;
 			this.OnTouch += VisualDiagnosticsOverlay_OnTouch;
 		}
 
@@ -31,6 +30,10 @@ namespace Microsoft.Maui
 			{
 				_enableElementSelector = value;
 				this.DisableUITouchEventPassthrough = value;
+				// If we enable the element picker,
+				// make sure the view itself is enabled and visible.
+				if (value)
+					this.IsVisible = true;
 			}
 		}
 

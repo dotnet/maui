@@ -51,7 +51,7 @@
     </views:BasePage.Resources>
     <ScrollView>
         <Grid
-            RowDefinitions="150, *, Auto, Auto, Auto"
+            RowDefinitions="150, *, Auto, Auto, Auto, Auto, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
@@ -118,8 +118,10 @@
 
             <Button Margin="5"  Grid.Row="2" Text="Add Adorner to MauiTextLabel" Clicked="TestVisualTreeHelper" />
             <Button Margin="5"  Grid.Row="3" Text="Enable Visual Diagnostics Element Picker (Will disable UI!)" Clicked="EnableElementPicker" />
+            <Button Margin="5"  Grid.Row="4" Text="Enable Test Window Overlay" Clicked="TestAddOverlayWindow" />
+            <Button Margin="5"  Grid.Row="5" Text="Disable Test Window Overlay" Clicked="TestRemoveOverlayWindow" />
             <Label
-                Grid.Row="4"
+                Grid.Row="6"
                 Text="Microsoft Corporation © 2021"
                 Style="{StaticResource FooterStyle}" />
         </Grid>

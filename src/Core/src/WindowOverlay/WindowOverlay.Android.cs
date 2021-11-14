@@ -14,6 +14,7 @@ namespace Microsoft.Maui
 	{
 		internal Activity? _nativeActivity;
 		internal NativeGraphicsView? _graphicsView;
+		ViewGroup? _nativeLayer;
 
 		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough { get; set; }
@@ -42,15 +43,15 @@ namespace Microsoft.Maui
 				return false;
 
 			_nativeActivity = activity;
-			var nativeLayer = rootManager.RootView as ViewGroup;
+			_nativeLayer = rootManager.RootView as ViewGroup;
 
-			if (nativeLayer == null || nativeLayer.Context == null)
+			if (_nativeLayer == null || _nativeLayer.Context == null)
 				return false;
 
 			if (_nativeActivity == null || _nativeActivity.WindowManager == null || _nativeActivity.WindowManager.DefaultDisplay == null)
 				return false;
 
-			var measuredHeight = nativeLayer.MeasuredHeight;
+			var measuredHeight = _nativeLayer.MeasuredHeight;
 
 			if (_nativeActivity.Window != null)
 				_nativeActivity.Window.DecorView.LayoutChange += DecorView_LayoutChange;
@@ -58,12 +59,12 @@ namespace Microsoft.Maui
 			if (_nativeActivity != null && _nativeActivity.Resources != null && _nativeActivity.Resources.DisplayMetrics != null)
 				this.DPI = _nativeActivity.Resources.DisplayMetrics.Density;
 
-			this._graphicsView = new NativeGraphicsView(nativeLayer.Context, this);
+			this._graphicsView = new NativeGraphicsView(_nativeLayer.Context, this);
 			if (this._graphicsView == null)
 				return false;
 
 			this._graphicsView.Touch += TouchLayer_Touch;
-			nativeLayer.AddView(this._graphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
+			_nativeLayer.AddView(this._graphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
 			this._graphicsView.BringToFront();
 			this.IsNativeViewInitialized = true;
 			return this.IsNativeViewInitialized;
@@ -82,6 +83,12 @@ namespace Microsoft.Maui
 		{
 			if (_nativeActivity?.Window != null)
 				_nativeActivity.Window.DecorView.LayoutChange -= DecorView_LayoutChange;
+
+			if (_nativeLayer != null)
+				_nativeLayer.RemoveView(this._graphicsView);
+
+			this._graphicsView = null;
+			this.IsNativeViewInitialized = false;
 		}
 
 		private void TouchLayer_Touch(object? sender, View.TouchEventArgs e)

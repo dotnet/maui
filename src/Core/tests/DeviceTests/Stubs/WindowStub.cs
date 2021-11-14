@@ -10,6 +10,8 @@
 
 		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
+		public System.Collections.Generic.IReadOnlyCollection<IWindowOverlay> Overlays { get; }
+
 		public string Title { get; set; }
 		public bool IsCreated { get; set; }
 		public bool IsActivated { get; set; }
@@ -56,6 +58,10 @@
 		public void Backgrounding(IPersistedState state)
 		{
 		}
+
+		public bool AddOverlay(IWindowOverlay overlay) => false;
+
+		public bool RemoveOverlay(IWindowOverlay overlay) => false;
 
 		public bool BackButtonClicked() => true;
 	}

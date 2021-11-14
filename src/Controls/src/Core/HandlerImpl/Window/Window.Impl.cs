@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -21,10 +22,13 @@ namespace Microsoft.Maui.Controls
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanged: OnPageChanged);
 
+		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 
 		internal Toolbar Toolbar { get; }
+
+		public IReadOnlyCollection<IWindowOverlay> Overlays => this._overlays.ToList().AsReadOnly();
 
 		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
@@ -85,6 +89,39 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == nameof(Page))
 				Handler?.UpdateValue(nameof(IWindow.Content));
+		}
+
+		/// <inheritdoc/>
+		public bool AddOverlay(IWindowOverlay overlay)
+		{
+			if (overlay is IVisualDiagnosticsOverlay)
+				return false;
+
+			// Add the overlay. If it's added, 
+			// Initalize the native layer if it wasn't already,
+			// and call invalidate so it will be drawn.
+			var result = this._overlays.Add(overlay);
+			if (result)
+			{
+				overlay.InitializeNativeLayer();
+				overlay.Invalidate();
+			}
+
+			return result;
+		}
+
+		/// <inheritdoc/>
+		public bool RemoveOverlay(IWindowOverlay overlay)
+		{
+			if (overlay is IVisualDiagnosticsOverlay)
+				return false;
+
+			// Remove the overlay. If it's gone,
+			// dispose it to remove it fully.
+			var result = this._overlays.Remove(overlay);
+			if (result)
+				overlay.Dispose();
+			return result;
 		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();

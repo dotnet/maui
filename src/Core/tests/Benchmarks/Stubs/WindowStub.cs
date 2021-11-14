@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
+		public System.Collections.Generic.IReadOnlyCollection<IWindowOverlay> Overlays { get; }
+
 		public string Title { get; set; }
 
 		public bool IsCreated { get; set; }
@@ -55,6 +57,10 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public void Backgrounding(IPersistedState state)
 		{
 		}
+
+		public bool AddOverlay(IWindowOverlay overlay) => false;
+
+		public bool RemoveOverlay(IWindowOverlay overlay) => false;
 
 		public bool BackButtonClicked() => true;
 	}

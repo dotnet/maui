@@ -10,6 +10,7 @@ namespace Microsoft.Maui
 	{
 		internal HashSet<IDrawable> _drawables = new HashSet<IDrawable>();
 		internal bool _disposedValue;
+		bool isVisible = true;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="WindowOverlay"/> class.
@@ -30,7 +31,16 @@ namespace Microsoft.Maui
 		public bool IsNativeViewInitialized { get; internal set; }
 
 		/// <inheritdoc/>
-		public bool IsVisible { get; set; }
+		public bool IsVisible
+		{
+			get { return isVisible; }
+			set
+			{
+				isVisible = value;
+				if (this.IsNativeViewInitialized)
+					this.Invalidate();
+			}
+		}
 
 		/// <inheritdoc/>
 		public float DPI { get; internal set; } = 1;
@@ -65,19 +75,24 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public virtual bool AddDrawable(IDrawable drawable)
 		{
-			return this._drawables.Add(drawable);
+			var result = this._drawables.Add(drawable);
+			this.Invalidate();
+			return result;
 		}
 
 		/// <inheritdoc/>
 		public virtual bool RemoveDrawable(IDrawable drawable)
 		{
-			return this._drawables.Remove(drawable);
+			var result = this._drawables.Remove(drawable);
+			this.Invalidate();
+			return result;
 		}
 
 		/// <inheritdoc/>
 		public virtual void RemoveDrawables()
 		{
 			this._drawables.Clear();
+			this.Invalidate();
 		}
 
 		/// <inheritdoc/>

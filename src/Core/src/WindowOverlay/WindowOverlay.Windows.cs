@@ -13,6 +13,7 @@ namespace Microsoft.Maui
 		private W2DGraphicsView? _graphicsView;
 		private bool disableUITouchEventPassthrough;
 		private Frame? _frame;
+		private RootPanel? _rootPanel;
 
 		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough
@@ -40,6 +41,7 @@ namespace Microsoft.Maui
 			if (handler == null || handler._rootPanel == null)
 				return false;
 
+			this._rootPanel = handler._rootPanel;
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
 			if (nativeWindow is Frame frame)
@@ -71,6 +73,11 @@ namespace Microsoft.Maui
 		{
 			if (_frame != null)
 				_frame.Navigating -= Frame_Navigating;
+			if (this._rootPanel != null)
+				this._rootPanel.Children.Remove(this._graphicsView);
+
+			this._graphicsView = null;
+			this.IsNativeViewInitialized = false;
 		}
 
 		private void Frame_Navigating(object sender, UI.Xaml.Navigation.NavigatingCancelEventArgs e)

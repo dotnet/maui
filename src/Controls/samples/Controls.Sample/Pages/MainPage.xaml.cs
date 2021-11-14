@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 	{
 		readonly IServiceProvider _services;
 		readonly MainViewModel _viewModel;
-
+		TestWindowOverlay overlay;
 		public MainPage(IServiceProvider services, MainViewModel viewModel)
 		{
 			InitializeComponent();
@@ -23,6 +23,22 @@ namespace Maui.Controls.Sample.Pages
 			_viewModel = viewModel;
 
 			Debug.WriteLine($"Received as parameters, ServiceProvider: {_services != null} and MainViewModel: {_viewModel != null}");
+		}
+		void TestAddOverlayWindow(object sender, EventArgs e)
+		{
+			if (overlay == null)
+				overlay = new TestWindowOverlay((IWindow)this.Parent.Parent);
+			((IWindow)this.Parent.Parent).AddOverlay(overlay);
+		}
+
+		void TestRemoveOverlayWindow(object sender, EventArgs e)
+		{
+			if (overlay != null)
+			{
+				var result = ((IWindow)this.Parent.Parent).RemoveOverlay(overlay);
+				if (result)
+					overlay = null;
+			}
 		}
 
 		void TestVisualTreeHelper(object sender, EventArgs e)

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Microsoft.Maui
 {
 	/// <summary>
@@ -14,6 +16,25 @@ namespace Microsoft.Maui
 		/// Gets the current visual diagnostics overlay for the Window.
 		/// </summary>
 		IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
+
+		/// <summary>
+		/// Gets the read only collection of Window Overlays on top of the Window.
+		/// </summary>
+		IReadOnlyCollection<IWindowOverlay> Overlays { get; }
+
+		/// <summary>
+		/// Adds a Window Overlay to the current Window.
+		/// </summary>
+		/// <param name="overlay"><see cref="IWindowOverlay"/>.</param>
+		/// <returns>Boolean if the window overlay was added.</returns>
+		bool AddOverlay(IWindowOverlay overlay);
+
+		/// <summary>
+		/// Removes a Window Overlay to the current Window.
+		/// </summary>
+		/// <param name="overlay"><see cref="IWindowOverlay"/>.</param>
+		/// <returns>Boolean if the window overlay was removed.</returns>
+		bool RemoveOverlay(IWindowOverlay overlay);
 
 		/// <summary>
 		/// Occurs when the Window is created.

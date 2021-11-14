@@ -90,6 +90,7 @@ namespace Microsoft.Maui
 		{
 			this._frameObserver?.Dispose();
 			this._passthroughView?.Dispose();
+			this.IsNativeViewInitialized = false;
 		}
 
 		private void _uiView_OnTouch(object? sender, CGPoint e) => OnTouchInternal(new Point(e.X, e.Y));
