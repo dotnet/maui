@@ -12,16 +12,9 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Visual Diagnostics Overlay.
 	/// </summary>
-	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
+	public partial class VisualDiagnosticsOverlay : WindowOverlay
 	{
-		private Activity? _nativeActivity;
 		private HashSet<Tuple<IScrollView, Android.Views.View>> _scrollViews = new HashSet<Tuple<IScrollView, Android.Views.View>>();
-
-		/// <inheritdoc/>
-		public bool DisableUITouchEventPassthrough { get; set; }
-
-		/// <inheritdoc/>
-		public NativeGraphicsView? VisualDiagnosticsGraphicsView { get; internal set; }
 
 		/// <inheritdoc/>
 		public IReadOnlyCollection<Tuple<IScrollView, Android.Views.View>> ScrollViews => this._scrollViews.ToList().AsReadOnly();
@@ -48,49 +41,14 @@ namespace Microsoft.Maui
 			this._scrollViews.Clear();
 		}
 
-		/// <inheritdoc/>
-		public void InitializeNativeLayer(IMauiContext context, ViewGroup nativeLayer)
+		public override void HandleUIChange()
 		{
-			if (nativeLayer == null || nativeLayer.Context == null)
-				return;
+			base.HandleUIChange();
+			if (this._drawables.Any())
+				this.RemoveAdorners();
 
-			if (nativeLayer.Context is Activity activity)
-				_nativeActivity = activity;
-
-			if (_nativeActivity == null || _nativeActivity.WindowManager == null || _nativeActivity.WindowManager.DefaultDisplay == null)
-				return;
-
-			var measuredHeight = nativeLayer.MeasuredHeight;
-
-			if (_nativeActivity.Window != null)
-				_nativeActivity.Window.DecorView.LayoutChange += DecorView_LayoutChange;
-
-			if (_nativeActivity != null && _nativeActivity.Resources != null && _nativeActivity.Resources.DisplayMetrics != null)
-				this.DPI = _nativeActivity.Resources.DisplayMetrics.Density;
-
-			this.VisualDiagnosticsGraphicsView = new NativeGraphicsView(nativeLayer.Context, this);
-			if (this.VisualDiagnosticsGraphicsView == null)
-				return;
-
-			this.VisualDiagnosticsGraphicsView.Touch += TouchLayer_Touch;
-			nativeLayer.AddView(this.VisualDiagnosticsGraphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
-			this.VisualDiagnosticsGraphicsView.BringToFront();
-			this.IsNativeViewInitialized = true;
-		}
-
-		/// <inheritdoc/>
-		public void Invalidate()
-		{
-			this.VisualDiagnosticsGraphicsView?.Invalidate();
-		}
-
-		/// <summary>
-		/// Disposes the native event hooks and handlers used to drive the overlay.
-		/// </summary>
-		private void DisposeNativeDependencies()
-		{
-			if (_nativeActivity?.Window != null)
-				_nativeActivity.Window.DecorView.LayoutChange -= DecorView_LayoutChange;
+			if (this._graphicsView != null && this._nativeActivity != null)
+				this.Offset = GenerateAdornerOffset(this._nativeActivity, this._graphicsView);
 		}
 
 		private void Scroll_ScrollChange(object? sender, View.ScrollChangeEventArgs e)
@@ -116,27 +74,6 @@ namespace Microsoft.Maui
 			float heightPixels = nativeActivity.Resources.DisplayMetrics.HeightPixels;
 
 			return new Point(0, -(heightPixels - graphicsView.MeasuredHeight) / dpi);
-		}
-
-		private void TouchLayer_Touch(object? sender, View.TouchEventArgs e)
-		{
-			if (e == null || e.Event == null)
-				return;
-
-			e.Handled = this.DisableUITouchEventPassthrough;
-			var point = new Point(e.Event.RawX, e.Event.RawY);
-			OnTouchInternal(point, true);
-		}
-
-		private void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
-		{
-			if (this._adornerBorders.Any())
-				this.RemoveAdorners();
-
-			if (this.VisualDiagnosticsGraphicsView != null && this._nativeActivity != null)
-				this.Offset = GenerateAdornerOffset(this._nativeActivity, this.VisualDiagnosticsGraphicsView);
-
-			this.Invalidate();
 		}
 	}
 }

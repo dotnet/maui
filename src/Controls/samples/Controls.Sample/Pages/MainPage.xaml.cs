@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void EnableElementPicker(object sender, EventArgs e)
 		{
-			((IWindow)this.Parent.Parent).VisualDiagnosticsOverlay.DisableUITouchEventPassthrough = true;
+			((IWindow)this.Parent.Parent).VisualDiagnosticsOverlay.EnableElementSelector = true;
 		}
 	}
 }

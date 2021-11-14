@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UI.Xaml.Window>
 	{
-		RootPanel? _rootPanel = null;
+		internal RootPanel? _rootPanel = null;
 
 		protected override void ConnectHandler(UI.Xaml.Window nativeView)
 		{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 			handler?._rootPanel?.Children?.Add(windowManager.RootView);
 
 			if (window.VisualDiagnosticsOverlay != null && handler != null && handler._rootPanel != null)
-				window.VisualDiagnosticsOverlay.InitializeNativeLayer(handler.MauiContext, handler._rootPanel);
+				window.VisualDiagnosticsOverlay.InitializeNativeLayer();
 		}
 	}
 }

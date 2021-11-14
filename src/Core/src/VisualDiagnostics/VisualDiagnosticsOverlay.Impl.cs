@@ -6,42 +6,36 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	public partial class VisualDiagnosticsOverlay : IVisualDiagnosticsOverlay, IDrawable
+	public partial class VisualDiagnosticsOverlay : WindowOverlay, IVisualDiagnosticsOverlay
 	{
-		private HashSet<IAdornerBorder> _adornerBorders = new HashSet<IAdornerBorder>();
-		bool _disposedValue;
+		private bool _enableElementSelector;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="VisualDiagnosticsOverlay"/> class.
 		/// </summary>
 		/// <param name="window">The parent Window.</param>
 		public VisualDiagnosticsOverlay(IWindow window)
+			: base(window)
 		{
-			this.Window = window;
+			this.IsVisible = true;
+			this.OnTouch += VisualDiagnosticsOverlay_OnTouch;
 		}
-
-#pragma warning disable CS0067 // The event is never used
-		/// <inheritdoc/>
-		public event EventHandler<VisualDiagnosticsHitEvent>? OnTouch;
-#pragma warning restore CS0067
 
 		/// <inheritdoc/>
 		public bool AutoScrollToElement { get; set; }
 
 		/// <inheritdoc/>
-		public bool IsNativeViewInitialized { get; internal set; }
-
-		/// <inheritdoc/>
-		public IWindow Window { get; internal set; }
-
-		/// <inheritdoc/>
-		public IReadOnlyCollection<IAdornerBorder> AdornerBorders => this._adornerBorders.ToList().AsReadOnly();
+		public bool EnableElementSelector {
+			get { return _enableElementSelector; }
+			set
+			{
+				_enableElementSelector = value;
+				this.DisableUITouchEventPassthrough = value;
+			}
+		}
 
 		/// <inheritdoc/>
 		public Point Offset { get; internal set; }
-
-		/// <inheritdoc/>
-		public float DPI { get; internal set; } = 1;
 
 		public void AddScrollableElementHandlers()
 		{
@@ -56,65 +50,62 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public void AddAdorner(IAdornerBorder adornerBorder, bool scrollToView = false)
+		public bool AddAdorner(IAdornerBorder adornerBorder, bool scrollToView = false)
 		{
 			this.AddScrollableElementHandlers();
-			this._adornerBorders.Add(adornerBorder);
+			var result = this._drawables.Add(adornerBorder);
 
 			if (this.AutoScrollToElement || scrollToView)
 				this.ScrollToView((IVisualTreeElement)adornerBorder.VisualView);
 
 			this.Invalidate();
+			return result;
 		}
 
 		/// <inheritdoc/>
-		public void AddAdorner(IVisualTreeElement visualElement, bool scrollToView = false)
+		public bool AddAdorner(IVisualTreeElement visualElement, bool scrollToView = false)
 		{
 			if (visualElement is not IView view)
-				return;
+				return false;
 
-			this._adornerBorders.RemoveWhere(n => n.VisualView == view);
-			this._adornerBorders.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
+			var result = this._drawables.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
 			this.AddScrollableElementHandlers();
 
 			if (this.AutoScrollToElement || scrollToView)
 				this.ScrollToView(visualElement);
 
 			this.Invalidate();
+			return result;
 		}
 
 		/// <inheritdoc/>
-		public void RemoveAdorner(IAdornerBorder adornerBorder)
+		public bool RemoveAdorner(IAdornerBorder adornerBorder)
 		{
-			this._adornerBorders.RemoveWhere(n => n == adornerBorder);
-			if (!this._adornerBorders.Any())
+			var results = this._drawables.RemoveWhere(n => n == adornerBorder);
+			if (!this._drawables.Any())
 				this.RemoveScrollableElementHandler();
 			this.Invalidate();
+			return results > 0;
 		}
 
 		/// <inheritdoc/>
 		public void RemoveAdorners()
 		{
 			this.RemoveScrollableElementHandler();
-			this._adornerBorders.Clear();
+			this._drawables.Clear();
 			this.Invalidate();
 		}
 
 		/// <inheritdoc/>
-		public void RemoveAdorners(IVisualTreeElement visualElement)
+		public bool RemoveAdorners(IVisualTreeElement visualElement)
 		{
 			if (visualElement is not IView view)
-				return;
+				return false;
 
-			this._adornerBorders.RemoveWhere(n => n.VisualView == view);
+			var adorners = this._drawables.Where(n => n is IAdornerBorder).Cast<IAdornerBorder>().Where(n => n.VisualView == view);
+			var results = this._drawables.RemoveWhere(n => adorners.Contains(n));
 			this.Invalidate();
-		}
-
-		/// <inheritdoc/>
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
-		{
-			foreach (var border in this._adornerBorders) 
-				border.Draw(canvas, dirtyRect);
+			return results > 0;
 		}
 
 		/// <inheritdoc/>
@@ -129,6 +120,40 @@ namespace Microsoft.Maui
 
 			var nativeView = view.GetNativeViewBounds();
 			parentScrollView.RequestScrollTo(nativeView.X, nativeView.Y, true);
+		}
+
+		/// <inheritdoc/>
+		public override bool AddDrawable(IDrawable drawable)
+		{
+			if (drawable is not IAdornerBorder border)
+				return false;
+			return this.AddAdorner(border, this.AutoScrollToElement);
+		}
+
+		/// <inheritdoc/>
+		public override bool RemoveDrawable(IDrawable drawable)
+		{
+			if (drawable is not IAdornerBorder border)
+				return false;
+			return this.RemoveAdorner(border);
+		}
+
+		/// <inheritdoc/>
+		public override void RemoveDrawables() => this.RemoveAdorners();
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					this.RemoveScrollableElementHandler();
+					this.OnTouch -= this.VisualDiagnosticsOverlay_OnTouch;
+				}
+			}
+
+			base.Dispose(disposing);
+
 		}
 
 		/// <summary>
@@ -146,33 +171,6 @@ namespace Microsoft.Maui
 			return content.GetEntireVisualTreeElementChildren().Where(n => n is IScrollView).Cast<IScrollView>().ToList();
 		}
 
-		/// <summary>
-		/// Handles <see cref="OnTouch"/> event.
-		/// </summary>
-		/// <param name="point">Point where user has touched.</param>
-		/// <param name="addAdorner">
-		/// If true, will get the visual tree to see if there are any elements for the given point,
-		/// if so, it will add an adorner for the top most element.
-		/// </param>
-		internal void OnTouchInternal(Point point, bool addAdorner = false)
-		{
-			var elements = new List<IVisualTreeElement>();
-
-			if (this.DisableUITouchEventPassthrough)
-			{
-				var visualWindow = this.Window as IVisualTreeElement;
-				if (visualWindow != null)
-					elements.AddRange(visualWindow.GetVisualTreeElements(point));
-			}
-
-			if (addAdorner && elements.Any())
-			{
-				this.AddAdorner(elements.First());
-			}
-
-			this.OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements));
-		}
-
 		private IScrollView? GetParentScrollView(IVisualTreeElement element)
 		{
 			if (element is IScrollView scrollView)
@@ -185,39 +183,20 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		protected virtual void Dispose(bool disposing)
+		private void VisualDiagnosticsOverlay_OnTouch(object? sender, VisualDiagnosticsHitEvent e)
 		{
-			if (!_disposedValue)
-			{
-				if (disposing)
-				{
-					this.RemoveScrollableElementHandler();
-					this.DisposeNativeDependencies();
-				}
+			if (!this.EnableElementSelector)
+				return;
 
-				_disposedValue = true;
-			}
-		}
-
-		public void Dispose()
-		{
-			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
+			this.RemoveAdorners();
+			if (e.VisualTreeElements.Any())
+				this.AddAdorner(e.VisualTreeElements.First());
 		}
 
 #if NETSTANDARD || NET6
 
 		/// <inheritdoc/>
-		public bool DisableUITouchEventPassthrough { get; set; }
-
-		/// <inheritdoc/>
 		public IReadOnlyCollection<Tuple<IScrollView, object>> ScrollViews { get; } = new List<Tuple<IScrollView, object>>().AsReadOnly();
-
-		/// <inheritdoc/>
-		public void Invalidate()
-		{
-		}
 
 		/// <inheritdoc/>
 		public void AddScrollableElementHandler(IScrollView scrollBar)
