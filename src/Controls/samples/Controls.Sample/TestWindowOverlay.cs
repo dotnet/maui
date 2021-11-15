@@ -23,10 +23,13 @@ namespace Maui.Controls.Sample
 			this.OnTouch += TestWindowOverlay_OnTouch;
 		}
 
-		private void TestWindowOverlay_OnTouch(object sender, VisualDiagnosticsHitEvent e)
+		private async void TestWindowOverlay_OnTouch(object sender, VisualDiagnosticsHitEvent e)
 		{
 			if (e.WindowOverlayElements.Contains(testWindowDrawable))
-				System.Diagnostics.Debug.WriteLine("Greetings from VSCX!");
+			{
+				var result = await XamlApp.Current.MainPage.DisplayActionSheet("Greetings from Visual Studio Client Experiences!", "Goodbye!", null, "Do something", "Do something else", "Do something... with feeling.");
+				System.Diagnostics.Debug.WriteLine(result);
+			}
 		}
 	}
 
@@ -42,12 +45,15 @@ namespace Maui.Controls.Sample
 
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
-			canvas.FillColor = Color.FromRgba(225, 225, 255, 225);
-			canvas.StrokeColor = Color.FromRgba(225, 225, 255, 225);
+			canvas.FillColor = Color.FromRgba(255, 0, 0, 225);
+			canvas.StrokeColor = Color.FromRgba(225, 0, 0, 225);
+			canvas.FontColor = Colors.Orange;
+			canvas.FontSize = 40f;
 			var centerX = dirtyRect.Width - 50;
 			var centerY = dirtyRect.Height - 50;
 			_circle = new Circle(centerX, centerY, 40);
 			canvas.FillCircle(centerX, centerY, 40);
+			canvas.DrawString($"🔥", centerX, centerY + 10, HorizontalAlignment.Center);
 		}
 
 		public bool IsPointInElement(Point point)
