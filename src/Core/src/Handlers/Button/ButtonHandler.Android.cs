@@ -1,15 +1,9 @@
-using System;
 using System.Threading.Tasks;
-using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Views;
-using AndroidX.AppCompat.Widget;
-using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
-using static Microsoft.Maui.Handlers.ButtonHandler;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -18,11 +12,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		static Thickness? DefaultPadding;
 		static Drawable? DefaultBackground;
+		static ColorStateList? TransparentColorStateList;
 
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
-
-		static ColorStateList? _transparentColorStateList;
 
 		protected override MaterialButton CreateNativeView()
 		{
@@ -30,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				IconGravity = MaterialButton.IconGravityTextStart,
 				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
-				IconTint = (_transparentColorStateList ??= Colors.Transparent.ToDefaultColorStateList()),
+				IconTint = (TransparentColorStateList ??= Colors.Transparent.ToDefaultColorStateList()),
 				SoundEffectsEnabled = false
 			};
 
@@ -77,6 +70,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateBackground(button, DefaultBackground);
 		}
+
+		[MissingMapper]
+		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder) { }
+
+		[MissingMapper]
+		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder) { }
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{

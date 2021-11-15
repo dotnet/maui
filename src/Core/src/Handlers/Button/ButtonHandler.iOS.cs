@@ -1,9 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Foundation;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -46,6 +42,15 @@ namespace Microsoft.Maui.Handlers
 			ButtonTextColorDefaultHighlighted = nativeView.TitleColor(UIControlState.Highlighted);
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
 		}
+
+		[MissingMapper]
+		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder) { }
+
+		[MissingMapper]
+		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder) { }
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{

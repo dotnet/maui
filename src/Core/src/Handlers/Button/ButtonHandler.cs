@@ -29,7 +29,14 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IText.Text)] = MapText,
 		};
 
-		public static IPropertyMapper<IButton, IButtonHandler> Mapper = new PropertyMapper<IButton, IButtonHandler>(TextButtonMapper, ImageButtonMapper, ViewHandler.ViewMapper)
+		public static IPropertyMapper<IButtonBorder, IButtonHandler> BorderMapper = new PropertyMapper<IButtonBorder, IButtonHandler>()
+		{
+			[nameof(IButtonBorder.BorderWidth)] = MapBorderWidth,
+			[nameof(IButtonBorder.BorderColor)] = MapBorderColor,
+			[nameof(IButtonBorder.CornerRadius)] = MapCornerRadius
+		};
+
+		public static IPropertyMapper<IButton, IButtonHandler> Mapper = new PropertyMapper<IButton, IButtonHandler>(TextButtonMapper, ImageButtonMapper, BorderMapper, ViewHandler.ViewMapper)
 		{
 			[nameof(IButton.Background)] = MapBackground,
 			[nameof(IButton.Padding)] = MapPadding,
