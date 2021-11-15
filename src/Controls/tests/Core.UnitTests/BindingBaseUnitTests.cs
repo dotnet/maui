@@ -11,22 +11,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public abstract class BindingBaseUnitTests : BaseTestFixture
 	{
-		//internal class Logger : LogListener
-		//{
-		//	public IReadOnlyList<string> Messages
-		//	{
-		//		get { return messages; }
-		//	}
+		internal class Logger : LogListener
+		{
+			public IReadOnlyList<string> Messages
+			{
+				get { return messages; }
+			}
 
-		//	public override void Warning(string category, string message)
-		//	{
-		//		messages.Add("[" + category + "] " + message);
-		//	}
+			public override void Warning(string category, string message)
+			{
+				messages.Add("[" + category + "] " + message);
+			}
 
-		//	readonly List<string> messages = new List<string>();
-		//}
+			readonly List<string> messages = new List<string>();
+		}
 
-		//internal Logger log;
+		internal Logger log;
 
 		protected abstract BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null);
 
@@ -243,8 +243,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"BindingContext property changed");
 			Assert.AreEqual(value, bindable.GetValue(property),
 				"Target property did not change");
-			//Assert.That(log.Messages.Count, Is.EqualTo(0),
-			//	"An error was logged: " + log.Messages.FirstOrDefault());
+			Assert.That(log.Messages.Count, Is.EqualTo(0),
+				"An error was logged: " + log.Messages.FirstOrDefault());
 		}
 
 		[Test, Category("[Binding] Set Value")]
