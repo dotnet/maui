@@ -19,6 +19,13 @@ namespace Microsoft.Maui
 		bool DisableUITouchEventPassthrough { get; set; }
 
 		/// <summary>
+		/// Gets or sets a value indicating whether to enable handling touch events when
+		/// selecting any drawable element on the overlay.
+		/// This setting is overridden by <see cref="DisableUITouchEventPassthrough"/>.
+		/// </summary>
+		bool EnableDrawableTouchHandling { get; set; }
+
+		/// <summary>
 		/// Gets or sets a value indicating whether to draw the window overlay.
 		/// </summary>
 		bool IsVisible { get; set; }
@@ -37,7 +44,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the current collection of drawable elements on the overlay.
 		/// </summary>
-		IReadOnlyCollection<IDrawable> Drawables { get; }
+		IReadOnlyCollection<IWindowOverlayElement> WindowElements { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the native touch and drawing layer has been initialized.
@@ -65,21 +72,21 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Adds a new drawable element to the overlay.
 		/// </summary>
-		/// <param name="drawable"><see cref="IDrawable"/>.</param>
+		/// <param name="element"><see cref="IWindowOverlayElement"/>.</param>
 		/// <returns>Boolean indicating if the drawable was added to the collection.</returns>
-		bool AddDrawable(IDrawable drawable);
+		bool AddWindowElement(IWindowOverlayElement element);
 
 		/// <summary>
 		/// Removes a drawable element from the overlay.
 		/// </summary>
-		/// <param name="drawable"><see cref="IDrawable"/>.</param>
+		/// <param name="element"><see cref="IWindowOverlayElement"/>.</param>
 		/// <returns>Boolean indicating if the drawable was removed from the collection.</returns>
-		bool RemoveDrawable(IDrawable drawable);
+		bool RemoveWindowElement(IWindowOverlayElement element);
 
 		/// <summary>
 		/// Removes all drawable elements from the overlay.
 		/// </summary>
-		void RemoveDrawables();
+		void RemoveWindowElements();
 
 		/// <summary>
 		/// Initialize the native touch and drawing layer.

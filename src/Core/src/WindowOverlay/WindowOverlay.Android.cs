@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Android.App;
 using Android.Views;
@@ -96,8 +97,16 @@ namespace Microsoft.Maui
 			if (e == null || e.Event == null)
 				return;
 
-			e.Handled = this.DisableUITouchEventPassthrough;
+			if (e.Event.Action != MotionEventActions.Down)
+				return;
+
 			var point = new Point(e.Event.RawX, e.Event.RawY);
+			
+			if (this.EnableDrawableTouchHandling)
+				e.Handled = this._windowElements.Any(n => n.IsPointInElement(point));
+			else
+				e.Handled = this.DisableUITouchEventPassthrough;
+
 			OnTouchInternal(point);
 		}
 

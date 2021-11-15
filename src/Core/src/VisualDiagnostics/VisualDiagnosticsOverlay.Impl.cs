@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		public bool AddAdorner(IAdornerBorder adornerBorder, bool scrollToView = false)
 		{
 			this.AddScrollableElementHandlers();
-			var result = this._drawables.Add(adornerBorder);
+			var result = this._windowElements.Add(adornerBorder);
 
 			if (this.AutoScrollToElement || scrollToView)
 				this.ScrollToView((IVisualTreeElement)adornerBorder.VisualView);
@@ -71,7 +71,7 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			var result = this._drawables.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
+			var result = this._windowElements.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
 			this.AddScrollableElementHandlers();
 
 			if (this.AutoScrollToElement || scrollToView)
@@ -84,8 +84,8 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool RemoveAdorner(IAdornerBorder adornerBorder)
 		{
-			var results = this._drawables.RemoveWhere(n => n == adornerBorder);
-			if (!this._drawables.Any())
+			var results = this._windowElements.RemoveWhere(n => n == adornerBorder);
+			if (!this._windowElements.Any())
 				this.RemoveScrollableElementHandler();
 			this.Invalidate();
 			return results > 0;
@@ -95,7 +95,7 @@ namespace Microsoft.Maui
 		public void RemoveAdorners()
 		{
 			this.RemoveScrollableElementHandler();
-			this._drawables.Clear();
+			this._windowElements.Clear();
 			this.Invalidate();
 		}
 
@@ -105,8 +105,8 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			var adorners = this._drawables.Where(n => n is IAdornerBorder).Cast<IAdornerBorder>().Where(n => n.VisualView == view);
-			var results = this._drawables.RemoveWhere(n => adorners.Contains(n));
+			var adorners = this._windowElements.Where(n => n is IAdornerBorder).Cast<IAdornerBorder>().Where(n => n.VisualView == view);
+			var results = this._windowElements.RemoveWhere(n => adorners.Contains(n));
 			this.Invalidate();
 			return results > 0;
 		}
@@ -126,7 +126,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public override bool AddDrawable(IDrawable drawable)
+		public override bool AddWindowElement(IWindowOverlayElement drawable)
 		{
 			if (drawable is not IAdornerBorder border)
 				return false;
@@ -134,7 +134,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public override bool RemoveDrawable(IDrawable drawable)
+		public override bool RemoveWindowElement(IWindowOverlayElement drawable)
 		{
 			if (drawable is not IAdornerBorder border)
 				return false;
@@ -142,7 +142,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public override void RemoveDrawables() => this.RemoveAdorners();
+		public override void RemoveWindowElements() => this.RemoveAdorners();
 
 		protected override void Dispose(bool disposing)
 		{

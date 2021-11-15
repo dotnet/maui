@@ -111,13 +111,16 @@ namespace Microsoft.Maui
 
 	public class VisualDiagnosticsHitEvent
 	{
-		public VisualDiagnosticsHitEvent(Point point, IList<IVisualTreeElement> elements)
+		public VisualDiagnosticsHitEvent(Point point, IList<IVisualTreeElement> elements, IList<IWindowOverlayElement> overlayElements)
 		{
 			this.Point = point;
 			this.VisualTreeElements = elements;
+			this.WindowOverlayElements = overlayElements;
 		}
 
 		public IList<IVisualTreeElement> VisualTreeElements { get; }
+
+		public IList<IWindowOverlayElement> WindowOverlayElements { get; }
 
 		public Point Point { get; }
 	}

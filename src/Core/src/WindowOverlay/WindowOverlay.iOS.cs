@@ -24,8 +24,6 @@ namespace Microsoft.Maui
 			set
 			{
 				disableUITouchEventPassthrough = value;
-				if (this._passthroughView != null)
-					this._passthroughView.DisableUITouchEventPassthrough = value;
 			}
 		}
 
@@ -47,7 +45,7 @@ namespace Microsoft.Maui
 				return false;
 
 			// Create a passthrough view for holding the canvas and other diagnostics tools.
-			_passthroughView = new PassthroughView(nativeWindow.RootViewController.View.Frame);
+			_passthroughView = new PassthroughView(this, nativeWindow.RootViewController.View.Frame);
 
 			this._graphicsView = new NativeGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
 			_passthroughView.AddSubview(this._graphicsView);
@@ -105,21 +103,20 @@ namespace Microsoft.Maui
 	internal class PassthroughView : UIView
 	{
 		/// <summary>
-		/// Gets or sets a value whether to enable or disable the UI layer from handling touch events.
-		/// </summary>
-		public bool DisableUITouchEventPassthrough { get; set; }
-
-		/// <summary>
 		/// Event Handler for handling on touch events on the Passthrough View.
 		/// </summary>
 		public event EventHandler<CGPoint>? OnTouch;
 
+		WindowOverlay overlay;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PassthroughView"/> class.
 		/// </summary>
+		/// <param name="overlay">The Window Overlay.</param>
 		/// <param name="frame">Base Frame.</param>
-		public PassthroughView(CGRect frame) : base(frame)
+		public PassthroughView(WindowOverlay overlay, CGRect frame) : base(frame)
 		{
+			this.overlay = overlay;
 		}
 
 		public override bool PointInside(CGPoint point, UIEvent? uievent)
@@ -135,8 +132,15 @@ namespace Microsoft.Maui
 			if (uievent.Type != UIEventType.Touches)
 				return false;
 
+			var disableTouchEvent = false;
+
+			if (this.overlay.EnableDrawableTouchHandling)
+				disableTouchEvent = this.overlay.WindowElements.Any(n => n.IsPointInElement(new Point(point.X, point.Y)));
+			else
+				disableTouchEvent = this.overlay.DisableUITouchEventPassthrough;
+
 			this.OnTouch?.Invoke(this, point);
-			return DisableUITouchEventPassthrough;
+			return disableTouchEvent;
 		}
 	}
 }

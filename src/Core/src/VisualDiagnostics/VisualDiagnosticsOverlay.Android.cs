@@ -44,7 +44,7 @@ namespace Microsoft.Maui
 		public override void HandleUIChange()
 		{
 			base.HandleUIChange();
-			if (this._drawables.Any())
+			if (this._windowElements.Any())
 				this.RemoveAdorners();
 
 			if (this._graphicsView != null && this._nativeActivity != null)

@@ -44,6 +44,11 @@ namespace Microsoft.Maui
 			canvas.StrokeColor = this.StrokeColor;
 		}
 
+		public virtual bool IsPointInElement(Point point)
+		{
+			return false;
+		}
+
 		/// <inheritdoc/>
 		public float DPI { get; }
 

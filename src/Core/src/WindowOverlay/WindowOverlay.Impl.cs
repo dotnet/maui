@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public partial class WindowOverlay : IWindowOverlay, IDrawable
 	{
-		internal HashSet<IDrawable> _drawables = new HashSet<IDrawable>();
+		internal HashSet<IWindowOverlayElement> _windowElements = new HashSet<IWindowOverlayElement>();
 		internal bool _disposedValue;
 		bool isVisible = true;
 
@@ -25,10 +25,13 @@ namespace Microsoft.Maui
 		public IWindow Window { get; internal set; }
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<IDrawable> Drawables => this._drawables.ToList().AsReadOnly();
+		public IReadOnlyCollection<IWindowOverlayElement> WindowElements => this._windowElements.ToList().AsReadOnly();
 
 		/// <inheritdoc/>
 		public bool IsNativeViewInitialized { get; internal set; }
+
+		/// <inheritdoc/>
+		public bool EnableDrawableTouchHandling { get; set; }
 
 		/// <inheritdoc/>
 		public bool IsVisible
@@ -55,7 +58,7 @@ namespace Microsoft.Maui
 		{
 			if (!this.IsVisible)
 				return;
-			foreach (var drawable in this._drawables)
+			foreach (var drawable in this._windowElements)
 				drawable.Draw(canvas, dirtyRect);
 		}
 
@@ -73,25 +76,25 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public virtual bool AddDrawable(IDrawable drawable)
+		public virtual bool AddWindowElement(IWindowOverlayElement drawable)
 		{
-			var result = this._drawables.Add(drawable);
+			var result = this._windowElements.Add(drawable);
 			this.Invalidate();
 			return result;
 		}
 
 		/// <inheritdoc/>
-		public virtual bool RemoveDrawable(IDrawable drawable)
+		public virtual bool RemoveWindowElement(IWindowOverlayElement drawable)
 		{
-			var result = this._drawables.Remove(drawable);
+			var result = this._windowElements.Remove(drawable);
 			this.Invalidate();
 			return result;
 		}
 
 		/// <inheritdoc/>
-		public virtual void RemoveDrawables()
+		public virtual void RemoveWindowElements()
 		{
-			this._drawables.Clear();
+			this._windowElements.Clear();
 			this.Invalidate();
 		}
 
@@ -107,6 +110,12 @@ namespace Microsoft.Maui
 		internal void OnTouchInternal(Point point)
 		{
 			var elements = new List<IVisualTreeElement>();
+			var windowElements = new List<IWindowOverlayElement>();
+
+			if (this.EnableDrawableTouchHandling)
+			{
+				windowElements.AddRange(this._windowElements.Where(n => n.IsPointInElement(point)));
+			}
 
 			if (this.DisableUITouchEventPassthrough)
 			{
@@ -115,7 +124,7 @@ namespace Microsoft.Maui
 					elements.AddRange(visualWindow.GetVisualTreeElements(point));
 			}
 
-			this.OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements));
+			this.OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements, windowElements));
 		}
 
 		public void Dispose()

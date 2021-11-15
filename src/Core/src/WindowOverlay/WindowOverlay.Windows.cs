@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
+using Windows.UI.Core;
 
 namespace Microsoft.Maui
 {
@@ -22,8 +23,6 @@ namespace Microsoft.Maui
 			set
 			{
 				disableUITouchEventPassthrough = value;
-				if (this._graphicsView != null)
-					this._graphicsView.IsHitTestVisible = value;
 			}
 		}
 
@@ -90,11 +89,14 @@ namespace Microsoft.Maui
 		{
 			if (e == null)
 				return;
-
-			e.Handled = this.DisableUITouchEventPassthrough;
 			var position = e.GetPosition(this._graphicsView);
-
 			var point = new Point(position.X, position.Y);
+
+			if (this.EnableDrawableTouchHandling)
+				e.Handled = this._windowElements.Any(n => n.IsPointInElement(point));
+			else
+				e.Handled = this.DisableUITouchEventPassthrough;
+
 			this.OnTouchInternal(point);
 		}
 	}

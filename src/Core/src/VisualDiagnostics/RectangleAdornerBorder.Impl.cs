@@ -24,6 +24,12 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
+		public override bool IsPointInElement(Point point)
+		{
+			return this.DrawnRectangle.Contains(point);
+		}
+
+		/// <inheritdoc/>
 		public override void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
 			base.Draw(canvas, dirtyRect);

@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	public interface IAdornerBorder : IDrawable
+	public interface IAdornerBorder : IWindowOverlayElement
 	{
 		/// <summary>
 		/// Gets the DPI for the Adorner Border.
