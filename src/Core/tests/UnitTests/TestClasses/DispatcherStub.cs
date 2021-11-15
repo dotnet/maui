@@ -15,10 +15,14 @@ namespace Microsoft.Maui.UnitTests
 		{
 			_isInvokeRequired = isInvokeRequired;
 			_invokeOnMainThread = invokeOnMainThread;
+			
+			ManagedThreadId = Environment.CurrentManagedThreadId;
 		}
 
 		public bool IsInvokeRequired =>
 			_isInvokeRequired?.Invoke() ?? false;
+
+		public int ManagedThreadId { get; }
 
 		public void BeginInvokeOnMainThread(Action action)
 		{
@@ -31,15 +35,15 @@ namespace Microsoft.Maui.UnitTests
 
 	class DispatcherProviderStub : IDispatcherProvider
 	{
-		[ThreadStatic]
-		IDispatcher? s_dispatcherInstance;
-
-		public IDispatcher? GetForCurrentThread() =>
-			s_dispatcherInstance ??= DispatcherProviderStubOptions.SkipDispatcherCreation
+		ThreadLocal<IDispatcher?> s_dispatcherInstance = new(() =>
+			DispatcherProviderStubOptions.SkipDispatcherCreation
 				? null
 				: new DispatcherStub(
 					DispatcherProviderStubOptions.IsInvokeRequired,
-					DispatcherProviderStubOptions.InvokeOnMainThread);
+					DispatcherProviderStubOptions.InvokeOnMainThread));
+
+		public IDispatcher? GetForCurrentThread() =>
+			s_dispatcherInstance.Value;
 	}
 
 	public class DispatcherProviderStubOptions

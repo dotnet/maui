@@ -65,12 +65,15 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 		public Task DifferentDispatcherForDifferentThread() =>
 			DispatcherTest.Run(async () =>
 			{
+				var outerId = Environment.CurrentManagedThreadId;
 				var dispatcher1 = Dispatcher.GetForCurrentThread();
 
 				await Task.Run(() =>
 				{
+					var innerId = Environment.CurrentManagedThreadId;
 					var dispatcher2 = Dispatcher.GetForCurrentThread();
 
+					Assert.NotEqual(outerId, innerId);
 					Assert.NotSame(dispatcher1, dispatcher2);
 				});
 			});

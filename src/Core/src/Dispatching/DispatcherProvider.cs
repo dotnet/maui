@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Dispatching
 	public partial class DispatcherProvider : IDispatcherProvider
 	{
 		[ThreadStatic]
-		IDispatcher? s_dispatcherInstance;
+		static IDispatcher? s_dispatcherInstance;
 
 		// this is mainly settable for unit testing purposes
 		static IDispatcherProvider? s_currentProvider;
