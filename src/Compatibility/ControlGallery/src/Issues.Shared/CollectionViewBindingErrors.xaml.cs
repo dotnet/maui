@@ -72,6 +72,33 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 	}
 
+	internal static class Log
+	{
+		static Log()
+		{
+			Listeners = new SynchronizedList<LogListener>();
+		}
+
+		public static IList<LogListener> Listeners { get; }
+
+		public static void Warning(string category, string message)
+		{
+			foreach (LogListener listener in Listeners)
+				listener.Warning(category, message);
+		}
+
+		public static void Warning(string category, string format, params object[] args)
+		{
+			Warning(category, string.Format(format, args));
+		}
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	internal abstract class LogListener
+	{
+		public abstract void Warning(string category, string message);
+	}
+
 	[Preserve(AllMembers = true)]
 	internal class CountBindingErrors : LogListener
 	{
