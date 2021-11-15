@@ -1,13 +1,14 @@
-﻿using System;
-using CoreAnimation;
+﻿#nullable disable
+
+using System;
 using CoreGraphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public class MauiLabel : UILabel
 	{
+		public ILabel VirtualView { get; set; }
 		public UIEdgeInsets TextInsets { get; set; }
 
 		public MauiLabel(CGRect frame) : base(frame)
@@ -16,6 +17,37 @@ namespace Microsoft.Maui
 
 		public MauiLabel()
 		{
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			if (VirtualView == null)
+				return;
+
+			CGSize fitSize;
+			nfloat labelHeight;
+
+			switch (VirtualView.VerticalTextAlignment)
+			{
+				case Maui.TextAlignment.Start:
+					fitSize = SizeThatFits(VirtualView.Frame.Size.ToCGSize());
+					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
+					Frame = new CGRect(0, 0, (nfloat)VirtualView.Width, labelHeight);
+					break;
+				case Maui.TextAlignment.Center:
+					Frame = new CGRect(0, 0, (nfloat)VirtualView.Width, (nfloat)VirtualView.Height);
+					break;
+				case Maui.TextAlignment.End:
+					fitSize = SizeThatFits(VirtualView.Frame.Size.ToCGSize());
+					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
+					nfloat yOffset = (nfloat)(VirtualView.Height - labelHeight);
+					Frame = new CGRect(0, yOffset, (nfloat)VirtualView.Width, labelHeight);
+					break;
+			}
+
+			// TODO: Recalculate Span positions.
 		}
 
 		public override void DrawText(CGRect rect) =>
@@ -39,7 +71,8 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public override CGSize SizeThatFits(CGSize size) => AddInsets(base.SizeThatFits(size));
+		public override CGSize SizeThatFits(CGSize size) 
+			=> AddInsets(base.SizeThatFits(size));
 
 		CGSize AddInsets(CGSize size) => new CGSize(
 			width: size.Width + TextInsets.Left + TextInsets.Right,
