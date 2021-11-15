@@ -8,8 +8,8 @@ namespace Microsoft.Maui
 	public interface IAdornerBorder : IWindowOverlayElement
 	{
 		/// <summary>
-		/// Gets the DPI for the Adorner Border.
-		/// Used to override the default DPI behavior for the containing border. 
+		/// Gets the Density for the Adorner Border.
+		/// Used to override the default density behavior for the containing border. 
 		/// </summary>
 		float Density { get; }
 
