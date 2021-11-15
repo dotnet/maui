@@ -164,17 +164,5 @@ namespace Microsoft.Maui
 		{
 			textBox.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
-		
-		public static void UpdateAutoSize(this MauiTextBox textBox, IEditor editor)
-		{
-			if (editor.AutoSize == EditorAutoSizeOption.Disabled)
-			{
-				textBox.AcceptsReturn = false;
-			}
-			else
-			{
-				textBox.AcceptsReturn = true;
-			}
-		}
 	}
 }

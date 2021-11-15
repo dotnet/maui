@@ -170,8 +170,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
 				UpdateIsReadOnly();
-			else if (e.PropertyName == Editor.AutoSizeProperty.PropertyName)
-				UpdateAutoSize();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -331,20 +329,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.FocusableInTouchMode = isReadOnly;
 			EditText.Focusable = isReadOnly;
 			EditText.SetCursorVisible(isReadOnly);
-		}
-
-		[PortHandler]
-		void UpdateAutoSize()
-		{
-			if(Element.AutoSize == EditorAutoSizeOption.Disabled)
-			{
-				EditText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.None);
-			}
-			else
-			{
-				EditText.SetAutoSizeTextTypeUniformWithConfiguration(EditText.AutoSizeMinTextSize, EditText.AutoSizeMaxTextSize, EditText.AutoSizeStepGranularity, (int)ComplexUnitType.Sp);
-			}
-			
 		}
 	}
 }

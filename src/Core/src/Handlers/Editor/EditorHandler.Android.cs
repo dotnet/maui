@@ -1,8 +1,10 @@
-﻿using Android.Content.Res;
+﻿using Android.Content;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -22,10 +24,10 @@ namespace Microsoft.Maui.Handlers
 				ImeOptions = ImeAction.Done
 			};
 
-			editText.SetSingleLine(false);
-			editText.Gravity = GravityFlags.Top;
-			editText.TextAlignment = Android.Views.TextAlignment.ViewStart;
-			editText.SetHorizontallyScrolling(false);
+			//editText.SetSingleLine(false);
+			//editText.Gravity = GravityFlags.Top;
+			//editText.TextAlignment = Android.Views.TextAlignment.ViewStart;
+			//editText.SetHorizontallyScrolling(false);
 
 			return editText;
 		}
@@ -46,8 +48,10 @@ namespace Microsoft.Maui.Handlers
 			FocusChangeListener.Handler = null;
 		}
 
-		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
+		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e)
+		{
 			VirtualView.UpdateText(e);
+		}
 
 		void SetupDefaults(AppCompatEditText nativeView)
 		{
@@ -109,11 +113,6 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
 
-		public static void MapTextAutoSize(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateAutoSize(editor);
-		}
-		
 		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(editor);

@@ -237,18 +237,6 @@ namespace Microsoft.Maui
 			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 
-		public static void UpdateAutoSize(this AppCompatEditText editText, IEditor editor)
-		{
-			if (editor.AutoSize == EditorAutoSizeOption.Disabled)
-			{
-				editText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.None);
-			}
-			else
-			{
-				editText.SetAutoSizeTextTypeUniformWithConfiguration(editText.AutoSizeMinTextSize, editText.AutoSizeMaxTextSize, editText.AutoSizeStepGranularity, (int)ComplexUnitType.Sp);
-			}
-		}
-
 		public static void UpdateCursorPosition(this AppCompatEditText editText, IEntry entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)

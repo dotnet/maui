@@ -104,11 +104,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			VirtualView?.UpdateText(NativeView.Text);
 		}
-		
-		public static void MapTextAutoSize(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateAutoSize(editor);
-		}
 
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{
