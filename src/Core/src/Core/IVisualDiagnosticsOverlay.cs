@@ -87,25 +87,25 @@ namespace Microsoft.Maui
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		IReadOnlyCollection<Tuple<IScrollView, Android.Views.View>> ScrollViews { get; }
+		IReadOnlyDictionary<IScrollView, Android.Views.View> ScrollViews ScrollViews { get; }
 #elif IOS
 		/// <summary>
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		IReadOnlyCollection<Tuple<IScrollView, IDisposable>> ScrollViews { get; }
+		IReadOnlyDictionary<IScrollView, IDisposable> ScrollViews { get; }
 #elif WINDOWS
 		/// <summary>
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		IReadOnlyCollection<Tuple<IScrollView, Microsoft.UI.Xaml.Controls.ScrollViewer>> ScrollViews { get; }
+		IReadOnlyDictionary<IScrollView, Microsoft.UI.Xaml.Controls.ScrollViewer> ScrollViews { get; }
 #else
 		/// <summary>
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		IReadOnlyCollection<Tuple<IScrollView, object>> ScrollViews { get; }
+		IReadOnlyDictionary<IScrollView, object> ScrollViews { get; }
 #endif
 	}
 

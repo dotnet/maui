@@ -12,12 +12,12 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Visual Diagnostics Overlay.
 	/// </summary>
-	public partial class VisualDiagnosticsOverlay : WindowOverlay
+	public partial class VisualDiagnosticsOverlay : WindowOverlay, IVisualDiagnosticsOverlay
 	{
-		private HashSet<Tuple<IScrollView, Android.Views.View>> _scrollViews = new HashSet<Tuple<IScrollView, Android.Views.View>>();
+		private Dictionary<IScrollView, Android.Views.View> _scrollViews = new Dictionary<IScrollView, Android.Views.View>();
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<Tuple<IScrollView, Android.Views.View>> ScrollViews => _scrollViews.ToList().AsReadOnly();
+		public IReadOnlyDictionary<IScrollView, Android.Views.View> ScrollViews => _scrollViews;
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 			if (nativeScroll != null)
 			{
 				nativeScroll.ScrollChange += ScrollScrollChange;
-				_scrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
+				_scrollViews.Add(scrollBar, nativeScroll);
 			}
 		}
 
@@ -34,8 +34,8 @@ namespace Microsoft.Maui
 		{
 			foreach (var scrollBar in ScrollViews)
 			{
-				if (!scrollBar.Item2.IsDisposed())
-					scrollBar.Item2.ScrollChange -= ScrollScrollChange;
+				if (!scrollBar.Value.IsDisposed())
+					scrollBar.Value.ScrollChange -= ScrollScrollChange;
 			}
 
 			_scrollViews.Clear();

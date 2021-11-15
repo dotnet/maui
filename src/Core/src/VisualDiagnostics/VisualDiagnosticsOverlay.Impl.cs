@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 			var scrollBars = GetScrollViews();
 			foreach (var scrollBar in scrollBars)
 			{
-				if (!ScrollViews.Any(x => x.Item1 == scrollBar))
+				if (!ScrollViews.Any(x => x.Key == scrollBar))
 				{
 					AddScrollableElementHandler(scrollBar);
 				}
@@ -199,7 +199,7 @@ namespace Microsoft.Maui
 #if NETSTANDARD || NET6
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<Tuple<IScrollView, object>> ScrollViews { get; } = new List<Tuple<IScrollView, object>>().AsReadOnly();
+		public IReadOnlyDictionary<IScrollView, object> ScrollViews { get; } = new Dictionary<IScrollView, object>();
 
 		/// <inheritdoc/>
 		public void AddScrollableElementHandler(IScrollView scrollBar)

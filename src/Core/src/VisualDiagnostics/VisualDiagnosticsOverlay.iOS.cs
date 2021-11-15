@@ -15,10 +15,10 @@ namespace Microsoft.Maui
 	/// </summary>
 	public partial class VisualDiagnosticsOverlay : WindowOverlay
 	{
-		private HashSet<Tuple<IScrollView, IDisposable>> _scrollViews = new HashSet<Tuple<IScrollView, IDisposable>>();
+		private Dictionary<IScrollView, IDisposable> _scrollViews = new Dictionary<IScrollView, IDisposable>();
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<Tuple<IScrollView, IDisposable>> ScrollViews => this._scrollViews.ToList().AsReadOnly();
+		public IReadOnlyDictionary<IScrollView, IDisposable> ScrollViews => this._scrollViews;
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 			if (nativeScroll != null)
 			{
 				var dispose = nativeScroll.AddObserver("contentOffset", Foundation.NSKeyValueObservingOptions.New, FrameAction);
-				this._scrollViews.Add(new Tuple<IScrollView, IDisposable>(scrollBar, dispose));
+				this._scrollViews.Add(scrollBar, dispose);
 			}
 		}
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 		{
 			foreach (var scroll in this._scrollViews)
 			{
-				scroll.Item2.Dispose();
+				scroll.Value.Dispose();
 			}
 
 			this._scrollViews.Clear();
