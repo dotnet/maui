@@ -11,7 +11,7 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : Canvas, IWrapperViewCanvas
+	public partial class WrapperView : Canvas
 	{
 		public SkiaGraphicsView BackgroundCanvas { get; }
 	}
@@ -21,10 +21,11 @@ namespace Microsoft.Maui.Platform
 		Lazy<SkiaGraphicsView> _drawableCanvas;
 		Lazy<SKClipperView> _clipperView;
 		EvasObject? _content;
-		IShape? _shape;
+		MauiDrawable _mauiDrawable;
 
 		public WrapperView(EvasObject parent) : base(parent)
 		{
+			_mauiDrawable = new MauiDrawable();
 			_drawableCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
 				var view = new SkiaGraphicsView(parent)
@@ -34,7 +35,6 @@ namespace Microsoft.Maui.Platform
 					PassEvents = true
 				};
 				view.Show();
-				view.PassEvents = true;
 				Children.Add(view);
 				view.Lower();
 				Content?.RaiseTop();
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Platform
 			UpdateShape(border.Shape);
 		}
 
-		partial void ShadowChanged()
+		public void UpdateBorder(IBorder border)
 		{
 			if (!_drawableCanvas.IsValueCreated && Shadow is null)
 				return;
@@ -145,6 +145,10 @@ namespace Microsoft.Maui.Platform
 			}
 			canvas.FillPath(clipPath);
 			Content?.SetClipperCanvas(_clipperView.Value);
+			if (_drawableCanvas.IsValueCreated)
+			{
+				_drawableCanvas.Value.SetClipperCanvas(_clipperView.Value);
+			}
 		}
 
 		void OnLayout(object? sender, LayoutEventArgs e)
