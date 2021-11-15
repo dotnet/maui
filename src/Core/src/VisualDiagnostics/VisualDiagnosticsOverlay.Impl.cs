@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		public VisualDiagnosticsOverlay(IWindow window)
 			: base(window)
 		{
-			this.OnTouch += VisualDiagnosticsOverlay_OnTouch;
+			OnTouch += VisualDiagnosticsOverlayOnTouch;
 		}
 
 		/// <inheritdoc/>
@@ -29,11 +29,11 @@ namespace Microsoft.Maui
 			set
 			{
 				_enableElementSelector = value;
-				this.DisableUITouchEventPassthrough = value;
+				DisableUITouchEventPassthrough = value;
 				// If we enable the element picker,
 				// make sure the view itself is enabled and visible.
 				if (value)
-					this.IsVisible = true;
+					IsVisible = true;
 			}
 		}
 
@@ -42,12 +42,12 @@ namespace Microsoft.Maui
 
 		public void AddScrollableElementHandlers()
 		{
-			var scrollBars = this.GetScrollViews();
+			var scrollBars = GetScrollViews();
 			foreach (var scrollBar in scrollBars)
 			{
-				if (!this.ScrollViews.Any(x => x.Item1 == scrollBar))
+				if (!ScrollViews.Any(x => x.Item1 == scrollBar))
 				{
-					this.AddScrollableElementHandler(scrollBar);
+					AddScrollableElementHandler(scrollBar);
 				}
 			}
 		}
@@ -55,13 +55,13 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool AddAdorner(IAdornerBorder adornerBorder, bool scrollToView = false)
 		{
-			this.AddScrollableElementHandlers();
-			var result = this._windowElements.Add(adornerBorder);
+			AddScrollableElementHandlers();
+			var result = _windowElements.Add(adornerBorder);
 
-			if (this.AutoScrollToElement || scrollToView)
-				this.ScrollToView((IVisualTreeElement)adornerBorder.VisualView);
+			if (AutoScrollToElement || scrollToView)
+				ScrollToView((IVisualTreeElement)adornerBorder.VisualView);
 
-			this.Invalidate();
+			Invalidate();
 			return result;
 		}
 
@@ -71,32 +71,32 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			var result = this._windowElements.Add(new RectangleGridAdornerBorder(view, this.DPI, this.Offset));
-			this.AddScrollableElementHandlers();
+			var result = _windowElements.Add(new RectangleGridAdornerBorder(view, DPI, Offset));
+			AddScrollableElementHandlers();
 
-			if (this.AutoScrollToElement || scrollToView)
-				this.ScrollToView(visualElement);
+			if (AutoScrollToElement || scrollToView)
+				ScrollToView(visualElement);
 
-			this.Invalidate();
+			Invalidate();
 			return result;
 		}
 
 		/// <inheritdoc/>
 		public bool RemoveAdorner(IAdornerBorder adornerBorder)
 		{
-			var results = this._windowElements.RemoveWhere(n => n == adornerBorder);
-			if (!this._windowElements.Any())
-				this.RemoveScrollableElementHandler();
-			this.Invalidate();
+			var results = _windowElements.RemoveWhere(n => n == adornerBorder);
+			if (!_windowElements.Any())
+				RemoveScrollableElementHandler();
+			Invalidate();
 			return results > 0;
 		}
 
 		/// <inheritdoc/>
 		public void RemoveAdorners()
 		{
-			this.RemoveScrollableElementHandler();
-			this._windowElements.Clear();
-			this.Invalidate();
+			RemoveScrollableElementHandler();
+			_windowElements.Clear();
+			Invalidate();
 		}
 
 		/// <inheritdoc/>
@@ -105,9 +105,9 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			var adorners = this._windowElements.Where(n => n is IAdornerBorder).Cast<IAdornerBorder>().Where(n => n.VisualView == view);
-			var results = this._windowElements.RemoveWhere(n => adorners.Contains(n));
-			this.Invalidate();
+			var adorners = _windowElements.Where(n => n is IAdornerBorder).Cast<IAdornerBorder>().Where(n => n.VisualView == view);
+			var results = _windowElements.RemoveWhere(n => adorners.Contains(n));
+			Invalidate();
 			return results > 0;
 		}
 
@@ -130,7 +130,7 @@ namespace Microsoft.Maui
 		{
 			if (drawable is not IAdornerBorder border)
 				return false;
-			return this.AddAdorner(border, this.AutoScrollToElement);
+			return AddAdorner(border, AutoScrollToElement);
 		}
 
 		/// <inheritdoc/>
@@ -138,11 +138,11 @@ namespace Microsoft.Maui
 		{
 			if (drawable is not IAdornerBorder border)
 				return false;
-			return this.RemoveAdorner(border);
+			return RemoveAdorner(border);
 		}
 
 		/// <inheritdoc/>
-		public override void RemoveWindowElements() => this.RemoveAdorners();
+		public override void RemoveWindowElements() => RemoveAdorners();
 
 		protected override void Dispose(bool disposing)
 		{
@@ -150,8 +150,8 @@ namespace Microsoft.Maui
 			{
 				if (disposing)
 				{
-					this.RemoveScrollableElementHandler();
-					this.OnTouch -= this.VisualDiagnosticsOverlay_OnTouch;
+					RemoveScrollableElementHandler();
+					OnTouch -= VisualDiagnosticsOverlayOnTouch;
 				}
 			}
 
@@ -165,9 +165,9 @@ namespace Microsoft.Maui
 		/// <returns>List of IScrollView.</returns>
 		internal List<IScrollView> GetScrollViews ()
 		{
-			if (this.Window == null)
+			if (Window == null)
 				return new List<IScrollView>();
-			var content = this.Window.Content as IVisualTreeElement;
+			var content = Window.Content as IVisualTreeElement;
 			if (content == null)
 				return new List<IScrollView>();
 
@@ -186,14 +186,14 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		private void VisualDiagnosticsOverlay_OnTouch(object? sender, VisualDiagnosticsHitEvent e)
+		private void VisualDiagnosticsOverlayOnTouch(object? sender, VisualDiagnosticsHitEvent e)
 		{
-			if (!this.EnableElementSelector)
+			if (!EnableElementSelector)
 				return;
 
-			this.RemoveAdorners();
+			RemoveAdorners();
 			if (e.VisualTreeElements.Any())
-				this.AddAdorner(e.VisualTreeElements.First());
+				AddAdorner(e.VisualTreeElements.First());
 		}
 
 #if NETSTANDARD || NET6

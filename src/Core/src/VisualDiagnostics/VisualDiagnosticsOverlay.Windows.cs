@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 			{
 				if (this._scrollViews.Add(new Tuple<IScrollView, ScrollViewer>(scrollBar, viewer)))
 				{
-					viewer.ViewChanging += Viewer_ViewChanging;
+					viewer.ViewChanging += ViewerViewChanging;
 				}
 			}
 		}
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 		{
 			foreach (var scrollBar in this.ScrollViews)
 			{
-				scrollBar.Item2.ViewChanging -= Viewer_ViewChanging;
+				scrollBar.Item2.ViewChanging -= ViewerViewChanging;
 			}
 
 			this._scrollViews.Clear();
@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 				this.RemoveAdorners();
 		}
 
-		private void Viewer_ViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
+		private void ViewerViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
 		{
 			this.Invalidate();
 		}

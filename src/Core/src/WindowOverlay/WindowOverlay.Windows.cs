@@ -12,7 +12,7 @@ using Windows.UI.Core;
 
 namespace Microsoft.Maui
 {
-	public partial class WindowOverlay : IWindowOverlay, IDrawable
+	public partial class WindowOverlay : IWindowOverlay
 	{
 		private W2DGraphicsView? _graphicsView;
 		private bool disableUITouchEventPassthrough;
@@ -27,54 +27,56 @@ namespace Microsoft.Maui
 			set
 			{
 				disableUITouchEventPassthrough = value;
-				if (this._graphicsView != null)
-					this._graphicsView.IsHitTestVisible = value;
+				if (_graphicsView != null)
+					_graphicsView.IsHitTestVisible = value;
 			}
 		}
 
 		/// <inheritdoc/>
 		public bool InitializeNativeLayer()
 		{
-			if (this.IsNativeViewInitialized)
+			if (IsNativeViewInitialized)
 				return true;
 
-			if (this.Window == null)
+			if (Window == null)
 				return false;
 
-			_nativeWindow = this.Window.Content.GetNative(true);
+			_nativeWindow = Window.Content.GetNative(true);
 			if (_nativeWindow == null)
 				return false;
-			var handler = this.Window.Handler as WindowHandler;
+			var handler = Window.Handler as WindowHandler;
 			if (handler == null || handler._rootPanel == null)
 				return false;
 
-			this._rootPanel = handler._rootPanel;
+			_rootPanel = handler._rootPanel;
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
 			if (_nativeWindow is Frame frame)
 			{
 				_frame = frame;
-				_frame.Navigating += Frame_Navigating;
+				_frame.Navigating += FrameNavigating;
 			}
 
-			this._graphicsView = new W2DGraphicsView() { Drawable = this };
-			if (this._graphicsView == null)
+			_graphicsView = new W2DGraphicsView() { Drawable = this };
+			if (_graphicsView == null)
 				return false;
 
-			_nativeWindow.Tapped += GraphicsView_Tapped;
-			this._graphicsView.Tapped += GraphicsView_Tapped;
+			_nativeWindow.Tapped += ViewTapped;
+			_nativeWindow.PointerMoved += PointerMoved;
+			_graphicsView.Tapped += ViewTapped;
+			_graphicsView.PointerMoved += PointerMoved;
 
-			this._graphicsView.SetValue(Canvas.ZIndexProperty, 99);
-			this._graphicsView.IsHitTestVisible = false;
-			handler._rootPanel.Children.Add(this._graphicsView);
-			this.IsNativeViewInitialized = true;
-			return this.IsNativeViewInitialized;
+			_graphicsView.SetValue(Canvas.ZIndexProperty, 99);
+			_graphicsView.IsHitTestVisible = false;
+			handler._rootPanel.Children.Add(_graphicsView);
+			IsNativeViewInitialized = true;
+			return IsNativeViewInitialized;
 		}
 
 		/// <inheritdoc/>
 		public void Invalidate()
 		{
-			this._graphicsView?.Invalidate();
+			_graphicsView?.Invalidate();
 		}
 
 		/// <summary>
@@ -83,36 +85,60 @@ namespace Microsoft.Maui
 		private void DisposeNativeDependencies()
 		{
 			if (_frame != null)
-				_frame.Navigating -= Frame_Navigating;
-			if (this._rootPanel != null)
-				this._rootPanel.Children.Remove(this._graphicsView);
-			if (this._nativeWindow != null)
-				this._nativeWindow.Tapped -= GraphicsView_Tapped;
-			if (this._graphicsView != null)
-				this._graphicsView.Tapped -= GraphicsView_Tapped;
-			this._graphicsView = null;
-			this.IsNativeViewInitialized = false;
+				_frame.Navigating -= FrameNavigating;
+			if (_rootPanel != null)
+				_rootPanel.Children.Remove(_graphicsView);
+			if (_nativeWindow != null)
+			{
+				_nativeWindow.Tapped -= ViewTapped;
+				_nativeWindow.PointerMoved -= PointerMoved;
+			}
+			if (_graphicsView != null)
+			{
+				_graphicsView.Tapped -= ViewTapped;
+				_graphicsView.PointerMoved -= PointerMoved;
+			}
+			_graphicsView = null;
+			IsNativeViewInitialized = false;
 		}
 
-		private void Frame_Navigating(object sender, UI.Xaml.Navigation.NavigatingCancelEventArgs e)
+		private void PointerMoved(object sender, UI.Xaml.Input.PointerRoutedEventArgs e)
 		{
-			this.HandleUIChange();
-			this.Invalidate();
+			if (!EnableDrawableTouchHandling)
+				return;
+
+			if (!_windowElements.Any())
+				return;
+
+			if (_graphicsView == null)
+				return;
+
+			var pointerPoint = e.GetCurrentPoint(_graphicsView);
+			if (pointerPoint == null)
+				return;
+
+			this._graphicsView.IsHitTestVisible = _windowElements.Any(n => n.IsPointInElement(new Point(pointerPoint.Position.X, pointerPoint.Position.Y)));
 		}
 
-		private void GraphicsView_Tapped(object sender, UI.Xaml.Input.TappedRoutedEventArgs e)
+		private void FrameNavigating(object sender, UI.Xaml.Navigation.NavigatingCancelEventArgs e)
+		{
+			HandleUIChange();
+			Invalidate();
+		}
+
+		private void ViewTapped(object sender, UI.Xaml.Input.TappedRoutedEventArgs e)
 		{
 			if (e == null)
 				return;
-			var position = e.GetPosition(this._graphicsView);
+			var position = e.GetPosition(_graphicsView);
 			var point = new Point(position.X, position.Y);
 
-			if (this.DisableUITouchEventPassthrough)
+			if (DisableUITouchEventPassthrough)
 				e.Handled = true;
-			else if (this.EnableDrawableTouchHandling)
-				e.Handled = this._windowElements.Any(n => n.IsPointInElement(point));
+			else if (EnableDrawableTouchHandling)
+				e.Handled = _windowElements.Any(n => n.IsPointInElement(point));
 
-			this.OnTouchInternal(point);
+			OnTouchInternal(point);
 		}
 	}
 }

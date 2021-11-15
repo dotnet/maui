@@ -29,13 +29,13 @@ namespace Microsoft.Maui
 
 		public bool InitializeNativeLayer()
 		{
-			if (this.IsNativeViewInitialized)
+			if (IsNativeViewInitialized)
 				return true;
 
-			if (this.Window == null)
+			if (Window == null)
 				return false;
 
-			var nativeLayer = this.Window.GetNative(true);
+			var nativeLayer = Window.GetNative(true);
 			if (nativeLayer == null || nativeLayer.Window == null)
 				return false;
 
@@ -47,38 +47,38 @@ namespace Microsoft.Maui
 			// Create a passthrough view for holding the canvas and other diagnostics tools.
 			_passthroughView = new PassthroughView(this, nativeWindow.RootViewController.View.Frame);
 
-			this._graphicsView = new NativeGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
-			_passthroughView.AddSubview(this._graphicsView);
+			_graphicsView = new NativeGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
+			_passthroughView.AddSubview(_graphicsView);
 
-			if (this._graphicsView == null)
+			if (_graphicsView == null)
 			{
 				return false;
 			}
 
 			// Any time the frame gets a new value, we need to update and invalidate the canvas.
-			this._frameObserver = nativeLayer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
+			_frameObserver = nativeLayer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
 			// Disable the graphics view from user input.
 			// This will be handled by the passthrough view.
-			this._graphicsView.UserInteractionEnabled = false;
+			_graphicsView.UserInteractionEnabled = false;
 
 			// Make the canvas view transparent.
-			this._graphicsView.BackgroundColor = UIColor.FromWhiteAlpha(1, 0.0f);
+			_graphicsView.BackgroundColor = UIColor.FromWhiteAlpha(1, 0.0f);
 
 			// Add the passthrough view to the front of the stack.
 			nativeWindow.RootViewController.View.AddSubview(_passthroughView);
 			nativeWindow.RootViewController.View.BringSubviewToFront(_passthroughView);
 
 			// Any time the passthrough view is touched, handle it.
-			this._passthroughView.OnTouch += _uiView_OnTouch;
-			this.IsNativeViewInitialized = true;
-			return this.IsNativeViewInitialized;
+			_passthroughView.OnTouch += UIViewOnTouch;
+			IsNativeViewInitialized = true;
+			return IsNativeViewInitialized;
 		}
 
 		/// <inheritdoc/>
 		public void Invalidate()
 		{
-			this._graphicsView?.InvalidateIntrinsicContentSize();
-			this._graphicsView?.InvalidateDrawable();
+			_graphicsView?.InvalidateIntrinsicContentSize();
+			_graphicsView?.InvalidateDrawable();
 		}
 
 		/// <summary>
@@ -86,17 +86,17 @@ namespace Microsoft.Maui
 		/// </summary>
 		private void DisposeNativeDependencies()
 		{
-			this._frameObserver?.Dispose();
-			this._passthroughView?.Dispose();
-			this.IsNativeViewInitialized = false;
+			_frameObserver?.Dispose();
+			_passthroughView?.Dispose();
+			IsNativeViewInitialized = false;
 		}
 
-		private void _uiView_OnTouch(object? sender, CGPoint e) => OnTouchInternal(new Point(e.X, e.Y));
+		private void UIViewOnTouch(object? sender, CGPoint e) => OnTouchInternal(new Point(e.X, e.Y));
 
 		private void FrameAction(Foundation.NSObservedChange obj)
 		{
-			this.HandleUIChange();
-			this.Invalidate();
+			HandleUIChange();
+			Invalidate();
 		}
 	}
 
@@ -114,9 +114,9 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="overlay">The Window Overlay.</param>
 		/// <param name="frame">Base Frame.</param>
-		public PassthroughView(WindowOverlay overlay, CGRect frame) : base(frame)
+		public PassthroughView(WindowOverlay windowOverlay, CGRect frame) : base(frame)
 		{
-			this.overlay = overlay;
+			overlay = windowOverlay;
 		}
 
 		public override bool PointInside(CGPoint point, UIEvent? uievent)
@@ -134,12 +134,12 @@ namespace Microsoft.Maui
 
 			var disableTouchEvent = false;
 
-			if (this.overlay.DisableUITouchEventPassthrough)
+			if (overlay.DisableUITouchEventPassthrough)
 				disableTouchEvent = true;
-			else if (this.overlay.EnableDrawableTouchHandling)
-				disableTouchEvent = this.overlay.WindowElements.Any(n => n.IsPointInElement(new Point(point.X, point.Y)));
+			else if (overlay.EnableDrawableTouchHandling)
+				disableTouchEvent = overlay.WindowElements.Any(n => n.IsPointInElement(new Point(point.X, point.Y)));
 
-			this.OnTouch?.Invoke(this, point);
+			OnTouch?.Invoke(this, point);
 			return disableTouchEvent;
 		}
 	}

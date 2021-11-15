@@ -23,25 +23,25 @@ namespace Microsoft.Maui
 		public AdornerBorder(IView view, float dpi = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
 		{
 			if (fillColor != null)
-				this.FillColor = fillColor;
+				FillColor = fillColor;
 
 			if (strokeColor != null)
-				this.StrokeColor = strokeColor;
+				StrokeColor = strokeColor;
 
 			if (offset == null)
-				this.Offset = new Point();
+				Offset = new Point();
 			else
-				this.Offset = offset.Value;
+				Offset = offset.Value;
 
-			this.VisualView = view;
-			this.DPI = dpi;
+			VisualView = view;
+			DPI = dpi;
 		}
 
 		/// <inheritdoc/>
 		public virtual void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
-			canvas.FillColor = this.FillColor;
-			canvas.StrokeColor = this.StrokeColor;
+			canvas.FillColor = FillColor;
+			canvas.StrokeColor = StrokeColor;
 		}
 
 		public virtual bool IsPointInElement(Point point)

@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public override bool IsPointInElement(Point point)
 		{
-			return this.DrawnRectangle.Contains(point);
+			return DrawnRectangle.Contains(point);
 		}
 
 		/// <inheritdoc/>
@@ -34,13 +34,13 @@ namespace Microsoft.Maui
 		{
 			base.Draw(canvas, dirtyRect);
 
-			var rect = this.VisualView.GetNativeViewBounds();
-			var x = (rect.X / this.DPI) + (Offset.X);
-			var y = (rect.Y / this.DPI) + (Offset.Y);
-			var width = (rect.Width / this.DPI);
-			var height = (rect.Height / this.DPI);
-			this.DrawnRectangle = new Rectangle(x, y, width, height);
-			canvas.FillRectangle(this.DrawnRectangle);
+			var rect = VisualView.GetNativeViewBounds();
+			var x = (rect.X / DPI) + (Offset.X);
+			var y = (rect.Y / DPI) + (Offset.Y);
+			var width = (rect.Width / DPI);
+			var height = (rect.Height / DPI);
+			DrawnRectangle = new Rectangle(x, y, width, height);
+			canvas.FillRectangle(DrawnRectangle);
 		}
 
 		/// <summary>

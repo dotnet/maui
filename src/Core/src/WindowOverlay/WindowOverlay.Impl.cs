@@ -18,14 +18,14 @@ namespace Microsoft.Maui
 		/// <param name="window">The parent Window.</param>
 		public WindowOverlay(IWindow window)
 		{
-			this.Window = window;
+			Window = window;
 		}
 
 		/// <inheritdoc/>
 		public IWindow Window { get; internal set; }
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<IWindowOverlayElement> WindowElements => this._windowElements.ToList().AsReadOnly();
+		public IReadOnlyCollection<IWindowOverlayElement> WindowElements => _windowElements.ToList().AsReadOnly();
 
 		/// <inheritdoc/>
 		public bool IsNativeViewInitialized { get; internal set; }
@@ -40,8 +40,8 @@ namespace Microsoft.Maui
 			set
 			{
 				isVisible = value;
-				if (this.IsNativeViewInitialized)
-					this.Invalidate();
+				if (IsNativeViewInitialized)
+					Invalidate();
 			}
 		}
 
@@ -56,9 +56,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
-			if (!this.IsVisible)
+			if (!IsVisible)
 				return;
-			foreach (var drawable in this._windowElements)
+			foreach (var drawable in _windowElements)
 				drawable.Draw(canvas, dirtyRect);
 		}
 
@@ -68,7 +68,7 @@ namespace Microsoft.Maui
 			{
 				if (disposing)
 				{
-					this.DisposeNativeDependencies();
+					DisposeNativeDependencies();
 				}
 
 				_disposedValue = true;
@@ -78,24 +78,24 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public virtual bool AddWindowElement(IWindowOverlayElement drawable)
 		{
-			var result = this._windowElements.Add(drawable);
-			this.Invalidate();
+			var result = _windowElements.Add(drawable);
+			Invalidate();
 			return result;
 		}
 
 		/// <inheritdoc/>
 		public virtual bool RemoveWindowElement(IWindowOverlayElement drawable)
 		{
-			var result = this._windowElements.Remove(drawable);
-			this.Invalidate();
+			var result = _windowElements.Remove(drawable);
+			Invalidate();
 			return result;
 		}
 
 		/// <inheritdoc/>
 		public virtual void RemoveWindowElements()
 		{
-			this._windowElements.Clear();
-			this.Invalidate();
+			_windowElements.Clear();
+			Invalidate();
 		}
 
 		/// <inheritdoc/>
@@ -112,19 +112,19 @@ namespace Microsoft.Maui
 			var elements = new List<IVisualTreeElement>();
 			var windowElements = new List<IWindowOverlayElement>();
 
-			if (this.EnableDrawableTouchHandling)
+			if (EnableDrawableTouchHandling)
 			{
-				windowElements.AddRange(this._windowElements.Where(n => n.IsPointInElement(point)));
+				windowElements.AddRange(_windowElements.Where(n => n.IsPointInElement(point)));
 			}
 
-			if (this.DisableUITouchEventPassthrough)
+			if (DisableUITouchEventPassthrough)
 			{
-				var visualWindow = this.Window as IVisualTreeElement;
+				var visualWindow = Window as IVisualTreeElement;
 				if (visualWindow != null)
 					elements.AddRange(visualWindow.GetVisualTreeElements(point));
 			}
 
-			this.OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements, windowElements));
+			OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements, windowElements));
 		}
 
 		public void Dispose()

@@ -17,43 +17,43 @@ namespace Microsoft.Maui
 		private HashSet<Tuple<IScrollView, Android.Views.View>> _scrollViews = new HashSet<Tuple<IScrollView, Android.Views.View>>();
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<Tuple<IScrollView, Android.Views.View>> ScrollViews => this._scrollViews.ToList().AsReadOnly();
+		public IReadOnlyCollection<Tuple<IScrollView, Android.Views.View>> ScrollViews => _scrollViews.ToList().AsReadOnly();
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null)
 			{
-				nativeScroll.ScrollChange += Scroll_ScrollChange;
-				this._scrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
+				nativeScroll.ScrollChange += ScrollScrollChange;
+				_scrollViews.Add(new Tuple<IScrollView, View>(scrollBar, nativeScroll));
 			}
 		}
 
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach (var scrollBar in this.ScrollViews)
+			foreach (var scrollBar in ScrollViews)
 			{
 				if (!scrollBar.Item2.IsDisposed())
-					scrollBar.Item2.ScrollChange -= Scroll_ScrollChange;
+					scrollBar.Item2.ScrollChange -= ScrollScrollChange;
 			}
 
-			this._scrollViews.Clear();
+			_scrollViews.Clear();
 		}
 
 		public override void HandleUIChange()
 		{
 			base.HandleUIChange();
-			if (this._windowElements.Any())
-				this.RemoveAdorners();
+			if (_windowElements.Any())
+				RemoveAdorners();
 
-			if (this._graphicsView != null && this._nativeActivity != null)
-				this.Offset = GenerateAdornerOffset(this._nativeActivity, this._graphicsView);
+			if (_graphicsView != null && _nativeActivity != null)
+				Offset = GenerateAdornerOffset(_nativeActivity, _graphicsView);
 		}
 
-		private void Scroll_ScrollChange(object? sender, View.ScrollChangeEventArgs e)
+		private void ScrollScrollChange(object? sender, View.ScrollChangeEventArgs e)
 		{
-			this.Invalidate();
+			Invalidate();
 		}
 
 		/// <summary>

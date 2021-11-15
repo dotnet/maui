@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Toolbar Toolbar { get; }
 
-		public IReadOnlyCollection<IWindowOverlay> Overlays => this._overlays.ToList().AsReadOnly();
+		public IReadOnlyCollection<IWindowOverlay> Overlays => _overlays.ToList().AsReadOnly();
 
 		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 			// Add the overlay. If it's added, 
 			// Initalize the native layer if it wasn't already,
 			// and call invalidate so it will be drawn.
-			var result = this._overlays.Add(overlay);
+			var result = _overlays.Add(overlay);
 			if (result)
 			{
 				overlay.InitializeNativeLayer();
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls
 
 			// Remove the overlay. If it's gone,
 			// dispose it to remove it fully.
-			var result = this._overlays.Remove(overlay);
+			var result = _overlays.Remove(overlay);
 			if (result)
 				overlay.Dispose();
 			return result;

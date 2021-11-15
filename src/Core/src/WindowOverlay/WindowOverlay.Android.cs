@@ -22,17 +22,17 @@ namespace Microsoft.Maui
 
 		public bool InitializeNativeLayer()
 		{
-			if (this.IsNativeViewInitialized)
+			if (IsNativeViewInitialized)
 				return true;
 
-			if (this.Window == null)
+			if (Window == null)
 				return false;
 
-			var nativeWindow = this.Window.Content.GetNative(true);
+			var nativeWindow = Window.Content.GetNative(true);
 			if (nativeWindow == null)
 				return false;
 			
-			var handler = this.Window.Handler as WindowHandler;
+			var handler = Window.Handler as WindowHandler;
 			if (handler == null || handler.MauiContext == null)
 				return false;
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
@@ -58,23 +58,23 @@ namespace Microsoft.Maui
 				_nativeActivity.Window.DecorView.LayoutChange += DecorView_LayoutChange;
 
 			if (_nativeActivity != null && _nativeActivity.Resources != null && _nativeActivity.Resources.DisplayMetrics != null)
-				this.DPI = _nativeActivity.Resources.DisplayMetrics.Density;
+				DPI = _nativeActivity.Resources.DisplayMetrics.Density;
 
-			this._graphicsView = new NativeGraphicsView(_nativeLayer.Context, this);
-			if (this._graphicsView == null)
+			_graphicsView = new NativeGraphicsView(_nativeLayer.Context, this);
+			if (_graphicsView == null)
 				return false;
 
-			this._graphicsView.Touch += TouchLayer_Touch;
-			_nativeLayer.AddView(this._graphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
-			this._graphicsView.BringToFront();
-			this.IsNativeViewInitialized = true;
-			return this.IsNativeViewInitialized;
+			_graphicsView.Touch += TouchLayer_Touch;
+			_nativeLayer.AddView(_graphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
+			_graphicsView.BringToFront();
+			IsNativeViewInitialized = true;
+			return IsNativeViewInitialized;
 		}
 
 		/// <inheritdoc/>
 		public void Invalidate()
 		{
-			this._graphicsView?.Invalidate();
+			_graphicsView?.Invalidate();
 		}
 
 		/// <summary>
@@ -86,10 +86,10 @@ namespace Microsoft.Maui
 				_nativeActivity.Window.DecorView.LayoutChange -= DecorView_LayoutChange;
 
 			if (_nativeLayer != null)
-				_nativeLayer.RemoveView(this._graphicsView);
+				_nativeLayer.RemoveView(_graphicsView);
 
-			this._graphicsView = null;
-			this.IsNativeViewInitialized = false;
+			_graphicsView = null;
+			IsNativeViewInitialized = false;
 		}
 
 		private void TouchLayer_Touch(object? sender, View.TouchEventArgs e)
@@ -103,18 +103,18 @@ namespace Microsoft.Maui
 
 			var point = new Point(e.Event.RawX, e.Event.RawY);
 			
-			if (this.DisableUITouchEventPassthrough)
+			if (DisableUITouchEventPassthrough)
 				e.Handled = true;
-			else if (this.EnableDrawableTouchHandling)
-				e.Handled = this._windowElements.Any(n => n.IsPointInElement(point));
+			else if (EnableDrawableTouchHandling)
+				e.Handled = _windowElements.Any(n => n.IsPointInElement(point));
 
 			OnTouchInternal(point);
 		}
 
 		private void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
 		{
-			this.HandleUIChange();
-			this.Invalidate();
+			HandleUIChange();
+			Invalidate();
 		}
 	}
 }

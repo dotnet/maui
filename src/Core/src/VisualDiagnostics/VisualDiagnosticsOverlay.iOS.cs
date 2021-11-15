@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 			this._scrollViews.Clear();
 		}
 
-		private void Scroll_Scrolled(object? sender, EventArgs e)
+		private void ScrollScrolled(object? sender, EventArgs e)
 		{
 			this.Invalidate();
 		}

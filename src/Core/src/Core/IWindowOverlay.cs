@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics.Native;
 
 namespace Microsoft.Maui
 {
-	public interface IWindowOverlay : IDisposable
+	public interface IWindowOverlay : IDrawable, IDisposable
 	{
 		/// <summary>
 		/// Gets or sets a value indicating whether to disable UI Touch Event Passthrough.
