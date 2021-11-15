@@ -55,6 +55,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool AddAdorner(IAdornerBorder adornerBorder, bool scrollToView = false)
 		{
+			if (adornerBorder == null)
+				throw new ArgumentNullException(nameof(adornerBorder));
+
 			AddScrollableElementHandlers();
 			var result = _windowElements.Add(adornerBorder);
 
@@ -68,6 +71,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool AddAdorner(IVisualTreeElement visualElement, bool scrollToView = false)
 		{
+			if (visualElement == null)
+				throw new ArgumentNullException(nameof(visualElement));
+
 			if (visualElement is not IView view)
 				return false;
 
@@ -84,6 +90,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool RemoveAdorner(IAdornerBorder adornerBorder)
 		{
+			if (adornerBorder == null)
+				throw new ArgumentNullException(nameof(adornerBorder));
+
 			var results = _windowElements.RemoveWhere(n => n == adornerBorder);
 			if (!_windowElements.Any())
 				RemoveScrollableElementHandler();
@@ -102,6 +111,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool RemoveAdorners(IVisualTreeElement visualElement)
 		{
+			if (visualElement == null)
+				throw new ArgumentNullException(nameof(visualElement));
+
 			if (visualElement is not IView view)
 				return false;
 

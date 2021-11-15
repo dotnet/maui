@@ -78,6 +78,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public virtual bool AddWindowElement(IWindowOverlayElement drawable)
 		{
+			if (drawable == null)
+				throw new ArgumentNullException(nameof(drawable));
+
 			var result = _windowElements.Add(drawable);
 			Invalidate();
 			return result;
@@ -86,6 +89,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public virtual bool RemoveWindowElement(IWindowOverlayElement drawable)
 		{
+			if (drawable == null)
+				throw new ArgumentNullException(nameof(drawable));
+
 			var result = _windowElements.Remove(drawable);
 			Invalidate();
 			return result;
