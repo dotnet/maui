@@ -14,7 +14,7 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui
 {
-	public static class IViewExtensions
+	public static class ViewExtensions
 	{
 #if __ANDROID__
 		internal static Rectangle GetNativeViewBounds(this IView view)
