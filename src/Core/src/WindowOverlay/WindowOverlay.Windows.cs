@@ -27,6 +27,8 @@ namespace Microsoft.Maui
 			set
 			{
 				disableUITouchEventPassthrough = value;
+				if (this._graphicsView != null)
+					this._graphicsView.IsHitTestVisible = value;
 			}
 		}
 
@@ -60,6 +62,7 @@ namespace Microsoft.Maui
 				return false;
 
 			_nativeWindow.Tapped += GraphicsView_Tapped;
+			this._graphicsView.Tapped += GraphicsView_Tapped;
 
 			this._graphicsView.SetValue(Canvas.ZIndexProperty, 99);
 			this._graphicsView.IsHitTestVisible = false;
@@ -85,6 +88,8 @@ namespace Microsoft.Maui
 				this._rootPanel.Children.Remove(this._graphicsView);
 			if (this._nativeWindow != null)
 				this._nativeWindow.Tapped -= GraphicsView_Tapped;
+			if (this._graphicsView != null)
+				this._graphicsView.Tapped -= GraphicsView_Tapped;
 			this._graphicsView = null;
 			this.IsNativeViewInitialized = false;
 		}
@@ -102,10 +107,10 @@ namespace Microsoft.Maui
 			var position = e.GetPosition(this._graphicsView);
 			var point = new Point(position.X, position.Y);
 
-			if (this.EnableDrawableTouchHandling)
+			if (this.DisableUITouchEventPassthrough)
+				e.Handled = true;
+			else if (this.EnableDrawableTouchHandling)
 				e.Handled = this._windowElements.Any(n => n.IsPointInElement(point));
-			else
-				e.Handled = this.DisableUITouchEventPassthrough;
 
 			this.OnTouchInternal(point);
 		}

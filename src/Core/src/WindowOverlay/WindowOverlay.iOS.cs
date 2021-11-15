@@ -134,10 +134,10 @@ namespace Microsoft.Maui
 
 			var disableTouchEvent = false;
 
-			if (this.overlay.EnableDrawableTouchHandling)
+			if (this.overlay.DisableUITouchEventPassthrough)
+				disableTouchEvent = true;
+			else if (this.overlay.EnableDrawableTouchHandling)
 				disableTouchEvent = this.overlay.WindowElements.Any(n => n.IsPointInElement(new Point(point.X, point.Y)));
-			else
-				disableTouchEvent = this.overlay.DisableUITouchEventPassthrough;
 
 			this.OnTouch?.Invoke(this, point);
 			return disableTouchEvent;

@@ -97,15 +97,16 @@ namespace Microsoft.Maui
 			if (e == null || e.Event == null)
 				return;
 
-			if (e.Event.Action != MotionEventActions.Down)
+			System.Diagnostics.Debug.WriteLine(e);
+			if (e.Event.Action != MotionEventActions.Down && e.Event.ButtonState != MotionEventButtonState.Primary)
 				return;
 
 			var point = new Point(e.Event.RawX, e.Event.RawY);
 			
-			if (this.EnableDrawableTouchHandling)
+			if (this.DisableUITouchEventPassthrough)
+				e.Handled = true;
+			else if (this.EnableDrawableTouchHandling)
 				e.Handled = this._windowElements.Any(n => n.IsPointInElement(point));
-			else
-				e.Handled = this.DisableUITouchEventPassthrough;
 
 			OnTouchInternal(point);
 		}
