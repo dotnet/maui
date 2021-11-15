@@ -213,5 +213,19 @@ namespace Microsoft.Maui
 			else if (nativeView is Panel panel)
 				panel.UpdateBackground(view.Background);
 		}
+
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view.GetNative(true);
+			if (nativeView != null)
+			{
+				var root = nativeView.XamlRoot;
+				var offset = nativeView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
+				if (offset != null)
+					return new Rectangle(offset.Matrix.OffsetX, offset.Matrix.OffsetY, nativeView.ActualWidth, nativeView.ActualHeight);
+			}
+
+			return new Rectangle();
+		}
 	}
 }

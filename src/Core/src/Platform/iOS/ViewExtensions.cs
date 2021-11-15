@@ -318,5 +318,43 @@ namespace Microsoft.Maui
 				view.Subviews[n].RemoveFromSuperview();
 			}
 		}
+
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view.GetNative(true);
+			if (nativeView == null)
+			{
+				return new Rectangle();
+			}
+
+			var uiWindow = nativeView.GetUIWindow();
+			if (uiWindow == null)
+				return new Rectangle();
+
+			nfloat X;
+			nfloat Y;
+			nfloat Width;
+			nfloat Height;
+
+			var convertPoint = nativeView.ConvertRectToView(nativeView.Bounds, uiWindow);
+
+			X = convertPoint.X;
+			Y = convertPoint.Y;
+			Width = convertPoint.Width;
+			Height = convertPoint.Height;
+
+			return new Rectangle(X, Y, Width, Height);
+		}
+
+		internal static UIKit.UIWindow? GetUIWindow(this UIKit.UIView view)
+		{
+			if (view is UIKit.UIWindow window)
+				return window;
+
+			if (view.Superview != null)
+				return GetUIWindow(view.Superview);
+
+			return null;
+		}
 	}
 }

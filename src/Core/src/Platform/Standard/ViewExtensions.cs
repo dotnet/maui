@@ -49,5 +49,7 @@ namespace Microsoft.Maui
 		public static void UpdateMinimumWidth(this object nativeView, IView view) { }
 
 		public static void UpdateMaximumWidth(this object nativeView, IView view) { }
+
+		internal static Graphics.Rectangle GetNativeViewBounds(this IView view) => view.Frame;
 	}
 }
