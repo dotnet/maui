@@ -410,7 +410,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			}
 			catch (IllegalStateException exc)
 			{
-				Application.Current? FindMauiContext()?.CreateLogger<MapRenderer>()?.LogWarning(exc, $"MoveToRegion exception");
+				Application.Current?.FindMauiContext()?.CreateLogger<MapRenderer>()?.LogWarning(exc, $"MoveToRegion exception");
 			}
 		}
 
@@ -1026,7 +1026,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 				}
 				else
 				{
-					Application.Current? FindMauiContext()?.CreateLogger<MapRenderer>()?.LogWarning("Missing location permissions for IsShowingUser");
+					Application.Current?.FindMauiContext()?.CreateLogger<MapRenderer>()?.LogWarning("Missing location permissions for IsShowingUser");
 					map.MyLocationEnabled = map.UiSettings.MyLocationButtonEnabled = false;
 				}
 			}

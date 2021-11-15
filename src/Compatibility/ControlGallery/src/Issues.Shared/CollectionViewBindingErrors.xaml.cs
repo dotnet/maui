@@ -93,7 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 	}
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
 	internal abstract class LogListener
 	{
 		public abstract void Warning(string category, string message);
