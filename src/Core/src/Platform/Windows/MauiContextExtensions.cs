@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel.Resources.Core;
 
 namespace Microsoft.Maui
@@ -31,6 +32,12 @@ namespace Microsoft.Maui
 			scopedContext.AddSpecific(nativeWindow);
 			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
 			return scopedContext;
+		}
+
+		public static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
+		{
+			return MauiWinUIApplication.Current.Services
+				?? throw new InvalidOperationException("Unable to find Application Services");
 		}
 	}
 }
