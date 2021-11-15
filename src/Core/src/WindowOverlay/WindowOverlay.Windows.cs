@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 			if (IsNativeViewInitialized)
 				return true;
 
-			if (Window == null)
+			if (Window?.Content == null)
 				return false;
 
 			_nativeWindow = Window.Content.GetNative(true);
