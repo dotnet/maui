@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 		public static void UpdateStrokeShape(this EvasObject nativeView, IBorder border)
 		{
 			var borderShape = border.Shape;
-			var canvas = nativeView as IWrapperViewCanvas;
+			var canvas = nativeView as BorderView;
 			if (canvas == null && borderShape == null)
 				return;
 
@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 		public static void UpdateStroke(this EvasObject nativeView, IBorder border)
 		{
 			var stroke = border.Stroke;
-			var canvas = nativeView as IWrapperViewCanvas;
+			var canvas = nativeView as BorderView;
 			if (canvas == null && stroke.IsNullOrEmpty())
 				return;
 
@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeThickness(this EvasObject nativeView, IBorder border)
 		{
-			var canvas = nativeView as IWrapperViewCanvas;
+			var canvas = nativeView as BorderView;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 			if (canvas == null && !hasBorder)
 				return;
@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 		public static void UpdateStrokeDashPattern(this EvasObject nativeView, IBorder border)
 		{
 			var strokeDashPattern = border.StrokeDashPattern;
-			var canvas = nativeView as IWrapperViewCanvas;
+			var canvas = nativeView as BorderView;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 			if (canvas == null && !hasBorder && (strokeDashPattern == null || strokeDashPattern.Length == 0))
 				return;
@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeDashOffset(this EvasObject nativeView, IBorder border)
 		{
-			var canvas = nativeView as IWrapperViewCanvas;
+			var canvas = nativeView as BorderView;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 			if (canvas == null && !hasBorder)
 				return;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeMiterLimit(this EvasObject nativeView, IBorder border)
 		{
-			var canvas = nativeView as IWrapperViewCanvas;
+			var canvas = nativeView as BorderView;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 			if (canvas == null && !hasBorder)
 				return;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeLineCap(this EvasObject nativeView, IBorder border)
 		{
-			var canvas = nativeView as IWrapperViewCanvas;
+			var canvas = nativeView as BorderView;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 			if (canvas == null && !hasBorder)
 				return;
@@ -78,7 +78,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeLineJoin(this EvasObject nativeView, IBorder border)
 		{
-			var canvas = nativeView as IWrapperViewCanvas;
+			var canvas = nativeView as BorderView;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 			if (canvas == null && !hasBorder)
 				return;
@@ -92,9 +92,9 @@ namespace Microsoft.Maui
 			if (!hasBorder)
 				return;
 
-			if (nativeView is IWrapperViewCanvas canvas)
+			if (nativeView is BorderView borderView)
 			{
-				canvas.Drawables.BorderDrawable = border.Background?.ToDrawable(border) ?? null;
+				borderView.ContainerView?.UpdateBorder(border);
 			}
 		}
 	}

@@ -20,6 +20,12 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+			NativeView.ContainerView = ContainerView;
+		}
+
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
@@ -46,12 +52,13 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
+			NativeView.Children.Clear();
 			_contentHandler?.Dispose();
 			_contentHandler = null;
 
 			if (VirtualView.PresentedContent is IView view)
 			{
-				NativeView.Content = view.ToNative(MauiContext);
+				NativeView.Children.Add(view.ToNative(MauiContext));
 				if (view.Handler is INativeViewHandler thandler)
 				{
 					thandler?.SetParent(this);

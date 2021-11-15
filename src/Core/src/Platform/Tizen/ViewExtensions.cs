@@ -44,6 +44,10 @@ namespace Microsoft.Maui
 			{
 				wrapperView.UpdateBackground(view.Background);
 			}
+			else if (nativeView is BorderView borderView)
+			{
+				borderView.ContainerView?.UpdateBackground(view.Background);
+			}
 			else
 			{
 				if (view.Background is SolidPaint paint)

@@ -10,29 +10,25 @@ using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui
 {
-	public partial class WrapperView : Canvas, IWrapperViewCanvas
+	public partial class WrapperView : Canvas
 	{
 		Lazy<SkiaGraphicsView> _drawableCanvas;
 		Lazy<SKClipperView> _clipperView;
 		EvasObject? _content;
-		IShape? _shape;
+		MauiDrawable _mauiDrawable;
 
 		public WrapperView(EvasObject parent) : base(parent)
 		{
+			_mauiDrawable = new MauiDrawable();
 			_drawableCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
 				var view = new SkiaGraphicsView(parent)
 				{
-					IgnorePixelScaling = true
+					IgnorePixelScaling = true,
+					Drawable = _mauiDrawable,
+					PassEvents = true
 				};
-				var _drawables = new WrapperViewDrawables();
-				_drawables.Invalidated += (s, e) =>
-				{
-					view.Invalidate();
-				};
-				view.Drawable = _drawables;
 				view.Show();
-				view.PassEvents = true;
 				Children.Add(view);
 				view.Lower();
 				Content?.RaiseTop();
@@ -41,8 +37,10 @@ namespace Microsoft.Maui
 
 			_clipperView = new Lazy<SKClipperView>(() =>
 			{
-				var clipper = new SKClipperView(parent);
-				clipper.PassEvents = true;
+				var clipper = new SKClipperView(parent)
+				{
+					PassEvents = true
+				};
 				clipper.DrawClip += OnClipPaint;
 				clipper.Show();
 				clipper.DeviceScalingFactor = (float)DeviceInfo.ScalingFactor;
@@ -57,41 +55,27 @@ namespace Microsoft.Maui
 
 		public void UpdateBackground(Paint? paint)
 		{
-			if (paint == null)
-			{
-				Drawables.BackgroundDrawable = null;
-			}
-			else
-			{
-				if (Drawables.BackgroundDrawable == null)
-				{
-					Drawables.BackgroundDrawable = paint.ToDrawable(GetBoundaryPath());
-				}
-				else
-				{
-					(Drawables.BackgroundDrawable as BackgroundDrawable)!.UpdatePaint(paint);
-				}
-			}
+			_mauiDrawable.Background = paint;
 			_drawableCanvas.Value.Invalidate();
 		}
 
 		public void UpdateShape(IShape? shape)
 		{
-			_shape = shape;
+			_mauiDrawable.Shape = shape;
 			UpdateDrawableCanvas(false);
+		}
+
+		public void UpdateBorder(IBorder border)
+		{
+			_mauiDrawable.Border = border;
+			UpdateShape(border.Shape);
 		}
 
 		partial void ShadowChanged()
 		{
-			if (Shadow == null)
+			_mauiDrawable.Shadow = Shadow;
+			if (Shadow != null)
 			{
-				Drawables.ShadowDrawable = null;
-				return;
-			}
-
-			if (Drawables.ShadowDrawable == null)
-			{
-				Drawables.ShadowDrawable = new ShadowDrawable(Shadow, GetBoundaryPath());
 				_drawableCanvas.Value.SetClip(null);
 			}
 			UpdateDrawableCanvas(true);
@@ -99,6 +83,7 @@ namespace Microsoft.Maui
 
 		partial void ClipChanged()
 		{
+			_mauiDrawable.Clip = Clip;
 			_clipperView.Value.Invalidate();
 			UpdateDrawableCanvas(false);
 		}
@@ -109,18 +94,8 @@ namespace Microsoft.Maui
 			{
 				UpdateDrawableCanvasGeometry();
 			}
-			UpdateDrawables();
+			_mauiDrawable.Bounds = GetBounds();
 			_drawableCanvas.Value.Invalidate();
-		}
-
-		void UpdateDrawables()
-		{
-			var path = GetBoundaryPath();
-			if (Shadow != null)
-			{
-				(Drawables.ShadowDrawable as ShadowDrawable)?.UpdateShadow(Shadow, path);
-			}
-			(Drawables.BackgroundDrawable as BackgroundDrawable)?.UpdatePath(path);
 		}
 
 		void OnClipPaint(object? sender, DrawClipEventArgs e)
@@ -133,16 +108,18 @@ namespace Microsoft.Maui
 			canvas.FillRectangle(e.DirtyRect);
 
 			canvas.FillColor = Colors.White;
-
 			var clipPath = Clip?.PathForBounds(new Graphics.Rectangle(0, 0, width, height)) ?? null;
 			if (clipPath == null)
 			{
 				canvas.FillRectangle(e.DirtyRect);
 				return;
 			}
-
 			canvas.FillPath(clipPath);
 			Content?.SetClipperCanvas(_clipperView.Value);
+			if (_drawableCanvas.IsValueCreated)
+			{
+				_drawableCanvas.Value.SetClipperCanvas(_clipperView.Value);
+			}
 		}
 
 		void OnLayout(object? sender, LayoutEventArgs e)
@@ -161,6 +138,10 @@ namespace Microsoft.Maui
 			{
 				_clipperView.Value.Geometry = Geometry;
 				_clipperView.Value.Invalidate();
+				if (Shadow != null)
+				{
+					_drawableCanvas.Value.SetClip(null);
+				}
 			}
 		}
 
@@ -186,8 +167,6 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public IWrapperViewDrawables Drawables => (IWrapperViewDrawables)_drawableCanvas.Value.Drawable;
-
 		void UpdateDrawableCanvasGeometry()
 		{
 			if (_drawableCanvas.IsValueCreated)
@@ -196,30 +175,17 @@ namespace Microsoft.Maui
 			}
 		}
 
-		PathF GetBoundaryPath()
+		Graphics.Rectangle GetBounds()
 		{
 			var drawableGeometry = _drawableCanvas.Value.Geometry;
-			var left = Geometry.Left - drawableGeometry.Left;
-			var top = Geometry.Top - drawableGeometry.Top;
-			var width = Geometry.Width;
-			var height = Geometry.Height;
-			var bounds = new Tizen.UIExtensions.Common.Rect(left, top, width, height).ToDP();
+			var borderThickness = _mauiDrawable.Border != null ? _mauiDrawable.Border.StrokeThickness : 0;
+			var padding = (borderThickness / 2).ToPixel();
+			var left = Geometry.Left - drawableGeometry.Left + padding;
+			var top = Geometry.Top - drawableGeometry.Top + padding;
+			var width = Geometry.Width - (padding * 2);
+			var height = Geometry.Height - (padding * 2);
 
-			if (Clip != null)
-			{
-				var clipPath = Clip.PathForBounds(bounds);
-				clipPath.Move((float)bounds.Left, (float)bounds.Top);
-				return clipPath;
-			}
-
-			if (_shape != null)
-			{
-				return _shape.PathForBounds(bounds);
-			}
-
-			var path = new PathF();
-			path.AppendRectangle(bounds);
-			return path;
+			return new Tizen.UIExtensions.Common.Rect(left, top, width, height).ToDP();
 		}
 	}
 
