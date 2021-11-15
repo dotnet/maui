@@ -13,6 +13,7 @@ using ObjCRuntime;
 using UIKit;
 using CGRect = CoreGraphics.CGRect;
 using IOPath = System.IO.Path;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #if DEBUG
 				if (oldvalue != null && newvalue != null)
 				{
-					Log.Warning("Renderer", $"{bindable} already has a renderer attached to it: {oldvalue}. Please figure out why and then fix it.");
+					Forms.MauiContext?.CreateLogger("Renderer")?.LogWarning($"{bindable} already has a renderer attached to it: {oldvalue}. Please figure out why and then fix it.");
 				}
 #endif
 				var view = bindable as VisualElement;

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -248,7 +249,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception exc)
 			{
-				Internals.Log.Warning(nameof(Application), $"Exception while saving Application Properties: {exc}");
+				Current?.Handler?.MauiContext?.CreateLogger<Application>()?.LogWarning(exc, "Exception while saving Application Properties");
 			}
 		}
 
@@ -357,7 +358,7 @@ namespace Microsoft.Maui.Controls
 			var deserializer = DependencyService.Get<IDeserializer>();
 			if (deserializer == null)
 			{
-				Log.Warning("Startup", "No IDeserialzier was found registered");
+				Current?.Handler?.MauiContext?.CreateLogger<Application>()?.LogWarning("No IDeserializer was found registered");
 				return new Dictionary<string, object>(4);
 			}
 

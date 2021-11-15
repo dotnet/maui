@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using ObjCRuntime;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -111,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception ex)
 			{
-				Controls.Internals.Log.Warning(nameof(ImageRenderer), "Error loading image: {0}", ex);
+				Forms.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Error loading image");
 			}
 		}
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -200,7 +201,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception e)
 			{
-				Log.Warning(nameof(NavigationPage), $"{e}");
+				Application.Current?.Handler?.MauiContext?.CreateLogger<NavigationPage>()?.LogWarning(e, null);
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 
