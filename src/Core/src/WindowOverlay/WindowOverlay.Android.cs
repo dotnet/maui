@@ -102,7 +102,8 @@ namespace Microsoft.Maui
 				return;
 
 			var point = new Point(e.Event.RawX, e.Event.RawY);
-			
+
+			e.Handled = false;
 			if (DisableUITouchEventPassthrough)
 				e.Handled = true;
 			else if (EnableDrawableTouchHandling)
