@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Represents a View used to accept multi-line input.
 	/// </summary>
-	public interface IEditor : IView, ITextInput, ITextStyle, ITextInputAutoSize
+	public interface IEditor : IView, ITextInput, ITextStyle, ITextAlignment, ITextInputAutoSize
 	{
 		/// <summary>
 		/// Occurs when the user finalizes the text in an editor with the return key.

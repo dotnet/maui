@@ -307,43 +307,6 @@ namespace Microsoft.Maui
 				entry.SelectionLength = newSelectionLength;
 			return end;
 		}
-		
-
-		public static void UpdateAutoSize(this AppCompatEditText editText, IEditor editor)
-		{
-			if (editor.IsReadOnly)
-			{
-				editText.InputType = InputTypes.Null;
-			if(editor.AutoSize == EditorAutoSizeOption.Disabled)
-			{				
-				editText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.None);
-			}
-			else
-			{
-				var keyboard = editor.Keyboard;
-				var nativeInputTypeToUpdate = keyboard.ToInputType();
-
-				if (keyboard is not CustomKeyboard)
-				{
-					// TODO: IsSpellCheckEnabled handling must be here.
-
-					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
-					{
-						if (!editor.IsTextPredictionEnabled)
-							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
-					}
-				}
-
-				if (keyboard == Keyboard.Numeric)
-				{
-					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
-				}
-
-				editText.InputType = nativeInputTypeToUpdate;
-				editText.SetAutoSizeTextTypeUniformWithConfiguration(editText.AutoSizeMinTextSize, editText.AutoSizeMaxTextSize, editText.AutoSizeStepGranularity, (int)ComplexUnitType.Sp);
-			}
-		}
-
 
 		internal static void SetInputType(this AppCompatEditText editText, ITextInput textInput)
 		{
