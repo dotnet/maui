@@ -35,13 +35,12 @@ namespace Microsoft.Maui
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-
-		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this EditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			editText.UpdateTextColor(entry.TextColor, defaultColor);
 		}
 
-		public static void UpdateTextColor(this AppCompatEditText editText, Graphics.Color textColor, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor, ColorStateList? defaultColor)
 		{
 			if (textColor == null)
 			{
@@ -128,7 +127,7 @@ namespace Microsoft.Maui
 				editText.SetFilters(currentFilters.ToArray());
 		}
 
-		public static void UpdatePlaceholder(this AppCompatEditText editText, IPlaceholder textInput)
+		public static void UpdatePlaceholder(this EditText editText, IPlaceholder textInput)
 		{
 			if (editText.Hint == textInput.Placeholder)
 				return;
@@ -136,12 +135,12 @@ namespace Microsoft.Maui
 			editText.Hint = textInput.Placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this EditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
 		{
 			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor, defaultColor);
 		}
 
-		public static void UpdatePlaceholderColor(this AppCompatEditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
 		{
 			if (placeholderTextColor == null)
 			{

@@ -15,6 +15,11 @@
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
+                <Label
+                    Text="TextColor"
+                    Style="{StaticResource Headline}" />
+                <Editor
+                    TextColor="Red"/>
                 <Editor
                     Text="I am disabled"
                     IsEnabled="False"/>

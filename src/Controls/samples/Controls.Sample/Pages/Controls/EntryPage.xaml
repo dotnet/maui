@@ -21,6 +21,11 @@
                 <Entry 
                     IsEnabled="False"/>
                 <Label
+                    Text="TextColor"
+                    Style="{StaticResource Headline}" />
+                <Entry
+                    TextColor="Red"/>
+                <Label
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
                 <Entry 
