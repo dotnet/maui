@@ -116,12 +116,7 @@ namespace Microsoft.Maui.Controls
 			if (overlay is IVisualDiagnosticsOverlay)
 				return false;
 
-			// Remove the overlay. If it's gone,
-			// dispose it to remove it fully.
-			var result = _overlays.Remove(overlay);
-			if (result)
-				overlay.Dispose();
-			return result;
+			return _overlays.Remove(overlay);
 		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
