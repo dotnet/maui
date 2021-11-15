@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Core;
 
@@ -15,6 +18,7 @@ namespace Microsoft.Maui
 		private bool disableUITouchEventPassthrough;
 		private Frame? _frame;
 		private RootPanel? _rootPanel;
+		private FrameworkElement? _nativeWindow;
 
 		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough
@@ -35,7 +39,9 @@ namespace Microsoft.Maui
 			if (this.Window == null)
 				return false;
 
-			var nativeWindow = this.Window.Content.GetNative(true);
+			_nativeWindow = this.Window.Content.GetNative(true);
+			if (_nativeWindow == null)
+				return false;
 			var handler = this.Window.Handler as WindowHandler;
 			if (handler == null || handler._rootPanel == null)
 				return false;
@@ -43,21 +49,24 @@ namespace Microsoft.Maui
 			this._rootPanel = handler._rootPanel;
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
-			if (nativeWindow is Frame frame)
+			if (_nativeWindow is Frame frame)
 			{
 				_frame = frame;
 				_frame.Navigating += Frame_Navigating;
 			}
 
 			this._graphicsView = new W2DGraphicsView() { Drawable = this };
-			this._graphicsView.Tapped += GraphicsView_Tapped;
+			if (this._graphicsView == null)
+				return false;
+
+			_nativeWindow.Tapped += GraphicsView_Tapped;
+
 			this._graphicsView.SetValue(Canvas.ZIndexProperty, 99);
 			this._graphicsView.IsHitTestVisible = false;
 			handler._rootPanel.Children.Add(this._graphicsView);
 			this.IsNativeViewInitialized = true;
 			return this.IsNativeViewInitialized;
 		}
-
 
 		/// <inheritdoc/>
 		public void Invalidate()
@@ -74,7 +83,8 @@ namespace Microsoft.Maui
 				_frame.Navigating -= Frame_Navigating;
 			if (this._rootPanel != null)
 				this._rootPanel.Children.Remove(this._graphicsView);
-
+			if (this._nativeWindow != null)
+				this._nativeWindow.Tapped -= GraphicsView_Tapped;
 			this._graphicsView = null;
 			this.IsNativeViewInitialized = false;
 		}
