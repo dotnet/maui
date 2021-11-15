@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Platform
 
 		public WrapperView(EvasObject parent) : base(parent)
 		{
+			_mauiDrawable = new MauiDrawable();
 			_drawableCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
 				var view = new SkiaGraphicsView(parent)
