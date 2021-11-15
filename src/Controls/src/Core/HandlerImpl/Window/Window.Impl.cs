@@ -116,7 +116,11 @@ namespace Microsoft.Maui.Controls
 			if (overlay is IVisualDiagnosticsOverlay)
 				return false;
 
-			return _overlays.Remove(overlay);
+			var result = _overlays.Remove(overlay);
+			if (result)
+				overlay.Dispose();
+
+			return result;
 		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
