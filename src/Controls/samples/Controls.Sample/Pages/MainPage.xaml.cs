@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (overlay != null)
 			{
-				var result = ((IWindow)this.Parent.Parent).RemoveOverlay(overlay);
+				var result = this.GetParentWindow().RemoveOverlay(overlay);
 				if (result)
 					overlay = null;
 			}
