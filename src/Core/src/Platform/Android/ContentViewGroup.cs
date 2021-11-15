@@ -30,11 +30,6 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public override void Invalidate()
-		{
-			base.Invalidate();
-		}
-
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Context == null)
