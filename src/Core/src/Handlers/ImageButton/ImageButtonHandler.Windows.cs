@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Handlers
 		protected override Button CreateNativeView() =>
 			new Button
 			{
+				VerticalAlignment = VerticalAlignment.Stretch,
+				HorizontalAlignment = HorizontalAlignment.Stretch,
 				Content = new Image
 				{
 					VerticalAlignment = VerticalAlignment.Center,
