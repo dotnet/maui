@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				var entry = new Entry()
 				{
-					HorizontalOptions = LayoutOptions.FillAndExpand,
+					HorizontalOptions = LayoutOptions.Fill,
 					VerticalOptions = LayoutOptions.Center,
 					FontSize = -1,
 				};

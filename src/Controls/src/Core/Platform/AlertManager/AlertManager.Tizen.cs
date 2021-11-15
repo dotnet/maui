@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var entry = new Entry
 			{
 				MinimumWidthRequest = 200,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				BackgroundColor = GColor.FromRgb(250, 250, 250),
 				TextColor = GColor.FromRgb(0, 0, 0),
 				Keyboard = args.Keyboard,
@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls.Platform
 				LineBreakMode = LineBreakMode.CharacterWrap,
 				TextColor = Application.AccentColor,
 				Text = args.Message,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				HorizontalTextAlignment = TextAlignment.Center,
 				FontSize = Device.GetNamedSize(NamedSize.Subtitle, typeof(Label)),
 			});

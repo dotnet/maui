@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var entry = new Entry
 			{
 				MinimumWidthRequest = 200,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				BackgroundColor = Color.FromRgb(250, 250, 250),
 				TextColor = Color.FromRgb(0, 0, 0),
 				Keyboard = args.Keyboard,
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 						LineBreakMode = LineBreakMode.CharacterWrap,
 						TextColor = DeviceInfo.Idiom == TargetIdiom.Watch ? Color.FromRgb(255,255,255) : Application.AccentColor,
 						Text = args.Message,
-						HorizontalOptions = LayoutOptions.FillAndExpand,
+						HorizontalOptions = LayoutOptions.Fill,
 						HorizontalTextAlignment = TextAlignment.Center,
 						FontSize = Device.GetNamedSize(NamedSize.Subtitle, typeof(Label)),
 					},

@@ -292,12 +292,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				if (IsHorizontalSwipe)
 				{
 					itemView.HorizontalOptions = LayoutOptions.Start;
-					itemView.VerticalOptions = LayoutOptions.FillAndExpand;
+					itemView.VerticalOptions = LayoutOptions.Fill;
 				}
 				else
 				{
 					itemView.VerticalOptions = LayoutOptions.Start;
-					itemView.HorizontalOptions = LayoutOptions.FillAndExpand;
+					itemView.HorizontalOptions = LayoutOptions.Fill;
 				}
 				itemsLayout.Children.Add(itemView);
 			}
@@ -348,8 +348,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			return new XStackLayout
 			{
-				VerticalOptions = LayoutOptions.FillAndExpand,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.Fill,
+				HorizontalOptions = LayoutOptions.Fill,
 				Children =
 				{
 					item.Content
@@ -372,21 +372,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			if (horizontal)
 			{
-				image.VerticalOptions = LayoutOptions.FillAndExpand;
+				image.VerticalOptions = LayoutOptions.Fill;
 				image.HorizontalOptions = LayoutOptions.Start;
 
-				label.VerticalOptions = LayoutOptions.CenterAndExpand;
-				label.HorizontalOptions = LayoutOptions.CenterAndExpand;
+				label.VerticalOptions = LayoutOptions.Center;
+				label.HorizontalOptions = LayoutOptions.Center;
 				label.VerticalTextAlignment = TextAlignment.Center;
 				label.FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label));
 			}
 			else
 			{
-				image.VerticalOptions = LayoutOptions.FillAndExpand;
-				image.HorizontalOptions = LayoutOptions.FillAndExpand;
+				image.VerticalOptions = LayoutOptions.Fill;
+				image.HorizontalOptions = LayoutOptions.Fill;
 
-				label.VerticalOptions = LayoutOptions.EndAndExpand;
-				label.HorizontalOptions = LayoutOptions.CenterAndExpand;
+				label.VerticalOptions = LayoutOptions.End;
+				label.HorizontalOptions = LayoutOptions.Center;
 				label.VerticalTextAlignment = TextAlignment.End;
 			}
 
@@ -394,7 +394,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Padding = 5,
 				BackgroundColor = item.BackgroundColor,
-				VerticalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.Fill,
 				Orientation = horizontal ? StackOrientation.Horizontal : StackOrientation.Vertical,
 				Children =
 				{

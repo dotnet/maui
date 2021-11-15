@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public RefreshLayout()
 		{
 			HeightRequest = 200;
-			HorizontalOptions = LayoutOptions.FillAndExpand;
+			HorizontalOptions = LayoutOptions.Fill;
 
 			RefreshIcon = new RefreshIcon
 			{

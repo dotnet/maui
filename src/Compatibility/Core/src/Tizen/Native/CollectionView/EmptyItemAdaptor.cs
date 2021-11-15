@@ -84,14 +84,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		{
 			public EmptyView()
 			{
-				HorizontalOptions = LayoutOptions.FillAndExpand;
-				VerticalOptions = LayoutOptions.FillAndExpand;
+				HorizontalOptions = LayoutOptions.Fill;
+				VerticalOptions = LayoutOptions.Fill;
 				Children.Add(
 					new XLabel
 					{
 						Text = "No items found",
-						VerticalOptions = LayoutOptions.CenterAndExpand,
-						HorizontalOptions = LayoutOptions.CenterAndExpand,
+						VerticalOptions = LayoutOptions.Center,
+						HorizontalOptions = LayoutOptions.Center,
 						HorizontalTextAlignment = Maui.TextAlignment.Center,
 						VerticalTextAlignment = Maui.TextAlignment.Center,
 					}

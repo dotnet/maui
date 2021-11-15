@@ -1,15 +1,9 @@
 using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
-using System.Threading.Tasks;
 using ElmSharp;
-using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
-using TAppControl = Tizen.Applications.AppControl;
 using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -53,18 +47,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			timer = new Timer(onTimeout, null, Timeout.Infinite, Timeout.Infinite);
 			// set interval separarately to prevent calling onTimeout before `timer' is assigned
 			timer.Change(interval, interval);
-		}
-
-		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			using (var client = new HttpClient())
-			using (HttpResponseMessage response = await client.GetAsync(uri, cancellationToken))
-				return await response.Content.ReadAsStreamAsync();
-		}
-
-		public IIsolatedStorageFile GetUserStoreForApplication()
-		{
-			return new TizenIsolatedStorageFile();
 		}
 
 		public void QuitApplication()
