@@ -89,6 +89,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
 		}
 
+		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(editor);
+		}
+
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) 
 		{
 			handler.NativeView?.UpdateKeyboard(editor); 

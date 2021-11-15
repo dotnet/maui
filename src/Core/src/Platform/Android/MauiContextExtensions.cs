@@ -66,5 +66,13 @@ namespace Microsoft.Maui
 
 			return scopedContext;
 		}
+
+		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
+		{
+			if (mauiContext.Context?.ApplicationContext is MauiApplication ma)
+				return ma.Services;
+
+			throw new InvalidOperationException("Unable to find Application Services");
+		}
 	}
 }

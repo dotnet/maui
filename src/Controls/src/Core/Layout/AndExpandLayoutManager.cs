@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		readonly StackLayout _stackLayout;
 		GridLayoutManager _manager;
 
-		public AndExpandLayoutManager(StackLayout stackLayout) 
+		public AndExpandLayoutManager(StackLayout stackLayout)
 		{
 			_stackLayout = stackLayout;
 		}

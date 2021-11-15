@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel.Resources.Core;
 
 namespace Microsoft.Maui
@@ -24,5 +25,11 @@ namespace Microsoft.Maui
 
 		public static UI.Xaml.Window? GetOptionalNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<UI.Xaml.Window>();
+
+		public static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
+		{
+			return MauiWinUIApplication.Current.Services
+				?? throw new InvalidOperationException("Unable to find Application Services");
+		}
 	}
 }

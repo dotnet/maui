@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Pages
 {
-	public partial class AndExpandPage 
+	public partial class AndExpandPage
 	{
 		int _counter = 0;
 
@@ -8,7 +8,8 @@
 		{
 			InitializeComponent();
 
-			Toggle.Clicked += (sender, args) => {
+			Toggle.Clicked += (sender, args) =>
+			{
 
 #pragma warning disable CS0618 // Type or member is obsolete
 				switch (_counter % 5)
