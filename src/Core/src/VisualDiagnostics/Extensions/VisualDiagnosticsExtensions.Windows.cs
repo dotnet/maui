@@ -15,32 +15,6 @@ namespace Microsoft.Maui
 {
 	public static class VisualDiagnosticsWindowsExtensions
 	{
-		internal static ViewTransform? GetViewTransform(this IView view)
-		{
-			var nativeView = view.GetNative(true);
-			if (nativeView == null)
-				return null;
-			return GetViewTransform(nativeView);
-		}
-
-		internal static ViewTransform? GetViewTransform(FrameworkElement element)
-		{
-			var root = element.XamlRoot;
-			var offset = element.TransformToVisual(root.Content) as MatrixTransform;
-			if (offset == null)
-				return null;
-			Matrix matrix = offset.Matrix;
-			return new ViewTransform()
-			{
-				M11 = matrix.M11,
-				M12 = matrix.M12,
-				M21 = matrix.M21,
-				M22 = matrix.M22,
-				OffsetX = matrix.OffsetX,
-				OffsetY = matrix.OffsetY,
-			};
-		}
-
 		internal static async Task<byte[]?> RenderAsPng(this IView view)
 		{
 			var nativeView = view.GetNative(true);

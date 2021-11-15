@@ -65,27 +65,6 @@ namespace Microsoft.Maui
 			}
 			return transform;
 		}
-
-		internal static ViewTransform ToViewTransform(this CATransform3D transform) =>
-			new ViewTransform
-			{
-				M11 = transform.m11,
-				M12 = transform.m12,
-				M13 = transform.m13,
-				M14 = transform.m14,
-				M21 = transform.m21,
-				M22 = transform.m22,
-				M23 = transform.m23,
-				M24 = transform.m24,
-				M31 = transform.m31,
-				M32 = transform.m32,
-				M33 = transform.m33,
-				M34 = transform.m34,
-				OffsetX = transform.m41,
-				OffsetY = transform.m42,
-				OffsetZ = transform.m43,
-				M44 = transform.m44
-			};
 	}
 
 	public static class VisualDiagnosticsiOSExtensions
@@ -103,30 +82,6 @@ namespace Microsoft.Maui
 				return Task.FromResult<byte[]?>(null);
 			var skipChildren = !(view is IView && !(view is ILayout));
 			return Task.FromResult(RenderAsPng(nativeView.Window, nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren));
-		}
-
-		internal static ViewTransform? GetViewTransform(this IView view)
-		{
-			var nativeView = view.GetNative(true);
-			if (nativeView == null)
-				return null;
-			return GetViewTransform(nativeView.Layer);
-		}
-
-		internal static ViewTransform? GetViewTransform(CALayer layer)
-		{
-			if (layer == null)
-				return null;
-
-			var superLayer = layer.SuperLayer;
-			if (layer.Transform.IsIdentity && (superLayer == null || superLayer.Transform.IsIdentity))
-				return null;
-
-			var superTransform = layer.SuperLayer?.GetChildTransform() ?? CATransform3D.Identity;
-
-			return layer.GetLocalTransform()
-				.Concat(superTransform)
-					.ToViewTransform();
 		}
 
 		static byte[]? RenderAsPng(UIWindow window, object obj, nfloat scale, bool skipChildren = true)

@@ -11,59 +11,6 @@ namespace Microsoft.Maui
 {
 	public static class VisualDiagnosticsAndroidExtensions
 	{
-		internal static ViewTransform? GetViewTransform(this IView view)
-		{
-			var nativeView = view.GetNative(true);
-			if (nativeView == null)
-				return null;
-			return GetViewTransform(nativeView);
-		}
-
-		internal static ViewTransform? GetViewTransform(View view)
-		{
-			if (view == null || view.Matrix == null || view.Matrix.IsIdentity)
-				return null;
-
-			var m = new float[16];
-			var v = new float[16];
-			var r = new float[16];
-
-			GL.Matrix.SetIdentityM(r, 0);
-			GL.Matrix.SetIdentityM(v, 0);
-			GL.Matrix.SetIdentityM(m, 0);
-
-			GL.Matrix.TranslateM(v, 0, view.Left, view.Top, 0);
-			GL.Matrix.TranslateM(v, 0, view.PivotX, view.PivotY, 0);
-			GL.Matrix.TranslateM(v, 0, view.TranslationX, view.TranslationY, 0);
-			GL.Matrix.ScaleM(v, 0, view.ScaleX, view.ScaleY, 1);
-			GL.Matrix.RotateM(v, 0, view.RotationX, 1, 0, 0);
-			GL.Matrix.RotateM(v, 0, view.RotationY, 0, 1, 0);
-			GL.Matrix.RotateM(m, 0, view.Rotation, 0, 0, 1);
-
-			GL.Matrix.MultiplyMM(r, 0, v, 0, m, 0);
-			GL.Matrix.TranslateM(m, 0, r, 0, -view.PivotX, -view.PivotY, 0);
-
-			return new ViewTransform
-			{
-				M11 = m[0],
-				M12 = m[1],
-				M13 = m[2],
-				M14 = m[3],
-				M21 = m[4],
-				M22 = m[5],
-				M23 = m[6],
-				M24 = m[7],
-				M31 = m[8],
-				M32 = m[9],
-				M33 = m[10],
-				M34 = m[11],
-				OffsetX = m[12],
-				OffsetY = m[13],
-				OffsetZ = m[14],
-				M44 = m[15]
-			};
-		}
-
 		internal static Task<byte[]?> RenderAsPng(this IView view)
 		{
 			var nativeView = view.GetNative(true);

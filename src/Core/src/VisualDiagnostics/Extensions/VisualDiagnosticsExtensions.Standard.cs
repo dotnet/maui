@@ -11,10 +11,5 @@ namespace Microsoft.Maui
 		{
 			return Task.FromResult<byte[]?>(null);
 		}
-
-		internal static ViewTransform? GetViewTransform(this IView view)
-		{
-			return null;
-		}
 	}
 }
