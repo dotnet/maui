@@ -87,7 +87,7 @@ namespace Microsoft.Maui
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		IReadOnlyDictionary<IScrollView, Android.Views.View> ScrollViews ScrollViews { get; }
+		IReadOnlyDictionary<IScrollView, Android.Views.View> ScrollViews { get; }
 #elif IOS
 		/// <summary>
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
