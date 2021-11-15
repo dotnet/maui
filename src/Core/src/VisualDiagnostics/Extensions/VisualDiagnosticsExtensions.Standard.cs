@@ -7,7 +7,6 @@ namespace Microsoft.Maui
 {
 	public static class VisualDiagnosticsExtensions
 	{
-#if NET6 || NETSTANDARD
 		internal static Task<byte[]?> RenderAsPng(this IView view)
 		{
 			return Task.FromResult<byte[]?>(null);
@@ -17,6 +16,5 @@ namespace Microsoft.Maui
 		{
 			return null;
 		}
-#endif
 	}
 }

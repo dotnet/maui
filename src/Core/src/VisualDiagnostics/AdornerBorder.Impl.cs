@@ -16,11 +16,11 @@ namespace Microsoft.Maui
 		/// Initializes a new instance of the <see cref="AdornerBorder"/> class.
 		/// </summary>
 		/// <param name="view">An <see cref="IView"/> to create the Adorner Border around.</param>
-		/// <param name="dpi">Override DPI setting. Default: 1</param>
+		/// <param name="density">Override density setting. Default: 1</param>
 		/// <param name="offset">Offset point used for positioning drawable object. Default: null</param>
 		/// <param name="fillColor">Canvas Fill Color.</param>
 		/// <param name="strokeColor">Canvas Stroke Color.</param>
-		public AdornerBorder(IView view, float dpi = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
+		public AdornerBorder(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
 		{
 			if (fillColor != null)
 				FillColor = fillColor;
@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 				Offset = offset.Value;
 
 			VisualView = view;
-			DPI = dpi;
+			Density = density;
 		}
 
 		/// <inheritdoc/>
@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public float DPI { get; }
+		public float Density { get; }
 
 		/// <inheritdoc/>
 		public IView VisualView { get; }

@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public float DPI { get; internal set; } = 1;
+		public float Density { get; internal set; } = 1;
 
 #pragma warning disable CS0067 // The event is never used
 		/// <inheritdoc/>

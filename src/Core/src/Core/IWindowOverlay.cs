@@ -36,10 +36,10 @@ namespace Microsoft.Maui
 		IWindow Window { get; }
 
 		/// <summary>
-		/// Gets the DPI for the layer.
-		/// Can be used to pass through DPI settings to underlying drawables.
+		/// Gets the Density for the layer.
+		/// Can be used to pass through Density settings to underlying drawables.
 		/// </summary>
-		public float DPI { get; }
+		public float Density { get; }
 
 		/// <summary>
 		/// Gets the current collection of drawable elements on the overlay.

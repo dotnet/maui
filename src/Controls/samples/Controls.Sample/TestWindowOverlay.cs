@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample
 
 		public bool IsPointInElement(Point point)
 		{
-			return Circle.ContainsPoint(_circle, new Point(point.X / this.overlay.DPI, point.Y / this.overlay.DPI));
+			return Circle.ContainsPoint(_circle, new Point(point.X / this.overlay.Density, point.Y / this.overlay.Density));
 		}
 
 		struct Circle

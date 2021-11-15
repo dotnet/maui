@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 		/// Gets the DPI for the Adorner Border.
 		/// Used to override the default DPI behavior for the containing border. 
 		/// </summary>
-		float DPI { get; }
+		float Density { get; }
 
 		/// <summary>
 		/// Gets the underlying <see cref="IView"/> that makes up the border.

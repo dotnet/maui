@@ -58,7 +58,7 @@ namespace Microsoft.Maui
 				_nativeActivity.Window.DecorView.LayoutChange += DecorView_LayoutChange;
 
 			if (_nativeActivity != null && _nativeActivity.Resources != null && _nativeActivity.Resources.DisplayMetrics != null)
-				DPI = _nativeActivity.Resources.DisplayMetrics.Density;
+				Density = _nativeActivity.Resources.DisplayMetrics.Density;
 
 			_graphicsView = new NativeGraphicsView(_nativeLayer.Context, this);
 			if (_graphicsView == null)

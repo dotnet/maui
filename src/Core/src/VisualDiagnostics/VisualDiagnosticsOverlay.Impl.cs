@@ -71,7 +71,7 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			var result = _windowElements.Add(new RectangleGridAdornerBorder(view, DPI, Offset));
+			var result = _windowElements.Add(new RectangleGridAdornerBorder(view, Density, Offset));
 			AddScrollableElementHandlers();
 
 			if (AutoScrollToElement || scrollToView)

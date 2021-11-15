@@ -14,12 +14,12 @@ namespace Microsoft.Maui
 		/// Initializes a new instance of the <see cref="RectangleAdornerBorder"/> class.
 		/// </summary>
 		/// <param name="view">An <see cref="IView"/> to create the Adorner Border around.</param>
-		/// <param name="dpi">Override DPI setting. Default: 1</param>
+		/// <param name="density">Override density setting. Default: 1</param>
 		/// <param name="offset">Offset point used for positioning drawable object. Default: null</param>
 		/// <param name="fillColor">Canvas Fill Color.</param>
 		/// <param name="strokeColor">Canvas Stroke Color.</param>
-		public RectangleAdornerBorder(IView view, float dpi = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
-			: base(view, dpi, offset, fillColor, strokeColor)
+		public RectangleAdornerBorder(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
+			: base(view, density, offset, fillColor, strokeColor)
 		{
 		}
 
@@ -35,10 +35,10 @@ namespace Microsoft.Maui
 			base.Draw(canvas, dirtyRect);
 
 			var rect = VisualView.GetNativeViewBounds();
-			var x = (rect.X / DPI) + (Offset.X);
-			var y = (rect.Y / DPI) + (Offset.Y);
-			var width = (rect.Width / DPI);
-			var height = (rect.Height / DPI);
+			var x = (rect.X / Density) + (Offset.X);
+			var y = (rect.Y / Density) + (Offset.Y);
+			var width = (rect.Width / Density);
+			var height = (rect.Height / Density);
 			DrawnRectangle = new Rectangle(x, y, width, height);
 			canvas.FillRectangle(DrawnRectangle);
 		}
