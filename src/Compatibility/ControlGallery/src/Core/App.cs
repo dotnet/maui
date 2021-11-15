@@ -237,8 +237,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			}
 			catch (Exception ex)
 			{
-				Log.Warning("UITests", $"Error attempting to navigate directly to {test}: {ex}");
-
+				Application.Current.FindMauiContext()?.CreateLogger("UITests").LogWarning(ex, $"Error attempting to navigate directly to {test}");
 			}
 
 			return false;
