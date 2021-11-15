@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 			var scrollBars = GetScrollViews();
 			foreach (var scrollBar in scrollBars)
 			{
-				if (!ScrollViews.Any(x => x.Key == scrollBar))
+				if (!ScrollViews.ContainsKey(scrollBar))
 				{
 					AddScrollableElementHandler(scrollBar);
 				}
@@ -105,7 +105,7 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			var adorners = _windowElements.Where(n => n is IAdornerBorder).Cast<IAdornerBorder>().Where(n => n.VisualView == view);
+			var adorners = _windowElements.OfType<IAdornerBorder>().Where(n => n.VisualView == view);
 			var results = _windowElements.RemoveWhere(n => adorners.Contains(n));
 			Invalidate();
 			return results > 0;
@@ -156,7 +156,6 @@ namespace Microsoft.Maui
 			}
 
 			base.Dispose(disposing);
-
 		}
 
 		/// <summary>

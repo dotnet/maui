@@ -33,9 +33,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach (var scroll in this._scrollViews)
+			foreach (var scroll in this._scrollViews.Values)
 			{
-				scroll.Value.Dispose();
+				scroll.Dispose();
 			}
 
 			this._scrollViews.Clear();

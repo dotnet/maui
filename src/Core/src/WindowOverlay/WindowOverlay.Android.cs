@@ -49,7 +49,7 @@ namespace Microsoft.Maui
 			if (_nativeLayer == null || _nativeLayer.Context == null)
 				return false;
 
-			if (_nativeActivity == null || _nativeActivity.WindowManager == null || _nativeActivity.WindowManager.DefaultDisplay == null)
+			if (_nativeActivity?.WindowManager?.DefaultDisplay == null)
 				return false;
 
 			var measuredHeight = _nativeLayer.MeasuredHeight;
@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 			if (_nativeActivity.Window != null)
 				_nativeActivity.Window.DecorView.LayoutChange += DecorView_LayoutChange;
 
-			if (_nativeActivity != null && _nativeActivity.Resources != null && _nativeActivity.Resources.DisplayMetrics != null)
+			if (_nativeActivity?.Resources?.DisplayMetrics != null)
 				Density = _nativeActivity.Resources.DisplayMetrics.Density;
 
 			_graphicsView = new NativeGraphicsView(_nativeLayer.Context, this);

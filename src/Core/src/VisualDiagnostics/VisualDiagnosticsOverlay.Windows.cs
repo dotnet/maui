@@ -34,9 +34,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach (var scrollBar in this.ScrollViews)
+			foreach (var scrollBar in this.ScrollViews.Values)
 			{
-				scrollBar.Value.ViewChanging -= ViewerViewChanging;
+				scrollBar.ViewChanging -= ViewerViewChanging;
 			}
 
 			this._scrollViews.Clear();

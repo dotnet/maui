@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null)
 			{
-				nativeScroll.ScrollChange += ScrollScrollChange;
+				nativeScroll.ScrollChange += ScrollChange;
 				_scrollViews.Add(scrollBar, nativeScroll);
 			}
 		}
@@ -32,10 +32,10 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach (var scrollBar in ScrollViews)
+			foreach (var scrollBar in ScrollViews.Values)
 			{
-				if (!scrollBar.Value.IsDisposed())
-					scrollBar.Value.ScrollChange -= ScrollScrollChange;
+				if (!scrollBar.IsDisposed())
+					scrollBar.ScrollChange -= ScrollChange;
 			}
 
 			_scrollViews.Clear();
@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 				Offset = GenerateAdornerOffset(_nativeActivity, _graphicsView);
 		}
 
-		private void ScrollScrollChange(object? sender, View.ScrollChangeEventArgs e)
+		private void ScrollChange(object? sender, View.ScrollChangeEventArgs e)
 		{
 			Invalidate();
 		}

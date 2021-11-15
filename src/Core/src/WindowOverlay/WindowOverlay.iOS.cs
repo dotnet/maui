@@ -36,12 +36,11 @@ namespace Microsoft.Maui
 				return false;
 
 			var nativeLayer = Window.GetNative(true);
-			if (nativeLayer == null || nativeLayer.Window == null)
+			if (nativeLayer?.Window == null)
 				return false;
 
 			var nativeWindow = nativeLayer.Window;
-
-			if (nativeWindow.RootViewController == null || nativeWindow.RootViewController.View == null)
+			if (nativeWindow?.RootViewController?.View == null)
 				return false;
 
 			// Create a passthrough view for holding the canvas and other diagnostics tools.
