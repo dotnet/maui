@@ -3,11 +3,11 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public class StackLayoutManager : ILayoutManager 
+	public class StackLayoutManager : ILayoutManager
 	{
 		readonly StackLayout _stackLayout;
 
-		public StackLayoutManager(StackLayout stackLayout) 
+		public StackLayoutManager(StackLayout stackLayout)
 		{
 			_stackLayout = stackLayout;
 		}
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		HorizontalStackLayoutManager _horizontalStackLayoutManager;
 		AndExpandLayoutManager _andExpandLayoutManager;
 
-		ILayoutManager SelectLayoutManager() 
+		ILayoutManager SelectLayoutManager()
 		{
 			if (UsesExpansion(_stackLayout))
 			{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (_stackLayout.Orientation == StackOrientation.Vertical)
-			{ 
+			{
 				return _verticalStackLayoutManager ??= new VerticalStackLayoutManager(_stackLayout);
 			}
 
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 			return SelectLayoutManager().Measure(widthConstraint, heightConstraint);
 		}
 
-		static bool UsesExpansion(StackLayout stackLayout) 
+		static bool UsesExpansion(StackLayout stackLayout)
 		{
 			var orientation = stackLayout.Orientation;
 
