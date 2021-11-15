@@ -406,7 +406,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				catch (Exception ex)
 				{
-					Application.Current?.Handler?.MauiContext?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set Control.SelectionLength from SelectionLength");
+					Application.Current?.FindMauiContext()?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set Control.SelectionLength from SelectionLength");
 				}
 				finally
 				{
@@ -441,7 +441,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				catch (Exception ex)
 				{
-					Application.Current?.Handler?.MauiContext?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set Control.SelectionStart from CursorPosition");
+					Application.Current?.FindMauiContext()?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set Control.SelectionStart from CursorPosition");
 				}
 				finally
 				{
@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set CursorPosition from renderer");
+				Application.Current?.FindMauiContext()?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set CursorPosition from renderer");
 			}
 			finally
 			{
@@ -478,7 +478,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set SelectionLength from renderer");
+				Application.Current?.FindMauiContext()?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set SelectionLength from renderer");
 			}
 			finally
 			{

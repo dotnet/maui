@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<BorderDrawable>()?.LogWarning(ex, "Unable to create circle image");
+				Application.Current?.FindMauiContext()?.CreateLogger<BorderDrawable>()?.LogWarning(ex, "Unable to create circle image");
 			}
 
 			finishDraw(canvas);

@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception exception)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<Platform>()?.LogWarning(exception, "UpdateToolbarItems failed after app resume");
+				Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(exception, "UpdateToolbarItems failed after app resume");
 			}
 		}
 

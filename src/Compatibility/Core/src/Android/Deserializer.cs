@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			catch (Exception e)
 			{
 				Debug.WriteLine("Could not deserialize properties: " + e.Message);
-				Application.Current?.Handler?.MauiContext?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while reading Application properties");
+				Application.Current?.FindMauiContext()?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while reading Application properties");
 			}
 
 			return null;
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			catch (Exception e)
 			{
 				Debug.WriteLine("Could not serialize properties: " + e.Message);
-				Application.Current?.Handler?.MauiContext?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while writing Application properties");
+				Application.Current?.FindMauiContext()?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while writing Application properties");
 				return;
 			}
 		}

@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateAnimations()
 		{
 
-			Application.Current?.Handler?.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning("Animations do not work with Legacy Renderers. Please remove the \"UseLegacyRenderers\" flag or change your renderer to inherit from the fast image renderer.");
+			Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning("Animations do not work with Legacy Renderers. Please remove the \"UseLegacyRenderers\" flag or change your renderer to inherit from the fast image renderer.");
 		}
 
 		void UpdateAspect()
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Error loading image");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Error loading image");
 			}
 			finally
 			{

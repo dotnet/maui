@@ -58,14 +58,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					if (!spellcheckEnabled)
 					{
-						Application.Current?.Handler?.MauiContext?.CreateLogger<Keyboard>()?.LogWarning("CapitalizeSentence only works when spell check is enabled");
+						Application.Current?.FindMauiContext()?.CreateLogger<Keyboard>()?.LogWarning("CapitalizeSentence only works when spell check is enabled");
 					}
 				}
 				else if (capitalizedWordsEnabled)
 				{
 					if (!spellcheckEnabled)
 					{
-						Application.Current?.Handler?.MauiContext?.CreateLogger<Keyboard>()?.LogWarning("CapitalizeWord only works when spell check is enabled");
+						Application.Current?.FindMauiContext()?.CreateLogger<Keyboard>()?.LogWarning("CapitalizeWord only works when spell check is enabled");
 					}
 
 					nameValue = InputScopeNameValue.NameOrPhoneNumber;
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				if (capitalizedCharacterEnabled)
 				{
-					Application.Current?.Handler?.MauiContext?.CreateLogger<Keyboard>()?.LogWarning("UWP does not support CapitalizeCharacter");
+					Application.Current?.FindMauiContext()?.CreateLogger<Keyboard>()?.LogWarning("UWP does not support CapitalizeCharacter");
 				}
 
 				name.NameValue = nameValue;

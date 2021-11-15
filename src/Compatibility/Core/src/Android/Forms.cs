@@ -720,7 +720,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				catch (Exception ex)
 				{
-					Application.Current?.Handler?.MauiContext?.CreateLogger<AndroidPlatformServices>()?
+					Application.Current?.FindMauiContext()?.CreateLogger<AndroidPlatformServices>()?
 						.LogWarning(ex, "Error retrieving text appearance");
 				}
 				return false;

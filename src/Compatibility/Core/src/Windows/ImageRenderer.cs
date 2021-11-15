@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
-			Application.Current?.Handler?.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning($"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
+			Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning($"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
 			((IImageController)Element)?.SetIsLoading(false);
 		}
 
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Error loading image");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Error loading image");
 			}
 			finally
 			{
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception exception)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning(exception, "ImageSource failed to update after app resume");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning(exception, "ImageSource failed to update after app resume");
 			}
 		}
 

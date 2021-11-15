@@ -116,11 +116,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (OperationCanceledException)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageSource>()?.LogWarning("Image load cancelled");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageSource>()?.LogWarning("Image load cancelled");
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageSource>()?.LogWarning(ex, "Image load failed");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageSource>()?.LogWarning(ex, "Image load failed");
 #if DEBUG
 				throw;
 #endif

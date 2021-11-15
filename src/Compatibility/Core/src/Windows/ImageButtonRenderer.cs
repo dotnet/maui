@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageButtonRenderer>()?.LogWarning(ex, $"Error loading image");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning(ex, $"Error loading image");
 			}
 			finally
 			{
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
-			Application.Current?.Handler?.MauiContext?.CreateLogger<ImageButtonRenderer>()?.LogWarning($"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
+			Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning($"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
 			Element?.SetIsLoading(false);
 		}
 

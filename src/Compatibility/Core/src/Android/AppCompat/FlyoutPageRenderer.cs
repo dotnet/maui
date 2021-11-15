@@ -425,7 +425,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (drawable != null)
 					this.SetBackground(drawable);
-			}).FireAndForget(e => Application.Current?.Handler?.MauiContext?.CreateLogger<FlyoutPageRenderer>()?
+			}).FireAndForget(e => Application.Current?.FindMauiContext()?.CreateLogger<FlyoutPageRenderer>()?
 						.LogWarning(e, "Error updating the background image"));
 		}
 

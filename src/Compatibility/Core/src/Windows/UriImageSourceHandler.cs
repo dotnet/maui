@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				catch (Exception ex) 
 				{
-					Application.Current?.Handler?.MauiContext?.CreateLogger<UriImageSourceHandler>()?.LogWarning(ex, $"Could not load {imageLoader.Uri}");
+					Application.Current?.FindMauiContext()?.CreateLogger<UriImageSourceHandler>()?.LogWarning(ex, $"Could not load {imageLoader.Uri}");
 
 					// According to https://msdn.microsoft.com/library/windows/apps/jj191522
 					// this can happen if the image data is bad or the app is close to its 

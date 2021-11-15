@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<BaseCellView>()?.LogWarning(ex, $"Error loading image");
+				Application.Current?.FindMauiContext()?.CreateLogger<BaseCellView>()?.LogWarning(ex, $"Error loading image");
 			}
 		}
 	}

@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<IImageRendererController>()?.LogWarning(ex, "Error loading image");
+				Application.Current?.FindMauiContext()?.CreateLogger<IImageRendererController>()?.LogWarning(ex, "Error loading image");
 			}
 			finally
 			{

@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (animation == null)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageLoaderSourceHandler>()?.LogWarning($"Image data was invalid: {streamSource}");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageLoaderSourceHandler>()?.LogWarning($"Image data was invalid: {streamSource}");
 			}
 
 			return animation;
@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (animation == null)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<FileImageSourceHandler>()?.LogWarning($"Could not retrieve image or image data was invalid: {imagesource}");
+				Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>()?.LogWarning($"Could not retrieve image or image data was invalid: {imagesource}");
 			}
 
 			return animation;
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					if (animation == null)
 					{
-						Application.Current?.Handler?.MauiContext?.CreateLogger<FileImageSourceHandler>()?.LogWarning("Could not retrieve image or image data was invalid: {0}", imagesource);
+						Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>()?.LogWarning("Could not retrieve image or image data was invalid: {0}", imagesource);
 					}
 				}
 			}

@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			_activity = thisActivity as Activity;
 			if (_activity == null)
-				Application.Current?.Handler?.MauiContext?.CreateLogger<WebViewRenderer>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
+				Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
 		}
 	}
 }

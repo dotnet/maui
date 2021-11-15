@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (bitmap == null)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageLoaderSourceHandler>()?.LogWarning("Image data was invalid: {0}", streamsource);
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageLoaderSourceHandler>()?.LogWarning("Image data was invalid: {0}", streamsource);
 			}
 
 			return bitmap;

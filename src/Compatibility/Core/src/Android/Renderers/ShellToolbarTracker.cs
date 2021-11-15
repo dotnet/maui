@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (Exception exc)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<FileImageSourceHandler>()?.LogWarning(exc, "Failed to Navigate Back");
+				Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>()?.LogWarning(exc, "Failed to Navigate Back");
 			}
 		}
 

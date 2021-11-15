@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				//WindowsRuntimeMarshal.AddEventHandler(add, remove, s_handlerinfo);
 			}
 			catch (Exception) {
-				Application.Current?.Handler?.MauiContext?.CreateLogger<NativeEventWrapper>()?.LogWarning("Can not attach NativeEventWrapper.");
+				Application.Current?.FindMauiContext()?.CreateLogger<NativeEventWrapper>()?.LogWarning("Can not attach NativeEventWrapper.");
 			}
 		}
 

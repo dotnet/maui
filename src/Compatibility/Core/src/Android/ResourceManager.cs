@@ -176,11 +176,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (OperationCanceledException)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning("Image load cancelled");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning("Image load cancelled");
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Image load failed");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Image load failed");
 			}
 
 			return null;
@@ -350,7 +350,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (id == 0)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger(nameof(ResourceManager)).LogWarning($"Could not load image named: {name}");
+				Application.Current?.FindMauiContext()?.CreateLogger(nameof(ResourceManager)).LogWarning($"Could not load image named: {name}");
 				return null;
 			}
 
