@@ -1,6 +1,4 @@
 ﻿using System;
-using ObjCRuntime;
-using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -32,6 +30,14 @@ namespace Microsoft.Maui.Handlers
 					invh.ViewController.Title = titled.Title;
 				}
 			}
+		}
+
+		public static void MapBackgroundImageSource(PageHandler handler, IPage page)
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.NativeView?.UpdateBackgroundImageSourceAsync(page, provider)			
+				.FireAndForget(handler);
 		}
 	}
 }

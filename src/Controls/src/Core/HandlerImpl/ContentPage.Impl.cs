@@ -4,8 +4,9 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
+	public partial class ContentPage : IPage, HotReload.IHotReloadableView
 	{
+		IImageSource IPage.BackgroundImageSource => BackgroundImageSource;
 		object IContentView.Content => Content;
 		IView IContentView.PresentedContent => Content;
 
