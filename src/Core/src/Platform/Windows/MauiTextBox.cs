@@ -441,13 +441,13 @@ namespace Microsoft.Maui
 
 			if (!SelectionLengthChangePending)
 			{
-				int elementSelectionLength = Math.Min(Text.Length - cursorPosition, ViewSelectionLength);
+				int elementSelectionLength = string.IsNullOrEmpty(Text) ? 0 : Math.Min(Text.Length - cursorPosition, ViewSelectionLength);
 				int controlSelectionLength = SelectionLength;
+
 				if (controlSelectionLength != elementSelectionLength)
 					SetSelectionLength(controlSelectionLength);
 			}
 		}
-
 
 		// Because the implementation of a password entry is based around inheriting from TextBox (via MauiTextBox), there
 		// are some inaccuracies in the behavior. OnKeyDown is what needs to be used for a workaround in this case because 
