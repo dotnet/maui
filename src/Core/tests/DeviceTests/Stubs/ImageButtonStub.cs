@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -20,6 +20,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			get => Source;
 			set => Source = value;
 		}
+
+		public Color BorderColor { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public int CornerRadius { get; set; }
 
 		public Thickness Padding { get; set; }
 

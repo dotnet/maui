@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Provides functionality to be able to customize a Button border.
 	/// </summary>
-	public interface IButtonBorder : IView
+	public interface IButtonBorder
 	{
 		/// <summary>
 		/// Gets a color that describes the border stroke color of the button.
