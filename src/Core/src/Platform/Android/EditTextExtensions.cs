@@ -5,7 +5,6 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using Android.Util;
 
 namespace Microsoft.Maui
 {
@@ -237,12 +236,14 @@ namespace Microsoft.Maui
 			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 
+		[PortHandler]
 		public static void UpdateCursorPosition(this AppCompatEditText editText, IEntry entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)
 				UpdateCursorSelection(editText, entry);
 		}
 
+		[PortHandler]
 		public static void UpdateSelectionLength(this AppCompatEditText editText, IEntry entry)
 		{
 			if ((editText.SelectionEnd - editText.SelectionStart) != entry.SelectionLength)

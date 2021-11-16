@@ -64,10 +64,8 @@ namespace Microsoft.Maui
 			textView.SetTextSize(fontSize.Unit, fontSize.Value);
 		}
 
-		public static void UpdateCharacterSpacing(this TextView textView, ITextStyle textStyle)
-		{
+		public static void UpdateCharacterSpacing(this TextView textView, ITextStyle textStyle) =>
 			textView.LetterSpacing = textStyle.CharacterSpacing.ToEm();
-		}
 
 		public static void UpdateHorizontalTextAlignment(this TextView textView, ITextAlignment text)
 		{

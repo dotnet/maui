@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls
 			(this as IEditorController).SendCompleted();
 		}
 
-
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
 			_previousBounds = bounds;
@@ -51,21 +50,6 @@ namespace Microsoft.Maui.Controls
 				return width == otherWidth ||
 					(width - otherWidth) < double.Epsilon;
 			}
-		}
-
-		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
-		{
-			return base.Measure(widthConstraint, heightConstraint, flags);
-		}
-
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			return base.OnMeasure(widthConstraint, heightConstraint);
-		}
-
-		protected override void InvalidateMeasureOverride()
-		{
-			base.InvalidateMeasureOverride();
 		}
 	}
 }

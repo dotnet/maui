@@ -59,12 +59,12 @@ namespace Microsoft.Maui
 		{
 			textBox.PlaceholderText = editor.Placeholder ?? string.Empty;
 		}
-		
+
 		public static void UpdatePlaceholder(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.PlaceholderText = entry.Placeholder ?? string.Empty;
 		}
-	
+
 		public static void UpdatePlaceholderColor(this MauiTextBox textBox, IPlaceholder placeholder, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush)
 		{
 			Color placeholderColor = placeholder.PlaceholderColor;

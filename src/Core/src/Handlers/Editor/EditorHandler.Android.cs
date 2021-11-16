@@ -1,10 +1,8 @@
-﻿using Android.Content;
-using Android.Content.Res;
+﻿using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
