@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Editor), true, BindingMode.Default);
 
-		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled);
+		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
+			=> ((Editor)bindable)?.InvalidateMeasure());
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
@@ -91,18 +92,23 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) { }
+		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
+			UpdateAutoSizeOption();
 
-		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) { }
+		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
+			UpdateAutoSizeOption();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) { }
-			
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
+			UpdateAutoSizeOption();
+
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (Editor)this);
 
-		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) { }
+		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			UpdateAutoSizeOption();
 
-		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) { }
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
+			UpdateAutoSizeOption();
 
 		public event EventHandler Completed;
 
@@ -120,15 +126,15 @@ namespace Microsoft.Maui.Controls
 		public void SendCompleted()
 			=> Completed?.Invoke(this, EventArgs.Empty);
 
-		//protected override void OnTextChanged(string oldValue, string newValue)
-		//{
-		//	base.OnTextChanged(oldValue, newValue);
+		protected override void OnTextChanged(string oldValue, string newValue)
+		{
+			base.OnTextChanged(oldValue, newValue);
 
-		//	if (AutoSize == EditorAutoSizeOption.TextChanges)
-		//	{
-		//		InvalidateMeasure();
-		//	}
-		//}
+			if (AutoSize == EditorAutoSizeOption.TextChanges)
+			{
+				InvalidateMeasure();
+			}
+		}
 
 		public void OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
