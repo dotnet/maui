@@ -36,10 +36,9 @@ namespace Microsoft.Maui
 				return false;
 
 			var nativeLayer = Window.GetNative(true);
-			if (nativeLayer?.Window == null)
+			if (nativeLayer is not UIWindow nativeWindow)
 				return false;
 
-			var nativeWindow = nativeLayer.Window;
 			if (nativeWindow?.RootViewController?.View == null)
 				return false;
 
