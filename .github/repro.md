@@ -54,3 +54,4 @@ At this point we would love for you to include the reproduction.
 - Never put any propriatary code in your reproduction. We are contractually not allowed to look at code that you do not own without bit legal hassles and NDA's.
 - Never submit binaries (mostly covered by putting it on a GitHub repo)
 - Do not reference external data-sources, this should rarely be needed.
+- Always refer to concrete version numbers. Avoid saying "this happens in the latest version". We don't know if you're using a preview version or maybe you _think_ you're using the latest version but actually aren't. To avoid any confusion, always refer to exact version numbers.
