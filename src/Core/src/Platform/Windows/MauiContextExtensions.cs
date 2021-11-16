@@ -26,14 +26,6 @@ namespace Microsoft.Maui
 		public static UI.Xaml.Window? GetOptionalNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<UI.Xaml.Window>();
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UI.Xaml.Window nativeWindow)
-		{
-			var scopedContext = new MauiContext(mauiContext);
-			scopedContext.AddSpecific(nativeWindow);
-			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
-			return scopedContext;
-		}
-
 		public static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
 			return MauiWinUIApplication.Current.Services
