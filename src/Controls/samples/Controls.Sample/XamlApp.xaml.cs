@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample
 
 		// Must not use MainPage for multi-window
 		protected override Window CreateWindow(IActivationState activationState)
-			=> new Window(new Pages.EditorPage());
+			=> new Window(Services.GetRequiredService<Page>());
 
 		public IServiceProvider Services { get; }
 	}
