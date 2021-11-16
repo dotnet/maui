@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Handlers
 	public partial class NavigationViewHandler :
 		ViewHandler<INavigationView, View>
 	{
-		StackNavigationManager? _navigationManager;
+		StackNavigationManager? _stackNavigationManager;
+		internal StackNavigationManager? StackNavigationManager => _stackNavigationManager;
 
 		protected override View CreateNativeView()
 		{
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		StackNavigationManager CreateNavigationManager() =>
-			_navigationManager ??= new StackNavigationManager();
+			_stackNavigationManager ??= new StackNavigationManager();
 
 		protected override void ConnectHandler(View nativeView)
 		{
@@ -45,12 +46,12 @@ namespace Microsoft.Maui.Handlers
 			var navigationLayout = rootContainer.NavigationLayout;
 
 			base.ConnectHandler(nativeView);
-			_navigationManager?.Connect(VirtualView, navigationLayout);
+			_stackNavigationManager?.Connect(VirtualView, navigationLayout);
 		}
 
 		private protected override void OnDisconnectHandler(View nativeView)
 		{
-			_navigationManager?.Disconnect();
+			_stackNavigationManager?.Disconnect();
 			base.OnDisconnectHandler(nativeView);
 		}
 
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
 			if (arg3 is NavigationRequest ea)
-				arg1._navigationManager?.RequestNavigation(ea);
+				arg1._stackNavigationManager?.RequestNavigation(ea);
 		}
 	}
 }

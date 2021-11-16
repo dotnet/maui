@@ -7,5 +7,6 @@ namespace Microsoft.Maui
 	{
 		public static IAnimationManager GetAnimationManager(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<IAnimationManager>();
+
 	}
 }

@@ -80,7 +80,9 @@ namespace Microsoft.Maui.Controls
 
 		public ListView()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			TemplatedItems.IsGroupingEnabledProperty = IsGroupingEnabledProperty;
 			TemplatedItems.GroupHeaderTemplateProperty = GroupHeaderTemplateProperty;

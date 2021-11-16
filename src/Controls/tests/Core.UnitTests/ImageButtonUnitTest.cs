@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new ImageButton();
 			var mockImageRenderer = new MockImageRenderer(image);
 			var loader = new StreamImageSource { Stream = GetStreamAsync };
-			
+
 			image.Source = loader;
 			Assert.IsTrue(image.IsLoading);
 

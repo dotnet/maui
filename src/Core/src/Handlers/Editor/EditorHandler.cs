@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.TextColor)] = MapTextColor,
 			[nameof(IEditor.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEditor.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEditor.Keyboard)] = MapKeyboard
 		};
 

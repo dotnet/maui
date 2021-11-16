@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Layouts
 			return value;
 		}
 
-		static double ResolveChildMeasureConstraint(double boundsValue, bool proportional, double constraint) 
+		static double ResolveChildMeasureConstraint(double boundsValue, bool proportional, double constraint)
 		{
 			if (boundsValue < 0)
 			{

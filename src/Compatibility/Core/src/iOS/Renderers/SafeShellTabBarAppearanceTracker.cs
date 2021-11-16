@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
 				}
 			}
-			
+
 			if (Forms.IsiOS15OrNewer)
 				UpdateiOS15TabBarAppearance(controller, appearance);
 			else
