@@ -77,6 +77,9 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
+			if (_windowElements.OfType<IAdornerBorder>().Any(n => n.VisualView == view))
+				return false;
+
 			var result = _windowElements.Add(new RectangleGridAdornerBorder(view, Density, Offset));
 			AddScrollableElementHandlers();
 
