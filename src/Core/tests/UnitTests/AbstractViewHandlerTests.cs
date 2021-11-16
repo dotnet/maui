@@ -1,13 +1,14 @@
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting.Internal;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core, TestCategory.Lifecycle)]
-	public class AbstractViewHandlerTests
+	public class AbstractViewHandlerTests : TestBase
 	{
 		[Fact]
 		public void ConnectAndDisconnectFireAppropriateNumberOfTimes()
@@ -106,7 +107,6 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void ChainingToLessTypedParentWorks()
 		{
-
 			bool wasMapper1Called = false;
 			bool wasMapper2Called = false;
 			var mapper1 = new PropertyMapper<IView, HandlerStub>

@@ -67,15 +67,6 @@ namespace Microsoft.Maui
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow)
-		{
-			var scopedContext = new MauiContext(mauiContext.Services, nativeWindow, mauiContext);
-
-			scopedContext.AddWeakSpecific(nativeWindow);
-
-			return scopedContext;
-		}
-
 		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
 			if (mauiContext.Context?.ApplicationContext is MauiApplication ma)

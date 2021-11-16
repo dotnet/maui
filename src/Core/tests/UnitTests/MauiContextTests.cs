@@ -40,40 +40,6 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void AddSpecificFactoryOverridesBase()
-		{
-			var baseObj = new TestThing();
-
-			var collection = new MauiServiceCollection();
-			collection.AddSingleton(baseObj);
-			var services = new MauiServiceProvider(collection, false);
-
-			var specificObj = new TestThing();
-			var context = new MauiContext(services);
-			context.AddSpecific(() => specificObj);
-
-			Assert.Same(specificObj, context.Services.GetService<TestThing>());
-		}
-
-		[Fact]
-		public void AddSpecificFactoryIsLazy()
-		{
-			var count = 0;
-			var specificObj = new TestThing();
-
-			var collection = new MauiServiceCollection();
-			var services = new MauiServiceProvider(collection, false);
-			var context = new MauiContext(services);
-			context.AddSpecific(() => { count++; return specificObj; });
-
-			Assert.Equal(0, count);
-			Assert.Same(specificObj, context.Services.GetService<TestThing>());
-			Assert.Equal(1, count);
-			Assert.Same(specificObj, context.Services.GetService<TestThing>());
-			Assert.Equal(1, count);
-		}
-
-		[Fact]
 		public void AddSpecificIsNotWeak()
 		{
 			var collection = new MauiServiceCollection();

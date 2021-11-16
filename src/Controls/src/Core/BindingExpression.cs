@@ -760,13 +760,11 @@ namespace Microsoft.Maui.Controls
 				}
 
 				Action action = () => _expression.Apply();
-				if (_expression._weakTarget != null && _expression._weakTarget.TryGetTarget(out BindableObject obj) && obj.Dispatcher != null && obj.Dispatcher.IsInvokeRequired)
+				if (_expression._weakTarget != null &&
+					_expression._weakTarget.TryGetTarget(out BindableObject obj) &&
+					obj.Dispatcher.IsInvokeRequired)
 				{
 					obj.Dispatcher.BeginInvokeOnMainThread(action);
-				}
-				else if (Device.IsInvokeRequired)
-				{
-					Device.BeginInvokeOnMainThread(action);
 				}
 				else
 				{
