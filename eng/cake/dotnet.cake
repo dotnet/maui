@@ -384,6 +384,7 @@ void RunMSBuildWithDotNet(
     {
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)
+            .SetMaxCpuCount(0)
             .WithTarget(target)
             .EnableBinaryLogger(binlog);
         if (warningsAsError)
@@ -426,6 +427,7 @@ void RunMSBuildWithDotNet(
         Information("Using MSBuild: {0}", msbuild);
         var msbuildSettings = new MSBuildSettings { ToolPath = msbuild }
             .SetConfiguration(configuration)
+            .SetMaxCpuCount(0)
             .WithTarget(target)
             .EnableBinaryLogger(binlog);
         if (warningsAsError)
