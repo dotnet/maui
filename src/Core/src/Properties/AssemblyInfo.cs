@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.Android")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.iOS")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Windows")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Core.UnitTests")]
