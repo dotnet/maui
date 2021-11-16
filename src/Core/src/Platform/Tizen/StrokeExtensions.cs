@@ -92,10 +92,10 @@ namespace Microsoft.Maui.Platform
 			if (!hasBorder)
 				return;
 
-			if (platformView is BorderView borderView)
-			{
-				borderView.ContainerView?.UpdateBorder(border);
-			}
+			//if (nativeView is BorderView borderView)
+			//{
+			//	borderView.ContainerView?.UpdateBorder(border);
+			//}
 		}
 	}
 }

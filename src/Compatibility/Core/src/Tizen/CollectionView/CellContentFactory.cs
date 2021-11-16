@@ -63,8 +63,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var text = new Label
 			{
-				HorizontalOptions = LayoutOptions.FillAndExpand,
-				VerticalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Fill,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(10, 0),
 				FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label))
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			var layout = new Controls.StackLayout
 			{
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				BackgroundColor = Color.FromArgb("#e3f2fd"),
 				Padding = 5,
 				Children =
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var layout = new Controls.StackLayout
 			{
 				Spacing = 0,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				Padding = new Thickness(10, 5),
 				Children =
 				{
@@ -116,10 +116,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		static View CreateContent(ImageCell imageCell)
 		{
 			var textcell = CreateContent((TextCell)imageCell);
-			textcell.HorizontalOptions = LayoutOptions.FillAndExpand;
+			textcell.HorizontalOptions = LayoutOptions.Fill;
 			var layout = new Controls.Grid
 			{
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
 				{
 					new ColumnDefinition
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			label.Margin = new Thickness(20, 0, 0, 0);
 			var layout = new Controls.StackLayout
 			{
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				Children =
 				{
 					label,
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Padding = new Thickness(10, 5),
 				Spacing = 0,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				Orientation = StackOrientation.Horizontal,
 				Children =
 				{
@@ -219,8 +219,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				var content = new ContentPresenter
 				{
-					VerticalOptions = LayoutOptions.FillAndExpand,
-					HorizontalOptions = LayoutOptions.FillAndExpand
+					VerticalOptions = LayoutOptions.Fill,
+					HorizontalOptions = LayoutOptions.Fill
 				};
 
 
@@ -251,8 +251,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					var layout = new Controls.StackLayout
 					{
 						Spacing = 0,
-						VerticalOptions = LayoutOptions.FillAndExpand,
-						HorizontalOptions = LayoutOptions.FillAndExpand,
+						VerticalOptions = LayoutOptions.Fill,
+						HorizontalOptions = LayoutOptions.Fill,
 						Children =
 						{
 							content,

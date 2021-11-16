@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					new XLabel
 					{
 						Text = "No items found",
-						VerticalOptions = LayoutOptions.CenterAndExpand,
-						HorizontalOptions = LayoutOptions.CenterAndExpand,
+						VerticalOptions = LayoutOptions.Center,
+						HorizontalOptions = LayoutOptions.Center,
 						HorizontalTextAlignment = TextAlignment.Center,
 						VerticalTextAlignment = TextAlignment.Center,
 					}
