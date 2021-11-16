@@ -152,7 +152,7 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool InitializeNativeLayer()
 		{
-			return false;
+			return this.IsNativeViewInitialized = true;
 		}
 
 		/// <summary>
@@ -160,6 +160,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		private void DisposeNativeDependencies()
 		{
+			this.IsNativeViewInitialized = false;
 		}
 #endif
 	}
