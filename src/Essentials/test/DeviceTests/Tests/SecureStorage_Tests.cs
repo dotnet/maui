@@ -8,6 +8,8 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+
+	[Collection("UsesPreferences")]
 	public class SecureStorage_Tests
 	{
 		public SecureStorage_Tests()
