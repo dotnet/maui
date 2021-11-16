@@ -203,12 +203,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
 		}
-
-		EditorAutoSizeOption GetNativeAutoSize(EditorHandler editorHandler)
-		{
-			var textView = GetNativeEditor(editorHandler);
-
-			return textView.AutoSizeTextType == AutoSizeTextType.None ?  EditorAutoSizeOption.Disabled : EditorAutoSizeOption.TextChanges ;
-		}
 	}
 }
