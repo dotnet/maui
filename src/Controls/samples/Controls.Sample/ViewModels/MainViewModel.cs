@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels.Base;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Maui.Dispatching;
 
 namespace Maui.Controls.Sample.ViewModels
 {
@@ -12,14 +15,25 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		readonly IConfiguration _configuration;
 		readonly ITextService _textService;
+		readonly IDispatcher _dispatcher;
 
-		public MainViewModel(IConfiguration configuration, ITextService textService)
+		public MainViewModel(IConfiguration configuration, ITextService textService, IDispatcher dispatcher)
 		{
 			_configuration = configuration;
 			_textService = textService;
-
+			_dispatcher = dispatcher;
 			Debug.WriteLine($"Value from config: {_configuration["MyKey"]}");
 			Debug.WriteLine($"Value from TextService: {_textService.GetText()}");
+
+			Task.Run(() =>
+			{
+				Debug.WriteLine($"This is on the thread pool! ({Environment.CurrentManagedThreadId})");
+
+				_dispatcher.BeginInvokeOnMainThread(() =>
+				{
+					Debug.WriteLine($"This is on the main thread! ({Environment.CurrentManagedThreadId})");
+				});
+			});
 		}
 
 		protected override IEnumerable<SectionModel> CreateItems() => new[]

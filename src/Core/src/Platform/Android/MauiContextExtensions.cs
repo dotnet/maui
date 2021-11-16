@@ -67,13 +67,12 @@ namespace Microsoft.Maui
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow)
+		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
-			var scopedContext = new MauiContext(mauiContext.Services, nativeWindow, mauiContext);
+			if (mauiContext.Context?.ApplicationContext is MauiApplication ma)
+				return ma.Services;
 
-			scopedContext.AddWeakSpecific(nativeWindow);
-
-			return scopedContext;
+			throw new InvalidOperationException("Unable to find Application Services");
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				AutomationId = automationId,
 				FontSize = 10,
 				HeightRequest = Device.RuntimePlatform == Device.Android ? 40 : 30,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				Margin = 5,
 				Padding = 5
 			};

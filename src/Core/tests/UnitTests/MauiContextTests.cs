@@ -40,22 +40,6 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void AddSpecificFactoryOverridesBase()
-		{
-			var baseObj = new TestThing();
-
-			var collection = new MauiServiceCollection();
-			collection.AddSingleton(baseObj);
-			var services = new MauiFactory(collection, false);
-
-			var specificObj = new TestThing();
-			var context = new MauiContext(services);
-			context.AddSpecific(() => specificObj);
-
-			Assert.Same(specificObj, context.Services.GetService<TestThing>());
-		}
-
-		[Fact]
 		public void AddSpecificFactoryIsLazy()
 		{
 			var count = 0;

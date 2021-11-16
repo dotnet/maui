@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -24,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
+				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				VisualDiagnostics.VisualTreeChanged += VTChanged;
 				debuggerinitialstate = Microsoft.Maui.Controls.Xaml.Diagnostics.DebuggerHelper._mockDebuggerIsAttached;
 				DebuggerHelper._mockDebuggerIsAttached = true;
@@ -34,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = debuggerinitialstate;
-				Device.PlatformServices = null;
+				DispatcherProvider.SetCurrent(null);
 				VisualDiagnostics.VisualTreeChanged -= VTChanged;
 				failures = 0;
 			}

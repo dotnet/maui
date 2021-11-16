@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
@@ -17,6 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			_defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
 			Device.PlatformServices = new MockPlatformServices();
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			DeviceDisplay.SetCurrent(null);
 		}
 
@@ -27,6 +30,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			DeviceDisplay.SetCurrent(null);
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
 			System.Threading.Thread.CurrentThread.CurrentUICulture = _defaultUICulture;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }
