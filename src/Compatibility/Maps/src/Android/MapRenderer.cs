@@ -25,6 +25,7 @@ using Circle = Microsoft.Maui.Controls.Maps.Circle;
 using Math = System.Math;
 using Polygon = Microsoft.Maui.Controls.Maps.Polygon;
 using Polyline = Microsoft.Maui.Controls.Maps.Polyline;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 {
