@@ -441,7 +441,7 @@ namespace Microsoft.Maui
 
 			if (!SelectionLengthChangePending)
 			{
-				int elementSelectionLength = Math.Min((Text?.Length ?? 0) - cursorPosition, ViewSelectionLength);
+				int elementSelectionLength = Math.Min(Text.Length - cursorPosition, ViewSelectionLength);
 				int controlSelectionLength = SelectionLength;
 				if (controlSelectionLength != elementSelectionLength)
 					SetSelectionLength(controlSelectionLength);
