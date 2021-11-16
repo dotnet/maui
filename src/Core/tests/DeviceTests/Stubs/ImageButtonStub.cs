@@ -1,10 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class ImageButtonStub : StubBase, IImageButton, IImageSourcePartEvents, IImageStub
 	{
+		public Color BorderColor { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public int CornerRadius { get; set; }
+
 		public Aspect Aspect { get; set; }
 
 		public bool IsOpaque { get; set; }

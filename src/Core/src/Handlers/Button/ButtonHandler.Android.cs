@@ -78,6 +78,15 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateBackground(button, DefaultBackground);
 		}
 
+		[MissingMapper]
+		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder) { }
+
+		[MissingMapper]
+		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder) { }
+
 		public static void MapText(IButtonHandler handler, IText button)
 		{
 			handler.TypedNativeView?.UpdateTextPlainText(button);

@@ -5,6 +5,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class ButtonStub : StubBase, IButton, ITextButton, IImageButton
 	{
+		public Color BorderColor { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public int CornerRadius { get; set; }
+
 		public string Text { get; set; }
 
 		public Color TextColor { get; set; }

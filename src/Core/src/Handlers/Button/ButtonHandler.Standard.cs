@@ -6,6 +6,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
+		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder) { }
+		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder) { }
+		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder) { }
 		public static void MapText(IButtonHandler handler, IText button) { }
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button) { }
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button) { }

@@ -1,13 +1,33 @@
 using System;
-using CoreGraphics;
-using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
+		static nfloat DefaultCornerRadius = 5;
+
+		public static void UpdateBorderColor(this UIButton nativeButton, IButtonBorder buttonBorder)
+		{
+			if (buttonBorder.BorderColor != null)
+				nativeButton.Layer.BorderColor = buttonBorder.BorderColor.ToCGColor();
+		}
+
+		public static void UpdateBorderWidth(this UIButton nativeButton, IButtonBorder buttonBorder)
+		{
+			nativeButton.Layer.BorderWidth = Math.Max(0f, (float)buttonBorder.BorderWidth);
+		}
+
+		public static void UpdateCornerRadius(this UIButton nativeButton, IButtonBorder buttonBorder)
+		{
+			nfloat cornerRadius = DefaultCornerRadius;
+
+			if (cornerRadius != buttonBorder.CornerRadius)
+				cornerRadius = buttonBorder.CornerRadius;
+
+			nativeButton.Layer.CornerRadius = cornerRadius;
+		}
+
 		public static void UpdateText(this UIButton nativeButton, IText button) =>
 			nativeButton.SetTitle(button.Text, UIControlState.Normal);
 
@@ -47,10 +67,10 @@ namespace Microsoft.Maui
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)
 		{
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)(button.Padding.Top),
-				(float)(button.Padding.Left),
-				(float)(button.Padding.Bottom),
-				(float)(button.Padding.Right));
+				(float)button.Padding.Top,
+				(float)button.Padding.Left,
+				(float)button.Padding.Bottom,
+				(float)button.Padding.Right);
 		}
 	}
 }
