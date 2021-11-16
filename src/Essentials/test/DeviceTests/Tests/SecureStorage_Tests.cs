@@ -145,8 +145,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public async Task Set_Get_Async_MultipleTimes()
 		{
-			Parallel.For(0, 100, i =>
-				SecureStorage.SetAsync(i.ToString(), i.ToString())
+			await Parallel.ForEachAsync(Enumerable.Range(0, 100), async (i, _) =>
+				await SecureStorage.SetAsync(i.ToString(), i.ToString())
 			);
 
 			for (int i = 0; i < 100; i++)
