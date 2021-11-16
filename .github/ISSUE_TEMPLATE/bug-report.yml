@@ -37,8 +37,8 @@ body:
         - Preview 7
         - Preview 8
         - Preview 9
-        - Preview 10
-        - RC 1
+        - Preview 10 (current)
+        - Preview 11
         - Unknown/Other (please specify)
     validations:
       required: true
@@ -51,8 +51,8 @@ body:
         - Preview 7
         - Preview 8
         - Preview 9
-        - Preview 10
-        - RC 1
+        - Preview 10 (current)
+        - Preview 11
         - Unknown/Other
     validations:
       required: true
