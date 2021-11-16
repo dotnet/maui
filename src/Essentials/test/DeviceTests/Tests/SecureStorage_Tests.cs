@@ -54,19 +54,19 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 #if __ANDROID__
-        [Theory]
-        [InlineData("test.txt", "data")]
-        public async Task Fix_Corrupt_Data(string key, string data)
-        {
-            // this operation is only available on API level 23+ devices
-            if (!Platform.HasApiLevel(23))
-                return;
+		[Theory]
+		[InlineData("test.txt", "data")]
+		public async Task Fix_Corrupt_Data(string key, string data)
+		{
+			// this operation is only available on API level 23+ devices
+			if (!Platform.HasApiLevel(23))
+				return;
 
-            // set a valid key
-            await SecureStorage.SetAsync(key, data);
+			// set a valid key
+			await SecureStorage.SetAsync(key, data);
 
-            // simulate corrupt the key
-            var corruptData = "A2PfJSNdEDjM+422tpu7FqFcVQQbO3ti/DvnDnIqrq9CFwaBi6NdXYcicjvMW6nF7X/Clpto5xerM41U1H4qtWJDO0Ijc5QNTHGZl9tDSbXJ6yDCDDnEDryj2uTa8DiHoNcNX68QtcV3at4kkJKXXAwZXSC88a73/xDdh1u5gUdCeXJzVc5vOY6QpAGUH0bjR5NHrqEQNNGDdquFGN9n2ZJPsEK6C9fx0QwCIL+uldpAYSWrpmUIr+/0X7Y0mJpN84ldygEVxHLBuVrzB4Bbu5XGLUN/0Sr2plWcKm7XhM6wp3JRW6Eae2ozys42p1YLeM0HXWrhTqP6FRPkS6mOtw==";
+			// simulate corrupt the key
+			var corruptData = "A2PfJSNdEDjM+422tpu7FqFcVQQbO3ti/DvnDnIqrq9CFwaBi6NdXYcicjvMW6nF7X/Clpto5xerM41U1H4qtWJDO0Ijc5QNTHGZl9tDSbXJ6yDCDDnEDryj2uTa8DiHoNcNX68QtcV3at4kkJKXXAwZXSC88a73/xDdh1u5gUdCeXJzVc5vOY6QpAGUH0bjR5NHrqEQNNGDdquFGN9n2ZJPsEK6C9fx0QwCIL+uldpAYSWrpmUIr+/0X7Y0mJpN84ldygEVxHLBuVrzB4Bbu5XGLUN/0Sr2plWcKm7XhM6wp3JRW6Eae2ozys42p1YLeM0HXWrhTqP6FRPkS6mOtw==";
 			var all = Preferences.GetSharedPreferences(SecureStorage.Alias).All;
 			Preferences.Set(all.Keys.First(x => !x.StartsWith("_")), corruptData, SecureStorage.Alias);
 
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			await SecureStorage.SetAsync(key, data);
 			c = await SecureStorage.GetAsync(key);
 			Assert.Equal(data, c);
-        }
+		}
 #endif
 
 		[Fact]
@@ -124,28 +124,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 #if __ANDROID__
-        [Fact]
-        public async Task Asymmetric_to_Symmetric_API_Upgrade()
-        {
-            var key = "asym_to_sym_upgrade";
-            var expected = "this is the value";
+		[Fact]
+		public async Task Asymmetric_to_Symmetric_API_Upgrade()
+		{
+			var key = "asym_to_sym_upgrade";
+			var expected = "this is the value";
 
-            SecureStorage.RemoveAll();
+			SecureStorage.RemoveAll();
 
-            await SecureStorage.SetAsync(key, expected);
+			await SecureStorage.SetAsync(key, expected);
 
-            var v = await SecureStorage.GetAsync(key);
+			var v = await SecureStorage.GetAsync(key);
 
-            SecureStorage.RemoveAll();
+			SecureStorage.RemoveAll();
 
 			Assert.Equal(expected, v);
-        }
+		}
 #endif
 
 		[Fact]
 		public async Task Set_Get_Async_MultipleTimes()
 		{
-			Parallel.For(0, 100, i => 
+			Parallel.For(0, 100, i =>
 				SecureStorage.SetAsync(i.ToString(), i.ToString())
 			);
 
