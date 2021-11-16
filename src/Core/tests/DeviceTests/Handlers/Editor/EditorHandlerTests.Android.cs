@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Android.Text;
 using Android.Text.Method;
-using Android.Widget;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
