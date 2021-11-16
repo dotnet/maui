@@ -30,7 +30,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>1ec2e17fcfd86bdd6f7e7246b6d527e94e34c15a</Sha>
+      <Sha>01b3d6d1366fc1273e71b3664f9e64351126c3cc</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
