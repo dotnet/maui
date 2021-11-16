@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
-		static nfloat DefaultCornerRadius = 5;
+		static float DefaultCornerRadius = 5;
 
 		public static void UpdateBorderColor(this UIButton nativeButton, IButtonBorder buttonBorder)
 		{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateCornerRadius(this UIButton nativeButton, IButtonBorder buttonBorder)
 		{
-			nfloat cornerRadius = DefaultCornerRadius;
+			var cornerRadius = DefaultCornerRadius;
 
 			if (cornerRadius != buttonBorder.CornerRadius)
 				cornerRadius = buttonBorder.CornerRadius;
