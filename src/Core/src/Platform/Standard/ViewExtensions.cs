@@ -58,16 +58,6 @@ namespace Microsoft.Maui
 
 		internal static Matrix4x4 GetViewTransform(this IView view) => new Matrix4x4();
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view)
-		{
-			var rect = view.GetNativeViewBounds();
-			var transform = view.GetViewTransform();
-			Vector2 x = new Vector2((float)rect.Left, (float)rect.Top);
-			x = Vector2.Transform(x, transform);
-			Vector2 y = new Vector2((float)rect.Right, (float)rect.Bottom);
-			y = Vector2.Transform(y, transform);
-
-			return new Rectangle(transform.Translation.X, transform.Translation.Y, Convert.ToInt32(Math.Abs(x.X - y.X)), Convert.ToInt32(Math.Abs(x.Y - y.Y)));
-		}
+		internal static Graphics.Rectangle GetBoundingBox(this IView view) => view.Frame;
 	}
 }
