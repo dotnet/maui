@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Hosting
 	{
 		public static MauiAppBuilder ConfigureMauiHandlers(this MauiAppBuilder builder, Action<IMauiHandlersCollection>? configureDelegate)
 		{
-			builder.Services.TryAddSingleton<IMauiHandlersServiceProvider, MauiHandlersServiceProvider>();
+			builder.Services.TryAddSingleton<IMauiHandlersFactory, MauiHandlersFactory>();
 			if (configureDelegate != null)
 			{
 				builder.Services.AddSingleton<HandlerRegistration>(new HandlerRegistration(configureDelegate));

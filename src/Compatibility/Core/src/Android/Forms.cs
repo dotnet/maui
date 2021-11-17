@@ -490,23 +490,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			double _microSize;
 			double _smallSize;
 
-			static Handler s_handler;
-
 			readonly Context _context;
 
 			public AndroidPlatformServices(Context context)
 			{
 				_context = context;
-			}
-
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				if (s_handler == null || s_handler.Looper != Looper.MainLooper)
-				{
-					s_handler = new Handler(Looper.MainLooper);
-				}
-
-				s_handler.Post(action);
 			}
 
 			public Assembly[] GetAssemblies()
@@ -662,14 +650,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					return new AColor(color).ToColor();
 
 				return null;
-			}
-
-			public bool IsInvokeRequired
-			{
-				get
-				{
-					return Looper.MainLooper != Looper.MyLooper();
-				}
 			}
 
 			public string RuntimePlatform => Device.Android;

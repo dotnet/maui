@@ -81,60 +81,61 @@ Task("dotnet-templates")
 
         var templatesTest = $"../templatesTest/{Guid.NewGuid()}/";
 
+        CleanDirectories("../templatesTest");
+
+        // Create empty Directory.Build.props/targets
+        EnsureDirectoryExists(Directory(templatesTest));
+        FileWriteText(File(templatesTest + "Directory.Build.props"), "<Project/>");
+        FileWriteText(File(templatesTest + "Directory.Build.targets"), "<Project/>");
+        CopyFileToDirectory(File("./NuGet.config"), Directory(templatesTest));
+
+        // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
+        var designTime = new Dictionary<string, string> {
+            { "DesignTimeBuild", "true" },
+            { "BuildingInsideVisualStudio", "true" },
+            { "SkipCompilerExecution", "true" },
+            // NOTE: this overrides a default setting that supports VS Mac
+            // See: https://github.com/xamarin/xamarin-android/blob/94c2a3d86a2e0e74863b57e3c5c61dbd29daa9ea/src/Xamarin.Android.Build.Tasks/Xamarin.Android.Common.props.in#L19
+            { "AndroidUseManagedDesignTimeResourceGenerator", "true" },
+        };
+
+        var properties = new Dictionary<string, string> {
+            // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
+            { "RestoreNoCache", "true" },
+            { "RestorePackagesPath", MakeAbsolute(File(templatesTest + "packages")).FullPath },
+            { "RestoreConfigFile", MakeAbsolute(File(templatesTest + "nuget.config")).FullPath },
+
+            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+            { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
+        };
+
+        var frameworks = new [] {
+            "net6.0-android",
+            "net6.0-ios",
+            "net6.0-maccatalyst",
+        };
+
+        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+        {
+            var name = template.Replace("-", "") + " Space-Dash";
+            StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
+
+            // Design-time build without restore
+            foreach (var framework in frameworks)
+            {
+                RunMSBuildWithDotNet($"{templatesTest}{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
+            }
+
+            // Build
+            RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
+        }
         try
         {
             CleanDirectories(templatesTest);
-
-            // Create empty Directory.Build.props/targets
-            EnsureDirectoryExists(Directory(templatesTest));
-            FileWriteText(File(templatesTest + "Directory.Build.props"), "<Project/>");
-            FileWriteText(File(templatesTest + "Directory.Build.targets"), "<Project/>");
-            CopyFileToDirectory(File("./NuGet.config"), Directory(templatesTest));
-
-            // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
-            var designTime = new Dictionary<string, string> {
-                { "DesignTimeBuild", "true" },
-                { "BuildingInsideVisualStudio", "true" },
-                { "SkipCompilerExecution", "true" },
-                // NOTE: this overrides a default setting that supports VS Mac
-                // See: https://github.com/xamarin/xamarin-android/blob/94c2a3d86a2e0e74863b57e3c5c61dbd29daa9ea/src/Xamarin.Android.Build.Tasks/Xamarin.Android.Common.props.in#L19
-                { "AndroidUseManagedDesignTimeResourceGenerator", "true" },
-            };
-
-            var properties = new Dictionary<string, string> {
-                // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-                { "RestoreNoCache", "true" },
-                { "RestorePackagesPath", MakeAbsolute(File(templatesTest + "packages")).FullPath },
-                { "RestoreConfigFile", MakeAbsolute(File(templatesTest + "nuget.config")).FullPath },
-
-                // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
-                { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
-            };
-
-            var frameworks = new [] {
-                "net6.0-android",
-                "net6.0-ios",
-                "net6.0-maccatalyst",
-            };
-
-            foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
-            {
-                var name = template.Replace("-", "") + " Space-Dash";
-                StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
-
-                // Design-time build without restore
-                foreach (var framework in frameworks)
-                {
-                    RunMSBuildWithDotNet($"{templatesTest}{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
-                }
-
-                // Build
-                RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
-            }
         }
-        finally 
+        catch
         {
-            CleanDirectories(templatesTest);
+            Information("Unable to clean up templates directory.");
         }
     });
 
@@ -384,6 +385,7 @@ void RunMSBuildWithDotNet(
     {
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)
+            .SetMaxCpuCount(0)
             .WithTarget(target)
             .EnableBinaryLogger(binlog);
         if (warningsAsError)
@@ -426,6 +428,7 @@ void RunMSBuildWithDotNet(
         Information("Using MSBuild: {0}", msbuild);
         var msbuildSettings = new MSBuildSettings { ToolPath = msbuild }
             .SetConfiguration(configuration)
+            .SetMaxCpuCount(0)
             .WithTarget(target)
             .EnableBinaryLogger(binlog);
         if (warningsAsError)

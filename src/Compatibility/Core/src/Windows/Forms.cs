@@ -86,9 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 
-			var dispatcher = mainWindow?.DispatcherQueue ?? UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-
-			var platformServices = new WindowsPlatformServices(dispatcher);
+			var platformServices = new WindowsPlatformServices();
 
 			Device.PlatformServices = platformServices;
 			Device.PlatformInvalidator = platformServices;
