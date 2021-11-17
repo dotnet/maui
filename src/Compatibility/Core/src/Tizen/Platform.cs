@@ -108,16 +108,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			widthConstraint = widthConstraint <= -1 ? double.PositiveInfinity : widthConstraint;
 			heightConstraint = heightConstraint <= -1 ? double.PositiveInfinity : heightConstraint;
 
-			double width = !double.IsPositiveInfinity(widthConstraint) ? widthConstraint : Int32.MaxValue;
-			double height = !double.IsPositiveInfinity(heightConstraint) ? heightConstraint : Int32.MaxValue;
-
 			var renderView = GetRenderer(view);
 			if (renderView == null || renderView.NativeView == null)
 			{
 				return (view is IView iView) ? new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint)) : new SizeRequest(Graphics.Size.Zero);
 			}
 
-			return Platform.GetRenderer(view).GetDesiredSize(width, height);
+			return renderView.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 	}
 
