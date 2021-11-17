@@ -74,15 +74,15 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (NotSupportedException)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<IVisual>()?.LogWarning($"Cannot scan assembly {assembly.FullName} for Visual types.");
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning($"Cannot scan assembly {assembly.FullName} for Visual types.");
 			}
 			catch (FileNotFoundException)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<IVisual>()?.LogWarning($"Unable to load a dependent assembly for {assembly.FullName}. It cannot be scanned for Visual types.");
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning($"Unable to load a dependent assembly for {assembly.FullName}. It cannot be scanned for Visual types.");
 			}
 			catch (ReflectionTypeLoadException)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<IVisual>()?.LogWarning($"Unable to load a dependent assembly for {assembly.FullName}. Types cannot be loaded.");
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning($"Unable to load a dependent assembly for {assembly.FullName}. Types cannot be loaded.");
 			}
 		}
 
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<VisualTypeConverter>()?.LogWarning("Visual", $"Unable to register {visualType} please add a public default constructor");
+				Application.Current?.FindMauiContext()?.CreateLogger<VisualTypeConverter>()?.LogWarning("Visual", $"Unable to register {visualType} please add a public default constructor");
 			}
 
 			return null;

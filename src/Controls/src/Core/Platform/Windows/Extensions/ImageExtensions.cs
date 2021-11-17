@@ -115,11 +115,11 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			catch (OperationCanceledException)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<Image>()?.LogWarning("Image load cancelled");
+				Application.Current?.FindMauiContext()?.CreateLogger<Image>()?.LogWarning("Image load cancelled");
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<Image>()?.LogWarning(ex, "Image load failed");
+				Application.Current?.FindMauiContext()?.CreateLogger<Image>()?.LogWarning(ex, "Image load failed");
 #if DEBUG
 				throw;
 #endif

@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 			catch (Exception exc)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<Shape>()?.LogWarning(exc,"Exception while getting shape Bounds");
+				Application.Current?.FindMauiContext()?.CreateLogger<Shape>()?.LogWarning(exc,"Exception while getting shape Bounds");
 			}
 
 			var transform = Matrix3x2.Identity;

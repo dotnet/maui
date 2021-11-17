@@ -394,13 +394,13 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(property));
 			if (checkAccess && property.IsReadOnly)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
 			if (!converted && !property.TryConvert(ref value))
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<BindableObject>()?.LogWarning($"Cannot convert {value} to type '{property.ReturnType}'");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot convert {value} to type '{property.ReturnType}'");
 				return;
 			}
 

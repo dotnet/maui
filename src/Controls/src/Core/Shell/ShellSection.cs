@@ -474,7 +474,7 @@ namespace Microsoft.Maui.Controls
 			var content = Routing.GetOrCreateContent(route) as Page;
 			if (content == null)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ShellSection>()?.LogWarning($"Failed to Create Content For: {route}");
+				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning($"Failed to Create Content For: {route}");
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);

@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception e)
 			{
-				Application.Current?.Handler?.MauiContext?.CreateLogger<NavigationPage>()?.LogWarning(e, null);
+				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning(e, null);
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 

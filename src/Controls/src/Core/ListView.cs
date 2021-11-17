@@ -566,7 +566,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null && lv.GroupHeaderTemplate != null)
 			{
 				lv.GroupHeaderTemplate = null;
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ListView>()?.LogWarning("GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupHeaderTemplate to null");
+				Application.Current?.FindMauiContext()?.CreateLogger<ListView>()?.LogWarning("GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupHeaderTemplate to null");
 			}
 		}
 
@@ -576,7 +576,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null && lv.GroupDisplayBinding != null)
 			{
 				lv.GroupDisplayBinding = null;
-				Application.Current?.Handler?.MauiContext?.CreateLogger<ListView>()?.LogWarning("GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupDisplayBinding to null");
+				Application.Current?.FindMauiContext()?.CreateLogger<ListView>()?.LogWarning("GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupDisplayBinding to null");
 			}
 		}
 

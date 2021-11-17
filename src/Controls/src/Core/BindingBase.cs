@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls
 			catch (FormatException)
 			{
 				value = null;
-				Application.Current?.Handler?.MauiContext?.CreateLogger<BindingBase>()?.LogWarning("FormatException");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindingBase>()?.LogWarning("FormatException");
 				return false;
 			}
 		}
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls
 			catch (FormatException)
 			{
 				value = null;
-				Application.Current?.Handler?.MauiContext?.CreateLogger<BindingBase>()?.LogWarning("FormatException");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindingBase>()?.LogWarning("FormatException");
 				return false;
 			}
 		}

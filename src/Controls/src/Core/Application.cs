@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception exc)
 			{
-				Current?.Handler?.MauiContext?.CreateLogger<Application>()?.LogWarning(exc, "Exception while saving Application Properties");
+				Current?.FindMauiContext()?.CreateLogger<Application>()?.LogWarning(exc, "Exception while saving Application Properties");
 			}
 		}
 
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls
 			var deserializer = DependencyService.Get<IDeserializer>();
 			if (deserializer == null)
 			{
-				Current?.Handler?.MauiContext?.CreateLogger<Application>()?.LogWarning("No IDeserializer was found registered");
+				Current?.FindMauiContext()?.CreateLogger<Application>()?.LogWarning("No IDeserializer was found registered");
 				return new Dictionary<string, object>(4);
 			}
 

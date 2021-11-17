@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				catch (MonoTouchException ex) when (ex.Name == "NSRangeException")
 				{
-					Application.Current?.Handler?.MauiContext?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
+					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
 				}
 
 				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();

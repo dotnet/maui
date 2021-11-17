@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			if (_isMaterialRegistered || _warnedAboutMaterial)
 				return;
 
-			var logger = Application.Current?.Handler?.MauiContext?.CreateLogger<IVisual>();
+			var logger = Application.Current?.FindMauiContext()?.CreateLogger<IVisual>();
 			_warnedAboutMaterial = true;
 			if (Device.RuntimePlatform == Device.iOS || Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.Tizen)
 				logger?.LogWarning("Visual", $"Material needs to be registered on {Device.RuntimePlatform} by calling FormsMaterial.Init() after the Microsoft.Maui.Controls.Forms.Init method call.");
