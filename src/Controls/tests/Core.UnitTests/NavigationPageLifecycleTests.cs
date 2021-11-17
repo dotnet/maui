@@ -9,8 +9,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class NavigationPageLifecycleTests : BaseTestFixture
 	{
-		[Test]
-		public async Task AppearingFiresForInitialPage()
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task AppearingFiresForInitialPage(bool useMaui)
 		{
 			ContentPage contentPage = new ContentPage();
 			ContentPage resultPage = null;
@@ -18,15 +19,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			contentPage.Appearing += (sender, _)
 				=> resultPage = (ContentPage)sender;
 
-			NavigationPage nav = new NavigationPage(contentPage);
+			NavigationPage nav = new TestNavigationPage(useMaui, contentPage);
 
 			Assert.IsNull(resultPage);
 			_ = new Window(nav);
 			Assert.AreEqual(resultPage, contentPage);
 		}
 
-		[Test]
-		public async Task PushLifeCycle()
+
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task PushLifeCycle(bool useMaui)
 		{
 			ContentPage initialPage = new ContentPage();
 			ContentPage pushedPage = new ContentPage();
@@ -40,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			pushedPage.Appearing += (sender, _)
 				=> pageAppearing = (ContentPage)sender;
 
-			NavigationPage nav = new NavigationPage(initialPage);
+			NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
 			_ = new Window(nav);
 			nav.SendAppearing();
 
@@ -50,37 +53,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(pageAppearing, pushedPage);
 		}
 
-		[Test]
-		public async Task PopLifeCycle()
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task PopLifeCycle(bool useMaui)
 		{
 			ContentPage initialPage = new ContentPage();
 			ContentPage pushedPage = new ContentPage();
 
-			ContentPage initialPageAppearing = null;
+			ContentPage rootPageFiresAppearingAfterPop = null;
 			ContentPage pageDisappeared = null;
 
-			NavigationPage nav = new NavigationPage(initialPage);
+			NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
 			_ = new Window(nav);
 			nav.SendAppearing();
 
 			initialPage.Appearing += (sender, _)
-				=> initialPageAppearing = (ContentPage)sender;
+				=> rootPageFiresAppearingAfterPop = (ContentPage)sender;
 
 			pushedPage.Disappearing += (sender, _)
 				=> pageDisappeared = (ContentPage)sender;
 
 			await nav.PushAsync(pushedPage);
-			Assert.IsNull(initialPageAppearing);
+			Assert.IsNull(rootPageFiresAppearingAfterPop);
 			Assert.IsNull(pageDisappeared);
 
 			await nav.PopAsync();
 
-			Assert.AreEqual(initialPageAppearing, initialPage);
-			Assert.AreEqual(pageDisappeared, pushedPage);
+			Assert.AreEqual(initialPage, rootPageFiresAppearingAfterPop);
+			Assert.AreEqual(pushedPage, pageDisappeared);
 		}
 
-		[Test]
-		public async Task RemoveLastPage()
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task RemoveLastPage(bool useMaui)
 		{
 			ContentPage initialPage = new ContentPage();
 			ContentPage pushedPage = new ContentPage();
@@ -88,7 +93,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage initialPageAppearing = null;
 			ContentPage pageDisappeared = null;
 
-			NavigationPage nav = new NavigationPage(initialPage);
+			NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
 			_ = new Window(nav);
 			nav.SendAppearing();
 
@@ -108,9 +113,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(pageDisappeared, pushedPage);
 		}
 
-
-		[Test]
-		public async Task RemoveInnerPage()
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task RemoveInnerPage(bool useMaui)
 		{
 			ContentPage initialPage = new ContentPage();
 			ContentPage pushedPage = new ContentPage();
@@ -118,7 +123,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage initialPageAppearing = null;
 			ContentPage pageDisappeared = null;
 
-			NavigationPage nav = new NavigationPage(initialPage);
+			NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
 			_ = new Window(nav);
 			nav.SendAppearing();
 

@@ -70,7 +70,7 @@ namespace Microsoft.Maui
 			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
 		}
 
-		public static void UpdateVerticalTextAlignment(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateVerticalTextAlignment(this AppCompatEditText editText, ITextAlignment entry)
 		{
 			editText.UpdateVerticalAlignment(entry.VerticalTextAlignment);
 		}

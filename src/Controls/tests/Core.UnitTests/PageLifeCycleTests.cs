@@ -6,11 +6,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class PageLifeCycleTests : BaseTestFixture
 	{
-		[Test]
-		public void NavigationPageInitialPage()
+		[TestCase(false)]
+		[TestCase(true)]
+		public void NavigationPageInitialPage(bool useMaui)
 		{
 			var lcPage = new LCPage();
-			NavigationPage navigationPage = new NavigationPage(lcPage);
+			NavigationPage navigationPage = new TestNavigationPage(useMaui, lcPage);
 			navigationPage.InitialNativeNavigationStackLoaded();
 			Assert.IsNull(lcPage.NavigatingFromArgs);
 			Assert.IsNull(lcPage.NavigatedFromArgs);
@@ -18,12 +19,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNull(lcPage.NavigatedToArgs.PreviousPage);
 		}
 
-		[Test]
-		public async Task NavigationPagePushPage()
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task NavigationPagePushPage(bool useMaui)
 		{
 			var previousPage = new LCPage();
 			var lcPage = new LCPage();
-			NavigationPage navigationPage = new NavigationPage(previousPage);
+			NavigationPage navigationPage = new TestNavigationPage(useMaui, previousPage);
 			await navigationPage.PushAsync(lcPage);
 
 			Assert.IsNotNull(previousPage.NavigatingFromArgs);
@@ -31,13 +33,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(lcPage, previousPage.NavigatedFromArgs.DestinationPage);
 		}
 
-		[Test]
-		public async Task NavigationPagePopPage()
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task NavigationPagePopPage(bool useMaui)
 		{
 			var firstPage = new LCPage();
 			var poppedPage = new LCPage();
 
-			NavigationPage navigationPage = new NavigationPage(firstPage);
+			NavigationPage navigationPage = new TestNavigationPage(useMaui, firstPage);
 			await navigationPage.PushAsync(poppedPage);
 			await navigationPage.PopAsync();
 
@@ -46,13 +49,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(firstPage, poppedPage.NavigatedFromArgs.DestinationPage);
 		}
 
-		[Test]
-		public async Task NavigationPagePopToRoot()
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task NavigationPagePopToRoot(bool useMaui)
 		{
 			var firstPage = new LCPage();
 			var poppedPage = new LCPage();
 
-			NavigationPage navigationPage = new NavigationPage(firstPage);
+			NavigationPage navigationPage = new TestNavigationPage(useMaui, firstPage);
 			await navigationPage.PushAsync(new ContentPage());
 			await navigationPage.PushAsync(new ContentPage());
 			await navigationPage.PushAsync(poppedPage);

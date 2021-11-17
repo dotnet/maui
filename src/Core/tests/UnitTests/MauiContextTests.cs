@@ -34,7 +34,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var specificObj = new TestThing();
 			var context = new MauiContext(services);
-			context.AddSpecific(specificObj);
+			context.AddSpecific<TestThing>(specificObj);
 
 			Assert.Same(specificObj, context.Services.GetService<TestThing>());
 		}

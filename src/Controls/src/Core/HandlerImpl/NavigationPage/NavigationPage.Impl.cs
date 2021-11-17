@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -12,6 +13,16 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage : INavigationView
 	{
+		// If the user is making overlapping navigation requests this is used to fire once all navigation 
+		// events have been processed
+		TaskCompletionSource<object> _allPendingNavigationCompletionSource;
+
+		// This is used to process the currently active navigation request
+		TaskCompletionSource<object> _currentNavigationCompletionSource;
+
+		int _waitingCount = 0;
+		readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
+
 		partial void Init()
 		{
 			this.Appearing += OnAppearing;
@@ -50,12 +61,19 @@ namespace Microsoft.Maui.Controls
 		// with the new native Navigation Stack
 		void INavigationView.NavigationFinished(IReadOnlyList<IView> newStack)
 		{
-			SyncToNavigationStack(newStack);
-			var completionSource = _taskCompletionSource;
-			CurrentPage = (Page)newStack[newStack.Count - 1];
-			RootPage = (Page)newStack[0];
+			// If the user is performing multiple overlapping navigations then we don't want to sync the native stack to our xplat stack
+			// We wait until we get to the end of the queue and then we sync up.
+			// Otherwise intermediate results will wipe out the navigationstack
+			if (_waitingCount <= 1)
+			{
+				SyncToNavigationStack(newStack);
+				CurrentPage = (Page)newStack[newStack.Count - 1];
+				RootPage = (Page)newStack[0];
+			}
+
+			var completionSource = _currentNavigationCompletionSource;
 			CurrentNavigationTask = null;
-			_taskCompletionSource = null;
+			_currentNavigationCompletionSource = null;
 			completionSource?.SetResult(null);
 		}
 
@@ -110,62 +128,102 @@ namespace Microsoft.Maui.Controls
 				window.Toolbar.ApplyNavigationPage(this);
 		}
 
-		Task WaitForCurrentNavigationTask() =>
-			CurrentNavigationTask ?? Task.CompletedTask;
-
 		// This is used for navigation events that don't effect the currently visible page
 		// InsertPageBefore/RemovePage
 		async void SendHandlerUpdate(bool animated)
 		{
-			await WaitForCurrentNavigationTask();
-			var trulyReadOnlyNavigationStack = new List<IView>(NavigationStack);
-			var request = new NavigationRequest(trulyReadOnlyNavigationStack, animated);
-			((INavigationView)this).RequestNavigation(request);
+			try
+			{
+				Interlocked.Increment(ref _waitingCount);
+				await SemaphoreSlim.WaitAsync();
+				var trulyReadOnlyNavigationStack = new List<IView>(NavigationStack);
+				var request = new NavigationRequest(trulyReadOnlyNavigationStack, animated);
+				((INavigationView)this).RequestNavigation(request);
+			}
+			finally
+			{
+				Interlocked.Decrement(ref _waitingCount);
+				SemaphoreSlim.Release();
+			}
 		}
 
-		TaskCompletionSource<object> _taskCompletionSource;
-
-		async Task SendHandlerUpdateAsync(bool animated, bool push = false, bool pop = false, bool popToRoot = false)
+		async Task SendHandlerUpdateAsync(
+			bool animated,
+			Action processStackChanges,
+			Action firePostNavigatingEvents,
+			Action fireNavigatedEvents)
 		{
-			// Wait for any pending navigation tasks to finish
-			await WaitForCurrentNavigationTask();
+			try
+			{
+				processStackChanges?.Invoke();
+				Interlocked.Increment(ref _waitingCount);
+				// Wait for pending navigation tasks to finish
+				await SemaphoreSlim.WaitAsync();
 
-			var completionSource = new TaskCompletionSource<object>();
-			CurrentNavigationTask = completionSource.Task;
-			_taskCompletionSource = completionSource;
+				var currentNavRequestTaskSource = new TaskCompletionSource<object>();
+				_allPendingNavigationCompletionSource ??= new TaskCompletionSource<object>();
 
-			// We create a new list to send to the handler because the structure backing 
-			// The Navigation stack isn't immutable
-			var previousPage = CurrentPage;
-			var immutableNavigationStack = new List<IView>(NavigationStack);
+				if (CurrentNavigationTask == null)
+				{
+					CurrentNavigationTask = _allPendingNavigationCompletionSource.Task;
+				}
+				else if (CurrentNavigationTask != _allPendingNavigationCompletionSource.Task)
+				{
+					throw new InvalidOperationException("Pending Navigations still processing");
+				}
 
-			// Alert currently visible pages that navigation is happening
-			SendNavigating();
+				_currentNavigationCompletionSource = currentNavRequestTaskSource;
 
-			// Create the request for the handler
-			var request = new NavigationRequest(immutableNavigationStack, animated);
-			((INavigationView)this).RequestNavigation(request);
+				// We create a new list to send to the handler because the structure backing 
+				// The Navigation stack isn't immutable
+				var immutableNavigationStack = new List<IView>(NavigationStack);
+				firePostNavigatingEvents?.Invoke();
 
-			// Wait for the handler to finish processing the navigation
-			await completionSource.Task;
+				// Create the request for the handler
+				var request = new NavigationRequest(immutableNavigationStack, animated);
+				((INavigationView)this).RequestNavigation(request);
+
+				// Wait for the handler to finish processing the navigation
+				// This task completes once the handler calls INavigationView.Finished
+				await currentNavRequestTaskSource.Task;
+			}
+			finally
+			{
+				if (Interlocked.Decrement(ref _waitingCount) == 0)
+				{
+					_allPendingNavigationCompletionSource.SetResult(new object());
+					_allPendingNavigationCompletionSource = null;
+				}
+
+				SemaphoreSlim.Release();
+			}
 
 			// Send navigated event to currently visible pages and associated navigation event
-			SendNavigated(previousPage);
-			if (push)
-				Pushed?.Invoke(this, new NavigationEventArgs(CurrentPage));
-			else if (pop)
-				Popped?.Invoke(this, new NavigationEventArgs(previousPage));
-			else
-				PoppedToRoot?.Invoke(this, new NavigationEventArgs(previousPage));
+			fireNavigatedEvents?.Invoke();
 		}
 
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
-			var immutableNavigationStack = new List<IView>(NavigationStack);
-			SendNavigating();
-			var request = new NavigationRequest(immutableNavigationStack, false);
-			((INavigationView)this).RequestNavigation(request);
+
+			if (InternalChildren.Count > 0)
+			{
+				var navStack = Navigation.NavigationStack;
+				var visiblePage = Navigation.NavigationStack[NavigationStack.Count - 1];
+				RootPage = navStack[0];
+				CurrentPage = visiblePage;
+
+				SendHandlerUpdateAsync(false, null, 
+				() =>
+				{					
+					FireAppearing(CurrentPage);
+				},
+				() =>
+				{
+					SendNavigated(null);
+				})
+				.FireAndForget(Handler);
+			}
 		}
 
 		// Once we get all platforms over to the new APIs
@@ -185,13 +243,6 @@ namespace Microsoft.Maui.Controls
 			protected override IReadOnlyList<Page> GetNavigationStack()
 			{
 				return _castingList.Value;
-			}
-
-
-			void SendHandlerUpdate(bool animated)
-			{
-				var request = new NavigationRequest(GetNavigationStack(), false);
-				Owner.Handler?.Invoke(nameof(INavigationView.RequestNavigation), request);
 			}
 
 			protected override void OnInsertPageBefore(Page page, Page before)
@@ -214,39 +265,98 @@ namespace Microsoft.Maui.Controls
 				if (index == 0)
 					Owner.RootPage = page;
 
-				SendHandlerUpdate(false);
+				Owner.SendHandlerUpdate(false);
 			}
 
 			protected async override Task<Page> OnPopAsync(bool animated)
 			{
-				var page = (Page)Owner.InternalChildren.Last();
-				Owner.FireDisappearing(page);
+				if (Owner.InternalChildren.Count == 1)
+				{
+					return null;
+				}
 
-				if (Owner.InternalChildren.Last() == page)
-					Owner.FireAppearing((Page)Owner.InternalChildren[Owner.InternalChildren.Count - 2]);
+				var currentPage = NavigationStack[NavigationStack.Count - 1];
+				var newCurrentPage = NavigationStack[NavigationStack.Count - 2];
 
-				Owner.RemoveFromInnerChildren(page);
-				Owner.CurrentPage = (Page)Owner.InternalChildren.Last();
-				await Owner.SendHandlerUpdateAsync(animated, pop: true);
-				return page;
+				await Owner.SendHandlerUpdateAsync(animated, 
+					() =>
+					{
+						Owner.RemoveFromInnerChildren(currentPage);
+						Owner.CurrentPage = currentPage;
+					},
+					() =>
+					{
+						Owner.SendNavigating(currentPage);
+						Owner.FireDisappearing(currentPage);
+						Owner.FireAppearing(newCurrentPage);
+					},
+					() =>
+					{
+						Owner.SendNavigated(currentPage);
+						Owner?.Popped?.Invoke(Owner, new NavigationEventArgs(currentPage));
+					});
+
+				return currentPage;
 			}
 
 			protected override Task OnPopToRootAsync(bool animated)
 			{
-				Element[] childrenToRemove = Owner.InternalChildren.Skip(1).ToArray();
-				foreach (Element child in childrenToRemove)
-				{
-					Owner.RemoveFromInnerChildren(child);
-				}
+				if (NavigationStack.Count == 1)
+					return Task.CompletedTask;
 
-				Owner.CurrentPage = Owner.RootPage;
-				return Owner.SendHandlerUpdateAsync(animated, popToRoot: true);
+				Page previousPage = Owner.CurrentPage;
+				Page newPage = Owner.RootPage;
+				List<Page> pagesToRemove = new List<Page>();
+
+				return Owner.SendHandlerUpdateAsync(animated,
+					() =>
+					{
+						var lastIndex = NavigationStack.Count - 1;
+						while (lastIndex > 0)
+						{
+							var page = (Page)NavigationStack[lastIndex];
+							Owner.RemoveFromInnerChildren(page);
+							lastIndex = NavigationStack.Count - 1;
+							pagesToRemove.Insert(0, page);
+						}
+						Owner.CurrentPage = newPage;
+					},
+					() =>
+					{
+						Owner.SendNavigating(previousPage);
+						Owner.FireDisappearing(previousPage);
+						Owner.FireAppearing(newPage);
+					},
+					() =>
+					{
+						Owner.SendNavigated(previousPage);
+						Owner?.PoppedToRoot?.Invoke(Owner, new PoppedToRootEventArgs(newPage, pagesToRemove));
+					});
 			}
 
 			protected override Task OnPushAsync(Page root, bool animated)
 			{
-				Owner.PushPage(root);
-				return Owner.SendHandlerUpdateAsync(animated, push: true);
+				if (Owner.InternalChildren.Contains(root))
+					return Task.CompletedTask;
+
+				var previousPage = Owner.CurrentPage;
+				
+				return Owner.SendHandlerUpdateAsync(animated,
+					() =>
+					{
+						Owner.PushPage(root);
+					},
+					() =>
+					{
+						Owner.SendNavigating(previousPage);
+						Owner.FireDisappearing(previousPage);
+						Owner.FireAppearing(root);
+					},
+					() =>
+					{
+						Owner.SendNavigated(previousPage);
+						Owner?.Pushed?.Invoke(Owner, new NavigationEventArgs(root));
+					});
 			}
 
 			protected override void OnRemovePage(Page page)

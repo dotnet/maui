@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 				Width = 300
 			};
 
-			if(shape == "Rectangle")
+			if (shape == "Rectangle")
 			{
 				border.Shape = new RectangleStub();
 			}

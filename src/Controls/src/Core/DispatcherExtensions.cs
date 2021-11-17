@@ -1,68 +1,55 @@
+﻿#nullable enable
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
 	internal static class DispatcherExtensions
 	{
-		static IDispatcherProvider s_current;
-		static IDispatcher s_default;
-
-		public static IDispatcher GetDispatcher(this BindableObject bindableObject)
+		public static IDispatcher GetDispatcher(this BindableObject? bindableObject)
 		{
-			if (s_default != null)
-			{
-				// If we're already using the fallback dispatcher, keep using it
-				return s_default;
-			}
+			// try find the dispatcher in the current hierarchy
+			if (bindableObject is VisualElement visual &&
+				visual.FindMauiContext() is IMauiContext context &&
+				context.Services.GetService<IDispatcher>() is IDispatcher handlerDispatcher)
+				return handlerDispatcher;
 
-			// See if the current platform has a DispatcherProvider for us
-			s_current = s_current ?? DependencyService.Get<IDispatcherProvider>();
+			// maybe this thread has a dispatcher
+			if (Dispatcher.GetForCurrentThread() is IDispatcher globalDispatcher)
+				return globalDispatcher;
 
-			if (s_current == null)
-			{
-				// No DispatcherProvider available, use the fallback dispatcher
-				s_default = new FallbackDispatcher();
-				return s_default;
-			}
+			// try looking on the app
+			if (bindableObject is not Application &&
+				Application.Current?.Dispatcher is IDispatcher appDispatcher)
+				return appDispatcher;
 
-			// Use the DispatcherProvider to retrieve an appropriate dispatcher for this BindableObject
-			return s_current.GetDispatcher(bindableObject) ?? new FallbackDispatcher();
+			// no dispatchers found at all
+			throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
 		}
 
-		public static void Dispatch(this IDispatcher dispatcher, Action action)
+		public static void Dispatch(this IDispatcher? dispatcher, Action action)
 		{
-			if (dispatcher != null)
+			// try looking on the app
+			if (dispatcher is null && Application.Current?.Dispatcher is IDispatcher appDispatcher)
+				dispatcher = appDispatcher;
+
+			// maybe this thread has a dispatcher
+			if (dispatcher is null)
+				dispatcher = Dispatcher.GetForCurrentThread();
+
+			// no dispatchers found at all
+			if (dispatcher is null)
+				throw new InvalidOperationException("The dispatcher was not found and the current application does not have a dispatcher.");
+
+			if (dispatcher.IsInvokeRequired)
 			{
-				if (dispatcher.IsInvokeRequired)
-				{
-					dispatcher.BeginInvokeOnMainThread(action);
-				}
-				else
-				{
-					action();
-				}
+				dispatcher.BeginInvokeOnMainThread(action);
 			}
 			else
 			{
-				if (Device.IsInvokeRequired)
-				{
-					Device.BeginInvokeOnMainThread(action);
-				}
-				else
-				{
-					action();
-				}
+				action();
 			}
-		}
-	}
-
-	internal class FallbackDispatcher : IDispatcher
-	{
-		public bool IsInvokeRequired => Device.IsInvokeRequired;
-
-		public void BeginInvokeOnMainThread(Action action)
-		{
-			Device.BeginInvokeOnMainThread(action);
 		}
 	}
 }

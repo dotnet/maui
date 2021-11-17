@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 	{
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
 
-		MauiContext _applicationContext = null!;
+		IMauiContext _applicationContext = null!;
 
 		protected MauiUIApplicationDelegate()
 		{
@@ -26,9 +26,11 @@ namespace Microsoft.Maui
 		{
 			var mauiApp = CreateMauiApp();
 
-			Services = mauiApp.Services;
+			var rootContext = new MauiContext(mauiApp.Services);
 
-			_applicationContext = new MauiContext(Services, this);
+			_applicationContext = rootContext.MakeApplicationScope(this);
+
+			Services = _applicationContext.Services;
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 
