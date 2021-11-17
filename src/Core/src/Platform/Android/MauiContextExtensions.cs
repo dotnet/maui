@@ -67,6 +67,9 @@ namespace Microsoft.Maui
 
 			if (registerNewNavigationRoot)
 			{
+				if (fragmentManager == null)
+					throw new InvalidOperationException("If you're creating a new Navigation Root you need to use a new Fragment Manager");
+
 				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
 			}
 

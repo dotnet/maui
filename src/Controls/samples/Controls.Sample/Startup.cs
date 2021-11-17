@@ -157,7 +157,7 @@ namespace Maui.Controls.Sample
 					// Log everything in this one
 					events.AddAndroid(android => android
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
-						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)))
+						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
 						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
@@ -187,7 +187,7 @@ namespace Maui.Controls.Sample
 
 							return shouldPreventBack-- > 0;
 						})
-						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
+						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut") && false)
 						.OnRestoreInstanceState((a, b) =>
 						{
 							LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");

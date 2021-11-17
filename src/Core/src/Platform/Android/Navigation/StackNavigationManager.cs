@@ -325,17 +325,6 @@ namespace Microsoft.Maui
 
 		internal void ToolbarBackButtonClicked() => OnToolbarBackButtonClicked();
 
-		protected virtual void OnHardwareBackButtonClicked()
-		{
-			if (MauiContext.GetActivity().GetWindow()?.BackButtonClicked() == false &&
-				NavigationStack.Count == 1)
-			{
-				MauiContext.GetActivity().FinishAffinity();
-			}
-		}
-
-		internal void HardwareBackButtonClicked() => OnHardwareBackButtonClicked();
-
 		// Fragments are always destroyed if they aren't visible
 		// The Handler/NativeView associated with the visible IView remain intact
 		// The performance hit of destorying/recreating fragments should be negligible
@@ -427,12 +416,6 @@ namespace Microsoft.Maui
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);
 
-
-				// This wires up the hardware back button to this fragment
-				f.RequireActivity()
-					.OnBackPressedDispatcher
-					.AddCallback(f, _stackNavigationManager.BackClick);
-
 				// Wire up the toolbar to the currently made visible Fragment
 				var controller = NavHostFragment.FindNavController(f);
 				var appbarConfig =
@@ -455,19 +438,8 @@ namespace Microsoft.Maui
 			{
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
-
-				_stackNavigationManager.BackClick.Remove();
+				
 				base.OnFragmentViewDestroyed(fm, f);
-			}
-
-			public override void OnFragmentCreated(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f, Bundle savedInstanceState)
-			{
-				base.OnFragmentCreated(fm, f, savedInstanceState);
-
-				// This wires up the hardware back button to this fragment
-				f.RequireActivity()
-					.OnBackPressedDispatcher
-					.AddCallback(f, _stackNavigationManager.BackClick);
 			}
 			#endregion
 

@@ -27,9 +27,14 @@ namespace Microsoft.Maui
 
 			if (!preventBack)
 			{
-				MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del => del(this));
+				var preventBackPropagation = false;
+				MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
+				{
+					preventBackPropagation = del(this) || preventBackPropagation;
+				});
 
-				base.OnBackPressed();
+				if (!preventBackPropagation)
+					base.OnBackPressed();
 			}
 		}
 

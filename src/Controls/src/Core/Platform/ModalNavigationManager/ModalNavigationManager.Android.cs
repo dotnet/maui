@@ -16,16 +16,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		partial void OnPageAttachedHandler()
-		{
-			if (_window.NativeActivity is AppCompatActivity activity && (_BackButtonCallBack == null || _BackButtonCallBack.Context != activity))
-			{
-				activity
-					.OnBackPressedDispatcher
-					.AddCallback(activity, _BackButtonCallBack = new BackButtonCallBack(this, activity));
-			}
-		}
-
 		ViewGroup _rootDecorView => (_window?.NativeActivity?.Window?.DecorView as ViewGroup) ??
 			throw new InvalidOperationException("Root View Needs to be set");
 
@@ -33,7 +23,6 @@ namespace Microsoft.Maui.Controls.Platform
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 		IPageController CurrentPageController => _navModel.CurrentPage;
 		Page CurrentPage => _navModel.CurrentPage;
-		BackButtonCallBack? _BackButtonCallBack;
 
 		// AFAICT this is specific to ListView and Context Items
 		internal bool NavAnimationInProgress
@@ -58,8 +47,19 @@ namespace Microsoft.Maui.Controls.Platform
 			var modalHandler = modal.Handler as INativeViewHandler;
 			if (modalHandler != null)
 			{
-				ModalContainer? modalContainer = modalHandler.NativeView.GetParentOfType<ModalContainer>() ??
-					throw new InvalidOperationException("Parent is not Modal Container");
+				ModalContainer? modalContainer = null;
+
+
+				for (int i = 0; i <= _rootDecorView.ChildCount; i++)
+				{
+					if(_rootDecorView.GetChildAt(i) is ModalContainer mc &&
+						mc.Modal == modal)
+					{
+						modalContainer = mc;
+					}
+				}
+
+				_= modalContainer ?? throw new InvalidOperationException("Parent is not Modal Container");
 
 				if (animated)
 				{
@@ -166,47 +166,11 @@ namespace Microsoft.Maui.Controls.Platform
 			return handled;
 		}
 
-		class BackButtonCallBack : OnBackPressedCallback
-		{
-			WeakReference<Context> _weakReference;
-			ModalNavigationManager? _service;
-
-			public BackButtonCallBack(ModalNavigationManager service, Context context) : base(true)
-			{
-				_service = service;
-				_weakReference = new WeakReference<Context>(context);
-			}
-
-			public Context? Context
-			{
-				get
-				{
-					Context? context;
-					if (_weakReference.TryGetTarget(out context))
-						return context;
-
-					_service = null;
-					return null;
-				}
-			}
-
-			public override void HandleOnBackPressed()
-			{
-				_service?.HandleBackPressed();
-			}
-
-			protected override void Dispose(bool disposing)
-			{
-				_service = null;
-				base.Dispose(disposing);
-			}
-		}
-
 		sealed class ModalContainer : ViewGroup
 		{
 			AView _backgroundView;
 			IMauiContext? _windowMauiContext;
-			Page? _modal;
+			public Page? Modal { get; private set; }
 			ModalFragment _modalFragment;
 			FragmentManager? _fragmentManager;
 
@@ -215,7 +179,7 @@ namespace Microsoft.Maui.Controls.Platform
 			public ModalContainer(IWindow window, Page modal) : base(window.Handler?.MauiContext?.Context ?? throw new ArgumentNullException($"{nameof(window.Handler.MauiContext.Context)}"))
 			{
 				_windowMauiContext = window.Handler.MauiContext;
-				_modal = modal;
+				Modal = modal;
 
 				_backgroundView = new AView(_windowMauiContext.Context);
 				UpdateBackgroundColor();
@@ -223,7 +187,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				Id = AView.GenerateViewId();
 
-				_modal.PropertyChanged += OnModalPagePropertyChanged;
+				Modal.PropertyChanged += OnModalPagePropertyChanged;
 
 				_modalFragment = new ModalFragment(_windowMauiContext, window, modal);
 				_fragmentManager = _windowMauiContext.GetFragmentManager();
@@ -269,10 +233,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void UpdateBackgroundColor()
 			{
-				if (_modal == null)
+				if (Modal == null)
 					return;
 
-				Color modalBkgndColor = _modal.BackgroundColor;
+				Color modalBkgndColor = Modal.BackgroundColor;
 				if (modalBkgndColor == null)
 					_backgroundView.SetWindowBackground();
 				else
@@ -281,13 +245,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Destroy()
 			{
-				if (_modal == null || _windowMauiContext == null || _fragmentManager == null)
+				if (Modal == null || _windowMauiContext == null || _fragmentManager == null)
 					return;
 
-				if (_modal.Toolbar?.Handler != null)
-					_modal.Toolbar.Handler = null;
+				if (Modal.Toolbar?.Handler != null)
+					Modal.Toolbar.Handler = null;
 
-				_modal.Handler = null;
+				Modal.Handler = null;
 
 
 				_fragmentManager
@@ -295,7 +259,7 @@ namespace Microsoft.Maui.Controls.Platform
 					.Remove(_modalFragment)
 					.Commit();
 
-				_modal = null;
+				Modal = null;
 				_windowMauiContext = null;
 				_fragmentManager = null;
 				this.RemoveFromParent();
@@ -324,27 +288,15 @@ namespace Microsoft.Maui.Controls.Platform
 				public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 				{
 					var modalContext = _mauiWindowContext
-						.MakeScoped(registerNewNavigationRoot: true);
-
+						.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 
 					_modal.Toolbar ??= new Toolbar();
 					_ = _modal.Toolbar.ToNative(modalContext);
 
 					_navigationRootManager = modalContext.GetNavigationRootManager();
-
 					_navigationRootManager.SetContentView(_modal.ToNative(modalContext));
 
 					return _navigationRootManager.RootView;
-				}
-
-				public override void OnDestroy()
-				{
-					base.OnDestroy();
-				}
-
-				public override void OnDestroyView()
-				{
-					base.OnDestroyView();
 				}
 			}
 		}
