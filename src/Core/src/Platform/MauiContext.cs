@@ -30,8 +30,8 @@ namespace Microsoft.Maui
 
 		public IServiceProvider Services => _services;
 
-		public IMauiHandlersServiceProvider Handlers =>
-			Services.GetRequiredService<IMauiHandlersServiceProvider>();
+		public IMauiHandlersFactory Handlers =>
+			Services.GetRequiredService<IMauiHandlersFactory>();
 
 #if __ANDROID__
 		public Android.Content.Context? Context =>

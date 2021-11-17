@@ -77,10 +77,10 @@ namespace Microsoft.Maui.UnitTests
 			HandlerStub handlerStub = new HandlerStub();
 
 			var collection = new MauiServiceCollection();
-			collection.TryAddSingleton<IMauiHandlersServiceProvider>(new MauiHandlersServiceProvider(null));
+			collection.TryAddSingleton<IMauiHandlersFactory>(new MauiHandlersFactory(null));
 			collection.TryAddSingleton<IFooService, FooService>();
 
-			var provider = new MauiServiceProvider(collection, false);
+			var provider = new MauiFactory(collection, false);
 
 			handlerStub.SetMauiContext(new HandlersContextStub(provider));
 
