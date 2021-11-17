@@ -123,6 +123,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
 		}
 
+		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(editor);
+		}
+
 		[MissingMapper]
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) { }
 
