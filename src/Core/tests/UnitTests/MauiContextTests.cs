@@ -50,7 +50,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var specificObj = new TestThing();
 			var context = new MauiContext(services);
-			context.AddSpecific(() => specificObj);
+			context.AddSpecific<TestThing>(() => specificObj);
 
 			Assert.Same(specificObj, context.Services.GetService<TestThing>());
 		}
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.UnitTests
 			var collection = new MauiServiceCollection();
 			var services = new MauiFactory(collection, false);
 			var context = new MauiContext(services);
-			context.AddSpecific(() => { count++; return specificObj; });
+			context.AddSpecific<TestThing>(() => { count++; return specificObj; });
 
 			Assert.Equal(0, count);
 			Assert.Same(specificObj, context.Services.GetService<TestThing>());
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.UnitTests
 			static void DoAdd(MauiContext ctx)
 			{
 				var specificObj = new TestThing();
-				ctx.AddSpecific(specificObj);
+				ctx.AddSpecific<TestThing>(specificObj);
 			}
 		}
 
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.UnitTests
 			static void DoAdd(MauiContext ctx)
 			{
 				var specificObj = new TestThing();
-				ctx.AddWeakSpecific(specificObj);
+				ctx.AddWeakSpecific<TestThing>(specificObj);
 			}
 		}
 
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.UnitTests
 			var first = new MauiContext(services);
 
 			var second = new MauiContext(first);
-			second.AddSpecific(obj2);
+			second.AddSpecific<TestThing>(obj2);
 
 			Assert.Same(obj2, second.Services.GetService<TestThing>());
 		}
