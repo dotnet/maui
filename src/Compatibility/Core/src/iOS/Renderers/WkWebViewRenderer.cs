@@ -197,12 +197,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// local file loading here and see if that works:
 				if (!LoadFile(url))
 				{
-					Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(formatException, $"Unable to Load Url {url} ");
+					Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(formatException, "Unable to Load Url {url} ", url);
 				}
 			}
 			catch (Exception exc)
 			{
-				Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(exc, $"Unable to Load Url {url} ");
+				Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(exc, "Unable to Load Url {url}", url);
 			}
 		}
 
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception ex)
 			{
-				Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(ex, $"Could not load {url} as local file");
+				Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(ex, "Could not load {url} as local file", url);
 			}
 
 			return false;

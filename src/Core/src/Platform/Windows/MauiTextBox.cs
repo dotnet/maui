@@ -245,7 +245,7 @@ namespace Microsoft.Maui
 					.Current
 					.Services
 					.CreateLogger<ILogger>()
-					.LogWarning($"Failed to set Control.SelectionStart from CursorPosition: {ex}");
+					.LogWarning(ex, "Failed to set Control.SelectionStart from CursorPosition");
 			}
 			finally
 			{
@@ -281,7 +281,7 @@ namespace Microsoft.Maui
 					.Current
 					.Services
 					.CreateLogger<ILogger>()
-					.LogWarning($"Failed to set Control.SelectionLength from SelectionLength: {ex}");
+					.LogWarning(ex, "Failed to set Control.SelectionLength from SelectionLength");
 			}
 			finally
 			{

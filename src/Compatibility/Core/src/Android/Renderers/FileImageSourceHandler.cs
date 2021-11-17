@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (bitmap == null)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>()?.LogWarning($"Could not find image or image file was invalid: {imagesource}");
+				Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>()?.LogWarning("Could not find image or image file was invalid: {imagesource}", imagesource);
 			}
 
 			return bitmap;
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (uri != null)
 					imageView.SetImageURI(uri);
 				else
-					Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>().LogWarning($"Could not find image or image file was invalid: {0}", imagesource);
+					Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>().LogWarning("Could not find image or image file was invalid: {imagesource}", imagesource);
 			}
 			else
 			{
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (drawable != null)
 					imageView.SetImageDrawable(drawable);
 				else
-					Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>().LogWarning($"Could not find image or image file was invalid: {0}", imagesource);
+					Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>().LogWarning("Could not find image or image file was invalid: {imagesource}", imagesource);
 			}
 
 			return Task.FromResult(true);

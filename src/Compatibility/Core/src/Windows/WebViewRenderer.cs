@@ -91,7 +91,7 @@ if(bases.length == 0){
 				}
 				catch (Exception exc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning(exc, $"Failed to load: {uri}");
+					Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning(exc, "Failed to load: {uri}", uri);
 				}
 			}
 			else
@@ -103,7 +103,7 @@ if(bases.length == 0){
 				}
 				catch (Exception exc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning(exc, $"Failed to load: {uri}");
+					Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning(exc, "Failed to load: {uri}", uri);
 				}
 			}
 		}
@@ -369,7 +369,7 @@ if(bases.length == 0){
 					}
 					catch (Exception exc)
 					{
-						Application.Current?.FindMauiContext()?.CreateLogger<WebView>()?.LogWarning(exc, $"Eval of script failed Script: {eventArg.Script}");
+						Application.Current?.FindMauiContext()?.CreateLogger<WebView>()?.LogWarning(exc, "Eval of script failed Script: {eventArg.Script}", eventArg.Script);
 					}
 				});
 		}

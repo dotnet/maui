@@ -350,7 +350,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (id == 0)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger(nameof(ResourceManager)).LogWarning($"Could not load image named: {name}");
+				Application.Current?.FindMauiContext()?.CreateLogger(nameof(ResourceManager)).LogWarning("Could not load image named: {name}", name);
 				return null;
 			}
 

@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
-			Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning($"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
+			Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning("Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}", exceptionRoutedEventArgs.ErrorMessage);
 			Element?.SetIsLoading(false);
 		}
 
