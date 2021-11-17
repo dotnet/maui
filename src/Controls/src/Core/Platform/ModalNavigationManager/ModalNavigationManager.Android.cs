@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				Modal.PropertyChanged += OnModalPagePropertyChanged;
 
-				_modalFragment = new ModalFragment(_windowMauiContext, window, modal);
+				_modalFragment = new ModalFragment(_windowMauiContext, modal);
 				_fragmentManager = _windowMauiContext.GetFragmentManager();
 
 				_fragmentManager
@@ -269,7 +269,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				readonly Page _modal;
 				readonly IMauiContext _mauiWindowContext;
-				readonly IWindow _window;
 				NavigationRootManager? _navigationRootManager;
 
 				public NavigationRootManager? NavigationRootManager
@@ -278,11 +277,10 @@ namespace Microsoft.Maui.Controls.Platform
 					private set => _navigationRootManager = value;
 				}
 
-				public ModalFragment(IMauiContext mauiContext, IWindow window, Page modal)
+				public ModalFragment(IMauiContext mauiContext, Page modal)
 				{
 					_modal = modal;
 					_mauiWindowContext = mauiContext;
-					_window = window;
 				}
 
 				public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
