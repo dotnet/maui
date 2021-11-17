@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class NavigationViewHandler :
 		ViewHandler<INavigationView, Frame>
 	{
-		NavigationManager? _navigationManager;
+		StackNavigationManager? _navigationManager;
 		protected override Frame CreateNativeView()
 		{
 			_navigationManager = CreateNavigationManager();
@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Handlers
 
 
 		// this should move to a factory method
-		protected virtual NavigationManager CreateNavigationManager() =>
-			_navigationManager ??= new NavigationManager(MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null"));
+		protected virtual StackNavigationManager CreateNavigationManager() =>
+			_navigationManager ??= new StackNavigationManager(MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null"));
 	}
 }
 

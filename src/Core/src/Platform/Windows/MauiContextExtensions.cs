@@ -31,5 +31,18 @@ namespace Microsoft.Maui
 			return MauiWinUIApplication.Current.Services
 				?? throw new InvalidOperationException("Unable to find Application Services");
 		}
+
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, bool registerNewNavigationRoot)
+		{
+			var scopedContext = new MauiContext(mauiContext.Services);
+
+			if (registerNewNavigationRoot)
+			{
+				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
+			}
+
+			return scopedContext;
+		}
 	}
 }

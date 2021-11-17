@@ -406,18 +406,18 @@ namespace Microsoft.Maui
 			AndroidX.Fragment.App.FragmentManager.FragmentLifecycleCallbacks,
 			NavController.IOnDestinationChangedListener
 		{
-			StackNavigationManager _navigationManager;
+			StackNavigationManager _stackNavigationManager;
 
 			public Callbacks(StackNavigationManager navigationLayout)
 			{
-				_navigationManager = navigationLayout;
+				_stackNavigationManager = navigationLayout;
 			}
 			#region IOnDestinationChangedListener
 
 			void NavController.IOnDestinationChangedListener.OnDestinationChanged(
 				NavController p0, NavDestination p1, Bundle p2)
 			{
-				_navigationManager.OnDestinationChanged(p0, p1, p2);
+				_stackNavigationManager.OnDestinationChanged(p0, p1, p2);
 			}
 			#endregion
 
@@ -425,14 +425,13 @@ namespace Microsoft.Maui
 			public override void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f)
 			{
 				if (f is NavigationViewFragment pf)
-					_navigationManager.OnNavigationViewFragmentResumed(fm, pf);
+					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);
 
 
 				// This wires up the hardware back button to this fragment
 				f.RequireActivity()
 					.OnBackPressedDispatcher
-					.AddCallback(f, _navigationManager.BackClick);
-
+					.AddCallback(f, _stackNavigationManager.BackClick);
 
 				// Wire up the toolbar to the currently made visible Fragment
 				var controller = NavHostFragment.FindNavController(f);
@@ -441,18 +440,13 @@ namespace Microsoft.Maui
 						.Builder(controller.Graph)
 						.Build();
 
-				if (_navigationManager.Toolbar != null)
+				if (_stackNavigationManager.Toolbar != null)
 				{
 					NavigationUI
-						.SetupWithNavController(_navigationManager.Toolbar, controller, appbarConfig);
+						.SetupWithNavController(_stackNavigationManager.Toolbar, controller, appbarConfig);
 
-					_navigationManager.Toolbar.SetNavigationOnClickListener(_navigationManager.BackClick);
+					_stackNavigationManager.Toolbar.SetNavigationOnClickListener(_stackNavigationManager.BackClick);
 				}
-			}
-
-			public override void OnFragmentAttached(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f, Context context)
-			{
-				base.OnFragmentAttached(fm, f, context);
 			}
 
 			public override void OnFragmentViewDestroyed(
@@ -460,8 +454,9 @@ namespace Microsoft.Maui
 				AndroidX.Fragment.App.Fragment f)
 			{
 				if (f is NavigationViewFragment pf)
-					_navigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
+					_stackNavigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
 
+				_stackNavigationManager.BackClick.Remove();
 				base.OnFragmentViewDestroyed(fm, f);
 			}
 
@@ -472,7 +467,7 @@ namespace Microsoft.Maui
 				// This wires up the hardware back button to this fragment
 				f.RequireActivity()
 					.OnBackPressedDispatcher
-					.AddCallback(f, _navigationManager.BackClick);
+					.AddCallback(f, _stackNavigationManager.BackClick);
 			}
 			#endregion
 

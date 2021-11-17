@@ -3,10 +3,12 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
 using AndroidX.AppCompat.App;
+using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -24,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		ViewGroup _renderer => (_window?.NativeActivity?.Window?.DecorView as ViewGroup) ??
+		ViewGroup _rootDecorView => (_window?.NativeActivity?.Window?.DecorView as ViewGroup) ??
 			throw new InvalidOperationException("Root View Needs to be set");
 
 		bool _navAnimationInProgress;
@@ -53,22 +55,21 @@ namespace Microsoft.Maui.Controls.Platform
 			((IPageController)modal).SendDisappearing();
 			var source = new TaskCompletionSource<Page>();
 
-			var modalRenderer = modal.Handler as INativeViewHandler;
-			if (modalRenderer != null)
+			var modalHandler = modal.Handler as INativeViewHandler;
+			if (modalHandler != null)
 			{
-				ModalContainer? modalContainer = modalRenderer.NativeView?.Parent as ModalContainer ??
+				ModalContainer? modalContainer = modalHandler.NativeView.GetParentOfType<ModalContainer>() ??
 					throw new InvalidOperationException("Parent is not Modal Container");
 
 				if (animated)
 				{
 					modalContainer
-						.Animate()?.TranslationY(_renderer.Height)?
+						.Animate()?.TranslationY(_rootDecorView.Height)?
 						.SetInterpolator(new AccelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
 						{
 							OnEnd = a =>
 							{
-								modalContainer.RemoveFromParent();
-								modalContainer.Dispose();
+								modalContainer.Destroy();
 								source.TrySetResult(modal);
 								CurrentPageController?.SendAppearing();
 								modalContainer = null;
@@ -77,8 +78,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					modalContainer.RemoveFromParent();
-					modalContainer.Dispose();
+					modalContainer.Destroy();
 					source.TrySetResult(modal);
 					CurrentPageController?.SendAppearing();
 				}
@@ -109,15 +109,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Task PresentModal(Page modal, bool animated)
 		{
-			var modalContainer = new ModalContainer(MauiContext, modal);
+			modal.Toolbar ??= new Toolbar();
 
-			_renderer.AddView(modalContainer);
+			var modalContainer = new ModalContainer(_window, modal);
+
+			_rootDecorView.AddView(modalContainer);
 
 			var source = new TaskCompletionSource<bool>();
 			NavAnimationInProgress = true;
 			if (animated)
 			{
-				modalContainer.TranslationY = _renderer.Height;
+				modalContainer.TranslationY = _rootDecorView.Height;
 				modalContainer?.Animate()?.TranslationY(0)?.SetInterpolator(new DecelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
 				{
 					OnEnd = a =>
@@ -203,61 +205,60 @@ namespace Microsoft.Maui.Controls.Platform
 		sealed class ModalContainer : ViewGroup
 		{
 			AView _backgroundView;
-			Page _modal;
+			IMauiContext? _windowMauiContext;
+			Page? _modal;
+			ModalFragment _modalFragment;
+			FragmentManager? _fragmentManager;
 
-			public ModalContainer(IMauiContext context, Page modal) : base(context.Context ?? throw new ArgumentNullException($"{nameof(context.Context)}"))
+			NavigationRootManager? NavigationRootManager => _modalFragment.NavigationRootManager;
+
+			public ModalContainer(IWindow window, Page modal) : base(window.Handler?.MauiContext?.Context ?? throw new ArgumentNullException($"{nameof(window.Handler.MauiContext.Context)}"))
 			{
+				_windowMauiContext = window.Handler.MauiContext;
 				_modal = modal;
 
-				_backgroundView = new AView(context.Context);
+				_backgroundView = new AView(_windowMauiContext.Context);
 				UpdateBackgroundColor();
 				AddView(_backgroundView);
-				var nativeView = modal.ToNative(context);
-
-				AddView(nativeView);
 
 				Id = AView.GenerateViewId();
 
 				_modal.PropertyChanged += OnModalPagePropertyChanged;
+
+				_modalFragment = new ModalFragment(_windowMauiContext, window, modal);
+				_fragmentManager = _windowMauiContext.GetFragmentManager();
+
+				_fragmentManager
+					.BeginTransaction()
+					.Add(this.Id, _modalFragment)
+					.Commit();
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				if (Context == null)
+				if (Context == null || NavigationRootManager == null)
+				{
+					SetMeasuredDimension(0, 0);
 					return;
+				}
 
-				var deviceIndependentWidth = widthMeasureSpec.ToDouble(Context);
-				var deviceIndependentHeight = heightMeasureSpec.ToDouble(Context);
-				var size = (_modal as IView).Measure(deviceIndependentWidth, deviceIndependentHeight);
+				var rootView =
+					NavigationRootManager.RootView;
 
-				var nativeWidth = Context.ToPixels(size.Width);
-				var nativeHeight = Context.ToPixels(size.Height);
-
-				SetMeasuredDimension((int)nativeWidth, (int)nativeHeight);
+				rootView.Measure(widthMeasureSpec, heightMeasureSpec);
+				SetMeasuredDimension(rootView.MeasuredWidth, rootView.MeasuredHeight);
 			}
 
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (Context == null)
+				if (Context == null || NavigationRootManager == null)
 					return;
 
-				if (changed)
-				{
-					var deviceIndependentLeft = Context.FromPixels(l);
-					var deviceIndependentTop = Context.FromPixels(t);
-					var deviceIndependentRight = Context.FromPixels(r);
-					var deviceIndependentBottom = Context.FromPixels(b);
+				NavigationRootManager
+					.RootView.Layout(l, t, r, b);
 
-					var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
-						deviceIndependentRight, deviceIndependentBottom);
-
-					(_modal as IView).Arrange(destination);
-					(_modal.Handler as INativeViewHandler)?.NativeArrange(_modal.Frame);
-					_backgroundView.Layout(0, 0, r - l, b - t);
-				}
-
-				// _renderer.UpdateLayout();
+				_backgroundView.Layout(0, 0, r - l, b - t);
 			}
 
 			void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -268,11 +269,83 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void UpdateBackgroundColor()
 			{
+				if (_modal == null)
+					return;
+
 				Color modalBkgndColor = _modal.BackgroundColor;
 				if (modalBkgndColor == null)
 					_backgroundView.SetWindowBackground();
 				else
 					_backgroundView.SetBackgroundColor(modalBkgndColor.ToNative());
+			}
+
+			public void Destroy()
+			{
+				if (_modal == null || _windowMauiContext == null || _fragmentManager == null)
+					return;
+
+				if (_modal.Toolbar?.Handler != null)
+					_modal.Toolbar.Handler = null;
+
+				_modal.Handler = null;
+
+
+				_fragmentManager
+					.BeginTransaction()
+					.Remove(_modalFragment)
+					.Commit();
+
+				_modal = null;
+				_windowMauiContext = null;
+				_fragmentManager = null;
+				this.RemoveFromParent();
+			}
+
+			class ModalFragment : Fragment
+			{
+				readonly Page _modal;
+				readonly IMauiContext _mauiWindowContext;
+				readonly IWindow _window;
+				NavigationRootManager? _navigationRootManager;
+
+				public NavigationRootManager? NavigationRootManager
+				{
+					get => _navigationRootManager;
+					private set => _navigationRootManager = value;
+				}
+
+				public ModalFragment(IMauiContext mauiContext, IWindow window, Page modal)
+				{
+					_modal = modal;
+					_mauiWindowContext = mauiContext;
+					_window = window;
+				}
+
+				public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+				{
+					var modalContext = _mauiWindowContext
+						.MakeScoped(registerNewNavigationRoot: true);
+
+
+					_modal.Toolbar ??= new Toolbar();
+					_ = _modal.Toolbar.ToNative(modalContext);
+
+					_navigationRootManager = modalContext.GetNavigationRootManager();
+
+					_navigationRootManager.SetContentView(_modal.ToNative(modalContext));
+
+					return _navigationRootManager.RootView;
+				}
+
+				public override void OnDestroy()
+				{
+					base.OnDestroy();
+				}
+
+				public override void OnDestroyView()
+				{
+					base.OnDestroyView();
+				}
 			}
 		}
 	}

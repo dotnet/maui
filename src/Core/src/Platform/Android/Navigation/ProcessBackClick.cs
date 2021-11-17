@@ -7,22 +7,22 @@ namespace Microsoft.Maui
 {
 	class ProcessBackClick : AndroidX.Activity.OnBackPressedCallback, AView.IOnClickListener
 	{
-		StackNavigationManager _navigationManager;
+		StackNavigationManager _stackNavigationManager;
 
 		public ProcessBackClick(StackNavigationManager navHostPageFragment)
 			: base(true)
 		{
-			_navigationManager = navHostPageFragment;
+			_stackNavigationManager = navHostPageFragment;
 		}
 
 		public override void HandleOnBackPressed()
 		{
-			_navigationManager.HardwareBackButtonClicked();
+			_stackNavigationManager.HardwareBackButtonClicked();
 		}
 
 		public void OnClick(AView? v)
 		{
-			_navigationManager.ToolbarBackButtonClicked();
+			_stackNavigationManager.ToolbarBackButtonClicked();
 		}
 	}
 }
