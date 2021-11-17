@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportRenderer(typeof(Issue12372Button), typeof(_12372CustomRenderer))]

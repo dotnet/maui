@@ -1,9 +1,15 @@
+using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Essentials;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+
+	[Collection("UsesPreferences")]
 	public class SecureStorage_Tests
 	{
 		public SecureStorage_Tests()
@@ -12,13 +18,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Theory]
-		[InlineData("test.txt", "data", true, true)]
-		[InlineData("noextension", "data2", true, false)]
-		[InlineData("funny*&$%@!._/\\chars", "data3", true, false)]
-		[InlineData("test.txt2", "data2", false, true)]
-		[InlineData("noextension2", "data22", false, false)]
-		[InlineData("funny*&$%@!._/\\chars2", "data32", false, false)]
-		public async Task Saves_And_Loads(string key, string data, bool emulatePreApi23, bool emulateNonEnglishLocale)
+		[InlineData("test.txt", "data")]
+		[InlineData("noextension", "data2")]
+		[InlineData("funny*&$%@!._/\\chars", "data3")]
+		[InlineData("test.txt2", "data2")]
+		[InlineData("noextension2", "data22")]
+		[InlineData("funny*&$%@!._/\\chars2", "data32")]
+		public async Task Saves_And_Loads(string key, string data)
 		{
 #if __IOS__
             // Try the new platform specific api
@@ -28,18 +34,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
             Assert.Equal(data, b);
 #endif
-
-#if __ANDROID__
-            SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
-
-            if (emulateNonEnglishLocale)
-            {
-                Platform.SetLocale(new Java.Util.Locale("ar"));
-            }
-#else
-			Utils.Unused(emulatePreApi23, emulateNonEnglishLocale);
-#endif
-
 			await SecureStorage.SetAsync(key, data);
 
 			var c = await SecureStorage.GetAsync(key);
@@ -60,81 +54,59 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 #if __ANDROID__
-        [Theory]
-        [InlineData("test.txt", "data")]
-        public async Task Fix_Corrupt_Key(string key, string data)
-        {
-            // this operation is only available on API level 23+ devices
-            if (!Platform.HasApiLevel(23))
-                return;
-
-            // set a valid key
-            SecureStorage.AlwaysUseAsymmetricKeyStorage = true;
-            await SecureStorage.SetAsync(key, data);
-
-            // simulate corrupt the key
-            var prefKey = "SecureStorageKey";
-            var mainKey = "A2PfJSNdEDjM+422tpu7FqFcVQQbO3ti/DvnDnIqrq9CFwaBi6NdXYcicjvMW6nF7X/Clpto5xerM41U1H4qtWJDO0Ijc5QNTHGZl9tDSbXJ6yDCDDnEDryj2uTa8DiHoNcNX68QtcV3at4kkJKXXAwZXSC88a73/xDdh1u5gUdCeXJzVc5vOY6QpAGUH0bjR5NHrqEQNNGDdquFGN9n2ZJPsEK6C9fx0QwCIL+uldpAYSWrpmUIr+/0X7Y0mJpN84ldygEVxHLBuVrzB4Bbu5XGLUN/0Sr2plWcKm7XhM6wp3JRW6Eae2ozys42p1YLeM0HXWrhTqP6FRPkS6mOtw==";
-
-            Preferences.Set(prefKey, mainKey, SecureStorage.Alias);
-
-            var c = await SecureStorage.GetAsync(key);
-            Assert.Null(c);
-
-            // try to reset and get again
-            await SecureStorage.SetAsync(key, data);
-            c = await SecureStorage.GetAsync(key);
-
-            Assert.Equal(data, c);
-        }
-#endif
-
 		[Theory]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task Non_Existent_Key_Returns_Null(bool emulatePreApi23)
+		[InlineData("test.txt", "data")]
+		public async Task Fix_Corrupt_Data(string key, string data)
 		{
-#if __ANDROID__
-            SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
-#else
-			Utils.Unused(emulatePreApi23);
-#endif
-			var v = await SecureStorage.GetAsync("THIS_KEY_SHOULD_NOT_EXIST");
+			// this operation is only available on API level 23+ devices
+			if (!Platform.HasApiLevel(23))
+				return;
 
+			// set a valid key
+			await SecureStorage.SetAsync(key, data);
+
+			// simulate corrupt the key
+			var corruptData = "A2PfJSNdEDjM+422tpu7FqFcVQQbO3ti/DvnDnIqrq9CFwaBi6NdXYcicjvMW6nF7X/Clpto5xerM41U1H4qtWJDO0Ijc5QNTHGZl9tDSbXJ6yDCDDnEDryj2uTa8DiHoNcNX68QtcV3at4kkJKXXAwZXSC88a73/xDdh1u5gUdCeXJzVc5vOY6QpAGUH0bjR5NHrqEQNNGDdquFGN9n2ZJPsEK6C9fx0QwCIL+uldpAYSWrpmUIr+/0X7Y0mJpN84ldygEVxHLBuVrzB4Bbu5XGLUN/0Sr2plWcKm7XhM6wp3JRW6Eae2ozys42p1YLeM0HXWrhTqP6FRPkS6mOtw==";
+			var all = Preferences.GetSharedPreferences(SecureStorage.Alias).All;
+			Preferences.Set(all.Keys.First(x => !x.StartsWith("_")), corruptData, SecureStorage.Alias);
+
+			var c = await SecureStorage.GetAsync(key);
+			Assert.Null(c);
+
+			// try to reset and get again
+			await SecureStorage.SetAsync(key, data);
+			c = await SecureStorage.GetAsync(key);
+			Assert.Equal(data, c);
+		}
+#endif
+
+		[Fact]
+		public async Task Non_Existent_Key_Returns_Null()
+		{
+			var v = await SecureStorage.GetAsync("THIS_KEY_SHOULD_NOT_EXIST");
 			Assert.Null(v);
 		}
 
 		[Theory]
-		[InlineData("KEY_TO_REMOVE1", true)]
-		[InlineData("KEY_TO_REMOVE2", false)]
-		public async Task Remove_Key(string key, bool emulatePreApi23)
+		[InlineData("KEY_TO_REMOVE1")]
+		[InlineData("KEY_TO_REMOVE2")]
+		public async Task Remove_Key(string key)
 		{
-#if __ANDROID__
-            SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
-#else
-			Utils.Unused(emulatePreApi23);
-#endif
 			await SecureStorage.SetAsync(key, "Irrelevant Data");
 
 			var result = SecureStorage.Remove(key);
-
 			Assert.True(result);
 
 			var v = await SecureStorage.GetAsync(key);
-
 			Assert.Null(v);
 		}
 
 		[Theory]
-		[InlineData(true, new[] { "KEYS_TO_REMOVEA1", "KEYS_TO_REMOVEA2" })]
-		[InlineData(false, new[] { "KEYS_TO_REMOVEB1", "KEYS_TO_REMOVEB2" })]
-		public async Task Remove_All_Keys(bool emulatePreApi23, string[] keys)
+		[InlineData("KEYS_TO_REMOVEA1", "KEYS_TO_REMOVEA2")]
+		[InlineData("KEYS_TO_REMOVEB1", "KEYS_TO_REMOVEB2")]
+		public async Task Remove_All_Keys(string key1, string key2)
 		{
-#if __ANDROID__
-            SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
-#else
-			Utils.Unused(emulatePreApi23);
-#endif
+			string[] keys = new[] { key1, key2 };
 
 			// Set a couple keys
 			foreach (var key in keys)
@@ -145,50 +117,43 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			// Make sure they are all removed
 			foreach (var key in keys)
-				Assert.Null(await SecureStorage.GetAsync(key));
+			{
+				var result = await SecureStorage.GetAsync(key);
+				Assert.Null(result);
+			}
 		}
 
 #if __ANDROID__
-        [Fact]
-        public async Task Asymmetric_to_Symmetric_API_Upgrade()
-        {
-            var key = "asym_to_sym_upgrade";
-            var expected = "this is the value";
+		[Fact]
+		public async Task Asymmetric_to_Symmetric_API_Upgrade()
+		{
+			var key = "asym_to_sym_upgrade";
+			var expected = "this is the value";
 
-            SecureStorage.RemoveAll();
+			SecureStorage.RemoveAll();
 
-            // Emulate pre api 23
-            SecureStorage.AlwaysUseAsymmetricKeyStorage = true;
+			await SecureStorage.SetAsync(key, expected);
 
-            await SecureStorage.SetAsync(key, expected);
+			var v = await SecureStorage.GetAsync(key);
 
-            // Simulate Upgrading to API23+
-            SecureStorage.AlwaysUseAsymmetricKeyStorage = false;
+			SecureStorage.RemoveAll();
 
-            var v = await SecureStorage.GetAsync(key);
-
-            SecureStorage.RemoveAll();
-
-            Assert.Equal(expected, v);
-        }
+			Assert.Equal(expected, v);
+		}
 #endif
 
-#if __ANDROID__
-        [Theory]
-        [InlineData("test-key", "value1")]
-        public async Task Legacy_Key(string key, string data)
-        {
-            var ks = new AndroidKeyStore(Platform.AppContext, SecureStorage.Alias, SecureStorage.AlwaysUseAsymmetricKeyStorage);
-            var encryptedData = ks.Encrypt(data);
+		[Fact]
+		public async Task Set_Get_Async_MultipleTimes()
+		{
+			await Parallel.ForEachAsync(Enumerable.Range(0, 100), async (i, _) =>
+				await SecureStorage.SetAsync(i.ToString(), i.ToString())
+			);
 
-            var encStr = System.Convert.ToBase64String(encryptedData);
-            Preferences.Set(SecureStorage.Md5Hash(key), encStr, SecureStorage.Alias);
-
-            // Ensure we read back out the right key
-            var c = await SecureStorage.GetAsync(key);
-
-            Assert.Equal(data, c);
-        }
-#endif
+			for (int i = 0; i < 100; i++)
+			{
+				var v = await SecureStorage.GetAsync(i.ToString());
+				Assert.Equal(i.ToString(), v);
+			}
+		}
 	}
 }

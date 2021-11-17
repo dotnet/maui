@@ -3,6 +3,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -22,20 +23,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 
-			nativeView.Changed += OnChanged;
 			nativeView.ShouldChangeText += OnShouldChangeText;
 			nativeView.Ended += OnEnded;
-			nativeView.TextPropertySet += OnTextPropertySet;
+			nativeView.TextSetOrChanged += OnTextPropertySet;
 		}
 
 		protected override void DisconnectHandler(MauiTextView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 
-			nativeView.Changed -= OnChanged;
 			nativeView.ShouldChangeText -= OnShouldChangeText;
 			nativeView.Ended -= OnEnded;
-			nativeView.TextPropertySet -= OnTextPropertySet;
+			nativeView.TextSetOrChanged -= OnTextPropertySet;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -99,14 +98,20 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
 
-		void OnChanged(object? sender, EventArgs e) => OnTextChanged();
-
-		void OnTextChanged()
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
 		{
-			if (NativeView == null)
-				return;
+			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+		}
 
-			NativeView.HidePlaceholder(!string.IsNullOrEmpty(NativeView.Text));
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			
+		}
+
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
 		}
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)
@@ -133,20 +138,10 @@ namespace Microsoft.Maui.Handlers
 			// TODO: Update IsFocused property
 			VirtualView.Completed();
 		}
-
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
-		}
-
+		
 		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			VirtualView.UpdateText(NativeView.Text);
-		}
-
-		public static void MapKeyboard(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateKeyboard(editor);
 		}
 	}
 }

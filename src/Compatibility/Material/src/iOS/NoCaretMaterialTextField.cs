@@ -1,4 +1,5 @@
 using CoreGraphics;
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Internals;
 

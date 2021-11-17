@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Provides functionality to be able to customize the appearance of text.
 	/// </summary>
-	public interface ITextStyle : IElement
+	public interface ITextStyle
 	{
 		/// <summary>
 		/// Gets the text color.

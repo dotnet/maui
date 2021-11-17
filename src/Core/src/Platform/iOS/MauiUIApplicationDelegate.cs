@@ -1,25 +1,19 @@
 using System;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
-		WeakReference<IWindow>? _virtualWindow;
-		internal IWindow? VirtualWindow
-		{
-			get
-			{
-				IWindow? window = null;
-				_virtualWindow?.TryGetTarget(out window);
-				return window;
-			}
-		}
+		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
+
+		IMauiContext _applicationContext = null!;
 
 		protected MauiUIApplicationDelegate()
 		{
@@ -32,9 +26,13 @@ namespace Microsoft.Maui
 		{
 			var mauiApp = CreateMauiApp();
 
-			Services = mauiApp.Services;
+			var rootContext = new MauiContext(mauiApp.Services);
 
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
+			_applicationContext = rootContext.MakeApplicationScope(this);
+
+			Services = _applicationContext.Services;
+
+			Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 
 			return true;
 		}
@@ -43,43 +41,36 @@ namespace Microsoft.Maui
 		{
 			Application = Services.GetRequiredService<IApplication>();
 
-			var uiWindow = CreateNativeWindow();
+			this.SetApplicationHandler(Application, _applicationContext);
 
-			Window = uiWindow;
+			// If < iOS 13, or we're not on mac/ipad, or the Info.plist does not have a scene manifest entry
+			// we need to assume no multi window, and no UISceneDelegate
+			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0)
+				|| (UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac
+					&& UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Pad)
+				|| !NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString("UIApplicationSceneManifest")))
+			{
+				this.CreateNativeWindow(Application, application, launchOptions);
+			}
 
-			Window.MakeKeyAndVisible();
-
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 
 			return true;
 		}
 
-		UIWindow CreateNativeWindow()
-		{
-			var uiWindow = new UIWindow();
-
-			var mauiContext = new MauiContext(Services, uiWindow);
-
-			Services.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
-
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-			_virtualWindow = new WeakReference<IWindow>(window);
-			uiWindow.SetWindow(window, mauiContext);
-
-			return uiWindow;
-		}
+		public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
+			=> new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
 
 		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
 		{
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.PerformActionForShortcutItem>(del => del(application, shortcutItem, completionHandler));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.PerformActionForShortcutItem>(del => del(application, shortcutItem, completionHandler));
 		}
 
 		public override bool OpenUrl(UIApplication application, NSUrl url, NSDictionary options)
 		{
 			var wasHandled = false;
 
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OpenUrl>(del =>
+			Services?.InvokeLifecycleEvents<iOSLifecycle.OpenUrl>(del =>
 			{
 				wasHandled = del(application, url, options) || wasHandled;
 			});
@@ -91,7 +82,7 @@ namespace Microsoft.Maui
 		{
 			var wasHandled = false;
 
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.ContinueUserActivity>(del =>
+			Services?.InvokeLifecycleEvents<iOSLifecycle.ContinueUserActivity>(del =>
 			{
 				wasHandled = del(application, userActivity, completionHandler) || wasHandled;
 			});
@@ -101,27 +92,27 @@ namespace Microsoft.Maui
 
 		public override void OnActivated(UIApplication application)
 		{
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OnActivated>(del => del(application));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.OnActivated>(del => del(application));
 		}
 
 		public override void OnResignActivation(UIApplication application)
 		{
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OnResignActivation>(del => del(application));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.OnResignActivation>(del => del(application));
 		}
 
 		public override void WillTerminate(UIApplication application)
 		{
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
 		}
 
 		public override void DidEnterBackground(UIApplication application)
 		{
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.DidEnterBackground>(del => del(application));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.DidEnterBackground>(del => del(application));
 		}
 
 		public override void WillEnterForeground(UIApplication application)
 		{
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
 		}
 
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;

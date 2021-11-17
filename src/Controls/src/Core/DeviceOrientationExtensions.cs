@@ -1,18 +1,13 @@
-using System.ComponentModel;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class DeviceOrientationExtensions
+	static class DeviceOrientationExtensions
 	{
-		public static bool IsLandscape(this DeviceOrientation orientation)
-		{
-			return orientation == DeviceOrientation.Landscape || orientation == DeviceOrientation.LandscapeLeft || orientation == DeviceOrientation.LandscapeRight;
-		}
+		public static bool IsLandscape(this DisplayOrientation orientation) =>
+			orientation == DisplayOrientation.Landscape;
 
-		public static bool IsPortrait(this DeviceOrientation orientation)
-		{
-			return orientation == DeviceOrientation.Portrait || orientation == DeviceOrientation.PortraitDown || orientation == DeviceOrientation.PortraitUp;
-		}
+		public static bool IsPortrait(this DisplayOrientation orientation) =>
+			orientation == DisplayOrientation.Portrait;
 	}
 }

@@ -1,5 +1,6 @@
 #nullable enable
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
@@ -20,12 +21,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTextBox nativeView)
 		{
+			nativeView.TextChanged += OnTextChanged;
 			nativeView.LostFocus += OnLostFocus;
 			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiTextBox nativeView)
 		{
+			nativeView.TextChanged -= OnTextChanged;
 			nativeView.LostFocus -= OnLostFocus;
 		}
 
@@ -86,11 +89,21 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
 		}
 
+		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(editor);
+		}
+
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) 
 		{
 			handler.NativeView?.UpdateKeyboard(editor); 
 		}
-		
+
+		void OnTextChanged(object sender, TextChangedEventArgs args)
+		{
+			VirtualView?.UpdateText(NativeView.Text);
+		}
+
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{
 			VirtualView?.Completed();

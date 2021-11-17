@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
@@ -43,6 +43,8 @@ namespace Microsoft.Maui.Hosting
 			_logging = new LoggingBuilder(Services);
 			_host = new ConfigureHostBuilder(hostContext, Configuration, Services);
 
+			Services.AddSingleton<IConfiguration>(_ => Configuration);
+
 			if (useDefaults)
 			{
 				// Register required services
@@ -52,6 +54,7 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureImageSources();
 				this.ConfigureAnimations();
 				this.ConfigureCrossPlatformLifecycleEvents();
+				this.ConfigureDispatching();
 			}
 		}
 
@@ -82,20 +85,26 @@ namespace Microsoft.Maui.Hosting
 		/// <returns>A configured <see cref="MauiApp"/>.</returns>
 		public MauiApp Build()
 		{
-			// Copy the configuration sources into the final IConfigurationBuilder
 			_hostBuilder.ConfigureHostConfiguration(builder =>
 			{
-				foreach (var source in ((IConfigurationBuilder)Configuration).Sources)
-				{
-					builder.Sources.Add(source);
-				}
+				builder.AddInMemoryCollection(
+					new Dictionary<string, string> {
+						{ HostDefaults.ApplicationKey, BootstrapHostBuilder.GetDefaultApplicationName() },
+						{ HostDefaults.ContentRootKey,  Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) },
+					});
+			});
+
+			// Chain the configuration sources into the final IConfigurationBuilder
+			var chainedConfigSource = new TrackingChainedConfigurationSource(Configuration);
+
+			_hostBuilder.ConfigureAppConfiguration(builder =>
+			{
+				builder.Add(chainedConfigSource);
 
 				foreach (var kvp in ((IConfigurationBuilder)Configuration).Properties)
 				{
 					builder.Properties[kvp.Key] = kvp.Value;
 				}
-
-				builder.AddInMemoryCollection(new Dictionary<string, string> { { HostDefaults.ApplicationKey, BootstrapHostBuilder.GetDefaultApplicationName() } });
 			});
 
 			// This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
@@ -114,6 +123,25 @@ namespace Microsoft.Maui.Hosting
 				// Drop the reference to the existing collection and set the inner collection
 				// to the new one. This allows code that has references to the service collection to still function.
 				_services.InnerCollection = services;
+
+				var hostBuilderProviders = ((IConfigurationRoot)context.Configuration).Providers;
+
+				if (!hostBuilderProviders.Contains(chainedConfigSource.BuiltProvider))
+				{
+					// Something removed the _hostBuilder's TrackingChainedConfigurationSource pointing back to the ConfigurationManager.
+					// Replicate the effect by clearing the ConfingurationManager sources.
+					((IConfigurationBuilder)Configuration).Sources.Clear();
+				}
+
+				// Make builder.Configuration match the final configuration. To do that, we add the additional
+				// providers in the inner _hostBuilders's Configuration to the ConfigurationManager.
+				foreach (var provider in hostBuilderProviders)
+				{
+					if (!ReferenceEquals(provider, chainedConfigSource.BuiltProvider))
+					{
+						((IConfigurationBuilder)Configuration).Add(new ConfigurationProviderSource(provider));
+					}
+				}
 			});
 
 			// Run the other callbacks on the final host builder
@@ -121,14 +149,12 @@ namespace Microsoft.Maui.Hosting
 
 			_builtApplication = new MauiApp(_hostBuilder.Build());
 
-			// Make builder.Configuration match the final configuration. To do that
-			// we clear the sources and add the built configuration as a source
-			((IConfigurationBuilder)Configuration).Sources.Clear();
-			Configuration.AddConfiguration(_builtApplication.Configuration);
-
 			// Mark the service collection as read-only to prevent future modifications
 			_services.IsReadOnly = true;
 
+			// Resolve both the _hostBuilder's Configuration and builder.Configuration to mark both as resolved within the
+			// service provider ensuring both will be properly disposed with the provider.
+			_ = _builtApplication.Services.GetService<IEnumerable<IConfiguration>>();
 
 			var initServices = _builtApplication.Services.GetServices<IMauiInitializeService>();
 			if (initServices != null)
@@ -138,7 +164,6 @@ namespace Microsoft.Maui.Hosting
 					instance.Initialize(_builtApplication.Services);
 				}
 			}
-
 
 			return _builtApplication;
 		}
@@ -218,13 +243,16 @@ namespace Microsoft.Maui.Hosting
 						}
 
 						logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-						logging.AddConsole();
 						logging.AddDebug();
-						logging.AddEventSourceLogger();
 
 						if (isWindows)
 						{
-							// Add the EventLogLoggerProvider on windows machines
+							// The Console logger creates a new thread, which isn't ideal for mobile platforms:
+							// https://github.com/dotnet/runtime/blob/57bfe474518ab5b7cfe6bf7424a79ce3af9d6657/src/libraries/Microsoft.Extensions.Logging.Console/src/ConsoleLoggerProcessor.cs#L25-L29
+							// https://github.com/dotnet/runtime/blob/57bfe474518ab5b7cfe6bf7424a79ce3af9d6657/src/libraries/Microsoft.Extensions.Logging.Console/src/ConsoleLoggerProcessor.cs#L64
+							logging.AddConsole();
+							logging.AddEventSourceLogger();
+							// AddEventLog() should be windows-only
 							logging.AddEventLog();
 						}
 

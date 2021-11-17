@@ -18,6 +18,7 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 			AutoPackage = false;
 			Id = Platform.GenerateViewId();
-			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
+			DeviceDisplay.MainDisplayInfoChanged += DeviceInfoPropertyChanged;
 		}
 
 		INavigationPageController NavigationPageController => Element as INavigationPageController;
@@ -164,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			if (disposing)
 			{
-				Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
+				DeviceDisplay.MainDisplayInfoChanged -= DeviceInfoPropertyChanged;
 
 				if (NavigationPageController != null)
 				{
@@ -484,7 +485,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 
 			if (actionBarHeight <= 0)
-				return Device.Info.CurrentOrientation.IsPortrait() ? (int)Context.ToPixels(56) : (int)Context.ToPixels(48);
+				return DeviceDisplay.MainDisplayInfo.Orientation.IsPortrait() ? (int)Context.ToPixels(56) : (int)Context.ToPixels(48);
 
 			if (Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.TranslucentStatus) || Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.TranslucentNavigation))
 			{
@@ -553,12 +554,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				UpdateToolbar();
 		}
 
-#pragma warning disable 1998 // considered for removal
-		async void DeviceInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
-#pragma warning restore 1998
+		void DeviceInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
-			if (nameof(Device.Info.CurrentOrientation) == e.PropertyName)
-				ResetToolbar();
+			ResetToolbar();
 		}
 
 		void InsertPageBefore(Page page, Page before)
@@ -908,8 +906,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			if (_disposed || _currentMenuItems == null)
 				return;
 
-			_currentMenuItems.Clear();
-			_currentMenuItems = new List<IMenuItem>();
 			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Element.FindMauiContext(), null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 

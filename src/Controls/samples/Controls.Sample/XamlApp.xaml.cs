@@ -17,14 +17,16 @@ namespace Maui.Controls.Sample
 
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 
-			MainPage = Services.GetRequiredService<Page>();
-
 			RequestedThemeChanged += (sender, args) =>
 			{
 				// Respond to the theme change
 				Debug.WriteLine($"Requested theme changed: {args.RequestedTheme}");
 			};
 		}
+
+		// Must not use MainPage for multi-window
+		protected override Window CreateWindow(IActivationState activationState)
+			=> new Window(Services.GetRequiredService<Page>());
 
 		public IServiceProvider Services { get; }
 	}

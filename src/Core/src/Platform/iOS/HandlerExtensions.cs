@@ -1,10 +1,32 @@
 using System;
+using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
+		internal static UIView? GetNative(this IElement view, bool returnWrappedIfPresent)
+		{
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return (view.Handler?.NativeView as UIView);
+
+		}
+
+		internal static UIView ToNative(this IElement view, IMauiContext context, bool returnWrappedIfPresent)
+		{
+			var nativeView = view.ToNative(context);
+
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return nativeView;
+
+		}
+
 		public static UIViewController ToUIViewController(this IElement view, IMauiContext context)
 		{
 			var nativeView = view.ToNative(context);
@@ -15,6 +37,18 @@ namespace Microsoft.Maui
 		}
 
 		public static UIView ToNative(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.NativeView is not UIView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(UIView)}");
+			}
+
+			return result;
+		}
+
+		public static INativeViewHandler ToHandler(this IElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
@@ -37,33 +71,34 @@ namespace Microsoft.Maui
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
 
-			if (((INativeViewHandler)handler).NativeView is not UIView result)
-			{
-				throw new InvalidOperationException($"Unable to convert {view} to {typeof(UIView)}");
-			}
-
-			return result;
+			return (INativeViewHandler)handler;
 		}
 
-		public static void SetWindow(this UIWindow nativeWindow, IWindow window, IMauiContext mauiContext)
+		public static void SetApplicationHandler(this UIApplicationDelegate nativeApplication, IApplication application, IMauiContext context) =>
+			SetHandler(nativeApplication, application, context);
+
+		public static void SetWindowHandler(this UIWindow nativeWindow, IWindow window, IMauiContext context) =>
+			SetHandler(nativeWindow, window, context);
+
+		static void SetHandler(this NSObject nativeElement, IElement element, IMauiContext mauiContext)
 		{
-			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
-			_ = window ?? throw new ArgumentNullException(nameof(window));
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
 			_ = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 
-			var handler = window.Handler;
+			var handler = element.Handler;
 			if (handler == null)
-				handler = mauiContext.Handlers.GetHandler(window.GetType());
+				handler = mauiContext.Handlers.GetHandler(element.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for window {window}.");
+				throw new Exception($"Handler not found for window {element}.");
 
 			handler.SetMauiContext(mauiContext);
 
-			window.Handler = handler;
+			element.Handler = handler;
 
-			if (handler.VirtualView != window)
-				handler.SetVirtualView(window);
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
 		}
 	}
 }

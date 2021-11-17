@@ -2,6 +2,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Foundation;
 using MessageUI;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials

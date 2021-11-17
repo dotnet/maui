@@ -2,6 +2,7 @@ using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_shellContext = shellContext;
 		}
 
-		public virtual void SetAppearance(Toolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance)
+		public virtual void SetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance)
 		{
 			var foreground = appearance.ForegroundColor;
 			var background = appearance.BackgroundColor;
@@ -26,12 +27,12 @@ namespace Microsoft.Maui.Controls.Platform
 			SetColors(toolbar, toolbarTracker, foreground, background, titleColor);
 		}
 
-		public virtual void ResetAppearance(Toolbar toolbar, IShellToolbarTracker toolbarTracker)
+		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
 			SetColors(toolbar, toolbarTracker, ShellView.DefaultForegroundColor, ShellView.DefaultBackgroundColor, ShellView.DefaultTitleColor);
 		}
 
-		protected virtual void SetColors(Toolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
+		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
 		{
 			var titleArgb = title.ToNative(ShellView.DefaultTitleColor).ToArgb();
 

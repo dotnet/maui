@@ -6,6 +6,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		readonly List<IWindow> _windows = new List<IWindow>();
 
+		public IElementHandler Handler { get; set; }
+
+		public Maui.IElement Parent { get; set; }
+
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		public string Property { get; set; } = "Default";
@@ -13,6 +17,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public IWindow CreateWindow(IActivationState activationState)
 		{
 			throw new System.NotImplementedException();
+		}
+
+		public void OpenWindow(IWindow window)
+		{
+			_windows.Add(window);
+		}
+
+		public void CloseWindow(IWindow window)
+		{
+			_windows.Remove(window);
 		}
 
 		public void ThemeChanged() { }

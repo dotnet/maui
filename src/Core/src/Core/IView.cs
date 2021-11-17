@@ -110,11 +110,6 @@ namespace Microsoft.Maui
 		new IViewHandler? Handler { get; set; }
 
 		/// <summary>
-		/// Gets the Parent of the Element.
-		/// </summary>
-		new IView? Parent { get; }
-
-		/// <summary>
 		/// Positions child elements and determines a size for an Element.
 		/// </summary>
 		/// <param name="bounds">The size that the parent computes for the child element.</param>

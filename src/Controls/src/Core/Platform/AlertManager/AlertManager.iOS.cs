@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -16,21 +18,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Subscribe(Window window)
 		{
-			IMauiContext mauiContext = window?.MauiContext;
-			UIWindow nativeWindow = mauiContext?.Window;
+			var nativeWindow = window?.MauiContext.GetNativeWindow();
 
 			if (Subscriptions.Any(s => s.Window == nativeWindow))
-			{
 				return;
-			}
 
 			Subscriptions.Add(new AlertRequestHelper(nativeWindow));
 		}
 
 		internal void Unsubscribe(Window window)
 		{
-			IMauiContext mauiContext = window?.MauiContext;
-			UIWindow nativeWindow = mauiContext?.Window;
+			var nativeWindow = window?.MauiContext.GetNativeWindow();
 
 			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 

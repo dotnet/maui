@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			var width = availableSize.Width;
 			var height = availableSize.Height;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 				height = XamlRoot.Size.Height;
 			}
 
-			var size = new Windows.Foundation.Size(width, height);
+			var size = new global::Windows.Foundation.Size(width, height);
 
 			// Measure the children (should only be one, the Page)
 			foreach (var child in Children)
@@ -36,11 +36,11 @@ namespace Microsoft.Maui
 			return size;
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			foreach (var child in Children)
 			{
-				child.Arrange(new Windows.Foundation.Rect(new Windows.Foundation.Point(0,0), finalSize));
+				child.Arrange(new global::Windows.Foundation.Rect(new global::Windows.Foundation.Point(0,0), finalSize));
 			}
 
 			return finalSize;
