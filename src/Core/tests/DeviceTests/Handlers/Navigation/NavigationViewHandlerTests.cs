@@ -10,7 +10,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.NavigationView)]
 	public partial class NavigationViewHandlerTests : HandlerTestBase<NavigationViewHandler, NavigationViewStub>
 	{
-#if ANDROID || WINDOWS || true
+#if ANDROID || WINDOWS
 		[Fact(DisplayName = "Push Multiple Pages At Start")]
 		public async Task PushMultiplePagesAtStart()
 		{
