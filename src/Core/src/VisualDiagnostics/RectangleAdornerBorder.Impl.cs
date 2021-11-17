@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 using System.Text;
 using Microsoft.Maui.Graphics;
 
@@ -33,12 +35,12 @@ namespace Microsoft.Maui
 		public override void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
 			base.Draw(canvas, dirtyRect);
-
-			var rect = VisualView.GetNativeViewBounds();
-			var x = (rect.X / Density) + (Offset.X);
-			var y = (rect.Y / Density) + (Offset.Y);
-			var width = (rect.Width / Density);
-			var height = (rect.Height / Density);
+			
+			var boundingBox = VisualView.GetBoundingBox();
+			var x = (boundingBox.X / Density) + (Offset.X);
+			var y = (boundingBox.Y / Density) + (Offset.Y);
+			var width = ((boundingBox.Width) / Density);
+			var height = ((boundingBox.Height) / Density);
 			DrawnRectangle = new Rectangle(x, y, width, height);
 			canvas.FillRectangle(DrawnRectangle);
 		}

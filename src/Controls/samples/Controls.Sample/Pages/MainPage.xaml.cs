@@ -43,7 +43,8 @@ namespace Maui.Controls.Sample.Pages
 
 		void TestVisualTreeHelper(object sender, EventArgs e)
 		{
-			this.GetParentWindow().VisualDiagnosticsOverlay.AddAdorner(MauiTextLabel as IVisualTreeElement, true);
+			this.GetParentWindow().VisualDiagnosticsOverlay.RemoveAdorners();
+			this.GetParentWindow().VisualDiagnosticsOverlay.AddAdorner(TestButton as IVisualTreeElement, false);
 		}
 
 		void EnableElementPicker(object sender, EventArgs e)

@@ -27,4 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials-net6.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="VisualDiagnostics\Extensions\" />
+  </ItemGroup>
 </Project>
