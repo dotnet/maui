@@ -627,10 +627,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(typeof(PageWithDependency), typeof(Dependency))]
 		public async Task GlobalRouteWithDependencyResolution(Type typeForRouteName, Type type)
 		{
-			var shell = new Shell();
-			var item1 = CreateShellItem(asImplicit: true, shellItemRoute: "animals", shellSectionRoute: "domestic", shellContentRoute: "dogs");
-			shell.Items.Add(item1);
-
 			var serviceCollection = new ServiceCollection();
 			serviceCollection.AddTransient<Dependency>();
 			IServiceProvider services = serviceCollection.BuildServiceProvider();
@@ -638,10 +634,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var fakeHandler = Substitute.For<IElementHandler>();
 			fakeMauiContext.Services.Returns(services);
 			fakeHandler.MauiContext.Returns(fakeMauiContext);
-			var fakeApplication = new Application();
-			fakeApplication.Handler = fakeHandler;
-			Application.Current = fakeApplication;
 
+			var flyoutItem = CreateShellItem<FlyoutItem>();
+			flyoutItem.Items.Add(CreateShellContent(asImplicit: true, shellContentRoute: "cats"));
+			var shell = new TestShell
+			{
+				Items = { flyoutItem }
+			};
+			shell.Parent.Handler = fakeHandler;
 			var routeName = typeForRouteName.AssemblyQualifiedName;
 			Routing.RegisterRoute(routeName, type);
 			await shell.GoToAsync(routeName);

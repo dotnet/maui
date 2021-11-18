@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls
 			return keys;
 		}
 
-		public static Element GetOrCreateContent(string route)
+		public static Element GetOrCreateContent(string route, IServiceProvider services)
 		{
 			Element result = null;
 
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (s_routes.TryGetValue(route, out var content))
-				result = content.GetOrCreate();
+				result = content.GetOrCreate(services);
 
 			if (result == null)
 			{
@@ -144,9 +144,9 @@ namespace Microsoft.Maui.Controls
 				var type = Type.GetType(route);
 				if (type != null)
 				{
-					if (Application.Current?.Handler?.MauiContext?.Services != null)
+					if (services != null)
 					{
-						result = Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(Application.Current.Handler.MauiContext.Services, type) as Element;
+						result = Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, type) as Element;
 					}
 					else
 					{
@@ -241,11 +241,11 @@ namespace Microsoft.Maui.Controls
 				_type = type;
 			}
 
-			public override Element GetOrCreate()
+			public override Element GetOrCreate(IServiceProvider services)
 			{
-				if (Application.Current?.Handler?.MauiContext?.Services != null)
+				if (services != null)
 				{
-					return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(Application.Current.Handler.MauiContext.Services, _type) as Element;
+					return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, _type) as Element;
 				}
 				return Activator.CreateInstance(_type) as Element;
 			}

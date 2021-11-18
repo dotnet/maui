@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					_contentPage = contentPage;
 				}
 
-				public override Element GetOrCreate() => _contentPage;
+				public override Element GetOrCreate(IServiceProvider services) => _contentPage;
 			}
 
 			public Action<ShellNavigatedEventArgs> OnNavigatedHandler { get; set; }
