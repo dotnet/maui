@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			var collectionView = new CollectionView
 			{
 				ItemsLayout = itemsLayout,
-				SelectionMode = SelectionMode.Single,
+				SelectionMode = Microsoft.Maui.Controls.SelectionMode.Single,
 				AutomationId = "collectionview"
 			};
 

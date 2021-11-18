@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries
 				GroupFooterTemplate = GroupFooterTemplate(),
 				GroupHeaderTemplate = GroupHeaderTemplate(),
 				IsGrouped = true,
-				SelectionMode = SelectionMode.Single
+				SelectionMode = Microsoft.Maui.Controls.SelectionMode.Single
 			};
 
 			var itemsSource = new ObservableSuperTeams();
