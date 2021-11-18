@@ -221,13 +221,26 @@ namespace Microsoft.Maui
 				return new Rectangle();
 			}
 
+			var location = nativeView.GetNativeViewBounds();
+			return new Rectangle(
+				location.X,
+				location.Y,
+				nativeView.Context.ToPixels(view.Frame.Width),
+				nativeView.Context.ToPixels(view.Frame.Height));
+		}
+
+		internal static Rectangle GetNativeViewBounds(this View nativeView)
+		{
+			if (nativeView?.Context == null)
+				return new Rectangle();
+
 			var location = new int[2];
 			nativeView.GetLocationOnScreen(location);
 			return new Rectangle(
 				location[0],
 				location[1],
-				nativeView.Context.ToPixels(view.Frame.Width),
-				nativeView.Context.ToPixels(view.Frame.Height));
+				(int)nativeView.Context.ToPixels(nativeView.Width),
+				(int)nativeView.Context.ToPixels(nativeView.Height));
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
@@ -238,7 +251,7 @@ namespace Microsoft.Maui
 			return GetViewTransform(nativeView);
 		}
 
-		internal static Matrix4x4 GetViewTransform(View view)
+		internal static Matrix4x4 GetViewTransform(this View view)
 		{
 			if (view == null || view.Matrix == null || view.Matrix.IsIdentity)
 				return new Matrix4x4();
@@ -281,8 +294,10 @@ namespace Microsoft.Maui
 		}
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+			=> view.GetNative(true).GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox(this View? nativeView)
 		{
-			var nativeView = view.GetNative(true);
 			if (nativeView == null)
 				return new Rectangle();
 

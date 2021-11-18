@@ -227,7 +227,7 @@ namespace Microsoft.Maui
 			return GetViewTransform(nativeView);
 		}
 
-		internal static Matrix4x4 GetViewTransform(FrameworkElement element)
+		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
 			var root = element.Parent as UIElement;
 			if (root == null)
@@ -250,19 +250,28 @@ namespace Microsoft.Maui
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView != null)
-			{
-				var root = nativeView.XamlRoot;
-				var offset = nativeView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
-				if (offset != null)
-					return new Rectangle(offset.Matrix.OffsetX, offset.Matrix.OffsetY, nativeView.ActualWidth, nativeView.ActualHeight);
-			}
+				return GetNativeViewBounds(nativeView);
+			return new Rectangle();
+		}
+
+		internal static Rectangle GetNativeViewBounds(this FrameworkElement nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			var root = nativeView.XamlRoot;
+			var offset = nativeView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
+			if (offset != null)
+				return new Rectangle(offset.Matrix.OffsetX, offset.Matrix.OffsetY, nativeView.ActualWidth, nativeView.ActualHeight);
 
 			return new Rectangle();
 		}
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+			=> view.GetNative(true).GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox(this FrameworkElement? nativeView)
 		{
-			var nativeView = view.GetNative(true);
 			if (nativeView == null)
 				return new Rectangle();
 

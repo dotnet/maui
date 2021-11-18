@@ -329,32 +329,23 @@ namespace Microsoft.Maui
 				return new Rectangle();
 			}
 
+			return nativeView.GetNativeViewBounds();
+		}
+
+		internal static Rectangle GetNativeViewBounds(this UIView nativeView)
+		{
 			var uiWindow = nativeView.GetUIWindow();
 			if (uiWindow == null)
 				return new Rectangle();
 
-			nfloat X;
-			nfloat Y;
-			nfloat Width;
-			nfloat Height;
-
 			var convertPoint = nativeView.ConvertRectToView(nativeView.Bounds, uiWindow);
 
-			X = convertPoint.X;
-			Y = convertPoint.Y;
-			Width = convertPoint.Width;
-			Height = convertPoint.Height;
+			var X = convertPoint.X;
+			var Y = convertPoint.Y;
+			var Width = convertPoint.Width;
+			var Height = convertPoint.Height;
 
 			return new Rectangle(X, Y, Width, Height);
-		}
-
-		internal static CGRect GetNativeViewBounds(this UIView nativeView)
-		{
-			var uiWindow = nativeView.GetUIWindow();
-			if (uiWindow == null)
-				return new CGRect();
-
-			return nativeView.ConvertRectToView(nativeView.Bounds, uiWindow);
 		}
 
 
@@ -396,7 +387,10 @@ namespace Microsoft.Maui
 			return GetViewTransform(nativeView.Layer);
 		}
 
-		internal static Matrix4x4 GetViewTransform(CALayer layer)
+		internal static Matrix4x4 GetViewTransform(this UIView view) 
+			=> view.Layer.GetViewTransform();
+
+		internal static Matrix4x4 GetViewTransform(this CALayer layer)
 		{
 			if (layer == null)
 				return new Matrix4x4();
@@ -412,13 +406,15 @@ namespace Microsoft.Maui
 					.ToViewTransform();
 		}
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+			=> view.GetNative(true).GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox (this UIView? nativeView)
 		{
-			var nativeView = view.GetNative(true);
 			if (nativeView == null)
 				return new Rectangle();
 			var nvb = nativeView.GetNativeViewBounds();
-			var transform = view.GetViewTransform();
+			var transform = nativeView.GetViewTransform();
 			var radians = transform.ExtractAngleInRadians();
 			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
 			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
