@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			UpdateAccessibilityImportance(CurrentPage, ImportantForAccessibility.Auto, true);
 
-			if (_navModel.Modals.Count == 0 && _renderer.ChildCount > 0 && _renderer.GetChildAt(0) is AView view)
+			if (_navModel.Modals.Count == 0 && _rootDecorView.ChildCount > 0 && _rootDecorView.GetChildAt(0) is AView view)
 			{
 				view.ImportantForAccessibility = ImportantForAccessibility.Auto;
 
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Platform
 			CurrentPageController?.SendDisappearing();
 			UpdateAccessibilityImportance(CurrentPage, ImportantForAccessibility.NoHideDescendants, false);
 
-			if (_renderer.ChildCount > 0 && _renderer.GetChildAt(0) is AView view)
+			if (_rootDecorView.ChildCount > 0 && _rootDecorView.GetChildAt(0) is AView view)
 			{
 				view.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 
