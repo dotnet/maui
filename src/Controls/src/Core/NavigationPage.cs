@@ -260,7 +260,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public async Task PushAsync(Page page, bool animated)
-		{	
+		{
 			// If Navigation interactions are being handled by the MAUI APIs
 			// this routes the call there instead of through old behavior
 			if (Navigation is MauiNavigationImpl mvi && this is INavigationView)

@@ -1,15 +1,15 @@
 ﻿#nullable enable
 using System;
-using System.Linq;
-using Microsoft.UI.Xaml;
 using System.Collections.Concurrent;
-using Microsoft.UI.Xaml.Media;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui
 {
@@ -17,6 +17,14 @@ namespace Microsoft.Maui
 	{
 		static readonly Lazy<ConcurrentDictionary<Type, DependencyProperty>> ForegroundProperties =
 			new Lazy<ConcurrentDictionary<Type, DependencyProperty>>(() => new ConcurrentDictionary<Type, DependencyProperty>());
+
+		public static T? GetResource<T>(this FrameworkElement element, string key, T? def = default)
+		{
+			if (element.Resources.TryGetValue(key, out var resource))
+				return (T?)resource;
+
+			return def;
+		}
 
 		public static WBrush GetForeground(this FrameworkElement element)
 		{

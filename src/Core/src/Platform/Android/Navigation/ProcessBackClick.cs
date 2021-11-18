@@ -5,24 +5,18 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	class ProcessBackClick : AndroidX.Activity.OnBackPressedCallback, AView.IOnClickListener
+	class ProcessBackClick : Java.Lang.Object, AView.IOnClickListener
 	{
-		StackNavigationManager _navigationManager;
+		StackNavigationManager _stackNavigationManager;
 
 		public ProcessBackClick(StackNavigationManager navHostPageFragment)
-			: base(true)
 		{
-			_navigationManager = navHostPageFragment;
-		}
-
-		public override void HandleOnBackPressed()
-		{
-			_navigationManager.HardwareBackButtonClicked();
+			_stackNavigationManager = navHostPageFragment;
 		}
 
 		public void OnClick(AView? v)
 		{
-			_navigationManager.ToolbarBackButtonClicked();
+			_stackNavigationManager.ToolbarBackButtonClicked();
 		}
 	}
 }

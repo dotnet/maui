@@ -7,31 +7,24 @@ namespace Microsoft.Maui
 	public class MauiContext : IMauiContext
 	{
 		readonly WrappedServiceProvider _services;
-		readonly IMauiContext? _parent;
-
-		public MauiContext(IMauiContext parent)
-			: this(parent.Services, parent)
-		{
-		}
 
 #if __ANDROID__
-		public MauiContext(IServiceProvider services, Android.Content.Context context, IMauiContext? parent = null)
-			: this(services, parent)
+		public MauiContext(IServiceProvider services, Android.Content.Context context)
+			: this(services)
 		{
 			AddWeakSpecific(context);
 		}
 #endif
 
-		public MauiContext(IServiceProvider services, IMauiContext? parent = null)
+		public MauiContext(IServiceProvider services)
 		{
 			_services = new WrappedServiceProvider(services ?? throw new ArgumentNullException(nameof(services)));
-			_parent = parent;
 		}
 
 		public IServiceProvider Services => _services;
 
-		public IMauiHandlersServiceProvider Handlers =>
-			Services.GetRequiredService<IMauiHandlersServiceProvider>();
+		public IMauiHandlersFactory Handlers =>
+			Services.GetRequiredService<IMauiHandlersFactory>();
 
 #if __ANDROID__
 		public Android.Content.Context? Context =>

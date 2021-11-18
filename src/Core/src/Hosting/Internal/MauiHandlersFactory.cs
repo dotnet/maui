@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	class MauiHandlersServiceProvider : MauiServiceProvider, IMauiHandlersServiceProvider
+	class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
-		public MauiHandlersServiceProvider(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions) :
+		public MauiHandlersFactory(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions) :
 			base(CreateHandlerCollection(registrationActions), constructorInjection: false)
 		{
 		}

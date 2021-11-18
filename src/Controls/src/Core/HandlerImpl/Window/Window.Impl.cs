@@ -13,7 +13,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 
-		internal Toolbar Toolbar { get; }
+		Toolbar IToolbarElement.Toolbar => _toolBar;
+		Toolbar _toolBar;
 
 		public IReadOnlyCollection<IWindowOverlay> Overlays => _overlays.ToList().AsReadOnly();
 
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls
 
 		public Window()
 		{
-			Toolbar = new Toolbar();
+			_toolBar = new Toolbar();
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
@@ -313,6 +314,11 @@ namespace Microsoft.Maui.Controls
 
 		bool IWindow.BackButtonClicked()
 		{
+			if (Navigation.ModalStack.Count > 0)
+			{
+				return Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendBackButtonPressed();
+			}
+
 			return this.Page?.SendBackButtonPressed() ?? false;
 		}
 
@@ -365,6 +371,7 @@ namespace Microsoft.Maui.Controls
 				_owner.OnModalPushing(modal);
 
 				modal.Parent = _owner;
+				modal.Toolbar ??= new Toolbar();
 
 				if (modal.NavigationProxy.ModalStack.Count == 0)
 				{

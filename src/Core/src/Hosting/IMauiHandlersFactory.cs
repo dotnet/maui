@@ -4,7 +4,7 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public interface IMauiHandlersServiceProvider : IMauiServiceProvider
+	public interface IMauiHandlersFactory : IMauiFactory
 	{
 		Type? GetHandlerType(Type iview);
 

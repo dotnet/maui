@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
 		{
-			
+
 		}
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor)
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 			// TODO: Update IsFocused property
 			VirtualView.Completed();
 		}
-		
+
 		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			VirtualView.UpdateText(NativeView.Text);

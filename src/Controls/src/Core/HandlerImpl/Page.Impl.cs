@@ -4,8 +4,25 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Page : IView, ITitledElement
+	public partial class Page : IView, ITitledElement, IToolbarElement
 	{
+		Toolbar _toolbar;
+		Toolbar IToolbarElement.Toolbar
+		{
+			get => _toolbar;
+		}
+
+		internal Toolbar Toolbar
+		{
+			get => _toolbar;
+			set
+			{
+				_toolbar = value;
+				if (this is NavigationPage np)
+					_toolbar.ApplyNavigationPage(np);
+			}
+		}
+
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
 			NavigatedTo?.Invoke(this, args);

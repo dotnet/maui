@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
 		{
 			if (containerBuilder is IMauiServiceCollection mauiServiceCollection)
-				return new MauiServiceProvider(mauiServiceCollection, _constructorInjection);
+				return new MauiFactory(mauiServiceCollection, _constructorInjection);
 
 			throw new InvalidCastException($"{nameof(containerBuilder)} is not {nameof(IMauiServiceCollection)}");
 		}
