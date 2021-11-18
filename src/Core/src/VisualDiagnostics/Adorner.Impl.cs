@@ -6,21 +6,21 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Adorner Border.
+	/// Adorner.
 	/// Used to set up the initial Androer Border drawable.
 	/// By itself, it does nothing. Implement on top of it to draw shapes.
 	/// </summary>
-	public partial class AdornerBorder : IAdornerBorder, IDrawable
+	public partial class adorner : IAdorner, IDrawable
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AdornerBorder"/> class.
+		/// Initializes a new instance of the <see cref="adorner"/> class.
 		/// </summary>
-		/// <param name="view">An <see cref="IView"/> to create the Adorner Border around.</param>
+		/// <param name="view">An <see cref="IView"/> to create the Adorner around.</param>
 		/// <param name="density">Override density setting. Default: 1</param>
 		/// <param name="offset">Offset point used for positioning drawable object. Default: null</param>
 		/// <param name="fillColor">Canvas Fill Color.</param>
 		/// <param name="strokeColor">Canvas Stroke Color.</param>
-		public AdornerBorder(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
+		public adorner(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
 		{
 			if (fillColor != null)
 				FillColor = fillColor;

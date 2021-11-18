@@ -3,19 +3,19 @@
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Rectangle Grid Adorner Border.
+	/// Rectangle Grid Adorner.
 	/// </summary>
-	public class RectangleGridAdornerBorder : RectangleAdornerBorder
+	public class RectangleGridAdorner : RectangleAdorner
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="RectangleGridAdornerBorder"/> class.
+		/// Initializes a new instance of the <see cref="RectangleGridAdorner"/> class.
 		/// </summary>
-		/// <param name="view">An <see cref="IView"/> to create the Adorner Border around.</param>
+		/// <param name="view">An <see cref="IView"/> to create the Adorner around.</param>
 		/// <param name="density">Override density setting. Default: 1</param>
 		/// <param name="offset">Offset Point used for positioning drawable object. Default: null</param>
 		/// <param name="fillColor">Canvas Fill Color.</param>
 		/// <param name="strokeColor">Canvas Stroke Color.</param>
-		public RectangleGridAdornerBorder(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
+		public RectangleGridAdorner(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
 			: base(view, density, offset, fillColor, strokeColor)
 		{
 		}

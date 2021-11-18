@@ -8,19 +8,19 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Rectangle Adorner Border.
+	/// Rectangle Adorner.
 	/// </summary>
-	public class RectangleAdornerBorder : AdornerBorder
+	public class RectangleAdorner : adorner
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="RectangleAdornerBorder"/> class.
+		/// Initializes a new instance of the <see cref="RectangleAdorner"/> class.
 		/// </summary>
-		/// <param name="view">An <see cref="IView"/> to create the Adorner Border around.</param>
+		/// <param name="view">An <see cref="IView"/> to create the Adorner around.</param>
 		/// <param name="density">Override density setting. Default: 1</param>
 		/// <param name="offset">Offset point used for positioning drawable object. Default: null</param>
 		/// <param name="fillColor">Canvas Fill Color.</param>
 		/// <param name="strokeColor">Canvas Stroke Color.</param>
-		public RectangleAdornerBorder(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
+		public RectangleAdorner(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
 			: base(view, density, offset, fillColor, strokeColor)
 		{
 		}

@@ -5,10 +5,10 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	public interface IAdornerBorder : IWindowOverlayElement
+	public interface IAdorner : IWindowOverlayElement
 	{
 		/// <summary>
-		/// Gets the Density for the Adorner Border.
+		/// Gets the Density for the Adorner.
 		/// Used to override the default density behavior for the containing border. 
 		/// </summary>
 		float Density { get; }
@@ -26,12 +26,12 @@ namespace Microsoft.Maui
 		Point Offset { get; }
 
 		/// <summary>
-		/// Gets the fill color for the Adorner Border.
+		/// Gets the fill color for the Adorner.
 		/// </summary>
 		Color FillColor { get; }
 
 		/// <summary>
-		/// Gets the stroke color for the Adorner Border.
+		/// Gets the stroke color for the Adorner.
 		/// </summary>
 		Color StrokeColor { get; }
 	}

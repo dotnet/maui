@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 		bool EnableElementSelector { get; set; }
 
 		/// <summary>
-		/// Gets the offset point used to adjust the native drawing bounds for a given adorner border.
+		/// Gets the offset point used to adjust the native drawing bounds for a given Adorner.
 		/// Used when the underlying operating system may not give exact placement for where elements are.
 		/// Ex. Android and the Status Bar.
 		/// </summary>
@@ -31,12 +31,12 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Adds a new adorner to the Visual Diagnostics Overlay.
 		/// </summary>
-		/// <param name="adornerBorder"><see cref="IAdornerBorder"/>.</param>
+		/// <param name="adorner"><see cref="IAdorner"/>.</param>
 		/// <param name="scrollToView">When adding the adorner, scroll to the element. Only applies if the element is contained in an <see cref="IScrollView"/>.</param>
-		bool AddAdorner(IAdornerBorder adornerBorder, bool scrollToView);
+		bool AddAdorner(IAdorner adorner, bool scrollToView);
 
 		/// <summary>
-		/// Adds a new adorner to the Visual Diagnostics Overlay. Uses the default adorner border for drawing.
+		/// Adds a new adorner to the Visual Diagnostics Overlay. Uses the default Adorner for drawing.
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/>.</param>
 		/// <param name="scrollToView">When adding the adorner, scroll to the element. Only applies if the element is contained in an <see cref="IScrollView"/>.</param>
@@ -45,8 +45,8 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Removes adorner from Visual Diagnostics Overlay.
 		/// </summary>
-		/// <param name="adornerBorder"><see cref="IAdornerBorder"/>.</param>
-		bool RemoveAdorner(IAdornerBorder adornerBorder);
+		/// <param name="adorner"><see cref="IAdorner"/>.</param>
+		bool RemoveAdorner(IAdorner adorner);
 
 		/// <summary>
 		/// Removes all adorners from the Visual Diagnostics Overlay.

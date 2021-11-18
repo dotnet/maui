@@ -53,16 +53,16 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public bool AddAdorner(IAdornerBorder adornerBorder, bool scrollToView = false)
+		public bool AddAdorner(IAdorner adorner, bool scrollToView = false)
 		{
-			if (adornerBorder == null)
-				throw new ArgumentNullException(nameof(adornerBorder));
+			if (adorner == null)
+				throw new ArgumentNullException(nameof(adorner));
 
 			AddScrollableElementHandlers();
-			var result = _windowElements.Add(adornerBorder);
+			var result = _windowElements.Add(adorner);
 
 			if (AutoScrollToElement || scrollToView)
-				ScrollToView((IVisualTreeElement)adornerBorder.VisualView);
+				ScrollToView((IVisualTreeElement)adorner.VisualView);
 
 			Invalidate();
 			return result;
@@ -77,10 +77,10 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			if (_windowElements.OfType<IAdornerBorder>().Any(n => n.VisualView == view))
+			if (_windowElements.OfType<IAdorner>().Any(n => n.VisualView == view))
 				return false;
 
-			var result = _windowElements.Add(new RectangleGridAdornerBorder(view, Density, Offset));
+			var result = _windowElements.Add(new RectangleGridAdorner(view, Density, Offset));
 			AddScrollableElementHandlers();
 
 			if (AutoScrollToElement || scrollToView)
@@ -91,12 +91,12 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public bool RemoveAdorner(IAdornerBorder adornerBorder)
+		public bool RemoveAdorner(IAdorner adorner)
 		{
-			if (adornerBorder == null)
-				throw new ArgumentNullException(nameof(adornerBorder));
+			if (adorner == null)
+				throw new ArgumentNullException(nameof(adorner));
 
-			var results = _windowElements.RemoveWhere(n => n == adornerBorder);
+			var results = _windowElements.RemoveWhere(n => n == adorner);
 			if (!_windowElements.Any())
 				RemoveScrollableElementHandler();
 			Invalidate();
@@ -120,7 +120,7 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			var adorners = _windowElements.OfType<IAdornerBorder>().Where(n => n.VisualView == view);
+			var adorners = _windowElements.OfType<IAdorner>().Where(n => n.VisualView == view);
 			var results = _windowElements.RemoveWhere(n => adorners.Contains(n));
 			Invalidate();
 			return results > 0;
@@ -143,17 +143,17 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public override bool AddWindowElement(IWindowOverlayElement drawable)
 		{
-			if (drawable is not IAdornerBorder border)
+			if (drawable is not IAdorner adorner)
 				return false;
-			return AddAdorner(border, AutoScrollToElement);
+			return AddAdorner(adorner, AutoScrollToElement);
 		}
 
 		/// <inheritdoc/>
 		public override bool RemoveWindowElement(IWindowOverlayElement drawable)
 		{
-			if (drawable is not IAdornerBorder border)
+			if (drawable is not IAdorner adorner)
 				return false;
-			return RemoveAdorner(border);
+			return RemoveAdorner(adorner);
 		}
 
 		/// <inheritdoc/>

@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Can't add existing IVisualTreeElement twice.
 			Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
 
-			var adorner = wind1.VisualDiagnosticsOverlay.WindowElements.First() as IAdornerBorder;
+			var adorner = wind1.VisualDiagnosticsOverlay.WindowElements.First() as IAdorner;
 
 			// Can't add existing Adorner twice.
 			Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(adorner, false));
