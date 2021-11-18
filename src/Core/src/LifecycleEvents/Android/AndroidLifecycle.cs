@@ -37,9 +37,6 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void OnRequestPermissionsResult(Activity activity, int requestCode, string[] permissions, Permission[] grantResults);
 		public delegate void OnRestoreInstanceState(Activity activity, Bundle savedInstanceState);
 
-		// Custom events
-		public delegate bool OnPressingBack(Activity activity);
-
 		// Internal events
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);
 	}
