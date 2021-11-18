@@ -5,7 +5,6 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
-using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
