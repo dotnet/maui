@@ -1,49 +1,60 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal abstract class LogListener
+	public static class UnitTestLoggerExtensions
 	{
-		public abstract void Warning(string category, string message);
+		public static ILoggingBuilder AddUnitTestLogger(
+			this ILoggingBuilder builder)
+		{
+			builder.Services.TryAddEnumerable(
+				ServiceDescriptor.Singleton<ILoggerProvider, UnitTestLoggerProvider>());
+
+			return builder;
+		}
+
+	}
+	public sealed class UnitTestLoggerProvider : ILoggerProvider
+	{
+		private readonly ConcurrentDictionary<string, UnitTestLogger> _loggers = new();
+
+		public UnitTestLoggerProvider()
+		{
+			MockApplication.MockLogger = new UnitTestLogger();
+		}
+
+		public ILogger CreateLogger(string categoryName) =>
+			_loggers.GetOrAdd(categoryName, name => MockApplication.MockLogger);
+
+		public void Dispose()
+		{
+			_loggers.Clear();
+		}
 	}
 
-	internal class Logger : LogListener
+	public class UnitTestLogger : ILogger
 	{
-		public IReadOnlyList<string> Messages
+		readonly List<string> _messages = new();
+		public IReadOnlyList<string> Messages => _messages;
+
+		public IDisposable BeginScope<TState>(TState state) => default;
+
+		public bool IsEnabled(LogLevel logLevel) => true;
+
+		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
 		{
-			get { return messages; }
-		}
+			if (!IsEnabled(logLevel))
+			{
+				return;
+			}
 
-		public override void Warning(string category, string message)
-		{
-			messages.Add("[" + category + "] " + message);
-		}
-
-		readonly List<string> messages = new List<string>();
-	}
-
-	internal static class Log
-	{
-		static Log()
-		{
-			Listeners = new SynchronizedList<LogListener>();
-		}
-
-		public static IList<LogListener> Listeners { get; }
-
-		public static void Warning(string category, string message)
-		{
-			foreach (LogListener listener in Listeners)
-				listener.Warning(category, message);
-		}
-
-		public static void Warning(string category, string format, params object[] args)
-		{
-			Warning(category, string.Format(format, args));
+			_messages.Add($"{formatter(state, exception)}");
 		}
 	}
 }

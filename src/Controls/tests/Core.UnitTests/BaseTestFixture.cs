@@ -1,8 +1,7 @@
 using System;
 using System.Globalization;
-using System.Threading;
-using Microsoft.Maui.Essentials;
 using NUnit.Framework;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
