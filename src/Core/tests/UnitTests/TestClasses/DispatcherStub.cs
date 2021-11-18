@@ -33,7 +33,7 @@ namespace Microsoft.Maui.UnitTests
 		}
 	}
 
-	class DispatcherProviderStub : IDispatcherProvider
+	class DispatcherProviderStub : IDispatcherProvider, IDisposable
 	{
 		ThreadLocal<IDispatcher?> s_dispatcherInstance = new(() =>
 			DispatcherProviderStubOptions.SkipDispatcherCreation
@@ -41,6 +41,9 @@ namespace Microsoft.Maui.UnitTests
 				: new DispatcherStub(
 					DispatcherProviderStubOptions.IsInvokeRequired,
 					DispatcherProviderStubOptions.InvokeOnMainThread));
+
+		public void Dispose() =>
+			s_dispatcherInstance.Dispose();
 
 		public IDispatcher? GetForCurrentThread() =>
 			s_dispatcherInstance.Value;
