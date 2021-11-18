@@ -1,5 +1,0 @@
-<!-- Workarounds for WinUI when $(SingleProject) is true -->
-<Project>
-  <!-- Required - Overwrite tasks that are not needed when multitargeting -->
-  <Target Name="BinPlaceBootstrapDll" />
-</Project>

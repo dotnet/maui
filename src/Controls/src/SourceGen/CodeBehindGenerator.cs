@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Xml;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen
 {
-	[Generator]
-	public class CodeBehindGenerator : ISourceGenerator
+	[Generator(LanguageNames.CSharp)]
+	public class CodeBehindGenerator : IIncrementalGenerator
 	{
-		static string[] _CSharpKeywords = new[] {
+		static readonly string[] CSharpKeywords = new[] {
 			"abstract", "as",
 			"base", "bool", "break", "byte",
 			"case", "catch", "char", "checked", "class", "const", "continue",
@@ -35,48 +36,63 @@ namespace Microsoft.Maui.Controls.SourceGen
 			"virtual", "void", "volatile",
 			"while",
 		};
-		public void Execute(GeneratorExecutionContext context)
+
+		public void Initialize(IncrementalGeneratorInitializationContext initContext)
 		{
-			IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache = GetXmlnsDefinitionAttribules(context);
+			//#if DEBUG
+			//			if (!System.Diagnostics.Debugger.IsAttached)
+			//				System.Diagnostics.Debugger.Launch();
+			//#endif
+			var projectItemProvider = initContext.AdditionalTextsProvider
+				.Combine(initContext.AnalyzerConfigOptionsProvider)
+				.Select(ComputeProjectItem);
 
-			foreach (var file in context.AdditionalFiles)
+			var xmlnsDefinitionsProvider = initContext.CompilationProvider
+				.Select(GetXmlnsDefinitionAttributes);
+
+			var sourceProvider = projectItemProvider
+				.Combine(xmlnsDefinitionsProvider)
+				.Combine(initContext.CompilationProvider)
+				.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right));
+
+			initContext.RegisterSourceOutput(sourceProvider, static (sourceProductionContext, provider) =>
 			{
-				string? code;
-				if (!context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind == null)
-					continue;
-
-				switch (kind)
+				var (projectItem, xmlnsDefinitions, compilation) = provider;
+				if (projectItem == null)
+					return;
+				switch (projectItem.Kind)
 				{
 					case "Xaml":
-						if (!TryGenerateXamlCodeBehind(file, context, xmlnsDefinitionCache, out code))
-							continue;
+						GenerateXamlCodeBehind(projectItem, compilation, sourceProductionContext, xmlnsDefinitions);
 						break;
 					case "Css":
-						if (!TryGenerateCssCodeBehind(file, context, out code))
-							continue;
+						GenerateCssCodeBehind(projectItem, sourceProductionContext);
 						break;
-					default:
-						continue; //throw ??
 				}
-				if (code == null)
-					continue;
-				if (!context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? name))
-					name = file.Path;
-				name = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(name)) ? "" : Path.GetDirectoryName(name) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(name)}.{kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
-				context.AddSource(name, SourceText.From(code, Encoding.UTF8));
-			}
+			});
 		}
 
-		IList<XmlnsDefinitionAttribute> GetXmlnsDefinitionAttribules(GeneratorExecutionContext context)
+		static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
+		{
+			var (additionalText, globalOptions) = tuple;
+			var options = globalOptions.GetOptions(additionalText);
+			if (!options.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
+				return null;
+			options.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
+			options.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
+			options.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
+			return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind);
+		}
+
+		static IList<XmlnsDefinitionAttribute> GetXmlnsDefinitionAttributes(Compilation compilation, CancellationToken cancellationToken)
 		{
 			var cache = new List<XmlnsDefinitionAttribute>();
-			INamedTypeSymbol? xmlnsDefinitonAttribute = context.Compilation.GetTypeByMetadataName(typeof(XmlnsDefinitionAttribute).FullName);
+			INamedTypeSymbol? xmlnsDefinitonAttribute = compilation.GetTypeByMetadataName(typeof(XmlnsDefinitionAttribute).FullName);
 			if (xmlnsDefinitonAttribute == null)
 				return cache;
-			foreach (var reference in context.Compilation.References)
+			foreach (var reference in compilation.References)
 			{
-				var symbol = context.Compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
-				if (symbol == null)
+				if (compilation.GetAssemblyOrModuleSymbol(reference) is not IAssemblySymbol symbol)
 					continue;
 				foreach (var attr in symbol.GetAttributes())
 				{
@@ -90,36 +106,34 @@ namespace Microsoft.Maui.Controls.SourceGen
 					cache.Add(xmlnsDef);
 				}
 			}
-
 			return cache;
 		}
 
-		bool TryGenerateXamlCodeBehind(AdditionalText file, GeneratorExecutionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? code)
+		static void GenerateXamlCodeBehind(ProjectItem projItem, Compilation compilation, SourceProductionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
 		{
-			code = null;
-			using (var reader = File.OpenText(file.Path))
+			using (var reader = File.OpenText(projItem.AdditionalText.Path))
 			{
-				if (!TryParseXaml(reader, context, xmlnsDefinitionCache, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
-					return false;
+				if (!TryParseXaml(reader, compilation, xmlnsDefinitionCache, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
+					return;
 
 				var sb = new StringBuilder();
-				var opt = context.AnalyzerConfigOptions.GetOptions(file);
-				if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
-					&& context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? targetPath))
-					sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+				var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
+
+				if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
+					sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+
 				if (XamlResourceIdOnly)
 				{
-					code = sb.ToString();
-					return true;
+					context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+					return;
 				}
+
 				if (rootType == null)
 					throw new Exception("Something went wrong");
 
 				sb.AppendLine($"namespace {rootClrNamespace}");
 				sb.AppendLine("{");
-
-				if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.RelativePath", out string? relativePath))
-					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{relativePath.Replace("\\", "\\\\")}\")]");
+				sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
 				if (addXamlCompilationAttribute)
 					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
 				if (hideFromIntellisense)
@@ -145,7 +159,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 					{
 						sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 
-						sb.AppendLine($"\t\t{faccess} {ftype} {(_CSharpKeywords.Contains(fname) ? "@" + fname : fname)};");
+						sb.AppendLine($"\t\t{faccess} {ftype} {(CSharpKeywords.Contains(fname) ? "@" + fname : fname)};");
 						sb.AppendLine();
 					}
 
@@ -156,18 +170,17 @@ namespace Microsoft.Maui.Controls.SourceGen
 				sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
 				if (namedFields != null)
 					foreach ((var fname, var ftype, var faccess) in namedFields)
-						sb.AppendLine($"\t\t\t{(_CSharpKeywords.Contains(fname) ? "@" + fname : fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, \"{fname}\");");
+						sb.AppendLine($"\t\t\t{(CSharpKeywords.Contains(fname) ? "@" + fname : fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, \"{fname}\");");
 
 				sb.AppendLine("\t\t}");
 				sb.AppendLine("\t}");
 				sb.AppendLine("}");
 
-				code = sb.ToString();
-				return true;
+				context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 			}
 		}
 
-		bool TryParseXaml(TextReader xaml, GeneratorExecutionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
+		static bool TryParseXaml(TextReader xaml, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
 		{
 			rootType = null;
 			rootClrNamespace = null;
@@ -223,9 +236,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return true;
 			}
 
-			namedFields = GetNamedFields(root, nsmgr, context, xmlnsDefinitionCache);
+			namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsDefinitionCache);
 			var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-			baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), context, xmlnsDefinitionCache);
+			baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, xmlnsDefinitionCache);
 
 			return true;
 		}
@@ -244,7 +257,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			return false;
 		}
 
-		IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, GeneratorExecutionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
+		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
 		{
 			var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 			if (xPrefix == null)
@@ -268,11 +281,11 @@ namespace Microsoft.Maui.Controls.SourceGen
 				var accessModifier = fieldModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "private"; //notpublic is WPF for internal
 				if (!new[] { "private", "public", "internal", "protected" }.Contains(accessModifier)) //quick validation
 					accessModifier = "private";
-				yield return (name ?? "", GetTypeName(xmlType, context, xmlnsDefinitionCache), accessModifier);
+				yield return (name ?? "", GetTypeName(xmlType, compilation, xmlnsDefinitionCache), accessModifier);
 			}
 		}
 
-		string GetTypeName(XmlType xmlType, GeneratorExecutionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
+		static string GetTypeName(XmlType xmlType, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
 		{
 			string returnType;
 			var ns = GetClrNamespace(xmlType.NamespaceUri);
@@ -281,11 +294,11 @@ namespace Microsoft.Maui.Controls.SourceGen
 			else
 			{
 				// It's an external, non-built-in namespace URL.
-				returnType = GetTypeNameFromCustomNamespace(xmlType, context, xmlnsDefinitionCache);
+				returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsDefinitionCache);
 			}
 
 			if (xmlType.TypeArguments != null)
-				returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, context, xmlnsDefinitionCache)))}>";
+				returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsDefinitionCache)))}>";
 
 			return $"global::{returnType}";
 		}
@@ -301,7 +314,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 		}
 
-		string GetTypeNameFromCustomNamespace(XmlType xmlType, GeneratorExecutionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
+		static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
 		{
 #nullable disable
 			string typeName = xmlType.GetTypeReference<string>(xmlnsDefinitionCache, null,
@@ -310,7 +323,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 					string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
 					string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
 
-					if (context.Compilation.GetTypeByMetadataName(fullName) != null)
+					if (compilation.GetTypeByMetadataName(fullName) != null)
 						return fullName;
 					return null;
 				});
@@ -337,24 +350,34 @@ namespace Microsoft.Maui.Controls.SourceGen
 			return null;
 		}
 
-		bool TryGenerateCssCodeBehind(AdditionalText file, GeneratorExecutionContext context, out string? code)
+		static void GenerateCssCodeBehind(ProjectItem projItem, SourceProductionContext sourceProductionContext)
 		{
 			var sb = new StringBuilder();
-			var opt = context.AnalyzerConfigOptions.GetOptions(file);
-			if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
-				&& context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? targetPath))
-				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\', '/')}\", null)]");
+			var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
-			code = sb.ToString();
-			return true;
+			if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
+				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", null)]");
+
+			sourceProductionContext.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+
 		}
 
-		public void Initialize(GeneratorInitializationContext context)
+		class ProjectItem
 		{
-			//#if DEBUG
-			//			if (!Debugger.IsAttached)
-			//				Debugger.Launch();
-			//#endif
+			public ProjectItem(AdditionalText additionalText, string? targetPath, string? relativePath, string? manifestResourceName, string kind)
+			{
+				AdditionalText = additionalText;
+				TargetPath = targetPath ?? additionalText.Path;
+				RelativePath = relativePath;
+				ManifestResourceName = manifestResourceName;
+				Kind = kind;
+			}
+
+			public AdditionalText AdditionalText { get; }
+			public string? TargetPath { get; }
+			public string? RelativePath { get; }
+			public string? ManifestResourceName { get; }
+			public string Kind { get; }
 		}
 	}
 }

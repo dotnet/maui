@@ -2,13 +2,14 @@
 <views:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Pages.ModalPage"
+    x:Class="Maui.Controls.Sample.Pages.ModalPage"    
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
     <views:BasePage.Content>
-        <StackLayout
-            Margin="12">
+        <VerticalStackLayout Margin="12">
+            <Button Clicked="PushClicked" Text="Push Page" />
             <Button Clicked="PushModalClicked" Text="Push Modal Page" />
+            <Button Clicked="PushNavigationModalClicked" Text="Push Modal Navigation Page" />
             <Button x:Name="PushModal" Clicked="PopModalClicked" Text="Pop Modal Page" />
-        </StackLayout>
+        </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

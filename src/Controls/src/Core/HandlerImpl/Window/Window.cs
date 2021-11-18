@@ -7,8 +7,9 @@ namespace Microsoft.Maui.Controls
 	{
 		public static IPropertyMapper<IWindow, WindowHandler> ControlsLabelMapper = new PropertyMapper<IWindow, WindowHandler>(WindowHandler.WindowMapper)
 		{
-#if WINDOWS
+#if __ANDROID__ || WINDOWS
 			[nameof(IWindow.Content)] = MapContent,
+			[nameof(Toolbar)] = MapToolbar,
 #endif
 		};
 
@@ -18,7 +19,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-#if WINDOWS
+#if ANDROID || WINDOWS
+		public static void MapToolbar(WindowHandler handler, IWindow view)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
+
+			if (view is IToolbarElement tb && tb.Toolbar != null)
+			{
+				_ = tb.Toolbar.ToNative(handler.MauiContext);
+			}
+		}
 
 		public static void MapContent(WindowHandler handler, IWindow view)
 		{
@@ -27,7 +37,10 @@ namespace Microsoft.Maui.Controls
 				WindowHandler.MapContent(handler, view);
 				return;
 			}
-
+#if ANDROID
+			var nativeContent = view.Content.ToContainerView(handler.MauiContext!);
+			handler.NativeView.SetContentView(nativeContent);
+#else
 			if (handler.NativeView.Content is UI.Xaml.Controls.Panel panel)
 			{
 				var nativeContent = view.Content.ToNative(handler.MauiContext!);
@@ -35,6 +48,7 @@ namespace Microsoft.Maui.Controls
 				panel.Children.Add(nativeContent);
 
 			}
+#endif
 		}
 #endif
 

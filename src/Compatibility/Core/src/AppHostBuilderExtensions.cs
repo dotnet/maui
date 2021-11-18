@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static class MauiAppBuilderExtensions
 	{
-		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder)
+		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
 		{
 			builder.Services.TryAddSingleton<IApplication, TApp>();
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
+		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication
 		{
 			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
@@ -84,6 +85,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 
+					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
@@ -149,8 +151,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					Internals.Registrar.Registered.Register(typeof(StreamImageSource), typeof(StreamImagesourceHandler));
 					Internals.Registrar.Registered.Register(typeof(UriImageSource), typeof(ImageLoaderSourceHandler));
 					Internals.Registrar.Registered.Register(typeof(FontImageSource), typeof(FontImageSourceHandler));
-
-
 					Internals.Registrar.Registered.Register(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader));
 
 #endif
@@ -158,15 +158,15 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
-
-					// Update the mappings for IView/View to work specifically for Controls
-					VisualElement.RemapForControls();
-					View.RemapForControls();
-					Label.RemapForControls();
-					Button.RemapForControls();
 				});
 
 			builder.AddMauiCompat();
+
+			// Update the mappings for IView/View to work specifically for Controls
+			VisualElement.RemapForControls();
+			Label.RemapForControls();
+			Button.RemapForControls();
+			Window.RemapForControls();
 
 			return builder;
 		}

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
@@ -18,8 +19,6 @@ namespace Microsoft.Maui.Controls
 		Task<IDictionary<string, object>>? _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 		readonly Lazy<IResourceDictionary> _systemResources;
-
-		public override IDispatcher Dispatcher => this.GetDispatcher();
 
 		IAppIndexingProvider? _appIndexProvider;
 		ReadOnlyCollection<Element>? _logicalChildren;

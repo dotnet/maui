@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using Microsoft.Maui.Controls.Internals;
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeLabel = UIKit.UILabel;
 #else

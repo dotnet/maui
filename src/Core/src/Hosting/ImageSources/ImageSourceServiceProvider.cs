@@ -6,7 +6,7 @@ using Microsoft.Maui.Hosting.Internal;
 
 namespace Microsoft.Maui.Hosting
 {
-	class ImageSourceServiceProvider : MauiServiceProvider, IImageSourceServiceProvider
+	class ImageSourceServiceProvider : MauiFactory, IImageSourceServiceProvider
 	{
 		static readonly string ImageSourceInterface = typeof(IImageSource).FullName!;
 		static readonly Type ImageSourceServiceType = typeof(IImageSourceService<>);

@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
 		{
-			var windowManager = MauiContext?.GetWindowManager();
-			windowManager?.Connect(VirtualView);
+			var windowManager = MauiContext?.GetNavigationRootManager();
+			windowManager?.Connect(VirtualView.Content);
 
 			_rootPanel?.Children?.Clear();
 			nativeView.Content = null;
@@ -42,8 +42,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var windowManager = handler.MauiContext.GetWindowManager();
-			windowManager.Connect(handler.VirtualView);
+			var windowManager = handler.MauiContext.GetNavigationRootManager();
+			windowManager.Connect(handler.VirtualView.Content);
 			handler?._rootPanel?.Children?.Clear();
 			handler?._rootPanel?.Children?.Add(windowManager.RootView);
 		}

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Internals
 {

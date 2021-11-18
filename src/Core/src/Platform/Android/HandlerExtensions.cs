@@ -7,6 +7,26 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
+		internal static AView? GetNative(this IElement view, bool returnWrappedIfPresent)
+		{
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return (view.Handler?.NativeView as AView);
+
+		}
+
+		internal static AView ToNative(this IElement view, IMauiContext context, bool returnWrappedIfPresent)
+		{
+			var nativeView = view.ToNative(context);
+
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return nativeView;
+
+		}
+
 		public static AView ToContainerView(this IElement view, IMauiContext context) =>
 			new ContainerView(context) { CurrentView = view };
 
@@ -31,10 +51,6 @@ namespace Microsoft.Maui
 				view = ir.ReplacedView;
 
 			var handler = view.Handler;
-
-			if (handler?.MauiContext != null && handler.MauiContext != context)
-				handler = null;
-
 			if (handler == null)
 				handler = context.Handlers.GetHandler(view.GetType());
 

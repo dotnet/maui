@@ -5,6 +5,26 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
+		internal static FrameworkElement? GetNative(this IElement view, bool returnWrappedIfPresent)
+		{
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return (view.Handler?.NativeView as FrameworkElement);
+
+		}
+
+		internal static FrameworkElement ToNative(this IElement view, IMauiContext context, bool returnWrappedIfPresent)
+		{
+			var nativeView = view.ToNative(context);
+
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return nativeView;
+
+		}
+
 		public static FrameworkElement ToNative(this IElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
@@ -29,12 +49,13 @@ namespace Microsoft.Maui
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
 
-			if (((INativeViewHandler)handler).NativeView is not FrameworkElement result)
-			{
-				throw new InvalidOperationException($"Unable to convert {view} to {typeof(FrameworkElement)}");
-			}
+			if (handler is INativeViewHandler nvh && nvh.NativeView is FrameworkElement)
+				return nvh.NativeView;
 
-			return result;
+			if (handler.NativeView is FrameworkElement result)
+				return result;
+
+			throw new InvalidOperationException($"Unable to convert {view} to {typeof(FrameworkElement)}");
 		}
 
 		public static void SetApplicationHandler(this UI.Xaml.Application nativeApplication, IApplication application, IMauiContext context) =>

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform

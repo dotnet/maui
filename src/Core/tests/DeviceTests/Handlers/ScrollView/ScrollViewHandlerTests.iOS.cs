@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform.iOS;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;

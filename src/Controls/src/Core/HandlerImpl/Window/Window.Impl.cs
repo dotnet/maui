@@ -12,7 +12,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -24,8 +24,12 @@ namespace Microsoft.Maui.Controls
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 
+		Toolbar IToolbarElement.Toolbar => _toolBar;
+		Toolbar _toolBar;
+
 		public Window()
 		{
+			_toolBar = new Toolbar();
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
@@ -63,6 +67,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler? Deactivated;
 		public event EventHandler? Stopped;
 		public event EventHandler? Destroying;
+		public event EventHandler<BackgroundingEventArgs>? Backgrounding;
 
 		protected virtual void OnCreated() { }
 		protected virtual void OnResumed() { }
@@ -70,6 +75,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnDeactivated() { }
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
+		protected virtual void OnBackgrounding(IPersistedState state) { }
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
@@ -201,6 +207,8 @@ namespace Microsoft.Maui.Controls
 		{
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
+
+			Application?.RemoveWindow(this);
 		}
 
 		void IWindow.Resumed()
@@ -208,6 +216,12 @@ namespace Microsoft.Maui.Controls
 			Resumed?.Invoke(this, EventArgs.Empty);
 			OnResumed();
 			Application?.SendResume();
+		}
+
+		void IWindow.Backgrounding(IPersistedState state)
+		{
+			Backgrounding?.Invoke(this, new BackgroundingEventArgs(state));
+			OnBackgrounding(state);
 		}
 
 		// Currently this returns MainPage + ModalStack
@@ -259,8 +273,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		bool IWindow.BackButtonPressed()
+		bool IWindow.BackButtonClicked()
 		{
+			if (Navigation.ModalStack.Count > 0)
+			{
+				return Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendBackButtonPressed();
+			}
+
 			return this.Page?.SendBackButtonPressed() ?? false;
 		}
 
@@ -313,6 +332,7 @@ namespace Microsoft.Maui.Controls
 				_owner.OnModalPushing(modal);
 
 				modal.Parent = _owner;
+				modal.Toolbar ??= new Toolbar();
 
 				if (modal.NavigationProxy.ModalStack.Count == 0)
 				{

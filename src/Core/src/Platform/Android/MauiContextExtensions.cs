@@ -17,8 +17,8 @@ namespace Microsoft.Maui
 			return config.LayoutDirection.ToFlowDirection();
 		}
 
-		public static NavigationManager GetNavigationManager(this IMauiContext mauiContext) =>
-			mauiContext.Services.GetRequiredService<NavigationManager>();
+		public static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<NavigationRootManager>();
 
 		public static LayoutInflater GetLayoutInflater(this IMauiContext mauiContext)
 		{
@@ -48,9 +48,13 @@ namespace Microsoft.Maui
 			(mauiContext.Context?.GetActivity() as AppCompatActivity)
 			?? throw new InvalidOperationException("AppCompatActivity Not Found");
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, LayoutInflater? layoutInflater = null, FragmentManager? fragmentManager = null)
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext,
+			LayoutInflater? layoutInflater = null,
+			FragmentManager? fragmentManager = null,
+			Android.Content.Context? context = null,
+			bool registerNewNavigationRoot = false)
 		{
-			var scopedContext = new MauiContext(mauiContext);
+			var scopedContext = new MauiContext(mauiContext.Services);
 
 			if (layoutInflater != null)
 				scopedContext.AddWeakSpecific(layoutInflater);
@@ -58,25 +62,26 @@ namespace Microsoft.Maui
 			if (fragmentManager != null)
 				scopedContext.AddWeakSpecific(fragmentManager);
 
+			if (context != null)
+				scopedContext.AddWeakSpecific(context);
+
+			if (registerNewNavigationRoot)
+			{
+				if (fragmentManager == null)
+					throw new InvalidOperationException("If you're creating a new Navigation Root you need to use a new Fragment Manager");
+
+				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
+			}
+
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, NavigationManager navigationManager)
+		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
-			var scopedContext = new MauiContext(mauiContext);
+			if (mauiContext.Context?.ApplicationContext is MauiApplication ma)
+				return ma.Services;
 
-			scopedContext.AddSpecific(navigationManager);
-
-			return scopedContext;
-		}
-
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow)
-		{
-			var scopedContext = new MauiContext(mauiContext.Services, nativeWindow, mauiContext);
-
-			scopedContext.AddSpecific(nativeWindow);
-
-			return scopedContext;
+			throw new InvalidOperationException("Unable to find Application Services");
 		}
 	}
 }

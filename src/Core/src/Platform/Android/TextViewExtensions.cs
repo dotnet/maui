@@ -83,6 +83,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateVerticalTextAlignment(this TextView textView, ITextAlignment textAlignment)
+		{
+			textView.UpdateVerticalAlignment(textAlignment.VerticalTextAlignment);
+		}
+
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
 		{
 			textView.SetLineBreakMode(label);

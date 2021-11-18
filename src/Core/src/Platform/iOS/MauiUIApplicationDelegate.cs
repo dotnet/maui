@@ -3,24 +3,17 @@ using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
-		MauiContext _applicationContext = null!;
-		WeakReference<IWindow>? _virtualWindow;
+		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
 
-		internal IWindow? VirtualWindow
-		{
-			get
-			{
-				IWindow? window = null;
-				_virtualWindow?.TryGetTarget(out window);
-				return window;
-			}
-		}
+		IMauiContext _applicationContext = null!;
 
 		protected MauiUIApplicationDelegate()
 		{
@@ -33,9 +26,11 @@ namespace Microsoft.Maui
 		{
 			var mauiApp = CreateMauiApp();
 
-			Services = mauiApp.Services;
+			var rootContext = new MauiContext(mauiApp.Services);
 
-			_applicationContext = new MauiContext(Services, this);
+			_applicationContext = rootContext.MakeApplicationScope(this);
+
+			Services = _applicationContext.Services;
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 
@@ -48,32 +43,23 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
-			var uiWindow = CreateNativeWindow();
+			// If < iOS 13, or we're not on mac/ipad, or the Info.plist does not have a scene manifest entry
+			// we need to assume no multi window, and no UISceneDelegate
+			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0)
+				|| (UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac
+					&& UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Pad)
+				|| !NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString("UIApplicationSceneManifest")))
+			{
+				this.CreateNativeWindow(Application, application, launchOptions);
+			}
 
-			Window = uiWindow;
-
-			Window.MakeKeyAndVisible();
-
-			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
+			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 
 			return true;
 		}
 
-		UIWindow CreateNativeWindow()
-		{
-			var uiWindow = new UIWindow();
-
-			var mauiContext = _applicationContext.MakeScoped(uiWindow);
-
-			Services?.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
-
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-			_virtualWindow = new WeakReference<IWindow>(window);
-			uiWindow.SetWindowHandler(window, mauiContext);
-
-			return uiWindow;
-		}
+		public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
+			=> new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
 
 		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
 		{

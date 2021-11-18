@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
@@ -13,8 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			var mockDeviceInfo = new TestDeviceInfo();
-			Device.Info = mockDeviceInfo;
+			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
 		}
 
 

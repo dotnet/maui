@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 #if NET6_0_OR_GREATER
-			var grid = new Grid() { VerticalOptions = LayoutOptions.FillAndExpand, BackgroundColor = Colors.Purple, };
+			var grid = new Grid() { VerticalOptions = LayoutOptions.Fill, BackgroundColor = Colors.Purple, };
 			grid.AddRowDefinition(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
 			grid.AddRowDefinition(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 			grid.AddRowDefinition(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
@@ -28,6 +28,7 @@ namespace Maui.Controls.Sample.Pages
 			grid.Add(headerLabel);
 			GridLayout.SetRow(headerLabel, 0);
 
+			// You can replace this BlazorWebView with CustomBlazorWebView to see loading custom static assets
 			var bwv = new BlazorWebView
 			{
 				// General properties

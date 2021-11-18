@@ -1,15 +1,19 @@
+#nullable enable
+using System;
 using Windows.Graphics.Display;
 using Windows.Graphics.Display.Core;
 using Windows.System.Display;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceDisplay
+	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
-		static readonly object locker = new object();
-		static DisplayRequest displayRequest;
+		readonly object locker = new object();
+		DisplayRequest? displayRequest;
 
-		static bool PlatformKeepScreenOn
+		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
+
+		public bool KeepScreenOn
 		{
 			get
 			{
@@ -43,9 +47,12 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static DisplayInfo GetMainDisplayInfo(DisplayInformation di = null)
+		public DisplayInfo GetMainDisplayInfo() =>
+			GetMainDisplayInfo(null);
+
+		DisplayInfo GetMainDisplayInfo(DisplayInformation? di = null)
 		{
-			di = di ?? DisplayInformation.GetForCurrentView();
+			di ??= DisplayInformation.GetForCurrentView();
 
 			var rotation = CalculateRotation(di);
 			var perpendicular =
@@ -67,7 +74,7 @@ namespace Microsoft.Maui.Essentials
 				rate: (float)(hdm?.RefreshRate ?? 0));
 		}
 
-		static void StartScreenMetricsListeners()
+		public void StartScreenMetricsListeners()
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
@@ -78,7 +85,7 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static void StopScreenMetricsListeners()
+		public void StopScreenMetricsListeners()
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
@@ -89,13 +96,13 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static void OnDisplayInformationChanged(DisplayInformation di, object args)
+		void OnDisplayInformationChanged(DisplayInformation di, object args)
 		{
 			var metrics = GetMainDisplayInfo(di);
-			OnMainDisplayInfoChanged(metrics);
+			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
 		}
 
-		static DisplayOrientation CalculateOrientation(DisplayInformation di)
+		DisplayOrientation CalculateOrientation(DisplayInformation di)
 		{
 			switch (di.CurrentOrientation)
 			{

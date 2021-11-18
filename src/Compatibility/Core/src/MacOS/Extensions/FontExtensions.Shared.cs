@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility.Internals;
 using Microsoft.Maui.Controls.Internals;
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeFont = UIKit.UIFont;
 

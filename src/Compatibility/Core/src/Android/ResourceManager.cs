@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,23 +23,39 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		static ImageCache GetCache() => _lruCache.Value;
 
 		static Assembly _assembly;
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Resource.designer.cs is in the root application assembly, which should be preserved.")]
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 		static Type FindType(string name, string altName)
 		{
-			return _assembly?.GetTypes().FirstOrDefault(x => x.Name == name || x.Name == altName);
+			if (_assembly != null)
+			{
+				foreach (var type in _assembly.GetTypes())
+				{
+					if (type.Name == name || type.Name == altName)
+						return type;
+				}
+			}
+			return null;
 		}
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 		static Type _drawableClass;
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 		static Type _resourceClass;
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 		static Type _styleClass;
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 		static Type _layoutClass;
 
 		public static Type DrawableClass
 		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 			get
 			{
 				if (_drawableClass == null)
 					_drawableClass = FindType("Drawable", "Resource_Drawable");
 				return _drawableClass;
 			}
+			[param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 			set
 			{
 				_drawableClass = value;
@@ -48,12 +64,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public static Type ResourceClass
 		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 			get
 			{
 				if (_resourceClass == null)
 					_resourceClass = FindType("Id", "Resource_Id");
 				return _resourceClass;
 			}
+			[param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 			set
 			{
 				_resourceClass = value;
@@ -62,12 +80,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public static Type StyleClass
 		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 			get
 			{
 				if (_styleClass == null)
 					_styleClass = FindType("Style", "Resource_Style");
 				return _styleClass;
 			}
+			[param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 			set
 			{
 				_styleClass = value;
@@ -76,12 +96,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public static Type LayoutClass
 		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 			get
 			{
 				if (_layoutClass == null)
 					_layoutClass = FindType("Layout", "Resource_Layout");
 				return _layoutClass;
 			}
+			[param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 			set
 			{
 				_layoutClass = value;
@@ -223,7 +245,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					// volley the requests better up front so that if the same request comes in it isn't requeued
 					if (initialSource is UriImageSource uri && uri.CachingEnabled)
 					{
-						cacheKey = Device.PlatformServices.GetHash(uri.Uri.ToString());
+						cacheKey = Crc64.ComputeHashString(uri.Uri.ToString());
 						var cacheObject = await GetCache().GetAsync(cacheKey, uri.CacheValidity, async () =>
 						{
 							var drawable = await context.GetFormsDrawableAsync(initialSource, cancellationToken);
@@ -359,17 +381,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_assembly = mainAssembly;
 		}
 
-		static int IdFromTitle(string title, Type resourceType, string defType, Resources resource)
+		static int IdFromTitle(string title, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] Type resourceType, string defType, Resources resource)
 		{
 			return IdFromTitle(title, resourceType, defType, resource, Platform.GetPackageName());
 		}
 
-		static int IdFromTitle(string title, Type resourceType, string defType, Context context)
+		static int IdFromTitle(string title, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] Type resourceType, string defType, Context context)
 		{
 			return IdFromTitle(title, resourceType, defType, context?.Resources, context?.PackageName);
 		}
 
-		static int IdFromTitle(string title, Type resourceType, string defType, Resources resource, string packageName)
+		static int IdFromTitle(string title, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] Type resourceType, string defType, Resources resource, string packageName)
 		{
 			int id = 0;
 			if (title == null)
@@ -409,7 +431,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return GetId(resourceType, name);
 		}
 
-		static int GetId(Type type, string memberName)
+		static int GetId([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] Type type, string memberName)
 		{
 			// This may legitimately be null in designer scenarios
 			if (type == null)

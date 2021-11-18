@@ -152,7 +152,7 @@ namespace Microsoft.Maui
 				await Task.Delay(500);
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
-			Windows.Foundation.Point offset = ttv.TransformPoint(new Windows.Foundation.Point(0, 0));
+			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
 			var shadowHost = new UI.Xaml.Shapes.Rectangle()
 			{

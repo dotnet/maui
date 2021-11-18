@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -34,10 +35,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			var nativeView = this.GetWrappedNativeView();
 
-			if (nativeView == null)
+			if (nativeView == null || VirtualView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
+
+			VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 			var explicitWidth = VirtualView.Width;
 			var explicitHeight = VirtualView.Height;

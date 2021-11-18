@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Xaml.Internals;
@@ -8,6 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
     public class NativeBindingService : INativeBindingService
     {
+        [UnconditionalSuppressMessage ("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
         public bool TrySetBinding(object target, string propertyName, BindingBase binding)
         {
             var view = target as FrameworkElement;

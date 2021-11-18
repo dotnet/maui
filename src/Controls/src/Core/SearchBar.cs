@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(SearchBar), true, BindingMode.Default);
+
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
@@ -77,6 +79,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
+		}
+
+		public bool IsTextPredictionEnabled
+		{
+			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
+			set { SetValue(IsTextPredictionEnabledProperty, value); }
 		}
 
 		public string FontFamily

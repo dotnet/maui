@@ -29,12 +29,11 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public class TabbedPageManager
 	{
+		Fragment _tabLayoutFragment;
 		ColorStateList _originalTabTextColors;
 		ColorStateList _orignalTabIconColors;
-
 		ColorStateList _newTabTextColors;
 		ColorStateList _newTabIconColors;
-
 		FragmentManager _fragmentManager;
 		TabLayout _tabLayout;
 		BottomNavigationView _bottomNavigationView;
@@ -46,16 +45,17 @@ namespace Microsoft.Maui.Controls.Handlers
 		int _defaultARGBColor = Colors.Transparent.ToNative().ToArgb();
 		AColor _defaultAndroidColor = Colors.Transparent.ToNative();
 		readonly IMauiContext _context;
-		private readonly Listeners _listeners;
-
+		readonly Listeners _listeners;
 		TabbedPage Element { get; set; }
 		internal TabLayout TabLayout => _tabLayout;
 		internal BottomNavigationView BottomNavigationView => _bottomNavigationView;
 		internal ViewPager2 ViewPager => _viewPager;
+		NavigationRootManager NavigationRootManager { get; }
 
 		public TabbedPageManager(IMauiContext context)
 		{
 			_context = context;
+			NavigationRootManager = _context.GetNavigationRootManager();
 			_listeners = new Listeners(this);
 			_viewPager = new ViewPager2(context.Context)
 			{
@@ -104,11 +104,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				Element.PropertyChanged -= OnElementPropertyChanged;
 				((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
+				Element.Appearing -= OnTabbedPageAppearing;
+				Element.Disappearing -= OnTabbedPageDisappearing;
+				RemoveTabs();
 			}
 
 			Element = tabbedPage;
 			if (Element != null)
 			{
+				Element.Appearing += OnTabbedPageAppearing;
+				Element.Disappearing += OnTabbedPageDisappearing;
 				_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 				Element.PropertyChanged += OnElementPropertyChanged;
 				if (IsBottomTabPlacement)
@@ -126,7 +131,6 @@ namespace Microsoft.Maui.Controls.Handlers
 					if (_tabLayout == null)
 					{
 						var layoutInflater = Element.Handler.MauiContext.GetLayoutInflater();
-						var navManager = Element.Handler.MauiContext.GetNavigationManager();
 						_tabLayout = new TabLayout(_context.Context)
 						{
 							TabMode = TabLayout.ModeFixed,
@@ -150,8 +154,82 @@ namespace Microsoft.Maui.Controls.Handlers
 				UpdateItemIconColor();
 				UpdateSwipePaging();
 				UpdateOffscreenPageLimit();
+				SetTabLayout();
 			}
 		}
+
+		void RemoveTabs()
+		{
+			if (_tabLayoutFragment != null)
+			{
+				var fragment = _tabLayoutFragment;
+				_tabLayoutFragment = null;
+				_ = _context
+						.GetNavigationRootManager()
+						.FragmentManager
+						.BeginTransaction()
+						.Remove(fragment)
+						.SetReorderingAllowed(true)
+						.Commit();
+
+				_tabplacementId = 0;
+			}
+		}
+
+		void OnTabbedPageDisappearing(object sender, EventArgs e)
+		{
+			RemoveTabs();
+		}
+
+		void OnTabbedPageAppearing(object sender, EventArgs e)
+		{
+			SetTabLayout();
+		}
+
+		int _tabplacementId;
+		internal void SetTabLayout()
+		{
+			int id;
+			var rootManager =
+				_context.GetNavigationRootManager();
+
+			if (IsBottomTabPlacement)
+			{
+				id = Resource.Id.navigationlayout_bottomtabs;
+				if (_tabplacementId == id)
+					return;
+
+				_tabLayoutFragment = new ViewFragment(BottomNavigationView);
+
+				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
+				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+				{
+					cl.BottomMargin = _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height);
+				}
+			}
+			else
+			{
+				id = Resource.Id.navigationlayout_toptabs;
+				if (_tabplacementId == id)
+					return;
+
+				_tabLayoutFragment = new ViewFragment(TabLayout);
+				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
+				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+				{
+					cl.BottomMargin = 0;
+				}
+			}
+
+			_tabplacementId = id;
+			_ = rootManager
+					.FragmentManager
+					.BeginTransaction()
+					.Replace(id, _tabLayoutFragment)
+					.SetReorderingAllowed(true)
+					.Commit();
+		}
+
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -181,14 +259,14 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
+			ViewPager2 pager = _viewPager;
+			var adapter = (MultiPageFragmentStateAdapter<Page>)pager.Adapter;
+			adapter.CountOverride = Element.Children.Count;
 			if (IsBottomTabPlacement)
 			{
-				ViewPager2 pager = _viewPager;
 				BottomNavigationView bottomNavigationView = _bottomNavigationView;
 
-				((MultiPageFragmentStateAdapter<Page>)pager.Adapter).CountOverride = Element.Children.Count;
-
-				pager.Adapter.NotifyDataSetChanged();
+				adapter.NotifyDataSetChanged();
 
 				if (Element.Children.Count == 0)
 				{
@@ -204,11 +282,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 			else
 			{
-				ViewPager2 pager = _viewPager;
 				TabLayout tabs = _tabLayout;
 
-				((MultiPageFragmentStateAdapter<Page>)pager.Adapter).CountOverride = Element.Children.Count;
-				pager.Adapter.NotifyDataSetChanged();
+				adapter.NotifyDataSetChanged();
 				if (Element.Children.Count == 0)
 				{
 					tabs.RemoveAllTabs();
@@ -375,7 +451,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				_context,
 				result =>
 				{
-					SetTabIconImageSource(tab, result.Value);
+					SetTabIconImageSource(tab, result?.Value);
 				});
 		}
 

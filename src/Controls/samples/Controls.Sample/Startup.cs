@@ -26,6 +26,8 @@ namespace Maui.Controls.Sample
 
 	public static class MauiProgram
 	{
+		static bool UseMauiGraphicsSkia = false;
+
 		enum PageType { Main, Blazor, Shell, Template }
 		readonly static PageType _pageType = PageType.Main;
 
@@ -35,6 +37,24 @@ namespace Maui.Controls.Sample
 
 			appBuilder.UseMauiApp<Recipes.App>();
 			var services = appBuilder.Services;
+
+			if (UseMauiGraphicsSkia)
+			{
+				/*
+				appBuilder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<GraphicsView, SkiaGraphicsViewHandler>();
+					handlers.AddHandler<BoxView, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
+				});
+				*/
+			}
 
 			appBuilder
 				.ConfigureMauiHandlers(handlers =>
@@ -137,7 +157,7 @@ namespace Maui.Controls.Sample
 					// Log everything in this one
 					events.AddAndroid(android => android
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
-						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)))
+						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
 						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
@@ -145,7 +165,6 @@ namespace Maui.Controls.Sample
 						.OnPause((a) => LogEvent(nameof(AndroidLifecycle.OnPause)))
 						.OnPostCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnPostCreate)))
 						.OnPostResume((a) => LogEvent(nameof(AndroidLifecycle.OnPostResume)))
-						.OnPressingBack((a) => LogEvent(nameof(AndroidLifecycle.OnPressingBack)) && false)
 						.OnRequestPermissionsResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnRequestPermissionsResult)))
 						.OnRestart((a) => LogEvent(nameof(AndroidLifecycle.OnRestart)))
 						.OnRestoreInstanceState((a, b) => LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState)))
@@ -161,13 +180,7 @@ namespace Maui.Controls.Sample
 						{
 							LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
 						})
-						.OnPressingBack(a =>
-						{
-							LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
-
-							return shouldPreventBack-- > 0;
-						})
-						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
+						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut") && (shouldPreventBack-- > 0))
 						.OnRestoreInstanceState((a, b) =>
 						{
 							LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");

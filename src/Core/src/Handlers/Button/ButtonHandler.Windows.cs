@@ -1,46 +1,65 @@
 #nullable enable
-using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, MauiButton>
+	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
-		static UI.Xaml.Thickness? DefaultPadding;
-		static UI.Xaml.Media.Brush? DefaultForeground;
-		static UI.Xaml.Media.Brush? DefaultBackground;
-
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
-		protected override MauiButton CreateNativeView() 
-			=> new MauiButton();
+		protected override Button CreateNativeView() =>
+			new Button
+			{
+				VerticalAlignment = VerticalAlignment.Stretch,
+				HorizontalAlignment = HorizontalAlignment.Stretch,
+				Content = new StackPanel
+				{
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center,
+					Orientation = Orientation.Horizontal,
+					Margin = WinUIHelpers.CreateThickness(0),
+					Children =
+					{
+						new Image
+						{
+							VerticalAlignment = VerticalAlignment.Center,
+							HorizontalAlignment = HorizontalAlignment.Center,
+							Stretch = Stretch.Uniform,
+							Margin = WinUIHelpers.CreateThickness(0),
+							Visibility = UI.Xaml.Visibility.Collapsed,
+						},
+						new TextBlock
+						{
+							VerticalAlignment = VerticalAlignment.Center,
+							HorizontalAlignment = HorizontalAlignment.Center,
+							Margin = WinUIHelpers.CreateThickness(0),
+							Visibility = UI.Xaml.Visibility.Collapsed,
+						}
+					}
+				}
+			};
 
-		void SetupDefaults(MauiButton nativeView)
-		{
-			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
-			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
-			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
-		}
-
-		protected override void ConnectHandler(MauiButton nativeView)
+		protected override void ConnectHandler(Button nativeView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
 
 			nativeView.Click += OnClick;
-			nativeView.AddHandler(UI.Xaml.UIElement.PointerPressedEvent, _pointerPressedHandler, true);
-			nativeView.AddHandler(UI.Xaml.UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
+			nativeView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
+			nativeView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
 
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(MauiButton nativeView)
+		protected override void DisconnectHandler(Button nativeView)
 		{
 			nativeView.Click -= OnClick;
-			nativeView.RemoveHandler(UI.Xaml.UIElement.PointerPressedEvent, _pointerPressedHandler);
-			nativeView.RemoveHandler(UI.Xaml.UIElement.PointerReleasedEvent, _pointerReleasedHandler);
+			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
+			nativeView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
 
 			_pointerPressedHandler = null;
 			_pointerReleasedHandler = null;
@@ -51,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Windows-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateBackground(button, DefaultBackground);
+			handler.TypedNativeView?.UpdateBackground(button);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
@@ -61,12 +80,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.TypedNativeView?.UpdateTextColor(button, DefaultForeground);
+			handler.TypedNativeView?.UpdateTextColor(button);
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(button.CharacterSpacing);
+			handler.TypedNativeView?.UpdateCharacterSpacing(button);
 		}
 
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
@@ -78,7 +97,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
+			handler.TypedNativeView?.UpdatePadding(button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IButton image) =>
@@ -87,12 +106,12 @@ namespace Microsoft.Maui.Handlers
 				.UpdateImageSourceAsync()
 				.FireAndForget(handler);
 
-		void OnSetImageSource(ImageSource? obj)
+		void OnSetImageSource(ImageSource? nativeImageSource)
 		{
-			NativeView.UpdateImageSource(VirtualView, obj);
+			NativeView.UpdateImageSource(nativeImageSource);
 		}
 
-		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)
+		void OnClick(object sender, RoutedEventArgs e)
 		{
 			VirtualView?.Clicked();
 			VirtualView?.Released();

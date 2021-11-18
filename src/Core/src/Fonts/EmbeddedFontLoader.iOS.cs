@@ -18,8 +18,13 @@ namespace Microsoft.Maui
 					throw new InvalidOperationException("ResourceStream was null.");
 
 				var data = NSData.FromStream(font.ResourceStream);
+				if (data == null)
+					throw new InvalidOperationException("Unable to load font stream data.");
 				var provider = new CGDataProvider(data);
 				var cgFont = CGFont.CreateFromProvider(provider);
+				if (cgFont == null)
+					throw new InvalidOperationException("Unable to load font from the stream.");
+
 				var name = cgFont.PostScriptName;
 
 				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))

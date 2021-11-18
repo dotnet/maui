@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 		public IElement? VirtualView { get; private protected set; }
 
-		public void SetMauiContext(IMauiContext mauiContext) =>
+		public virtual void SetMauiContext(IMauiContext mauiContext) =>
 			MauiContext = mauiContext;
 
 		public virtual void SetVirtualView(IElement view)
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 				var map = imv.GetPropertyMapperOverrides();
 				if (map is not null)
 				{
-					map.Chained = _defaultMapper;
+					map.Chained = new[] { _defaultMapper };
 					_mapper = map;
 				}
 			}

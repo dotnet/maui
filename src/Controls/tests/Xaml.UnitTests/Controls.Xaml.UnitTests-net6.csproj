@@ -5,7 +5,7 @@
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0672;0219;0414;CS0436</NoWarn>
+    <NoWarn>0672;0219;0414;CS0436;0618</NoWarn>
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
   </PropertyGroup>
@@ -37,11 +37,11 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Core.UnitTests\MockDispatcherProvider.cs" />
-    <Compile Include="..\Core.UnitTests\MockDispatcher.cs" />
+    <Compile Include="..\..\..\Core\tests\UnitTests\TestClasses\DispatcherStub.cs" Link="DispatcherStub.cs" />
     <Compile Include="..\Core.UnitTests\MockPlatformServices.cs" />
     <Compile Include="..\Core.UnitTests\BaseTestFixture.cs" />
   </ItemGroup>

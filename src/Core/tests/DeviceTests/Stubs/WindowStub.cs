@@ -51,6 +51,10 @@
 			IsResumed = false;
 		}
 
-		public bool BackButtonPressed() => true;
+		public void Backgrounding(IPersistedState state)
+		{
+		}
+
+		public bool BackButtonClicked() => true;
 	}
 }

@@ -24,6 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 				.CreateBuilder()
 				.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler(typeof(ButtonWithContainerStub), typeof(ButtonWithContainerStubHandler));
 					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
 					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
 				})
@@ -74,20 +75,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		public IMauiContext MauiContext => _context;
 
-		protected THandler CreateHandler(IView view) =>
-			CreateHandler<THandler>(view);
+		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
+			CreateHandler<THandler>(view, mauiContext);
 
-		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
+		protected TCustomHandler CreateHandler<TCustomHandler>(IView view, IMauiContext mauiContext = null)
 			where TCustomHandler : THandler, new()
 		{
 			var handler = new TCustomHandler();
-			InitializeViewHandler(view, handler);
+			InitializeViewHandler(view, handler, mauiContext);
 			return handler;
 		}
 
-		protected void InitializeViewHandler(IView view, IViewHandler handler)
+		protected void InitializeViewHandler(IView view, IViewHandler handler, IMauiContext mauiContext = null)
 		{
-			handler.SetMauiContext(MauiContext);
+			handler.SetMauiContext(mauiContext ?? MauiContext);
 
 			handler.SetVirtualView(view);
 			view.Handler = handler;

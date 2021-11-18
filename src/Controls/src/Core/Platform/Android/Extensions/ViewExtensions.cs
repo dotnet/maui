@@ -114,8 +114,8 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static T GetParentOfType<T>(this AView view)
 			where T : class
 		{
-			T t = view as T;
-			if (view != null)
+
+			if (view is T t)
 				return t;
 
 			return view.Parent.GetParentOfType<T>();
