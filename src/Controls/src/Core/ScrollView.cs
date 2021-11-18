@@ -377,5 +377,10 @@ namespace Microsoft.Maui.Controls
 
 			return args;
 		}
+
+		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		{
+			// No need to queue up layout changes in ScrollView 
+		}
 	}
 }
