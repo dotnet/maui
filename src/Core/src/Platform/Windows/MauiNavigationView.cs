@@ -77,6 +77,10 @@ namespace Microsoft.Maui
 
 		internal void UpdateBarBackgroundBrush(WBrush? brush)
 		{
+
+			if (brush == null)
+				return;
+
 			if (PaneToggleButtonGrid != null)
 				PaneToggleButtonGrid.Background = brush;
 

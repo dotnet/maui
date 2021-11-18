@@ -6,14 +6,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report! Please make sure to add as much detail as you can, preferably with a reproduction. This will help us diagnose the issue faster and thus resolve it quicker.
+        Thanks for taking the time to fill out this bug report! Please make sure to add as much detail as you can, preferably with a [reproduction](https://github.com/dotnet/maui/blob/main/.github/repro.md). This will help us diagnose the issue faster and thus resolve it quicker.
         
         If this is a bug in Xamarin.Forms, please [open the issue in the Xamarin.Forms repo](https://github.com/xamarin/Xamarin.Forms/issues/new?assignees=&labels=s%2Funverified%2C+t%2Fbug+%3Abug%3A&template=bug_report.md&title=[Bug]+).
   - type: textarea
     id: description
     attributes:
       label: Description
-      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots and videos as well. We love reproduction projects, please provide them through a GitHub repo and link that here.
+      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots and videos as well. We love [reproduction projects](https://github.com/dotnet/maui/blob/main/.github/repro.md), please provide them through a GitHub repo and link that here.
       placeholder: Tell us what you see!
     validations:
       required: true
@@ -37,8 +37,8 @@ body:
         - Preview 7
         - Preview 8
         - Preview 9
-        - Preview 10
-        - RC 1
+        - Preview 10 (current)
+        - Preview 11
         - Unknown/Other (please specify)
     validations:
       required: true
@@ -51,8 +51,8 @@ body:
         - Preview 7
         - Preview 8
         - Preview 9
-        - Preview 10
-        - RC 1
+        - Preview 10 (current)
+        - Preview 11
         - Unknown/Other
     validations:
       required: true

@@ -122,10 +122,11 @@ namespace Microsoft.Maui.Controls
 
 		void OnAppearing(object sender, EventArgs e)
 		{
-			// Update the Window level Toolbar with my Toolbar information
-			var window = this.FindParentOfType<Window>();
-			if (window?.Toolbar != null)
-				window.Toolbar.ApplyNavigationPage(this);
+			// Update the Container level Toolbar with my Toolbar information
+			if(this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), true) is IToolbarElement te)
+			{
+				te.Toolbar.ApplyNavigationPage(this);
+			}
 		}
 
 		// This is used for navigation events that don't effect the currently visible page
@@ -213,9 +214,9 @@ namespace Microsoft.Maui.Controls
 				RootPage = navStack[0];
 				CurrentPage = visiblePage;
 
-				SendHandlerUpdateAsync(false, null, 
+				SendHandlerUpdateAsync(false, null,
 				() =>
-				{					
+				{
 					FireAppearing(CurrentPage);
 				},
 				() =>
@@ -278,7 +279,7 @@ namespace Microsoft.Maui.Controls
 				var currentPage = NavigationStack[NavigationStack.Count - 1];
 				var newCurrentPage = NavigationStack[NavigationStack.Count - 2];
 
-				await Owner.SendHandlerUpdateAsync(animated, 
+				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
 						Owner.RemoveFromInnerChildren(currentPage);
@@ -340,7 +341,7 @@ namespace Microsoft.Maui.Controls
 					return Task.CompletedTask;
 
 				var previousPage = Owner.CurrentPage;
-				
+
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{

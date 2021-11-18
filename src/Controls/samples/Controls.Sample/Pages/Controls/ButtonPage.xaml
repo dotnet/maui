@@ -31,6 +31,12 @@
                     TextColor="White"
                     Text="Button"/>
                 <Label
+                    Text="Character Spacing"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    CharacterSpacing="20"
+                    Text="Button"/>
+                <Label
                     Text="Image Source"
                     Style="{StaticResource Headline}"/>
                 <Button ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings.png" Padding="16, 9, 16, 9" />

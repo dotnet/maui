@@ -11,7 +11,5 @@ namespace Microsoft.Maui.Essentials
 		IEssentialsBuilder OnAppAction(Action<AppAction> action);
 
 		IEssentialsBuilder UseVersionTracking();
-
-		IEssentialsBuilder UseLegacySecureStorage();
 	}
 }

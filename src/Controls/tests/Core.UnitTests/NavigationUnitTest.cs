@@ -631,7 +631,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage contentPage2 = new ContentPage();
 			ContentPage contentPage3 = new ContentPage();
 
-			var navigationPage = new TestNavigationPage(true, contentPage1);			
+			var navigationPage = new TestNavigationPage(true, contentPage1);
 			await navigationPage.PushAsync(contentPage2);
 			await navigationPage.PushAsync(contentPage3);
 
