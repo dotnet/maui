@@ -5,16 +5,13 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
-using Tizen.WebView;
-using TChromium = Tizen.WebView.Chromium;
-using TWebView = Tizen.WebView.WebView;
+using Tizen.NUI;
+using TApplication = Tizen.Applications.Application;
+using NWebView = Tizen.NUI.BaseComponents.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	/// <summary>
-	/// The Tizen <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
-	/// </summary>
-	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WebViewContainer>
+	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, NWebView>
 	{
 		private const string AppOrigin = "http://0.0.0.0/";
 		private const string BlazorInitScript = @"
@@ -43,52 +40,70 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		";
 
 		private TizenWebViewManager? _webviewManager;
-		private WebViewExtensions.InterceptRequestCallback? _interceptRequestCallback;
-
-		private TWebView PlatformWebView => PlatformView.WebView;
 
 		private bool RequiredStartupPropertiesSet =>
 			//_webview != null &&
 			HostPage != null &&
 			Services != null;
 
-		/// <inheritdoc />
-		protected override WebViewContainer CreatePlatformView()
+		protected override NWebView CreateNativeView()
 		{
-			TChromium.Initialize();
-			MauiApplication.Current.Terminated += (s, e) => TChromium.Shutdown();
-
-			return new WebViewContainer(PlatformParent);
-		}
-
-		/// <inheritdoc />
-		protected override void ConnectHandler(WebViewContainer platformView)
-		{
-			_interceptRequestCallback = OnRequestInterceptCallback;
-			PlatformWebView.LoadFinished += OnLoadFinished;
-			PlatformWebView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
-			PlatformWebView.SetInterceptRequestCallback(_interceptRequestCallback);
-			PlatformWebView.GetSettings().JavaScriptEnabled = true;
-		}
-
-		/// <inheritdoc />
-		protected override void DisconnectHandler(WebViewContainer platformView)
-		{
-			PlatformWebView.LoadFinished -= OnLoadFinished;
-			base.DisconnectHandler(platformView);
-		}
-
-		private void PostMessageFromJS(JavaScriptMessage message)
-		{
-			if (message is null)
+			return new NWebView()
 			{
-				throw new ArgumentNullException(nameof(message));
-			}
+				MouseEventsEnabled = true,
+				KeyEventsEnabled = true,
+			};
+		}
 
-			if (message.Name.Equals("BlazorHandler", StringComparison.Ordinal))
+		protected override void ConnectHandler(NWebView nativeView)
+		{
+			NativeView.PageLoadFinished += OnLoadFinished;
+			NativeView.Context.RegisterHttpRequestInterceptedCallback(OnRequestInterceptCallback);
+			NativeView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
+		}
+
+		protected override void DisconnectHandler(NWebView nativeView)
+		{
+			NativeView.PageLoadFinished -= OnLoadFinished;
+			base.DisconnectHandler(nativeView);
+		}
+
+
+		public void PostMessageFromJS(string message)
+		{
+			_webviewManager!.MessageReceivedInternal(new Uri(NativeView.Url), message);
+		}
+
+		private void OnLoadFinished(object? sender, WebViewPageLoadEventArgs e)
+		{
+			//FocusManager.Instance.SetCurrentFocusView(NativeView);
+			var url = NativeView.Url;
+
+			if (url == AppOrigin)
+				NativeView.EvaluateJavaScript(BlazorInitScript);
+		}
+
+		private void OnRequestInterceptCallback(WebHttpRequestInterceptor interceptor)
+		{
+			var url = interceptor.Url;
+			if (url.StartsWith(AppOrigin))
 			{
-				_webviewManager!.MessageReceivedInternal(new Uri(PlatformWebView.Url), message.GetBodyAsString());
+				var allowFallbackOnHostPage = url.EndsWith("/");
+				if (_webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+				{
+					var header = $"HTTP/1.0 200 OK\r\n";
+					foreach (var item in headers)
+					{
+						header += $"{item.Key}:{item.Value}\r\n";
+					}
+					header += "\r\n";
+					var body = new StreamReader(content).ReadToEnd();
+
+					interceptor.SetResponse(header, body);
+					return;
+				}
 			}
+			interceptor.Ignore();
 		}
 
 		public void PostMessageFromJS(JavaScriptMessage message)
@@ -156,55 +171,5 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 			_webviewManager.Navigate("/");
 		}
-
-		private void OnRequestInterceptCallback(IntPtr context, IntPtr request, IntPtr userdata)
-		{
-			if (request == IntPtr.Zero)
-			{
-				return;
-			}
-
-			var url = PlatformWebView.GetInterceptRequestUrl(request);
-
-			if (url.StartsWith(AppOrigin))
-			{
-				var allowFallbackOnHostPage = url.EndsWith("/");
-				url = QueryStringHelper.RemovePossibleQueryString(url);
-				if (_webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
-				{
-					var header = $"HTTP/1.0 200 OK\r\n";
-					foreach (var item in headers)
-					{
-						header += $"{item.Key}:{item.Value}\r\n";
-					}
-					header += "\r\n";
-
-					using (MemoryStream memstream = new MemoryStream())
-					{
-						content.CopyTo(memstream);
-						var body = memstream.ToArray();
-						PlatformWebView.SetInterceptRequestResponse(request, header, body, (uint)body.Length);
-					}
-					return;
-				}
-			}
-
-			PlatformWebView.IgnoreInterceptRequest(request);
-		}
-
-		private void OnLoadFinished(object? sender, EventArgs e)
-		{
-			PlatformWebView.SetFocus(true);
-			var url = PlatformWebView.Url;
-
-			if (url == AppOrigin)
-				PlatformWebView.Eval(BlazorInitScript);
-		}
-
-		internal IFileProvider CreateFileProvider(string contentRootDir)
-		{
-			return new TizenMauiAssetFileProvider(contentRootDir);
-		}
-
 	}
 }
