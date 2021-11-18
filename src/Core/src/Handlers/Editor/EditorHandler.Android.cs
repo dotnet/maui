@@ -56,7 +56,6 @@ namespace Microsoft.Maui.Handlers
 			DefaultBackground = nativeView.Background;
 		}
 
-		// This is a Android-specific mapping
 		public static void MapBackground(EditorHandler handler, IEditor editor)
 		{
 			handler.NativeView?.UpdateBackground(editor, DefaultBackground);

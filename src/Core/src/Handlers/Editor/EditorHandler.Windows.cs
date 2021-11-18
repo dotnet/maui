@@ -1,41 +1,29 @@
 #nullable enable
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, MauiTextBox>
+	public partial class EditorHandler : ViewHandler<IEditor, TextBox>
 	{
-		Brush? _placeholderDefaultBrush;
-		Brush? _defaultPlaceholderColorFocusBrush;
+		protected override TextBox CreateNativeView() =>
+			new MauiTextBox
+			{
+				AcceptsReturn = true,
+				TextWrapping = TextWrapping.Wrap,
+			};
 
-		protected override MauiTextBox CreateNativeView() => new MauiTextBox
-		{
-			AcceptsReturn = true,
-			TextWrapping = TextWrapping.Wrap,
-			Style = Application.Current.Resources["MauiTextBoxStyle"] as Style,
-			UpdateVerticalAlignmentOnLoad = false,
-			VerticalContentAlignment = VerticalAlignment.Top
-		};
-
-		protected override void ConnectHandler(MauiTextBox nativeView)
+		protected override void ConnectHandler(TextBox nativeView)
 		{
 			nativeView.TextChanged += OnTextChanged;
 			nativeView.LostFocus += OnLostFocus;
-			SetupDefaults(nativeView);
 		}
 
-		protected override void DisconnectHandler(MauiTextBox nativeView)
+		protected override void DisconnectHandler(TextBox nativeView)
 		{
 			nativeView.TextChanged -= OnTextChanged;
 			nativeView.LostFocus -= OnLostFocus;
-		}
-
-		void SetupDefaults(MauiTextBox nativeView)
-		{
-			_placeholderDefaultBrush = nativeView.PlaceholderForeground;
-			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)
@@ -50,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdatePlaceholderColor(editor, handler._placeholderDefaultBrush, handler._defaultPlaceholderColorFocusBrush);
+			handler.NativeView?.UpdatePlaceholderColor(editor);
 		}
 
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
@@ -80,9 +68,13 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateIsReadOnly(editor);
 		}
 
+		public static void MapBackground(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateBackground(editor);
+		}
+
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
-
 
 		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
 		{
@@ -94,9 +86,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateVerticalTextAlignment(editor);
 		}
 
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) 
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateKeyboard(editor); 
+			handler.NativeView?.UpdateKeyboard(editor);
 		}
 
 		void OnTextChanged(object sender, TextChangedEventArgs args)

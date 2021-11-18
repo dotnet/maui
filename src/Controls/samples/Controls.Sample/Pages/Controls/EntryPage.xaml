@@ -21,6 +21,12 @@
                 <Entry 
                     IsEnabled="False"/>
                 <Label
+                    Text="Using TextColor"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    TextColor="Purple"/>
+                <Label
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
                 <Entry 
@@ -31,11 +37,6 @@
                 <Entry 
                     PlaceholderColor="Purple"
                     Placeholder="Placeholder"/>
-                <Label
-                    Text="Password"
-                    Style="{StaticResource Headline}" />
-                <Entry
-                    IsPassword="True" />
                 <Label
                     Text="With Text"
                     Style="{StaticResource Headline}" />
