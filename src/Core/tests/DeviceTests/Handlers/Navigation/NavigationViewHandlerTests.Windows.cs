@@ -17,27 +17,27 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-			FrameworkElement frameworkElement = null;
-			var content = (Panel)DefaultWindow.Content;
-			try
-			{
-				var mauiContext = new ContextStub(MauiContext.GetApplicationServices());
-				var handler = CreateHandler(navigationView, mauiContext);
-				frameworkElement = handler.NativeView;
-				content.Children.Add(frameworkElement);
-				if (navigationView is NavigationViewStub nvs && nvs.NavigationStack?.Count > 0)
+				FrameworkElement frameworkElement = null;
+				var content = (Panel)DefaultWindow.Content;
+				try
 				{
-					navigationView.RequestNavigation(new NavigationRequest(nvs.NavigationStack, false));
-					await nvs.OnNavigationFinished;
-				}
+					var mauiContext = MauiContext.MakeScoped(true);
+					var handler = CreateHandler(navigationView, mauiContext);
+					frameworkElement = handler.NativeView;
+					content.Children.Add(frameworkElement);
+					if (navigationView is NavigationViewStub nvs && nvs.NavigationStack?.Count > 0)
+					{
+						navigationView.RequestNavigation(new NavigationRequest(nvs.NavigationStack, false));
+						await nvs.OnNavigationFinished;
+					}
 
-				await action(handler);
-			}
-			finally
-			{
-				if (frameworkElement != null)
-					content.Children.Remove(frameworkElement);
-				}				
+					await action(handler);
+				}
+				finally
+				{
+					if (frameworkElement != null)
+						content.Children.Remove(frameworkElement);
+				}
 			});
 		}
 	}

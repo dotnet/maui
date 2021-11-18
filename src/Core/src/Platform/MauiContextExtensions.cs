@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 
 		public static IMauiContext MakeApplicationScope(this IMauiContext mauiContext, NativeApplication nativeApplication)
 		{
-			var scopedContext = new MauiContext(mauiContext);
+			var scopedContext = new MauiContext(mauiContext.Services);
 
 			scopedContext.AddSpecific(nativeApplication);
 
@@ -46,9 +46,9 @@ namespace Microsoft.Maui
 			scope = mauiContext.Services.CreateScope();
 
 #if __ANDROID__
-			var scopedContext = new MauiContext(scope.ServiceProvider, nativeWindow, mauiContext);
+			var scopedContext = new MauiContext(scope.ServiceProvider, nativeWindow);
 #else
-			var scopedContext = new MauiContext(scope.ServiceProvider, mauiContext);
+			var scopedContext = new MauiContext(scope.ServiceProvider);
 #endif
 
 			scopedContext.AddWeakSpecific(nativeWindow);
