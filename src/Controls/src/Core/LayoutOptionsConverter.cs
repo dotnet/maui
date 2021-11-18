@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+#pragma warning disable CS0618 // Type or member is obsolete (AndExpand options)
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -52,6 +53,7 @@ namespace Microsoft.Maui.Controls
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{

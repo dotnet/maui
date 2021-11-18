@@ -98,6 +98,22 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
 
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+		}
+
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+
+		}
+
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
+		}
+
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)
 		{
 			var currLength = textView?.Text?.Length ?? 0;
@@ -123,19 +139,9 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Completed();
 		}
 
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
-		}
-
 		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			VirtualView.UpdateText(NativeView.Text);
-		}
-
-		public static void MapKeyboard(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateKeyboard(editor);
 		}
 	}
 }

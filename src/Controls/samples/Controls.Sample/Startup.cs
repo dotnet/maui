@@ -157,7 +157,7 @@ namespace Maui.Controls.Sample
 					// Log everything in this one
 					events.AddAndroid(android => android
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
-						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)))
+						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
 						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
@@ -165,7 +165,6 @@ namespace Maui.Controls.Sample
 						.OnPause((a) => LogEvent(nameof(AndroidLifecycle.OnPause)))
 						.OnPostCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnPostCreate)))
 						.OnPostResume((a) => LogEvent(nameof(AndroidLifecycle.OnPostResume)))
-						.OnPressingBack((a) => LogEvent(nameof(AndroidLifecycle.OnPressingBack)) && false)
 						.OnRequestPermissionsResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnRequestPermissionsResult)))
 						.OnRestart((a) => LogEvent(nameof(AndroidLifecycle.OnRestart)))
 						.OnRestoreInstanceState((a, b) => LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState)))
@@ -181,13 +180,7 @@ namespace Maui.Controls.Sample
 						{
 							LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
 						})
-						.OnPressingBack(a =>
-						{
-							LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
-
-							return shouldPreventBack-- > 0;
-						})
-						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
+						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut") && (shouldPreventBack-- > 0))
 						.OnRestoreInstanceState((a, b) =>
 						{
 							LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");

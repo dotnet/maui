@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -24,6 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
+				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
 			}
 
@@ -31,6 +34,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void TearDown()
 			{
 				Device.PlatformServices = null;
+				DispatcherProvider.SetCurrent(null);
 			}
 
 			[TestCase(false)]

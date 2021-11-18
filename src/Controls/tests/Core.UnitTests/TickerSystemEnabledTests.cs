@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -9,13 +11,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[OneTimeSetUp]
 		public void Init()
 		{
-			Device.PlatformServices = new MockPlatformServices();
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
 		[OneTimeTearDown]
 		public void End()
 		{
-			Device.PlatformServices = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 
 		async Task SwapFadeViews(View view1, View view2)

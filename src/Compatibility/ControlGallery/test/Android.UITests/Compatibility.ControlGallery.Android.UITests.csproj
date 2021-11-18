@@ -9,6 +9,14 @@
     <DefineConstants>$(DefineConstants);__ANDROID__;UITEST;__SHELL__</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;0618</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;0618</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="System.Net.Http" />
   </ItemGroup>

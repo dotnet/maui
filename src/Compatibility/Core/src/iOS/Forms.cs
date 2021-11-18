@@ -300,11 +300,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 			}
 
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
-			}
-
 			public Assembly[] GetAssemblies()
 			{
 				return AppDomain.CurrentDomain.GetAssemblies();
@@ -640,8 +635,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					return result;
 				}
 			}
-
-			public bool IsInvokeRequired => !NSThread.IsMain;
 
 #if __MOBILE__
 			public string RuntimePlatform => Device.iOS;
