@@ -15,7 +15,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			_isInvokeRequired = isInvokeRequired;
 			_invokeOnMainThread = invokeOnMainThread;
-			
+
 			ManagedThreadId = Environment.CurrentManagedThreadId;
 		}
 

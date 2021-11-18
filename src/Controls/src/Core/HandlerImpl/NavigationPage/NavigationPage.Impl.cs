@@ -214,9 +214,9 @@ namespace Microsoft.Maui.Controls
 				RootPage = navStack[0];
 				CurrentPage = visiblePage;
 
-				SendHandlerUpdateAsync(false, null, 
+				SendHandlerUpdateAsync(false, null,
 				() =>
-				{					
+				{
 					FireAppearing(CurrentPage);
 				},
 				() =>
@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Controls
 				var currentPage = NavigationStack[NavigationStack.Count - 1];
 				var newCurrentPage = NavigationStack[NavigationStack.Count - 2];
 
-				await Owner.SendHandlerUpdateAsync(animated, 
+				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
 						Owner.RemoveFromInnerChildren(currentPage);
@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls
 					return Task.CompletedTask;
 
 				var previousPage = Owner.CurrentPage;
-				
+
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
