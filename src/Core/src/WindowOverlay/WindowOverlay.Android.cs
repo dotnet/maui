@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool DisableUITouchEventPassthrough { get; set; }
 
-		public bool InitializeNativeLayer()
+		public virtual bool Initialize()
 		{
 			if (IsNativeViewInitialized)
 				return true;
@@ -78,9 +78,9 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Disposes the native event hooks and handlers used to drive the overlay.
+		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		private void DisposeNativeDependencies()
+		private void DeinitializeNativeDependencies()
 		{
 			if (_nativeActivity?.Window != null)
 				_nativeActivity.Window.DecorView.LayoutChange -= DecorView_LayoutChange;

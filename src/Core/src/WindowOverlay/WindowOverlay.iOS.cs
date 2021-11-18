@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public bool InitializeNativeLayer()
+		public virtual bool Initialize()
 		{
 			if (IsNativeViewInitialized)
 				return true;
@@ -80,9 +80,9 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Disposes the native event hooks and handlers used to drive the overlay.
+		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		private void DisposeNativeDependencies()
+		private void DeinitializeNativeDependencies()
 		{
 			_frameObserver?.Dispose();
 			_passthroughView?.Dispose();

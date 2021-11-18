@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 			handler?._rootPanel?.Children?.Add(windowManager.RootView);
 
 			if (window.VisualDiagnosticsOverlay != null && handler != null && handler._rootPanel != null)
-				window.VisualDiagnosticsOverlay.InitializeNativeLayer();
+				window.VisualDiagnosticsOverlay.Initialize();
 		}
 	}
 }

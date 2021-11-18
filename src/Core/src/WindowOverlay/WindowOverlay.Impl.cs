@@ -9,7 +9,6 @@ namespace Microsoft.Maui
 	public partial class WindowOverlay : IWindowOverlay, IDrawable
 	{
 		internal HashSet<IWindowOverlayElement> _windowElements = new HashSet<IWindowOverlayElement>();
-		internal bool _disposedValue;
 		bool isVisible = true;
 
 		/// <summary>
@@ -62,17 +61,10 @@ namespace Microsoft.Maui
 				drawable.Draw(canvas, dirtyRect);
 		}
 
-		protected virtual void Dispose(bool disposing)
+		public virtual bool Deinitialize()
 		{
-			if (!_disposedValue)
-			{
-				if (disposing)
-				{
-					DisposeNativeDependencies();
-				}
-
-				_disposedValue = true;
-			}
+			DeinitializeNativeDependencies();
+			return true;
 		}
 
 		/// <inheritdoc/>
@@ -133,13 +125,6 @@ namespace Microsoft.Maui
 			OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements, windowElements));
 		}
 
-		public void Dispose()
-		{
-			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
-		}
-
 #if NETSTANDARD || NET6
 
 		/// <inheritdoc/>
@@ -150,15 +135,15 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public bool InitializeNativeLayer()
+		public virtual bool Initialize()
 		{
 			return this.IsNativeViewInitialized = true;
 		}
 
 		/// <summary>
-		/// Disposes the native event hooks and handlers used to drive the overlay.
+		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		private void DisposeNativeDependencies()
+		private void DeinitializeNativeDependencies()
 		{
 			this.IsNativeViewInitialized = false;
 		}

@@ -159,18 +159,11 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public override void RemoveWindowElements() => RemoveAdorners();
 
-		protected override void Dispose(bool disposing)
+		public override bool Deinitialize()
 		{
-			if (!_disposedValue)
-			{
-				if (disposing)
-				{
-					RemoveScrollableElementHandler();
-					OnTouch -= VisualDiagnosticsOverlayOnTouch;
-				}
-			}
-
-			base.Dispose(disposing);
+			RemoveScrollableElementHandler();
+			OnTouch -= VisualDiagnosticsOverlayOnTouch;
+			return base.Deinitialize();
 		}
 
 		/// <summary>

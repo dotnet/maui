@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics.Native;
 
 namespace Microsoft.Maui
 {
-	public interface IWindowOverlay : IDrawable, IDisposable
+	public interface IWindowOverlay : IDrawable
 	{
 		/// <summary>
 		/// Gets or sets a value indicating whether to disable UI Touch Event Passthrough.
@@ -89,8 +89,13 @@ namespace Microsoft.Maui
 		void RemoveWindowElements();
 
 		/// <summary>
-		/// Initialize the native touch and drawing layer.
+		/// Initialize the overlay.
 		/// </summary>
-		bool InitializeNativeLayer();
+		bool Initialize();
+
+		/// <summary>
+		/// Deinitialize the overlay.
+		/// </summary>
+		bool Deinitialize();
 	}
 }

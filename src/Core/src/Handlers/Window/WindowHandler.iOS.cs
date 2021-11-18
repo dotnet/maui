@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView.RootViewController = nativeContent;
 
 			if (window.VisualDiagnosticsOverlay != null)
-				window.VisualDiagnosticsOverlay.InitializeNativeLayer();
+				window.VisualDiagnosticsOverlay.Initialize();
 		}
 	}
 }

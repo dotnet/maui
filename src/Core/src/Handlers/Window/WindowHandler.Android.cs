@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 			rootManager.SetContentView(nativeContent);
 			handler.NativeView.SetContentView(rootManager.RootView);
 			if (window.VisualDiagnosticsOverlay != null && rootManager.RootView is ViewGroup group)
-				window.VisualDiagnosticsOverlay.InitializeNativeLayer();
+				window.VisualDiagnosticsOverlay.Initialize();
 		}
 	}
 }

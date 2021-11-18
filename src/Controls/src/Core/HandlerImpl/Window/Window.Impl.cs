@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls
 			var result = _overlays.Add(overlay);
 			if (result)
 			{
-				overlay.InitializeNativeLayer();
+				overlay.Initialize();
 				overlay.Invalidate();
 			}
 
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls
 
 			var result = _overlays.Remove(overlay);
 			if (result)
-				overlay.Dispose();
+				overlay.Deinitialize();
 
 			return result;
 		}
