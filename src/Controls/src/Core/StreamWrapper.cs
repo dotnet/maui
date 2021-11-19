@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls
 			if (!response.IsSuccessStatusCode)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<StreamWrapper>()?
-						.LogWarning($"Could not retrieve {uri}, status code {response.StatusCode}");
+						.LogWarning("Could not retrieve {Uri}, status code {StatusCode}", uri, response.StatusCode);
 
 				return null;
 			}

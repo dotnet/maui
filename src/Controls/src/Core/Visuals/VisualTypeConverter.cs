@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<VisualTypeConverter>()?.LogWarning("Unable to register {visualType} please add a public default constructor", visualType.ToString());
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to register {visualType} please add a public default constructor", visualType.ToString());
 			}
 
 			return null;
