@@ -43,12 +43,12 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
-			// If < iOS 13, or we're not on mac/ipad, or the Info.plist does not have a scene manifest entry
-			// we need to assume no multi window, and no UISceneDelegate
-			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0)
-				|| (UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac
-					&& UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Pad)
-				|| !NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString("UIApplicationSceneManifest")))
+			// If < iOS 13 or the Info.plist does not have a scene manifest entry
+			// we need to assume no multi window, and no UISceneDelegate.
+			// We cannot check for iPads/Mac because even on the iPhone it uses the
+			// scene delegate if one is specified in the manifest.
+			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0) ||
+				!NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString("UIApplicationSceneManifest")))
 			{
 				this.CreateNativeWindow(Application, application, launchOptions);
 			}
