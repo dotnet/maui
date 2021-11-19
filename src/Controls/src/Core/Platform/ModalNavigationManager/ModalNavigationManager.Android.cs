@@ -52,14 +52,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 				for (int i = 0; i <= _rootDecorView.ChildCount; i++)
 				{
-					if(_rootDecorView.GetChildAt(i) is ModalContainer mc &&
+					if (_rootDecorView.GetChildAt(i) is ModalContainer mc &&
 						mc.Modal == modal)
 					{
 						modalContainer = mc;
 					}
 				}
 
-				_= modalContainer ?? throw new InvalidOperationException("Parent is not Modal Container");
+				_ = modalContainer ?? throw new InvalidOperationException("Parent is not Modal Container");
 
 				if (animated)
 				{
