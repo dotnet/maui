@@ -8,8 +8,22 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 	// All these tests should run in a separate thread/task to avoid polluting the other tests.
 	// This is only because the dispatcher and dispatcher provider are both "static" classes.
 	[Category(TestCategory.Core, TestCategory.Dispatching)]
-	public class DispatcherTests : TestBase
+	public class DispatcherTests : IDisposable
 	{
+		DispatcherProviderStub _dispatcherProvider;
+
+		public DispatcherTests()
+		{
+			_dispatcherProvider = new DispatcherProviderStub();
+			DispatcherProvider.SetCurrent(_dispatcherProvider);
+		}
+
+		public void Dispose()
+		{
+			DispatcherProvider.SetCurrent(null);
+			_dispatcherProvider.Dispose();
+		}
+
 		// just a check to make sure the test dispatcher is working
 		[Fact]
 		public Task TestImplementationHasDispatcher() =>

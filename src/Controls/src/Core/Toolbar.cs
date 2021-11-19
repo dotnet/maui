@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 {
 	internal interface IToolbarElement
 	{
-		Toolbar Toolbar { get;}
+		Toolbar Toolbar { get; }
 	}
 
 	public class Toolbar : Microsoft.Maui.IElement

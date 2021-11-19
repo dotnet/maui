@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 				var viewFragment = new NavViewFragment(MauiContext);
 
 				try
-				{										
+				{
 					linearLayoutCompat.Id = View.GenerateViewId();
 
 					fragmentManager

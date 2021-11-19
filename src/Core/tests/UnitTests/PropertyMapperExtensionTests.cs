@@ -4,7 +4,7 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core, TestCategory.PropertyMapping)]
-	public class PropertyMapperExtensionTests : TestBase
+	public class PropertyMapperExtensionTests
 	{
 		[Fact]
 		public void AddAfterMapping()

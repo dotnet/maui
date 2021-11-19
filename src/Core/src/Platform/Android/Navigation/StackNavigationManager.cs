@@ -438,7 +438,7 @@ namespace Microsoft.Maui
 			{
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
-				
+
 				base.OnFragmentViewDestroyed(fm, f);
 			}
 			#endregion
