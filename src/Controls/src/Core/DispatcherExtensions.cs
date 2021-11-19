@@ -65,8 +65,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				action();
-				return Task.CompletedTask;
+				return action();
 			}
 		}
 
