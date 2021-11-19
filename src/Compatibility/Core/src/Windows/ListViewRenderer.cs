@@ -233,10 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				ReloadData();
 			}
 
-			if (Element.Dispatcher == null)
-				Device.BeginInvokeOnMainThread(() => List?.UpdateLayout());
-			else
-				Element.Dispatcher.BeginInvokeOnMainThread(() => List?.UpdateLayout());
+			Element.Dispatcher.DispatchIfRequired(() => List?.UpdateLayout());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

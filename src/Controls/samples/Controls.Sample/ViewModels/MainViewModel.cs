@@ -27,11 +27,11 @@ namespace Maui.Controls.Sample.ViewModels
 
 			Task.Run(() =>
 			{
-				Debug.WriteLine($"This is on the thread pool! ({Environment.CurrentManagedThreadId})");
+				Debug.WriteLine($"This is on the thread pool! (dispatchRequired={_dispatcher.IsDispatchRequired}; id={Environment.CurrentManagedThreadId})");
 
-				_dispatcher.BeginInvokeOnMainThread(() =>
+				_dispatcher.Dispatch(() =>
 				{
-					Debug.WriteLine($"This is on the main thread! ({Environment.CurrentManagedThreadId})");
+					Debug.WriteLine($"This is on the main thread! (dispatchRequired={_dispatcher.IsDispatchRequired}; id={Environment.CurrentManagedThreadId})");
 				});
 			});
 		}

@@ -14,10 +14,10 @@ namespace Microsoft.Maui.Dispatching
 			_handler = new Handler(_looper);
 		}
 
-		bool IsInvokeRequiredImplementation() =>
-			_looper != Looper.MainLooper;
+		bool IsDispatchRequiredImplementation() =>
+			_looper != Looper.MyLooper();
 
-		void BeginInvokeOnMainThreadImplementation(Action action) =>
+		bool DispatchImplementation(Action action) =>
 			_handler.Post(() => action());
 	}
 

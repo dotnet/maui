@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UISettingsColorValuesChanged(UISettings sender, object args)
 		{
-			Application.Current.Dispatcher.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.DispatchIfRequired(() =>
 				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme)));
 		}
 
