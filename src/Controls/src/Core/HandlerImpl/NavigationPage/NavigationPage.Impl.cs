@@ -154,6 +154,11 @@ namespace Microsoft.Maui.Controls
 			Action firePostNavigatingEvents,
 			Action fireNavigatedEvents)
 		{
+			if (!_setForMaui || this.IsShimmed())
+			{
+				return;
+			}
+
 			try
 			{
 				processStackChanges?.Invoke();
