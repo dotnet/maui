@@ -1,8 +1,6 @@
 using System;
 using Tizen.Applications;
-using ElmSharp;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -10,6 +8,8 @@ namespace Microsoft.Maui
 {
 	public abstract class MauiApplication : CoreUIApplication
 	{
+		IMauiContext _applicationContext = null!;
+
 		protected MauiApplication()
 		{
 			Current = this;
@@ -23,9 +23,11 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			MauiApplicationContext = new MauiContext(mauiApp.Services, this, CoreUIAppContext.GetInstance(this));
+			var rootContext = new MauiContext(mauiApp.Services, CoreUIAppContext.GetInstance(this));
 
-			Services = mauiApp.Services;
+			_applicationContext = rootContext.MakeApplicationScope(this);
+
+			Services = _applicationContext.Services;
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
@@ -36,10 +38,7 @@ namespace Microsoft.Maui
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			if (Application == null)
-				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
-
-			this.SetApplicationHandler(Application, MauiApplicationContext);
+			this.SetApplicationHandler(Application, _applicationContext);
 
 			this.CreateNativeWindow(Application);
 
@@ -101,8 +100,6 @@ namespace Microsoft.Maui
 		}
 
 		public static new MauiApplication Current { get; private set; } = null!;
-
-		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

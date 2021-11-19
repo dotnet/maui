@@ -38,7 +38,8 @@ namespace Microsoft.Maui
 				return;
 
 			var context = CoreUIAppContext.GetInstance(nativeApplication);
-			var mauiContext = applicationContext.MakeScoped(context);
+
+			var mauiContext = applicationContext.MakeWindowScope(context, out var windowScope);
 
 			applicationContext.Services.InvokeLifecycleEvents<TizenLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
