@@ -46,9 +46,11 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			MauiApplicationContext = new MauiContext(mauiApp.Services, this, CoreUIAppContext.GetInstance(this));
+			var rootContext = new MauiContext(mauiApp.Services, CoreUIAppContext.GetInstance(this));
 
-			Services = mauiApp.Services;
+			_applicationContext = rootContext.MakeApplicationScope(this);
+
+			Services = _applicationContext.Services;
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
@@ -132,8 +134,6 @@ namespace Microsoft.Maui
 		}
 
 		public static new MauiApplication Current { get; private set; } = null!;
-
-		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

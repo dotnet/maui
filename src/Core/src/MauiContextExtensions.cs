@@ -52,6 +52,9 @@ namespace Microsoft.Maui
 
 #if ANDROID
 			var scopedContext = new MauiContext(scope.ServiceProvider, platformWindow);
+#elif TIZEN
+			var scopedContext = new MauiContext(scope.ServiceProvider, platformWindow);
+			scopedContext.AddWeakSpecific(platformWindow.MainWindow);
 #else
 			var scopedContext = new MauiContext(scope.ServiceProvider);
 #endif

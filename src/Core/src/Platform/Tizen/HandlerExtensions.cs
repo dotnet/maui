@@ -38,17 +38,11 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public static void SetApplicationHandler(this CoreUIApplication nativeApplication, IApplication application, IMauiContext context)
-		{
-			_ = nativeApplication ?? throw new ArgumentNullException(nameof(nativeApplication));
+		public static void SetApplicationHandler(this CoreUIApplication nativeApplication, IApplication application, IMauiContext context) =>
 			SetHandler(application, context);
-		}
 
-		public static void SetWindowHandler(this Window nativeWindow, IWindow window, IMauiContext context)
-		{
-			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
+		public static void SetWindowHandler(this Window nativeWindow, IWindow window, IMauiContext context) =>
 			SetHandler(window, context);
-		}
 
 		static void SetHandler(IElement element, IMauiContext context)
 		{
