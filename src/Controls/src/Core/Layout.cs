@@ -376,7 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			QueueLayoutResolution();
 		}
 
-		internal virtual void QueueLayoutResolution() 
+		internal virtual void QueueLayoutResolution()
 		{
 			s_resolutionList.Add(new KeyValuePair<Layout, int>(this, GetElementDepth(this)));
 

@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls
 			return default;
 		}
 
-		internal static Element? FindParentWith(this Element element, Func<Element, bool> withMatch, bool includeThis = false)			
+		internal static Element? FindParentWith(this Element element, Func<Element, bool> withMatch, bool includeThis = false)
 		{
 			if (includeThis && withMatch(element))
 				return element;
