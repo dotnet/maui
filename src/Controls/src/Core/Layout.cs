@@ -373,6 +373,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			}
 
+			QueueLayoutResolution();
+		}
+
+		internal virtual void QueueLayoutResolution()
+		{
 			s_resolutionList.Add(new KeyValuePair<Layout, int>(this, GetElementDepth(this)));
 
 			if (Device.PlatformInvalidator == null && !s_relayoutInProgress)

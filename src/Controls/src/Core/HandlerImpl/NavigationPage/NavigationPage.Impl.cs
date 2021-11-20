@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if(this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), true) is IToolbarElement te)
+			if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), true) is IToolbarElement te)
 			{
 				te.Toolbar.ApplyNavigationPage(this);
 			}
@@ -154,6 +154,11 @@ namespace Microsoft.Maui.Controls
 			Action firePostNavigatingEvents,
 			Action fireNavigatedEvents)
 		{
+			if (!_setForMaui || this.IsShimmed())
+			{
+				return;
+			}
+
 			try
 			{
 				processStackChanges?.Invoke();
