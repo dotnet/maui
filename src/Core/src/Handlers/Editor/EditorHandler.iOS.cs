@@ -80,24 +80,8 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(editor);
 		}
 
-		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)
-		{
-			var currLength = textView?.Text?.Length ?? 0;
-
-			// Fix a crash on undo
-			if (range.Length + range.Location > currLength)
-				return false;
-
-			if (VirtualView == null || NativeView == null)
-				return false;
-
-			var addLength = replacementString?.Length ?? 0;
-			var remLength = range.Length;
-
-			var newLength = currLength + addLength - remLength;
-
-			return newLength <= VirtualView.MaxLength;
-		}
+		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString) =>
+			VirtualView.OnShouldChangeText(textView.Text, range, replacementString);
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
@@ -105,9 +89,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Completed();
 		}
 
-		void OnTextPropertySet(object? sender, EventArgs e)
-		{
+		void OnTextPropertySet(object? sender, EventArgs e) =>
 			VirtualView.UpdateText(NativeView.Text);
-		}
 	}
 }

@@ -112,7 +112,16 @@ namespace Microsoft.Maui.Handlers
 				VirtualView?.ClearButtonVisibility == ClearButtonVisibility.WhileEditing &&
 				NativeView.HandleClearButtonTouched(VirtualView.FlowDirection, e, GetClearButtonDrawable);
 
-		void OnEditorAction(object? sender, EditorActionEventArgs e) =>
-			e.Handled = NativeView.HandleEditorAction(VirtualView, e);
+		void OnEditorAction(object? sender, EditorActionEventArgs e)
+		{
+			if (e.IsCompletedAction())
+			{
+				// TODO: Dismiss keyboard for hardware / physical keyboards
+
+				VirtualView?.Completed();
+			}
+
+			e.Handled = true;
+		}
 	}
 }

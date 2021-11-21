@@ -341,22 +341,7 @@ namespace Microsoft.Maui.Platform
 				editText.InputType |= InputTypes.TextFlagMultiLine;
 		}
 
-		internal static bool HandleEditorAction(this EditText? nativeView, IEntry VirtualView, EditorActionEventArgs e)
-		{
-			if (nativeView is null)
-				return false;
-
-			if (e.IsCompletedAction())
-			{
-				// TODO: Dismiss keyboard for hardware / physical keyboards
-
-				VirtualView?.Completed();
-			}
-
-			return true;
-		}
-
-		static bool IsCompletedAction(this EditorActionEventArgs e)
+		internal static bool IsCompletedAction(this EditorActionEventArgs e)
 		{
 			var actionId = e.ActionId;
 			var evt = e.Event;

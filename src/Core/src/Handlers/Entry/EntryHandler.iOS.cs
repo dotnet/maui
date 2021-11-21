@@ -110,40 +110,16 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();
-
-		void OnEditingEnded(object? sender, EventArgs e) => OnTextChanged();
-
-		void OnTextPropertySet(object? sender, EventArgs e) => OnTextChanged();
-
-		void OnTextChanged()
-		{
-			if (VirtualView == null || NativeView == null)
-				return;
-
+		void OnEditingChanged(object? sender, EventArgs e) =>
 			VirtualView.UpdateText(NativeView.Text);
-		}
 
-		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)
-		{
-			var currLength = textField?.Text?.Length ?? 0;
+		void OnEditingEnded(object? sender, EventArgs e) =>
+			VirtualView.UpdateText(NativeView.Text);
 
-			// fix a crash on undo
-			if (range.Length + range.Location > currLength)
-				return false;
+		void OnTextPropertySet(object? sender, EventArgs e) =>
+			VirtualView.UpdateText(NativeView.Text);
 
-			if (VirtualView == null || NativeView == null)
-				return false;
-
-			if (VirtualView.MaxLength < 0)
-				return true;
-
-			var addLength = replacementString?.Length ?? 0;
-			var remLength = range.Length;
-
-			var newLength = currLength + addLength - remLength;
-
-			return newLength <= VirtualView.MaxLength;
-		}
+		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
+			VirtualView.OnShouldChangeText(textField.Text, range, replacementString);
 	}
 }
