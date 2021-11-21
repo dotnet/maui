@@ -1,4 +1,3 @@
-using Microsoft.Maui.Platform;
 using System;
 using Android.Views;
 using Android.Widget;

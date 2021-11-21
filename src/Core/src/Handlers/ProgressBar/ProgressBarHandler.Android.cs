@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Platform;
-using static Android.Resource;
+﻿using static Android.Resource;
 using AndroidProgressBar = Android.Widget.ProgressBar;
 
 namespace Microsoft.Maui.Handlers

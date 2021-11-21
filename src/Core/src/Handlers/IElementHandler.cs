@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Platform;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	public interface IElementHandler
 	{

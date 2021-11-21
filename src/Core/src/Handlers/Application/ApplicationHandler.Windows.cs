@@ -1,4 +1,3 @@
-using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers

@@ -1,7 +1,6 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using Microsoft.Extensions.DependencyInjection;
-	using Microsoft.Maui.Platform;
 	using FormsElement = Maui.Controls.Application;
 
 	public static class Application

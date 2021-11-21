@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Platform;
-#if __IOS__ || MACCATALYST
+﻿#if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIImageView;
 #elif MONOANDROID
 using NativeView = Android.Widget.ImageView;
