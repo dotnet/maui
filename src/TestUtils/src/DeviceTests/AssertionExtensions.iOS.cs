@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.Maui.Platform;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;

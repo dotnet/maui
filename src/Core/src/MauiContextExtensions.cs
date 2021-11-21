@@ -2,6 +2,7 @@
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 
 #if WINDOWS
 using NativeApplication = Microsoft.UI.Xaml.Application;

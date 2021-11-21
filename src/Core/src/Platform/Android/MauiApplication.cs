@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiApplication : Application
 	{

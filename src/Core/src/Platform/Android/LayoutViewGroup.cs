@@ -6,7 +6,7 @@ using Android.Views;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Platform
 {
 	public class LayoutViewGroup : ViewGroup
 	{

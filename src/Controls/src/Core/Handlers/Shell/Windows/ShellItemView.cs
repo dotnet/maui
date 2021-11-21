@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 
 using UwpGrid = Microsoft.UI.Xaml.Controls.Grid;
@@ -173,7 +174,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							if (!fontImageSource.Color.IsDefault())
 							{
-								icon.Foreground = Maui.ColorExtensions.ToNative(fontImageSource.Color);
+								icon.Foreground = fontImageSource.Color.ToNative();
 							}
 
 							btn.Icon = icon;

@@ -5,6 +5,7 @@ using Android.Graphics.Drawables.Shapes;
 using Android.Util;
 using AndroidX.Core.Content;
 using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Platform;
 using static Android.Graphics.Paint;
 using AColor = Android.Graphics.Color;
 using AContext = Android.Content.Context;

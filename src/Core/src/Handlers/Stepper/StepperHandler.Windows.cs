@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using Microsoft.Maui.Platform;
+
 namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, MauiStepper>

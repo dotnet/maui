@@ -8,7 +8,7 @@ using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 using NativeView = System.Object;
 #endif
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Handlers
 {
 	public static class ViewHandlerExtensions
 	{

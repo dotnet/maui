@@ -7,6 +7,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
+using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 

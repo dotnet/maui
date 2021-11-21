@@ -16,16 +16,19 @@ using NativeView = System.Object;
 using NativeImage = System.Object;
 #endif
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public partial class ImageSourcePartLoader
 	{
 		IImageSourceServiceProvider? _imageSourceServiceProvider;
+
 		IImageSourceServiceProvider ImageSourceServiceProvider =>
 			_imageSourceServiceProvider ??= Handler.GetRequiredService<IImageSourceServiceProvider>();
 
 		readonly Func<IImageSourcePart?> _imageSourcePart;
+
 		Action<NativeImage?>? SetImage { get; }
+
 		NativeView? NativeView => Handler.NativeView as NativeView;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();

@@ -2,6 +2,7 @@
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

@@ -7,7 +7,7 @@ using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Platform;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class SemanticExtensions
 	{

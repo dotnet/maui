@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.LifecycleEvents
+﻿using Microsoft.Maui.Platform;
+
+namespace Microsoft.Maui.LifecycleEvents
 {
 	public static class WindowsLifecycle
 	{

@@ -1,5 +1,6 @@
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using System;
 
 namespace Microsoft.Maui.LifecycleEvents

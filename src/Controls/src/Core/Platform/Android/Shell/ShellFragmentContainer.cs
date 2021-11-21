@@ -1,6 +1,7 @@
 using Android.OS;
 using Android.Views;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 

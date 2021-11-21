@@ -8,7 +8,7 @@ using WDoubleCollection = Microsoft.UI.Xaml.Media.DoubleCollection;
 using WPenLineCap = Microsoft.UI.Xaml.Media.PenLineCap;
 using WPenLineJoin = Microsoft.UI.Xaml.Media.PenLineJoin;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Platform
 {
 	public class ContentPanel : Panel
 	{

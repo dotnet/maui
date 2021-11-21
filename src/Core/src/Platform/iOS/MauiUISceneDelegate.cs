@@ -4,7 +4,7 @@ using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiUISceneDelegate : UIWindowSceneDelegate
 	{

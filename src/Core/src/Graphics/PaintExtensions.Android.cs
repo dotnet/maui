@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Graphics
 {

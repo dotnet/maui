@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Platform;
 using WFoundation = Windows.Foundation;
 using WMedia = Microsoft.UI.Xaml.Media;
 

@@ -5,6 +5,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
 

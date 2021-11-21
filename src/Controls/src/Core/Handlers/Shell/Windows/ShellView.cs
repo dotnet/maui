@@ -14,6 +14,7 @@ using Microsoft.UI;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -306,7 +307,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_shell.FlyoutBackground != null)
 					FlyoutBackgroundColor = _shell.FlyoutBackground.ToBrush();
 				else if (_shell.FlyoutBackgroundColor != null)
-					FlyoutBackgroundColor = Maui.ColorExtensions.ToNative(_shell.FlyoutBackgroundColor);
+					FlyoutBackgroundColor = _shell.FlyoutBackgroundColor.ToNative();
 			}
 				
 		}

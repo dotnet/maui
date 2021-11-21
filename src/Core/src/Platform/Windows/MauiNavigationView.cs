@@ -12,7 +12,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using System.ComponentModel;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	// This is needed by WinUI because of 
 	// https://github.com/microsoft/microsoft-ui-xaml/issues/2698#issuecomment-648751713

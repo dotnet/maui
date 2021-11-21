@@ -3,7 +3,7 @@ using Microsoft.UI;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public sealed class ColorConverter : UI.Xaml.Data.IValueConverter
 	{

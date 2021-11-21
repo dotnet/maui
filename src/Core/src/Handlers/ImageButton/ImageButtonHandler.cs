@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Platform;
 #if __IOS__ || MACCATALYST
 using NativeImage = UIKit.UIImage;
 using NativeImageView = UIKit.UIImageView;

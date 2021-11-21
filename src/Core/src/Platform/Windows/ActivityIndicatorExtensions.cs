@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ActivityIndicatorExtensions
 	{

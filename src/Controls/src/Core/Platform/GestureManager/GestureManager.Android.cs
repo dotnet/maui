@@ -8,6 +8,7 @@ using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform

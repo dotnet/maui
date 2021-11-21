@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.Maui.Platform;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 

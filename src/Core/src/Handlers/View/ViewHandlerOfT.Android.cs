@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Handlers

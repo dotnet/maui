@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.LifecycleEvents
