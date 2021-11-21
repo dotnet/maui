@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		Page? _modalBackgroundPage;
-
 		Panel Container
 		{
 			get
@@ -20,11 +18,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 				throw new InvalidOperationException("Root container Panel not found");
 			}
-		}
-
-		Rectangle ContainerBounds
-		{
-			get { return new Rectangle(0, 0, Container.ActualWidth, Container.ActualHeight); }
 		}
 
 		public  Task<Page> PopModalAsync(bool animated)
@@ -48,96 +41,68 @@ namespace Microsoft.Maui.Controls.Platform
 			return tcs.Task;
 		}
 
-		void AddPage(Page page)
-		{
-			if (Container == null || page == null)
-				return;
-
-			if (_modalBackgroundPage != null)
-				_modalBackgroundPage.GetCurrentPage()?.SendDisappearing();
-
-			page.ToNative(MauiContext);
-
-			var pageHandler = (INativeViewHandler)page.Handler;
-
-
-			if (pageHandler.ContainerView != null && !Container.Children.Contains(pageHandler.ContainerView))
-				Container.Children.Add(pageHandler.ContainerView);
-			else if (!Container.Children.Contains(pageHandler.NativeView))
-				Container.Children.Add(pageHandler.NativeView);
-
-			(page as IView).Measure(Container.ActualWidth, Container.ActualHeight);
-			(page as IView).Arrange(ContainerBounds);
-
-			page.Layout(ContainerBounds);
-		}
-
 		void RemovePage(Page page)
 		{
 			if (Container == null || page == null)
 				return;
 
-			if (_modalBackgroundPage != null)
-				_modalBackgroundPage.GetCurrentPage()?.SendAppearing();
+			var mauiContext = page.FindMauiContext() ??
+				throw new InvalidOperationException("Maui Context removed from outgoing page too early");
 
-			var pageHandler = (INativeViewHandler)page.Handler;
-
-			if (Container.Children.Contains(pageHandler.NativeView))
-				Container.Children.Remove(pageHandler.NativeView);
-
-			if (Container.Children.Contains(pageHandler.ContainerView))
-				Container.Children.Remove(pageHandler.ContainerView);
-		}
-
-		partial void OnPageAttachedHandler()
-		{
-			if (_modalBackgroundPage != null)
-			{
-				RemovePage(_modalBackgroundPage);
-				_modalBackgroundPage.Cleanup();
-				_modalBackgroundPage.Parent = null;
-			}
+			Container.Children.Remove(mauiContext.GetNavigationRootManager().RootView);
 		}
 
 		void SetCurrent(Page newPage, Page previousPage, bool popping, Action? completedCallback = null)
 		{
-			bool modal = true;
 			try
 			{
-				if (modal && !popping && !newPage.BackgroundColor.IsDefault())
-					_modalBackgroundPage = previousPage;
-				else
+				if (popping)
 				{
 					RemovePage(previousPage);
-
-					if (!modal && _modalBackgroundPage != null)
-					{
-						RemovePage(_modalBackgroundPage);
-						_modalBackgroundPage.Cleanup();
-						_modalBackgroundPage.Parent = null;
-					}
-
-					_modalBackgroundPage = null;
+				}				
+				else if (newPage.BackgroundColor.IsDefault() && newPage.Background.IsEmpty)
+				{
+					RemovePage(previousPage);
 				}
+
 
 				if (popping)
 				{
-					//// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
-					//// page will leak 
-
-					previousPage.Cleanup();
+					previousPage.Handler = null;
+					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
+					// page will leak 
 					previousPage.Parent = null;
 				}
 
-				newPage.Layout(ContainerBounds);
+				if (Container == null || newPage == null)
+					return;
 
-				AddPage(newPage);
+				if (!popping)
+				{
+					
+
+					var modalContext =
+						MauiContext
+							.MakeScoped(registerNewNavigationRoot: true);
+							
+
+					newPage.Toolbar ??= new Toolbar();
+					_ = newPage.Toolbar.ToNative(modalContext);
+
+					var windowManager = modalContext.GetNavigationRootManager();
+					windowManager.Connect(newPage);
+					Container.Children.Add(windowManager.RootView);
+				}
+				else
+				{
+					var windowManager = newPage.FindMauiContext()?.GetNavigationRootManager() ??
+						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
+
+					if(!Container.Children.Contains(windowManager.RootView))
+						Container.Children.Add(windowManager.RootView);
+				}
 
 				completedCallback?.Invoke();
-
-				// TODO MAUI WINUI STill needs a Toolbar
-				//UpdateToolbarTracker();
-				//await UpdateToolbarItems();
 			}
 			catch (Exception error)
 			{

@@ -12,6 +12,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		[TestCase(false)]
 		[TestCase(true)]
+		public async Task HandlerUpdatesDontFireForLegacy(bool withPage)
+		{
+			TestNavigationPage nav =
+				new TestNavigationPage(false, (withPage) ? new ContentPage() : null);
+
+			var handler = new TestNavigationHandler();
+			(nav as IView).Handler = handler;
+
+
+			Assert.IsNull(nav.CurrentNavigationTask);
+			Assert.IsNull(handler.CurrentNavigationRequest);
+		}
+
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task HandlerUpdatesFireWithStartingPage(bool withPage)
+		{
+			TestNavigationPage nav =
+				new TestNavigationPage(true, (withPage) ? new ContentPage() : null);
+
+			var handler = new TestNavigationHandler();
+			(nav as IView).Handler = handler;
+
+			if (!withPage)
+			{
+				Assert.IsNull(nav.CurrentNavigationTask);
+			}
+			else
+			{
+				Assert.IsNotNull(nav.CurrentNavigationTask);
+			}
+		}
+
+		[TestCase(false)]
+		[TestCase(true)]
 		public async Task TestNavigationImplPush(bool useMaui)
 		{
 			NavigationPage nav = new TestNavigationPage(useMaui);
@@ -631,7 +666,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage contentPage2 = new ContentPage();
 			ContentPage contentPage3 = new ContentPage();
 
-			var navigationPage = new TestNavigationPage(true, contentPage1);			
+			var navigationPage = new TestNavigationPage(true, contentPage1);
 			await navigationPage.PushAsync(contentPage2);
 			await navigationPage.PushAsync(contentPage3);
 

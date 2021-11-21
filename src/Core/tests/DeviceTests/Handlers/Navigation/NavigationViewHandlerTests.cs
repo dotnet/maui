@@ -14,8 +14,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Push Multiple Pages At Start")]
 		public async Task PushMultiplePagesAtStart()
 		{
-			PageStub page1 = new PageStub();
-			PageStub page2 = new PageStub();
+			var page1 = new ButtonStub();
+			var page2 = new ButtonStub();
 			NavigationViewStub navigationViewStub = new NavigationViewStub()
 			{
 				NavigationStack = new List<IView>()

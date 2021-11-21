@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;

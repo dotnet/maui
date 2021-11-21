@@ -77,6 +77,10 @@
                     VerticalTextAlignment="End"
                     Text="This should be on the bottom"
                     HeightRequest="100"/>
+                <Label
+                    Text="Auto Size with Text Changes"
+                    Style="{StaticResource Headline}" />
+                <Editor AutoSize="TextChanges"  />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
