@@ -3,7 +3,6 @@ using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform

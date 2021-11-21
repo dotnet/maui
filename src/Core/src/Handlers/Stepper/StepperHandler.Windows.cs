@@ -1,5 +1,4 @@
 ﻿#nullable disable
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

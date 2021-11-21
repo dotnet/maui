@@ -1,5 +1,4 @@
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;

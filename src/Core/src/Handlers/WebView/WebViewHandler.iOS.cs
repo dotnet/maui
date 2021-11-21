@@ -1,5 +1,4 @@
 ﻿using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
 

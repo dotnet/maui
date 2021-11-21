@@ -1,5 +1,4 @@
 ﻿using AndroidX.RecyclerView.Widget;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

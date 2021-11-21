@@ -10,7 +10,6 @@ using Google.Android.Material.BottomSheet;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using ALabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode;
 using ColorStateList = Android.Content.Res.ColorStateList;

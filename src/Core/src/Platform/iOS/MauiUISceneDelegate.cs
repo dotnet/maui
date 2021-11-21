@@ -1,10 +1,9 @@
 ﻿using Foundation;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public class MauiUISceneDelegate : UIWindowSceneDelegate
 	{

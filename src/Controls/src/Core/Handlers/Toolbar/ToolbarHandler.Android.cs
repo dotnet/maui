@@ -15,7 +15,6 @@ using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers
 {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Maui.Graphics.Native;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

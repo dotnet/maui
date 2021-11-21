@@ -1,6 +1,5 @@
 ﻿using System;
 using Android.Content;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

@@ -1,7 +1,6 @@
 using System;
 using Android.App;
 using Google.Android.Material.AppBar;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

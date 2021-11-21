@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Maui.LifecycleEvents;
 using WinRT;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public class MauiWinUIWindow : UI.Xaml.Window
 	{

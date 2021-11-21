@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using Microsoft.Maui.Platform;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIImageView;
 #elif MONOANDROID

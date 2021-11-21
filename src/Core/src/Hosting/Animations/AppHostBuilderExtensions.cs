@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Animations;
 
 #if __ANDROID__
-using Microsoft.Maui.Platform;
 #endif
 
 namespace Microsoft.Maui.Hosting

@@ -4,7 +4,6 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
-using Microsoft.Maui.Platform;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers

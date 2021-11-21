@@ -1,6 +1,5 @@
 using System;
 using Android.Views;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

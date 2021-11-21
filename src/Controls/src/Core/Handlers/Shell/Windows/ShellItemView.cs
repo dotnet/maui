@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 
 using UwpGrid = Microsoft.UI.Xaml.Controls.Grid;

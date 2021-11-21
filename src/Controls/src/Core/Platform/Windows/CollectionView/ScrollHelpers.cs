@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using UWPPoint = Windows.Foundation.Point;
 using UWPSize = Windows.Foundation.Size;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {

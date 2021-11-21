@@ -3,7 +3,6 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using static Microsoft.Maui.Controls.Button;
 
 namespace Microsoft.Maui.Controls.Platform

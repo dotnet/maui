@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

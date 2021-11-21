@@ -3,7 +3,6 @@ using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text.Format;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

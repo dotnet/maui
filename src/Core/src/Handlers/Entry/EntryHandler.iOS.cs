@@ -1,7 +1,6 @@
 ﻿using System;
 using Foundation;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

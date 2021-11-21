@@ -1,7 +1,6 @@
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Widget;
-using Microsoft.Maui.Platform;
 using static AndroidX.AppCompat.Widget.SearchView;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 

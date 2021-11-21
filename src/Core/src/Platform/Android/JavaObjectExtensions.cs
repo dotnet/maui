@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	static class JavaObjectExtensions
 	{

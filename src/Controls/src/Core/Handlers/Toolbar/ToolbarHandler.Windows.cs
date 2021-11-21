@@ -9,7 +9,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers
 {

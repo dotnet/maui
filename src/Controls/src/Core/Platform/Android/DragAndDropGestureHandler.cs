@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Android.Content;
 using Android.Views;
-using Microsoft.Maui.Platform;
 using ADragFlags = Android.Views.DragFlags;
 using AUri = Android.Net.Uri;
 using AView = Android.Views.View;

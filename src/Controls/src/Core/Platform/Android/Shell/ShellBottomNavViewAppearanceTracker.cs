@@ -9,7 +9,6 @@ using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;
 

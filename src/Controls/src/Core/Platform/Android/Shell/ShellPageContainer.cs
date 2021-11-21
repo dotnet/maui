@@ -2,7 +2,6 @@ using Android.Content;
 using Android.Views;
 using AndroidX.Core.Content;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;

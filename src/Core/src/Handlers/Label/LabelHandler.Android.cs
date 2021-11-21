@@ -2,7 +2,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

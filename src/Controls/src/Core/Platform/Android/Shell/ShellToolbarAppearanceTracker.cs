@@ -2,7 +2,6 @@ using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Platform

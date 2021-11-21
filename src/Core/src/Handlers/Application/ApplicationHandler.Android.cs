@@ -1,7 +1,6 @@
 using Android.App;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.Maui.Platform;
 using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers

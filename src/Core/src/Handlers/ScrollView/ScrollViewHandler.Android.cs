@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.Views;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
 namespace Microsoft.Maui.Handlers

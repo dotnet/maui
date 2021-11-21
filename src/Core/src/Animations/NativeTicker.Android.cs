@@ -1,6 +1,5 @@
 ﻿using System;
 using Android.Animation;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Animations
 {

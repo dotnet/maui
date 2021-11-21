@@ -6,7 +6,6 @@ using Android.Views;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat;
-using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform

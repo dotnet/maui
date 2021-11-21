@@ -1,5 +1,4 @@
 using System.Linq;
-using Microsoft.Maui.Platform;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WGradientStopCollection = Microsoft.UI.Xaml.Media.GradientStopCollection;
 using WGradientStop = Microsoft.UI.Xaml.Media.GradientStop;

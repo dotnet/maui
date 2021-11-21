@@ -5,7 +5,6 @@ using Android.Util;
 using AndroidX.Core.Content;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

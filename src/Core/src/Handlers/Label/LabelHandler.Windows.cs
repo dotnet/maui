@@ -1,5 +1,4 @@
 #nullable enable
-using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers

@@ -5,7 +5,7 @@ using Android.Content.Res;
 using Android.OS;
 using Microsoft.Maui.LifecycleEvents;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity
 	{

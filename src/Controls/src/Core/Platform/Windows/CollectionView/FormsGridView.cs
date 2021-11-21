@@ -1,5 +1,4 @@
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using UWPApp = Microsoft.UI.Xaml.Application;

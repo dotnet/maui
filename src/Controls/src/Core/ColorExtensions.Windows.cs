@@ -2,7 +2,6 @@ using System;
 using Windows.UI;
 using Microsoft.UI;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 

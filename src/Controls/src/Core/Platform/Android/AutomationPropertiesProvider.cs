@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using Android.Views;
 using Android.Widget;
-using Microsoft.Maui.Platform;
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;

@@ -6,7 +6,6 @@ using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
 using Java.Lang;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {

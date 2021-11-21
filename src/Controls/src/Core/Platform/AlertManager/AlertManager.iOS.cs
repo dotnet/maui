@@ -7,7 +7,6 @@ using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

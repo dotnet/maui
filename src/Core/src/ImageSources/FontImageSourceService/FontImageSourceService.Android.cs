@@ -9,7 +9,6 @@ using Android.Util;
 using Bumptech.Glide;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.BumptechGlide;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {

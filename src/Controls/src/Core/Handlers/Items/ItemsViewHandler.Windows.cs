@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 using Microsoft.UI.Xaml.Controls;

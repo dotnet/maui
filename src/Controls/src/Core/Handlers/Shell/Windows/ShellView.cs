@@ -14,7 +14,6 @@ using Microsoft.UI;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {

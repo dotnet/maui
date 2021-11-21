@@ -10,7 +10,6 @@ using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

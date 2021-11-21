@@ -1,6 +1,5 @@
 using Android.Content.Res;
 using Microsoft.Maui;
-using Microsoft.Maui.Platform;
 using AAttribute = Android.Resource.Attribute;
 using APorterDuff = Android.Graphics.PorterDuff;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;

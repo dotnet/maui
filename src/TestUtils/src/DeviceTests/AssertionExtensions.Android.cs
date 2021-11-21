@@ -5,7 +5,6 @@ using Android.Graphics;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
-using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;

@@ -4,7 +4,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui
 {
 	static class ElementHandlerExtensions
 	{

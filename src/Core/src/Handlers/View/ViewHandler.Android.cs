@@ -3,7 +3,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
-using Microsoft.Maui.Platform;
 using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers

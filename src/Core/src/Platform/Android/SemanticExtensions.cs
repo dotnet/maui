@@ -5,7 +5,6 @@ using Android.Views.Accessibility;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Platform
 {

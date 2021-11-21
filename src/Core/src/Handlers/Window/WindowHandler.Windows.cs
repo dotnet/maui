@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

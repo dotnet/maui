@@ -1,6 +1,5 @@
 ﻿using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

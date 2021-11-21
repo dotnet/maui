@@ -4,9 +4,8 @@ using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public abstract class MauiWinUIApplication : UI.Xaml.Application
 	{

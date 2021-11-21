@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 
 using Foundation;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

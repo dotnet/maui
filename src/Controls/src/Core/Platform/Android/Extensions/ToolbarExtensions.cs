@@ -13,7 +13,6 @@ using Android.Views;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
