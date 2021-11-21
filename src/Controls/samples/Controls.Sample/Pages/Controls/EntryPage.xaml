@@ -38,6 +38,11 @@
                     PlaceholderColor="Purple"
                     Placeholder="Placeholder"/>
                 <Label
+                    Text="Password"
+                    Style="{StaticResource Headline}" />
+                <Entry
+                    IsPassword="True" />
+                <Label
                     Text="With Text"
                     Style="{StaticResource Headline}" />
                 <Entry 
