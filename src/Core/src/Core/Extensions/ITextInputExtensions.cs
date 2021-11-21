@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		}
 
 #if __IOS__
-		public static bool OnShouldChangeText(this ITextInput textInput, string? text, Foundation.NSRange range, string replacementString)
+		public static bool TextWithinMaxLength(this ITextInput textInput, string? text, Foundation.NSRange range, string replacementString)
 		{
 			var currLength = text?.Length ?? 0;
 

@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString) =>
-			VirtualView.OnShouldChangeText(textView.Text, range, replacementString);
+			VirtualView.TextWithinMaxLength(textView.Text, range, replacementString);
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{

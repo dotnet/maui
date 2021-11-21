@@ -120,6 +120,6 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.UpdateText(NativeView.Text);
 
 		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
-			VirtualView.OnShouldChangeText(textField.Text, range, replacementString);
+			VirtualView.TextWithinMaxLength(textField.Text, range, replacementString);
 	}
 }
