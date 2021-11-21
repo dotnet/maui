@@ -68,11 +68,8 @@ namespace Microsoft.Maui
 			textBox.UpdateInputScope(textInput);
 		}
 
-		public static void UpdateClearButtonVisibility(this TextBox textBox, IEntry entry)
-		{
-			if (textBox is IMauiTextBox mauiEntryTextBox)
-				mauiEntryTextBox.IsDeleteButtonEnabled = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
-		}
+		public static void UpdateClearButtonVisibility(this TextBox textBox, IEntry entry) =>
+			MauiTextBox.SetIsDeleteButtonEnabled(textBox, entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing);
 
 		public static void UpdatePlaceholder(this TextBox textBox, IPlaceholder placeholder)
 		{
@@ -170,11 +167,8 @@ namespace Microsoft.Maui
 			textBox.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
 		}
 
-		public static void UpdateVerticalTextAlignment(this TextBox textBox, ITextAlignment textAlignment)
-		{
-			if (textBox is IMauiTextBox mauiEntryTextBox)
-				mauiEntryTextBox.VerticalTextAlignment = textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment();
-		}
+		public static void UpdateVerticalTextAlignment(this TextBox textBox, ITextAlignment textAlignment) =>
+			MauiTextBox.SetVerticalTextAlignment(textBox, textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment());
 
 		public static void UpdateCursorPosition(this TextBox textBox, IEntry entry)
 		{

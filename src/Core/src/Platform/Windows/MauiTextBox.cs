@@ -4,86 +4,75 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
-	public interface IMauiTextBox
-	{
-		VerticalAlignment VerticalTextAlignment { get; set; }
-
-		bool IsDeleteButtonEnabled { get; set; }
-	}
-
-	public class MauiTextBox : TextBox, IMauiTextBox
+	public static class MauiTextBox
 	{
 		const string ContentElementName = "ContentElement";
 		const string DeleteButtonElementName = "DeleteButton";
 		const string ButtonStatesName = "ButtonStates";
 		const string ButtonVisibleStateName = "ButtonVisible";
 
-		ScrollViewer? _scrollViewer;
-		VisualStateGroup? _buttonStates;
-		VisualState? _buttonVisibleState;
+		public static void InvalidateAttachedProperties(DependencyObject obj)
+		{
+			OnVerticalTextAlignmentPropertyChanged(obj);
+			OnIsDeleteButtonEnabledPropertyChanged(obj);
+		}
 
-		public static DependencyProperty VerticalTextAlignmentProperty { get; } = DependencyProperty.Register(
-			nameof(VerticalTextAlignment), typeof(VerticalAlignment), typeof(MauiTextBox),
+		// VerticalTextAlignment
+
+		public static VerticalAlignment GetVerticalTextAlignment(DependencyObject obj) =>
+			(VerticalAlignment)obj.GetValue(VerticalTextAlignmentProperty);
+
+		public static void SetVerticalTextAlignment(DependencyObject obj, VerticalAlignment value) =>
+			obj.SetValue(VerticalTextAlignmentProperty, value);
+
+		public static readonly DependencyProperty VerticalTextAlignmentProperty = DependencyProperty.RegisterAttached(
+			"VerticalTextAlignment", typeof(VerticalAlignment), typeof(MauiTextBox),
 			new PropertyMetadata(VerticalAlignment.Center, OnVerticalTextAlignmentPropertyChanged));
 
-		public static DependencyProperty IsDeleteButtonEnabledProperty { get; } = DependencyProperty.Register(
-			nameof(IsDeleteButtonEnabled), typeof(bool), typeof(MauiTextBox),
+		static void OnVerticalTextAlignmentPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e = null)
+		{
+			// TODO: cache the scrollViewer value on the textBox
+
+			var element = d as FrameworkElement;
+			var scrollViewer = element?.GetDescendantByName<ScrollViewer>(ContentElementName);
+
+			if (scrollViewer is not null)
+				scrollViewer.VerticalAlignment = GetVerticalTextAlignment(d);
+		}
+
+		// IsDeleteButtonEnabled
+
+		public static bool GetIsDeleteButtonEnabled(DependencyObject obj) =>
+			(bool)obj.GetValue(IsDeleteButtonEnabledProperty);
+
+		public static void SetIsDeleteButtonEnabled(DependencyObject obj, bool value) =>
+			obj.SetValue(IsDeleteButtonEnabledProperty, value);
+
+		public static readonly DependencyProperty IsDeleteButtonEnabledProperty = DependencyProperty.RegisterAttached(
+			"IsDeleteButtonEnabled", typeof(bool), typeof(MauiTextBox),
 			new PropertyMetadata(true, OnIsDeleteButtonEnabledPropertyChanged));
 
-		static void OnVerticalTextAlignmentPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		static void OnIsDeleteButtonEnabledPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e = null)
 		{
-			if (d is MauiTextBox mauiEntryTextBox)
-				mauiEntryTextBox.UpdateVerticalTextAlignment();
-		}
+			// TODO: cache the buttonStates and buttonVisibleState values on the textBox
 
-		static void OnIsDeleteButtonEnabledPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (d is MauiTextBox mauiEntryTextBox)
-				mauiEntryTextBox.UpdateIsDeleteButtonEnabled();
-		}
+			var element = d as FrameworkElement;
 
-		public VerticalAlignment VerticalTextAlignment
-		{
-			get => (VerticalAlignment)GetValue(VerticalTextAlignmentProperty);
-			set => SetValue(VerticalTextAlignmentProperty, value);
-		}
-
-		public bool IsDeleteButtonEnabled
-		{
-			get => (bool)GetValue(IsDeleteButtonEnabledProperty);
-			set => SetValue(IsDeleteButtonEnabledProperty, value);
-		}
-
-		protected override void OnApplyTemplate()
-		{
-			base.OnApplyTemplate();
-
-			_scrollViewer = GetTemplateChild(ContentElementName) as ScrollViewer;
-
-			var deleteButton = GetTemplateChild(DeleteButtonElementName) as Button;
+			VisualStateGroup? buttonStates = null;
+			VisualState? buttonVisibleState = null;
+			var deleteButton = element?.GetDescendantByName<Button>(DeleteButtonElementName);
 			if (deleteButton?.Parent is Grid rootGrid)
-				(_buttonStates, _buttonVisibleState) = InterceptDeleteButtonVisualStates(rootGrid);
+				(buttonStates, buttonVisibleState) = InterceptDeleteButtonVisualStates(rootGrid);
 
-			UpdateVerticalTextAlignment();
-			UpdateIsDeleteButtonEnabled();
-		}
-
-		void UpdateVerticalTextAlignment()
-		{
-			if (_scrollViewer is not null)
-				_scrollViewer.VerticalAlignment = VerticalTextAlignment;
-		}
-
-		void UpdateIsDeleteButtonEnabled()
-		{
-			var states = _buttonStates?.States;
-			if (states is not null && _buttonVisibleState is not null)
+			var states = buttonStates?.States;
+			if (element is not null && states is not null && buttonVisibleState is not null)
 			{
-				var contains = states.Contains(_buttonVisibleState);
-				if (IsDeleteButtonEnabled && !contains)
-					states.Add(_buttonVisibleState);
-				else if (!IsDeleteButtonEnabled && contains)
-					states.Remove(_buttonVisibleState);
+				var isEnabled = GetIsDeleteButtonEnabled(element);
+				var contains = states.Contains(buttonVisibleState);
+				if (isEnabled && !contains)
+					states.Add(buttonVisibleState);
+				else if (!isEnabled && contains)
+					states.Remove(buttonVisibleState);
 			}
 		}
 
