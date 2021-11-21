@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
 			[nameof(IEntry.Font)] = MapFont,
+			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,

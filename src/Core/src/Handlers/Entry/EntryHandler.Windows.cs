@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,7 +10,11 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, TextBox>
 	{
-		protected override TextBox CreateNativeView() => new TextBox();
+		protected override TextBox CreateNativeView() =>
+			new MauiPasswordTextBox()
+			{
+				IsObfuscationDelayed = DeviceInfo.Idiom != DeviceIdiom.Desktop
+			};
 
 		protected override void ConnectHandler(TextBox nativeView)
 		{
@@ -29,6 +34,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(EntryHandler handler, IEntry entry) =>
 			handler.NativeView?.UpdateText(entry);
+
+		public static void MapIsPassword(EntryHandler handler, IEntry entry) =>
+			handler.NativeView?.UpdateIsPassword(entry);
 
 		public static void MapBackground(EntryHandler handler, IEntry entry) =>
 			handler.NativeView?.UpdateBackground(entry);

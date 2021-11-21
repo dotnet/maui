@@ -7,6 +7,12 @@ namespace Microsoft.Maui
 {
 	public static class TextBoxExtensions
 	{
+		public static void UpdateIsPassword(this TextBox nativeControl, IEntry entry)
+		{
+			if (nativeControl is MauiPasswordTextBox passwordTextBox)
+				passwordTextBox.IsPassword = entry.IsPassword;
+		}
+
 		public static void UpdateText(this TextBox nativeControl, ITextInput textInput)
 		{
 			var newText = textInput.Text;
