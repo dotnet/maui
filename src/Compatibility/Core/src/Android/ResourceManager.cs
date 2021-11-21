@@ -356,6 +356,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return AndroidAppCompat.GetDrawable(context, id);
 		}
 
+		public static int GetDrawableId(this Context context, string title)
+		{
+			return IdFromTitle(title, DrawableClass, _drawableDefType, context);
+		}
+
 		public static int GetResource(this Context context, string title)
 		{
 			return IdFromTitle(title, ResourceClass, "id", context);

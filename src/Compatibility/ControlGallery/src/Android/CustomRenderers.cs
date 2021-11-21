@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 				if (toolBarItem.IconImageSource is FileImageSource fileImageSource)
 				{
 					var name = IOPath.GetFileNameWithoutExtension(fileImageSource.File);
-					var id = context.GetDrawableId(name);
+					var id = ResourceManager.GetDrawableId(context, name);
 					if (id != 0)
 					{
 						if ((int)Build.VERSION.SdkInt >= 21)
