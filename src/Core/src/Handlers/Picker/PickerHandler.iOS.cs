@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;

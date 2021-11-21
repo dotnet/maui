@@ -3,6 +3,7 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
+using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 

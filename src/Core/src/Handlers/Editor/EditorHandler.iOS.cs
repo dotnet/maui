@@ -1,9 +1,7 @@
 ﻿using System;
-using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
-using ObjCRuntime;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -12,17 +10,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		static readonly int BaseHeight = 30;
 
-		static readonly UIColor DefaultPlaceholderColor = ColorExtensions.PlaceholderColor;
-
-		protected override MauiTextView CreateNativeView()
-		{
-			return new MauiTextView(CGRect.Empty);
-		}
+		protected override MauiTextView CreateNativeView() => new MauiTextView();
 
 		protected override void ConnectHandler(MauiTextView nativeView)
 		{
-			base.ConnectHandler(nativeView);
-
 			nativeView.ShouldChangeText += OnShouldChangeText;
 			nativeView.Ended += OnEnded;
 			nativeView.TextSetOrChanged += OnTextPropertySet;
@@ -30,8 +21,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiTextView nativeView)
 		{
-			base.DisconnectHandler(nativeView);
-
 			nativeView.ShouldChangeText -= OnShouldChangeText;
 			nativeView.Ended -= OnEnded;
 			nativeView.TextSetOrChanged -= OnTextPropertySet;
@@ -48,40 +37,40 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, editor);
 		}
 
-		public static void MapTextColor(EditorHandler handler, IEditor editor)
-		{
+		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
-		}
 
-		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
-		{
+		public static void MapPlaceholder(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdatePlaceholder(editor);
-		}
 
-		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdatePlaceholderColor(editor, DefaultPlaceholderColor);
-		}
+		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdatePlaceholderColor(editor);
 
-		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
-		{
+		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateCharacterSpacing(editor);
-		}
 
-		public static void MapMaxLength(EditorHandler handler, IEditor editor)
-		{
+		public static void MapMaxLength(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateMaxLength(editor);
-		}
 
-		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
-		{
+		public static void MapIsReadOnly(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateIsReadOnly(editor);
+
+		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
+
+		public static void MapFont(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
+
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		{
 		}
 
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
-		}
+		public static void MapKeyboard(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateKeyboard(editor);
 
 		public static void MapFormatting(EditorHandler handler, IEditor editor)
 		{
@@ -89,29 +78,6 @@ namespace Microsoft.Maui.Handlers
 
 			// Update all of the attributed text formatting properties
 			handler.NativeView?.UpdateCharacterSpacing(editor);
-		}
-
-		public static void MapFont(EditorHandler handler, IEditor editor)
-		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
-
-			handler.NativeView?.UpdateFont(editor, fontManager);
-		}
-
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
-		}
-
-		[MissingMapper]
-		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
-		{
-
-		}
-
-		public static void MapKeyboard(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateKeyboard(editor);
 		}
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)

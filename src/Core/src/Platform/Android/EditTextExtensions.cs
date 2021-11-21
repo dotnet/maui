@@ -9,14 +9,14 @@ using Android.Widget;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class EditTextExtensions
 	{
 		static readonly int[][] ColorStates =
 		{
-			new[] { Android.Resource.Attribute.StateEnabled },
-			new[] { -Android.Resource.Attribute.StateEnabled }
+			new[] { global::Android.Resource.Attribute.StateEnabled },
+			new[] { -global::Android.Resource.Attribute.StateEnabled }
 		};
 
 		public static void UpdateText(this EditText editText, IEntry entry)

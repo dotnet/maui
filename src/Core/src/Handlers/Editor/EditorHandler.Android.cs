@@ -2,6 +2,7 @@
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Platform;
 using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
