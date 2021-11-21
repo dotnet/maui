@@ -119,11 +119,17 @@ namespace Microsoft.Maui.Platform
 
 		public static bool GetClipToOutline(this AView view)
 		{
+			if (!view.IsAlive())
+				return false;
+
 			return view.ClipToOutline;
 		}
 
 		public static void SetClipToOutline(this AView view, bool value)
 		{
+			if (!view.IsAlive())
+				return;
+
 			view.ClipToOutline = value;
 		}
 

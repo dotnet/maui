@@ -18,6 +18,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;

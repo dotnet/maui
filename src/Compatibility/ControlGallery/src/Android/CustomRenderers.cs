@@ -22,6 +22,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
 using AView = Android.Views.View;
