@@ -6,6 +6,7 @@ using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
 
