@@ -15,6 +15,8 @@ using WWebView = Microsoft.UI.Xaml.Controls.WebView2;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Extensions.Logging;
 
+using NavigationStartingEventArgs =  Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs;
+
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
@@ -465,17 +467,37 @@ if(bases.length == 0){
 			//{
 			Uri uri;
 
-			if (Uri.TryCreate(e.Uri, UriKind.Absolute, out uri) && uri != null)
+			if (!Uri.TryCreate(e.Uri, UriKind.Absolute, out uri) || uri is null)
 			{
-				var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = uri.AbsoluteUri }, uri.AbsoluteUri);
-
-				WebViewController.SendNavigating(args);
-				e.Cancel = args.Cancel;
-
-				// reset in this case because this is the last event we will get
-				if (args.Cancel)
-					_eventState = WebNavigationEvent.NewPage;
+				return;
 			}
+
+			var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = uri.AbsoluteUri }, uri.AbsoluteUri, true);
+
+			args.RegisterDeferralCompletedCallBack(() => NavigatingDeterminedCallback(e, args));
+
+			Element.SendNavigating(args);
+
+			if (!args.DeferralRequested)
+			{
+				// Navigation is not being defferred
+				e.Cancel = false;
+				return;
+			}
+
+			// reset in this case because this is the last event we will get
+			if (args.Cancelled)
+				_eventState = WebNavigationEvent.NewPage;
+		}
+
+		Task NavigatingDeterminedCallback(NavigationStartingEventArgs nativeArgs,WebNavigatingEventArgs controlArgs)
+		{
+			// Will this just cause the same issue for this control?
+			nativeArgs.Cancel = controlArgs.Cancelled;
+
+			// Whats the best way to avoid async with no await?
+			//return Task.CompletedTask;
+			return Task.FromResult(0);
 		}
 
 		[PortHandler]
