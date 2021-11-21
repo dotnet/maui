@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public static partial class ViewExtensions
 	{

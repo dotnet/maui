@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public static class MauiTextBox
 	{

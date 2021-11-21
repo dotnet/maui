@@ -1,9 +1,10 @@
 ﻿using System;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public static class TextFieldExtensions
 	{

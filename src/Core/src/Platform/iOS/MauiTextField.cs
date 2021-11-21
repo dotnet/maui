@@ -1,9 +1,10 @@
 ﻿using System;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui.Platform.iOS
 {
 	public class MauiTextField : UITextField
 	{

@@ -1,6 +1,5 @@
 ﻿using Android.Content.Res;
 using Android.Widget;
-using Microsoft.Maui.Platform;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui

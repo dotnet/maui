@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using Windows.UI.Core;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	// TODO: Replace this all with a real PasswordBox and not do this
 	//       as we lose many default password box features.

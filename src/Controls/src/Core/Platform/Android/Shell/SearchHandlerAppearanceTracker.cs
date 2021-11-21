@@ -16,7 +16,6 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Platform;
 using AImageButton = Android.Widget.ImageButton;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;

@@ -1,6 +1,8 @@
-﻿using UIKit;
+﻿using Microsoft.Maui.Platform.iOS;
+using ObjCRuntime;
+using UIKit;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public static class TextViewExtensions
 	{
