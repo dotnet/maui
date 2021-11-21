@@ -5,7 +5,7 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Platform
 {
 	public class MauiSearchBar : UISearchBar
 	{

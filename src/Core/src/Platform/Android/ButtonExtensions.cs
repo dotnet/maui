@@ -6,7 +6,7 @@ using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Handlers;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{

@@ -6,7 +6,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class NavigationRootManager
 	{

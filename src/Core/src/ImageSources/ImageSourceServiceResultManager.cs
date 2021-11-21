@@ -2,7 +2,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui
 {
 	internal class ImageSourceServiceResultManager
 	{

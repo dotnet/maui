@@ -11,7 +11,7 @@ using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class FrameworkElementExtensions
 	{

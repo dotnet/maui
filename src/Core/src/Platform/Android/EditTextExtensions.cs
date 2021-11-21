@@ -6,7 +6,7 @@ using Android.Text;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class EditTextExtensions
 	{

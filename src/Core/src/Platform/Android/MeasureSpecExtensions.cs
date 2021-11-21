@@ -2,7 +2,7 @@ using Android.Content;
 using Android.Views;
 using static Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class MeasureSpecExtensions
 	{

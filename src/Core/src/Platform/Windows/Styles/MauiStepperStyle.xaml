@@ -1,7 +1,7 @@
 <ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:uwp="using:Microsoft.Maui">
+	xmlns:uwp="using:Microsoft.Maui.Platform">
 
     <Style TargetType="uwp:MauiStepper">
         <Setter Property="Template">

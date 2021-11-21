@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Graphics
 {
-	public static class CompareExtensions
+	internal static class CompareExtensions
 	{
 		public static T Clamp<T>(this T value, T min, T max) where T : IComparable<T>
 		{
