@@ -1,4 +1,5 @@
-﻿#if __IOS__ || MACCATALYST
+﻿using Microsoft.Maui.Platform;
+#if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIButton;
 #elif MONOANDROID
 using NativeView = Google.Android.Material.Button.MaterialButton;

@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Java.Util.Concurrent;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class FutureExtensions
 	{

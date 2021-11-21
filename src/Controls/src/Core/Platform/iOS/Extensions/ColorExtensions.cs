@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

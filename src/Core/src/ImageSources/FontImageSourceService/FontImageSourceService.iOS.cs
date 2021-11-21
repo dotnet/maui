@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;

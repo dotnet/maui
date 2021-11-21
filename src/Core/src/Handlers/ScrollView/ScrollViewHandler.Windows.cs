@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.Maui.Layouts.LayoutExtensions;

@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 using static Android.Resource;
 using AColor = Android.Graphics.Color;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{

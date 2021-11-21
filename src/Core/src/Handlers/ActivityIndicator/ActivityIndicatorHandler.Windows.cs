@@ -1,4 +1,6 @@
 ﻿#nullable enable
+using Microsoft.Maui.Platform;
+
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, MauiActivityIndicator>

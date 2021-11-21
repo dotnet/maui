@@ -12,6 +12,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;

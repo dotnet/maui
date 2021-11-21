@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

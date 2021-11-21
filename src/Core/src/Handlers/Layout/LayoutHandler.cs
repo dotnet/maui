@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.Maui.Platform;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
 #elif __ANDROID__

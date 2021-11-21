@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 

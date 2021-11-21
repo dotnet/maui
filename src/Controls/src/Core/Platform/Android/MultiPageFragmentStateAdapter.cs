@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {

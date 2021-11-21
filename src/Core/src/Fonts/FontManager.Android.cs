@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using Android.Graphics;
 using Android.Util;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
 using AApplication = Android.App.Application;
 
 namespace Microsoft.Maui

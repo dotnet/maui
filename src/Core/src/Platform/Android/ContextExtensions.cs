@@ -14,7 +14,7 @@ using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
 using Size = Microsoft.Maui.Graphics.Size;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ContextExtensions
 	{

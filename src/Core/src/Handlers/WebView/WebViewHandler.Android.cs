@@ -1,4 +1,5 @@
 ﻿using Android.Webkit;
+using Microsoft.Maui.Platform;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
 

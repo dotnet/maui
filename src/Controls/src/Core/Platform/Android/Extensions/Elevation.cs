@@ -1,5 +1,6 @@
 using Android.Content;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {

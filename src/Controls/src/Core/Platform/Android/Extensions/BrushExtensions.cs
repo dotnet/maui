@@ -3,6 +3,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using static Android.Graphics.Drawables.GradientDrawable;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;

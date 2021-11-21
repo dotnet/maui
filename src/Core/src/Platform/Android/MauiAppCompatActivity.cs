@@ -2,7 +2,7 @@ using Android.OS;
 using AndroidX.AppCompat.App;
 using Microsoft.Maui.Platform;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{

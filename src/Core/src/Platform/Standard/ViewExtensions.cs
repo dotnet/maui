@@ -1,4 +1,4 @@
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	static partial class ViewExtensions
 	{

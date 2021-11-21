@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Maui.Controls.Internals;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {

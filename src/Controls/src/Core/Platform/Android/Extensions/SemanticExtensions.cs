@@ -2,6 +2,7 @@
 
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform

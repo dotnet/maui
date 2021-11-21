@@ -1,10 +1,10 @@
 using Foundation;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class LabelExtensions
 	{

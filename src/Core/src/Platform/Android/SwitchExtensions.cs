@@ -1,11 +1,12 @@
 using Android.Content.Res;
 using Microsoft.Maui;
+using Microsoft.Maui.Platform;
 using AAttribute = Android.Resource.Attribute;
 using APorterDuff = Android.Graphics.PorterDuff;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 using MauiAttribute = Microsoft.Maui.Resource.Attribute;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SwitchExtensions
 	{

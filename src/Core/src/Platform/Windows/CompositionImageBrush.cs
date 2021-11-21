@@ -8,7 +8,7 @@ using Microsoft.UI.Composition;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
     class CompositionImageBrush : IDisposable
     {

@@ -7,7 +7,7 @@ using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{

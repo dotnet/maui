@@ -1,6 +1,6 @@
 using Android.OS;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class NativeVersion
 	{

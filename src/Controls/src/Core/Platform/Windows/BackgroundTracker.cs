@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;

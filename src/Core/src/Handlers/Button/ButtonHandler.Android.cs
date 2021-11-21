@@ -9,6 +9,7 @@ using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using static Microsoft.Maui.Handlers.ButtonHandler;
 using AView = Android.Views.View;
 

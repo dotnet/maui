@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

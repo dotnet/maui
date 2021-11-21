@@ -1,3 +1,4 @@
+using Microsoft.Maui.Platform;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIButton;
 #elif MONOANDROID

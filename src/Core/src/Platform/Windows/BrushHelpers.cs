@@ -3,7 +3,7 @@ using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class BrushHelpers
 	{

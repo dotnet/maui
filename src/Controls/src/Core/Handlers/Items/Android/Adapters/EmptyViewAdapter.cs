@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Handlers.Items

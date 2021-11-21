@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Platform.Android;
+﻿using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers

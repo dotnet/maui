@@ -7,6 +7,7 @@ using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ARect = Android.Graphics.Rect;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 
