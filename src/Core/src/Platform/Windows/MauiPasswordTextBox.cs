@@ -198,47 +198,44 @@ namespace Microsoft.Maui.Platform
 
 		void ImmediateObfuscation()
 		{
-			var updatedRealText = DetermineTextFromPassword(Password, SelectionStart, Text);
-			var updatedText = Obfuscate(updatedRealText);
+			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
+			var updatedVisibleText = Obfuscate(updatedPassword);
 
-			if (Password != updatedRealText)
-				Password = updatedRealText;
+			if (Password != updatedPassword)
+				Password = updatedPassword;
 
-			if (Text != updatedText)
+			if (Text != updatedVisibleText)
 			{
 				var savedSelectionStart = SelectionStart;
-				Text = updatedText;
+				Text = updatedVisibleText;
 				SelectionStart = savedSelectionStart;
 			}
 		}
 
 		void DelayObfuscation()
 		{
-			var updatedRealText = DetermineTextFromPassword(Password, SelectionStart, Text);
-			if (Password == updatedRealText)
-				return;
-
 			var lengthDifference = Text.Length - Password.Length;
+			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
 
-			Password = updatedRealText;
+			if (Password != updatedPassword)
+				Password = updatedPassword;
 
 			// Cancel any pending delayed obfuscation
 			_cts?.Cancel();
 			_cts = null;
 
-			string newText;
-
+			string updatedVisibleText;
 			if (lengthDifference != 1)
 			{
 				// Either More than one character got added in this text change (e.g., a paste operation)
 				// Or characters were removed. Either way, we don't need to do the delayed obfuscation dance
-				newText = Obfuscate(Password);
+				updatedVisibleText = Obfuscate(Password);
 			}
 			else
 			{
 				// Only one character was added; we need to leave it visible for a brief time period
 				// Obfuscate all but the last character for now
-				newText = Obfuscate(Password, true);
+				updatedVisibleText = Obfuscate(Password, true);
 
 				// Leave the last character visible until a new character is added
 				// or sufficient time has passed
@@ -246,10 +243,10 @@ namespace Microsoft.Maui.Platform
 				StartTimeout(_cts.Token);
 			}
 
-			if (Text != newText)
+			if (Text != updatedVisibleText)
 			{
 				var savedSelectionStart = SelectionStart;
-				Text = newText;
+				Text = updatedVisibleText;
 				SelectionStart = savedSelectionStart;
 			}
 

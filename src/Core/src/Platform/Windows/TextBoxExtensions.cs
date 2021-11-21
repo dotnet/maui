@@ -17,6 +17,8 @@ namespace Microsoft.Maui
 		{
 			var newText = textInput.Text;
 
+			if (nativeControl is MauiPasswordTextBox passwordTextBox && passwordTextBox.Password == newText)
+				return;
 			if (nativeControl.Text == newText)
 				return;
 

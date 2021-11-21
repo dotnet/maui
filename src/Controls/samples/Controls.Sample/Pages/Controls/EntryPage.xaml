@@ -45,7 +45,11 @@
                     <Label Text="Is Password" VerticalOptions="Center"/>
                 </HorizontalStackLayout>
                 <Entry
+                    x:Name="pwdPassword"
                     IsPassword="{Binding IsChecked, Source={Reference chkIsPassword}}" />
+                <Label
+                    Text="{Binding Text, Source={Reference pwdPassword}}"
+                    Style="{StaticResource Headline}" />
                 <Label
                     Text="With Text"
                     Style="{StaticResource Headline}" />

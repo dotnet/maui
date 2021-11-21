@@ -10,10 +10,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, TextBox>
 	{
+		static readonly bool s_shouldBeDelayed = DeviceInfo.Idiom != DeviceIdiom.Desktop;
+
 		protected override TextBox CreateNativeView() =>
 			new MauiPasswordTextBox()
 			{
-				IsObfuscationDelayed = DeviceInfo.Idiom != DeviceIdiom.Desktop
+				IsObfuscationDelayed = s_shouldBeDelayed
 			};
 
 		protected override void ConnectHandler(TextBox nativeView)
@@ -86,8 +88,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(EntryHandler handler, IEntry entry) =>
 			handler.NativeView?.UpdateSelectionLength(entry);
 
-		void OnNativeTextChanged(object sender, TextChangedEventArgs args) =>
-			VirtualView?.UpdateText(NativeView.Text);
+		void OnNativeTextChanged(object sender, TextChangedEventArgs args)
+		{
+			if (NativeView is MauiPasswordTextBox passwordBox)
+				VirtualView?.UpdateText(passwordBox.Password);
+			else
+				VirtualView?.UpdateText(NativeView.Text);
+		}
 
 		void OnNativeKeyUp(object? sender, KeyRoutedEventArgs args)
 		{
