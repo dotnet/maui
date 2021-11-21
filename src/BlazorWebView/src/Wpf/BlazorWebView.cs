@@ -143,15 +143,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			StartWebViewCoreIfPossible();
 		}
 
-		private void StartWebViewCoreIfPossible()
+		public virtual WebView2WebViewManager CreateWebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, Web.JSComponentConfigurationStore store)
 		{
-			CheckDisposed();
-
-			if (!RequiredStartupPropertiesSet || _webviewManager != null)
-			{
-				return;
-			}
-
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
 			var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
@@ -163,7 +156,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				? assetFileProvider
 				: new CompositeFileProvider(customFileProvider, assetFileProvider);
 
-			_webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			return new WebView2WebViewManager(webview, services, dispatcher, fileProvider, store, hostPageRelativePath);
+		}
+
+		private void StartWebViewCoreIfPossible()
+		{
+			CheckDisposed();
+
+			if (!RequiredStartupPropertiesSet || _webviewManager != null)
+			{
+				return;
+			}
+
+			_webviewManager = this.CreateWebViewManager(new WpfWebView2Wrapper(_webview), Services, ComponentsDispatcher, RootComponents.JSComponents);
+			
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously

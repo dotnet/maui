@@ -130,6 +130,22 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			HostPage != null &&
 			Services != null;
 
+		protected virtual WebView2WebViewManager CreateWebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, Web.JSComponentConfigurationStore store)
+		{
+			// We assume the host page is always in the root of the content directory, because it's
+			// unclear there's any other use case. We can add more options later if so.
+			var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
+
+			var customFileProvider = CreateFileProvider(contentRootDir);
+			var assetFileProvider = new PhysicalFileProvider(contentRootDir);
+			IFileProvider fileProvider = customFileProvider == null
+				? assetFileProvider
+				: new CompositeFileProvider(customFileProvider, assetFileProvider);
+
+			return new WebView2WebViewManager(webview, services, dispatcher, fileProvider, store, hostPageRelativePath);
+		}
+
 		private void StartWebViewCoreIfPossible()
 		{
 			// We never start the Blazor code in design time because it doesn't make sense to run
@@ -145,18 +161,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				return;
 			}
 
-			// We assume the host page is always in the root of the content directory, because it's
-			// unclear there's any other use case. We can add more options later if so.
-			var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
-			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
-
-			var customFileProvider = CreateFileProvider(contentRootDir);
-			var assetFileProvider = new PhysicalFileProvider(contentRootDir);
-			IFileProvider fileProvider = customFileProvider == null
-				? assetFileProvider
-				: new CompositeFileProvider(customFileProvider, assetFileProvider);
-
-			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = CreateWebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, ComponentsDispatcher, RootComponents.JSComponents);
 
 			foreach (var rootComponent in RootComponents)
 			{
