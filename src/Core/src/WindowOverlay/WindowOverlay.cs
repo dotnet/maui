@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 
 #pragma warning disable CS0067 // The event is never used
 		/// <inheritdoc/>
-		public event EventHandler<VisualDiagnosticsTappedEventArgs>? Tapped;
+		public event EventHandler<WindowOverlayTappedEventArgs>? Tapped;
 #pragma warning restore CS0067
 
 		/// <inheritdoc/>
@@ -123,7 +123,7 @@ namespace Microsoft.Maui
 					elements.AddRange(visualWindow.GetVisualTreeElements(point));
 			}
 
-			Tapped?.Invoke(this, new VisualDiagnosticsTappedEventArgs(point, elements, windowElements));
+			Tapped?.Invoke(this, new WindowOverlayTappedEventArgs(point, elements, windowElements));
 		}
 	}
 }

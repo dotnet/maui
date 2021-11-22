@@ -4,9 +4,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	public class VisualDiagnosticsTappedEventArgs : EventArgs
+	public class WindowOverlayTappedEventArgs : EventArgs
 	{
-		public VisualDiagnosticsTappedEventArgs(Point point, IList<IVisualTreeElement> elements, IList<IWindowOverlayElement> overlayElements)
+		public WindowOverlayTappedEventArgs(Point point, IList<IVisualTreeElement> elements, IList<IWindowOverlayElement> overlayElements)
 		{
 			Point = point;
 			VisualTreeElements = elements;

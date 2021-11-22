@@ -194,7 +194,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		void VisualDiagnosticsOverlayOnTapped(object? sender, VisualDiagnosticsTappedEventArgs e)
+		void VisualDiagnosticsOverlayOnTapped(object? sender, WindowOverlayTappedEventArgs e)
 		{
 			if (!EnableElementSelector)
 				return;

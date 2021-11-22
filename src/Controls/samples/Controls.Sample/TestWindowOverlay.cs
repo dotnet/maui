@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample
 			Tapped += OnTapped;
 		}
 
-		async void OnTapped(object sender, VisualDiagnosticsTappedEventArgs e)
+		async void OnTapped(object sender, WindowOverlayTappedEventArgs e)
 		{
 			if (e.WindowOverlayElements.Contains(testWindowDrawable))
 			{

@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		/// Event Handler for touch events on the Overlay.
 		/// Called when a user touched the Overlay.
 		/// </summary>
-		event EventHandler<VisualDiagnosticsTappedEventArgs> Tapped;
+		event EventHandler<WindowOverlayTappedEventArgs> Tapped;
 
 		/// <summary>
 		/// Invalidates the layer.
