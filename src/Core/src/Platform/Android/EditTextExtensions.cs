@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
-using AndroidX.AppCompat.Widget;
+using static Android.Views.View;
+using static Android.Widget.TextView;
 
 namespace Microsoft.Maui
 {
@@ -12,11 +15,11 @@ namespace Microsoft.Maui
 	{
 		static readonly int[][] ColorStates =
 		{
-			new[] { Android.Resource.Attribute.StateEnabled },
-			new[] { -Android.Resource.Attribute.StateEnabled }
+			new[] { global::Android.Resource.Attribute.StateEnabled },
+			new[] { -global::Android.Resource.Attribute.StateEnabled }
 		};
 
-		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateText(this EditText editText, IEntry entry)
 		{
 			// Setting the text causes the cursor to reset to position zero
 			// Therefore if:
@@ -28,7 +31,7 @@ namespace Microsoft.Maui
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
 
-		public static void UpdateText(this AppCompatEditText editText, IEditor editor)
+		public static void UpdateText(this EditText editText, IEditor editor)
 		{
 			editText.Text = editor.Text;
 
@@ -36,12 +39,12 @@ namespace Microsoft.Maui
 		}
 
 
-		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this EditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			editText.UpdateTextColor(entry.TextColor, defaultColor);
 		}
 
-		public static void UpdateTextColor(this AppCompatEditText editText, Graphics.Color textColor, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor, ColorStateList? defaultColor)
 		{
 			if (textColor == null)
 			{
@@ -60,27 +63,27 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateIsPassword(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateIsPassword(this EditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
 		}
 
-		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, ITextAlignment textAlignment)
+		public static void UpdateHorizontalTextAlignment(this EditText editText, ITextAlignment textAlignment)
 		{
 			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
 		}
 
-		public static void UpdateVerticalTextAlignment(this AppCompatEditText editText, ITextAlignment entry)
+		public static void UpdateVerticalTextAlignment(this EditText editText, ITextAlignment entry)
 		{
 			editText.UpdateVerticalAlignment(entry.VerticalTextAlignment);
 		}
 
-		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
 		}
 
-		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEditor editor)
+		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEditor editor)
 		{
 			if (editor.IsTextPredictionEnabled)
 				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
@@ -88,13 +91,13 @@ namespace Microsoft.Maui
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
 		}
 
-		public static void UpdateMaxLength(this AppCompatEditText editText, IEntry entry) =>
+		public static void UpdateMaxLength(this EditText editText, IEntry entry) =>
 			UpdateMaxLength(editText, entry.MaxLength);
 
-		public static void UpdateMaxLength(this AppCompatEditText editText, IEditor editor) =>
+		public static void UpdateMaxLength(this EditText editText, IEditor editor) =>
 			UpdateMaxLength(editText, editor.MaxLength);
 
-		public static void UpdateMaxLength(this AppCompatEditText editText, int maxLength)
+		public static void UpdateMaxLength(this EditText editText, int maxLength)
 		{
 			editText.SetLengthFilter(maxLength);
 
@@ -128,7 +131,7 @@ namespace Microsoft.Maui
 				editText.SetFilters(currentFilters.ToArray());
 		}
 
-		public static void UpdatePlaceholder(this AppCompatEditText editText, IPlaceholder textInput)
+		public static void UpdatePlaceholder(this EditText editText, IPlaceholder textInput)
 		{
 			if (editText.Hint == textInput.Placeholder)
 				return;
@@ -136,12 +139,12 @@ namespace Microsoft.Maui
 			editText.Hint = textInput.Placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this EditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
 		{
 			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor, defaultColor);
 		}
 
-		public static void UpdatePlaceholderColor(this AppCompatEditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
 		{
 			if (placeholderTextColor == null)
 			{
@@ -159,7 +162,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateIsReadOnly(this EditText editText, IEntry entry)
 		{
 			bool isEditable = !entry.IsReadOnly;
 
@@ -169,17 +172,17 @@ namespace Microsoft.Maui
 			editText.Focusable = isEditable;
 		}
 
-		public static void UpdateKeyboard(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateKeyboard(this EditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
 		}
 
-		public static void UpdateKeyboard(this AppCompatEditText editText, IEditor editor)
+		public static void UpdateKeyboard(this EditText editText, IEditor editor)
 		{
 			editText.SetInputType(editor);
 		}
 
-		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEditor editor)
+		public static void UpdateIsReadOnly(this EditText editText, IEditor editor)
 		{
 			bool isReadOnly = !editor.IsReadOnly;
 
@@ -188,10 +191,10 @@ namespace Microsoft.Maui
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
+		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
 			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
 
-		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
+		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
 			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
 			void ShowClearButton()
@@ -231,27 +234,25 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
 			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 
-		[PortHandler]
-		public static void UpdateCursorPosition(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateCursorPosition(this EditText editText, IEntry entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)
 				UpdateCursorSelection(editText, entry);
 		}
 
-		[PortHandler]
-		public static void UpdateSelectionLength(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateSelectionLength(this EditText editText, IEntry entry)
 		{
 			if ((editText.SelectionEnd - editText.SelectionStart) != entry.SelectionLength)
 				UpdateCursorSelection(editText, entry);
 		}
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
-		static void UpdateCursorSelection(AppCompatEditText editText, IEntry entry)
+		static void UpdateCursorSelection(EditText editText, IEntry entry)
 		{
 			if (!entry.IsReadOnly)// && editText.HasFocus)// || editText.RequestFocus()))//&& editText.RequestFocus())
 			{
@@ -265,7 +266,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		static int GetSelectionStart(AppCompatEditText editText, IEntry entry)
+		static int GetSelectionStart(EditText editText, IEntry entry)
 		{
 			int start = editText.Length();
 			int cursorPosition = entry.CursorPosition;
@@ -285,7 +286,7 @@ namespace Microsoft.Maui
 			return start;
 		}
 
-		static int GetSelectionEnd(AppCompatEditText editText, IEntry entry, int start)
+		static int GetSelectionEnd(EditText editText, IEntry entry, int start)
 		{
 			int end = start;
 			int selectionLength = entry.SelectionLength;
@@ -297,7 +298,7 @@ namespace Microsoft.Maui
 			return end;
 		}
 
-		internal static void SetInputType(this AppCompatEditText editText, ITextInput textInput)
+		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
 			if (textInput.IsReadOnly)
 			{
@@ -338,6 +339,60 @@ namespace Microsoft.Maui
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
+		}
+
+		internal static bool IsCompletedAction(this EditorActionEventArgs e)
+		{
+			var actionId = e.ActionId;
+			var evt = e.Event;
+
+			return
+				actionId == ImeAction.Done ||
+				(actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter && evt?.Action == KeyEventActions.Up);
+		}
+
+		/// <summary>
+		/// Checks whether the touched position on the EditText is inbounds with clear button and clears if so.
+		/// This will return True to handle OnTouch to prevent re-activating keyboard after clearing the text.
+		/// </summary>
+		/// <returns>True if clear button is clicked and Text is cleared. False if not.</returns>
+		internal static bool HandleClearButtonTouched(this EditText? nativeView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
+		{
+			if (nativeView is null)
+				return false;
+
+			var motionEvent = touchEvent?.Event;
+			if (motionEvent is null)
+				return false;
+
+			var rBounds = getClearButtonDrawable?.Invoke()?.Bounds;
+			var buttonWidth = rBounds?.Width();
+
+			if (buttonWidth <= 0)
+				return false;
+
+			if (motionEvent.Action != MotionEventActions.Up)
+				return false;
+
+			var x = motionEvent.GetX();
+			var y = motionEvent.GetY();
+
+			if ((flowDirection != FlowDirection.LeftToRight
+				|| x < nativeView.Right - buttonWidth
+				|| x > nativeView.Right - nativeView.PaddingRight
+				|| y < nativeView.PaddingTop
+				|| y > nativeView.Height - nativeView.PaddingBottom) &&
+				(flowDirection != FlowDirection.RightToLeft
+				|| x < nativeView.Left + nativeView.PaddingLeft
+				|| x > nativeView.Left + buttonWidth
+				|| y < nativeView.PaddingTop
+				|| y > nativeView.Height - nativeView.PaddingBottom))
+			{
+				return false;
+			}
+
+			nativeView.Text = null;
+			return true;
 		}
 	}
 }

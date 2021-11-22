@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 			this.SetApplicationHandler(Application, _applicationContext);
 
 			// if there is no scene delegate or support for scene delegates, then we set up the window here
-			if (!this.IsUsingMultiWindow())
+			if (!this.HasSceneManifest())
 				this.CreateNativeWindow(Application, application, launchOptions);
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		public override bool RespondsToSelector(Selector? sel)
 		{
 			// if the app is not a multi-window app, then we cannot override the GetConfiguration method
-			if (sel?.Name == GetConfigurationSelectorName && !this.IsUsingMultiWindow())
+			if (sel?.Name == GetConfigurationSelectorName && !this.HasSceneManifest())
 				return false;
 
 			return base.RespondsToSelector(sel);
