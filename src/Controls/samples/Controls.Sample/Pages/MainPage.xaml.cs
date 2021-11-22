@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Maui.Controls.Sample.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -12,7 +8,7 @@ namespace Maui.Controls.Sample.Pages
 	{
 		readonly IServiceProvider _services;
 		readonly MainViewModel _viewModel;
-		TestWindowOverlay overlay;
+
 		public MainPage(IServiceProvider services, MainViewModel viewModel)
 		{
 			InitializeComponent();
@@ -23,33 +19,6 @@ namespace Maui.Controls.Sample.Pages
 			_viewModel = viewModel;
 
 			Debug.WriteLine($"Received as parameters, ServiceProvider: {_services != null} and MainViewModel: {_viewModel != null}");
-		}
-		void TestAddOverlayWindow(object sender, EventArgs e)
-		{
-			if (overlay == null)
-				overlay = new TestWindowOverlay((IWindow)this.Parent.Parent);
-			((IWindow)this.Parent.Parent).AddOverlay(overlay);
-		}
-
-		void TestRemoveOverlayWindow(object sender, EventArgs e)
-		{
-			if (overlay != null)
-			{
-				var result = this.GetParentWindow().RemoveOverlay(overlay);
-				if (result)
-					overlay = null;
-			}
-		}
-
-		void TestVisualTreeHelper(object sender, EventArgs e)
-		{
-			this.GetParentWindow().VisualDiagnosticsOverlay.RemoveAdorners();
-			this.GetParentWindow().VisualDiagnosticsOverlay.AddAdorner(TestButton as IVisualTreeElement, false);
-		}
-
-		void EnableElementPicker(object sender, EventArgs e)
-		{
-			this.GetParentWindow().VisualDiagnosticsOverlay.EnableElementSelector = true;
 		}
 	}
 }
