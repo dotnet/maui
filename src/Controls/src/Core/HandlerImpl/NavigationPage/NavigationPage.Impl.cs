@@ -11,7 +11,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class NavigationPage : INavigationView
+	public partial class NavigationPage : INavigationView, IToolbarElement
 	{
 		// If the user is making overlapping navigation requests this is used to fire once all navigation 
 		// events have been processed
@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls
 		partial void Init()
 		{
 			this.Appearing += OnAppearing;
+			this.Disappearing += OnDisappearing;
 		}
 
 		Thickness IView.Margin => Thickness.Zero;
@@ -120,12 +121,45 @@ namespace Microsoft.Maui.Controls
 		}
 
 
+		IToolbar IToolbarElement.Toolbar
+		{
+			get
+			{
+				if (this.Toolbar != null)
+					return Toolbar;
+
+				if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
+				{
+					return te.Toolbar;
+				}
+
+				return null;
+			}
+		}
+
+		void OnDisappearing(object sender, EventArgs e)
+		{
+			// Update the Container level Toolbar with my Toolbar information
+			if (this is IToolbarElement te && te.Toolbar is Toolbar ct)
+			{
+				ct.ApplyNavigationPage(this, HasAppeared);
+			}
+		}
+
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), true) is IToolbarElement te)
+			if(this is IToolbarElement te && te.Toolbar is Toolbar ct)
 			{
-				te.Toolbar.ApplyNavigationPage(this);
+				ct.ApplyNavigationPage(this, HasAppeared);
+			}
+			// This means the toolbar hasn't been initialized on window
+			else
+			{
+				var window = this.FindParentOfType<Window>();
+				var toolbar = new Toolbar(window);
+				toolbar.ApplyNavigationPage(this, true);
+				window.Toolbar = toolbar;
 			}
 		}
 
@@ -288,7 +322,7 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 						Owner.RemoveFromInnerChildren(currentPage);
-						Owner.CurrentPage = currentPage;
+						Owner.CurrentPage = newCurrentPage;
 					},
 					() =>
 					{

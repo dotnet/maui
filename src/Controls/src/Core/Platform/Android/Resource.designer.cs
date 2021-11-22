@@ -102,9 +102,6 @@ namespace Microsoft.Maui.Controls
 			// aapt resource value: 0x7F0801CD
 			public static int navigationlayout_toptabs = 2131231181;
 
-			// aapt resource value: 0x7F08013F
-			public static int navigationlayout_toolbar = 2131231039;
-
 			static Id()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -115,6 +112,9 @@ namespace Microsoft.Maui.Controls
 		{
 			// aapt resource value: 0x7F0B001C
 			public static int bottomtablayout = 2131427356;
+
+			// aapt resource value: 0x7F0B003E
+			public static int maui_toolbar = 2131427390;
 
 			// aapt resource value: 0x7F0B002E
 			public static int fragment_backstack = 2131427374;

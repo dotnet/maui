@@ -6,12 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	internal interface IToolbarElement
-	{
-		Toolbar Toolbar { get; }
-	}
-
-	public class Toolbar : Microsoft.Maui.IElement
+	public partial class Toolbar : Maui.IToolbar
 	{
 		NavigationPage _currentNavigationPage;
 		Page _currentPage;
@@ -24,22 +19,20 @@ namespace Microsoft.Maui.Controls
 		ImageSource _titleIcon;
 		string _backButtonTitle;
 		double? _barHeight;
-		bool _backButtonVisible;
-		bool _hasBackStack;
-		bool _isVisible = false;
 		IEnumerable<ToolbarItem> _toolbarItems;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
 		bool _dynamicOverflowEnabled;
+		bool _hasAppeared;
+		bool _isVisible = false;
+		bool _backButtonVisible;
 
-		public Toolbar()
+		public Toolbar(Maui.IElement parent)
 		{
+			_parent = parent;
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
 		}
 
-		public IEnumerable<ToolbarItem> ToolbarItems { get => _toolbarItems; set => SetProperty(ref _toolbarItems, value); }
-		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
-		public bool HasBackStack { get => _hasBackStack; set => SetProperty(ref _hasBackStack, value); }
-		public bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
+		public IEnumerable<ToolbarItem> ToolbarItems { get => _toolbarItems; set => SetProperty(ref _toolbarItems, value); }		
 		public double? BarHeight { get => _barHeight; set => SetProperty(ref _barHeight, value); }
 		public string BackButtonTitle { get => _backButtonTitle; set => SetProperty(ref _backButtonTitle, value); }
 		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
@@ -50,7 +43,8 @@ namespace Microsoft.Maui.Controls
 		public string Title { get => _title; set => SetProperty(ref _title, value); }
 		public VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
 		public bool DynamicOverflowEnabled { get => _dynamicOverflowEnabled; set => SetProperty(ref _dynamicOverflowEnabled, value); }
-
+		public bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
+		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
 		public IElementHandler Handler { get; set; }
 
 		Maui.IElement _parent;
@@ -66,11 +60,14 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(propertyName);
 		}
 
-		internal void ApplyNavigationPage(NavigationPage navigationPage)
+		internal void ApplyNavigationPage(NavigationPage navigationPage, bool hasAppeared)
 		{
-			_parent = _parent ?? navigationPage.FindParentOfType<Window>();
+			_hasAppeared = hasAppeared;
 			if (_currentNavigationPage == navigationPage)
+			{
+				IsVisible = hasAppeared;
 				return;
+			}
 
 			if (_currentNavigationPage != null)
 				_currentNavigationPage.PropertyChanged -= OnPropertyChanged;
@@ -122,9 +119,7 @@ namespace Microsoft.Maui.Controls
 				_currentPage.PropertyChanged -= OnPropertyChanged;
 
 			_currentPage = _currentNavigationPage.CurrentPage;
-			_currentNavigationPage.CurrentPage.PropertyChanged += OnPropertyChanged;
-
-			HasBackStack = _currentNavigationPage.Navigation.NavigationStack.Count > 1;
+			_currentNavigationPage.CurrentPage.PropertyChanged += OnPropertyChanged;			
 		}
 
 		void ApplyChanges(NavigationPage navigationPage)
@@ -143,7 +138,7 @@ namespace Microsoft.Maui.Controls
 			_toolbarTracker.Target = navigationPage.CurrentPage;
 			_toolbarTracker.AdditionalTargets = navigationPage.GetParentPages();
 			ToolbarItems = _toolbarTracker.ToolbarItems;
-			IsVisible = NavigationPage.GetHasNavigationBar(currentPage);
+			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
 			BackButtonVisible = NavigationPage.GetHasBackButton(currentPage) && stack.Count > 1;
 
 			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))

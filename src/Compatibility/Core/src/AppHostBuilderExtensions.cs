@@ -166,6 +166,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
+			Toolbar.RemapForControls();
 			Window.RemapForControls();
 
 			return builder;

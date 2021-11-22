@@ -82,33 +82,28 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			bool isNavigated = toolbar.HasBackStack;
-
 			_defaultNavigationIcon ??= nativeToolbar.NavigationIcon;
 
-			if (isNavigated)
+			if (toolbar.BackButtonVisible)
 			{
-				if (toolbar.BackButtonVisible)
-				{
-					nativeToolbar.NavigationIcon ??= _defaultNavigationIcon;
+				nativeToolbar.NavigationIcon ??= _defaultNavigationIcon;
 
-					var backButtonTitle = toolbar.BackButtonTitle;
-					ImageSource image = toolbar.TitleIcon;
+				var backButtonTitle = toolbar.BackButtonTitle;
+				ImageSource image = toolbar.TitleIcon;
 
-					if (!string.IsNullOrEmpty(backButtonTitle))
-					{
-						nativeToolbar.NavigationContentDescription = backButtonTitle;
-					}
-					else if (image == null ||
-						nativeToolbar.SetNavigationContentDescription(image) == null)
-					{
-						nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
-					}
-				}
-				else
+				if (!string.IsNullOrEmpty(backButtonTitle))
 				{
-					nativeToolbar.NavigationIcon = null;
+					nativeToolbar.NavigationContentDescription = backButtonTitle;
 				}
+				else if (image == null ||
+					nativeToolbar.SetNavigationContentDescription(image) == null)
+				{
+					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
+				}
+			}
+			else
+			{
+				nativeToolbar.NavigationIcon = null;
 			}
 
 			nativeToolbar.UpdateIconColor(toolbar);

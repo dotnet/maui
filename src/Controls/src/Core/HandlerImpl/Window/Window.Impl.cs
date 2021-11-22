@@ -23,13 +23,20 @@ namespace Microsoft.Maui.Controls
 
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
+		private Toolbar? _toolbar;
 
-		Toolbar IToolbarElement.Toolbar => _toolBar;
-		Toolbar _toolBar;
+		IToolbar? IToolbarElement.Toolbar => Toolbar;
+		internal Toolbar? Toolbar
+		{
+			get => _toolbar; set
+			{
+				_toolbar = value;
+				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
+			}
+		}
 
 		public Window()
 		{
-			_toolBar = new Toolbar();
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
@@ -332,7 +339,7 @@ namespace Microsoft.Maui.Controls
 				_owner.OnModalPushing(modal);
 
 				modal.Parent = _owner;
-				modal.Toolbar ??= new Toolbar();
+				modal.Toolbar ??= new Toolbar(modal);
 
 				if (modal.NavigationProxy.ModalStack.Count == 0)
 				{

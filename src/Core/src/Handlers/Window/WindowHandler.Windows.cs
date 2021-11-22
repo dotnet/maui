@@ -47,5 +47,16 @@ namespace Microsoft.Maui.Handlers
 			handler?._rootPanel?.Children?.Clear();
 			handler?._rootPanel?.Children?.Add(windowManager.RootView);
 		}
+
+		public static void MapToolbar(WindowHandler handler, IWindow view)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
+
+			if (view is IToolbarElement tb && tb.Toolbar != null)
+			{
+				_ = tb.Toolbar.ToNative(handler.MauiContext);
+			}
+		}
+
 	}
 }

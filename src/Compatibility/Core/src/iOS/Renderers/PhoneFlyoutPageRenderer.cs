@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		bool _applyShadow;
 
 		Page Page => Element as Page;
+		IFlyoutPageController FlyoutPageController => FlyoutPage;
 
 
 		[Preserve(Conditional = true)]
@@ -157,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
-			if (!FlyoutPage.ShouldShowSplitMode && _presented)
+			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
 				Presented = false;
 
 			base.WillRotate(toInterfaceOrientation, duration);
@@ -300,8 +301,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				detailView.Layer.Opacity = (float)opacity;
 			}
 
-			FlyoutPage.FlyoutBounds = new Rectangle(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPage.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
+			FlyoutPageController.FlyoutBounds = new Rectangle(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
+			FlyoutPageController.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
 
 			if (Presented)
 				_clickOffView.Frame = _detailController.View.Frame;
