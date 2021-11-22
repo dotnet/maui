@@ -15,6 +15,12 @@ namespace Microsoft.Maui.UnitTests
 
 		public Color TextColor { get; set; }
 
+		public Color BorderColor { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public int CornerRadius { get; set; }
+
 		public double CharacterSpacing { get; set; }
 
 		public Thickness Padding { get; set; }

@@ -1,5 +1,4 @@
 #nullable enable
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 
@@ -14,15 +13,8 @@ namespace Microsoft.Maui.Handlers
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
-		protected override MauiButton CreateNativeView() 
+		protected override MauiButton CreateNativeView()
 			=> new MauiButton();
-
-		void SetupDefaults(MauiButton nativeView)
-		{
-			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
-			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
-			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
-		}
 
 		protected override void ConnectHandler(MauiButton nativeView)
 		{
@@ -32,6 +24,8 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Click += OnClick;
 			nativeView.AddHandler(UI.Xaml.UIElement.PointerPressedEvent, _pointerPressedHandler, true);
 			nativeView.AddHandler(UI.Xaml.UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
+
+			SetupDefaults(nativeView);
 
 			base.ConnectHandler(nativeView);
 		}
@@ -48,20 +42,33 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
+		void SetupDefaults(MauiButton nativeView)
+		{
+			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
+			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
+			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
+		}
+
 		// This is a Windows-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			handler.TypedNativeView?.UpdateBackground(button, DefaultBackground);
 		}
 
-		[MissingMapper]
-		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder) { }
+		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder)
+		{
+			handler.TypedNativeView?.UpdateBorderColor(buttonBorder);
+		}
 
-		[MissingMapper]
-		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder) { }
+		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder)
+		{
+			handler.TypedNativeView?.UpdateBorderWidth(buttonBorder);
+		}
 
-		[MissingMapper]
-		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder) { }
+		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder)
+		{
+			handler.TypedNativeView?.UpdateCornerRadius(buttonBorder);
+		}
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{

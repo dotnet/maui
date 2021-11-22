@@ -28,6 +28,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			set => Source = value;
 		}
 
+		public Color BorderColor { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public int CornerRadius { get; set; }
+
 		public Thickness Padding { get; set; }
 
 		public event Action LoadingStarted;
