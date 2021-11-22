@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
-		{
+		{			
 			_defaultNavigationIcon ??= nativeToolbar.NavigationIcon;
 
 			if (toolbar.BackButtonVisible)
@@ -103,7 +103,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				nativeToolbar.NavigationIcon = null;
+				if(nativeToolbar.NavigationIcon is DrawerArrowDrawable dad && dad.Progress == 1)
+					nativeToolbar.NavigationIcon = null;
 			}
 
 			nativeToolbar.UpdateIconColor(toolbar);

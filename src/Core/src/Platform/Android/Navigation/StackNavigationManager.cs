@@ -436,7 +436,7 @@ namespace Microsoft.Maui
 				if (nativeToolbar != null && toolbar != null)
 				{
 					// TODO: MAUI Hackey way of wiring up Drawer Layout
-					// But currently you can only have a nav bar with a Navigation View					
+					// But currently you can only have a nav bar with a Navigation View	
 					if (nativeToolbar.Parent is DrawerLayout dl1)
 						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl1);
 					else if (nativeToolbar.Parent?.Parent is DrawerLayout dl2)

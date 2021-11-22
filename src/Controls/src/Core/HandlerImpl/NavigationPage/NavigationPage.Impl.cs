@@ -156,10 +156,20 @@ namespace Microsoft.Maui.Controls
 			// This means the toolbar hasn't been initialized on window
 			else
 			{
-				var window = this.FindParentOfType<Window>();
-				var toolbar = new Toolbar(window);
-				toolbar.ApplyNavigationPage(this, true);
-				window.Toolbar = toolbar;
+				var flyoutPage = this.FindParentOfType<FlyoutPage>();
+				if (flyoutPage != null)
+				{
+					var toolbar = new Toolbar(flyoutPage);
+					toolbar.ApplyNavigationPage(this, true);
+					flyoutPage.Toolbar = toolbar;
+				}
+				else
+				{
+					var window = this.FindParentOfType<Window>();
+					var toolbar = new Toolbar(window);
+					toolbar.ApplyNavigationPage(this, true);
+					window.Toolbar = toolbar;
+				}				
 			}
 		}
 

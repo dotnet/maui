@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
-		private Toolbar? _toolbar;
+		Toolbar? _toolbar;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
