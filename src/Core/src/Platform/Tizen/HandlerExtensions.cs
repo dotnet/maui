@@ -39,9 +39,7 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public static void SetApplicationHandler(this CoreApplication nativeApplication, IApplication application, IMauiContext context)
-		{
-			_ = nativeApplication ?? throw new ArgumentNullException(nameof(nativeApplication));
+		public static void SetApplicationHandler(this CoreApplication nativeApplication, IApplication application, IMauiContext context) =>
 			SetHandler(application, context);
 		}
 
