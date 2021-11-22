@@ -47,11 +47,11 @@ namespace Microsoft.Maui
 		{
 			if (buttonStroke.CornerRadius >= 0)
 			{
-				nativeButton.Resources["CornerRadius"] = WinUIHelpers.CreateCornerRadius(buttonStroke.CornerRadius);
+				nativeButton.Resources["ControlCornerRadius"] = WinUIHelpers.CreateCornerRadius(buttonStroke.CornerRadius);
 			}
 			else
 			{
-				nativeButton.Resources.Remove("CornerRadius");
+				nativeButton.Resources.Remove("ControlCornerRadius");
 			}
 		}
 
