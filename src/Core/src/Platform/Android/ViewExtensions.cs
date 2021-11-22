@@ -221,12 +221,7 @@ namespace Microsoft.Maui
 				return new Rectangle();
 			}
 
-			var location = nativeView.GetNativeViewBounds();
-			return new Rectangle(
-				location.X,
-				location.Y,
-				nativeView.Context.ToPixels(view.Frame.Width),
-				nativeView.Context.ToPixels(view.Frame.Height));
+			return nativeView.GetNativeViewBounds();
 		}
 
 		internal static Rectangle GetNativeViewBounds(this View nativeView)
@@ -248,7 +243,7 @@ namespace Microsoft.Maui
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
 				return new Matrix4x4();
-			return GetViewTransform(nativeView);
+			return nativeView.GetViewTransform();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this View view)

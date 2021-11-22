@@ -250,7 +250,7 @@ namespace Microsoft.Maui
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView != null)
-				return GetNativeViewBounds(nativeView);
+				return nativeView.GetNativeViewBounds();
 			return new Rectangle();
 		}
 
