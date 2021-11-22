@@ -13,31 +13,21 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateStrokeColor(this Button nativeButton, IButtonStroke buttonStroke)
 		{
-			if (nativeButton is MauiButton mauiButton)
-				mauiButton.UpdateBorderColor(buttonStroke.StrokeColor);
-			else
-			{
-				var borderColor = buttonStroke.StrokeColor;
+			var borderColor = buttonStroke.StrokeColor;
 
-				nativeButton.BorderBrush = (borderColor != null) ? ColorExtensions.ToNative(borderColor) : (WBrush)Application.Current.Resources["ButtonBorderThemeBrush"];
-			}
+			nativeButton.BorderBrush = (borderColor != null) ? ColorExtensions.ToNative(borderColor) : (WBrush)Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
 		public static void UpdateStrokeThickness(this Button nativeButton, IButtonStroke buttonStroke)
 		{
-			if (nativeButton is MauiButton mauiButton)
-				mauiButton.UpdateBorderWidth(buttonStroke.StrokeThickness);
-			else
-			{
-				var borderWidth = buttonStroke.StrokeThickness;
+			var borderWidth = buttonStroke.StrokeThickness;
 
-				nativeButton.BorderThickness = WinUIHelpers.CreateThickness(borderWidth);
-			}
+			nativeButton.BorderThickness = WinUIHelpers.CreateThickness(borderWidth);
 		}
 
-		public static void UpdateCornerRadius(this MauiButton nativeButton, IButtonStroke buttonBorder)
+		public static void UpdateCornerRadius(this Button nativeButton, IButtonStroke buttonStroke)
 		{
-			nativeButton.UpdateCornerRadius(buttonBorder.CornerRadius);
+			nativeButton.CornerRadius = WinUIHelpers.CreateCornerRadius(buttonStroke.CornerRadius);
 		}
 
 		public static void UpdateText(this Button nativeButton, IText text)

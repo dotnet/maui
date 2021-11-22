@@ -52,8 +52,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
 			nativeView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
 
-			SetupDefaults(nativeView);
-
 			base.ConnectHandler(nativeView);
 		}
 
@@ -67,13 +65,6 @@ namespace Microsoft.Maui.Handlers
 			_pointerReleasedHandler = null;
 
 			base.DisconnectHandler(nativeView);
-		}
-
-		void SetupDefaults(MauiButton nativeView)
-		{
-			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
-			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
-			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
 		}
 
 		// This is a Windows-specific mapping
