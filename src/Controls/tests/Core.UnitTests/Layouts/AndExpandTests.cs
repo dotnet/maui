@@ -1,7 +1,7 @@
 ﻿#nullable enable
+using System.Collections;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
-using System.Collections;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		{
 			Size _desiredSize = new(TestViewWidth, TestViewHeight);
 
-			protected override Size MeasureOverride(double widthConstraint, double heightConstraint) 
+			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 			{
 				DesiredSize = _desiredSize;
 				return _desiredSize;
@@ -45,7 +45,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void SingleChildExpandsToFillVertical()
 		{
-			var view0 = new TestView { 
+			var view0 = new TestView
+			{
 				Text = "Hello",
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
@@ -190,7 +191,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Test]
-		public void StackLayoutWithNoExpansionDoesNotExpand() 
+		public void StackLayoutWithNoExpansionDoesNotExpand()
 		{
 			var view0 = new TestView
 			{

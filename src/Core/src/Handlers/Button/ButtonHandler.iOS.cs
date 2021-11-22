@@ -25,6 +25,8 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TouchUpOutside += OnButtonTouchUpOutside;
 			nativeView.TouchDown += OnButtonTouchDown;
 
+			SetupDefaults(nativeView);
+
 			base.ConnectHandler(nativeView);
 		}
 
@@ -43,14 +45,20 @@ namespace Microsoft.Maui.Handlers
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
 		}
 
-		[MissingMapper]
-		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder) { }
+		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder)
+		{
+			handler.TypedNativeView?.UpdateBorderColor(buttonBorder);
+		}
 
-		[MissingMapper]
-		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder) { }
+		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder)
+		{
+			handler.TypedNativeView?.UpdateBorderWidth(buttonBorder);
+		}
 
-		[MissingMapper]
-		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder) { }
+		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder)
+		{
+			handler.TypedNativeView?.UpdateCornerRadius(buttonBorder);
+		}
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{
