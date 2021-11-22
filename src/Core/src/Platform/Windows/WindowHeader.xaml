@@ -9,7 +9,6 @@
     VerticalContentAlignment="Stretch"
     VerticalAlignment="Stretch" 
     HorizontalAlignment="Stretch"
-    Height="41"
     x:Name="commandBar">
     <CommandBar.Content>
         <Grid x:Name="contentGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
