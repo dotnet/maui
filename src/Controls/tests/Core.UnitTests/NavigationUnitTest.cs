@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(true)]
 		public async Task HandlerUpdatesFireWithStartingPage(bool withPage)
 		{
-			TestNavigationPage nav = 
+			TestNavigationPage nav =
 				new TestNavigationPage(true, (withPage) ? new ContentPage() : null);
 
 			var handler = new TestNavigationHandler();
