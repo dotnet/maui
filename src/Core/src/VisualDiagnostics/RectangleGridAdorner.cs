@@ -27,10 +27,10 @@ namespace Microsoft.Maui
 		{
 			base.Draw(canvas, dirtyRect);
 
-			var y = (float)DrawnBounds.Y;
-			var x = (float)DrawnBounds.X;
-			var width = (float)DrawnBounds.Width;
-			var height = (float)DrawnBounds.Height;
+			var y = (float)DrawnRectangle.Y;
+			var x = (float)DrawnRectangle.X;
+			var width = (float)DrawnRectangle.Width;
+			var height = (float)DrawnRectangle.Height;
 
 			canvas.DrawLine(0, y, LineMaxLength, y);
 			canvas.DrawLine(0, y + height, LineMaxLength, y + height);

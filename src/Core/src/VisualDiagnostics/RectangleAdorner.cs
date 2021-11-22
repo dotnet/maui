@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 			Offset = offset ?? Point.Zero;
 			VisualView = view;
 			Density = density;
-			DrawnBounds = Rectangle.Zero;
+			DrawnRectangle = Rectangle.Zero;
 		}
 
 		/// <inheritdoc/>
@@ -37,11 +37,11 @@ namespace Microsoft.Maui
 
 		public Color StrokeColor { get; }
 
-		public Rectangle DrawnBounds { get; private set; }
+		public Rectangle DrawnRectangle { get; private set; }
 
 		/// <inheritdoc/>
 		public virtual bool Contains(Point point) =>
-			DrawnBounds.Contains(point);
+			DrawnRectangle.Contains(point);
 
 		/// <inheritdoc/>
 		public virtual void Draw(ICanvas canvas, RectangleF dirtyRect)
@@ -55,9 +55,9 @@ namespace Microsoft.Maui
 			var width = boundingBox.Width / Density;
 			var height = boundingBox.Height / Density;
 
-			DrawnBounds = new Rectangle(x, y, width, height);
+			DrawnRectangle = new Rectangle(x, y, width, height);
 
-			canvas.FillRectangle(DrawnBounds);
+			canvas.FillRectangle(DrawnRectangle);
 		}
 	}
 }
