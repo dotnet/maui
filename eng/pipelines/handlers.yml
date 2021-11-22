@@ -120,6 +120,10 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if eq(BuildPlatform.name, 'macos') }} :
+                demands:
+                  - Agent.OSArchitecture -equals X64
+                  - Agent.OSVersionFamily -equals 11.3
             steps:
               - template: common/provision.yml
                 parameters:
@@ -154,6 +158,10 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
+            ${{ if eq(BuildPlatform.name, 'macos') }} :
+              demands:
+                - Agent.OSArchitecture -equals X64
+                - Agent.OSVersionFamily -equals 11.3
           steps:
             - template: common/provision.yml
               parameters:
@@ -211,6 +219,10 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if eq(BuildPlatform.name, 'macos') }} :
+                demands:
+                  - Agent.OSArchitecture -equals X64
+                  - Agent.OSVersionFamily -equals 11.3
             steps:
               - template: common/provision.yml
                 parameters:
@@ -251,6 +263,10 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if eq(BuildPlatform.name, 'macos') }} :
+                demands:
+                  - Agent.OSArchitecture -equals X64
+                  - Agent.OSVersionFamily -equals 11.3
             steps:
               - template: common/provision.yml
                 parameters:
