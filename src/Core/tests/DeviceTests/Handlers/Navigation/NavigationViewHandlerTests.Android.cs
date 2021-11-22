@@ -24,14 +24,11 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				ViewGroup rootView = (DefaultContext as AppCompatActivity).Window.DecorView as ViewGroup;
 				var linearLayoutCompat = new LinearLayoutCompat(DefaultContext);
+				var fragmentManager = MauiContext.GetFragmentManager();
+				var viewFragment = new NavViewFragment(MauiContext);
 
 				try
 				{
-					var mauiContext = new ContextStub(MauiContext.GetApplicationServices());
-					var viewFragment = new NavViewFragment(mauiContext);
-
-
-					var fragmentManager = (DefaultContext as AppCompatActivity).GetFragmentManager();
 					linearLayoutCompat.Id = View.GenerateViewId();
 
 					fragmentManager
@@ -54,11 +51,14 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					rootView.RemoveView(linearLayoutCompat);
+
+					fragmentManager
+						.BeginTransaction()
+						.Remove(viewFragment)
+						.Commit();
 				}
 			});
 		}
-
-
 
 		class NavViewFragment : Fragment
 		{
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 			{
-				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
+				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				return ScopedMauiContext.GetNavigationRootManager().RootView;
 			}
 

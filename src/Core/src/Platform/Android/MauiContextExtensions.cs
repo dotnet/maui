@@ -51,9 +51,10 @@ namespace Microsoft.Maui
 		public static IMauiContext MakeScoped(this IMauiContext mauiContext,
 			LayoutInflater? layoutInflater = null,
 			FragmentManager? fragmentManager = null,
-			Android.Content.Context? context = null)
+			Android.Content.Context? context = null,
+			bool registerNewNavigationRoot = false)
 		{
-			var scopedContext = new MauiContext(mauiContext);
+			var scopedContext = new MauiContext(mauiContext.Services);
 
 			if (layoutInflater != null)
 				scopedContext.AddWeakSpecific(layoutInflater);
@@ -63,6 +64,14 @@ namespace Microsoft.Maui
 
 			if (context != null)
 				scopedContext.AddWeakSpecific(context);
+
+			if (registerNewNavigationRoot)
+			{
+				if (fragmentManager == null)
+					throw new InvalidOperationException("If you're creating a new Navigation Root you need to use a new Fragment Manager");
+
+				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
+			}
 
 			return scopedContext;
 		}

@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.Maui
 {
-	public class NavigationManager
+	public class StackNavigationManager
 	{
 		IView? _currentPage;
 		IMauiContext _mauiContext;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 		public Frame NavigationFrame =>
 			_navigationFrame ?? throw new InvalidOperationException("NavigationFrame Null");
 
-		public NavigationManager(IMauiContext mauiContext)
+		public StackNavigationManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
 		}
@@ -95,7 +95,7 @@ namespace Microsoft.Maui
 
 			if (NavigationStack.Count > args.NavigationStack.Count)
 				return new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft };
-
+						
 			return new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
 		}
 

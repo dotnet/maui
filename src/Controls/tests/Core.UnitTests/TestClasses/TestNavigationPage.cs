@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return result;
 		}
 
-		
+
 	}
 
 	public class TestNavigationHandler : ViewHandler<NavigationPage, object>
