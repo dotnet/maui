@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		public override bool RespondsToSelector(Selector? sel)
 		{
 			// if the app is not a multi-window app, then we cannot override the GetConfiguration method
-			if (sel?.Name == GetConfigurationSelectorName && !this.IsUsingMultiWindow())
+			if (sel?.Name == GetConfigurationSelectorName && !this.HasSceneManifest())
 				return false;
 
 			return base.RespondsToSelector(sel);
