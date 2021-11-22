@@ -77,7 +77,7 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
         <!-- FOOTER -->
-        <VerticalStackLayout Grid.Row="3">
+        <VerticalStackLayout Grid.Row="3" Margin="0,0,0,100">
             <Button Margin="5" Text="Add Adorner to MauiTextLabel" Clicked="TestVisualTreeHelper" />
             <Button Margin="5" Text="Enable Visual Diagnostics Element Picker (Will disable UI!)" Clicked="EnableElementPicker" />
             <Button Margin="5" Text="Enable Test Window Overlay" Clicked="TestAddOverlayWindow" />
