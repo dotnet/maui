@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 			throw new InvalidOperationException("Window Not Found");
 		}
 
-		public static void RequestNewWindow(this CoreUIApplication nativeApplication, IApplication application, OpenWindowRequest? args)
+		public static void RequestNewWindow(this CoreApplication nativeApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return;
