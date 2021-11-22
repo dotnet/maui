@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+
 namespace Microsoft.Maui
 {
 	public static class ITextInputExtensions
@@ -14,6 +15,27 @@ namespace Microsoft.Maui
 			if (mauiText != nativeText)
 				textInput.Text = nativeText;
 		}
+
+#if __IOS__
+		public static bool TextWithinMaxLength(this ITextInput textInput, string? text, Foundation.NSRange range, string replacementString)
+		{
+			var currLength = text?.Length ?? 0;
+
+			// fix a crash on undo
+			if (range.Length + range.Location > currLength)
+				return false;
+
+			if (textInput.MaxLength < 0)
+				return true;
+
+			var addLength = replacementString?.Length ?? 0;
+			var remLength = range.Length;
+
+			var newLength = currLength + addLength - remLength;
+
+			return newLength <= textInput.MaxLength;
+		}
+#endif
 
 #if __ANDROID__
 		public static void UpdateText(this ITextInput textInput, Android.Text.TextChangedEventArgs e)
