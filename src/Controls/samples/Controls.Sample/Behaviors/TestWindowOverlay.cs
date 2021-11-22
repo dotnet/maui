@@ -27,6 +27,8 @@ namespace Maui.Controls.Sample
 
 			var window = Application.Current.Windows.FirstOrDefault(w => w == Window);
 
+			System.Diagnostics.Debug.WriteLine($"Tapped the test overlay button.");
+
 			var result = await window.Page.DisplayActionSheet(
 				"Greetings from Visual Studio Client Experiences!",
 				"Goodbye!",

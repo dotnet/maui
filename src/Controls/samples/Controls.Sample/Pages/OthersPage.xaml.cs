@@ -20,8 +20,11 @@ namespace Maui.Controls.Sample.Pages
 
 		void TestRemoveOverlayWindow(object sender, EventArgs e)
 		{
-			if (overlay is not null && GetParentWindow().RemoveOverlay(overlay))
+			if (overlay is not null)
+			{
+				GetParentWindow().RemoveOverlay(overlay);
 				overlay = null;
+			}
 		}
 
 		void TestVisualTreeHelper(object sender, EventArgs e)
