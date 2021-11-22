@@ -338,9 +338,9 @@ namespace Microsoft.Maui
 				return new Rectangle();
 
 			var superview = nativeView;
-			while (nativeView.Superview is not null)
+			while (superview.Superview is not null)
 			{
-				superview = nativeView.Superview;
+				superview = superview.Superview;
 			}
 
 			var convertPoint = nativeView.ConvertRectToView(nativeView.Bounds, superview);
