@@ -168,10 +168,16 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				// add MemberNotNull attributes
 				if (namedFields != null)
+				{
+					sb.AppendLine($"#if NET5_0_OR_GREATER");
 					foreach ((var fname, _, _) in namedFields)
 					{
+
 						sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({(CSharpKeywords.Contains(fname) ? "@" + fname : fname)}))]");
 					}
+
+					sb.AppendLine($"#endif");
+				}
 
 				sb.AppendLine("\t\tprivate void InitializeComponent()");
 				sb.AppendLine("\t\t{");
