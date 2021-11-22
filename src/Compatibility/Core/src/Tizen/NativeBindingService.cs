@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml.Internals;
 
 using EObject = ElmSharp.EvasObject;
