@@ -7,23 +7,23 @@ namespace Microsoft.Maui
 	{
 		static float DefaultCornerRadius = 5;
 
-		public static void UpdateBorderColor(this UIButton nativeButton, IButtonBorder buttonBorder)
+		public static void UpdateStrokeColor(this UIButton nativeButton, IButtonStroke buttonStroke)
 		{
-			if (buttonBorder.BorderColor != null)
-				nativeButton.Layer.BorderColor = buttonBorder.BorderColor.ToCGColor();
+			if (buttonStroke.StrokeColor != null)
+				nativeButton.Layer.BorderColor = buttonStroke.StrokeColor.ToCGColor();
 		}
 
-		public static void UpdateBorderWidth(this UIButton nativeButton, IButtonBorder buttonBorder)
+		public static void UpdateStrokeThickness(this UIButton nativeButton, IButtonStroke buttonStroke)
 		{
-			nativeButton.Layer.BorderWidth = Math.Max(0f, (float)buttonBorder.BorderWidth);
+			nativeButton.Layer.BorderWidth = Math.Max(0f, (float)buttonStroke.StrokeThickness);
 		}
 
-		public static void UpdateCornerRadius(this UIButton nativeButton, IButtonBorder buttonBorder)
+		public static void UpdateCornerRadius(this UIButton nativeButton, IButtonStroke buttonStroke)
 		{
 			var cornerRadius = DefaultCornerRadius;
 
-			if (cornerRadius != buttonBorder.CornerRadius)
-				cornerRadius = buttonBorder.CornerRadius;
+			if (cornerRadius != buttonStroke.CornerRadius)
+				cornerRadius = buttonStroke.CornerRadius;
 
 			nativeButton.Layer.CornerRadius = cornerRadius;
 		}

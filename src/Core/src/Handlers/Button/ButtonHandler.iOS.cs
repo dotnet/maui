@@ -45,19 +45,19 @@ namespace Microsoft.Maui.Handlers
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
 		}
 
-		public static void MapBorderColor(IButtonHandler handler, IButtonBorder buttonBorder)
+		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateBorderColor(buttonBorder);
+			handler.TypedNativeView?.UpdateStrokeColor(buttonStroke);
 		}
 
-		public static void MapBorderWidth(IButtonHandler handler, IButtonBorder buttonBorder)
+		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateBorderWidth(buttonBorder);
+			handler.TypedNativeView?.UpdateStrokeThickness(buttonStroke);
 		}
 
-		public static void MapCornerRadius(IButtonHandler handler, IButtonBorder buttonBorder)
+		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateCornerRadius(buttonBorder);
+			handler.TypedNativeView?.UpdateCornerRadius(buttonStroke);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)

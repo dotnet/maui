@@ -33,9 +33,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IButton.Background)] = MapBackground,
 			[nameof(IButton.Padding)] = MapPadding,
-			[nameof(IButtonBorder.BorderWidth)] = MapBorderWidth,
-			[nameof(IButtonBorder.BorderColor)] = MapBorderColor,
-			[nameof(IButtonBorder.CornerRadius)] = MapCornerRadius
+			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
+			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
+			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius
 		};
 
 		public ButtonHandler() : base(Mapper)
