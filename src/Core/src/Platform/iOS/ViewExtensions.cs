@@ -334,7 +334,7 @@ namespace Microsoft.Maui
 
 		internal static Rectangle GetNativeViewBounds(this UIView nativeView)
 		{
-			if (nativeView==null)
+			if (nativeView == null)
 				return new Rectangle();
 
 			var superview = nativeView;
