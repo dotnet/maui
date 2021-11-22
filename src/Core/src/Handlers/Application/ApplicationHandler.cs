@@ -8,7 +8,7 @@ using PlatformView = Android.App.Application;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Application;
 #elif TIZEN
-using PlatformView = Tizen.Applications.CoreUIApplication;
+using PlatformView = Tizen.Applications.CoreApplication;
 #endif
 
 namespace Microsoft.Maui.Handlers

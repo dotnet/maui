@@ -15,7 +15,7 @@ using NativeWindow = UIKit.UIWindow;
 using NativeApplication = Android.App.Application;
 using NativeWindow = Android.App.Activity;
 #elif TIZEN
-using NativeApplication = Tizen.Applications.CoreUIApplication;
+using NativeApplication = Tizen.Applications.CoreApplication;
 using NativeWindow =  Microsoft.Maui.CoreUIAppContext;
 #else
 using NativeApplication = System.Object;

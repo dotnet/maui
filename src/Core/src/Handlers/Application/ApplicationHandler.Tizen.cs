@@ -2,7 +2,7 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ApplicationHandler : ElementHandler<IApplication, CoreUIApplication>
+	public partial class ApplicationHandler : ElementHandler<IApplication, CoreApplication>
 	{
 		public static void MapTerminate(ApplicationHandler handler, IApplication application, object? args)
 		{
