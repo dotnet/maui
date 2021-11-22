@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 			this.SetApplicationHandler(Application, _applicationContext);
 
 			// if there is no scene delegate or support for scene delegates, then we set up the window here
-			if (!this.IsUsingMultiWindow())
+			if (!this.HasSceneManifest())
 				this.CreateNativeWindow(Application, application, launchOptions);
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
