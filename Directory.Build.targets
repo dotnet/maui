@@ -56,4 +56,6 @@
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.18" TargetingPackVersion="10.0.18362.18" />
   </ItemGroup>
 
+  <Target Name="ComputeXamarinTargetFrameworks" />
+
 </Project>
