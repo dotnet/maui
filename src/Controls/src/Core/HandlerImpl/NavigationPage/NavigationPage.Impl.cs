@@ -163,6 +163,13 @@ namespace Microsoft.Maui.Controls
 					toolbar.ApplyNavigationPage(this, true);
 					flyoutPage.Toolbar = toolbar;
 				}
+				// Is the root a modal page?
+				else if(this.FindParentWith(x => (x is IToolbarElement te && Navigation.ModalStack.Contains(x)), true) is Page modalRootPage)
+				{
+					var toolbar = new Toolbar(modalRootPage);
+					toolbar.ApplyNavigationPage(this, true);
+					modalRootPage.Toolbar = toolbar;
+				}
 				else
 				{
 					var window = this.FindParentOfType<Window>();

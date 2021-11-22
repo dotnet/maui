@@ -109,8 +109,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Task PresentModal(Page modal, bool animated)
 		{
-			modal.Toolbar ??= new Toolbar(modal);
-
 			var modalContainer = new ModalContainer(_window, modal);
 
 			_rootDecorView.AddView(modalContainer);
@@ -287,9 +285,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var modalContext = _mauiWindowContext
 						.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
-
-					_modal.Toolbar ??= new Toolbar(_modal);
-					_ = _modal.Toolbar.ToNative(modalContext);
 
 					_navigationRootManager = modalContext.GetNavigationRootManager();
 					_navigationRootManager.SetRootView(_modal, modalContext);

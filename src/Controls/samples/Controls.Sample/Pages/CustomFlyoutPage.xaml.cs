@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages
 			base()
 		{
 			InitializeComponent();
-			Detail = new MainPage(services, viewModel);
+			Detail = new CustomNavigationPage(services, viewModel);
 			Flyout = new ContentPage()
 			{
 				Title = "Menu",
