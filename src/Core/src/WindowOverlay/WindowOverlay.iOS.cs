@@ -72,6 +72,7 @@ namespace Microsoft.Maui
 		void DeinitializeNativeDependencies()
 		{
 			_frameObserver?.Dispose();
+			_passthroughView?.RemoveFromSuperview();
 			_passthroughView?.Dispose();
 			IsNativeViewInitialized = false;
 		}
