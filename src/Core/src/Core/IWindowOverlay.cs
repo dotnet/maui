@@ -39,7 +39,7 @@ namespace Microsoft.Maui
 		/// Gets the Density for the layer.
 		/// Can be used to pass through Density settings to underlying drawables.
 		/// </summary>
-		public float Density { get; }
+		float Density { get; }
 
 		/// <summary>
 		/// Gets the current collection of drawable elements on the overlay.
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		/// Event Handler for touch events on the Overlay.
 		/// Called when a user touched the Overlay.
 		/// </summary>
-		event EventHandler<VisualDiagnosticsHitEvent> OnTouch;
+		event EventHandler<VisualDiagnosticsTappedEventArgs> Tapped;
 
 		/// <summary>
 		/// Invalidates the layer.

@@ -11,10 +11,10 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
-	public partial class WindowOverlay : IWindowOverlay, IDrawable
+	public partial class WindowOverlay
 	{
-		internal Activity? _nativeActivity;
-		internal NativeGraphicsView? _graphicsView;
+		Activity? _nativeActivity;
+		NativeGraphicsView? _graphicsView;
 		ViewGroup? _nativeLayer;
 
 		/// <inheritdoc/>
@@ -80,7 +80,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		private void DeinitializeNativeDependencies()
+		void DeinitializeNativeDependencies()
 		{
 			if (_nativeActivity?.Window != null)
 				_nativeActivity.Window.DecorView.LayoutChange -= DecorView_LayoutChange;
@@ -92,7 +92,7 @@ namespace Microsoft.Maui
 			IsNativeViewInitialized = false;
 		}
 
-		private void TouchLayer_Touch(object? sender, View.TouchEventArgs e)
+		void TouchLayer_Touch(object? sender, View.TouchEventArgs e)
 		{
 			if (e == null || e.Event == null)
 				return;
@@ -107,12 +107,12 @@ namespace Microsoft.Maui
 			if (DisableUITouchEventPassthrough)
 				e.Handled = true;
 			else if (EnableDrawableTouchHandling)
-				e.Handled = _windowElements.Any(n => n.IsPointInElement(point));
+				e.Handled = _windowElements.Any(n => n.Contains(point));
 
 			OnTouchInternal(point);
 		}
 
-		private void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
+		void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
 		{
 			HandleUIChange();
 			Invalidate();

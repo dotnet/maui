@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
-
-#if ANDROID || IOS
-using Microsoft.Maui.Graphics.Native;
-#endif
 
 namespace Microsoft.Maui
 {
@@ -26,7 +21,7 @@ namespace Microsoft.Maui
 		/// Used when the underlying operating system may not give exact placement for where elements are.
 		/// Ex. Android and the Status Bar.
 		/// </summary>
-		public Point Offset { get; }
+		Point Offset { get; }
 
 		/// <summary>
 		/// Adds a new adorner to the Visual Diagnostics Overlay.
@@ -82,46 +77,10 @@ namespace Microsoft.Maui
 		/// <param name="element">Element to scroll to.</param>
 		void ScrollToView(IVisualTreeElement element);
 
-#if ANDROID
 		/// <summary>
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		IReadOnlyDictionary<IScrollView, Android.Views.View> ScrollViews { get; }
-#elif IOS
-		/// <summary>
-		/// Gets the Scroll Views in a given window, to be handled by the layer for
-		/// when they scroll to update the underlying adorners.
-		/// </summary>
-		IReadOnlyDictionary<IScrollView, IDisposable> ScrollViews { get; }
-#elif WINDOWS
-		/// <summary>
-		/// Gets the Scroll Views in a given window, to be handled by the layer for
-		/// when they scroll to update the underlying adorners.
-		/// </summary>
-		IReadOnlyDictionary<IScrollView, Microsoft.UI.Xaml.Controls.ScrollViewer> ScrollViews { get; }
-#else
-		/// <summary>
-		/// Gets the Scroll Views in a given window, to be handled by the layer for
-		/// when they scroll to update the underlying adorners.
-		/// </summary>
-		IReadOnlyDictionary<IScrollView, object> ScrollViews { get; }
-#endif
-	}
-
-	public class VisualDiagnosticsHitEvent
-	{
-		public VisualDiagnosticsHitEvent(Point point, IList<IVisualTreeElement> elements, IList<IWindowOverlayElement> overlayElements)
-		{
-			this.Point = point;
-			this.VisualTreeElements = elements;
-			this.WindowOverlayElements = overlayElements;
-		}
-
-		public IList<IVisualTreeElement> VisualTreeElements { get; }
-
-		public IList<IWindowOverlayElement> WindowOverlayElements { get; }
-
-		public Point Point { get; }
+		IReadOnlyList<IScrollView> ScrollViews { get; }
 	}
 }

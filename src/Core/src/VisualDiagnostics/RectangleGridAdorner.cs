@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public override bool IsPointInElement(Point point)
+		public override bool Contains(Point point)
 		{
 			return this.DrawnRectangle.Contains(point);
 		}

@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public partial class VisualDiagnosticsOverlay : WindowOverlay, IVisualDiagnosticsOverlay
 	{
-		private bool _enableElementSelector;
+		bool _enableElementSelector;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="VisualDiagnosticsOverlay"/> class.
@@ -17,14 +17,15 @@ namespace Microsoft.Maui
 		public VisualDiagnosticsOverlay(IWindow window)
 			: base(window)
 		{
-			OnTouch += VisualDiagnosticsOverlayOnTouch;
+			Tapped += VisualDiagnosticsOverlayOnTapped;
 		}
 
 		/// <inheritdoc/>
 		public bool AutoScrollToElement { get; set; }
 
 		/// <inheritdoc/>
-		public bool EnableElementSelector {
+		public bool EnableElementSelector
+		{
 			get { return _enableElementSelector; }
 			set
 			{
@@ -162,7 +163,7 @@ namespace Microsoft.Maui
 		public override bool Deinitialize()
 		{
 			RemoveScrollableElementHandler();
-			OnTouch -= VisualDiagnosticsOverlayOnTouch;
+			Tapped -= VisualDiagnosticsOverlayOnTapped;
 			return base.Deinitialize();
 		}
 
@@ -178,10 +179,10 @@ namespace Microsoft.Maui
 			if (content == null)
 				return new List<IScrollView>();
 
-			return content.GetEntireVisualTreeElementChildren().Where(n => n is IScrollView).Cast<IScrollView>().ToList();
+			return content.GetVisualTreeDescendants().Where(n => n is IScrollView).Cast<IScrollView>().ToList();
 		}
 
-		private IScrollView? GetParentScrollView(IVisualTreeElement element)
+		IScrollView? GetParentScrollView(IVisualTreeElement element)
 		{
 			if (element is IScrollView scrollView)
 				return scrollView;
@@ -193,7 +194,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		private void VisualDiagnosticsOverlayOnTouch(object? sender, VisualDiagnosticsHitEvent e)
+		void VisualDiagnosticsOverlayOnTapped(object? sender, VisualDiagnosticsTappedEventArgs e)
 		{
 			if (!EnableElementSelector)
 				return;
@@ -202,28 +203,5 @@ namespace Microsoft.Maui
 			if (e.VisualTreeElements.Any())
 				AddAdorner(e.VisualTreeElements.First());
 		}
-
-#if NETSTANDARD || NET6
-
-		/// <inheritdoc/>
-		public IReadOnlyDictionary<IScrollView, object> ScrollViews { get; } = new Dictionary<IScrollView, object>();
-
-		/// <inheritdoc/>
-		public void AddScrollableElementHandler(IScrollView scrollBar)
-		{
-		}
-
-		/// <inheritdoc/>
-		public void RemoveScrollableElementHandler()
-		{
-		}
-
-		/// <summary>
-		/// Disposes the native event hooks and handlers used to drive the overlay.
-		/// </summary>
-		private void DisposeNativeDependencies()
-		{
-		}
-#endif
 	}
 }

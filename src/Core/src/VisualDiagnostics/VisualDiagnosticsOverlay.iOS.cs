@@ -13,9 +13,9 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Visual Diagnostics Overlay.
 	/// </summary>
-	public partial class VisualDiagnosticsOverlay : WindowOverlay
+	public partial class VisualDiagnosticsOverlay
 	{
-		private Dictionary<IScrollView, IDisposable> _scrollViews = new Dictionary<IScrollView, IDisposable>();
+		Dictionary<IScrollView, IDisposable> _scrollViews = new Dictionary<IScrollView, IDisposable>();
 
 		/// <inheritdoc/>
 		public IReadOnlyDictionary<IScrollView, IDisposable> ScrollViews => this._scrollViews;
@@ -41,11 +41,12 @@ namespace Microsoft.Maui
 			this._scrollViews.Clear();
 		}
 
-		private void ScrollScrolled(object? sender, EventArgs e)
+		void ScrollScrolled(object? sender, EventArgs e)
 		{
 			this.Invalidate();
 		}
-		private void FrameAction(Foundation.NSObservedChange obj)
+
+		void FrameAction(Foundation.NSObservedChange obj)
 		{
 			if (this._windowElements.Any())
 				this.RemoveAdorners();

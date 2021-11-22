@@ -44,7 +44,7 @@ namespace Microsoft.Maui
 			canvas.StrokeColor = StrokeColor;
 		}
 
-		public virtual bool IsPointInElement(Point point)
+		public virtual bool Contains(Point point)
 		{
 			return false;
 		}

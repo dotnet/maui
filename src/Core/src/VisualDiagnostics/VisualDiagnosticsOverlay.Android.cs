@@ -12,9 +12,9 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Visual Diagnostics Overlay.
 	/// </summary>
-	public partial class VisualDiagnosticsOverlay : WindowOverlay, IVisualDiagnosticsOverlay
+	public partial class VisualDiagnosticsOverlay
 	{
-		private Dictionary<IScrollView, Android.Views.View> _scrollViews = new Dictionary<IScrollView, Android.Views.View>();
+		Dictionary<IScrollView, Android.Views.View> _scrollViews = new Dictionary<IScrollView, Android.Views.View>();
 
 		/// <inheritdoc/>
 		public IReadOnlyDictionary<IScrollView, Android.Views.View> ScrollViews => _scrollViews;

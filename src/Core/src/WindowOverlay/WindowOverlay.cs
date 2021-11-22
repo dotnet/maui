@@ -8,7 +8,8 @@ namespace Microsoft.Maui
 {
 	public partial class WindowOverlay : IWindowOverlay, IDrawable
 	{
-		internal HashSet<IWindowOverlayElement> _windowElements = new HashSet<IWindowOverlayElement>();
+		readonly HashSet<IWindowOverlayElement> _windowElements = new();
+
 		bool isVisible = true;
 
 		/// <summary>
@@ -49,7 +50,7 @@ namespace Microsoft.Maui
 
 #pragma warning disable CS0067 // The event is never used
 		/// <inheritdoc/>
-		public event EventHandler<VisualDiagnosticsHitEvent>? OnTouch;
+		public event EventHandler<VisualDiagnosticsTappedEventArgs>? Tapped;
 #pragma warning restore CS0067
 
 		/// <inheritdoc/>
@@ -112,7 +113,7 @@ namespace Microsoft.Maui
 
 			if (EnableDrawableTouchHandling)
 			{
-				windowElements.AddRange(_windowElements.Where(n => n.IsPointInElement(point)));
+				windowElements.AddRange(_windowElements.Where(n => n.Contains(point)));
 			}
 
 			if (DisableUITouchEventPassthrough)
@@ -122,31 +123,7 @@ namespace Microsoft.Maui
 					elements.AddRange(visualWindow.GetVisualTreeElements(point));
 			}
 
-			OnTouch?.Invoke(this, new VisualDiagnosticsHitEvent(point, elements, windowElements));
+			Tapped?.Invoke(this, new VisualDiagnosticsTappedEventArgs(point, elements, windowElements));
 		}
-
-#if NETSTANDARD || NET6
-
-		/// <inheritdoc/>
-		public bool DisableUITouchEventPassthrough { get; set; }
-		/// <inheritdoc/>
-		public void Invalidate()
-		{
-		}
-
-		/// <inheritdoc/>
-		public virtual bool Initialize()
-		{
-			return this.IsNativeViewInitialized = true;
-		}
-
-		/// <summary>
-		/// Deinitializes the native event hooks and handlers used to drive the overlay.
-		/// </summary>
-		private void DeinitializeNativeDependencies()
-		{
-			this.IsNativeViewInitialized = false;
-		}
-#endif
 	}
 }

@@ -11,7 +11,7 @@ using WinPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui
 {
-	public static class IVisualTreeElementExtensions
+	public static class VisualTreeElementExtensions
 	{
 		/// <summary>
 		/// Gets the Window containing the Visual Tree Element, if the element is contained within one.
@@ -31,13 +31,14 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Gets the entire list of children for a given Visual Tree Element.
+		/// Gets the entire hierarchy of descendants as a list of children for a given Visual Tree Element.
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetEntireVisualTreeElementChildren(this IVisualTreeElement visualElement) => visualElement.GetEntireVisualTreeElementChildrenInternal();
+		public static IList<IVisualTreeElement> GetVisualTreeDescendants(this IVisualTreeElement visualElement) =>
+			visualElement.GetVisualTreeDescendantsInternal();
 
-		private static IList<IVisualTreeElement> GetEntireVisualTreeElementChildrenInternal(this IVisualTreeElement visualElement, IList<IVisualTreeElement>? elements = null)
+		static IList<IVisualTreeElement> GetVisualTreeDescendantsInternal(this IVisualTreeElement visualElement, IList<IVisualTreeElement>? elements = null)
 		{
 			if (elements == null)
 				elements = new List<IVisualTreeElement>();
@@ -45,7 +46,7 @@ namespace Microsoft.Maui
 			elements.Add(visualElement);
 
 			foreach (var children in visualElement.GetVisualChildren())
-				children.GetEntireVisualTreeElementChildrenInternal(elements);
+				children.GetVisualTreeDescendantsInternal(elements);
 
 			return elements;
 		}
@@ -60,7 +61,8 @@ namespace Microsoft.Maui
 		/// <param name="y2">The Y point.</param>
 		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x1, double y1, double x2, double y2, bool useNativeViewBounds = true) => GetVisualTreeElements(visualElement, new Rectangle(x1, y1, x2 - x1, y2 - y1), useNativeViewBounds);
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x1, double y1, double x2, double y2, bool useNativeViewBounds = true) =>
+			GetVisualTreeElements(visualElement, new Rectangle(x1, y1, x2 - x1, y2 - y1), useNativeViewBounds);
 
 		/// <summary>
 		/// Gets list of a Visual Tree Elements children based off of a rectangle.
@@ -69,17 +71,17 @@ namespace Microsoft.Maui
 		/// <param name="rectangle">The rectangle.</param>
 		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rectangle rectangle, bool useNativeViewBounds = true) 
-			=> GetVisualTreeElementsInternal(visualElement, 
-				new List<Point> 
-				{ 
-					new Point(rectangle.X, rectangle.Y), 
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rectangle rectangle, bool useNativeViewBounds = true) =>
+			GetVisualTreeElementsInternal(
+				visualElement,
+				new List<Point>
+				{
+					new Point(rectangle.X, rectangle.Y),
 					new Point(rectangle.X + rectangle.Width, rectangle.Y + rectangle.Height),
 					new Point(rectangle.X + rectangle.Width, rectangle.Y),
 					new Point(rectangle.X, rectangle.Y + rectangle.Height)
-				}
-				, useNativeViewBounds);
-
+				},
+				useNativeViewBounds);
 
 		/// <summary>
 		/// Gets list of a Visual Tree Elements children based off of a given x, y point.
@@ -89,28 +91,25 @@ namespace Microsoft.Maui
 		/// <param name="y">The Y point.</param>
 		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x, double y, bool useNativeViewBounds = true) => GetVisualTreeElements(visualElement, new Point(x, y), useNativeViewBounds);
-#if WINDOWS
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x, double y, bool useNativeViewBounds = true) =>
+			GetVisualTreeElements(visualElement, new Point(x, y), useNativeViewBounds);
+
 		/// <summary>
-		/// Gets list of a Visual Tree Elements children based off of a given Point.
+		/// Gets list of a Visual Tree Element's children based off of a given Point.
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <param name="point"><see cref="Point"/>.</param>
-		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Elements Frame.</param>
+		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Element's Frame.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Point point, bool useNativeViewBounds = true) => GetVisualTreeElementsWindowsInternal(visualElement, new List<Point>() { point }, useNativeViewBounds);
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Point point, bool useNativeViewBounds = true) =>
+#if WINDOWS
+			GetVisualTreeElementsWindowsInternal(visualElement, new List<Point>() { point }, useNativeViewBounds);
 #else
-		/// <summary>
-		/// Gets list of a Visual Tree Elements children based off of a given Point.
-		/// </summary>
-		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
-		/// <param name="point"><see cref="Point"/>.</param>
-		/// <param name="useNativeViewBounds">If else, use native view bounds for given elements. Else, use the Elements Frame.</param>
-		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Point point, bool useNativeViewBounds = true) => GetVisualTreeElementsInternal(visualElement, new List<Point>() { point }, useNativeViewBounds);
+			GetVisualTreeElementsInternal(visualElement, new List<Point>() { point }, useNativeViewBounds);
 #endif
+
 #if WINDOWS
-		private static IList<IVisualTreeElement> GetVisualTreeElementsWindowsInternal(IVisualTreeElement visualElement, IList<Point> points, bool useNativeViewBounds = true)
+		static IList<IVisualTreeElement> GetVisualTreeElementsWindowsInternal(IVisualTreeElement visualElement, IList<Point> points, bool useNativeViewBounds = true)
 		{
 			if (!useNativeViewBounds)
 			{
@@ -137,7 +136,7 @@ namespace Microsoft.Maui
 				}
 
 				var uniqueElements = uiElements.Distinct();
-				var viewTree = visualElement.GetEntireVisualTreeElementChildren().Where(n => n is IView).Select(n => new Tuple<IView, object?>((IView)n, ((IView)n).GetNative(true)));
+				var viewTree = visualElement.GetVisualTreeDescendants().Where(n => n is IView).Select(n => new Tuple<IView, object?>((IView)n, ((IView)n).GetNative(true)));
 				var testList = viewTree.Where(n => uniqueElements.Contains(n.Item2)).Select(n => n.Item1);
 				if (testList != null && testList.Any())
 					visualElements.AddRange(testList.Select(n => (IVisualTreeElement)n));
@@ -148,7 +147,7 @@ namespace Microsoft.Maui
 		}
 #endif
 
-		private static IList<IVisualTreeElement> GetVisualTreeElementsInternal(IVisualTreeElement visualElement, IList<Point> points, bool useNativeViewBounds = true, IList<IVisualTreeElement>? elements = null)
+		static IList<IVisualTreeElement> GetVisualTreeElementsInternal(IVisualTreeElement visualElement, IList<Point> points, bool useNativeViewBounds = true, IList<IVisualTreeElement>? elements = null)
 		{
 			if (elements == null)
 				elements = new List<IVisualTreeElement>();
@@ -174,7 +173,6 @@ namespace Microsoft.Maui
 				GetVisualTreeElementsInternal(child, points, useNativeViewBounds, elements);
 			}
 
-			
 			return elements.Reverse().ToList();
 		}
 	}

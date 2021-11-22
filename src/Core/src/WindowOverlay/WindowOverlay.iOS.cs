@@ -11,21 +11,13 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public partial class WindowOverlay : IWindowOverlay, IDrawable
+	public partial class WindowOverlay
 	{
-		private bool disableUITouchEventPassthrough;
-		private PassthroughView? _passthroughView;
-		private IDisposable? _frameObserver;
-		private NativeGraphicsView? _graphicsView;
+		PassthroughView? _passthroughView;
+		IDisposable? _frameObserver;
+		NativeGraphicsView? _graphicsView;
 
-		public bool DisableUITouchEventPassthrough
-		{
-			get { return disableUITouchEventPassthrough; }
-			set
-			{
-				disableUITouchEventPassthrough = value;
-			}
-		}
+		public bool DisableUITouchEventPassthrough { get; set; }
 
 		public virtual bool Initialize()
 		{
@@ -82,63 +74,64 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		private void DeinitializeNativeDependencies()
+		void DeinitializeNativeDependencies()
 		{
 			_frameObserver?.Dispose();
 			_passthroughView?.Dispose();
 			IsNativeViewInitialized = false;
 		}
 
-		private void UIViewOnTouch(object? sender, CGPoint e) => OnTouchInternal(new Point(e.X, e.Y));
+		void UIViewOnTouch(object? sender, CGPoint e) => OnTouchInternal(new Point(e.X, e.Y));
 
-		private void FrameAction(Foundation.NSObservedChange obj)
+		void FrameAction(Foundation.NSObservedChange obj)
 		{
 			HandleUIChange();
 			Invalidate();
 		}
-	}
 
-	internal class PassthroughView : UIView
-	{
-		/// <summary>
-		/// Event Handler for handling on touch events on the Passthrough View.
-		/// </summary>
-		public event EventHandler<CGPoint>? OnTouch;
-
-		WindowOverlay overlay;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PassthroughView"/> class.
-		/// </summary>
-		/// <param name="overlay">The Window Overlay.</param>
-		/// <param name="frame">Base Frame.</param>
-		public PassthroughView(WindowOverlay windowOverlay, CGRect frame) : base(frame)
+		class PassthroughView : UIView
 		{
-			overlay = windowOverlay;
-		}
+			/// <summary>
+			/// Event Handler for handling on touch events on the Passthrough View.
+			/// </summary>
+			public event EventHandler<CGPoint>? OnTouch;
 
-		public override bool PointInside(CGPoint point, UIEvent? uievent)
-		{
-			// If we don't have a UI event, return.
-			if (uievent == null)
-				return false;
+			WindowOverlay overlay;
 
-			if (uievent.Type == UIEventType.Hover)
-				return false;
+			/// <summary>
+			/// Initializes a new instance of the <see cref="PassthroughView"/> class.
+			/// </summary>
+			/// <param name="overlay">The Window Overlay.</param>
+			/// <param name="frame">Base Frame.</param>
+			public PassthroughView(WindowOverlay windowOverlay, CGRect frame)
+				: base(frame)
+			{
+				overlay = windowOverlay;
+			}
 
-			// If we are not pressing down, return.
-			if (uievent.Type != UIEventType.Touches)
-				return false;
+			public override bool PointInside(CGPoint point, UIEvent? uievent)
+			{
+				// If we don't have a UI event, return.
+				if (uievent == null)
+					return false;
 
-			var disableTouchEvent = false;
+				if (uievent.Type == UIEventType.Hover)
+					return false;
 
-			if (overlay.DisableUITouchEventPassthrough)
-				disableTouchEvent = true;
-			else if (overlay.EnableDrawableTouchHandling)
-				disableTouchEvent = overlay.WindowElements.Any(n => n.IsPointInElement(new Point(point.X, point.Y)));
+				// If we are not pressing down, return.
+				if (uievent.Type != UIEventType.Touches)
+					return false;
 
-			OnTouch?.Invoke(this, point);
-			return disableTouchEvent;
+				var disableTouchEvent = false;
+
+				if (overlay.DisableUITouchEventPassthrough)
+					disableTouchEvent = true;
+				else if (overlay.EnableDrawableTouchHandling)
+					disableTouchEvent = overlay.WindowElements.Any(n => n.Contains(new Point(point.X, point.Y)));
+
+				OnTouch?.Invoke(this, point);
+				return disableTouchEvent;
+			}
 		}
 	}
 }

@@ -17,13 +17,13 @@ namespace Maui.Controls.Sample
 		public TestWindowOverlay(IWindow window) 
 			: base(window)
 		{
-			this.testWindowDrawable = new TestWindowDrawable(this);
-			this.AddWindowElement(testWindowDrawable);
-			this.EnableDrawableTouchHandling = true;
-			this.OnTouch += TestWindowOverlay_OnTouch;
+			testWindowDrawable = new TestWindowDrawable(this);
+			AddWindowElement(testWindowDrawable);
+			EnableDrawableTouchHandling = true;
+			Tapped += OnTapped;
 		}
 
-		private async void TestWindowOverlay_OnTouch(object sender, VisualDiagnosticsHitEvent e)
+		async void OnTapped(object sender, VisualDiagnosticsTappedEventArgs e)
 		{
 			if (e.WindowOverlayElements.Contains(testWindowDrawable))
 			{
@@ -56,7 +56,7 @@ namespace Maui.Controls.Sample
 			canvas.DrawString($"🔥", centerX, centerY + 10, HorizontalAlignment.Center);
 		}
 
-		public bool IsPointInElement(Point point)
+		public bool Contains(Point point)
 		{
 			return Circle.ContainsPoint(_circle, new Point(point.X / this.overlay.Density, point.Y / this.overlay.Density));
 		}

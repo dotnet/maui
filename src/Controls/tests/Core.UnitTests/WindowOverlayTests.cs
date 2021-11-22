@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 		}
 
-		public bool IsPointInElement(Point point)
+		public bool Contains(Point point)
 		{
 			return false;
 		}

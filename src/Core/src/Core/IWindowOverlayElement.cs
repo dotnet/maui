@@ -12,6 +12,6 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="point">The point to check.</param>
 		/// <returns>Boolean if the point is contained within the element.</returns>
-		bool IsPointInElement(Point point);
+		bool Contains(Point point);
 	}
 }

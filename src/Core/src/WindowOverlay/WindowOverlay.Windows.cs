@@ -12,7 +12,7 @@ using Windows.UI.Core;
 
 namespace Microsoft.Maui
 {
-	public partial class WindowOverlay : IWindowOverlay
+	public partial class WindowOverlay
 	{
 		private W2DGraphicsView? _graphicsView;
 		private bool disableUITouchEventPassthrough;
@@ -82,7 +82,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		private void DeinitializeNativeDependencies()
+		void DeinitializeNativeDependencies()
 		{
 			if (_frame != null)
 				_frame.Navigating -= FrameNavigating;
@@ -102,7 +102,7 @@ namespace Microsoft.Maui
 			IsNativeViewInitialized = false;
 		}
 
-		private void PointerMoved(object sender, UI.Xaml.Input.PointerRoutedEventArgs e)
+		void PointerMoved(object sender, UI.Xaml.Input.PointerRoutedEventArgs e)
 		{
 			if (!EnableDrawableTouchHandling)
 				return;
@@ -117,16 +117,16 @@ namespace Microsoft.Maui
 			if (pointerPoint == null)
 				return;
 
-			this._graphicsView.IsHitTestVisible = _windowElements.Any(n => n.IsPointInElement(new Point(pointerPoint.Position.X, pointerPoint.Position.Y)));
+			this._graphicsView.IsHitTestVisible = _windowElements.Any(n => n.Contains(new Point(pointerPoint.Position.X, pointerPoint.Position.Y)));
 		}
 
-		private void FrameNavigating(object sender, UI.Xaml.Navigation.NavigatingCancelEventArgs e)
+		void FrameNavigating(object sender, UI.Xaml.Navigation.NavigatingCancelEventArgs e)
 		{
 			HandleUIChange();
 			Invalidate();
 		}
 
-		private void ViewTapped(object sender, UI.Xaml.Input.TappedRoutedEventArgs e)
+		void ViewTapped(object sender, UI.Xaml.Input.TappedRoutedEventArgs e)
 		{
 			if (e == null)
 				return;
@@ -136,7 +136,7 @@ namespace Microsoft.Maui
 			if (DisableUITouchEventPassthrough)
 				e.Handled = true;
 			else if (EnableDrawableTouchHandling)
-				e.Handled = _windowElements.Any(n => n.IsPointInElement(point));
+				e.Handled = _windowElements.Any(n => n.Contains(point));
 
 			OnTouchInternal(point);
 		}
