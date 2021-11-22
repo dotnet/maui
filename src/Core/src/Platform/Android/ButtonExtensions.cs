@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Content.Res;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
@@ -10,6 +11,22 @@ namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
+		public static void UpdateStrokeColor(this MaterialButton nativeButton, IButtonStroke buttonStroke)
+		{
+			if (buttonStroke.StrokeColor != null)
+				nativeButton.StrokeColor = buttonStroke.StrokeColor.ToAndroidPreserveDisabled(nativeButton.StrokeColor);
+		}
+
+		public static void UpdateStrokeThickness(this MaterialButton nativeButton, IButtonStroke buttonStroke)
+		{
+			nativeButton.StrokeWidth = (int)(buttonStroke.StrokeThickness * (nativeButton?.Resources?.DisplayMetrics?.Density ?? 1));
+		}
+
+		public static void UpdateCornerRadius(this MaterialButton nativeButton, IButtonStroke buttonStroke)
+		{
+			nativeButton.CornerRadius = buttonStroke.CornerRadius;
+		}
+
 		public static void UpdatePadding(this AppCompatButton appCompatButton, IButton button, Thickness? defaultPadding = null)
 		{
 			var context = appCompatButton.Context;
