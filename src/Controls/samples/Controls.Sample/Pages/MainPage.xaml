@@ -51,7 +51,7 @@
     </views:BasePage.Resources>
     <ScrollView>
         <Grid
-            RowDefinitions="150,*,Auto"
+            RowDefinitions="150, *, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
@@ -63,7 +63,6 @@
                 Grid.Row="0"
                 RowDefinitions="Auto,*">
                 <Label
-                    x:Name="MauiTextLabel"
                     Text=".NET MAUI"
                     Style="{StaticResource TitleStyle}"/>
                 <Label
