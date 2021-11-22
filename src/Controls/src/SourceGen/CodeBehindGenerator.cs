@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				if (namedFields != null)
 					foreach ((var fname, _, _) in namedFields)
 					{
-						sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof(this.{(CSharpKeywords.Contains(fname) ? "@" + fname : fname)}))]");
+						sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({(CSharpKeywords.Contains(fname) ? "@" + fname : fname)}))]");
 					}
 
 				sb.AppendLine("\t\tprivate void InitializeComponent()");
