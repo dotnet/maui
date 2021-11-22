@@ -5,8 +5,6 @@ namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
-		static float DefaultCornerRadius = 5;
-
 		public static void UpdateStrokeColor(this UIButton nativeButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.StrokeColor != null)
@@ -15,17 +13,14 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeThickness(this UIButton nativeButton, IButtonStroke buttonStroke)
 		{
-			nativeButton.Layer.BorderWidth = Math.Max(0f, (float)buttonStroke.StrokeThickness);
+			if (buttonStroke.StrokeThickness >= 0)
+				nativeButton.Layer.BorderWidth = (float)buttonStroke.StrokeThickness;
 		}
 
 		public static void UpdateCornerRadius(this UIButton nativeButton, IButtonStroke buttonStroke)
 		{
-			var cornerRadius = DefaultCornerRadius;
-
-			if (cornerRadius != buttonStroke.CornerRadius)
-				cornerRadius = buttonStroke.CornerRadius;
-
-			nativeButton.Layer.CornerRadius = cornerRadius;
+			if (buttonStroke.CornerRadius >= 0)
+				nativeButton.Layer.CornerRadius = buttonStroke.CornerRadius;
 		}
 
 		public static void UpdateText(this UIButton nativeButton, IText button) =>

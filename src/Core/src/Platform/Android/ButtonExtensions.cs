@@ -19,12 +19,14 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeThickness(this MaterialButton nativeButton, IButtonStroke buttonStroke)
 		{
-			nativeButton.StrokeWidth = (int)(buttonStroke.StrokeThickness * (nativeButton?.Resources?.DisplayMetrics?.Density ?? 1));
+			if (buttonStroke.StrokeThickness >= 0)
+				nativeButton.StrokeWidth = (int)(buttonStroke.StrokeThickness * (nativeButton?.Resources?.DisplayMetrics?.Density ?? 1));
 		}
 
 		public static void UpdateCornerRadius(this MaterialButton nativeButton, IButtonStroke buttonStroke)
 		{
-			nativeButton.CornerRadius = buttonStroke.CornerRadius;
+			if (nativeButton.CornerRadius >= 0)
+				nativeButton.CornerRadius = buttonStroke.CornerRadius;
 		}
 
 		public static void UpdatePadding(this AppCompatButton appCompatButton, IButton button, Thickness? defaultPadding = null)
