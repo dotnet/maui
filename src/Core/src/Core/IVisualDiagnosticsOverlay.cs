@@ -81,6 +81,6 @@ namespace Microsoft.Maui
 		/// Gets the Scroll Views in a given window, to be handled by the layer for
 		/// when they scroll to update the underlying adorners.
 		/// </summary>
-		IReadOnlyList<IScrollView> ScrollViews { get; }
+		IReadOnlyCollection<IScrollView> ScrollViews { get; }
 	}
 }

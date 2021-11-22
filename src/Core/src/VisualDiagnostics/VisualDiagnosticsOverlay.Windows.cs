@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
+﻿using System.Collections.Generic;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
@@ -12,10 +8,7 @@ namespace Microsoft.Maui
 	/// </summary>
 	public partial class VisualDiagnosticsOverlay
 	{
-		Dictionary<IScrollView, ScrollViewer> _scrollViews = new Dictionary<IScrollView, ScrollViewer>();
-
-		/// <inheritdoc/>
-		public IReadOnlyDictionary<IScrollView, ScrollViewer> ScrollViews => this._scrollViews;
+		readonly Dictionary<IScrollView, ScrollViewer> _scrollViews = new();
 
 		/// <inheritdoc/>
 		public void AddScrollableElementHandler(IScrollView scrollBar)
@@ -23,10 +16,10 @@ namespace Microsoft.Maui
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
 			{
-				if (!this._scrollViews.ContainsKey(scrollBar))
+				if (!_scrollViews.ContainsKey(scrollBar))
 				{
-					this._scrollViews.Add(scrollBar, viewer);
-					viewer.ViewChanging += ViewerViewChanging;
+					_scrollViews.Add(scrollBar, viewer);
+					viewer.ViewChanging += OnViewChanging;
 				}
 			}
 		}
@@ -34,24 +27,25 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach (var scrollBar in this.ScrollViews.Values)
+			foreach (var scrollBar in _scrollViews.Values)
 			{
-				scrollBar.ViewChanging -= ViewerViewChanging;
+				scrollBar.ViewChanging -= OnViewChanging;
 			}
 
-			this._scrollViews.Clear();
+			_scrollViews.Clear();
 		}
 
 		public override void HandleUIChange()
 		{
 			base.HandleUIChange();
-			if (this._windowElements.Any())
-				this.RemoveAdorners();
+
+			if (WindowElements.Count > 0)
+				RemoveAdorners();
 		}
 
-		private void ViewerViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
+		void OnViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
 		{
-			this.Invalidate();
+			Invalidate();
 		}
 	}
 }

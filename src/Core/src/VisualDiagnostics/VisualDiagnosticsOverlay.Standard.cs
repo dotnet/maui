@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Maui.Graphics;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.Maui
 {
 	public partial class VisualDiagnosticsOverlay
 	{
-		/// <inheritdoc/>
-		public IReadOnlyList<object> ScrollViews { get; } = new List<IScrollView>();
+		readonly Dictionary<IScrollView, object> _scrollViews = new();
 
 		/// <inheritdoc/>
 		public void AddScrollableElementHandler(IScrollView scrollBar)

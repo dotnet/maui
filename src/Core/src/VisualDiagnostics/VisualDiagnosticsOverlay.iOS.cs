@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.CoreGraphics;
-using Microsoft.Maui.Graphics.Native;
-using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -15,43 +9,42 @@ namespace Microsoft.Maui
 	/// </summary>
 	public partial class VisualDiagnosticsOverlay
 	{
-		Dictionary<IScrollView, IDisposable> _scrollViews = new Dictionary<IScrollView, IDisposable>();
+		const string ScrollViewContentOffsetKey = "contentOffset";
 
-		/// <inheritdoc/>
-		public IReadOnlyDictionary<IScrollView, IDisposable> ScrollViews => this._scrollViews;
+		readonly Dictionary<IScrollView, IDisposable> _scrollViews = new();
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null)
 			{
-				var dispose = nativeScroll.AddObserver("contentOffset", Foundation.NSKeyValueObservingOptions.New, FrameAction);
-				this._scrollViews.Add(scrollBar, dispose);
+				var dispose = nativeScroll.AddObserver(ScrollViewContentOffsetKey, NSKeyValueObservingOptions.New, FrameAction);
+				_scrollViews.Add(scrollBar, dispose);
 			}
 		}
 
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach (var scroll in this._scrollViews.Values)
+			foreach (var scroll in _scrollViews.Values)
 			{
 				scroll.Dispose();
 			}
 
-			this._scrollViews.Clear();
+			_scrollViews.Clear();
 		}
 
 		void ScrollScrolled(object? sender, EventArgs e)
 		{
-			this.Invalidate();
+			Invalidate();
 		}
 
 		void FrameAction(Foundation.NSObservedChange obj)
 		{
-			if (this._windowElements.Any())
-				this.RemoveAdorners();
+			if (WindowElements.Count > 0)
+				RemoveAdorners();
 
-			this.Invalidate();
+			Invalidate();
 		}
 	}
 }

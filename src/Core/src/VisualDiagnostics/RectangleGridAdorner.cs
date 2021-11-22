@@ -7,6 +7,8 @@ namespace Microsoft.Maui
 	/// </summary>
 	public class RectangleGridAdorner : RectangleAdorner
 	{
+		const int LineMaxLength = 10000;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RectangleGridAdorner"/> class.
 		/// </summary>
@@ -21,23 +23,19 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public override bool Contains(Point point)
-		{
-			return this.DrawnRectangle.Contains(point);
-		}
-
-		/// <inheritdoc/>
 		public override void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
 			base.Draw(canvas, dirtyRect);
-			var y = this.DrawnRectangle.Y;
-			var x = this.DrawnRectangle.X;
-			var width = this.DrawnRectangle.Width;
-			var height = this.DrawnRectangle.Height;
-			canvas.DrawLine(0, (float)y, (float)10000, (float)y);
-			canvas.DrawLine(0, (float)(y + height), (float)10000, (float)(y + height));
-			canvas.DrawLine((float)x, 0, (float)x, (float)10000);
-			canvas.DrawLine((float)(x + width), 0, (float)(x + width), (float)10000);
+
+			var y = (float)DrawnBounds.Y;
+			var x = (float)DrawnBounds.X;
+			var width = (float)DrawnBounds.Width;
+			var height = (float)DrawnBounds.Height;
+
+			canvas.DrawLine(0, y, LineMaxLength, y);
+			canvas.DrawLine(0, y + height, LineMaxLength, y + height);
+			canvas.DrawLine(x, 0, x, LineMaxLength);
+			canvas.DrawLine(x + width, 0, x + width, LineMaxLength);
 		}
 	}
 }

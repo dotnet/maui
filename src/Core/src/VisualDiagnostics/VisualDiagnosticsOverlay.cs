@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
@@ -21,18 +20,21 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
+		public IReadOnlyCollection<IScrollView> ScrollViews => _scrollViews.Keys;
+
+		/// <inheritdoc/>
 		public bool AutoScrollToElement { get; set; }
 
 		/// <inheritdoc/>
 		public bool EnableElementSelector
 		{
-			get { return _enableElementSelector; }
+			get => _enableElementSelector;
 			set
 			{
 				_enableElementSelector = value;
 				DisableUITouchEventPassthrough = value;
-				// If we enable the element picker,
-				// make sure the view itself is enabled and visible.
+
+				// If we enable the element picker, make sure the view itself is enabled and visible.
 				if (value)
 					IsVisible = true;
 			}
@@ -46,7 +48,7 @@ namespace Microsoft.Maui
 			var scrollBars = GetScrollViews();
 			foreach (var scrollBar in scrollBars)
 			{
-				if (!ScrollViews.ContainsKey(scrollBar))
+				if (!ScrollViews.Contains(scrollBar))
 				{
 					AddScrollableElementHandler(scrollBar);
 				}
@@ -60,7 +62,7 @@ namespace Microsoft.Maui
 				throw new ArgumentNullException(nameof(adorner));
 
 			AddScrollableElementHandlers();
-			var result = _windowElements.Add(adorner);
+			var result = base.AddWindowElement(adorner);
 
 			if (AutoScrollToElement || scrollToView)
 				ScrollToView((IVisualTreeElement)adorner.VisualView);
@@ -78,10 +80,13 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			if (_windowElements.OfType<IAdorner>().Any(n => n.VisualView == view))
-				return false;
+			foreach (var element in WindowElements)
+			{
+				if (element is IAdorner adorner && adorner.VisualView == view)
+					return false;
+			}
 
-			var result = _windowElements.Add(new RectangleGridAdorner(view, Density, Offset));
+			var result = base.AddWindowElement(new RectangleGridAdorner(view, Density, Offset));
 			AddScrollableElementHandlers();
 
 			if (AutoScrollToElement || scrollToView)
@@ -97,19 +102,19 @@ namespace Microsoft.Maui
 			if (adorner == null)
 				throw new ArgumentNullException(nameof(adorner));
 
-			var results = _windowElements.RemoveWhere(n => n == adorner);
-			if (!_windowElements.Any())
+			var result = base.RemoveWindowElement(adorner);
+			if (WindowElements.Count == 0)
 				RemoveScrollableElementHandler();
+
 			Invalidate();
-			return results > 0;
+			return result;
 		}
 
 		/// <inheritdoc/>
 		public void RemoveAdorners()
 		{
 			RemoveScrollableElementHandler();
-			_windowElements.Clear();
-			Invalidate();
+			base.RemoveWindowElements();
 		}
 
 		/// <inheritdoc/>
@@ -121,10 +126,16 @@ namespace Microsoft.Maui
 			if (visualElement is not IView view)
 				return false;
 
-			var adorners = _windowElements.OfType<IAdorner>().Where(n => n.VisualView == view);
-			var results = _windowElements.RemoveWhere(n => adorners.Contains(n));
+			// make a copy because we will edit
+			var removed = false;
+			foreach (var element in WindowElements.ToList())
+			{
+				if (element is IAdorner adorner && adorner.VisualView == view)
+					removed = base.RemoveWindowElement(element) || removed;
+			}
+
 			Invalidate();
-			return results > 0;
+			return removed;
 		}
 
 		/// <inheritdoc/>
@@ -146,6 +157,7 @@ namespace Microsoft.Maui
 		{
 			if (drawable is not IAdorner adorner)
 				return false;
+
 			return AddAdorner(adorner, AutoScrollToElement);
 		}
 
@@ -154,43 +166,48 @@ namespace Microsoft.Maui
 		{
 			if (drawable is not IAdorner adorner)
 				return false;
+
 			return RemoveAdorner(adorner);
 		}
 
 		/// <inheritdoc/>
-		public override void RemoveWindowElements() => RemoveAdorners();
+		public override void RemoveWindowElements() =>
+			RemoveAdorners();
 
 		public override bool Deinitialize()
 		{
 			RemoveScrollableElementHandler();
+
 			Tapped -= VisualDiagnosticsOverlayOnTapped;
+
 			return base.Deinitialize();
 		}
 
-		/// <summary>
-		/// Gets the list of <see cref="IScrollView"/>, if any are in the visual element tree.
-		/// </summary>
-		/// <returns>List of IScrollView.</returns>
-		internal List<IScrollView> GetScrollViews ()
+		IList<IScrollView> GetScrollViews()
 		{
 			if (Window == null)
 				return new List<IScrollView>();
-			var content = Window.Content as IVisualTreeElement;
-			if (content == null)
+
+			if (Window.Content is not IVisualTreeElement content)
 				return new List<IScrollView>();
 
-			return content.GetVisualTreeDescendants().Where(n => n is IScrollView).Cast<IScrollView>().ToList();
+			return content.GetVisualTreeDescendants()
+				.OfType<IScrollView>()
+				.ToList();
 		}
 
 		IScrollView? GetParentScrollView(IVisualTreeElement element)
 		{
-			if (element is IScrollView scrollView)
-				return scrollView;
 			if (element == null)
 				return null;
+
+			if (element is IScrollView scrollView)
+				return scrollView;
+
 			var parent = element.GetVisualParent();
 			if (parent != null)
 				return GetParentScrollView(parent);
+
 			return null;
 		}
 
@@ -200,6 +217,7 @@ namespace Microsoft.Maui
 				return;
 
 			RemoveAdorners();
+
 			if (e.VisualTreeElements.Any())
 				AddAdorner(e.VisualTreeElements.First());
 		}

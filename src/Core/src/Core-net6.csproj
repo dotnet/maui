@@ -8,6 +8,11 @@
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup>
+    <Compile Remove="VisualDiagnostics\Extensions\**" />
+    <EmbeddedResource Remove="VisualDiagnostics\Extensions\**" />
+    <None Remove="VisualDiagnostics\Extensions\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.targets" Visible="False" Pack="True" PackagePath="build;buildTransitive" />
     <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.props" Visible="False" Pack="True" PackagePath="build;buildTransitive" />
   </ItemGroup>
@@ -26,8 +31,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials-net6.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="VisualDiagnostics\Extensions\" />
   </ItemGroup>
 </Project>

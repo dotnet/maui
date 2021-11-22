@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using Android.App;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
@@ -17,9 +14,6 @@ namespace Microsoft.Maui
 		NativeGraphicsView? _graphicsView;
 		ViewGroup? _nativeLayer;
 
-		/// <inheritdoc/>
-		public bool DisableUITouchEventPassthrough { get; set; }
-
 		public virtual bool Initialize()
 		{
 			if (IsNativeViewInitialized)
@@ -31,7 +25,7 @@ namespace Microsoft.Maui
 			var nativeWindow = Window.Content.GetNative(true);
 			if (nativeWindow == null)
 				return false;
-			
+
 			var handler = Window.Handler as WindowHandler;
 			if (handler == null || handler.MauiContext == null)
 				return false;
@@ -67,6 +61,7 @@ namespace Microsoft.Maui
 			_graphicsView.Touch += TouchLayer_Touch;
 			_nativeLayer.AddView(_graphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
 			_graphicsView.BringToFront();
+
 			IsNativeViewInitialized = true;
 			return IsNativeViewInitialized;
 		}
@@ -109,7 +104,7 @@ namespace Microsoft.Maui
 			else if (EnableDrawableTouchHandling)
 				e.Handled = _windowElements.Any(n => n.Contains(point));
 
-			OnTouchInternal(point);
+			OnTappedInternal(point);
 		}
 
 		void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)

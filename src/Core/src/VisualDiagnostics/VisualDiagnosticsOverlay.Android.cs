@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Android.App;
 using Android.Views;
-using AndroidX.CoordinatorLayout.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
 
@@ -14,17 +11,14 @@ namespace Microsoft.Maui
 	/// </summary>
 	public partial class VisualDiagnosticsOverlay
 	{
-		Dictionary<IScrollView, Android.Views.View> _scrollViews = new Dictionary<IScrollView, Android.Views.View>();
-
-		/// <inheritdoc/>
-		public IReadOnlyDictionary<IScrollView, Android.Views.View> ScrollViews => _scrollViews;
+		readonly Dictionary<IScrollView, View> _scrollViews = new();
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.GetNative(true);
 			if (nativeScroll != null)
 			{
-				nativeScroll.ScrollChange += ScrollChange;
+				nativeScroll.ScrollChange += OnScrollChange;
 				_scrollViews.Add(scrollBar, nativeScroll);
 			}
 		}
@@ -32,10 +26,10 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void RemoveScrollableElementHandler()
 		{
-			foreach (var scrollBar in ScrollViews.Values)
+			foreach (var scrollBar in _scrollViews.Values)
 			{
 				if (!scrollBar.IsDisposed())
-					scrollBar.ScrollChange -= ScrollChange;
+					scrollBar.ScrollChange -= OnScrollChange;
 			}
 
 			_scrollViews.Clear();
@@ -44,14 +38,15 @@ namespace Microsoft.Maui
 		public override void HandleUIChange()
 		{
 			base.HandleUIChange();
-			if (_windowElements.Any())
+
+			if (WindowElements.Count > 0)
 				RemoveAdorners();
 
-			if (_graphicsView != null && _nativeActivity != null)
-				Offset = GenerateAdornerOffset(_nativeActivity, _graphicsView);
+			if (GraphicsView != null)
+				Offset = GenerateAdornerOffset(GraphicsView);
 		}
 
-		private void ScrollChange(object? sender, View.ScrollChangeEventArgs e)
+		void OnScrollChange(object? sender, View.ScrollChangeEventArgs e)
 		{
 			Invalidate();
 		}
@@ -59,15 +54,14 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Generates the Adorner Offset.
 		/// </summary>
-		/// <param name="nativeActivity">Android Activity, <see cref="Activity"/>.</param>
 		/// <param name="graphicsView"><see cref="NativeGraphicsView"/>.</param>
 		/// <returns>Offset Rectangle.</returns>
-		private Point GenerateAdornerOffset(Activity nativeActivity, NativeGraphicsView graphicsView)
+		Point GenerateAdornerOffset(View graphicsView)
 		{
-			if (nativeActivity.Resources == null || nativeActivity.Resources.DisplayMetrics == null)
+			if (graphicsView == null || graphicsView.Context?.GetActivity() is not Activity nativeActivity)
 				return new Point();
 
-			if (graphicsView == null)
+			if (nativeActivity.Resources == null || nativeActivity.Resources.DisplayMetrics == null)
 				return new Point();
 
 			float dpi = nativeActivity.Resources.DisplayMetrics.Density;

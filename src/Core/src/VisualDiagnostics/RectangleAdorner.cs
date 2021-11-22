@@ -1,53 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Rectangle Adorner.
 	/// </summary>
-	public class RectangleAdorner : adorner
+	public class RectangleAdorner : IAdorner
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RectangleAdorner"/> class.
 		/// </summary>
-		/// <param name="view">An <see cref="IView"/> to create the Adorner around.</param>
+		/// <param name="view">An <see cref="IView"/> to create the adorner around.</param>
 		/// <param name="density">Override density setting. Default: 1</param>
 		/// <param name="offset">Offset point used for positioning drawable object. Default: null</param>
 		/// <param name="fillColor">Canvas Fill Color.</param>
 		/// <param name="strokeColor">Canvas Stroke Color.</param>
 		public RectangleAdorner(IView view, float density = 1, Point? offset = null, Color? fillColor = null, Color? strokeColor = null)
-			: base(view, density, offset, fillColor, strokeColor)
 		{
+			FillColor = fillColor ?? Color.FromRgba(225, 0, 0, 125);
+			StrokeColor = strokeColor ?? Color.FromRgba(225, 0, 0, 125);
+			Offset = offset ?? Point.Zero;
+			VisualView = view;
+			Density = density;
+			DrawnBounds = Rectangle.Zero;
 		}
 
 		/// <inheritdoc/>
-		public override bool Contains(Point point)
-		{
-			return DrawnRectangle.Contains(point);
-		}
+		public float Density { get; }
 
 		/// <inheritdoc/>
-		public override void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public IView VisualView { get; }
+
+		public Point Offset { get; }
+
+		public Color FillColor { get; }
+
+		public Color StrokeColor { get; }
+
+		public Rectangle DrawnBounds { get; private set; }
+
+		/// <inheritdoc/>
+		public virtual bool Contains(Point point) =>
+			DrawnBounds.Contains(point);
+
+		/// <inheritdoc/>
+		public virtual void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
-			base.Draw(canvas, dirtyRect);
-			
+			canvas.FillColor = FillColor;
+			canvas.StrokeColor = StrokeColor;
+
 			var boundingBox = VisualView.GetBoundingBox();
-			var x = (boundingBox.X / Density) + (Offset.X);
-			var y = (boundingBox.Y / Density) + (Offset.Y);
-			var width = ((boundingBox.Width) / Density);
-			var height = ((boundingBox.Height) / Density);
-			DrawnRectangle = new Rectangle(x, y, width, height);
-			canvas.FillRectangle(DrawnRectangle);
-		}
+			var x = (boundingBox.X / Density) + Offset.X;
+			var y = (boundingBox.Y / Density) + Offset.Y;
+			var width = boundingBox.Width / Density;
+			var height = boundingBox.Height / Density;
 
-		/// <summary>
-		/// Gets or sets the rectangle drawn by the 
-		/// </summary>
-		internal Rectangle DrawnRectangle { get; private set; } = new Rectangle();
+			DrawnBounds = new Rectangle(x, y, width, height);
+
+			canvas.FillRectangle(DrawnBounds);
+		}
 	}
 }

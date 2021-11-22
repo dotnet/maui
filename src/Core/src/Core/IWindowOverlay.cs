@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Graphics;
 
-#if ANDROID || IOS
-using Microsoft.Maui.Graphics.Native;
-#endif
-
 namespace Microsoft.Maui
 {
 	public interface IWindowOverlay : IDrawable

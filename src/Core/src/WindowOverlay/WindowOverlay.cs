@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Maui.Graphics;
+
+#if __IOS__ || MACCATALYST
+using NativeView = UIKit.UIView;
+#elif __ANDROID__
+using NativeView = Android.Views.View;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD
+using NativeView = System.Object;
+#endif
 
 namespace Microsoft.Maui
 {
 	public partial class WindowOverlay : IWindowOverlay, IDrawable
 	{
 		readonly HashSet<IWindowOverlayElement> _windowElements = new();
-
-		bool isVisible = true;
+		bool _isVisible = true;
+		private bool _disableUITouchEventPassthrough;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="WindowOverlay"/> class.
@@ -22,13 +31,27 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public IWindow Window { get; internal set; }
+		public IWindow Window { get; }
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<IWindowOverlayElement> WindowElements => _windowElements.ToList().AsReadOnly();
+		public IReadOnlyCollection<IWindowOverlayElement> WindowElements => _windowElements;
 
 		/// <inheritdoc/>
-		public bool IsNativeViewInitialized { get; internal set; }
+		public NativeView? GraphicsView => _graphicsView;
+
+		/// <inheritdoc/>
+		public bool IsNativeViewInitialized { get; private set; }
+
+		/// <inheritdoc/>
+		public bool DisableUITouchEventPassthrough
+		{
+			get => _disableUITouchEventPassthrough;
+			set
+			{
+				_disableUITouchEventPassthrough = value;
+				OnDisableUITouchEventPassthroughSet();
+			}
+		}
 
 		/// <inheritdoc/>
 		public bool EnableDrawableTouchHandling { get; set; }
@@ -36,10 +59,10 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public bool IsVisible
 		{
-			get { return isVisible; }
+			get => _isVisible;
 			set
 			{
-				isVisible = value;
+				_isVisible = value;
 				if (IsNativeViewInitialized)
 					Invalidate();
 			}
@@ -48,10 +71,8 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public float Density { get; internal set; } = 1;
 
-#pragma warning disable CS0067 // The event is never used
 		/// <inheritdoc/>
 		public event EventHandler<WindowOverlayTappedEventArgs>? Tapped;
-#pragma warning restore CS0067
 
 		/// <inheritdoc/>
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
@@ -103,10 +124,10 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Handles <see cref="OnTouch"/> event.
+		/// Handles <see cref="Tapped"/> event.
 		/// </summary>
 		/// <param name="point">Point where user has touched.</param>
-		internal void OnTouchInternal(Point point)
+		void OnTappedInternal(Point point)
 		{
 			var elements = new List<IVisualTreeElement>();
 			var windowElements = new List<IWindowOverlayElement>();
@@ -125,5 +146,7 @@ namespace Microsoft.Maui
 
 			Tapped?.Invoke(this, new WindowOverlayTappedEventArgs(point, elements, windowElements));
 		}
+
+		partial void OnDisableUITouchEventPassthroughSet();
 	}
 }

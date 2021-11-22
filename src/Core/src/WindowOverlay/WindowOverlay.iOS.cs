@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using CoreGraphics;
-using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.CoreGraphics;
 using Microsoft.Maui.Graphics.Native;
 using UIKit;
-
 
 namespace Microsoft.Maui
 {
@@ -16,8 +13,6 @@ namespace Microsoft.Maui
 		PassthroughView? _passthroughView;
 		IDisposable? _frameObserver;
 		NativeGraphicsView? _graphicsView;
-
-		public bool DisableUITouchEventPassthrough { get; set; }
 
 		public virtual bool Initialize()
 		{
@@ -81,7 +76,8 @@ namespace Microsoft.Maui
 			IsNativeViewInitialized = false;
 		}
 
-		void UIViewOnTouch(object? sender, CGPoint e) => OnTouchInternal(new Point(e.X, e.Y));
+		void UIViewOnTouch(object? sender, CGPoint e) =>
+			OnTappedInternal(new Point(e.X, e.Y));
 
 		void FrameAction(Foundation.NSObservedChange obj)
 		{

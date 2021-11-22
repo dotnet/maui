@@ -2,8 +2,7 @@
 {
 	public partial class WindowOverlay
 	{
-		/// <inheritdoc/>
-		public bool DisableUITouchEventPassthrough { get; set; }
+		object? _graphicsView = null;
 
 		/// <inheritdoc/>
 		public void Invalidate()

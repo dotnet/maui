@@ -1,36 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Microsoft.Graphics.Canvas.UI.Xaml;
+﻿using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.UI.Core;
 
 namespace Microsoft.Maui
 {
 	public partial class WindowOverlay
 	{
-		private W2DGraphicsView? _graphicsView;
-		private bool disableUITouchEventPassthrough;
-		private Frame? _frame;
-		private RootPanel? _rootPanel;
-		private FrameworkElement? _nativeWindow;
-
-		/// <inheritdoc/>
-		public bool DisableUITouchEventPassthrough
-		{
-			get { return disableUITouchEventPassthrough; }
-			set
-			{
-				disableUITouchEventPassthrough = value;
-				if (_graphicsView != null)
-					_graphicsView.IsHitTestVisible = value;
-			}
-		}
+		W2DGraphicsView? _graphicsView;
+		Frame? _frame;
+		RootPanel? _rootPanel;
+		FrameworkElement? _nativeWindow;
 
 		/// <inheritdoc/>
 		public virtual bool Initialize()
@@ -49,6 +31,7 @@ namespace Microsoft.Maui
 				return false;
 
 			_rootPanel = handler._rootPanel;
+
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
 			if (_nativeWindow is Frame frame)
@@ -69,6 +52,7 @@ namespace Microsoft.Maui
 			_graphicsView.SetValue(Canvas.ZIndexProperty, 99);
 			_graphicsView.IsHitTestVisible = false;
 			handler._rootPanel.Children.Add(_graphicsView);
+
 			IsNativeViewInitialized = true;
 			return IsNativeViewInitialized;
 		}
@@ -117,7 +101,7 @@ namespace Microsoft.Maui
 			if (pointerPoint == null)
 				return;
 
-			this._graphicsView.IsHitTestVisible = _windowElements.Any(n => n.Contains(new Point(pointerPoint.Position.X, pointerPoint.Position.Y)));
+			_graphicsView.IsHitTestVisible = _windowElements.Any(n => n.Contains(new Point(pointerPoint.Position.X, pointerPoint.Position.Y)));
 		}
 
 		void FrameNavigating(object sender, UI.Xaml.Navigation.NavigatingCancelEventArgs e)
@@ -138,7 +122,13 @@ namespace Microsoft.Maui
 			else if (EnableDrawableTouchHandling)
 				e.Handled = _windowElements.Any(n => n.Contains(point));
 
-			OnTouchInternal(point);
+			OnTappedInternal(point);
+		}
+
+		partial void OnDisableUITouchEventPassthroughSet()
+		{
+			if (_graphicsView != null)
+				_graphicsView.IsHitTestVisible = DisableUITouchEventPassthrough;
 		}
 	}
 }
