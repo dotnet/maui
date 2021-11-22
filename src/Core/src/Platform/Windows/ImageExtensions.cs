@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
@@ -8,7 +9,7 @@ namespace Microsoft.Maui
 {
 	public static class ImageExtensions
 	{
-		public static Size GetImageSourceSize(this ImageSource source)
+		public static Size GetImageSourceSize(this ImageSource source, FrameworkElement? element = null)
 		{
 			if (source is null)
 			{
@@ -16,10 +17,12 @@ namespace Microsoft.Maui
 			}
 			else if (source is BitmapSource bitmap)
 			{
+				var rasterizationScale = element?.XamlRoot?.RasterizationScale ?? 1;
+
 				return new Size
 				{
-					Width = bitmap.PixelWidth,
-					Height = bitmap.PixelHeight
+					Width = bitmap.PixelWidth / rasterizationScale,
+					Height = bitmap.PixelHeight / rasterizationScale
 				};
 			}
 			else if (source is CanvasImageSource canvas)

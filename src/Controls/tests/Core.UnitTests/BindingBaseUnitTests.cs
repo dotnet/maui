@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -643,8 +644,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void PropertyChangeBindingsOccurThroughMainThread()
+		public Task PropertyChangeBindingsOccurThroughMainThread() => DispatcherTest.Run(async () =>
 		{
+			var isOnBackgroundThread = false;
+			var invokeOnMainThreadWasCalled = false;
+
+			DispatcherProviderStubOptions.InvokeOnMainThread = action =>
+			{
+				invokeOnMainThreadWasCalled = true;
+				action();
+			};
+			DispatcherProviderStubOptions.IsInvokeRequired =
+				() => isOnBackgroundThread;
+
 			var vm = new MockViewModel { Text = "text" };
 
 			var bindable = new MockBindable();
@@ -652,14 +664,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.BindingContext = vm;
 			bindable.SetBinding(MockBindable.TextProperty, binding);
 
-			bool invokeOnMainThreadWasCalled = false;
-			Device.PlatformServices = new MockPlatformServices(a => invokeOnMainThreadWasCalled = true, isInvokeRequired: true);
+			Assert.False(invokeOnMainThreadWasCalled);
+
+			isOnBackgroundThread = true;
 
 			vm.Text = "updated";
 
-			// If we wait five seconds and invokeOnMainThreadWasCalled still hasn't been set, something is very wrong
-			Assert.That(invokeOnMainThreadWasCalled, Is.True.After(5000, 10));
-		}
+			Assert.True(invokeOnMainThreadWasCalled);
+		});
 	}
 
 	[TestFixture]

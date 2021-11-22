@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -15,27 +12,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class MarshalingObservableCollectionTests
 	{
-		MarshalingTestPlatformServices _services;
+		MarshalingTestDispatcherProvider _dispatcherProvider;
 
 		[SetUp]
 		public void Setup()
 		{
-			_services = new MarshalingTestPlatformServices();
-			Device.PlatformServices = _services;
-			_services.Start();
+			_dispatcherProvider = new MarshalingTestDispatcherProvider();
+			DispatcherProvider.SetCurrent(_dispatcherProvider);
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
-			_services.Stop();
-			_services = null;
+			DispatcherProvider.SetCurrent(null);
+			_dispatcherProvider.StopAllDispatchers();
+			_dispatcherProvider = null;
 		}
 
 		[Test]
 		[Description("Added items don't show up until they've been processed on the UI thread")]
-		public async Task AddOffUIThread()
+		public Task AddOffUIThread() => DispatcherTest.Run(async () =>
 		{
+			var _dispatcher = Dispatcher.GetForCurrentThread();
+
 			int insertCount = 0;
 			var countFromThreadPool = -1;
 
@@ -58,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() =>
+			var onMainThreadCount = await _dispatcher.InvokeOnMainThreadAsync<int>(() =>
 			{
 				return moc.Count;
 			});
@@ -66,23 +65,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(countFromThreadPool, Is.EqualTo(0), "Count should be zero because the update on the UI thread hasn't run yet");
 			Assert.That(onMainThreadCount, Is.EqualTo(1), "Count should be 1 because the UI thread has updated");
 			Assert.That(insertCount, Is.EqualTo(1), "The CollectionChanged event should have fired with an Add exactly 1 time");
-		}
+		});
 
 		[Test]
 		[Description("Intial item count should match wrapped collection.")]
-		public async Task InitialItemCountsMatch()
+		public Task InitialItemCountsMatch() => DispatcherTest.Run(async () =>
 		{
+			var _dispatcher = Dispatcher.GetForCurrentThread();
+
 			var source = new ObservableCollection<int> { 1, 2 };
 
 			var moc = new MarshalingObservableCollection(source);
 
 			Assert.That(source.Count, Is.EqualTo(moc.Count));
-		}
+		});
 
 		[Test]
 		[Description("Clears don't show up until they've been processed on the UI thread")]
-		public async Task ClearOnUIThread()
+		public Task ClearOnUIThread() => DispatcherTest.Run(async () =>
 		{
+			var _dispatcher = Dispatcher.GetForCurrentThread();
+
 			var countFromThreadPool = -1;
 
 			var source = new ObservableCollection<int>
@@ -101,16 +104,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
+			var onMainThreadCount = await _dispatcher.InvokeOnMainThreadAsync<int>(() => moc.Count);
 
 			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-clear");
 			Assert.That(onMainThreadCount, Is.EqualTo(0), "Count should be zero because the Clear has been processed");
-		}
+		});
 
 		[Test]
 		[Description("A Reset should reflect the state at the time of the Reset")]
-		public async Task ClearAndAddOffUIThread()
+		public Task ClearAndAddOffUIThread() => DispatcherTest.Run(async () =>
 		{
+			var _dispatcher = Dispatcher.GetForCurrentThread();
+
 			var countFromThreadPool = -1;
 
 			var source = new ObservableCollection<int>
@@ -130,16 +135,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
+			var onMainThreadCount = await _dispatcher.InvokeOnMainThreadAsync<int>(() => moc.Count);
 
 			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-clear");
 			Assert.That(onMainThreadCount, Is.EqualTo(1), "Should have processed a Clear and an Add");
-		}
+		});
 
 		[Test]
 		[Description("Removed items are still there until they're removed on the UI thread")]
-		public async Task RemoveOffUIThread()
+		public Task RemoveOffUIThread() => DispatcherTest.Run(async () =>
 		{
+			var _dispatcher = Dispatcher.GetForCurrentThread();
+
 			var countFromThreadPool = -1;
 
 			var source = new ObservableCollection<int> { 1, 2 };
@@ -154,16 +161,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
+			var onMainThreadCount = await _dispatcher.InvokeOnMainThreadAsync<int>(() => moc.Count);
 
 			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-remove");
 			Assert.That(onMainThreadCount, Is.EqualTo(1), "Remove has now processed");
-		}
+		});
 
 		[Test]
 		[Description("Until the UI thread processes a change, the indexer should remain consistent")]
-		public async Task IndexerConsistent()
+		public Task IndexerConsistent() => DispatcherTest.Run(async () =>
 		{
+			var _dispatcher = Dispatcher.GetForCurrentThread();
+
 			int itemFromThreadPool = -1;
 
 			var source = new ObservableCollection<int> { 1, 2 };
@@ -178,12 +187,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			Assert.That(itemFromThreadPool, Is.EqualTo(2), "Should have indexer value from before remove");
-		}
+		});
 
 		[Test]
 		[Description("Don't show replacements until the UI thread has processed them")]
-		public async Task ReplaceOffUIThread()
+		public Task ReplaceOffUIThread() => DispatcherTest.Run(async () =>
 		{
+			var _dispatcher = Dispatcher.GetForCurrentThread();
+
 			int itemFromThreadPool = -1;
 
 			var source = new ObservableCollection<int> { 1, 2 };
@@ -198,16 +209,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadValue = await Device.InvokeOnMainThreadAsync(() => moc[0]);
+			var onMainThreadValue = await _dispatcher.InvokeOnMainThreadAsync(() => moc[0]);
 
 			Assert.That(itemFromThreadPool, Is.EqualTo(1), "Should have value from before replace");
 			Assert.That(onMainThreadValue, Is.EqualTo(42), "Should have value from after replace");
-		}
+		});
 
 		[Test]
 		[Description("Don't show moves until the UI thread has processed them")]
-		public async Task MoveOffUIThread()
+		public Task MoveOffUIThread() => DispatcherTest.Run(async () =>
 		{
+			var _dispatcher = Dispatcher.GetForCurrentThread();
+
 			int itemFromThreadPool = -1;
 
 			var source = new ObservableCollection<int> { 1, 2 };
@@ -222,97 +235,80 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadValue = await Device.InvokeOnMainThreadAsync(() => moc[0]);
+			var onMainThreadValue = await _dispatcher.InvokeOnMainThreadAsync(() => moc[0]);
 
 			Assert.That(itemFromThreadPool, Is.EqualTo(1), "Should have value from before move");
 			Assert.That(onMainThreadValue, Is.EqualTo(2), "Should have value from after move");
-		}
+		});
 
 		// This class simulates running a single UI thread with a queue and non-UI threads;
 		// this allows us to test IsInvokeRequired/BeginInvoke without having to be on an actual device
-		class MarshalingTestPlatformServices : IPlatformServices
+		class MarshalingTestDispatcherProvider : IDispatcherProvider
 		{
-			int _threadId;
-			bool _running;
-			Queue<Action> _todo = new Queue<Action>();
-
-			public void Stop()
+			ThreadLocal<MarshalingTestDispatcher> s_dispatcherInstance = new(() =>
 			{
-				_running = false;
+				var dispatcher = new MarshalingTestDispatcher();
+				dispatcher.Start();
+				return dispatcher;
+			}, true);
+
+			public IDispatcher GetForCurrentThread() =>
+				s_dispatcherInstance.Value;
+
+			public void StopAllDispatchers()
+			{
+				foreach (var dispatcher in s_dispatcherInstance.Values)
+					dispatcher.Stop();
 			}
 
-			public void Start()
+			class MarshalingTestDispatcher : IDispatcher
 			{
-				_running = true;
-				Task.Run(() =>
-				{
+				int _threadId;
+				bool _running;
+				Queue<Action> _todo = new();
 
-					if (_threadId == 0)
+				public void Stop()
+				{
+					_running = false;
+				}
+
+				public void Start()
+				{
+					_running = true;
+
+					Task.Run(() =>
 					{
 						_threadId = Thread.CurrentThread.ManagedThreadId;
-					}
 
-					while (_running)
-					{
-						try
+						while (_running)
 						{
-							Thread.Sleep(100);
-							while (_todo.Count > 0)
+							try
 							{
-								_todo.Dequeue().Invoke();
+								Thread.Sleep(100);
+
+								while (_todo.Count > 0)
+								{
+									_todo.Dequeue().Invoke();
+								}
+							}
+							catch (Exception ex)
+							{
+								Stop();
 							}
 						}
-						catch (Exception ex)
-						{
-							Stop();
-						}
-					}
-				});
-			}
+					});
+				}
 
-			public bool IsInvokeRequired => Thread.CurrentThread.ManagedThreadId != _threadId;
+				public bool IsInvokeRequired =>
+					Thread.CurrentThread.ManagedThreadId != _threadId;
 
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				_todo.Enqueue(action);
-			}
+				public void BeginInvokeOnMainThread(Action action)
+				{
+					if (!_running)
+						throw new InvalidOperationException("Dispatcher has been stopped.");
 
-			public OSAppTheme RequestedTheme { get; }
-			public string RuntimePlatform { get; }
-
-			public Assembly[] GetAssemblies()
-			{
-				throw new NotImplementedException();
-			}
-
-			public Color GetNamedColor(string name)
-			{
-				throw new NotImplementedException();
-			}
-
-			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-			{
-				throw new NotImplementedException();
-			}
-
-			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-			{
-				throw new NotImplementedException();
-			}
-
-			public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-			{
-				throw new NotImplementedException();
-			}
-
-			public void QuitApplication()
-			{
-				throw new NotImplementedException();
-			}
-
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				throw new NotImplementedException();
+					_todo.Enqueue(action);
+				}
 			}
 		}
 	}

@@ -13,10 +13,6 @@ namespace Microsoft.Maui.Controls.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IPlatformServices
 	{
-		bool IsInvokeRequired { get; }
-
-		void BeginInvokeOnMainThread(Action action);
-
 		double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes);
 
 		Color GetNamedColor(string name);
