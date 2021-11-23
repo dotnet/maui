@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class Screenshot_Tests
 	{
-		[Theory]
+		[Fact]
 		public async Task GetPngScreenshot()
 		{
 			var mediaFile = await Screenshot.CaptureAsync();
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.True(png.Length > 0);
 		}
 
-		[Theory]
+		[Fact]
 		public async Task GetJpegScreenshot()
 		{
 			var mediaFile = await Screenshot.CaptureAsync();
