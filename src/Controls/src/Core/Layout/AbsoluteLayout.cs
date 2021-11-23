@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -21,7 +22,15 @@ namespace Microsoft.Maui.Controls
 			typeof(AbsoluteLayoutFlags), typeof(AbsoluteLayout), AbsoluteLayoutFlags.None);
 
 		public static readonly BindableProperty LayoutBoundsProperty = BindableProperty.CreateAttached("LayoutBounds",
-			typeof(Rectangle), typeof(AbsoluteLayout), new Rectangle(0, 0, AutoSize, AutoSize));
+			typeof(Rectangle), typeof(AbsoluteLayout), new Rectangle(0, 0, AutoSize, AutoSize), propertyChanged: LayoutBoundsPropertyChanged);
+
+		private static void LayoutBoundsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is View view && view.Parent is Maui.ILayout layout)
+			{
+				layout.InvalidateMeasure();
+			}
+		}
 
 		public static AbsoluteLayoutFlags GetLayoutFlags(BindableObject bindable)
 		{

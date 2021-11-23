@@ -13,8 +13,6 @@
 		<AndroidUseDefaultAotProfile Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(AndroidUseDefaultAotProfile)' == ''">false</AndroidUseDefaultAotProfile>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
-
 	<ItemGroup>
 		<ProjectCapability Include="Maui" Condition="'$(_ExcludeMauiProjectCapability)' != 'true'" />
 		<AvailableItemName Include="MauiXaml" />
@@ -194,23 +192,4 @@
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
 
-  <!-- UWP Targets-->
-  <Target Name="WinUICheckTargetPlatformVersion" BeforeTargets="PrepareForBuild"
-      Condition="'$(TargetPlatformIdentifier)' == 'UAP' AND '$(TargetPlatformVersion)' != '' AND '$(TargetPlatformMinVersion)' != ''">
-    <PropertyGroup>
-      <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
-    </PropertyGroup>
-    <Warning
-        Text="Microsoft.Maui recommends TargetPlatformMinVersion &gt;= 10.0.15063.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))"
-        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 15063" />
-    <PropertyGroup>
-      <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
-    </PropertyGroup>
-    <Warning
-        Text="Microsoft.Maui recommends TargetPlatformVersion &gt;= 10.0.18362.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
-        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 18362 AND '$(OutputType)'!='Library'" />
-    <Warning
-        Text="Microsoft.Maui recommends TargetPlatformVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
-        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 14393 AND '$(OutputType)'=='Library'" />
-  </Target>
 </Project>

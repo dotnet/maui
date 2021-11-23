@@ -24,17 +24,15 @@ namespace Maui.Controls.Sample.Pages.Base
 
 			ToolbarItems.Add(new ToolbarItem()
 			{
-				Text = "RTL",
+				Text = "Settings",
+				IconImageSource = ImageSource.FromFile("settings.png"),
 				Command = new Command(OnToolbarItemClicked)
 			});
 		}
 
-		private void OnToolbarItemClicked()
+		void OnToolbarItemClicked()
 		{
-			if (FlowDirection != Microsoft.Maui.FlowDirection.RightToLeft)
-				FlowDirection = Microsoft.Maui.FlowDirection.RightToLeft;
-			else
-				FlowDirection = Microsoft.Maui.FlowDirection.LeftToRight;
+			Navigation.PushModalAsync(new SettingsPage());
 		}
 
 		protected override void OnAppearing()

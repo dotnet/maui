@@ -56,8 +56,12 @@
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Frame     
+                    <Border     
                         Style="{StaticResource GalleryItemContainerStyle}">
+                        <Border.StrokeShape>
+                            <RoundRectangle 
+                                CornerRadius="0" />
+                        </Border.StrokeShape>
                         <Grid>
                             <StackLayout>
                                 <Label
@@ -68,7 +72,7 @@
                                     Style="{StaticResource GalleryItemDescriptionStyle}"/>
                             </StackLayout>
                         </Grid>
-                    </Frame>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

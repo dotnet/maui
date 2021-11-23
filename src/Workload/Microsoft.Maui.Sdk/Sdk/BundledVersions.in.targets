@@ -8,6 +8,7 @@
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' != 'windows' ">$(TargetPlatformIdentifier.ToLowerInvariant())</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(_MauiPlatformName)' == '' ">any</_MauiPlatformName>
+    <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' ">true</_MauiRuntimePackAlwaysCopyLocal>
   </PropertyGroup>
 
   <!-- Framework references -->
@@ -25,6 +26,7 @@
         RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' "
@@ -38,6 +40,7 @@
         RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
@@ -51,6 +54,7 @@
         RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
   </ItemGroup>
 

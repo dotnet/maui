@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.DeviceTests.Stubs

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -16,5 +17,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public string? HostPage { get; set; }
 
 		public RootComponentsCollection RootComponents { get; }
+
+		/// <inheritdoc/>
+		public virtual IFileProvider? CreateFileProvider(string contentRootDir)
+		{
+			return null;
+		}
 	}
 }

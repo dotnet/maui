@@ -19,5 +19,13 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator DoubleCollection(float[] f)
 			=> f == null ? new() : new(Array.ConvertAll(f, x => (double)x));
+
+		internal float[] ToFloatArray()
+		{
+			var array = new float[Count];
+			for (int i = 0; i < Count; i++)
+				array[i] = (float)this[i];
+			return array;
+		}
 	}
 }

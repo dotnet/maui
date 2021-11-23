@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Util;
 using Android.Widget;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			AutoPackage = false;
 			if (Forms.IsLollipopOrNewer)
-				Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
+				DeviceDisplay.MainDisplayInfoChanged += DeviceInfoPropertyChanged;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (disposing && !_disposed)
 			{
 				if (Forms.IsLollipopOrNewer)
-					Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
+					DeviceDisplay.MainDisplayInfoChanged -= DeviceInfoPropertyChanged;
 
 				_disposed = true;
 				if (_dialog != null)
@@ -118,19 +119,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return dialog;
 		}
 
-		void DeviceInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void DeviceInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
-			if (e.PropertyName == "CurrentOrientation")
+			DatePickerDialog currentDialog = _dialog;
+			if (currentDialog != null && currentDialog.IsShowing)
 			{
-				DatePickerDialog currentDialog = _dialog;
-				if (currentDialog != null && currentDialog.IsShowing)
-				{
-					currentDialog.Dismiss();
-					if (Forms.IsLollipopOrNewer)
-						currentDialog.CancelEvent -= OnCancelButtonClicked;
+				currentDialog.Dismiss();
+				if (Forms.IsLollipopOrNewer)
+					currentDialog.CancelEvent -= OnCancelButtonClicked;
 
-					ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
-				}
+				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
 			}
 		}
 

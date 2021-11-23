@@ -1178,7 +1178,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public async Task GetCurrentPageInShellNavigation()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
 
 			shell.Items.Add(item1);

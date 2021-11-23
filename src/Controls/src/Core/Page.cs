@@ -287,7 +287,9 @@ namespace Microsoft.Maui.Controls
 			var canceled = false;
 			EventHandler handler = (sender, args) => { canceled = true; };
 			window.PopCanceled += handler;
-			Navigation.PopModalAsync().ContinueWith(t => { throw t.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext());
+			Navigation
+				.PopModalAsync()
+				.FireAndForget(Handler);
 
 			window.PopCanceled -= handler;
 			return !canceled;
@@ -412,6 +414,14 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendAppearing()
 		{
+			// Only fire appearing if the page has been added to the windows
+			// Visual Hierarchy
+			var window = this.FindParentOfType<Window>();
+			if (window == null)
+			{
+				return;
+			}
+
 			if (_hasAppeared)
 				return;
 

@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 #if UITEST
 using Xamarin.UITest;
@@ -34,10 +35,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 
 			if (Device.RuntimePlatform == Device.Android)
-				SmallFlyoutItem = SmallFlyoutItem / Device.info.ScalingFactor;
+				SmallFlyoutItem = SmallFlyoutItem / DeviceDisplay.MainDisplayInfo.Density;
 
 			if (Device.RuntimePlatform == Device.Android)
-				SizeToModifyBy = SizeToModifyBy / Device.info.ScalingFactor;
+				SizeToModifyBy = SizeToModifyBy / DeviceDisplay.MainDisplayInfo.Density;
 #endif
 
 

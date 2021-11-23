@@ -296,6 +296,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateInputScope()
 		{
 			if(_queryTextBox == null)

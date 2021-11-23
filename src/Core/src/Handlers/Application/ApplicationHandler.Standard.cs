@@ -7,5 +7,7 @@ namespace Microsoft.Maui.Handlers
 		protected override object CreateNativeElement() => throw new NotImplementedException();
 
 		public static void MapTerminate(ApplicationHandler handler, IApplication application, object? args) { }
+		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args) { }
+		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args) { }
 	}
 }

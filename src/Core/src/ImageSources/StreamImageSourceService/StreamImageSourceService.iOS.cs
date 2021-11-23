@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -26,6 +27,9 @@ namespace Microsoft.Maui
 					throw new InvalidOperationException("Unable to load image stream.");
 
 				using var data = NSData.FromStream(stream);
+				if (data == null)
+					throw new InvalidOperationException("Unable to load image stream data.");
+
 				var image = UIImage.LoadFromData(data, scale);
 
 				if (image == null)

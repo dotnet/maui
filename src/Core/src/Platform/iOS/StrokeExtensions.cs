@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using CoreAnimation;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui

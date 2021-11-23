@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null, propertyChanging: TitleViewPropertyChanging);
 
-		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: CurrentPagePropertyChanged);
+		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
 
 		public static readonly BindableProperty CurrentPageProperty = CurrentPagePropertyKey.BindableProperty;
 
@@ -40,21 +40,35 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
-		public NavigationPage()
-		{
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<NavigationPage>>(() => new PlatformConfigurationRegistry<NavigationPage>(this));
-
-#if WINDOWS
-			Navigation = new MauiNavigationImpl(this);
+#if WINDOWS || ANDROID
+		const bool UseMauiHandler = true;
 #else
-			Navigation = new NavigationImpl(this);
+		const bool UseMauiHandler = false;
 #endif
-			Init();
+
+		bool _setForMaui;
+		public NavigationPage() : this(UseMauiHandler)
+		{
 		}
 
-		public NavigationPage(Page root) : this()
+		public NavigationPage(Page root) : this(UseMauiHandler, root)
 		{
-			PushPage(root);
+		}
+
+		internal NavigationPage(bool setforMaui, Page root = null)
+		{
+			_setForMaui = setforMaui;
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<NavigationPage>>(() => new PlatformConfigurationRegistry<NavigationPage>(this));
+
+			if (setforMaui)
+				Navigation = new MauiNavigationImpl(this);
+			else
+				Navigation = new NavigationImpl(this);
+
+			Init();
+
+			if (root != null)
+				PushPage(root);
 		}
 
 		public Color BarBackgroundColor
@@ -173,13 +187,10 @@ namespace Microsoft.Maui.Controls
 		public async Task<Page> PopAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
-			// this routes the pop call there instead of through old behavior
-			if (Navigation is MauiNavigationImpl && this is INavigationView nv)
+			// this routes the call there instead of through old behavior
+			if (Navigation is MauiNavigationImpl mvi && this is INavigationView)
 			{
-				var poppedPage = (Page)InternalChildren[InternalChildren.Count - 1];
-				RemoveFromInnerChildren(poppedPage);
-				await this.SendHandlerUpdateAsync(true, pop: true);
-				return poppedPage;
+				return await mvi.PopAsync(animated);
 			}
 
 			var tcs = new TaskCompletionSource<bool>();
@@ -219,6 +230,14 @@ namespace Microsoft.Maui.Controls
 
 		public async Task PopToRootAsync(bool animated)
 		{
+			// If Navigation interactions are being handled by the MAUI APIs
+			// this routes the call there instead of through old behavior
+			if (Navigation is MauiNavigationImpl mvi && this is INavigationView)
+			{
+				await mvi.PopToRootAsync(animated);
+				return;
+			}
+
 			if (CurrentNavigationTask != null && !CurrentNavigationTask.IsCompleted)
 			{
 				var tcs = new TaskCompletionSource<bool>();
@@ -243,6 +262,17 @@ namespace Microsoft.Maui.Controls
 
 		public async Task PushAsync(Page page, bool animated)
 		{
+			// If Navigation interactions are being handled by the MAUI APIs
+			// this routes the call there instead of through old behavior
+			if (Navigation is MauiNavigationImpl mvi && this is INavigationView)
+			{
+				if (InternalChildren.Contains(page))
+					return;
+
+				await mvi.PushAsync(page, animated);
+				return;
+			}
+
 			if (CurrentNavigationTask != null && !CurrentNavigationTask.IsCompleted)
 			{
 				var tcs = new TaskCompletionSource<bool>();
@@ -320,9 +350,9 @@ namespace Microsoft.Maui.Controls
 			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 		}
 
-		void SendNavigating()
+		void SendNavigating(Page navigatingFrom = null)
 		{
-			CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs());
 		}
 
 

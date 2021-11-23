@@ -4,14 +4,8 @@ using Microsoft.Maui.Controls;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	internal class MauiDispatcher : Dispatcher
+	internal sealed class MauiDispatcher : Dispatcher
 	{
-		public static Dispatcher Instance { get; } = new MauiDispatcher();
-
-		private MauiDispatcher()
-		{
-		}
-
 #pragma warning disable CA1416 // Validate platform compatibility
 		public override bool CheckAccess()
 		{

@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static ISharedPreferences GetSharedPreferences(string sharedName)
+		internal static ISharedPreferences GetSharedPreferences(string sharedName)
 		{
 			var context = Application.Context;
 

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials
 			Package.Current.Id.Version.Build.ToString(CultureInfo.InvariantCulture);
 
 		static void PlatformShowSettingsUI() =>
-			Windows.System.Launcher.LaunchUriAsync(new global::System.Uri("ms-settings:appsfeatures-app")).WatchForError();
+			global::Windows.System.Launcher.LaunchUriAsync(new global::System.Uri("ms-settings:appsfeatures-app")).WatchForError();
 
 		static AppTheme PlatformRequestedTheme() =>
 			Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
