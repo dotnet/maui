@@ -203,7 +203,7 @@ namespace Microsoft.Maui
 
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page
-			if (NavigationView is IToolbarElement te && te.Toolbar?.Handler != null)
+			if (NavigationView is INavigationView te && te.Toolbar?.Handler != null)
 			{
 				te.Toolbar.Handler.UpdateValue(nameof(IToolbar.BackButtonVisible));
 			}
@@ -416,15 +416,13 @@ namespace Microsoft.Maui
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);
 
 				AToolbar? nativeToolbar = null;
-				IToolbarElement? toolbarElement = null;
 				IToolbar? toolbar = null;
 
-				if (_stackNavigationManager.NavigationView is IToolbarElement te &&
-					te?.Toolbar?.Handler?.NativeView is AToolbar ntb)
+				if (_stackNavigationManager.NavigationView?.Toolbar is IToolbar tb &&
+					tb?.Handler?.NativeView is AToolbar ntb)
 				{
-					toolbarElement = te;
 					nativeToolbar = ntb;
-					toolbar = te.Toolbar;
+					toolbar = tb;
 				}
 
 				// Wire up the toolbar to the currently made visible Fragment

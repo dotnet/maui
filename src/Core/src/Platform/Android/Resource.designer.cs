@@ -18,6 +18,9 @@ namespace Microsoft.Maui
 
 		public partial class Attribute
 		{
+			// aapt resource value: 0x7F030007
+			public static int actionBarSize = 2130903047;
+
 			// aapt resource value: 0x7F0300E4
 			public static int colorSwitchThumbNormal = 2130903268;
 

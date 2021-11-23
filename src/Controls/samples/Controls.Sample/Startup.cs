@@ -106,6 +106,7 @@ namespace Maui.Controls.Sample
 			services.AddTransient<MainViewModel>();
 
 			services.AddTransient<IWindow, Window>();
+			services.AddTransient<CustomFlyoutPage, CustomFlyoutPage>();
 
 			services.AddTransient(
 				serviceType: typeof(Page),

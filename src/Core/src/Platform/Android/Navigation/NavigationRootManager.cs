@@ -16,6 +16,7 @@ namespace Microsoft.Maui
 		IMauiContext _mauiContext;
 		AView? _rootView;
 		ViewFragment? _viewFragment;
+		IToolbarElement? _toolbarElement;
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -37,6 +38,11 @@ namespace Microsoft.Maui
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
+		}
+
+		internal void SetToolbarElement(IToolbarElement toolbarElement)
+		{
+			_toolbarElement = toolbarElement;
 		}
 
 		internal void SetRootView(IView view, IMauiContext? mauiContext = null)
@@ -77,6 +83,14 @@ namespace Microsoft.Maui
 			}
 
 			RootViewChanged?.Invoke(this, EventArgs.Empty);
+
+			// Toolbars are added dynamically to the layout, but this can't be done until the full base
+			// layout has been set on the view.
+			// This is mainly a problem because the toolbar native view is created during the 'ToContainerView'
+			// and at this point the View that's going to house the Toolbar doesn't have access to
+			// the AppBarLayout that's part of the RootView
+			_toolbarElement?.Toolbar?.Parent?.Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
+
 		}
 
 		internal virtual void SetContentView(AView? view) =>

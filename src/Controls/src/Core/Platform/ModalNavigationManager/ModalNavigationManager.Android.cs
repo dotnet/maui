@@ -41,7 +41,6 @@ namespace Microsoft.Maui.Controls.Platform
 		public Task<Page> PopModalAsync(bool animated)
 		{
 			Page modal = _navModel.PopModal();
-			((IPageController)modal).SendDisappearing();
 			var source = new TaskCompletionSource<Page>();
 
 			var modalHandler = modal.Handler as INativeViewHandler;
@@ -71,7 +70,6 @@ namespace Microsoft.Maui.Controls.Platform
 							{
 								modalContainer.Destroy();
 								source.TrySetResult(modal);
-								CurrentPageController?.SendAppearing();
 								modalContainer = null;
 							}
 						});
@@ -80,7 +78,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					modalContainer.Destroy();
 					source.TrySetResult(modal);
-					CurrentPageController?.SendAppearing();
 				}
 			}
 
@@ -91,7 +88,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public async Task PushModalAsync(Page modal, bool animated)
 		{
-			CurrentPageController?.SendDisappearing();
 			UpdateAccessibilityImportance(CurrentPage, ImportantForAccessibility.NoHideDescendants, false);
 
 			_navModel.PushModal(modal);
@@ -101,10 +97,6 @@ namespace Microsoft.Maui.Controls.Platform
 			await presentModal;
 
 			UpdateAccessibilityImportance(modal, ImportantForAccessibility.Auto, true);
-
-			// Verify that the modal is still on the stack
-			if (_navModel.CurrentPage == modal)
-				((IPageController)modal).SendAppearing();
 		}
 
 		Task PresentModal(Page modal, bool animated)

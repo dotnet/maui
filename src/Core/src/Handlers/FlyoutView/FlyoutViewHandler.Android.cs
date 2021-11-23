@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IFlyoutView.Flyout)] = MapFlyout,
 			[nameof(IFlyoutView.Detail)] = MapDetail,
-			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 		};
 
 		View? _flyoutView;
@@ -76,27 +75,13 @@ namespace Microsoft.Maui.Handlers
 					(int)GravityFlags.Start);
 
 			NativeView.AddView(_flyoutView);
-		}
 
-		void UpdateToolbar()
-		{
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			var appbarLayout = NativeView.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
 
-			var someId = Microsoft.Maui.Resource.Id.navigationlayout_appbar;
-			if (appbarLayout == null || VirtualView is not IToolbarElement te)
-				return;
-
-			var nativeToolBar = te.Toolbar?.ToNative(MauiContext, true);
-			if (nativeToolBar == null || nativeToolBar?.Parent == nativeToolBar)
-				return;
-
-			appbarLayout.AddView(nativeToolBar, 0);
-		}
-
-		public static void MapToolbar(FlyoutViewHandler handler, IFlyoutView view)
-		{
-			handler.UpdateToolbar();
+			if (VirtualView.Flyout.Background == null && Context?.Theme != null)
+			{
+				var colors = Context.Theme.ObtainStyledAttributes(new[] { global::Android.Resource.Attribute.ColorBackground });
+				_flyoutView.SetBackgroundColor(new global::Android.Graphics.Color(colors.GetColor(0, 0)));
+			}
 		}
 
 		public static void MapDetail(FlyoutViewHandler handler, IFlyoutView flyoutView)

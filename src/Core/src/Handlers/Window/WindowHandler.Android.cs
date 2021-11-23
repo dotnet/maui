@@ -22,9 +22,6 @@ namespace Microsoft.Maui.Handlers
 
 			appbarLayout.AddView(nativeToolBar, 0);
 
-			// Visibility can only be updated after layout has been set for the toolbar
-			te.Toolbar?.Handler?.UpdateValue(nameof(IToolbar.IsVisible));
-
 		}
 
 		public static void MapTitle(WindowHandler handler, IWindow window) { }

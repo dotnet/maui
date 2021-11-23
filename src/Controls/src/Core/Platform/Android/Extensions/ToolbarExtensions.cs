@@ -42,16 +42,10 @@ namespace Microsoft.Maui.Controls.Platform
 				if (toolbar.BarHeight != null)
 					lp.Height = (int)nativeToolbar.Context.ToPixels(toolbar.BarHeight.Value);
 				else
-					lp.Height = ActionBarHeight();
+					lp.Height = nativeToolbar.Context?.GetActionBarHeight() ?? 0;
 			}
 
 			nativeToolbar.LayoutParameters = lp;
-
-			int ActionBarHeight()
-			{
-				int actionBarHeight = (int)nativeToolbar.Context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
-				return actionBarHeight;
-			}
 		}
 
 		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -81,7 +75,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
-		{			
+		{
 			_defaultNavigationIcon ??= nativeToolbar.NavigationIcon;
 
 			if (toolbar.BackButtonVisible)
@@ -103,7 +97,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				if(nativeToolbar.NavigationIcon is DrawerArrowDrawable dad && dad.Progress == 1)
+				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable dad && dad.Progress == 1)
 					nativeToolbar.NavigationIcon = null;
 			}
 

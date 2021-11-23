@@ -313,7 +313,6 @@ namespace Microsoft.Maui.Controls
 					return null;
 				}
 
-				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
 				Page? nextPage;
 				if (modal.NavigationProxy.ModalStack.Count == 1)
 				{
@@ -339,11 +338,9 @@ namespace Microsoft.Maui.Controls
 				_owner.OnModalPushing(modal);
 
 				modal.Parent = _owner;
-				modal.Toolbar ??= new Toolbar(modal);
 
 				if (modal.NavigationProxy.ModalStack.Count == 0)
 				{
-					_owner.Page?.SendNavigatingFrom(new NavigatingFromEventArgs());
 					modal.NavigationProxy.Inner = this;
 					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 					_owner.Page?.SendNavigatedFrom(new NavigatedFromEventArgs(modal));
@@ -352,7 +349,6 @@ namespace Microsoft.Maui.Controls
 				else
 				{
 					var previousModalPage = modal.NavigationProxy.ModalStack[modal.NavigationProxy.ModalStack.Count - 1];
-					previousModalPage.SendNavigatingFrom(new NavigatingFromEventArgs());
 					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 					modal.NavigationProxy.Inner = this;
 					previousModalPage.SendNavigatedFrom(new NavigatedFromEventArgs(modal));

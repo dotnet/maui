@@ -91,9 +91,16 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			if (_navTree.Count <= 1)
 				throw new InvalidNavigationException("Can't pop modal without any modals pushed");
+
+			var previousPage = CurrentPage;
 			Page modal = _navTree.Last()[0];
 			_modalStack.Remove(modal);
 			_navTree.Remove(_navTree.Last());
+
+			previousPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+			previousPage.SendDisappearing();
+			modal.SendAppearing();
+
 			return modal;
 		}
 
@@ -162,8 +169,13 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public void PushModal(Page page)
 		{
+			var previousPage = CurrentPage;
 			_navTree.Add(new List<Page> { page });
 			_modalStack.Add(page);
+
+			previousPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+			previousPage.SendDisappearing();
+			page.SendAppearing();
 		}
 
 		public bool RemovePage(Page page)

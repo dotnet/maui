@@ -121,15 +121,20 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		IToolbar IToolbarElement.Toolbar
+		IToolbar INavigationView.Toolbar
 		{
 			get
 			{
 				if (this.Toolbar != null)
 					return Toolbar;
 
+				var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
 				if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
 				{
+					// This means I'm inside a Modal Page so we shouldn't return the Toolbar from the window
+					if (rootPage is not IWindow && te is IWindow)
+						return null;
+
 					return te.Toolbar;
 				}
 
@@ -140,43 +145,53 @@ namespace Microsoft.Maui.Controls
 		void OnDisappearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if (this is IToolbarElement te && te.Toolbar is Toolbar ct)
+			if (this is INavigationView te && te.Toolbar is Toolbar ct)
 			{
-				ct.ApplyNavigationPage(this, HasAppeared);
+				// If the root page is being covered by a Modal Page then we don't worry about hiding the nav bar
+				bool coveredByModal = te.Toolbar.Parent is Window && Navigation.ModalStack.Count > 0;
+				ct.ApplyNavigationPage(this, HasAppeared || coveredByModal);
 			}
 		}
 
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if(this is IToolbarElement te && te.Toolbar is Toolbar ct)
+			if(this is INavigationView te && te.Toolbar is Toolbar ct)
 			{
 				ct.ApplyNavigationPage(this, HasAppeared);
 			}
-			// This means the toolbar hasn't been initialized on window
+			// This means the toolbar hasn't been initialized yet
+			// This code figures out what level the toolbar gets set on
 			else
 			{
+
+				// If the root is a flyoutpage then we set the toolbar on the flyout page
 				var flyoutPage = this.FindParentOfType<FlyoutPage>();
-				if (flyoutPage != null)
+				if (flyoutPage != null && flyoutPage.Parent is IWindow)
 				{
 					var toolbar = new Toolbar(flyoutPage);
 					toolbar.ApplyNavigationPage(this, true);
 					flyoutPage.Toolbar = toolbar;
 				}
 				// Is the root a modal page?
-				else if(this.FindParentWith(x => (x is IToolbarElement te && Navigation.ModalStack.Contains(x)), true) is Page modalRootPage)
-				{
-					var toolbar = new Toolbar(modalRootPage);
-					toolbar.ApplyNavigationPage(this, true);
-					modalRootPage.Toolbar = toolbar;
-				}
 				else
 				{
-					var window = this.FindParentOfType<Window>();
-					var toolbar = new Toolbar(window);
-					toolbar.ApplyNavigationPage(this, true);
-					window.Toolbar = toolbar;
-				}				
+					// Is the root the window or is this part of a modal stack
+					var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
+
+					if (rootPage is Window w)
+					{
+						var toolbar = new Toolbar(w);
+						toolbar.ApplyNavigationPage(this, true);
+						w.Toolbar = toolbar;
+					}
+					else if (rootPage is Page p)
+					{
+						var toolbar = new Toolbar(p);
+						toolbar.ApplyNavigationPage(this, true);
+						p.Toolbar = toolbar;
+					}
+				}			
 			}
 		}
 
@@ -262,6 +277,16 @@ namespace Microsoft.Maui.Controls
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
+
+			if (Handler == null)
+			{
+				var toolbar = (this as IToolbarElement).Toolbar;
+				toolbar.Handler = null;
+				if (toolbar.Parent is Window w)
+					w.Toolbar = null;
+				else if (toolbar.Parent is Page p)
+					p.Toolbar = null;
+			}
 
 			if (InternalChildren.Count > 0)
 			{
