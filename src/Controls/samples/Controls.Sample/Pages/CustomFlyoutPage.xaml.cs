@@ -15,7 +15,12 @@ namespace Maui.Controls.Sample.Pages
 			else
 				Detail = new MainPage(services, viewModel);
 
-			Flyout = new ContentPage()
+			Flyout = CreateFlyout();
+		}
+
+		public static ContentPage CreateFlyout()
+		{
+			return new ContentPage()
 			{
 				Title = "Menu",
 				Content = new VerticalStackLayout()
