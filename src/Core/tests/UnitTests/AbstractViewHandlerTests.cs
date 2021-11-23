@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core, TestCategory.Lifecycle)]
-	public class AbstractViewHandlerTests : TestBase
+	public class AbstractViewHandlerTests
 	{
 		[Fact]
 		public void ConnectAndDisconnectFireAppropriateNumberOfTimes()

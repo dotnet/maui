@@ -18,7 +18,7 @@ namespace Microsoft.Maui.UnitTests
 			var services = new MauiFactory(collection, false);
 
 			var first = new MauiContext(services);
-			var second = new MauiContext(first);
+			var second = new MauiContext(first.Services);
 
 			Assert.Same(obj, second.Services.GetService<TestThing>());
 		}
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var first = new MauiContext(services);
 
-			var second = new MauiContext(first);
+			var second = new MauiContext(first.Services);
 			second.AddSpecific<TestThing>(obj2);
 
 			Assert.Same(obj2, second.Services.GetService<TestThing>());

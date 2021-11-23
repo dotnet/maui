@@ -2,9 +2,9 @@
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	public class ElementTests : BaseTestFixture 
+	public class ElementTests : BaseTestFixture
 	{
-		class CustomLayout : StackLayout 
+		class CustomLayout : StackLayout
 		{
 			public int AddedCount { get; set; }
 			public int RemovedCount { get; set; }
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Test]
-		public void OnChildAddedCalled() 
+		public void OnChildAddedCalled()
 		{
 			var layout = new CustomLayout();
 			var button = new Button();

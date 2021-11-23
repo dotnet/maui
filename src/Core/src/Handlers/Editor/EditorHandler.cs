@@ -5,9 +5,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IEditor, EditorHandler> EditorMapper = new PropertyMapper<IEditor, EditorHandler>(ViewHandler.ViewMapper)
 		{
-#if __ANDROID__
 			[nameof(IEditor.Background)] = MapBackground,
-#endif
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEditor.Font)] = MapFont,
 			[nameof(IEditor.IsReadOnly)] = MapIsReadOnly,

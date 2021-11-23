@@ -27,7 +27,6 @@ namespace Maui.Controls.Sample.Controls
 			{
 #if WINDOWS
 				(Control as Microsoft.UI.Xaml.Controls.Control).Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Cyan);
-				(Control as MauiTextBox).BackgroundFocusBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White);
 #elif __ANDROID__
 				backgroundColor = Android.Graphics.Color.LightGreen;
 				Control.SetBackgroundColor(backgroundColor);
