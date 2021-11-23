@@ -6,14 +6,11 @@ namespace Microsoft.Maui.Dispatching
 {
 	public static class DispatcherExtensions
 	{
-		public static void BeginInvokeOnMainThread(this IDispatcher dispatcher, Action action) =>
-			dispatcher.BeginInvokeOnMainThread(action);
-
-		public static Task<T> InvokeOnMainThreadAsync<T>(this IDispatcher dispatcher, Func<T> func)
+		public static Task<T> DispatchAsync<T>(this IDispatcher dispatcher, Func<T> func)
 		{
 			var tcs = new TaskCompletionSource<T>();
 
-			dispatcher.BeginInvokeOnMainThread(() =>
+			dispatcher.Dispatch(() =>
 			{
 				try
 				{
@@ -29,18 +26,18 @@ namespace Microsoft.Maui.Dispatching
 			return tcs.Task;
 		}
 
-		public static Task InvokeOnMainThreadAsync(this IDispatcher dispatcher, Action action) =>
-			dispatcher.InvokeOnMainThreadAsync(() =>
+		public static Task DispatchAsync(this IDispatcher dispatcher, Action action) =>
+			dispatcher.DispatchAsync(() =>
 			{
 				action();
 				return true;
 			});
 
-		public static Task<T> InvokeOnMainThreadAsync<T>(this IDispatcher dispatcher, Func<Task<T>> funcTask)
+		public static Task<T> DispatchAsync<T>(this IDispatcher dispatcher, Func<Task<T>> funcTask)
 		{
 			var tcs = new TaskCompletionSource<T>();
 
-			dispatcher.BeginInvokeOnMainThread(async () =>
+			dispatcher.Dispatch(async () =>
 			{
 				try
 				{
@@ -56,14 +53,14 @@ namespace Microsoft.Maui.Dispatching
 			return tcs.Task;
 		}
 
-		public static Task InvokeOnMainThreadAsync(this IDispatcher dispatcher, Func<Task> funcTask) =>
-			dispatcher.InvokeOnMainThreadAsync(async () =>
+		public static Task DispatchAsync(this IDispatcher dispatcher, Func<Task> funcTask) =>
+			dispatcher.DispatchAsync(async () =>
 			{
 				await funcTask().ConfigureAwait(false);
 				return true;
 			});
 
-		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync(this IDispatcher dispatcher) =>
-			dispatcher.InvokeOnMainThreadAsync(() => SynchronizationContext.Current!);
+		public static Task<SynchronizationContext> GetSynchronizationContextAsync(this IDispatcher dispatcher) =>
+			dispatcher.DispatchAsync(() => SynchronizationContext.Current!);
 	}
 }
