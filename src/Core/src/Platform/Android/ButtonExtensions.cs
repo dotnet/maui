@@ -13,8 +13,19 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateStrokeColor(this MaterialButton nativeButton, IButtonStroke buttonStroke)
 		{
-			if (buttonStroke.StrokeColor != null)
-				nativeButton.StrokeColor = buttonStroke.StrokeColor.ToAndroidPreserveDisabled(nativeButton.StrokeColor);
+			var stroke = buttonStroke.StrokeColor?.ToNative();
+
+			if (stroke is not null)
+			{
+				var states = new int[][] {
+					new int[] { Android.Resource.Attribute.StateEnabled },
+					new int[] {-Android.Resource.Attribute.StateEnabled },
+					new int[] {-Android.Resource.Attribute.StateChecked },
+					new int[] { Android.Resource.Attribute.StatePressed }
+				};
+				var c = (int)stroke;
+				nativeButton.StrokeColor = new ColorStateList(states, new int[] { c, c, c, c });
+			}
 		}
 
 		public static void UpdateStrokeThickness(this MaterialButton nativeButton, IButtonStroke buttonStroke)
@@ -25,7 +36,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateCornerRadius(this MaterialButton nativeButton, IButtonStroke buttonStroke)
 		{
-			if (nativeButton.CornerRadius >= 0)
+			if (buttonStroke.CornerRadius >= 0)
 				nativeButton.CornerRadius = buttonStroke.CornerRadius;
 		}
 
