@@ -278,13 +278,12 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler == null)
+			if (Handler == null && (this as INavigationView).Toolbar is IToolbar tb)
 			{
-				var toolbar = (this as IToolbarElement).Toolbar;
-				toolbar.Handler = null;
-				if (toolbar.Parent is Window w)
+				tb.Handler = null;
+				if (tb.Parent is Window w)
 					w.Toolbar = null;
-				else if (toolbar.Parent is Page p)
+				else if (tb.Parent is Page p)
 					p.Toolbar = null;
 			}
 

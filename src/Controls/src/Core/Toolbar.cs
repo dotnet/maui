@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Controls
 		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
 		public Color BarBackgroundColor { get => _barBackgroundColor; set => SetProperty(ref _barBackgroundColor, value); }
 		public Brush BarBackground { get => _barBackground; set => SetProperty(ref _barBackground, value); }
-		public Color BarTextColor { get => _barTextColor; set => SetProperty(ref _barTextColor, value); }
-		public Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
-		public string Title { get => _title; set => SetProperty(ref _title, value); }
-		public VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
+		public Color BarTextColor { get => GetBarTextColor(); set => SetProperty(ref _barTextColor, value); }
+		public Color IconColor { get => GetIconColor(); set => SetProperty(ref _iconColor, value); }
+		public string Title { get => GetTitle(); set => SetProperty(ref _title, value); }
+		public VisualElement TitleView { get => GetTitleView(); set => SetProperty(ref _titleView, value); }
 		public bool DynamicOverflowEnabled { get => _dynamicOverflowEnabled; set => SetProperty(ref _dynamicOverflowEnabled, value); }
 		public bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
 		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
@@ -152,8 +152,12 @@ namespace Microsoft.Maui.Controls
 				BackButtonTitle = null;
 
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
-			BarBackgroundColor = navigationPage.BarBackgroundColor;
+
 			BarBackground = navigationPage.BarBackground;
+			if (!Brush.IsNullOrEmpty(navigationPage.BarBackground))
+				BarBackgroundColor = null;
+			else
+				BarBackgroundColor = navigationPage.BarBackgroundColor;
 
 #if WINDOWS
 			if (Brush.IsNullOrEmpty(BarBackground) && BarBackgroundColor == null)
@@ -165,11 +169,16 @@ namespace Microsoft.Maui.Controls
 					navigationPage.Background;
 			}
 #endif
-			BarTextColor = navigationPage.BarTextColor;
-			IconColor = NavigationPage.GetIconColor(currentPage);
-			Title = currentPage.Title;
-			TitleView = NavigationPage.GetTitleView(navigationPage);
+			BarTextColor = GetBarTextColor();
+			IconColor = GetIconColor();
+			Title = GetTitle();
+			TitleView = GetTitleView();
 			DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(_currentPage);
 		}
+
+		Color GetBarTextColor() => _currentNavigationPage.BarTextColor;
+		Color GetIconColor() => NavigationPage.GetIconColor(_currentPage);
+		string GetTitle() => _currentPage.Title;
+		VisualElement GetTitleView() => NavigationPage.GetTitleView(_currentNavigationPage);
 	}
 }

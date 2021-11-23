@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Controls.Platform
 	internal static class ToolbarExtensions
 	{
 		static Drawable? _defaultNavigationIcon;
+		static ColorStateList? _defaultTitleTextColor;
+		static int? _defaultNavigationIconColor;
 
 		public static void UpdateIsVisible(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
@@ -110,7 +112,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var tintColor = toolbar.BarBackgroundColor;
 
 			if (tintColor == null)
+			{
 				nativeToolbar.BackgroundTintMode = null;
+			}
 			else
 			{
 				nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
@@ -139,14 +143,36 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var textColor = toolbar.BarTextColor;
-			if (textColor != null)
-				nativeToolbar.SetTitleTextColor(textColor.ToNative().ToArgb());
 
-			if (nativeToolbar.NavigationIcon != null && textColor != null)
+			// Because we use the same toolbar across multiple navigation pages (think tabbed page with nested NavigationPage)
+			// We need to reset the toolbar text color to the default color when it's unset
+			if (_defaultTitleTextColor == null)
 			{
-				var icon = nativeToolbar.NavigationIcon as DrawerArrowDrawable;
-				if (icon != null)
+				var a = TintTypedArray.ObtainStyledAttributes(nativeToolbar.Context?.GetThemedContext(), null, Resource.Styleable.Toolbar, Resource.Attribute.toolbarStyle, 0);
+				_defaultTitleTextColor = a.GetColorStateList(Resource.Styleable.Toolbar_titleTextColor);
+				a.Recycle();
+			}
+
+			if (textColor != null)
+			{
+				nativeToolbar.SetTitleTextColor(textColor.ToNative().ToArgb());
+			}
+			else
+			{
+				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
+			}
+
+			if (nativeToolbar.NavigationIcon is DrawerArrowDrawable icon)
+			{
+				if (textColor != null)
+				{
+					_defaultNavigationIconColor = icon.Color;
 					icon.Color = textColor.ToNative().ToArgb();
+				}
+				else if (_defaultNavigationIconColor != null)
+				{
+					icon.Color = _defaultNavigationIconColor.Value;
+				}
 			}
 		}
 
