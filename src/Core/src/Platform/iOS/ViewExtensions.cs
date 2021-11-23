@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CoreAnimation;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -317,6 +319,33 @@ namespace Microsoft.Maui
 			{
 				view.Subviews[n].RemoveFromSuperview();
 			}
+		}
+
+		internal static Task<byte[]?> RenderAsPNG(this IView view) => view.RenderAsImage(true);
+
+		internal static Task<byte[]?> RenderAsJPEG(this IView view) => view.RenderAsImage(false);
+
+		internal static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true) => view.RenderAsImage(skipChildren, true);
+
+		internal static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view.RenderAsImage(skipChildren, false);
+
+		static Task<byte[]?> RenderAsImage(this UIView nativeView, bool skipChildren, bool asPng)
+		{
+			byte[] result;
+			if (asPng)
+				result = nativeView.Window.RenderAsPng(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+			else
+				result = nativeView.Window.RenderAsJpeg(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+			return Task.FromResult<byte[]?>(result);
+		}
+
+		static Task<byte[]?> RenderAsImage(this IView view, bool asPng)
+		{
+			var nativeView = view.GetNative(true);
+			if (nativeView == null)
+				return Task.FromResult<byte[]?>(null);
+			var skipChildren = !(view is IView && !(view is ILayout));
+			return nativeView.RenderAsImage(skipChildren, asPng);
 		}
 	}
 }
