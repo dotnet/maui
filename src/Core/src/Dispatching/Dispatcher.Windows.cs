@@ -12,10 +12,10 @@ namespace Microsoft.Maui.Dispatching
 			_dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
 		}
 
-		bool IsInvokeRequiredImplementation() =>
+		bool IsDispatchRequiredImplementation() =>
 			!_dispatcherQueue.HasThreadAccess;
 
-		void BeginInvokeOnMainThreadImplementation(Action action) =>
+		bool DispatchImplementation(Action action) =>
 			_dispatcherQueue.TryEnqueue(() => action());
 	}
 

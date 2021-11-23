@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		// return the dispatcher that was available when this was created,
 		// otherwise try to find the nearest dispatcher (probably the window/app)
 		public IDispatcher Dispatcher =>
-			_dispatcher ??= this.GetDispatcher();
+			_dispatcher ??= this.FindDispatcher();
 
 		public BindableObject()
 		{
