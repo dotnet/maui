@@ -213,7 +213,7 @@ namespace Microsoft.Maui
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
 
-		internal static Task<byte[]?> RenderAsPng(this IView view)
+		internal static Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
@@ -222,7 +222,7 @@ namespace Microsoft.Maui
 			return nativeView.RenderAsPNG();
 		}
 
-		internal static Task<byte[]?> RenderAsJpeg(this IView view)
+		internal static Task<byte[]?> RenderAsJPEG(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
