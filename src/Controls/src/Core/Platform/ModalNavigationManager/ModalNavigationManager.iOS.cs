@@ -63,8 +63,6 @@ namespace Microsoft.Maui.Controls.Platform
 					.ModalPresentationStyle()
 					.ToNativeModalPresentationStyle();
 
-			_window.Page?.GetCurrentPage()?.SendDisappearing();
-
 			_navModel.PushModal(modal);
 
 			modal.DescendantRemoved += HandleChildRemoved;
