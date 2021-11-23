@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 						Owner.RemoveFromInnerChildren(currentPage);
-						Owner.CurrentPage = currentPage;
+						Owner.CurrentPage = newCurrentPage;
 					},
 					() =>
 					{
