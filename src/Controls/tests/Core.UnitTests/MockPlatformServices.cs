@@ -154,6 +154,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MockApplication : Application
 	{
+		public static UnitTestLogger MockLogger;
+
 		public MockApplication()
 		{
 		}
