@@ -1,37 +1,35 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.View)]
-	public partial class ViewHandlerTests : HandlerTestBase<StubBase, StubBaseHandler>
+	public partial class ViewHandlerTests : HandlerTestBase<StubBaseHandler, StubBase>
 	{
 		[Fact(DisplayName = "NativeArrange triggers MapFrame")]
-		public Task NativeArrangeTriggersMapFrame()
+		public async Task NativeArrangeTriggersMapFrame()
 		{
-			var commandMapperField = typeof(ElementHandler).GetField("_commandMapper");
+			var didUpdateFrame = 0;
 
 			var view = new StubBase();
 
-			return InvokeOnMainThreadAsync(() =>
+			await InvokeOnMainThreadAsync(() =>
 			{
-				var handler = new StubBaseHandler(CreateNativeView());
+				var handler = new StubBaseHandler();
 
-				var viewHandler = handler as ViewHandler;
-				var commandMapper = commandMapperField.GetValue(handler) as CommandMapper;
-
-
-
-				handler.Com
+				handler.CommandMapper.AppendToMapping(nameof(IView.Frame), (h, v, a) =>
+				{
+					didUpdateFrame++;
+				});
 
 				InitializeViewHandler(view, handler);
-
-				var handler = CreateHandler(view);
-
-
 			});
+
+			Assert.Equal(1, didUpdateFrame);
 		}
 	}
 }

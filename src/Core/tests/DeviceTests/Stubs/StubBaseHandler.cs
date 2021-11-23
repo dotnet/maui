@@ -1,10 +1,5 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Primitives;
 
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
@@ -18,26 +13,50 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBaseHandler : ViewHandler<StubBase, NativeView>
+	public class StubBaseHandler : ViewHandler<StubBase, StubNativeView>
 	{
-		readonly NativeView _nativeView;
+		public static IPropertyMapper<StubBase, StubBaseHandler> StubMapper =
+			new PropertyMapper<StubBase, StubBaseHandler>(ViewMapper)
+			{
+			};
 
+		public static CommandMapper<StubBase, StubBaseHandler> StubCommandMapper =
+			new(ViewCommandMapper)
+			{
+			};
 
-		public static IPropertyMapper<StubBase, StubBaseHandler> StubMapper = new PropertyMapper<StubBase, StubBaseHandler>(ViewMapper)
+		public StubBaseHandler()
+			: this(null, null)
 		{
-		};
-
-		public static CommandMapper<StubBase, StubBaseHandler> StubCommandMapper = new(ViewCommandMapper)
-		{
-		};
-
-		protected StubBaseHandler(NativeView nativeView, IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
-			: base(mapper ?? StubMapper, commandMapper ?? ViewCommandMapper)
-		{
-			_nativeView = nativeView;
 		}
 
-		protected override NativeView CreateNativeView() =>
-			_nativeView;
+		public StubBaseHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
+			: base(
+				new PropertyMapper<StubBase, StubBaseHandler>(mapper ?? StubMapper),
+				new CommandMapper<StubBase, StubBaseHandler>(commandMapper ?? ViewCommandMapper))
+		{
+		}
+
+		public CommandMapper<StubBase, StubBaseHandler>? CommandMapper =>
+			_commandMapper as CommandMapper<StubBase, StubBaseHandler>;
+
+		public PropertyMapper<StubBase, StubBaseHandler>? PropertyMapper =>
+			_mapper as PropertyMapper<StubBase, StubBaseHandler>;
+
+		protected override StubNativeView CreateNativeView() =>
+			new StubNativeView(MauiContext!);
+	}
+
+	public class StubNativeView : NativeView
+	{
+		public StubNativeView(IMauiContext mauiContext)
+#if __ANDROID__
+			: base(mauiContext.Context)
+#endif
+		{
+			MauiContext = mauiContext;
+		}
+
+		public IMauiContext MauiContext { get; }
 	}
 }
