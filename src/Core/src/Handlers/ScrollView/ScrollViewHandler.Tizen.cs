@@ -45,6 +45,11 @@ namespace Microsoft.Maui.Handlers
 			Canvas.LayoutUpdated -= OnContentLayoutUpdated;
 		}
 
+		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+		}
+
 		void ScrollAnimationEnded(object? sender, EventArgs e)
 		{
 			VirtualView.ScrollFinished();
