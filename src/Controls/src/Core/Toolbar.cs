@@ -176,9 +176,9 @@ namespace Microsoft.Maui.Controls
 			DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(_currentPage);
 		}
 
-		Color GetBarTextColor() => _currentNavigationPage.BarTextColor;
-		Color GetIconColor() => NavigationPage.GetIconColor(_currentPage);
-		string GetTitle() => _currentPage.Title;
-		VisualElement GetTitleView() => NavigationPage.GetTitleView(_currentNavigationPage);
+		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
+		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
+		string GetTitle() => _currentPage?.Title;
+		VisualElement GetTitleView() => (_currentNavigationPage != null) ? NavigationPage.GetTitleView(_currentNavigationPage) : null;
 	}
 }
