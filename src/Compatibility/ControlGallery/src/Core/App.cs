@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -237,8 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			}
 			catch (Exception ex)
 			{
-				Log.Warning("UITests", $"Error attempting to navigate directly to {test}: {ex}");
-
+				Application.Current.FindMauiContext()?.CreateLogger("UITests").LogWarning(ex, "Error attempting to navigate directly to {Test}", test);
 			}
 
 			return false;

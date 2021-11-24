@@ -72,20 +72,20 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Device.StartTimer(TimeSpan.FromSeconds(1), () =>
 			{
-				labelRunsBackground.Dispatcher.BeginInvokeOnMainThread(() => labelRunsBackground.Text = DateTime.Now.ToString("HH:mm:ss"));
+				labelRunsBackground.Dispatcher.Dispatch(() => labelRunsBackground.Text = DateTime.Now.ToString("HH:mm:ss"));
 				return true;
 			});
 
 			var threadpoolButton = new Button { Text = "Update Instructions from Thread Pool" };
 			layout.Children.Add(threadpoolButton);
 
-			this.Dispatcher.BeginInvokeOnMainThread(() => { instructions.Text = "updated from thread pool 1"; });
+			this.Dispatcher.Dispatch(() => { instructions.Text = "updated from thread pool 1"; });
 
 			threadpoolButton.Clicked += (o, a) =>
 			{
 				Task.Run(() =>
 				{
-					this.Dispatcher.BeginInvokeOnMainThread(() => { instructions.Text = "updated from thread pool 2"; });
+					this.Dispatcher.Dispatch(() => { instructions.Text = "updated from thread pool 2"; });
 				});
 			};
 

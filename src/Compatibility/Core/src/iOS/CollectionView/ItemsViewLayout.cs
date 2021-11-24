@@ -4,8 +4,10 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -387,7 +389,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				catch (MonoTouchException ex) when (ex.Name == "NSRangeException")
 				{
-					Controls.Internals.Log.Warning("ItemsViewLayout", ex.ToString());
+				  Forms.MauiContext?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeExceptiond");
 				}
 
 				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();
