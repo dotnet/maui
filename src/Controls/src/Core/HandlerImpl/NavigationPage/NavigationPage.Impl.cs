@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		partial void Init()
 		{
 			this.Appearing += OnAppearing;
-			this.Disappearing += OnDisappearing;
+			this.NavigatingFrom += OnNavigatingFrom;
 		}
 
 		Thickness IView.Margin => Thickness.Zero;
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnDisappearing(object sender, EventArgs e)
+		void NavigatingFrom(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
 			if (this is INavigationView te && te.Toolbar is Toolbar ct)
