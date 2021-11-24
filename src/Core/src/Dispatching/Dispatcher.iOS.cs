@@ -1,33 +1,36 @@
 ﻿using System;
-using Foundation;
+using CoreFoundation;
 
 namespace Microsoft.Maui.Dispatching
 {
 	public partial class Dispatcher : IDispatcher
 	{
-		readonly NSRunLoop _runLoop;
+		readonly DispatchQueue _dispatchQueue;
 
-		internal Dispatcher(NSRunLoop runLoop)
+		internal Dispatcher(DispatchQueue dispatchQueue)
 		{
-			_runLoop = runLoop;
+			_dispatchQueue = dispatchQueue;
 		}
 
-		bool IsInvokeRequiredImplementation() =>
-			_runLoop != NSRunLoop.Main;
+		bool IsDispatchRequiredImplementation() =>
+			_dispatchQueue != DispatchQueue.CurrentQueue;
 
-		void BeginInvokeOnMainThreadImplementation(Action action) =>
-			_runLoop.BeginInvokeOnMainThread(() => action());
+		bool DispatchImplementation(Action action)
+		{
+			_dispatchQueue.DispatchAsync(() => action());
+			return true;
+		}
 	}
 
 	public partial class DispatcherProvider
 	{
 		static IDispatcher? GetForCurrentThreadImplementation()
 		{
-			var rl = NSRunLoop.Current;
-			if (rl != NSRunLoop.Main)
+			var q = DispatchQueue.CurrentQueue;
+			if (q != DispatchQueue.MainQueue)
 				return null;
 
-			return new Dispatcher(rl);
+			return new Dispatcher(q);
 		}
 	}
 }

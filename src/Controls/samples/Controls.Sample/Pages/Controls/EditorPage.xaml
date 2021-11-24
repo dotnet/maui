@@ -6,34 +6,77 @@
     Title="Editor">
     <views:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout
-                Margin="12">
+            <VerticalStackLayout Padding="12">
                 <Label
-                    Text="Default"
-                    Style="{StaticResource Headline}"/>
+                    Text="Basic"
+                    Style="{StaticResource Headline}" />
                 <Editor />
                 <Label
                     Text="Disabled"
-                    Style="{StaticResource Headline}"/>
-                <Editor
-                    Text="I am disabled"
+                    Style="{StaticResource Headline}" />
+                <Editor 
                     IsEnabled="False"/>
                 <Label
-                    Text="Placeholder"
-                    Style="{StaticResource Headline}"/>
-                <Editor
+                    Text="Using TextColor"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="Text"
+                    TextColor="Purple"/>
+                <Label
+                    Text="With Placeholder"
+                    Style="{StaticResource Headline}" />
+                <Editor 
                     Placeholder="Placeholder"/>
                 <Label
+                    Text="Using PlaceholderColor"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    PlaceholderColor="Purple"
+                    Placeholder="Placeholder"/>
+                <Label
+                    Text="With Text"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="Text"/>
+                <Label
+                    Text="ClearButtonVisibility = Never"
+                    Style="{StaticResource Headline}" />
+                <Label
                     Text="Read-only"
-                    Style="{StaticResource Headline}"/>
-                <Editor
-                    Text="I am read only"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="I am read only" 
                     IsReadOnly="True"/>
                 <Label
-                    Text="Keyboard"
-                    Style="{StaticResource Headline}"/>
-                <Editor
+                    Text="Completed"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Completed="OnEditorCompleted"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="Text"
+                    Background="Orange"/>
+                <Label
+                    Text="Keyboard Numeric"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="123"
                     Keyboard="Numeric"/>
+                <Label
+                    Text="HorizontalTextAlignment"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    HorizontalTextAlignment="End"
+                    Text="This should be on the end" />
+                <Label
+                    Text="VerticalTextAlignment"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    VerticalTextAlignment="End"
+                    Text="This should be on the bottom"
+                    HeightRequest="100"/>
                 <Label
                     Text="Auto Size with Text Changes"
                     Style="{StaticResource Headline}" />

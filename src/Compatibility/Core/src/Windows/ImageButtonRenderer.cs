@@ -11,6 +11,7 @@ using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -137,7 +138,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception ex)
 			{
-				Log.Warning(nameof(ImageRenderer), "Error loading image: {0}", ex);
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning(ex, $"Error loading image");
 			}
 			finally
 			{
@@ -163,7 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
-			Log.Warning("Image Loading", $"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
+			Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning("Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}", exceptionRoutedEventArgs.ErrorMessage);
 			Element?.SetIsLoading(false);
 		}
 

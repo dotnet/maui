@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception ex)
 			{
-				Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+				Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
 				throw;
 			}
 
@@ -111,7 +112,8 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception ex)
 			{
-				Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+
+				Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
 				return null;
 			}
 		}

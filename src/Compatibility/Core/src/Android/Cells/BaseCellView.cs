@@ -4,6 +4,7 @@ using Android.Text;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Widget;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
@@ -190,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (Exception ex)
 			{
-				Log.Warning(nameof(BaseCellView), "Error loading image: {0}", ex);
+				Application.Current?.FindMauiContext()?.CreateLogger<BaseCellView>()?.LogWarning(ex, $"Error loading image");
 			}
 		}
 	}

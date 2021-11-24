@@ -19,6 +19,7 @@
                     Text="FileSource"
                     Style="{StaticResource Headline}"/>
                 <Image 
+                    Background="Purple"
                     Source="dotnet_bot.png"
                     HeightRequest="200" 
                     WidthRequest="200"/>

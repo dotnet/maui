@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					Internals.Log.Warning("Warning", "Cannot find CallingAssembly, pass resolvingType to FromResource to ensure proper resolution");
+					Microsoft.Maui.Controls.Application.Current?.FindMauiContext()?.CreateLogger<ImageSource>()?.LogWarning("Cannot find CallingAssembly, pass resolvingType to FromResource to ensure proper resolution");
 					return null;
 				}
 			}
