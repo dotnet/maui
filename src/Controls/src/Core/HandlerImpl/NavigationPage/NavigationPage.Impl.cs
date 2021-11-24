@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void NavigatingFrom(object sender, EventArgs e)
+		void OnNavigatingFrom(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
 			if (this is INavigationView te && te.Toolbar is Toolbar ct)
