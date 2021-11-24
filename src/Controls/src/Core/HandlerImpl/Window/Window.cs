@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
 
-			if (view is Window window && window.Toolbar != null)
+			if (view is IToolbarElement tb && tb.Toolbar != null)
 			{
-				_ = window.Toolbar.ToNative(handler.MauiContext);
+				_ = tb.Toolbar.ToNative(handler.MauiContext);
 			}
 		}
 

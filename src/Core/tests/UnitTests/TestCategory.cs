@@ -8,5 +8,7 @@ namespace Microsoft.Maui.UnitTests
 		public const string Lifecycle = "Lifecycle";
 		public const string Hosting = "Hosting";
 		public const string ImageSource = "ImageSource";
+		public const string Dispatching = "Dispatching";
+		public const string View = "View";
 	}
 }

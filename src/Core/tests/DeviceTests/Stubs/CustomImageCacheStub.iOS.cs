@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.DeviceTests.Stubs

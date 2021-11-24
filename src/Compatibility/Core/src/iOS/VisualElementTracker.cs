@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
@@ -343,7 +344,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (thread)
-				view.Dispatcher.Dispatch(update);
+				view.Dispatcher.DispatchIfRequired(update);
 			else
 				update();
 #else

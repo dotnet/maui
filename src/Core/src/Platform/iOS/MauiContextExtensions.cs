@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -16,12 +17,5 @@ namespace Microsoft.Maui
 
 		public static UIWindow GetNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<UIWindow>();
-
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UIWindow nativeWindow)
-		{
-			var scopedContext = new MauiContext(mauiContext);
-			scopedContext.AddSpecific(nativeWindow);
-			return scopedContext;
-		}
 	}
 }

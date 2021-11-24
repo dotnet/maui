@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Internals
 {
@@ -285,7 +286,7 @@ namespace Microsoft.Maui.Controls.Internals
 					return;
 
 				IDispatcher dispatcher = (sender as BindableObject)?.Dispatcher;
-				dispatcher.Dispatch(() => _binding.Apply(false));
+				dispatcher.DispatchIfRequired(() => _binding.Apply(false));
 			}
 		}
 

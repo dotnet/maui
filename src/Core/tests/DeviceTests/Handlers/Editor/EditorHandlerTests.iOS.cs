@@ -4,6 +4,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform.iOS;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
@@ -153,8 +154,16 @@ namespace Microsoft.Maui.DeviceTests
 			control.SelectedTextRange = control.GetTextRange(endPosition, endPosition);
 		}
 
-		UILabel GetNativePlaceholder(EditorHandler editorHandler) =>
-			GetNativeEditor(editorHandler).PlaceholderLabel;
+		UILabel GetNativePlaceholder(EditorHandler editorHandler)
+		{
+			var editor = GetNativeEditor(editorHandler);
+			foreach (var view in editor.Subviews)
+			{
+				if (view is UILabel label)
+					return label;
+			}
+			return null;
+		}
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).PlaceholderText;

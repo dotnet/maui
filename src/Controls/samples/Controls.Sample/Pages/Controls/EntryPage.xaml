@@ -21,6 +21,12 @@
                 <Entry 
                     IsEnabled="False"/>
                 <Label
+                    Text="Using TextColor"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    TextColor="Purple"/>
+                <Label
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
                 <Entry 
@@ -34,8 +40,16 @@
                 <Label
                     Text="Password"
                     Style="{StaticResource Headline}" />
+                <HorizontalStackLayout>
+                    <CheckBox x:Name="chkIsPassword" IsChecked="true" />
+                    <Label Text="Is Password" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
                 <Entry
-                    IsPassword="True" />
+                    x:Name="pwdPassword"
+                    IsPassword="{Binding IsChecked, Source={Reference chkIsPassword}}" />
+                <Label
+                    Text="{Binding Text, Source={Reference pwdPassword}}"
+                    Style="{StaticResource Headline}" />
                 <Label
                     Text="With Text"
                     Style="{StaticResource Headline}" />

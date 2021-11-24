@@ -62,6 +62,8 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <Compile Remove="Handlers\*\*.cs" />
     <Compile Include="Handlers\ActivityIndicator\*.cs" />
+    <Compile Include="Handlers\Button\*.cs" />
+    <Compile Include="Handlers\Navigation\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />
@@ -73,8 +75,9 @@
     <Compile Remove="**\*.Windows.cs" />
   </ItemGroup>
 
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.targets" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
 
 </Project>

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RadioButtonGalleries;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -237,8 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			}
 			catch (Exception ex)
 			{
-				Log.Warning("UITests", $"Error attempting to navigate directly to {test}: {ex}");
-
+				Application.Current.FindMauiContext()?.CreateLogger("UITests").LogWarning(ex, "Error attempting to navigate directly to {Test}", test);
 			}
 
 			return false;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -231,7 +232,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (widthIsProportional)
 			{
-				result.Width = Device.Info.DisplayRound(region.Width * bounds.Width);
+				result.Width = DeviceDisplay.MainDisplayInfo.DisplayRound(region.Width * bounds.Width);
 			}
 			else if (bounds.Width != AutoSize)
 			{
@@ -240,7 +241,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (heightIsProportional)
 			{
-				result.Height = Device.Info.DisplayRound(region.Height * bounds.Height);
+				result.Height = DeviceDisplay.MainDisplayInfo.DisplayRound(region.Height * bounds.Height);
 			}
 			else if (bounds.Height != AutoSize)
 			{
@@ -272,7 +273,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (xIsProportional)
 			{
-				result.X = Device.Info.DisplayRound((region.Width - result.Width) * bounds.X);
+				result.X = DeviceDisplay.MainDisplayInfo.DisplayRound((region.Width - result.Width) * bounds.X);
 			}
 			else
 			{
@@ -281,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (yIsProportional)
 			{
-				result.Y = Device.Info.DisplayRound((region.Height - result.Height) * bounds.Y);
+				result.Y = DeviceDisplay.MainDisplayInfo.DisplayRound((region.Height - result.Height) * bounds.Y);
 			}
 			else
 			{

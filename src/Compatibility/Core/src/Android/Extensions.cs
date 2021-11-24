@@ -25,19 +25,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return null;
 		}
 
-		internal static DeviceOrientation ToDeviceOrientation(this Orientation orientation)
-		{
-			switch (orientation)
-			{
-				case Orientation.Landscape:
-					return DeviceOrientation.Landscape;
-				case Orientation.Portrait:
-					return DeviceOrientation.Portrait;
-				default:
-					return DeviceOrientation.Other;
-			}
-		}
-
 		internal static bool IsHorizontal(this Button.ButtonContentLayout layout) =>
 			layout.Position == Button.ButtonContentLayout.ImagePosition.Left ||
 			layout.Position == Button.ButtonContentLayout.ImagePosition.Right;

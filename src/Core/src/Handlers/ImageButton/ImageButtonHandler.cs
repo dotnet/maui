@@ -1,18 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 #if __IOS__ || MACCATALYST
 using NativeImage = UIKit.UIImage;
+using NativeImageView = UIKit.UIImageView;
 using NativeView = UIKit.UIButton;
 #elif MONOANDROID
 using NativeImage = Android.Graphics.Drawables.Drawable;
+using NativeImageView = Android.Widget.ImageView;
 using NativeView = AndroidX.AppCompat.Widget.AppCompatImageButton;
 #elif WINDOWS
 using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
+using NativeImageView = Microsoft.UI.Xaml.Controls.Image;
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
 using NativeImage = System.Object;
+using NativeImageView = System.Object;
+using NativeView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -38,14 +40,13 @@ namespace Microsoft.Maui.Handlers
 
 		IImage IImageHandler.TypedVirtualView => VirtualView;
 
+		NativeImageView IImageHandler.TypedNativeView =>
 #if __IOS__
-		UIKit.UIImageView IImageHandler.TypedNativeView => NativeView.ImageView;
+			NativeView.ImageView;
 #elif WINDOWS
-		UI.Xaml.Controls.Image IImageHandler.TypedNativeView => NativeView.GetImage() ?? (UI.Xaml.Controls.Image)NativeView.Content;
-#elif __ANDROID__
-		Android.Widget.ImageView IImageHandler.TypedNativeView => NativeView;
+			NativeView.GetContent<NativeImageView>() ?? throw new InvalidOperationException("ImageButton did not contain an Image element.");
 #else
-		object IImageHandler.TypedNativeView => NativeView;
+			NativeView;
 #endif
 		ImageSourcePartLoader IImageHandler.SourceLoader => SourceLoader;
 	}

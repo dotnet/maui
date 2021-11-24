@@ -4,6 +4,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -52,7 +53,7 @@ namespace Microsoft.Maui
 
 			var clipPath = GetClipPath();
 
-			if (clipPath != null)
+			if (clipPath! != null!)
 				ctx.AddPath(clipPath);
 
 			ctx.Clip();
@@ -295,7 +296,7 @@ namespace Microsoft.Maui
 				ctx.SetFillColor(_backgroundColor.CGColor);
 				var clipPath = GetClipPath();
 
-				if (clipPath != null)
+				if (clipPath! != null!)
 					ctx.AddPath(clipPath);
 
 				ctx.DrawPath(CGPathDrawingMode.Fill);
@@ -318,7 +319,7 @@ namespace Microsoft.Maui
 
 			var clipPath = GetClipPath();
 
-			if (clipPath != null)
+			if (clipPath! != null!)
 				ctx.AddPath(clipPath);
 
 			if (_stroke != null)

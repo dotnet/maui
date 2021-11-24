@@ -41,7 +41,7 @@ namespace Samples
 
 		void AppActions_OnAppAction(object sender, AppActionEventArgs e)
 		{
-			MainPage.Dispatcher.BeginInvokeOnMainThread(async () =>
+			MainPage.Dispatcher.Dispatch(async () =>
 			{
 				var page = e.AppAction.Id switch
 				{

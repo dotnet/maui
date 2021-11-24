@@ -260,7 +260,7 @@ namespace Microsoft.Maui.DeviceTests
 			return events;
 		}
 
-		protected new TCustomHandler CreateHandler<TCustomHandler>(IView view)
+		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
 			where TCustomHandler : IImageHandler, new()
 		{
 			var handler = new TCustomHandler();

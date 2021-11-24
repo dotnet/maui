@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Internals
 {
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.Internals
 			catch (global::System.IO.FileNotFoundException)
 			{
 				// Sometimes the previewer doesn't actually have everything required for these loads to work
-				Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attribute {1} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
+				Application.Current?.FindMauiContext()?.CreateLogger("Registrar")?.LogWarning("Could not load assembly: {assembly} for Attribute {attrType} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
 			}
 
 			return null;

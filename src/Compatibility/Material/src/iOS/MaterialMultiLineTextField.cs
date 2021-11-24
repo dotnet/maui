@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using MaterialComponents;
+using ObjCRuntime;
 using UIKit;
 using MMultilineTextField = MaterialComponents.MultilineTextField;
 using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;

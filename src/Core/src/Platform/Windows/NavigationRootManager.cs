@@ -11,8 +11,6 @@ namespace Microsoft.Maui
 	{
 		IMauiContext _mauiContext;
 		MauiNavigationView _navigationView;
-		IView? _content;
-		IWindow? _window;
 
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
@@ -23,22 +21,20 @@ namespace Microsoft.Maui
 
 		void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
 		{
-			_window?.BackButtonClicked();
+			_mauiContext.GetNativeWindow().GetWindow()?.BackButtonClicked();
 		}
 
 		public FrameworkElement RootView => _navigationView;
 
-		public virtual void Connect(IWindow window)
+		public virtual void Connect(IView view)
 		{
-			_window = window;
-			_content = window?.Content;
-			_navigationView.Content = _content?.ToNative(_mauiContext);
+			_ = view.ToNative(_mauiContext);
+			var nativeView = view.GetNative(true);
+			_navigationView.Content = nativeView;
 		}
 
-		public virtual void Disconnect(IWindow window)
+		public virtual void Disconnect(IView view)
 		{
-			_window = null;
-			_content = null;
 			_navigationView.Content = null;
 		}
 

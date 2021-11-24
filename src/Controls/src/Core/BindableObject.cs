@@ -4,17 +4,25 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
 		IDispatcher _dispatcher;
-		public virtual IDispatcher Dispatcher
+
+		// return the dispatcher that was available when this was created,
+		// otherwise try to find the nearest dispatcher (probably the window/app)
+		public IDispatcher Dispatcher =>
+			_dispatcher ??= this.FindDispatcher();
+
+		public BindableObject()
 		{
-			get => _dispatcher ??= this.GetDispatcher();
-			internal set => _dispatcher = value;
+			// try use the current thread's dispatcher
+			_dispatcher = Dispatching.Dispatcher.GetForCurrentThread();
 		}
 
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
@@ -393,13 +401,13 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(property));
 			if (checkAccess && property.IsReadOnly)
 			{
-				Log.Warning("BindableObject", $"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
 			if (!converted && !property.TryConvert(ref value))
 			{
-				Log.Warning("SetValue", $"Cannot convert {value} to type '{property.ReturnType}'");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot convert {value} to type '{property.ReturnType}'");
 				return;
 			}
 

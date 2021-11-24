@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Essentials
 	public static partial class SecureStorage
 	{
 		// Special Alias that is only used for Secure Storage. All others should use: Preferences.GetPrivatePreferencesSharedName
-		internal static readonly string Alias = $"{AppInfo.PackageName}.xamarinessentials";
+		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
 
 		public static Task<string> GetAsync(string key)
 		{

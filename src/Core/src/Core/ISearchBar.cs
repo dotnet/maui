@@ -7,6 +7,9 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface ISearchBar : IView, ITextInput, ITextAlignment
 	{
+		/// <summary>
+		/// Gets the color of the cancel button.
+		/// </summary>
 		Color CancelButtonColor { get; }
 
 		/// <summary>
