@@ -10,16 +10,16 @@ namespace Microsoft.Maui.DeviceTests
 		readonly Random rnd = new Random();
 
 		protected Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
-			TestDispatcher.Current.InvokeOnMainThreadAsync(func);
+			TestDispatcher.Current.DispatchAsync(func);
 
 		protected Task InvokeOnMainThreadAsync(Action action) =>
-			TestDispatcher.Current.InvokeOnMainThreadAsync(action);
+			TestDispatcher.Current.DispatchAsync(action);
 
 		protected Task InvokeOnMainThreadAsync(Func<Task> action) =>
-			TestDispatcher.Current.InvokeOnMainThreadAsync(action);
+			TestDispatcher.Current.DispatchAsync(action);
 
 		protected Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>
-			TestDispatcher.Current.InvokeOnMainThreadAsync(func);
+			TestDispatcher.Current.DispatchAsync(func);
 
 		protected async Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000)
 		{

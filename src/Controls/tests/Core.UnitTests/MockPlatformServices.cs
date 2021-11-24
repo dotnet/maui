@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
@@ -8,10 +7,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
-using FileAccess = System.IO.FileAccess;
-using FileMode = System.IO.FileMode;
-using FileShare = System.IO.FileShare;
-using Stream = System.IO.Stream;
 
 [assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
@@ -74,7 +69,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			Timer timer = null;
-			TimerCallback onTimeout = o => _dispatcher.BeginInvokeOnMainThread(() =>
+			TimerCallback onTimeout = o => _dispatcher.Dispatch(() =>
 			{
 				if (callback())
 					return;
@@ -159,6 +154,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MockApplication : Application
 	{
+		public static UnitTestLogger MockLogger;
+
 		public MockApplication()
 		{
 		}
@@ -185,8 +182,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	class MockDispatcher : IDispatcher
 	{
-		public bool IsInvokeRequired => false;
+		public bool IsDispatchRequired => false;
 
-		public void BeginInvokeOnMainThread(Action action) => action();
+		public bool Dispatch(Action action)
+		{
+			action();
+			return true;
+		}
 	}
 }

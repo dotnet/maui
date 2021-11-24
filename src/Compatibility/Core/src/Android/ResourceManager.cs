@@ -9,6 +9,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using AndroidAppCompat = AndroidX.AppCompat.Content.Res.AppCompatResources;
 using IOPath = System.IO.Path;
@@ -175,11 +176,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (OperationCanceledException)
 			{
-				Internals.Log.Warning("Image loading", "Image load cancelled");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning("Image load cancelled");
 			}
 			catch (Exception ex)
 			{
-				Internals.Log.Warning("Image loading", $"Image load failed: {ex}");
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Image load failed");
 			}
 
 			return null;
@@ -349,7 +350,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (id == 0)
 			{
-				Log.Warning("Could not load image named: {0}", name);
+				Application.Current?.FindMauiContext()?.CreateLogger(nameof(ResourceManager)).LogWarning("Could not load image named: {name}", name);
 				return null;
 			}
 

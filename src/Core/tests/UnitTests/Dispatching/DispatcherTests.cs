@@ -34,7 +34,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 				var dispatcher = Dispatcher.GetForCurrentThread();
 
 				Assert.NotNull(dispatcher);
-				Assert.False(dispatcher.IsInvokeRequired);
+				Assert.False(dispatcher.IsDispatchRequired);
 			});
 
 		[Fact]

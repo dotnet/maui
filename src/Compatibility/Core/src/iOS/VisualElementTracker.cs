@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (thread)
-				view.Dispatcher.Dispatch(update);
+				view.Dispatcher.DispatchIfRequired(update);
 			else
 				update();
 #else

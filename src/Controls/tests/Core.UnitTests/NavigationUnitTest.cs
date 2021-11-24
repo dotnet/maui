@@ -626,6 +626,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 		}
 
+		[Test]
+		public async Task CurrentPageUpdatesOnPopBeforeAsyncCompletes()
+		{
+			var root = new ContentPage { Title = "Root" };
+			var navPage = new TestNavigationPage(true, root);
+			await navPage.PushAsync(new ContentPage());
+			var popped = navPage.PopAsync();
+			Assert.AreEqual(navPage.CurrentPage, root);
+			await popped;
+			Assert.AreEqual(navPage.CurrentPage, root);
+		}
+
 		[TestCase(false, Description = "CurrentPage should not be set to null when you attempt to pop the last page")]
 		[TestCase(true, Description = "CurrentPage should not be set to null when you attempt to pop the last page")]
 		[Property("Bugzilla", 28335)]
