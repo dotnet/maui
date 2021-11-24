@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Essentials
 
 		static void Toggle(bool on)
 		{
-			var captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaType.Video);
+			var captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
 			if (captureDevice == null || !(captureDevice.HasFlash || captureDevice.HasTorch))
 				throw new FeatureNotSupportedException();
 
