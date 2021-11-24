@@ -6,8 +6,8 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Internals;
 
 #if __MOBILE__
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

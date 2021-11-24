@@ -3,11 +3,11 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform.iOS;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

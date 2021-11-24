@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -17,7 +18,6 @@ using UIKit;
 using WebKit;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using Uri = System.Uri;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

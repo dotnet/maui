@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls
 {
-	public static class GridLayoutExtensions 
+	public static class GridLayoutExtensions
 	{
 		public static void Add(this GridLayout gridLayout, IView view, int column = 0, int row = 0)
 		{

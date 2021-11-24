@@ -3,7 +3,7 @@
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
 	[TestFixture]
-	public class GridLayoutExtensionTests 
+	public class GridLayoutExtensionTests
 	{
 		[Test]
 		public void AddViewRowColumn()
