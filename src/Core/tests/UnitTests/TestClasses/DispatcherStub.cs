@@ -19,17 +19,18 @@ namespace Microsoft.Maui.UnitTests
 			ManagedThreadId = Environment.CurrentManagedThreadId;
 		}
 
-		public bool IsInvokeRequired =>
+		public bool IsDispatchRequired =>
 			_isInvokeRequired?.Invoke() ?? false;
 
 		public int ManagedThreadId { get; }
 
-		public void BeginInvokeOnMainThread(Action action)
+		public bool Dispatch(Action action)
 		{
 			if (_invokeOnMainThread is null)
 				action();
 			else
 				_invokeOnMainThread.Invoke(action);
+			return true;
 		}
 	}
 

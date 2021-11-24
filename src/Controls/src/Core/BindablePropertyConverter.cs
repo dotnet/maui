@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -78,13 +79,13 @@ namespace Microsoft.Maui.Controls
 				return null;
 			if (strValue.Contains(":"))
 			{
-				Log.Warning(null, "Can't resolve properties with xml namespace prefix.");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning("Can't resolve properties with xml namespace prefix.");
 				return null;
 			}
 			string[] parts = strValue.Split('.');
 			if (parts.Length != 2)
 			{
-				Log.Warning(null, $"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning($"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 				return null;
 			}
 			Type type = Type.GetType("Microsoft.Maui.Controls." + parts[0]);
