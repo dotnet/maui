@@ -1,19 +1,19 @@
-﻿using Microsoft.Maui.Animations;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 [assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-    internal class MockPlatformServices : Internals.IPlatformServices
+	internal class MockPlatformServices : Internals.IPlatformServices
 	{
 		readonly IDispatcher _dispatcher;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
