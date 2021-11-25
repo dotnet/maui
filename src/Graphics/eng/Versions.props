@@ -2,11 +2,11 @@
   <!--Package versions-->
   <PropertyGroup>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.101-servicing.21562.12</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.101-servicing.21567.21</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>6.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.101-preview.11.93</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.101-preview.11.111</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.11.383</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>15.0.101-preview.11.383</MicrosoftiOSSdkPackageVersion>
