@@ -86,7 +86,6 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateCornerRadius(buttonStroke);
 		}
 
-
 		public static void MapText(IButtonHandler handler, IText button)
 		{
 			handler.TypedNativeView?.UpdateTextPlainText(button);

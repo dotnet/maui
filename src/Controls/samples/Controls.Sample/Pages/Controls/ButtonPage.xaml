@@ -48,10 +48,18 @@
                     TextColor="White"
                     Text="BorderWidth"/>
                 <Label
-                    Text="CornerRadius"
+                    Text="CornerRadius = 0"
                     Style="{StaticResource Headline}"/>
                 <Button
-                    CornerRadius="12"
+                    CornerRadius="0"
+                    BackgroundColor="Purple"
+                    TextColor="White"
+                    Text="CornerRadius"/>
+                <Label
+                    Text="CornerRadius = 10"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    CornerRadius="10"
                     BackgroundColor="Purple"
                     TextColor="White"
                     Text="CornerRadius"/>
