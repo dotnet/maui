@@ -7,14 +7,14 @@ namespace Microsoft.Maui.Dispatching
 		public static IDispatcher? GetForCurrentThread() =>
 			DispatcherProvider.Current.GetForCurrentThread();
 
-		public bool IsInvokeRequired =>
-			IsInvokeRequiredImplementation();
+		public bool IsDispatchRequired =>
+			IsDispatchRequiredImplementation();
 
-		public void BeginInvokeOnMainThread(Action action)
+		public bool Dispatch(Action action)
 		{
 			_ = action ?? throw new ArgumentNullException(nameof(action));
 
-			BeginInvokeOnMainThreadImplementation(action);
+			return DispatchImplementation(action);
 		}
 	}
 }

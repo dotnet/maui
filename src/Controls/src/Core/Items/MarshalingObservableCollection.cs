@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 				args = new ResetNotifyCollectionChangedEventArgs(items);
 			}
 
-			_dispatcher.Dispatch(() => HandleCollectionChange(args));
+			_dispatcher.DispatchIfRequired(() => HandleCollectionChange(args));
 		}
 
 		void HandleCollectionChange(NotifyCollectionChangedEventArgs args)

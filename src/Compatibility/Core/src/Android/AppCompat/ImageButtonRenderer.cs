@@ -5,6 +5,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -220,7 +221,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					var heightRatio = 1f;
 
 					if (Element.Aspect == Aspect.AspectFill && OnThisPlatform().GetIsShadowEnabled())
-						Internals.Log.Warning(nameof(ImageButtonRenderer), "AspectFill isn't fully supported when using shadows. Image may be clipped incorrectly to Border");
+						Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning("AspectFill isn't fully supported when using shadows. Image may be clipped incorrectly to Border");
 
 					switch (Element.Aspect)
 					{

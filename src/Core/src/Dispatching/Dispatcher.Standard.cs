@@ -8,10 +8,10 @@ namespace Microsoft.Maui.Dispatching
 		{
 		}
 
-		bool IsInvokeRequiredImplementation() =>
+		bool IsDispatchRequiredImplementation() =>
 			throw new NotImplementedException();
 
-		void BeginInvokeOnMainThreadImplementation(Action action) =>
+		bool DispatchImplementation(Action action) =>
 			throw new NotImplementedException();
 	}
 

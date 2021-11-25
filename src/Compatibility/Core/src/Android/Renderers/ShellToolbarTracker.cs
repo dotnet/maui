@@ -13,6 +13,7 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -212,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (Exception exc)
 			{
-				Internals.Log.Warning(nameof(Shell), $"Failed to Navigate Back: {exc}");
+				Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>()?.LogWarning(exc, "Failed to Navigate Back");
 			}
 		}
 

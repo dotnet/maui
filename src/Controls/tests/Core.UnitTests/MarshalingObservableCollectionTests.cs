@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await _dispatcher.InvokeOnMainThreadAsync<int>(() =>
+			var onMainThreadCount = await _dispatcher.DispatchAsync<int>(() =>
 			{
 				return moc.Count;
 			});
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await _dispatcher.InvokeOnMainThreadAsync<int>(() => moc.Count);
+			var onMainThreadCount = await _dispatcher.DispatchAsync<int>(() => moc.Count);
 
 			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-clear");
 			Assert.That(onMainThreadCount, Is.EqualTo(0), "Count should be zero because the Clear has been processed");
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await _dispatcher.InvokeOnMainThreadAsync<int>(() => moc.Count);
+			var onMainThreadCount = await _dispatcher.DispatchAsync<int>(() => moc.Count);
 
 			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-clear");
 			Assert.That(onMainThreadCount, Is.EqualTo(1), "Should have processed a Clear and an Add");
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await _dispatcher.InvokeOnMainThreadAsync<int>(() => moc.Count);
+			var onMainThreadCount = await _dispatcher.DispatchAsync<int>(() => moc.Count);
 
 			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-remove");
 			Assert.That(onMainThreadCount, Is.EqualTo(1), "Remove has now processed");
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadValue = await _dispatcher.InvokeOnMainThreadAsync(() => moc[0]);
+			var onMainThreadValue = await _dispatcher.DispatchAsync(() => moc[0]);
 
 			Assert.That(itemFromThreadPool, Is.EqualTo(1), "Should have value from before replace");
 			Assert.That(onMainThreadValue, Is.EqualTo(42), "Should have value from after replace");
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadValue = await _dispatcher.InvokeOnMainThreadAsync(() => moc[0]);
+			var onMainThreadValue = await _dispatcher.DispatchAsync(() => moc[0]);
 
 			Assert.That(itemFromThreadPool, Is.EqualTo(1), "Should have value from before move");
 			Assert.That(onMainThreadValue, Is.EqualTo(2), "Should have value from after move");
@@ -299,15 +299,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					});
 				}
 
-				public bool IsInvokeRequired =>
+				public bool IsDispatchRequired =>
 					Thread.CurrentThread.ManagedThreadId != _threadId;
 
-				public void BeginInvokeOnMainThread(Action action)
+				public bool Dispatch(Action action)
 				{
 					if (!_running)
 						throw new InvalidOperationException("Dispatcher has been stopped.");
 
 					_todo.Enqueue(action);
+					return true;
 				}
 			}
 		}

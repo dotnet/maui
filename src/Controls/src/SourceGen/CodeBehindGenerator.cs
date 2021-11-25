@@ -165,6 +165,20 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				//initializeComponent
 				sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+
+				// add MemberNotNull attributes
+				if (namedFields != null)
+				{
+					sb.AppendLine($"#if NET5_0_OR_GREATER");
+					foreach ((var fname, _, _) in namedFields)
+					{
+
+						sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({(CSharpKeywords.Contains(fname) ? "@" + fname : fname)}))]");
+					}
+
+					sb.AppendLine($"#endif");
+				}
+
 				sb.AppendLine("\t\tprivate void InitializeComponent()");
 				sb.AppendLine("\t\t{");
 				sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");

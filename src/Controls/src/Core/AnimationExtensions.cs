@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -328,28 +329,12 @@ namespace Microsoft.Maui.Controls
 
 		static void DoAction(IAnimatable self, Action action)
 		{
+			IDispatcher dispatcher = null;
 			if (self is BindableObject element)
-			{
-				if (element.Dispatcher.IsInvokeRequired)
-				{
-					element.Dispatcher.BeginInvokeOnMainThread(action);
-				}
-				else
-				{
-					action();
-				}
+				dispatcher = element.Dispatcher;
 
-				return;
-			}
-
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(action);
-			}
-			else
-			{
-				action();
-			}
+			// a null dispatcher is OK as we will find one in Dispatch
+			dispatcher.DispatchIfRequired(action);
 		}
 
 		class Info
