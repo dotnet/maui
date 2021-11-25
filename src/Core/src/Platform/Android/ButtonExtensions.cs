@@ -1,11 +1,6 @@
-using System;
-using Android.Content;
-using Android.Content.Res;
-using Android.Views;
 using AndroidX.AppCompat.Widget;
-using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
-using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
@@ -13,18 +8,9 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateStrokeColor(this MaterialButton nativeButton, IButtonStroke buttonStroke)
 		{
-			var stroke = buttonStroke.StrokeColor?.ToNative();
-
-			if (stroke is not null)
+			if (buttonStroke.StrokeColor is Color stroke)
 			{
-				var states = new int[][] {
-					new int[] { Android.Resource.Attribute.StateEnabled },
-					new int[] {-Android.Resource.Attribute.StateEnabled },
-					new int[] {-Android.Resource.Attribute.StateChecked },
-					new int[] { Android.Resource.Attribute.StatePressed }
-				};
-				var c = (int)stroke;
-				nativeButton.StrokeColor = new ColorStateList(states, new int[] { c, c, c, c });
+				nativeButton.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToNative());
 			}
 		}
 
