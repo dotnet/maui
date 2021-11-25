@@ -21,7 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="build\**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Pack="true" PackagePath="build\" />
+    <Content Remove="build\**\*" />
+    <None Include="build\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
 </Project>
