@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "Microsoft.Maui.Graphics-net6.sln",
+    "projects": [
+      "src\\Microsoft.Maui.Graphics.Skia\\Microsoft.Maui.Graphics.Skia-net6.csproj",
+      "src\\Microsoft.Maui.Graphics.Text.Markdig\\Microsoft.Maui.Graphics.Text.Markdig-net6.csproj",
+      "src\\Microsoft.Maui.Graphics\\Microsoft.Maui.Graphics-net6.csproj",
+      "tests\\Microsoft.Maui.Graphics.Tests\\Microsoft.Maui.Graphics.Tests-net6.csproj"
+    ]
+  }
+}
