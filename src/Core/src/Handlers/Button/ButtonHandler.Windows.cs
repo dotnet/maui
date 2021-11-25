@@ -73,6 +73,21 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateBackground(button);
 		}
 
+		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.TypedNativeView?.UpdateStrokeColor(buttonStroke);
+		}
+
+		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.TypedNativeView?.UpdateStrokeThickness(buttonStroke);
+		}
+
+		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.TypedNativeView?.UpdateCornerRadius(buttonStroke);
+		}
+
 		public static void MapText(IButtonHandler handler, IText button)
 		{
 			handler.TypedNativeView?.UpdateText(button);

@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static double FromPixels(this Context self, double pixels)
+		public static double FromPixels(this Context? self, double pixels)
 		{
 			EnsureMetrics(self);
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static float ToPixels(this Context self, double dp)
+		public static float ToPixels(this Context? self, double dp)
 		{
 			EnsureMetrics(self);
 
@@ -164,14 +164,15 @@ namespace Microsoft.Maui
 			return (color & 0x00ffffff) | ((int)Math.Round(originalAlpha * alpha) << 24);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		static void EnsureMetrics(Context context)
+		static void EnsureMetrics(Context? context)
 		{
 			if (s_displayDensity != float.MinValue)
 				return;
 
-			using (DisplayMetrics? metrics = context?.Resources?.DisplayMetrics)
-				s_displayDensity = metrics != null ? metrics.Density : 0;
+			context ??= Android.App.Application.Context;
+
+			using (DisplayMetrics? metrics = context.Resources?.DisplayMetrics)
+				s_displayDensity = metrics != null ? metrics.Density : 1;
 		}
 
 		public static AActivity? GetActivity(this Context context)
