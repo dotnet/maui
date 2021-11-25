@@ -258,11 +258,6 @@ namespace Microsoft.Maui.Graphics
 			_commands.Add(canvas => canvas.SetFillPaint(paint, rectangle));
 		}
 
-		public void DrawImage(IImage image, float x, float y, float width, float height)
-		{
-			_commands.Add(canvas => canvas.DrawImage(image, x, y, width, height));
-		}
-
 		public SizeF GetStringSize(string value, IFont font, float fontSize)
 		{
 			throw new NotSupportedException();
@@ -271,6 +266,11 @@ namespace Microsoft.Maui.Graphics
 		public SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
 			throw new NotSupportedException();
+		}
+
+		public void DrawImage(IImage image, float x, float y, float width, float height)
+		{
+			_commands.Add(canvas => canvas.DrawImage(image, x, y, width, height));
 		}
 	}
 }
