@@ -1,13 +1,13 @@
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.CoreGraphics;
 using AppKit;
 using CoreGraphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Mac
 {
 	public class TesterViewController : NSViewController
 	{
+		
 		public override void LoadView()
 		{
 			View = new TesterView();
@@ -25,13 +25,11 @@ namespace GraphicsTester.Mac
 	public class TesterView : NSView
 	{
 		private readonly NSTableView tableView;
-		private readonly NativeGraphicsView graphicsView;
+		private readonly PlatformGraphicsView graphicsView;
 		private readonly TesterTableViewSource tableSource;
 
 		public TesterView() : base()
 		{
-			GraphicsPlatform.Register(NativeGraphicsService.Instance);
-
 			tableSource = new TesterTableViewSource();
 			tableSource.ScenarioSelected += (drawable) => {
 				graphicsView.Drawable = drawable;
@@ -48,7 +46,7 @@ namespace GraphicsTester.Mac
 
 			AddSubview(tableView);
 
-			graphicsView = new NativeGraphicsView();
+			graphicsView = new PlatformGraphicsView();
 			AddSubview(graphicsView);
 
 			Layout();

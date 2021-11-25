@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public CGImage CGImage => _bitmapContext.ToImage();
 
-		public override IImage Image => new PlatformImage(NSImage);
+		public PlatformImage PlatformImage => new PlatformImage(NSImage);
+
+		public override IImage Image => PlatformImage;
 
 		public override void Dispose()
 		{

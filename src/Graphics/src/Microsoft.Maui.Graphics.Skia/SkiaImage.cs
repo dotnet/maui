@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics.Platform;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
-		public SKBitmap PlatformImage => _image;
+		public SKBitmap PlatformRepresentation => _image;
 
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
@@ -145,12 +146,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, (float)Math.Round(dirtyRect.Width), (float)Math.Round(dirtyRect.Height));
 		}
 
-		public IImage ToImage(int width, int height, float scale = 1f)
+		public PlatformImage ToPlatformImage()
 		{
-			using var context = new SkiaBitmapExportContext(width, height, scale);
-			context.Canvas.Scale(scale, scale);
-			Draw(context.Canvas, new RectangleF(0, 0, (float)width / scale, (float)height / scale));
-			return context.Image;
+			throw new NotSupportedException();
 		}
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)

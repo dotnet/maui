@@ -43,9 +43,11 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public UIImage UIImage => UIImage.FromImage(_bitmapContext.ToImage());
 
+		public PlatformImage PlatformImage => new PlatformImage(UIImage);
+
 		public CGImage CGImage => _bitmapContext.ToImage();
 
-		public override IImage Image => new PlatformImage(UIImage);
+		public override IImage Image => PlatformImage;
 
 		public override void Dispose()
 		{

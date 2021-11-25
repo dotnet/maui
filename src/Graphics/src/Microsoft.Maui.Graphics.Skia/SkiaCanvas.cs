@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				var image = imagePaint.Image as SkiaImage;
 				if (image != null)
 				{
-					SKBitmap bitmap = image.PlatformImage;
+					SKBitmap bitmap = image.PlatformRepresentation;
 
 					if (bitmap != null)
 					{
@@ -851,7 +851,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			float height)
 		{
 			var skiaImage = image as SkiaImage;
-			var bitmap = skiaImage?.PlatformImage;
+			var bitmap = skiaImage?.PlatformRepresentation;
 			if (bitmap != null)
 			{
 				var scaleX = CurrentState.ScaleX < 0 ? -1 : 1;

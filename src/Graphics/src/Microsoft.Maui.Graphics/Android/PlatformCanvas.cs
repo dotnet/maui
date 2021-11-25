@@ -787,7 +787,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			if (image is PlatformImage mdimage)
+			var mdimage = image.ToPlatformImage();
+
+			if (mdimage != null)
 			{
 				var bitmap = mdimage.PlatformRepresentation;
 				if (bitmap != null)

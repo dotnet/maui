@@ -636,7 +636,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private void DrawImageCallback(CGContext context)
 		{
-			var platformWrapper = _fillImage as PlatformImage;
+			var platformWrapper = _fillImage.ToPlatformImage();
 			var platformImage = platformWrapper?.PlatformRepresentation;
 			if (platformImage != null)
 			{
@@ -660,7 +660,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			var platformImage = image as PlatformImage;
+			var platformImage = image.ToPlatformImage();
 			var platformRepresentation = platformImage?.PlatformRepresentation;
 			if (platformRepresentation != null)
 			{

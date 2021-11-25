@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override ICanvas Canvas => _canvas;
 
-		public override IImage Image => new PlatformImage(Bitmap);
+		public override IImage Image => PlatformImage;
+
+		public PlatformImage PlatformImage => new PlatformImage(Bitmap);
 
 		public Bitmap Bitmap => _bitmap;
 
