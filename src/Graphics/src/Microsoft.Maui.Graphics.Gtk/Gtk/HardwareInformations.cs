@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Maui.Graphics.Native.Gtk {
+namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 	public static class HardwareInformations {
 

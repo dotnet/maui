@@ -7,27 +7,27 @@ using Microsoft.Maui.Graphics.Text;
 using CoreText;
 using Foundation;
 
-namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class AttributedTextExtensions
 	{
 		public static NSAttributedString AsNSAttributedString(
 			this IAttributedText target,
-			string contextFontName = null,
+			IFont contextFont = null,
 			float contextFontSize = 12f,
 			string contextFontColor = null,
 			bool coreTextCompatible = false)
 		{
 			if (target != null)
 			{
-				var defaultAttributes = GetDefaultAttributes(contextFontName, contextFontSize, contextFontColor);
+				var defaultAttributes = GetDefaultAttributes(contextFont, contextFontSize, contextFontColor);
 				var attributedString = new NSMutableAttributedString(target.Text, defaultAttributes);
 
 				if (target.Runs != null)
 				{
 					foreach (var run in target.Runs)
 					{
-						HandleRun(attributedString, run, contextFontName, contextFontSize, contextFontColor, coreTextCompatible);
+						HandleRun(attributedString, run, contextFont, contextFontSize, contextFontColor, coreTextCompatible);
 					}
 				}
 
@@ -40,24 +40,22 @@ namespace Microsoft.Maui.Graphics.Native
 		private static void HandleRun(
 			NSMutableAttributedString attributedString,
 			IAttributedTextRun section,
-			string contextFontName = null,
+			IFont contextFont = null,
 			float contextFontSize = 12f,
 			string contextFontColor = null,
 			bool coreTextCompatible = false)
 		{
-			AddAttributes(attributedString, section.Attributes, section.Start, section.Length, contextFontName, contextFontSize, contextFontColor, coreTextCompatible);
+			AddAttributes(attributedString, section.Attributes, section.Start, section.Length, contextFont, contextFontSize, contextFontColor, coreTextCompatible);
 		}
 
 		private static CTStringAttributes GetDefaultAttributes(
-			string contextFontName = null,
+			IFont contextFont = null,
 			float contextFontSize = 12f,
 			string contextFontColor = null)
 		{
 			var ctattributes = new CTStringAttributes();
 
-			var font = contextFontName == null
-				? new CTFont(CTFontUIFontType.System, contextFontSize, NSLocale.CurrentLocale.Identifier)
-				: new CTFont(contextFontName, contextFontSize);
+			var font = contextFont?.ToCTFont(contextFontSize) ?? FontExtensions.GetDefaultCTFont(contextFontSize);
 
 			ctattributes.Font = font;
 
@@ -72,40 +70,29 @@ namespace Microsoft.Maui.Graphics.Native
 			Text.ITextAttributes attributes,
 			int start,
 			int length,
-			string contextFontName = null,
+			IFont contextFont = null,
 			float contextFontSize = 12f,
 			string contextFontColor = null,
 			bool coreTextCompatible = false)
 		{
 			var ctattributes = new CTStringAttributes();
 
-			CTFont font;
-			var fontName = attributes.GetFontName() ?? contextFontName;
-			var fontSize = attributes.GetFontSize(contextFontSize);
-			if (fontName != null)
-			{
-				font = new CTFont(fontName, fontSize);
-			}
-			else
-			{
-				/* todo: submit bug to Xamarin as null should be a valid argument to the language */
-				font = new CTFont(CTFontUIFontType.System, fontSize, NSLocale.CurrentLocale.Identifier);
-			}
+			var font = contextFont?.ToCTFont(contextFontSize) ?? FontExtensions.GetDefaultCTFont(contextFontSize);
 
 			if (attributes.GetBold() && attributes.GetItalic())
 			{
 				font = font.WithSymbolicTraits(
-					fontSize,
+					contextFontSize,
 					CTFontSymbolicTraits.Bold | CTFontSymbolicTraits.Italic,
 					CTFontSymbolicTraits.Bold | CTFontSymbolicTraits.Italic);
 			}
 			else if (attributes.GetBold())
 			{
-				font = font.WithSymbolicTraits(fontSize, CTFontSymbolicTraits.Bold, CTFontSymbolicTraits.Bold);
+				font = font.WithSymbolicTraits(contextFontSize, CTFontSymbolicTraits.Bold, CTFontSymbolicTraits.Bold);
 			}
 			else if (attributes.GetItalic())
 			{
-				font = font.WithSymbolicTraits(fontSize, CTFontSymbolicTraits.Italic, CTFontSymbolicTraits.Italic);
+				font = font.WithSymbolicTraits(contextFontSize, CTFontSymbolicTraits.Italic, CTFontSymbolicTraits.Italic);
 			}
 
 			ctattributes.Font = font;
@@ -188,13 +175,13 @@ namespace Microsoft.Maui.Graphics.Native
 			if (attributes.GetSuperscript())
 			{
 				if (dictionary == null) dictionary = new NSMutableDictionary();
-				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(fontSize * .5f));
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
 			}
 
 			if (attributes.GetSubscript())
 			{
 				if (dictionary == null) dictionary = new NSMutableDictionary();
-				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-fontSize * .2f));
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
 			}
 
 #if MONOMAC

@@ -1,11 +1,11 @@
 using System.IO;
 using System.Threading;
 
-namespace Microsoft.Maui.Graphics.Native.Gtk {
+namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 	public class GtkBitmapExportContext : BitmapExportContext {
 
-		private NativeCanvas _canvas;
+		private PlatformCanvas _canvas;
 		private Cairo.ImageSurface _surface;
 		private Cairo.Context _context;
 		private Gdk.Pixbuf? _pixbuf;
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 			_surface = new Cairo.ImageSurface(Cairo.Format.Argb32, width, height);
 			_context = new Cairo.Context(_surface);
 
-			_canvas = new NativeCanvas() {
+			_canvas = new PlatformCanvas {
 				Context = _context
 			};
 		}

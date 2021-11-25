@@ -88,10 +88,8 @@ namespace Microsoft.Maui.Graphics.SharpDX
 
 			Matrix = prototype.Matrix;
 
-			FontName = prototype.FontName;
+			Font = prototype.Font;
 			FontSize = prototype.FontSize;
-			FontWeight = prototype.FontWeight;
-			FontStyle = prototype.FontStyle;
 
 			_alpha = prototype._alpha;
 			_scale = prototype._scale;
@@ -111,9 +109,18 @@ namespace Microsoft.Maui.Graphics.SharpDX
 
 		public Matrix3x2 Matrix { get; private set; }
 
-		public String FontName { get; set; }
-		public FontWeight FontWeight { get; set; }
-		public FontStyle FontStyle { get; set; }
+		public IFont Font { get; set; }
+		public FontWeight NativeFontWeight
+			=> (FontWeight)(((Font?.Weight ?? Graphics.Font.Default.Weight) + 50) / 100 * 100);
+
+		public FontStyle NativeFontStyle
+			=> (Font?.StyleType ?? Graphics.Font.Default.StyleType) switch
+			{
+				FontStyleType.Normal => FontStyle.Normal,
+				FontStyleType.Italic => FontStyle.Italic,
+				FontStyleType.Oblique => FontStyle.Oblique,
+				_ => FontStyle.Normal
+			};
 
 		private RenderingParams TextRenderingParams { get; set; }
 		private DrawingStateBlock DrawingStateBlock { get; set; }
@@ -494,10 +501,8 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			IsShadowed = false;
 			_sourceShadowColor = CanvasDefaults.DefaultShadowColor;
 
-			FontName = "Arial";
+			Font = Graphics.Font.Default;
 			FontSize = 12;
-			FontWeight = FontWeight.Regular;
-			FontStyle = FontStyle.Normal;
 			_sourceFontColor = Colors.Black;
 			_fontBrushValid = false;
 

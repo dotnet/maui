@@ -2,7 +2,7 @@ namespace Microsoft.Maui.Graphics
 {
 	public interface ITextAttributes
 	{
-		string FontName { get; set; }
+		IFont Font { get; set; }
 
 		float FontSize { get; set; }
 

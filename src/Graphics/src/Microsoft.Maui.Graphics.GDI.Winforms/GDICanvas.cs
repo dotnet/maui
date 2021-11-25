@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using Microsoft.Maui.Graphics.Text;
 using System.Numerics;
+using System.Windows.Forms;
 
 namespace Microsoft.Maui.Graphics.GDI
 {
@@ -109,13 +110,11 @@ namespace Microsoft.Maui.Graphics.GDI
 			set => CurrentState.TextColor = value?.AsColor() ?? Drawing.Color.Black;
 		}
 
-		public override string FontName
+		public override IFont Font
 		{
 			set
 			{
-				FontMapping vMapping = GDIFontManager.GetMapping(value);
-				CurrentState.FontName = vMapping.Name;
-				CurrentState.FontStyle = vMapping.Style;
+				CurrentState.Font = value;
 			}
 		}
 
@@ -153,12 +152,12 @@ namespace Microsoft.Maui.Graphics.GDI
 			region.Dispose();
 		}
 
-		protected override void NativeDrawLine(float x1, float y1, float x2, float y2)
+		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
 		{
 			Draw(g => g.DrawLine(CurrentState.StrokePen, x1, y1, x2, y2));
 		}
 
-		protected override void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
+		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
 		{
 			while (startAngle < 0)
 			{
@@ -225,7 +224,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			Draw(g => g.FillPath(CurrentState.FillBrush, path));
 		}
 
-		protected override void NativeDrawRectangle(float x, float y, float width, float height)
+		protected override void PlatformDrawRectangle(float x, float y, float width, float height)
 		{
 			SetRect(x, y, width, height);
 			Draw(g => g.DrawRectangle(CurrentState.StrokePen, _rect.X, _rect.Y, _rect.Width, _rect.Height));
@@ -237,11 +236,11 @@ namespace Microsoft.Maui.Graphics.GDI
 			Draw(g => g.FillRectangle(CurrentState.FillBrush, _rect.X, _rect.Y, _rect.Width, _rect.Height));
 		}
 
-		protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
+		protected override void PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
 			if (cornerRadius == 0)
 			{
-				NativeDrawRectangle(x, y, width, height);
+				PlatformDrawRectangle(x, y, width, height);
 				return;
 			}
 
@@ -266,18 +265,18 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		private GraphicsPath GetPath(PathF path)
 		{
-			var graphicsPath = path.NativePath as GraphicsPath;
+			var graphicsPath = path.PlatformPath as GraphicsPath;
 
 			if (graphicsPath == null)
 			{
 				graphicsPath = path.AsGDIPath();
-				path.NativePath = graphicsPath;
+				path.PlatformPath = graphicsPath;
 			}
 
 			return graphicsPath;
 		}
 
-		protected override void NativeDrawPath(PathF path)
+		protected override void PlatformDrawPath(PathF path)
 		{
 			if (path == null)
 			{
@@ -349,7 +348,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			path.Dispose();
 		}
 
-		protected override void NativeDrawEllipse(float x, float y, float width, float height)
+		protected override void PlatformDrawEllipse(float x, float y, float width, float height)
 		{
 			SetRect(x, y, width, height);
 			Draw(g => g.DrawEllipse(CurrentState.StrokePen, _rect));
@@ -364,7 +363,7 @@ namespace Microsoft.Maui.Graphics.GDI
 		public override void DrawString(string value, float x, float y, HorizontalAlignment horizontalAlignment)
 		{
 			var font = CurrentState.Font;
-			var size = _graphics.MeasureString(value, font);
+			var size = _graphics.MeasureString(value, font.ToSystemDrawingFont(CurrentState.NativeFontSize));
 
 			switch (horizontalAlignment)
 			{
@@ -377,7 +376,7 @@ namespace Microsoft.Maui.Graphics.GDI
 					break;
 			}
 
-			Draw(g => g.DrawString(value, font, CurrentState.TextBrush, x, y - size.Height));
+			Draw(g => g.DrawString(value, font.ToSystemDrawingFont(CurrentState.NativeFontSize), CurrentState.TextBrush, x, y - size.Height));
 		}
 
 		public override void DrawString(string value, float x, float y, float width, float height, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment,
@@ -419,7 +418,7 @@ namespace Microsoft.Maui.Graphics.GDI
 
 			if (textFlow == TextFlow.OverflowBounds)
 			{
-				var size = _graphics.MeasureString(value, font, (int) width, format);
+				var size = _graphics.MeasureString(value, font.ToSystemDrawingFont(CurrentState.NativeFontSize), (int) width, format);
 
 				if (size.Height > _rect.Height)
 				{
@@ -439,34 +438,34 @@ namespace Microsoft.Maui.Graphics.GDI
 				}
 			}
 
-			Draw(g => g.DrawString(value, font, CurrentState.TextBrush, _rect, format));
+			Draw(g => g.DrawString(value, font.ToSystemDrawingFont(CurrentState.NativeFontSize), CurrentState.TextBrush, _rect, format));
 		}
 
 		public override void DrawText(IAttributedText value, float x, float y, float width, float height)
 		{
 		}
 
-		protected override void NativeRotate(float degrees, float radians, float x, float y)
+		protected override void PlatformRotate(float degrees, float radians, float x, float y)
 		{
 			CurrentState.NativeRotate(degrees, x, y);
 		}
 
-		protected override void NativeRotate(float degrees, float radians)
+		protected override void PlatformRotate(float degrees, float radians)
 		{
 			CurrentState.NativeRotate(degrees);
 		}
 
-		protected override void NativeScale(float sx, float sy)
+		protected override void PlatformScale(float sx, float sy)
 		{
 			CurrentState.NativeScale(sx, sy);
 		}
 
-		protected override void NativeTranslate(float tx, float ty)
+		protected override void PlatformTranslate(float tx, float ty)
 		{
 			CurrentState.NativeTranslate(tx, ty);
 		}
 
-		protected override void NativeConcatenateTransform(Matrix3x2 transform)
+		protected override void PlatformConcatenateTransform(Matrix3x2 transform)
 		{
 			CurrentState.NativeConcatenateTransform(transform);
 		}
@@ -476,12 +475,12 @@ namespace Microsoft.Maui.Graphics.GDI
 			Logger.Debug("Not implemented");
 		}
 
-		protected override float NativeStrokeSize
+		protected override float PlatformStrokeSize
 		{
 			set => CurrentState.StrokeWidth = value;
 		}
 
-		protected override void NativeSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
 		{
 		}
 
@@ -540,17 +539,6 @@ namespace Microsoft.Maui.Graphics.GDI
 			}
 		}
 
-		public override void SetToSystemFont()
-		{
-			CurrentState.FontName = "Arial";
-		}
-
-		public override void SetToBoldSystemFont()
-		{
-			CurrentState.FontName = "Arial";
-			CurrentState.FontStyle = FontStyle.Bold;
-		}
-
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
 			if (image is GDIImage nativeImage)
@@ -595,6 +583,22 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		private void DrawBlurred(Action<System.Drawing.Graphics> drawingAction)
 		{
+		}
+
+		public override SizeF GetStringSize(string aString, IFont font, float fontSize)
+		{
+			var f = font.ToSystemDrawingFont(fontSize * GDICanvasState.DpiAdjustment);
+			var size = TextRenderer.MeasureText(aString, f);
+			f.Dispose();
+			return new SizeF(size.Width, size.Height);
+		}
+
+		public override SizeF GetStringSize(string aString, IFont font, float fontSize, HorizontalAlignment aHorizontalAlignment, VerticalAlignment aVerticalAlignment)
+		{
+			var f = font.ToSystemDrawingFont(fontSize * GDICanvasState.DpiAdjustment);
+			var size = TextRenderer.MeasureText(aString, f);
+			f.Dispose();
+			return new SizeF(size.Width, size.Height);
 		}
 	}
 }

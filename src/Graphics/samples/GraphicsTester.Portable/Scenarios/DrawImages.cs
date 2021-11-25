@@ -16,7 +16,7 @@ namespace GraphicsTester.Scenarios
 			var assembly = GetType().GetTypeInfo().Assembly;
 			using (var stream = assembly.GetManifestResourceStream("GraphicsTester.Resources.royals.png"))
 			{
-				image = GraphicsPlatform.CurrentService.LoadImageFromStream(stream);
+				image = MemoryImage.FromStream(stream);
 			}
 
 			if (image != null)

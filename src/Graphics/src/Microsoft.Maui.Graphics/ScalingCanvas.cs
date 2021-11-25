@@ -82,9 +82,9 @@ namespace Microsoft.Maui.Graphics
 			set => _canvas.FontColor = value;
 		}
 
-		public string FontName
+		public IFont Font
 		{
-			set => _canvas.FontName = value;
+			set => _canvas.Font = value;
 		}
 
 		public float FontSize
@@ -274,19 +274,15 @@ namespace Microsoft.Maui.Graphics
 			_canvas.SetShadow(offset, blur, color);
 		}
 
-		public void SetToSystemFont()
-		{
-			_canvas.SetToSystemFont();
-		}
-
-		public void SetToBoldSystemFont()
-		{
-			_canvas.SetToBoldSystemFont();
-		}
-
 		public void SetBlur(float blurRadius)
 		{
 			_blurrableCanvas?.SetBlur(blurRadius);
 		}
+
+		public SizeF GetStringSize(string value, IFont font, float fontSize)
+			=> _canvas.GetStringSize(value, font, fontSize);
+
+		public SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+			=> _canvas.GetStringSize(value, font, fontSize, horizontalAlignment, verticalAlignment);
 	}
 }

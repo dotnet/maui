@@ -5,13 +5,13 @@ using Java.IO;
 namespace Microsoft.Maui.Graphics.Android
 {
 	// The class which loads the TTF file, parses it and returns the TTF font name
-	public class FontAnalyzer
+	internal class FontAnalyzer
 	{
 		// Font file; must be seekable
 		private RandomAccessFile _mFile;
 
 		// This function parses the TTF file and returns the font name specified in the file
-		public FontInfo GetFontInfo(string aFileName)
+		internal FontInfo GetFontInfo(string aFileName)
 		{
 			try
 			{

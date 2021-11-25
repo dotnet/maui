@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 						AsyncPump.Run(async () => await newBitmap.SaveAsync(memoryStream2, CanvasBitmapFileFormat.Png));
 
 						memoryStream2.Seek(0);
-						var newImage = W2DGraphicsService.Instance.LoadImageFromStream(memoryStream2.AsStreamForRead());
+						var newImage = FromStream(memoryStream2.AsStreamForRead());
 						if (disposeOriginal)
 							_bitmap.Dispose();
 
@@ -99,6 +99,22 @@ namespace Microsoft.Maui.Graphics.Win2D
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, Math.Abs(dirtyRect.Width), Math.Abs(dirtyRect.Height));
+		}
+
+		public IImage ToImage(int width, int height, float scale = 1f)
+		{
+			throw new NotImplementedException();
+		}
+
+
+		public IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
+		{
+			var creator = W2DGraphicsService.Creator;
+			if (creator == null)
+				throw new Exception("No resource creator has been registered globally or for this thread.");
+
+			var bitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream()));
+			return new W2DImage(creator, bitmap);
 		}
 	}
 }

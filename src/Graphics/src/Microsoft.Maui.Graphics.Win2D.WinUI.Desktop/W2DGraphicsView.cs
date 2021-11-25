@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Graphics.Win2D
     public sealed class W2DGraphicsView : UserControl
     {
         private CanvasControl _canvasControl;
-        private readonly W2DCanvas _canvas = new W2DCanvas();
+        private readonly W2DCanvas _canvas;
 
         private IDrawable _drawable;
         private RectangleF _dirty;
@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Graphics.Win2D
 
         public W2DGraphicsView()
         {
-            Loaded += UserControl_Loaded;
+			_canvas = new W2DCanvas();
+
+			Loaded += UserControl_Loaded;
             Unloaded += UserControl_Unloaded;
         }
 

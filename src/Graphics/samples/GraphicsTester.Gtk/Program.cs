@@ -3,7 +3,7 @@
 
 using System;
 using Gtk;
-using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Samples {
 

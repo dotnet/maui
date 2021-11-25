@@ -21,6 +21,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Ski
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Tests-net6", "tests\Microsoft.Maui.Graphics.Tests\Microsoft.Maui.Graphics.Tests-net6.csproj", "{FA7FC7EB-E1EE-4136-A2B5-FEF56A072784}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BC96F35C-D92C-404E-8615-AC15A6E62205}"
+	ProjectSection(SolutionItems) = preProject
+		src\targets\MultiTargeting.targets = src\targets\MultiTargeting.targets
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

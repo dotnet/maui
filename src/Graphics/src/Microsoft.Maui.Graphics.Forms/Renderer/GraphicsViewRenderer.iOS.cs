@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Microsoft.Maui.Graphics.Forms;
 using Microsoft.Maui.Graphics.Forms.iOS;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using Foundation;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
@@ -10,7 +10,7 @@ using Xamarin.Forms.Platform.iOS;
 namespace Microsoft.Maui.Graphics.Forms.iOS
 {
 	[Preserve]
-	public class GraphicsViewRenderer : ViewRenderer<GraphicsView, NativeGraphicsView>
+	public class GraphicsViewRenderer : ViewRenderer<GraphicsView, PlatformGraphicsView>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<GraphicsView> e)
 		{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Graphics.Forms.iOS
 
 			if (e.NewElement != null)
 			{
-				SetNativeControl(new NativeGraphicsView());
+				SetNativeControl(new PlatformGraphicsView());
 				UpdateDrawable();
 			}
 		}

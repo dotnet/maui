@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Graphics.Native.Gtk {
+namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 	public class GtkImage : IImage {
 
@@ -50,6 +50,14 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1) {
 			await Task.Run(() => NativeImage.SaveToStream(stream, format, quality));
+		}
+
+		public IImage ToImage(int width, int height, float scale = 1f)
+		{
+			using var context = new GtkBitmapExportContext(width, height, scale);
+			context.Canvas.Scale(scale, scale);
+			Draw(context.Canvas, new RectangleF(0, 0, (float)width / scale, (float)height / scale));
+			return context.Image;
 		}
 
 	}

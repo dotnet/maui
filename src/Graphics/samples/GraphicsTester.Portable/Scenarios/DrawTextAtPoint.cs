@@ -40,9 +40,9 @@ namespace GraphicsTester.Scenarios
 			}
 
 			canvas.SaveState();
-			canvas.SetToBoldSystemFont();
+			canvas.Font = Font.DefaultBold;
 			canvas.DrawString("Bold System Font", 50, 350, HorizontalAlignment.Left);
-			canvas.SetToSystemFont();
+			canvas.Font = Font.Default;
 			canvas.DrawString("System Font", 50, 400, HorizontalAlignment.Left);
 			canvas.RestoreState();
 		}

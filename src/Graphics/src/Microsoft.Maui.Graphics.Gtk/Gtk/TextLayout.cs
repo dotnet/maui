@@ -3,18 +3,19 @@ using Microsoft.Maui.Graphics.Extras;
 using Microsoft.Maui.Graphics.Text;
 using Context = Cairo.Context;
 
-namespace Microsoft.Maui.Graphics.Native.Gtk {
+namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 	/// <summary>
 	/// Measures and draws text using <see cref="Pango.Layout"/>
 	/// https://developer.gnome.org/pango/1.46/pango-Layout-Objects.html
 	/// https://developer.gnome.org/gdk3/stable/gdk3-Pango-Interaction.html
 	/// </summary>
-	public class TextLayout : IDisposable {
+	internal class TextLayout : IDisposable {
 
 		private Context _context;
 
 		public TextLayout(Context context) {
+
 			_context = context;
 		}
 
@@ -60,11 +61,11 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 		public Pango.FontDescription FontDescription {
 			get {
 				if (PangoFontSize == -1) {
-					PangoFontSize = NativeFontService.Instance.SystemFontDescription.Size;
+					PangoFontSize = Gdk.PangoHelper.ContextGet().FontDescription.Size;
 				}
 
 				if (string.IsNullOrEmpty(FontFamily)) {
-					FontFamily = NativeFontService.Instance.SystemFontDescription.Family;
+					FontFamily = Gdk.PangoHelper.ContextGet().FontDescription.Family;
 				}
 
 				if (_fontDescription == null) {
@@ -76,7 +77,6 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 					};
 
 					_fontDescriptionOwned = true;
-
 				}
 
 				return _fontDescription;

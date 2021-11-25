@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Graphics
 		private int _subPathCount;
 		private readonly List<bool> _subPathsClosed;
 
-		private object _nativePath;
+		private object _platformPath;
 		private RectangleF? _cachedBounds;
 
 		private PathF(List<PointF> points, List<float> arcSizes, List<bool> arcClockwise, List<PathOperation> operations, int subPathCount)
@@ -1187,13 +1187,13 @@ namespace Microsoft.Maui.Graphics
 			return false;
 		}
 
-		public object NativePath
+		public object PlatformPath
 		{
-			get => _nativePath;
+			get => _platformPath;
 			set
 			{
 				ReleaseNative();
-				_nativePath = value;
+				_platformPath = value;
 			}
 		}
 
@@ -1210,10 +1210,10 @@ namespace Microsoft.Maui.Graphics
 
 		private void ReleaseNative()
 		{
-			if (_nativePath is IDisposable disposable)
+			if (_platformPath is IDisposable disposable)
 				disposable.Dispose();
 
-			_nativePath = null;
+			_platformPath = null;
 		}
 
 		public void Move(float x, float y)
@@ -1341,11 +1341,17 @@ namespace Microsoft.Maui.Graphics
 				if (_cachedBounds != null)
 					return (RectangleF)_cachedBounds;
 
-				var currentService = GraphicsPlatform.CurrentService;
-				if (currentService != null)
-					_cachedBounds = currentService.GetPathBounds(this);
-				else
-					return GetBoundsByFlattening();
+#if IOS || MACCATALYST || __IOS__
+
+				if (PlatformPath is not global::CoreGraphics.CGPath cgPath)
+				{
+					PlatformPath = cgPath = Platform.GraphicsExtensions.AsCGPath(this);
+				}
+
+				_cachedBounds = Platform.GraphicsExtensions.AsRectangleF(cgPath.PathBoundingBox);
+#else
+				_cachedBounds = GetBoundsByFlattening();
+#endif
 
 				return (RectangleF)_cachedBounds;
 			}

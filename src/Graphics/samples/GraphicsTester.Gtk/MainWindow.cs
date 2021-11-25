@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using GraphicsTester.Scenarios;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Samples {
 
@@ -50,9 +50,6 @@ namespace Samples {
 			};
 
 			hpanned.Pack1(scroll0, true, true);
-
-			Fonts.Register(NativeFontService.Instance);
-			GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
 
 			_gtkGtkGraphicsView = new GtkGraphicsView {
 				BackgroundColor = Colors.White

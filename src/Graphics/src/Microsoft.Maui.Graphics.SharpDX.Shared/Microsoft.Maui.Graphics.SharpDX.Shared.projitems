@@ -15,15 +15,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)DXCanvasState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DXBitmapExportContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DXExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DXFontFamily.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DXFontService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DXFontManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DXFontStyle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DXGraphicsService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DXImage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DXImageExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DXImageUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DXWicContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FontExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Matrix3x2Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathGeometryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RectangleFExtensions.cs" />

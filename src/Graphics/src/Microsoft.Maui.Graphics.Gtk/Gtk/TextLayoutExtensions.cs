@@ -1,24 +1,39 @@
-namespace Microsoft.Maui.Graphics.Native.Gtk {
+namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
-	public static class TextLayoutExtensions {
+	internal static class TextLayoutExtensions {
 
-		public static void SetFontStyle(this TextLayout it, IFontStyle fs) {
-			it.FontFamily = fs.FontFamily.Name;
-			it.Weight = FontExtensions.ToFontWeigth(fs.Weight);
-			it.Style = fs.StyleType.ToPangoStyle();
+		public static void SetFontStyle(this TextLayout it, IFont font, double? size = null, int? weight = null, FontStyleType? fontStyleType = null) {
 
-			if (fs is NativeFontStyle nfs) {
-				it.PangoFontSize = nfs.Size.ScaledToPango();
-			}
+			it.FontFamily = font.Name;
+
+			if (weight.HasValue)
+				it.Weight = weight.Value.ToPangoWeight();
+
+			if (size.HasValue)
+				it.PangoFontSize = size.Value.ScaledToPango();
+
+			if (fontStyleType.HasValue)
+				it.Style = fontStyleType.Value switch
+				{
+					FontStyleType.Normal => Pango.Style.Normal,
+					FontStyleType.Italic => Pango.Style.Italic,
+					FontStyleType.Oblique => Pango.Style.Oblique,
+					_ => Pango.Style.Normal,
+				};
 		}
 
-		public static void SetCanvasState(this TextLayout it, NativeCanvasState state) {
-			it.FontFamily = state.FontName;
+		public static void SetCanvasState(this TextLayout it, PlatformCanvasState state) {
+
+			var font = (state?.Font ?? Font.Default).ToFontDescription();
+
+			it.FontFamily = font.Family;
+			it.Weight = font.Weight;
+
 			it.PangoFontSize = state.FontSize.ScaledToPango();
 			it.TextColor = state.FontColor;
 		}
 
-		public static TextLayout WithCanvasState(this TextLayout it, NativeCanvasState state) {
+		public static TextLayout WithCanvasState(this TextLayout it, PlatformCanvasState state) {
 			it.SetCanvasState(state);
 
 			return it;

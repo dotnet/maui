@@ -39,12 +39,12 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 
 			_skiaCanvas = _surface.Canvas;
-			var nativeCanvas = new SkiaCanvas
+			var platformCanvas = new SkiaCanvas
 			{
 				Canvas = _skiaCanvas,
 				DisplayScale = displayScale
 			};
-			_canvas = new ScalingCanvas(nativeCanvas);
+			_canvas = new ScalingCanvas(platformCanvas);
 			_disposeBitmap = disposeBitmap;
 		}
 

@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Graphics
 {
-    public class ArcFlattener
+    internal class ArcFlattener
     {
 		private float _cx;
 		private float _cy;

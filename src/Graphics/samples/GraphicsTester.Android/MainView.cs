@@ -6,14 +6,14 @@ using Android.Content;
 using Android.Views;
 using Android.Widget;
 using GraphicsTester.Scenarios;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Android
 {
 	public class MainView : LinearLayout
 	{
 		private readonly ListView _listView;
-		private readonly NativeGraphicsView _graphicsView;
+		private readonly PlatformGraphicsView _graphicsView;
 
 		public MainView (IntPtr javaReference, JniHandleOwnership transfer) : base (javaReference, transfer)
 		{
@@ -30,7 +30,7 @@ namespace GraphicsTester.Android
 				2.5f);
 			base.AddView (_listView);
 
-			_graphicsView = new NativeGraphicsView (context);
+			_graphicsView = new PlatformGraphicsView (context);
 			_graphicsView.BackgroundColor = Colors.White;
 			_graphicsView.LayoutParameters = new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.WrapContent,

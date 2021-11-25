@@ -20,6 +20,19 @@ namespace Microsoft.Maui.Graphics.SharpDX
 {
 	public class DXCanvas : AbstractCanvas<DXCanvasState>, IBlurrableCanvas
 	{
+		private const float Dip = 96f / 72f;
+
+		//public static Factory SharedFactory = new Factory(FactoryType.MultiThreaded);
+
+		//public static readonly ThreadLocal<Factory> CurrentFactory = new ThreadLocal<Factory>();
+		//public static readonly ThreadLocal<RenderTarget> CurrentTarget = new ThreadLocal<RenderTarget>();
+		//public static ImagingFactory2 FactoryImaging = new ImagingFactory2();
+
+		public static global::SharpDX.DirectWrite.Factory FactoryDirectWrite = new global::SharpDX.DirectWrite.Factory(global::SharpDX.DirectWrite.FactoryType.Shared);
+
+
+
+
 		private static readonly global::SharpDX.RectangleF InfiniteRect = new global::SharpDX.RectangleF(
 			float.NegativeInfinity,
 			float.NegativeInfinity,
@@ -159,17 +172,14 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			set => CurrentState.FontColor = value;
 		}
 
-		public override string FontName
+		public override IFont Font
 		{
 			set
 			{
 				if (value == null)
-					value = "Arial";
+					value = Graphics.Font.Default;
 
-				var style = (DXFontStyle) DXFontService.Instance.GetFontStyleById(value) ?? (DXFontStyle) DXFontService.Instance.GetDefaultFontStyle();
-				CurrentState.FontName = style.FontFamily.Name;
-				CurrentState.FontWeight = style.DxFontWeight;
-				CurrentState.FontStyle = style.DxFontStyle;
+				CurrentState.Font = value;
 			}
 		}
 
@@ -232,7 +242,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 				_vectorPatternContext = null;
 		}
 
-		protected override void NativeDrawLine(float x1, float y1, float x2, float y2)
+		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
 		{
 			_point1.X = x1;
 			_point1.Y = y1;
@@ -242,7 +252,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			Draw(ctx => ctx.DrawLine(_point1, _point2, CurrentState.DxStrokeBrush, CurrentState.StrokeSize, CurrentState.StrokeStyle));
 		}
 
-		protected override void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
+		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
 		{
 			while (startAngle < 0)
 			{
@@ -342,14 +352,14 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			geometry.Dispose();
 		}
 
-		protected override void NativeDrawRectangle(float x, float y, float width, float height)
+		protected override void PlatformDrawRectangle(float x, float y, float width, float height)
 		{
 			float strokeWidth = CurrentState.StrokeSize;
 			SetRect(x, y, width, height);
 			Draw(ctx => ctx.DrawRectangle(_rect, CurrentState.DxStrokeBrush, strokeWidth, CurrentState.StrokeStyle));
 		}
 
-		protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
+		protected override void PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
 			float strokeWidth = CurrentState.StrokeSize;
 			SetRect(x, y, width, height);
@@ -371,7 +381,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			Draw(ctx => ctx.DrawRoundedRectangle(_roundedRect, CurrentState.DxStrokeBrush, strokeWidth, CurrentState.StrokeStyle));
 		}
 
-		protected override void NativeDrawEllipse(float x, float y, float width, float height)
+		protected override void PlatformDrawEllipse(float x, float y, float width, float height)
 		{
 			float strokeWidth = CurrentState.StrokeSize;
 
@@ -404,18 +414,18 @@ namespace Microsoft.Maui.Graphics.SharpDX
 
 		private PathGeometry GetPath(PathF path, FillMode fillMode = FillMode.Winding)
 		{
-			var geometry = path.NativePath as PathGeometry;
+			var geometry = path.PlatformPath as PathGeometry;
 
 			if (geometry == null)
 			{
 				geometry = path.AsDxPath(_renderTarget.Factory, fillMode);
-				path.NativePath = geometry;
+				path.PlatformPath = geometry;
 			}
 
 			return geometry;
 		}
 
-		protected override void NativeDrawPath(PathF path)
+		protected override void PlatformDrawPath(PathF path)
 		{
 			if (path == null)
 				return;
@@ -524,10 +534,10 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			{
 #endif
 				var textFormat = new TextFormat(
-					DXGraphicsService.FactoryDirectWrite,
-					CurrentState.FontName,
-					CurrentState.FontWeight,
-					CurrentState.FontStyle,
+					FactoryDirectWrite,
+					CurrentState.Font.Name,
+					CurrentState.NativeFontWeight,
+					CurrentState.NativeFontStyle,
 					CurrentState.FontSize);
 
 				if (horizontalAlignment == HorizontalAlignment.Left)
@@ -579,8 +589,8 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			float lineAdjustment = 0)
 		{
 			// Initialize a TextFormat
-			var textFormat = new TextFormat(DXGraphicsService.FactoryDirectWrite, CurrentState.FontName,
-				CurrentState.FontWeight, CurrentState.FontStyle, CurrentState.FontSize);
+			var textFormat = new TextFormat(FactoryDirectWrite, CurrentState.Font.Name,
+				CurrentState.NativeFontWeight, CurrentState.NativeFontStyle, CurrentState.FontSize);
 
 			switch (horizontalAlignment)
 			{
@@ -616,7 +626,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 				options = DrawTextOptions.None;
 
 			// Initialize a TextLayout
-			var textLayout = new TextLayout(DXGraphicsService.FactoryDirectWrite, value, textFormat,
+			var textLayout = new TextLayout(FactoryDirectWrite, value, textFormat,
 				width, height);
 
 			_point1.X = x;
@@ -641,13 +651,13 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			var options = DrawTextOptions.Clip;
 
 			var textFormat = new TextFormat(
-				DXGraphicsService.FactoryDirectWrite,
-				CurrentState.FontName,
-				CurrentState.FontWeight,
-				CurrentState.FontStyle,
+				FactoryDirectWrite,
+				CurrentState.Font.Name,
+				CurrentState.NativeFontWeight,
+				CurrentState.NativeFontStyle,
 				CurrentState.FontSize);
 
-			var textLayout = new TextLayout(DXGraphicsService.FactoryDirectWrite, value.Text, textFormat, width, height);
+			var textLayout = new TextLayout(FactoryDirectWrite, value.Text, textFormat, width, height);
 
 			foreach (var run in value.Runs)
 			{
@@ -690,9 +700,8 @@ namespace Microsoft.Maui.Graphics.SharpDX
 
 							break;
 						case TextAttribute.FontName:
-							var fontName = attrValue ?? "Arial";
-							var style = (DXFontStyle) DXFontService.Instance.GetFontStyleById(fontName) ?? (DXFontStyle) DXFontService.Instance.GetDefaultFontStyle();
-							textLayout.SetFontFamilyName(style.FontFamily.Name, range);
+							var fontName = attrValue ?? Graphics.Font.Default.Name;
+							textLayout.SetFontFamilyName(fontName, range);
 							break;
 						case TextAttribute.FontSize:
 							if ("True".Equals(attrValue))
@@ -736,27 +745,27 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			_drawTextDisposables.Clear();
 		}
 
-		protected override void NativeRotate(float degrees, float radians, float x, float y)
+		protected override void PlatformRotate(float degrees, float radians, float x, float y)
 		{
 			_renderTarget.Transform = CurrentState.DxRotate(degrees, x, y);
 		}
 
-		protected override void NativeRotate(float degrees, float radians)
+		protected override void PlatformRotate(float degrees, float radians)
 		{
 			_renderTarget.Transform = CurrentState.DxRotate(degrees);
 		}
 
-		protected override void NativeScale(float sx, float sy)
+		protected override void PlatformScale(float sx, float sy)
 		{
 			_renderTarget.Transform = CurrentState.DxScale(sx, sy);
 		}
 
-		protected override void NativeTranslate(float tx, float ty)
+		protected override void PlatformTranslate(float tx, float ty)
 		{
 			_renderTarget.Transform = CurrentState.DxTranslate(tx, ty);
 		}
 
-		protected override void NativeConcatenateTransform(NumericsMatrix3x2 transform)
+		protected override void PlatformConcatenateTransform(NumericsMatrix3x2 transform)
 		{
 			_renderTarget.Transform = CurrentState.DxConcatenateTransform(transform);
 		}
@@ -778,12 +787,12 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			CurrentState.SetShadow(offset, blur, color);
 		}
 
-		protected override void NativeSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
 		{
 			CurrentState.SetStrokeDashPattern(pattern, strokeSize);
 		}
 
-		protected override float NativeStrokeSize
+		protected override float PlatformStrokeSize
 		{
 			set { }
 		}
@@ -963,20 +972,6 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			}
 
 			return _vectorPatternContext;
-		}
-
-		public override void SetToSystemFont()
-		{
-			CurrentState.FontName = "Arial";
-			CurrentState.FontWeight = FontWeight.Normal;
-			CurrentState.FontStyle = FontStyle.Normal;
-		}
-
-		public override void SetToBoldSystemFont()
-		{
-			CurrentState.FontName = "Arial";
-			CurrentState.FontWeight = FontWeight.Bold;
-			CurrentState.FontStyle = FontStyle.Normal;
 		}
 
 		public void DrawBitmap(Bitmap bitmap, global::SharpDX.RectangleF targetRect, float opacity)
@@ -1170,6 +1165,98 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			{
 				drawingAction((DeviceContext) _renderTarget);
 			}
+		}
+
+		public override SizeF GetStringSize(string value, IFont font, float textSize)
+		{
+			if (value == null) return new SizeF();
+
+			float fontSize = textSize;
+			float factor = 1;
+			while (fontSize > 14)
+			{
+				fontSize /= 14;
+				factor *= 14;
+			}
+
+			if (font == null)
+				font = Graphics.Font.Default;
+
+			var size = new SizeF();
+
+			var textFormat = new TextFormat(FactoryDirectWrite, font.Name, fontSize);
+			textFormat.TextAlignment = TextAlignment.Leading;
+			textFormat.ParagraphAlignment = ParagraphAlignment.Near;
+
+			var textLayout = new TextLayout(FactoryDirectWrite, value, textFormat, 512, 512);
+			size.Width = textLayout.Metrics.Width;
+			size.Height = textLayout.Metrics.Height;
+
+			size.Width *= factor;
+			size.Height *= factor;
+
+			return size;
+		}
+
+		public override SizeF GetStringSize(
+			string value,
+			IFont font,
+			float textSize,
+			HorizontalAlignment horizontalAlignment,
+			VerticalAlignment verticalAlignment)
+		{
+			if (value == null) return new SizeF();
+
+			float fontSize = textSize;
+			float factor = 1;
+			while (fontSize > 14)
+			{
+				fontSize /= 14;
+				factor *= 14;
+			}
+
+			var size = new SizeF();
+
+			var textFormat = new TextFormat(FactoryDirectWrite, font.Name, font.Weight.ToFontWeight(), font.StyleType.ToFontStyle(), fontSize);
+			if (horizontalAlignment == HorizontalAlignment.Left)
+			{
+				textFormat.TextAlignment = TextAlignment.Leading;
+			}
+			else if (horizontalAlignment == HorizontalAlignment.Center)
+			{
+				textFormat.TextAlignment = TextAlignment.Center;
+			}
+			else if (horizontalAlignment == HorizontalAlignment.Right)
+			{
+				textFormat.TextAlignment = TextAlignment.Trailing;
+			}
+			else if (horizontalAlignment == HorizontalAlignment.Justified)
+			{
+				textFormat.TextAlignment = TextAlignment.Justified;
+			}
+
+			if (verticalAlignment == VerticalAlignment.Top)
+			{
+				textFormat.ParagraphAlignment = ParagraphAlignment.Near;
+			}
+			else if (verticalAlignment == VerticalAlignment.Center)
+			{
+				textFormat.ParagraphAlignment = ParagraphAlignment.Center;
+			}
+			else if (verticalAlignment == VerticalAlignment.Bottom)
+			{
+				textFormat.ParagraphAlignment = ParagraphAlignment.Far;
+			}
+
+			var textLayout = new TextLayout(FactoryDirectWrite, value, textFormat, 512f, 512f, Dip, false);
+			size.Width = textLayout.Metrics.Width;
+			size.Height = textLayout.Metrics.Height;
+
+
+			size.Width *= factor;
+			size.Height *= factor;
+
+			return size;
 		}
 	}
 }

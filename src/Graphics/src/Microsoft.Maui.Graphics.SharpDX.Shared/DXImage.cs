@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 					{
 						wicBitmap.WritePngToStream(memoryStream2, w, h);
 						memoryStream2.Position = 0;
-						var newImage = DXGraphicsService.Instance.LoadImageFromStream(memoryStream2);
+						var newImage = FromStream(memoryStream2);
 						if (disposeOriginal)
 						{
 							_bitmap.Dispose();
@@ -101,6 +101,21 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, Math.Abs(dirtyRect.Width), Math.Abs(dirtyRect.Height));
+		}
+
+		public IImage ToImage(int width, int height, float scale = 1f)
+		{
+			using var context = new DXBitmapExportContext(width, height, scale);
+			context.Canvas.Scale(scale, scale);
+			Draw(context.Canvas, new RectangleF(0, 0, (float)width / scale, (float)height / scale));
+			return context.Image;
+		}
+
+
+		public static IImage FromStream(Stream stream, Graphics.ImageFormat format = Graphics.ImageFormat.Png)
+		{
+			var bitmap = DXGraphicsService.CurrentTarget.Value.LoadBitmap(stream);
+			return new DXImage(bitmap);
 		}
 	}
 }

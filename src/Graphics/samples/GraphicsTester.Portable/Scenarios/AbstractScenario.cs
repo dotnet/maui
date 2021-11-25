@@ -79,5 +79,10 @@ namespace GraphicsTester.Scenarios
 		{
 			return GetType().Name;
 		}
+
+		public IImage ToImage(int width, int height, float scale = 1)
+		{
+			throw new System.NotImplementedException();
+		}
 	}
 }

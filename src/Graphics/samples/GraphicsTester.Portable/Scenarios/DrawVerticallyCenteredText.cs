@@ -13,7 +13,7 @@ namespace GraphicsTester.Scenarios
 		{
 			canvas.StrokeSize = 1;
 			canvas.StrokeColor = Colors.Blue;
-			canvas.FontName = "Arial";
+			canvas.Font = Font.Default;
 			canvas.FontSize = 12f;
 
 			canvas.SaveState();
@@ -104,7 +104,7 @@ namespace GraphicsTester.Scenarios
 
 			canvas.SaveState();
 			canvas.Translate(0, 150);
-			canvas.SetToSystemFont();
+			canvas.Font = Font.Default;
 
 			rectHeight = 20;
 			canvas.Translate(0, 10);
@@ -134,7 +134,7 @@ namespace GraphicsTester.Scenarios
 
 			canvas.SaveState();
 			canvas.Translate(150, 150);
-			canvas.SetToSystemFont();
+			canvas.Font = Font.Default;
 
 			rectHeight = 20;
 			canvas.Translate(0, 10);
@@ -164,7 +164,7 @@ namespace GraphicsTester.Scenarios
 
 			canvas.SaveState();
 			canvas.Translate(300, 150);
-			canvas.SetToSystemFont();
+			canvas.Font = Font.Default;
 
 			rectHeight = 20;
 			canvas.Translate(0, 10);

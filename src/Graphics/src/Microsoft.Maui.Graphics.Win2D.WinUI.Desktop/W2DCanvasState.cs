@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Graphics.Win2D
 {
 	public class W2DCanvasState : CanvasState
 	{
-		private static FontWeight _nativeFontWeight = new FontWeight();
 		private static readonly float[] _emptyFloatArray = new float[] { };
 
 		private readonly W2DCanvas _owner;
@@ -56,20 +55,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 		private int _layerCount = 0;
 		private readonly float _dpi = 96;
 
-		public String FontName { get; set; }
-		public int FontWeight { get; set; }
-		public FontStyle FontStyle { get; set; }
-
-		public FontWeight NativeFontWeight
-		{
-			get
-			{
-				_nativeFontWeight.Weight = (ushort)FontWeight;
-				return _nativeFontWeight;
-			}
-
-			set => FontWeight = value.Weight;
-		}
+		public IFont Font { get; set; }
 
 		public float BlurRadius { get; private set; }
 		public bool IsShadowed { get; private set; }
@@ -120,11 +106,9 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 			Matrix = new Matrix3x2(prototype.Matrix.M11, prototype.Matrix.M12, prototype.Matrix.M21, prototype.Matrix.M22, prototype.Matrix.M31, prototype.Matrix.M32);
 
-			FontName = prototype.FontName;
+			Font = prototype.Font;
 			FontSize = prototype.FontSize;
-			FontWeight = prototype.FontWeight;
-			FontStyle = prototype.FontStyle;
-
+			
 			_alpha = prototype._alpha;
 			_scale = prototype._scale;
 
@@ -152,10 +136,9 @@ namespace Microsoft.Maui.Graphics.Win2D
 			IsShadowed = false;
 			_sourceShadowColor = CanvasDefaults.DefaultShadowColor;
 
-			FontName = "Arial";
+			Font = null;
 			FontSize = 12;
-			FontWeight = 200;
-			FontStyle = FontStyle.Normal;
+
 			_sourceFontColor = Colors.Black;
 			_fontBrushValid = false;
 
@@ -309,7 +292,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			_fillBrushValid = true;
 		}
 
-		public ICanvasBrush NativeFillBrush
+		public ICanvasBrush PlatformFillBrush
 		{
 			get
 			{
@@ -514,7 +497,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			//needsStrokeStyle = true;
 		}
 
-		public ICanvasBrush NativeFontBrush
+		public ICanvasBrush PlatformFontBrush
 		{
 			get
 			{
@@ -527,7 +510,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			}
 		}
 
-		public ICanvasBrush NativeStrokeBrush
+		public ICanvasBrush PlatformStrokeBrush
 		{
 			get
 			{
@@ -546,7 +529,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			}
 		}
 
-		public CanvasStrokeStyle NativeStrokeStyle
+		public CanvasStrokeStyle PlatformStrokeStyle
 		{
 			get
 			{

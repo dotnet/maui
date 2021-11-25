@@ -108,9 +108,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsyncPump.cs" />
-    <Compile Include="W2DFontFamily.cs" />
-    <Compile Include="W2DFontService.cs" />
-    <Compile Include="W2DFontStyle.cs" />
     <Compile Include="W2DCanvas.cs" />
     <Compile Include="W2DCanvasState.cs" />
     <Compile Include="W2DExtensions.cs" />

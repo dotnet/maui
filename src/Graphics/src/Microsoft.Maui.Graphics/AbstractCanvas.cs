@@ -17,19 +17,19 @@ namespace Microsoft.Maui.Graphics
 		private float _strokeLimit = 1;
 		private bool _strokeDashPatternDirty;
 
-		protected abstract float NativeStrokeSize { set; }
-		protected abstract void NativeSetStrokeDashPattern(float[] pattern, float strokeSize);
-		protected abstract void NativeDrawLine(float x1, float y1, float x2, float y2);
-		protected abstract void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed);
-		protected abstract void NativeDrawRectangle(float x, float y, float width, float height);
-		protected abstract void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius);
-		protected abstract void NativeDrawEllipse(float x, float y, float width, float height);
-		protected abstract void NativeDrawPath(PathF path);
-		protected abstract void NativeRotate(float degrees, float radians, float x, float y);
-		protected abstract void NativeRotate(float degrees, float radians);
-		protected abstract void NativeScale(float fx, float fy);
-		protected abstract void NativeTranslate(float tx, float ty);
-		protected abstract void NativeConcatenateTransform(Matrix3x2 transform);
+		protected abstract float PlatformStrokeSize { set; }
+		protected abstract void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize);
+		protected abstract void PlatformDrawLine(float x1, float y1, float x2, float y2);
+		protected abstract void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed);
+		protected abstract void PlatformDrawRectangle(float x, float y, float width, float height);
+		protected abstract void PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius);
+		protected abstract void PlatformDrawEllipse(float x, float y, float width, float height);
+		protected abstract void PlatformDrawPath(PathF path);
+		protected abstract void PlatformRotate(float degrees, float radians, float x, float y);
+		protected abstract void PlatformRotate(float degrees, float radians);
+		protected abstract void PlatformScale(float fx, float fy);
+		protected abstract void PlatformTranslate(float tx, float ty);
+		protected abstract void PlatformConcatenateTransform(Matrix3x2 transform);
 
 		protected AbstractCanvas(Func<object, TState> createNew, Func<TState, TState> createCopy)
 		{
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Graphics
 
 		public abstract Color FillColor { set; }
 		public abstract Color FontColor { set; }
-		public abstract string FontName { set; }
+		public abstract IFont Font { set; }
 		public abstract float FontSize { set; }
 		public abstract float Alpha { set; }
 		public abstract bool Antialias { set; }
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Graphics
 				}
 
 				_currentState.StrokeSize = size;
-				NativeStrokeSize = size;
+				PlatformStrokeSize = size;
 			}
 		}
 
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (_strokeDashPatternDirty)
 			{
-				NativeSetStrokeDashPattern(_currentState.StrokeDashPattern, _currentState.StrokeSize);
+				PlatformSetStrokeDashPattern(_currentState.StrokeDashPattern, _currentState.StrokeSize);
 				_strokeDashPatternDirty = false;
 			}
 		}
@@ -127,13 +127,13 @@ namespace Microsoft.Maui.Graphics
 		public void DrawLine(float x1, float y1, float x2, float y2)
 		{
 			EnsureStrokePatternSet();
-			NativeDrawLine(x1, y1, x2, y2);
+			PlatformDrawLine(x1, y1, x2, y2);
 		}
 
 		public void DrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
 		{
 			EnsureStrokePatternSet();
-			NativeDrawArc(x, y, width, height, startAngle, endAngle, clockwise, closed);
+			PlatformDrawArc(x, y, width, height, startAngle, endAngle, clockwise, closed);
 		}
 
 		public abstract void FillArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise);
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Graphics
 		public void DrawRectangle(float x, float y, float width, float height)
 		{
 			EnsureStrokePatternSet();
-			NativeDrawRectangle(x, y, width, height);
+			PlatformDrawRectangle(x, y, width, height);
 		}
 
 		public abstract void FillRectangle(float x, float y, float width, float height);
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Graphics
 				cornerRadius = halfWidth;
 
 			EnsureStrokePatternSet();
-			NativeDrawRoundedRectangle(x, y, width, height, cornerRadius);
+			PlatformDrawRoundedRectangle(x, y, width, height, cornerRadius);
 		}
 
 		public abstract void FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius);
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Graphics
 		public void DrawEllipse(float x, float y, float width, float height)
 		{
 			EnsureStrokePatternSet();
-			NativeDrawEllipse(x, y, width, height);
+			PlatformDrawEllipse(x, y, width, height);
 		}
 
 		public abstract void FillEllipse(float x, float y, float width, float height);
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Graphics
 		public void DrawPath(PathF path)
 		{
 			EnsureStrokePatternSet();
-			NativeDrawPath(path);
+			PlatformDrawPath(path);
 		}
 
 		public abstract void FillPath(PathF path, WindingMode windingMode);
@@ -219,8 +219,7 @@ namespace Microsoft.Maui.Graphics
 
 		public abstract void SetShadow(SizeF offset, float blur, Color color);
 		public abstract void SetFillPaint(Paint paint, RectangleF rectangle);
-		public abstract void SetToSystemFont();
-		public abstract void SetToBoldSystemFont();
+
 		public abstract void DrawImage(IImage image, float x, float y, float width, float height);
 
 		public virtual bool RestoreState()
@@ -267,7 +266,7 @@ namespace Microsoft.Maui.Graphics
 			transform = Matrix3x2.CreateTranslation(-x, -y) * transform;			
 			_currentState.Transform = transform;
 
-			NativeRotate(degrees, radians, x, y);
+			PlatformRotate(degrees, radians, x, y);
 		}
 
 		public void Rotate(float degrees)
@@ -278,7 +277,7 @@ namespace Microsoft.Maui.Graphics
 			transform = Matrix3x2.CreateRotation(radians) * transform;			
 			_currentState.Transform = transform;
 
-			NativeRotate(degrees, radians);
+			PlatformRotate(degrees, radians);
 		}
 
 		public void Scale(float fx, float fy)
@@ -287,7 +286,7 @@ namespace Microsoft.Maui.Graphics
 			transform = Matrix3x2.CreateScale(fx, fy) * transform;
 			_currentState.Transform = transform;
 
-			NativeScale(fx, fy);
+			PlatformScale(fx, fy);
 		}
 
 		public void Translate(float tx, float ty)
@@ -296,14 +295,18 @@ namespace Microsoft.Maui.Graphics
 			transform = Matrix3x2.CreateTranslation(tx, ty) * transform;
 			_currentState.Transform = transform;
 
-			NativeTranslate(tx, ty);
+			PlatformTranslate(tx, ty);
 		}
 
 		public void ConcatenateTransform(Matrix3x2 transform)
 		{
 			_currentState.Transform = transform * _currentState.Transform;
 
-			NativeConcatenateTransform(transform);
+			PlatformConcatenateTransform(transform);
 		}
+
+		public abstract SizeF GetStringSize(string value, IFont font, float fontSize);
+
+		public abstract SizeF GetStringSize(string aString, IFont font, float aFontSize, HorizontalAlignment aHorizontalAlignment, VerticalAlignment aVerticalAlignment);
 	}
 }

@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Graphics.Native.Gtk {
+namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 	public static class CanvasExtensions {
 

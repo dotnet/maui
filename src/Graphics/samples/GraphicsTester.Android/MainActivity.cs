@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics.Android;
 using Android.App;
 using Android.Widget;
 using Android.OS;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Android
 {
@@ -18,8 +18,6 @@ namespace GraphicsTester.Android
 		protected override void OnCreate (Bundle bundle)
 		{
 			base.OnCreate (bundle);
-
-			GraphicsPlatform.Register (NativeGraphicsService.Instance);
 
 			_mainView = new MainView (this);
 			// Defining the LinearLayout layout parameters to fill the parent.

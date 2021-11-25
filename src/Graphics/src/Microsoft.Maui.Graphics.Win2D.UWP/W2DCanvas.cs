@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			set => CurrentState.StrokeLineJoin = value;
 		}
 
-		protected override void NativeSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
 		{
 			CurrentState.SetStrokeDashPattern(pattern, strokeSize);
 		}
@@ -89,20 +89,14 @@ namespace Microsoft.Maui.Graphics.Win2D
 			set => CurrentState.FontColor = value;
 		}
 
-		public override string FontName
+		public override IFont Font
 		{
 			set
 			{
 				if (value == null)
-					value = "Arial";
+					value = Graphics.Font.Default;
 
-				var style = (W2DFontStyle)W2DFontService.Instance.GetFontStyleById(value) ?? (W2DFontStyle)W2DFontService.Instance.GetDefaultFontStyle();
-				if (style != null)
-				{
-					CurrentState.FontName = style.FontFamily.Name;
-					CurrentState.FontWeight = style.Weight;
-					CurrentState.FontStyle = style.NativeFontStyle;
-				}
+				CurrentState.Font = value;
 			}
 		}
 
@@ -243,10 +237,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 #endif
 				var textFormat = new CanvasTextFormat
 				{
-					FontFamily = CurrentState.FontName,
+					FontFamily = CurrentState.Font.Name,
 					FontSize = CurrentState.FontSize,
 					FontWeight = CurrentState.NativeFontWeight,
-					FontStyle = CurrentState.FontStyle,
+					FontStyle = CurrentState.NativeFontStyle,
 					VerticalAlignment = CanvasVerticalAlignment.Top
 				};
 
@@ -307,10 +301,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 		{
 			var textFormat = new CanvasTextFormat
 			{
-				FontFamily = CurrentState.FontName,
+				FontFamily = CurrentState.Font.Name,
 				FontSize = CurrentState.FontSize,
 				FontWeight = CurrentState.NativeFontWeight,
-				FontStyle = CurrentState.FontStyle
+				FontStyle = CurrentState.NativeFontStyle
 			};
 
 			switch (horizontalAlignment)
@@ -515,20 +509,6 @@ namespace Microsoft.Maui.Graphics.Win2D
 			return null;
 		}
 
-		public override void SetToSystemFont()
-		{
-			CurrentState.FontName = "Arial";
-			CurrentState.FontWeight = 200;
-			CurrentState.FontStyle = FontStyle.Normal;
-		}
-
-		public override void SetToBoldSystemFont()
-		{
-			CurrentState.FontName = "Arial";
-			CurrentState.FontWeight = 500;
-			CurrentState.FontStyle = FontStyle.Normal;
-		}
-
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
 			if (image is W2DImage nativeImage)
@@ -538,17 +518,17 @@ namespace Microsoft.Maui.Graphics.Win2D
 			}
 		}
 
-		protected override float NativeStrokeSize
+		protected override float PlatformStrokeSize
 		{
 			set { }
 		}
 
-		protected override void NativeDrawLine(float x1, float y1, float x2, float y2)
+		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
 		{
 			Draw(s => s.DrawLine(x1,y1,x2,y2, CurrentState.NativeStrokeBrush, CurrentState.StrokeSize, CurrentState.NativeStrokeStyle ));
 		}
 
-		protected override void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
+		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
 		{
 			while (startAngle < 0)
 			{
@@ -594,7 +574,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			Draw(ctx => ctx.DrawGeometry(geometry, CurrentState.NativeStrokeBrush, strokeWidth, CurrentState.NativeStrokeStyle));
 		}
 
-		protected override void NativeDrawRectangle(float x, float y, float width, float height)
+		protected override void PlatformDrawRectangle(float x, float y, float width, float height)
 		{
 			float strokeWidth = CurrentState.StrokeSize;
 			SetRect(x, y, width, height);
@@ -602,7 +582,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			Draw(s => s.DrawRectangle(_rect, CurrentState.NativeStrokeBrush, CurrentState.StrokeSize, CurrentState.NativeStrokeStyle));
 		}
 
-		protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
+		protected override void PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
 			float strokeWidth = CurrentState.StrokeSize;
 			SetRect(x, y, width, height);
@@ -620,7 +600,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			Draw(s => s.DrawRoundedRectangle(_rect, cornerRadius, cornerRadius, CurrentState.NativeStrokeBrush, CurrentState.StrokeSize, CurrentState.NativeStrokeStyle));
 		}
 
-		protected override void NativeDrawEllipse(float x, float y, float width, float height)
+		protected override void PlatformDrawEllipse(float x, float y, float width, float height)
 		{
 			float radiusX;
 			float radiusY;
@@ -655,18 +635,18 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		private CanvasGeometry GetPath(PathF path, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding)
 		{
-			var geometry = path.NativePath as CanvasGeometry;
+			var geometry = path.PlatformPath as CanvasGeometry;
 
 			if (geometry == null)
 			{
 				geometry = path.AsPath(_session, fillMode);
-				path.NativePath = geometry;
+				path.PlatformPath = geometry;
 			}
 
 			return geometry;
 		}
 
-		protected override void NativeDrawPath(PathF path)
+		protected override void PlatformDrawPath(PathF path)
 		{
 			if (path == null)
 				return;
@@ -681,27 +661,27 @@ namespace Microsoft.Maui.Graphics.Win2D
 			});
 		}
 
-		protected override void NativeRotate(float degrees, float radians, float x, float y)
+		protected override void PlatformRotate(float degrees, float radians, float x, float y)
 		{
 			_session.Transform = CurrentState.AppendRotate(degrees, x, y);
 		}
 
-		protected override void NativeRotate(float degrees, float radians)
+		protected override void PlatformRotate(float degrees, float radians)
 		{
 			_session.Transform = CurrentState.AppendRotate(degrees);
 		}
 
-		protected override void NativeScale(float sx, float sy)
+		protected override void PlatformScale(float sx, float sy)
 		{
 			_session.Transform = CurrentState.AppendScale(sx, sy);
 		}
 
-		protected override void NativeTranslate(float tx, float ty)
+		protected override void PlatformTranslate(float tx, float ty)
 		{
 			_session.Transform = CurrentState.AppendTranslate(tx, ty);
 		}
 
-		protected override void NativeConcatenateTransform(Matrix3x2 transform)
+		protected override void PlatformConcatenateTransform(Matrix3x2 transform)
 		{
 			_session.Transform = CurrentState.AppendConcatenateTransform(transform);
 		}
@@ -852,6 +832,16 @@ namespace Microsoft.Maui.Graphics.Win2D
 			_rect.Y = Math.Min(y, y + height);
 			_rect.Width = Math.Abs(width);
 			_rect.Height = Math.Abs(height);
+		}
+
+		public override SizeF GetStringSize(string value, IFont font, float textSize)
+		{
+			return new SizeF(value.Length * 10, textSize + 2);
+		}
+
+		public override SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+		{
+			return new SizeF(value.Length * 10, textSize + 2);
 		}
 	}
 

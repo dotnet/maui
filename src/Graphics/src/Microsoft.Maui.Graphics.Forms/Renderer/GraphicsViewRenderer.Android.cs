@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using Microsoft.Maui.Graphics.Forms.Android;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using Android.Content;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
@@ -10,7 +10,7 @@ using Xamarin.Forms.Platform.Android;
 namespace Microsoft.Maui.Graphics.Forms.Android
 {
 	[Preserve]
-	public class GraphicsViewRenderer : ViewRenderer<Microsoft.Maui.Graphics.Forms.GraphicsView, NativeGraphicsView>
+	public class GraphicsViewRenderer : ViewRenderer<Microsoft.Maui.Graphics.Forms.GraphicsView, PlatformGraphicsView>
 	{
 		public GraphicsViewRenderer(Context context) : base(context)
 		{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Graphics.Forms.Android
 
 			if (e.NewElement != null)
 			{
-				SetNativeControl(new NativeGraphicsView(Context));
+				SetNativeControl(new PlatformGraphicsView(Context));
 				UpdateDrawable();
 			}
 		}

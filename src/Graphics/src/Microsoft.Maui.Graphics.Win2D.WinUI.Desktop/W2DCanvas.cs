@@ -8,6 +8,7 @@ using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using System;
+using WFontStyle = Windows.UI.Text.FontStyle;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Graphics.Win2D
             set => CurrentState.StrokeLineJoin = value;
         }
 
-        protected override void NativeSetStrokeDashPattern(float[] pattern, float strokeSize)
+        protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
         {
             CurrentState.SetStrokeDashPattern(pattern, strokeSize);
         }
@@ -89,21 +90,9 @@ namespace Microsoft.Maui.Graphics.Win2D
             set => CurrentState.FontColor = value;
         }
 
-        public override string FontName
+        public override IFont Font
         {
-            set
-            {
-                if (value == null)
-                    value = "Arial";
-
-                var style = (W2DFontStyle)W2DFontService.Instance.GetFontStyleById(value) ?? (W2DFontStyle)W2DFontService.Instance.GetDefaultFontStyle();
-                if (style != null)
-                {
-                    CurrentState.FontName = style.FontFamily.Name;
-                    CurrentState.FontWeight = style.Weight;
-                    CurrentState.FontStyle = style.NativeFontStyle;
-                }
-            }
+			set => CurrentState.Font = value;
         }
 
         public override float FontSize
@@ -129,7 +118,7 @@ namespace Microsoft.Maui.Graphics.Win2D
         public override void FillPath(PathF path, WindingMode windingMode)
         {
             var geometry = GetPath(path, windingMode == WindingMode.NonZero ? CanvasFilledRegionDetermination.Winding : CanvasFilledRegionDetermination.Alternate);
-            Draw(s => s.FillGeometry(geometry, CurrentState.NativeFillBrush));
+            Draw(s => s.FillGeometry(geometry, CurrentState.PlatformFillBrush));
         }
 
 
@@ -191,17 +180,17 @@ namespace Microsoft.Maui.Graphics.Win2D
             builder.EndFigure(CanvasFigureLoop.Closed);
             var geometry = CanvasGeometry.CreatePath(builder);
 
-            Draw(ctx => ctx.FillGeometry(geometry, CurrentState.NativeFillBrush));
+            Draw(ctx => ctx.FillGeometry(geometry, CurrentState.PlatformFillBrush));
         }
 
         public override void FillRectangle(float x, float y, float width, float height)
         {
-            Draw(s => s.FillRectangle(x,y,width,height, CurrentState.NativeFillBrush));
+            Draw(s => s.FillRectangle(x,y,width,height, CurrentState.PlatformFillBrush));
         }
 
         public override void FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
         {
-            Draw(s => s.FillRoundedRectangle(x, y, width, height, cornerRadius, cornerRadius, CurrentState.NativeFillBrush));
+            Draw(s => s.FillRoundedRectangle(x, y, width, height, cornerRadius, cornerRadius, CurrentState.PlatformFillBrush));
         }
 
         public override void FillEllipse(float x, float y, float width, float height)
@@ -231,7 +220,7 @@ namespace Microsoft.Maui.Graphics.Win2D
                 radiusY = 0;
             }
 
-            Draw(s => s.FillEllipse(_point1, radiusX, radiusY, CurrentState.NativeFillBrush));
+            Draw(s => s.FillEllipse(_point1, radiusX, radiusY, CurrentState.PlatformFillBrush));
         }
 
         public override void DrawString(string value, float x, float y, HorizontalAlignment horizontalAlignment)
@@ -241,14 +230,8 @@ namespace Microsoft.Maui.Graphics.Win2D
             try
             {
 #endif
-                var textFormat = new CanvasTextFormat
-                {
-                    FontFamily = CurrentState.FontName,
-                    FontSize = CurrentState.FontSize,
-                    FontWeight = CurrentState.NativeFontWeight,
-                    FontStyle = CurrentState.FontStyle,
-                    VerticalAlignment = CanvasVerticalAlignment.Top
-                };
+				var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize);
+                textFormat.VerticalAlignment = CanvasVerticalAlignment.Top;
 
                 switch (horizontalAlignment)
                 {
@@ -282,7 +265,7 @@ namespace Microsoft.Maui.Graphics.Win2D
                     (float)_rect.Width,
                     (float)_rect.Height);
 
-                Draw(ctx => ctx.DrawTextLayout(textLayout, _point1, CurrentState.NativeFontBrush));
+                Draw(ctx => ctx.DrawTextLayout(textLayout, _point1, CurrentState.PlatformFontBrush));
 
 #if DEBUG
 
@@ -305,15 +288,9 @@ namespace Microsoft.Maui.Graphics.Win2D
             TextFlow textFlow = TextFlow.ClipBounds, 
 			float lineAdjustment = 0)
         {
-            var textFormat = new CanvasTextFormat
-            {
-                FontFamily = CurrentState.FontName,
-                FontSize = CurrentState.FontSize,
-                FontWeight = CurrentState.NativeFontWeight,
-                FontStyle = CurrentState.FontStyle
-            };
+			var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize);
 
-            switch (horizontalAlignment)
+			switch (horizontalAlignment)
             {
                 case HorizontalAlignment.Left:
                     textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Left;
@@ -359,7 +336,7 @@ namespace Microsoft.Maui.Graphics.Win2D
             _point1.X = x;
             _point1.Y = y;
 
-            Draw(ctx => ctx.DrawTextLayout( textLayout, _point1, CurrentState.NativeFontBrush));
+            Draw(ctx => ctx.DrawTextLayout( textLayout, _point1, CurrentState.PlatformFontBrush));
         }
 
         public override void DrawText(IAttributedText value, float x, float y, float width, float height)
@@ -390,7 +367,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			{
 				if (imagePaint.Image is W2DImage image)
 				{
-					var bitmapBrush = new CanvasImageBrush(_session, image.NativeImage)
+					var bitmapBrush = new CanvasImageBrush(_session, image.PlatformImage)
 					{
 						ExtendX = CanvasEdgeBehavior.Wrap,
 						ExtendY = CanvasEdgeBehavior.Wrap
@@ -489,7 +466,7 @@ namespace Microsoft.Maui.Graphics.Win2D
             var commandList = new CanvasCommandList(_session);
             using (var patternSession = commandList.CreateDrawingSession())
             {
-                var canvas = new W2DCanvas() { Session = patternSession };
+                var canvas = new W2DCanvas { Session = patternSession };
                 pattern?.Draw(canvas);
             }
 
@@ -515,40 +492,26 @@ namespace Microsoft.Maui.Graphics.Win2D
             return null;
         }
 
-        public override void SetToSystemFont()
-        {
-            CurrentState.FontName = "Arial";
-            CurrentState.FontWeight = 200;
-            CurrentState.FontStyle = FontStyle.Normal;
-        }
-
-        public override void SetToBoldSystemFont()
-        {
-            CurrentState.FontName = "Arial";
-            CurrentState.FontWeight = 500;
-            CurrentState.FontStyle = FontStyle.Normal;
-        }
-
         public override void DrawImage(IImage image, float x, float y, float width, float height)
         {
-            if (image is W2DImage nativeImage)
+            if (image is W2DImage platformImage)
             {
                 SetRect(x, y, width, height);
-                Draw(s => s.DrawImage(nativeImage.NativeImage, _rect, Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
+                Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
             }
         }
 
-        protected override float NativeStrokeSize
+        protected override float PlatformStrokeSize
         {
             set { }
         }
 
-        protected override void NativeDrawLine(float x1, float y1, float x2, float y2)
+        protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
         {
-            Draw(s => s.DrawLine(x1,y1,x2,y2, CurrentState.NativeStrokeBrush, CurrentState.StrokeSize, CurrentState.NativeStrokeStyle ));   
+            Draw(s => s.DrawLine(x1,y1,x2,y2, CurrentState.PlatformStrokeBrush, CurrentState.StrokeSize, CurrentState.PlatformStrokeStyle ));   
         }
 
-        protected override void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
+        protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
         {
             while (startAngle < 0)
             {
@@ -591,18 +554,18 @@ namespace Microsoft.Maui.Graphics.Win2D
             builder.EndFigure(CanvasFigureLoop.Open);
             var geometry = CanvasGeometry.CreatePath(builder);
 
-            Draw(ctx => ctx.DrawGeometry(geometry, CurrentState.NativeStrokeBrush, strokeWidth, CurrentState.NativeStrokeStyle));
+            Draw(ctx => ctx.DrawGeometry(geometry, CurrentState.PlatformStrokeBrush, strokeWidth, CurrentState.PlatformStrokeStyle));
         }
 
-        protected override void NativeDrawRectangle(float x, float y, float width, float height)
+        protected override void PlatformDrawRectangle(float x, float y, float width, float height)
         {
             float strokeWidth = CurrentState.StrokeSize;
             SetRect(x, y, width, height);
             
-            Draw(s => s.DrawRectangle(_rect, CurrentState.NativeStrokeBrush, CurrentState.StrokeSize, CurrentState.NativeStrokeStyle));
+            Draw(s => s.DrawRectangle(_rect, CurrentState.PlatformStrokeBrush, CurrentState.StrokeSize, CurrentState.PlatformStrokeStyle));
         }
 
-        protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
+        protected override void PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
         {
             float strokeWidth = CurrentState.StrokeSize;
             SetRect(x, y, width, height);
@@ -617,10 +580,10 @@ namespace Microsoft.Maui.Graphics.Win2D
                 cornerRadius = (float)_rect.Height / 2;
             }
 
-            Draw(s => s.DrawRoundedRectangle(_rect, cornerRadius, cornerRadius, CurrentState.NativeStrokeBrush, CurrentState.StrokeSize, CurrentState.NativeStrokeStyle));
+            Draw(s => s.DrawRoundedRectangle(_rect, cornerRadius, cornerRadius, CurrentState.PlatformStrokeBrush, CurrentState.StrokeSize, CurrentState.PlatformStrokeStyle));
         }
 
-        protected override void NativeDrawEllipse(float x, float y, float width, float height)
+        protected override void PlatformDrawEllipse(float x, float y, float width, float height)
         {
             float radiusX;
             float radiusY;
@@ -650,23 +613,23 @@ namespace Microsoft.Maui.Graphics.Win2D
                 radiusY = 0;
             }
 
-            Draw(s => s.DrawEllipse(px, py, radiusX, radiusY, CurrentState.NativeStrokeBrush, CurrentState.StrokeSize, CurrentState.NativeStrokeStyle));
+            Draw(s => s.DrawEllipse(px, py, radiusX, radiusY, CurrentState.PlatformStrokeBrush, CurrentState.StrokeSize, CurrentState.PlatformStrokeStyle));
         }
         
         private CanvasGeometry GetPath(PathF path, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding)
         {
-            var geometry = path.NativePath as CanvasGeometry;
+            var geometry = path.PlatformPath as CanvasGeometry;
             
             if (geometry == null)
             {
                 geometry = path.AsPath(_session, fillMode);
-                path.NativePath = geometry;
+                path.PlatformPath = geometry;
             }
 
             return geometry;
         }
         
-        protected override void NativeDrawPath(PathF path)
+        protected override void PlatformDrawPath(PathF path)
         {
             if (path == null)
                 return;
@@ -677,31 +640,31 @@ namespace Microsoft.Maui.Graphics.Win2D
             {
                 // ReSharper disable AccessToDisposedClosure
                 float strokeWidth = CurrentState.StrokeSize;
-                s.DrawGeometry(geometry, CurrentState.NativeStrokeBrush, strokeWidth, CurrentState.NativeStrokeStyle);
+                s.DrawGeometry(geometry, CurrentState.PlatformStrokeBrush, strokeWidth, CurrentState.PlatformStrokeStyle);
             });
         }
 
-        protected override void NativeRotate(float degrees, float radians, float x, float y)
+        protected override void PlatformRotate(float degrees, float radians, float x, float y)
         {
             _session.Transform = CurrentState.AppendRotate(degrees, x, y);
         }
 
-        protected override void NativeRotate(float degrees, float radians)
+        protected override void PlatformRotate(float degrees, float radians)
         {
             _session.Transform = CurrentState.AppendRotate(degrees);
         }
 
-        protected override void NativeScale(float sx, float sy)
+        protected override void PlatformScale(float sx, float sy)
         {
             _session.Transform = CurrentState.AppendScale(sx, sy);
         }
 
-        protected override void NativeTranslate(float tx, float ty)
+        protected override void PlatformTranslate(float tx, float ty)
         {
             _session.Transform = CurrentState.AppendTranslate(tx, ty);
         }
 
-        protected override void NativeConcatenateTransform(Matrix3x2 transform)
+        protected override void PlatformConcatenateTransform(Matrix3x2 transform)
         {
             _session.Transform = CurrentState.AppendConcatenateTransform(transform);
         }
@@ -855,5 +818,38 @@ namespace Microsoft.Maui.Graphics.Win2D
             _rect.Width = Math.Abs(width);
             _rect.Height = Math.Abs(height);
         }
-    }
+
+		public override SizeF GetStringSize(string value, IFont font, float textSize)
+			=> GetStringSize(value, font, textSize, HorizontalAlignment.Left, VerticalAlignment.Top);
+
+		public override  SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+		{
+			var format = new CanvasTextFormat {
+				FontFamily = font.Name,
+				FontSize = textSize,
+				FontWeight = new FontWeight { Weight = (ushort)font.Weight },
+				FontStyle = font.StyleType.ToFontStyle(),
+				WordWrapping = CanvasWordWrapping.NoWrap
+			};
+
+			var textLayout = new CanvasTextLayout(_session, value, format, 0.0f, 0.0f);
+			textLayout.VerticalAlignment = verticalAlignment switch
+			{
+				VerticalAlignment.Top => CanvasVerticalAlignment.Top,
+				VerticalAlignment.Center => CanvasVerticalAlignment.Center,
+				VerticalAlignment.Bottom => CanvasVerticalAlignment.Bottom,
+				_ => CanvasVerticalAlignment.Top
+			};
+			textLayout.HorizontalAlignment = horizontalAlignment switch
+			{
+				HorizontalAlignment.Left => CanvasHorizontalAlignment.Left,
+				HorizontalAlignment.Center => CanvasHorizontalAlignment.Center,
+				HorizontalAlignment.Right => CanvasHorizontalAlignment.Right,
+				HorizontalAlignment.Justified => CanvasHorizontalAlignment.Justified,
+				_ => CanvasHorizontalAlignment.Left,
+			};
+
+			return new SizeF((float)textLayout.DrawBounds.Width, (float)textLayout.DrawBounds.Height);
+		}
+	}
 }

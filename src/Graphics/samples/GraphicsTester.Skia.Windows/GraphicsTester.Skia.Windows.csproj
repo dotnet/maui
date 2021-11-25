@@ -65,9 +65,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="2.80.3">
+    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155">
     </PackageReference>
-    <PackageReference Include="SkiaSharp.Views" Version="2.80.3">
+    <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.155">
     </PackageReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

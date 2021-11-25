@@ -8,7 +8,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyName>Microsoft.Maui.Graphics</AssemblyName>
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Graphics</PackageId>
@@ -20,6 +20,24 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" Condition="$(TargetFramework.Contains('-windows'))" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Windows\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="iOS\GraphicsiOS.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>GraphicsiOS.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Microsoft.Maui.Graphics.Platform</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\targets\MultiTargeting.targets" />
+  <ItemGroup>
+    <None Update="iOS\GraphicsiOS.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>GraphicsiOS.resx</DependentUpon>
+    </None>
+  </ItemGroup>
 </Project>

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			if (image is GDIImage dxImage)
 				return dxImage.NativeImage;
 
-			if (image is VirtualImage virtualImage)
+			if (image is MemoryImage virtualImage)
 				using (var stream = new MemoryStream(virtualImage.Bytes))
 					return new Bitmap(stream);
 

@@ -234,32 +234,32 @@ namespace Microsoft.Maui.Graphics.Xaml
 
 		}
 
-		protected override void NativeConcatenateTransform(Matrix3x2 transform)
+		protected override void PlatformConcatenateTransform(Matrix3x2 transform)
 		{
 			CurrentState.XamlConcatenateTransform(transform);
 		}
 
-		protected override void NativeTranslate(float tx, float ty)
+		protected override void PlatformTranslate(float tx, float ty)
 		{
 			CurrentState.XamlTranslate(tx, ty);
 		}
 
-		protected override void NativeScale(float fx, float fy)
+		protected override void PlatformScale(float fx, float fy)
 		{
 			CurrentState.XamlScale(fx, fy);
 		}
 
-		protected override void NativeRotate(float degrees, float radians)
+		protected override void PlatformRotate(float degrees, float radians)
 		{
 			CurrentState.XamlRotate(degrees, radians);
 		}
 
-		protected override void NativeRotate(float degrees, float radians, float x, float y)
+		protected override void PlatformRotate(float degrees, float radians, float x, float y)
 		{
 			CurrentState.XamlRotate(degrees, radians, x, y);
 		}
 
-		protected override void NativeDrawPath(PathF path)
+		protected override void PlatformDrawPath(PathF path)
 		{
 			var item = GetOrCreateItem(ItemType.DrawPath);
 			var element = (Path)item.Element;
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Opacity = CurrentState.Alpha;
 		}
 
-		protected override void NativeDrawEllipse(float x, float y, float width, float height)
+		protected override void PlatformDrawEllipse(float x, float y, float width, float height)
 		{
 			var item = GetOrCreateItem(ItemType.DrawEllipse);
 			var element = (Ellipse)item.Element;
@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.RenderTransform = CurrentState.GetXamlTransform(_rectX, _rectY);
 		}
 
-		protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
+		protected override void PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
 			var item = GetOrCreateItem(ItemType.DrawRoundedRectangle);
 			var element = (global::Windows.UI.Xaml.Shapes.Rectangle)item.Element;
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.RenderTransform = CurrentState.GetXamlTransform(_rectX, _rectY);
 		}
 
-		protected override void NativeDrawRectangle(float x, float y, float width, float height)
+		protected override void PlatformDrawRectangle(float x, float y, float width, float height)
 		{
 			var item = GetOrCreateItem(ItemType.DrawRectangle);
 			var element = (global::Windows.UI.Xaml.Shapes.Rectangle)item.Element;
@@ -355,7 +355,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.RenderTransform = CurrentState.GetXamlTransform(_rectX, _rectY);
 		}
 
-		protected override void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
+		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
 		{
 			while (startAngle < 0)
 			{
@@ -424,7 +424,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.RenderTransform = CurrentState.GetXamlTransform(pathX, pathY);
 		}
 
-		protected override void NativeDrawLine(float x1, float y1, float x2, float y2)
+		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
 		{
 			var item = GetOrCreateItem(ItemType.DrawLine);
 			var element = (Line)item.Element;
@@ -452,12 +452,12 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Opacity = CurrentState.Alpha;
 		}
 
-		protected override void NativeSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
 		{
 			CurrentState.XamlDashArray = null;
 		}
 
-		protected override float NativeStrokeSize
+		protected override float PlatformStrokeSize
 		{
 			set {  }
 		}
@@ -466,20 +466,6 @@ namespace Microsoft.Maui.Graphics.Xaml
 		{
 
 		}
-
-		private static string defaultSystemFont = "SegoeUI";
-		private static string defaultBoldSystemFont = "SegoeUI-Bold";
-
-		public override void SetToBoldSystemFont()
-		{
-			CurrentState.Font = defaultBoldSystemFont;
-		}
-
-		public override void SetToSystemFont()
-		{
-			CurrentState.Font = defaultSystemFont;
-		}
-
 		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
 			if (paint is SolidPaint solidPaint)
@@ -698,7 +684,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			set => CurrentState.FontColor = value;
 		}
 
-		public override string FontName
+		public override IFont Font
 		{
 			set => CurrentState.Font = value;
 		}
@@ -795,6 +781,40 @@ namespace Microsoft.Maui.Graphics.Xaml
 			var pathX = geometry.Bounds.Left;
 			var pathY = geometry.Bounds.Top;
 			element.RenderTransform = CurrentState.GetXamlTransform(pathX, pathY);
+		}
+
+		public override SizeF GetStringSize(string value, IFont font, float fontSize)
+			=> GetStringSize(value, font, fontSize, HorizontalAlignment.Left, VerticalAlignment.Top);
+		
+		public override SizeF GetStringSize(string aString, IFont font, float aFontSize, HorizontalAlignment aHorizontalAlignment, VerticalAlignment aVerticalAlignment)
+		{
+			var tb = new TextBlock
+			{
+				HorizontalTextAlignment = aHorizontalAlignment switch
+				{
+					HorizontalAlignment.Left => TextAlignment.Left,
+					HorizontalAlignment.Center => TextAlignment.Center,
+					HorizontalAlignment.Right => TextAlignment.Right,
+					HorizontalAlignment.Justified => TextAlignment.Justify,
+					_ => TextAlignment.Left,
+				},
+				VerticalAlignment = aVerticalAlignment switch
+				{
+					VerticalAlignment.Top => Windows.UI.Xaml.VerticalAlignment.Top,
+					VerticalAlignment.Center => Windows.UI.Xaml.VerticalAlignment.Center,
+					VerticalAlignment.Bottom => Windows.UI.Xaml.VerticalAlignment.Bottom,
+					_ => Windows.UI.Xaml.VerticalAlignment.Top,
+				},
+				Text = aString,
+				FontSize = (double)aFontSize,
+				FontWeight = new Windows.UI.Text.FontWeight { Weight = (ushort)font.Weight },
+				FontFamily = string.IsNullOrEmpty(font?.Name) ? FontFamily.XamlAutoFontFamily : new FontFamily(font.Name),
+			};
+			tb.Measure(new Windows.Foundation.Size(Double.PositiveInfinity, Double.PositiveInfinity));
+
+			var s = tb.DesiredSize;
+
+			return new SizeF((float)s.Width, (float)s.Height);
 		}
 	}
 }

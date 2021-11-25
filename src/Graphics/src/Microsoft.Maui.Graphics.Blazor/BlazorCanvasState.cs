@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 
 		private bool _textDirty = true;
 		private Color _textColor = Colors.Black;
-		private string _font = "Arial";
+		private IFont _font = Graphics.Font.Default;
 		private float _fontSize = 12f;
 
 		public BlazorCanvasState()
@@ -160,14 +160,14 @@ namespace Microsoft.Maui.Graphics.Blazor
 			set => _alpha = value;
 		}
 
-		public string Font
+		public IFont Font
 		{
 			get => _font;
 			set
 			{
 				if (!string.Equals(_font,value))
 				{
-					_font = value ?? "Arial";
+					_font = value ?? Graphics.Font.Default;
 					_textDirty = true;
 				}
 			}

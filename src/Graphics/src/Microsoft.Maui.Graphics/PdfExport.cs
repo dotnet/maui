@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Graphics
 {
-	public static class PdfExport
+	internal static class PdfExport
 	{
 		private static IPdfExportService _registeredExportService;
 

@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			float fx,
 			float fy)
 		{
-			var nativePath = new SKPath();
+			var platformPath = new SKPath();
 
 			var ppux = ppu * fx;
 			var ppuy = ppu * fy;
@@ -125,26 +125,26 @@ namespace Microsoft.Maui.Graphics.Skia
 				if (type == PathOperation.Move)
 				{
 					var point = path[pointIndex++];
-					nativePath.MoveTo((ox + point.X * ppux), (oy + point.Y * ppuy));
+					platformPath.MoveTo((ox + point.X * ppux), (oy + point.Y * ppuy));
 				}
 				else if (type == PathOperation.Line)
 				{
 					var point = path[pointIndex++];
-					nativePath.LineTo((ox + point.X * ppux), (oy + point.Y * ppuy));
+					platformPath.LineTo((ox + point.X * ppux), (oy + point.Y * ppuy));
 				}
 
 				else if (type == PathOperation.Quad)
 				{
 					var controlPoint = path[pointIndex++];
 					var point = path[pointIndex++];
-					nativePath.QuadTo((ox + controlPoint.X * ppux), (oy + controlPoint.Y * ppuy), (ox + point.X * ppux), (oy + point.Y * ppuy));
+					platformPath.QuadTo((ox + controlPoint.X * ppux), (oy + controlPoint.Y * ppuy), (ox + point.X * ppux), (oy + point.Y * ppuy));
 				}
 				else if (type == PathOperation.Cubic)
 				{
 					var controlPoint1 = path[pointIndex++];
 					var controlPoint2 = path[pointIndex++];
 					var point = path[pointIndex++];
-					nativePath.CubicTo((ox + controlPoint1.X * ppux), (oy + controlPoint1.Y * ppuy), (ox + controlPoint2.X * ppux), (oy + controlPoint2.Y * ppuy), (ox + point.X * ppux),
+					platformPath.CubicTo((ox + controlPoint1.X * ppux), (oy + controlPoint1.Y * ppuy), (ox + controlPoint2.X * ppux), (oy + controlPoint2.Y * ppuy), (ox + point.X * ppux),
 						(oy + point.Y * ppuy));
 				}
 				else if (type == PathOperation.Arc)
@@ -172,15 +172,15 @@ namespace Microsoft.Maui.Graphics.Skia
 					if (!clockwise)
 						sweep *= -1;
 
-					nativePath.AddArc(rect, startAngle, sweep);
+					platformPath.AddArc(rect, startAngle, sweep);
 				}
 				else if (type == PathOperation.Close)
 				{
-					nativePath.Close();
+					platformPath.Close();
 				}
 			}
 
-			return nativePath;
+			return platformPath;
 		}
 
 		public static SKPath AsSkiaPath(this PathF path, float ppu, float zoom)

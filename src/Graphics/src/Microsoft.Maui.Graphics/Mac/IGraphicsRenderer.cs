@@ -1,11 +1,11 @@
 using System;
 using CoreGraphics;
 
-namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public interface IGraphicsRenderer : IDisposable
 	{
-		NativeGraphicsView GraphicsView { set; }
+		PlatformGraphicsView GraphicsView { set; }
 		ICanvas Canvas { get; }
 		IDrawable Drawable { get; set; }
 		void Draw(CGContext nativeCanvas, RectangleF dirtyRect);

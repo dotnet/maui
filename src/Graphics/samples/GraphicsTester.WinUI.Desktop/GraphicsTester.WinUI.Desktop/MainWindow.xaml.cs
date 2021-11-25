@@ -19,9 +19,6 @@ namespace GraphicsTester.WinUI.Desktop
 
         public void Initialize()
         {
-            GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
-            Fonts.Register(W2DFontService.Instance);
-
             GraphicsView.Background = new SolidColorBrush(global::Microsoft.UI.Colors.White);
 
             foreach (var scenario in ScenarioList.Scenarios)

@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Microsoft.Maui.Graphics
 {
-	public static class PdfExportContextExtensions
+	internal static class PdfExportContextExtensions
 	{
 		public static void WriteToFile(this PdfExportContext exportContext, string filename)
 		{

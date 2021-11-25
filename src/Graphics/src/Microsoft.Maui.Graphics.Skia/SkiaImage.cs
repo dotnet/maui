@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Graphics.Skia
 			_image = image;
 		}
 
+		//protected readonly IPlatformGraphics Graphics;
+
 		public float Width => _image.Width;
 
 		public float Height => _image.Height;
@@ -94,7 +96,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
-		public SKBitmap NativeImage => _image;
+		public SKBitmap PlatformImage => _image;
 
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
@@ -142,17 +144,31 @@ namespace Microsoft.Maui.Graphics.Skia
 		{
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, (float)Math.Round(dirtyRect.Width), (float)Math.Round(dirtyRect.Height));
 		}
-	}
 
-	public static class SkiaImageExtensions
-	{
-		public static SKBitmap AsBitmap(this IImage image)
+		public IImage ToImage(int width, int height, float scale = 1f)
 		{
-			if (image is SkiaImage skiaImage)
-				return skiaImage.NativeImage;
+			using var context = new SkiaBitmapExportContext(width, height, scale);
+			context.Canvas.Scale(scale, scale);
+			Draw(context.Canvas, new RectangleF(0, 0, (float)width / scale, (float)height / scale));
+			return context.Image;
+		}
 
-			if (image != null)
-				Logger.Warn("SkiaImageExtensions.AsBitmap: Unable to get SKBitmap from Image. Expected an image of type SkiaImage however an image of type {0} was received.", image.GetType());
+		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
+		{
+			using (var s = new SKManagedStream(stream))
+			{
+				using (var codec = SKCodec.Create(s))
+				{
+					var info = codec.Info;
+					var bitmap = new SKBitmap(info.Width, info.Height, info.ColorType, info.IsOpaque ? SKAlphaType.Opaque : SKAlphaType.Premul);
+
+					var result = codec.GetPixels(bitmap.Info, bitmap.GetPixels(out _));
+					if (result == SKCodecResult.Success || result == SKCodecResult.IncompleteInput)
+					{
+						return new SkiaImage(bitmap);
+					}
+				}
+			}
 
 			return null;
 		}

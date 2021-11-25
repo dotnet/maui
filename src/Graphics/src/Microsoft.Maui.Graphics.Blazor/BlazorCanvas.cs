@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 		public override LineJoin StrokeLineJoin { set => CurrentState.LineJoin = value; }
 		public override Color FillColor { set => CurrentState.FillColor = value; }
 		public override Color FontColor { set => CurrentState.TextColor = value; }
-		public override string FontName { set => CurrentState.Font = value; }
+		public override IFont Font { set => CurrentState.Font = value; }
 		public override float FontSize { set => CurrentState.FontSize = value; }
 		public override float Alpha { set => _context.GlobalAlpha = value; }
 		public override bool Antialias { set { /* do nothing */} }
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_bounds = new RectangleF(x1, y1, width, height);
 		}
 
-		protected override float NativeStrokeSize { set => CurrentState.LineWidth = value; }
+		protected override float PlatformStrokeSize { set => CurrentState.LineWidth = value; }
 
 		public override void ClipPath(PathF path, WindingMode windingMode = WindingMode.NonZero)
 		{
@@ -217,16 +217,6 @@ namespace Microsoft.Maui.Graphics.Blazor
 			Logger.Debug("BlazorCanvas.SetShadow - not yet supported.");
 		}
 
-		public override void SetToBoldSystemFont()
-		{
-			FontName = "Arial";
-		}
-
-		public override void SetToSystemFont()
-		{
-			FontName = "Arial-Bold";
-		}
-
 		public override void SubtractFromClip(float x, float y, float width, float height)
 		{
 			_context.Rect(_bounds.X, _bounds.Y, _bounds.Width, _bounds.Width);
@@ -234,12 +224,12 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.Clip("evenodd");
 		}
 
-		protected override void NativeConcatenateTransform(Matrix3x2 transform)
+		protected override void PlatformConcatenateTransform(Matrix3x2 transform)
 		{			
 			_context.SetTransform(transform.M11, transform.M12, transform.M21, transform.M22, transform.M31,transform.M32);
 		}
 
-		protected override void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
+		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
 		{
 			var alpha = CurrentState.SetStrokeStyle(_context);
 			_context.BeginPath();
@@ -248,7 +238,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.GlobalAlpha = alpha;
 		}
 
-		protected override void NativeDrawLine(float x1, float y1, float x2, float y2)
+		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
 		{
 			var alpha = CurrentState.SetStrokeStyle(_context);
 
@@ -260,7 +250,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.GlobalAlpha = alpha;
 		}
 
-		protected override void NativeDrawEllipse(float x, float y, float width, float height)
+		protected override void PlatformDrawEllipse(float x, float y, float width, float height)
 		{
 			var alpha = CurrentState.SetStrokeStyle(_context);
 
@@ -271,7 +261,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.GlobalAlpha = alpha;
 		}
 
-		protected override void NativeDrawPath(PathF path)
+		protected override void PlatformDrawPath(PathF path)
 		{
 			var alpha = CurrentState.SetStrokeStyle(_context);
 			_context.BeginPath();
@@ -280,14 +270,14 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.GlobalAlpha = alpha;
 		}
 
-		protected override void NativeDrawRectangle(float x, float y, float width, float height)
+		protected override void PlatformDrawRectangle(float x, float y, float width, float height)
 		{
 			var alpha = CurrentState.SetStrokeStyle(_context);
 			_context.StrokeRect(x, y, width, height);
 			_context.GlobalAlpha = alpha;
 		}
 
-		protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
+		protected override void PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
 			var alpha = CurrentState.SetStrokeStyle(_context);
 
@@ -298,24 +288,24 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.GlobalAlpha = alpha;
 		}
 
-		protected override void NativeRotate(float degrees, float radians, float x, float y)
+		protected override void PlatformRotate(float degrees, float radians, float x, float y)
 		{
 			_context.Translate(x, y);
 			_context.Rotate(radians);
 			_context.Translate(-x, -y);
 		}
 
-		protected override void NativeRotate(float degrees, float radians)
+		protected override void PlatformRotate(float degrees, float radians)
 		{
 			_context.Rotate(radians);
 		}
 
-		protected override void NativeScale(float fx, float fy)
+		protected override void PlatformScale(float fx, float fy)
 		{
 			_context.Scale(fx, fy);
 		}
 
-		protected override void NativeSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
 		{
 			float[] finalPattern = null;
 			if (pattern != null)
@@ -328,7 +318,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 			CurrentState.BlazorDashPattern = finalPattern;
 		}
 
-		protected override void NativeTranslate(float tx, float ty)
+		protected override void PlatformTranslate(float tx, float ty)
 		{
 			_context.Translate(tx, ty);
 		}
@@ -463,6 +453,16 @@ namespace Microsoft.Maui.Graphics.Blazor
 					_context.ClosePath();
 				}
 			}
+		}
+
+		public override SizeF GetStringSize(string value, IFont font, float textSize)
+		{
+			return new SizeF(value.Length * 10, textSize + 2);
+		}
+
+		public override SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+		{
+			return new SizeF(value.Length * 10, textSize + 2);
 		}
 	}
 }

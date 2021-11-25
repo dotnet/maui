@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Graphics.Skia
 		private float _displayScale = 1;
 		private SKShader _shader;
 
-		public SkiaCanvas() : base(CreateNewState, CreateStateCopy)
+		public SkiaCanvas(): base(CreateNewState, CreateStateCopy)
 		{
 		}
 
@@ -40,9 +40,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			set => CurrentState.AntiAlias = value;
 		}
 
-		protected override float NativeStrokeSize
+		protected override float PlatformStrokeSize
 		{
-			set => CurrentState.NativeStrokeSize = value;
+			set => CurrentState.PlatformStrokeSize = value;
 		}
 
 		public override float MiterLimit
@@ -75,15 +75,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			set => CurrentState.FontColor = value ?? Colors.Black;
 		}
 
-		public override string FontName
+		public override IFont Font
 		{
-			set
-			{
-				if (value != null)
-					CurrentState.FontName = value;
-				else
-					CurrentState.FontName = SkiaGraphicsService.Instance.SystemFontName;
-			}
+			set => CurrentState.Font = value;
 		}
 
 		public override float FontSize
@@ -240,7 +234,6 @@ namespace Microsoft.Maui.Graphics.Skia
 				FillPaint = _defaultFillPaint.CreateCopy(),
 				StrokePaint = _defaultStrokePaint.CreateCopy(),
 				FontPaint = _defaultFontPaint.CreateCopy(),
-				FontName = SkiaGraphicsService.Instance.SystemFontName
 			};
 
 			return state;
@@ -265,21 +258,11 @@ namespace Microsoft.Maui.Graphics.Skia
 			base.Dispose();
 		}
 
-		protected override void NativeSetStrokeDashPattern(
+		protected override void PlatformSetStrokeDashPattern(
 			float[] pattern,
 			float strokeSize)
 		{
 			CurrentState.SetStrokeDashPattern(pattern, strokeSize);
-		}
-
-		public override void SetToSystemFont()
-		{
-			CurrentState.FontName = SkiaGraphicsService.Instance.SystemFontName;
-		}
-
-		public override void SetToBoldSystemFont()
-		{
-			CurrentState.FontName = SkiaGraphicsService.Instance.BoldSystemFontName;
 		}
 
 		public override void SetFillPaint(Paint paint, RectangleF rectangle)
@@ -406,7 +389,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				var image = imagePaint.Image as SkiaImage;
 				if (image != null)
 				{
-					SKBitmap bitmap = image.NativeImage;
+					SKBitmap bitmap = image.PlatformImage;
 
 					if (bitmap != null)
 					{
@@ -444,7 +427,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
-		protected override void NativeDrawLine(
+		protected override void PlatformDrawLine(
 			float x1,
 			float y1,
 			float x2,
@@ -453,7 +436,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			_canvas.DrawLine(x1, y1, x2, y2, CurrentState.StrokePaintWithAlpha);
 		}
 
-		protected override void NativeDrawArc(
+		protected override void PlatformDrawArc(
 			float x,
 			float y,
 			float width,
@@ -484,19 +467,19 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (closed)
 			{
-				var nativePath = new SKPath();
-				nativePath.AddArc(rect, startAngle, sweep);
-				nativePath.Close();
-				_canvas.DrawPath(nativePath, CurrentState.StrokePaintWithAlpha);
-				nativePath.Dispose();
+				var platformPath = new SKPath();
+				platformPath.AddArc(rect, startAngle, sweep);
+				platformPath.Close();
+				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
+				platformPath.Dispose();
 			}
 			else
 			{
 				// todo: delete this after the api is bound
-				var nativePath = new SKPath();
-				nativePath.AddArc(rect, startAngle, sweep);
-				_canvas.DrawPath(nativePath, CurrentState.StrokePaintWithAlpha);
-				nativePath.Dispose();
+				var platformPath = new SKPath();
+				platformPath.AddArc(rect, startAngle, sweep);
+				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
+				platformPath.Dispose();
 
 				// todo: restore this when the api is bound.
 				//_canvas.DrawArc (rect, startAngle, sweep, false, CurrentState.StrokePaintWithAlpha);
@@ -526,16 +509,16 @@ namespace Microsoft.Maui.Graphics.Skia
 				sweep *= -1;
 
 			// todo: delete this after the api is bound
-			var nativePath = new SKPath();
-			nativePath.AddArc(rect, startAngle, sweep);
-			_canvas.DrawPath(nativePath, CurrentState.FillPaintWithAlpha);
-			nativePath.Dispose();
+			var platformPath = new SKPath();
+			platformPath.AddArc(rect, startAngle, sweep);
+			_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
+			platformPath.Dispose();
 
 			// todo: restore this when the api is bound.
 			//_canvas.DrawArc (rect, startAngle, sweep, false, CurrentState.FillPaintWithAlpha);
 		}
 
-		protected override void NativeDrawRectangle(
+		protected override void PlatformDrawRectangle(
 			float x,
 			float y,
 			float width,
@@ -569,7 +552,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			_canvas.DrawRect(rectX, rectY, rectWidth, rectHeight, CurrentState.FillPaintWithAlpha);
 		}
 
-		protected override void NativeDrawRoundedRectangle(
+		protected override void PlatformDrawRoundedRectangle(
 			float x,
 			float y,
 			float width,
@@ -605,7 +588,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			_canvas.DrawRoundRect(rect, radius, radius, CurrentState.FillPaintWithAlpha);
 		}
 
-		protected override void NativeDrawEllipse(
+		protected override void PlatformDrawEllipse(
 			float x,
 			float y,
 			float width,
@@ -649,29 +632,29 @@ namespace Microsoft.Maui.Graphics.Skia
 			_canvas.ClipRect(rect, SKClipOperation.Difference);
 		}
 
-		protected override void NativeDrawPath(
+		protected override void PlatformDrawPath(
 			PathF path)
 		{
-			var nativePath = path.AsSkiaPath();
-			_canvas.DrawPath(nativePath, CurrentState.StrokePaintWithAlpha);
-			nativePath.Dispose();
+			var platformPath = path.AsSkiaPath();
+			_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
+			platformPath.Dispose();
 		}
 
 		public override void ClipPath(PathF path,
 			WindingMode windingMode = WindingMode.NonZero)
 		{
-			var nativePath = path.AsSkiaPath();
-			nativePath.FillType = windingMode == WindingMode.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
-			_canvas.ClipPath(nativePath);
+			var platformPath = path.AsSkiaPath();
+			platformPath.FillType = windingMode == WindingMode.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
+			_canvas.ClipPath(platformPath);
 		}
 
 		public override void FillPath(PathF path,
 			WindingMode windingMode)
 		{
-			var nativePath = path.AsSkiaPath();
-			nativePath.FillType = windingMode == WindingMode.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
-			_canvas.DrawPath(nativePath, CurrentState.FillPaintWithAlpha);
-			nativePath.Dispose();
+			var platformPath = path.AsSkiaPath();
+			platformPath.FillType = windingMode == WindingMode.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
+			_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
+			platformPath.Dispose();
 		}
 
 		public override void DrawString(
@@ -722,7 +705,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			var attributes = new StandardTextAttributes()
 			{
 				FontSize = CurrentState.FontPaint.TextSize,
-				FontName = CurrentState.FontName,
+				Font = CurrentState.Font,
 				HorizontalAlignment = horizAlignment,
 				VerticalAlignment = vertAlignment,
 			};
@@ -803,7 +786,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
-		protected override void NativeRotate(
+		protected override void PlatformRotate(
 			float degrees,
 			float radians,
 			float x,
@@ -812,14 +795,14 @@ namespace Microsoft.Maui.Graphics.Skia
 			_canvas.RotateDegrees(degrees, x, y);
 		}
 
-		protected override void NativeRotate(
+		protected override void PlatformRotate(
 			float degrees,
 			float radians)
 		{
 			_canvas.RotateDegrees(degrees);
 		}
 
-		protected override void NativeScale(
+		protected override void PlatformScale(
 			float xFactor,
 			float yFactor)
 		{
@@ -829,14 +812,14 @@ namespace Microsoft.Maui.Graphics.Skia
 				_canvas.Scale(xFactor < 0 ? -1 : 1, yFactor < 0 ? -1 : 1);
 		}
 
-		protected override void NativeTranslate(
+		protected override void PlatformTranslate(
 			float tx,
 			float ty)
 		{
 			_canvas.Translate(tx * CurrentState.ScaleX, ty * CurrentState.ScaleY);
 		}
 
-		protected override void NativeConcatenateTransform(Matrix3x2 transform)
+		protected override void PlatformConcatenateTransform(Matrix3x2 transform)
 		{
 			var matrix = new SKMatrix();
 
@@ -868,7 +851,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			float height)
 		{
 			var skiaImage = image as SkiaImage;
-			var bitmap = skiaImage?.NativeImage;
+			var bitmap = skiaImage?.PlatformImage;
 			if (bitmap != null)
 			{
 				var scaleX = CurrentState.ScaleX < 0 ? -1 : 1;
@@ -903,6 +886,36 @@ namespace Microsoft.Maui.Graphics.Skia
 			float height)
 		{
 			_canvas.ClipRect(new SKRect(x, y, x + width, y + height));
+		}
+
+		public override SizeF GetStringSize(string value, IFont font, float fontSize)
+		{
+			if (string.IsNullOrEmpty(value))
+				return new SizeF();
+
+			var paint = new SKPaint
+			{
+				Typeface = font?.ToSKTypeface() ?? SKTypeface.Default,
+				TextSize = fontSize
+			};
+			var width = paint.MeasureText(value);
+			paint.Dispose();
+			return new SizeF(width, fontSize);
+		}
+
+		public override SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+		{
+			if (string.IsNullOrEmpty(value))
+				return new SizeF();
+
+			var paint = new SKPaint
+			{
+				TextSize = fontSize,
+				Typeface = font?.ToSKTypeface() ?? SKTypeface.Default
+			};
+			var width = paint.MeasureText(value);
+			paint.Dispose();
+			return new SizeF(width, fontSize);
 		}
 	}
 }

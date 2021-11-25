@@ -3,9 +3,9 @@ using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
 
-namespace Microsoft.Maui.Graphics.Native.Text
+namespace Microsoft.Maui.Graphics.Platform.Text
 {
-	public static class AttributedTextExtensions
+	internal static class AttributedTextExtensions
 	{
 		public static SpannableStringBuilder AsSpannableStringBuilder(this IAttributedText target)
 		{

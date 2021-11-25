@@ -13,7 +13,7 @@ namespace GraphicsTester.Scenarios
 		{
 			canvas.StrokeSize = 1;
 			canvas.StrokeColor = Colors.Blue;
-			canvas.FontName = "Arial";
+			canvas.Font = Font.Default;
 			canvas.FontSize = 12f;
 
 			const string textShort = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ";
