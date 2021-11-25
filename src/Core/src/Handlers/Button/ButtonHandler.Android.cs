@@ -11,8 +11,21 @@ namespace Microsoft.Maui.Handlers
 	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
 		static Thickness? DefaultPadding;
-		static Drawable? DefaultBackground;
 		static ColorStateList? TransparentColorStateList;
+
+		// not static and each button has a new instance
+		Drawable? DefaultBackground;
+
+		void SetupDefaults(MaterialButton nativeView)
+		{
+			DefaultPadding ??= new Thickness(
+				nativeView.PaddingLeft,
+				nativeView.PaddingTop,
+				nativeView.PaddingRight,
+				nativeView.PaddingBottom);
+
+			DefaultBackground ??= nativeView.Background;
+		}
 
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
@@ -30,19 +43,10 @@ namespace Microsoft.Maui.Handlers
 			return nativeButton;
 		}
 
-		void SetupDefaults(MaterialButton nativeView)
-		{
-			DefaultPadding = new Thickness(
-				nativeView.PaddingLeft,
-				nativeView.PaddingTop,
-				nativeView.PaddingRight,
-				nativeView.PaddingBottom);
-
-			DefaultBackground = nativeView.Background;
-		}
-
 		protected override void ConnectHandler(MaterialButton nativeView)
 		{
+			SetupDefaults(nativeView);
+
 			ClickListener.Handler = this;
 			nativeView.SetOnClickListener(ClickListener);
 
@@ -68,7 +72,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateBackground(button, DefaultBackground);
+			handler.TypedNativeView?.UpdateBackground(button, (handler as ButtonHandler)?.DefaultBackground);
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)

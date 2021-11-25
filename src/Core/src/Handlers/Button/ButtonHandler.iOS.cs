@@ -12,6 +12,13 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? ButtonTextColorDefaultHighlighted;
 		static UIColor? ButtonTextColorDefaultNormal;
 
+		void SetupDefaults(UIButton nativeView)
+		{
+			ButtonTextColorDefaultNormal ??= nativeView.TitleColor(UIControlState.Normal);
+			ButtonTextColorDefaultHighlighted ??= nativeView.TitleColor(UIControlState.Highlighted);
+			ButtonTextColorDefaultDisabled ??= nativeView.TitleColor(UIControlState.Disabled);
+		}
+
 		protected override UIButton CreateNativeView()
 		{
 			var button = new UIButton(UIButtonType.System);
@@ -21,11 +28,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton nativeView)
 		{
+			SetupDefaults(nativeView);
+
 			nativeView.TouchUpInside += OnButtonTouchUpInside;
 			nativeView.TouchUpOutside += OnButtonTouchUpOutside;
 			nativeView.TouchDown += OnButtonTouchDown;
-
-			SetupDefaults(nativeView);
 
 			base.ConnectHandler(nativeView);
 		}
@@ -36,13 +43,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TouchUpOutside -= OnButtonTouchUpOutside;
 			nativeView.TouchDown -= OnButtonTouchDown;
 			base.DisconnectHandler(nativeView);
-		}
-
-		void SetupDefaults(UIButton nativeView)
-		{
-			ButtonTextColorDefaultNormal = nativeView.TitleColor(UIControlState.Normal);
-			ButtonTextColorDefaultHighlighted = nativeView.TitleColor(UIControlState.Highlighted);
-			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
