@@ -83,18 +83,6 @@ steps:
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
-    - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-      - task: NuGetAuthenticate@0
-        displayName: 'Authenticate Reunion NuGet sources'
-        inputs:
-          nuGetServiceConnections: Project.Reunion.nuget.internal
-      - pwsh: |
-          $content = Get-Content 'NuGet.config'
-          $content = $content.Replace(
-            '<!-- WASDK_PACKAGE_PLACEHOLDER -->',
-            '<add key="wasdk-internal" value="https://pkgs.dev.azure.com/microsoft/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json" />')
-          Set-Content 'NuGet.config' $content
-        displayName: 'Add "wasdk-internal" to NuGet.config'
 
 
   # Prepare Both
@@ -103,3 +91,18 @@ steps:
     condition: eq(variables['provisioningCake'], 'true')
   - pwsh: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
+
+
+  # Prepare for Reunion packages
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - task: NuGetAuthenticate@0
+      displayName: 'Authenticate Reunion NuGet sources'
+      inputs:
+        nuGetServiceConnections: Project.Reunion.nuget.internal
+    - pwsh: |
+        $content = Get-Content 'NuGet.config'
+        $content = $content.Replace(
+          '<!-- WASDK_PACKAGE_PLACEHOLDER -->',
+          '<add key="wasdk-internal" value="https://pkgs.dev.azure.com/microsoft/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json" />')
+        Set-Content 'NuGet.config' $content
+      displayName: 'Add "wasdk-internal" to NuGet.config'
