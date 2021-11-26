@@ -76,7 +76,7 @@
     />
     <PackageReference
         Update="Microsoft.WindowsAppSDK"
-        Version="$(_MicrosoftWindowsAppSDKPackageVersion)"
+        Version="$(MicrosoftWindowsAppSDKPackageVersion)"
         NoWarn="NU1605"
     />
     <PackageReference
