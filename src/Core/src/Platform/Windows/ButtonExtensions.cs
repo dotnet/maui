@@ -7,7 +7,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{

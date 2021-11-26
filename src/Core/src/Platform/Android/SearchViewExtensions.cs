@@ -2,7 +2,7 @@
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SearchViewExtensions
 	{

@@ -1,7 +1,7 @@
 ﻿using Android.Content.Res;
 using AColor = Android.Graphics.Color;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class ColorStateListExtensions
 	{

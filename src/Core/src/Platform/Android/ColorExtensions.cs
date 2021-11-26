@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics.Android;
 using Microsoft.Maui.Graphics.Native;
 using AColor = Android.Graphics.Color;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ColorExtensions
 	{

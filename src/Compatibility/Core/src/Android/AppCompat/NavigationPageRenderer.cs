@@ -990,7 +990,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			Color navIconColor = NavigationPage.GetIconColor(Current);
 			if (navIconColor != null && bar.NavigationIcon != null)
-				DrawableExtensions.SetColorFilter(bar.NavigationIcon, navIconColor, FilterMode.SrcAtop);
+				bar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
 
 			bar.Title = currentPage?.Title ?? string.Empty;
 

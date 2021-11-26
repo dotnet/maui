@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
 using APath = Android.Graphics.Path;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : ViewGroup
 	{

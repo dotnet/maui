@@ -2,7 +2,7 @@
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Platform
 {
 	public class MauiMaterialButton : MaterialButton
 	{

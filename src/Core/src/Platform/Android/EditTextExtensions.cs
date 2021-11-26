@@ -9,7 +9,7 @@ using Android.Widget;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class EditTextExtensions
 	{

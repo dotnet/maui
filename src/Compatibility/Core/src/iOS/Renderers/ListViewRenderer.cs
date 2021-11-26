@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 				return;
 
-			_backgroundUIView.RemoveBackgroundLayer();
+			BrushExtensions.RemoveBackgroundLayer(_backgroundUIView);
 
 			if (!Brush.IsNullOrEmpty(brush))
 			{
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (backgroundLayer != null)
 					{
 						_backgroundUIView.BackgroundColor = UIColor.Clear;
-						_backgroundUIView.InsertBackgroundLayer(backgroundLayer, 0);
+						BrushExtensions.InsertBackgroundLayer(_backgroundUIView, backgroundLayer, 0);
 					}
 				}
 			}

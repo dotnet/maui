@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 

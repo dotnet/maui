@@ -1,5 +1,3 @@
-using Microsoft.Maui.Platform.iOS;
-
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, MauiLabel>

@@ -4,7 +4,7 @@ using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static partial class MauiContextExtensions
 	{

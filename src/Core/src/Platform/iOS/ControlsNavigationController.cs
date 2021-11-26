@@ -8,7 +8,7 @@ using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal class ControlsNavigationController : UINavigationController
 	{

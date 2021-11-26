@@ -22,6 +22,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
 using AView = Android.Views.View;
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 				if (toolBarItem.IconImageSource is FileImageSource fileImageSource)
 				{
 					var name = IOPath.GetFileNameWithoutExtension(fileImageSource.File);
-					var id = context.GetDrawableId(name);
+					var id = ResourceManager.GetDrawableId(context, name);
 					if (id != 0)
 					{
 						if ((int)Build.VERSION.SdkInt >= 21)
