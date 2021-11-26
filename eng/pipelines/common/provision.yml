@@ -83,6 +83,13 @@ steps:
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
+    - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      - pwsh: |
+          $content = Get-Content 'NuGet.config'
+          $content = $content.Replace(
+            '<!-- WASDK_PACKAGE_PLACEHOLDER -->',
+            '<add key="wasdk-internal" value="https://pkgs.dev.azure.com/microsoft/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json" />')
+          Set-Content 'NuGet.config' $content
 
 
   # Prepare Both
