@@ -4,6 +4,8 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+
+	[Collection("UsesPreferences")]
 	public class Preferences_Tests
 	{
 		const string sharedNameTestData = "Shared";

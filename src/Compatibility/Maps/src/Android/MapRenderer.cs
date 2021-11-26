@@ -13,11 +13,13 @@ using Android.Gms.Maps.Model;
 using Android.OS;
 using AndroidX.Core.Content;
 using Java.Lang;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
@@ -410,8 +412,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			}
 			catch (IllegalStateException exc)
 			{
-				System.Diagnostics.Debug.WriteLine("MoveToRegion exception: " + exc);
-				Log.Warning("Microsoft.Maui.Controls MapRenderer", $"MoveToRegion exception: {exc}");
+				Application.Current?.FindMauiContext()?.CreateLogger<MapRenderer>()?.LogWarning(exc, $"MoveToRegion exception");
 			}
 		}
 
@@ -1027,7 +1028,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 				}
 				else
 				{
-					Log.Warning("Microsoft.Maui.Controls.MapRenderer", "Missing location permissions for IsShowingUser");
+					Application.Current?.FindMauiContext()?.CreateLogger<MapRenderer>()?.LogWarning("Missing location permissions for IsShowingUser");
 					map.MyLocationEnabled = map.UiSettings.MyLocationButtonEnabled = false;
 				}
 			}

@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers

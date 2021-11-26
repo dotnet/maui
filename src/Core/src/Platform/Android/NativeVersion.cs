@@ -1,6 +1,6 @@
 using Android.OS;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class NativeVersion
 	{
@@ -29,5 +29,6 @@ namespace Microsoft.Maui
 		public const int PowerSaveMode = 21;
 		public const int BlendModeColorFilter = 29;
 		public const int SeekBarSetMin = 26;
+		public const int LaunchAdjacent = 24;
 	}
 }

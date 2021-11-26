@@ -5,7 +5,7 @@ using Android.OS;
 using Android.Views;
 using AndroidX.Fragment.App;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	class ViewFragment : Fragment
 	{

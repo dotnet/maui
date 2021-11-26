@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui
+﻿namespace Microsoft.Maui.Platform
 {
 	public static class TimePickerExtensions
 	{

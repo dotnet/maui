@@ -406,8 +406,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (appearance != null)
 			{
 				var a = (IShellAppearanceElement)appearance;
-				tabBarBackgroundColor = a.EffectiveTabBarBackgroundColor.ToWindowsColor();
-				tabBarForegroundColor = a.EffectiveTabBarForegroundColor.ToWindowsColor();
+
+				if (a.EffectiveTabBarBackgroundColor != null)
+					tabBarBackgroundColor = a.EffectiveTabBarBackgroundColor.ToWindowsColor();
+
+				if (a.EffectiveTabBarForegroundColor != null)
+					tabBarForegroundColor = a.EffectiveTabBarForegroundColor.ToWindowsColor();
 			}
 
 			UpdateBrushColor("NavigationViewTopPaneBackground", tabBarBackgroundColor);

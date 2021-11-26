@@ -17,7 +17,15 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="activationState">Argument containing specific information on each platform.</param>
 		/// <returns>The created window.</returns>
-		IWindow CreateWindow(IActivationState activationState);
+		IWindow CreateWindow(IActivationState? activationState);
+
+		void OpenWindow(IWindow window);
+
+		/// <summary>
+		/// Requests that the application closes the window.
+		/// </summary>
+		/// <param name="window">The window to close.</param>
+		void CloseWindow(IWindow window);
 
 		/// <summary>
 		/// Notify a theme change.

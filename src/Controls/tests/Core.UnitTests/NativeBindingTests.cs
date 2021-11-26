@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -194,11 +196,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[SetUp]
 		public void SetUp()
 		{
-			Device.PlatformServices = new MockPlatformServices();
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
 			//this should collect the ConditionalWeakTable
 			GC.Collect();
+			GC.WaitForPendingFinalizers();
 		}
+
+		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Test]
 		public void SetOneWayBinding()

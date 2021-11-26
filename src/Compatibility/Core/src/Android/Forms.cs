@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -16,6 +15,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen.Android;
 using Microsoft.Maui.Controls.Internals;
@@ -309,13 +309,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Application.AccentColor = GetAccentColor(activity);
 			_ColorButtonNormalSet = false;
 
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				Profile.FramePartition("Log.Listeners");
-				Internals.Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-			}
-
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Profile.FramePartition("Device.PlatformServices");
@@ -324,18 +317,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.PlatformServices = androidServices;
 			Device.PlatformInvalidator = androidServices;
-
-			// use field and not property to avoid exception in getter
-			if (Device.info != null)
-			{
-				((AndroidDeviceInfo)Device.info).Dispose();
-				Device.info = null;
-			}
-
-			// We want this to be updated when we have a new activity (e.g. on a configuration change)
-			// because Device.Info watches for orientation changes and we need a current activity for that
-			Profile.FramePartition("create AndroidDeviceInfo");
-			Device.Info = new AndroidDeviceInfo(activity);
 
 			Profile.FramePartition("RegisterAll");
 
@@ -465,103 +446,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return rc;
 		}
 
-		class AndroidDeviceInfo : DeviceInfo
-		{
-			bool _disposed;
-			readonly Context _formsActivity;
-			Size _scaledScreenSize;
-			Size _pixelScreenSize;
-			double _scalingFactor;
-
-			Orientation _previousOrientation = Orientation.Undefined;
-			IDualScreenService DualScreenService => DependencyService.Get<IDualScreenService>();
-
-			public AndroidDeviceInfo(Context formsActivity)
-			{
-				CheckOrientationChanged(formsActivity);
-
-				// This will not be an implementation of IDeviceInfoProvider when running inside the context
-				// of layoutlib, which is what the Android Designer does.
-				// It also won't be IDeviceInfoProvider when using Page Embedding
-				if (formsActivity is IDeviceInfoProvider)
-				{
-					_formsActivity = formsActivity;
-					((IDeviceInfoProvider)_formsActivity).ConfigurationChanged += ConfigurationChanged;
-				}
-			}
-
-			public override Size PixelScreenSize
-			{
-				get { return _pixelScreenSize; }
-			}
-
-			public override Size ScaledScreenSize => _scaledScreenSize;
-
-			public override double ScalingFactor
-			{
-				get { return _scalingFactor; }
-			}
-
-
-			public override double DisplayRound(double value) =>
-				Math.Round(ScalingFactor * value) / ScalingFactor;
-
-			protected override void Dispose(bool disposing)
-			{
-				if (_disposed)
-				{
-					return;
-				}
-
-				_disposed = true;
-
-				if (disposing)
-				{
-					var provider = _formsActivity as IDeviceInfoProvider;
-					if (provider != null)
-						provider.ConfigurationChanged -= ConfigurationChanged;
-				}
-
-				base.Dispose(disposing);
-			}
-
-			void UpdateScreenMetrics(Context formsActivity)
-			{
-				using (DisplayMetrics display = formsActivity.Resources.DisplayMetrics)
-				{
-					_scalingFactor = display.Density;
-					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
-					_scaledScreenSize = new Size(_pixelScreenSize.Width / _scalingFactor, _pixelScreenSize.Height / _scalingFactor);
-				}
-			}
-
-			void CheckOrientationChanged(Context formsActivity)
-			{
-				Orientation orientation;
-
-				if (DualScreenService?.IsSpanned == true)
-				{
-					orientation = (DualScreenService.IsLandscape) ? Orientation.Landscape : Orientation.Portrait;
-				}
-				else
-				{
-					orientation = formsActivity.Resources.Configuration.Orientation;
-				}
-
-				if (!_previousOrientation.Equals(orientation))
-					CurrentOrientation = orientation.ToDeviceOrientation();
-
-				_previousOrientation = orientation;
-
-				UpdateScreenMetrics(formsActivity);
-			}
-
-			void ConfigurationChanged(object sender, EventArgs e)
-			{
-				CheckOrientationChanged(_formsActivity);
-			}
-		}
-
 		class AndroidExpressionSearch : ExpressionVisitor, IExpressionSearch
 		{
 			List<object> _results;
@@ -600,23 +484,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			double _microSize;
 			double _smallSize;
 
-			static Handler s_handler;
-
 			readonly Context _context;
 
 			public AndroidPlatformServices(Context context)
 			{
 				_context = context;
-			}
-
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				if (s_handler == null || s_handler.Looper != Looper.MainLooper)
-				{
-					s_handler = new Handler(Looper.MainLooper);
-				}
-
-				s_handler.Post(action);
 			}
 
 			public Assembly[] GetAssemblies()
@@ -774,32 +646,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return null;
 			}
 
-			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-			{
-				using (var client = new HttpClient())
-				{
-					// Do not remove this await otherwise the client will dispose before
-					// the stream even starts
-					var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
-
-					return result;
-				}
-			}
-
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				throw new NotImplementedException("GetUserStoreForApplication currently not available https://github.com/dotnet/runtime/issues/52332");
-				//return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
-			}
-
-			public bool IsInvokeRequired
-			{
-				get
-				{
-					return Looper.MainLooper != Looper.MyLooper();
-				}
-			}
-
 			public string RuntimePlatform => Device.Android;
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
@@ -854,7 +700,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				catch (Exception ex)
 				{
-					Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
+					Application.Current?.FindMauiContext()?.CreateLogger<AndroidPlatformServices>()?
+						.LogWarning(ex, "Error retrieving text appearance");
 				}
 				return false;
 			}
@@ -890,49 +737,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 						default:
 							return OSAppTheme.Unspecified;
 					};
-				}
-			}
-
-			public class _IsolatedStorageFile : IIsolatedStorageFile
-			{
-				readonly IsolatedStorageFile _isolatedStorageFile;
-
-				public _IsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-				{
-					_isolatedStorageFile = isolatedStorageFile;
-				}
-
-				public Task CreateDirectoryAsync(string path)
-				{
-					_isolatedStorageFile.CreateDirectory(path);
-					return Task.FromResult(true);
-				}
-
-				public Task<bool> GetDirectoryExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.DirectoryExists(path));
-				}
-
-				public Task<bool> GetFileExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.FileExists(path));
-				}
-
-				public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
-					return Task.FromResult(stream);
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
-					return Task.FromResult(stream);
 				}
 			}
 		}

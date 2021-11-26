@@ -6,6 +6,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui

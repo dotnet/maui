@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
@@ -40,6 +39,11 @@ namespace Microsoft.Maui
 		/// </summary>
 		void ScrollFinished();
 
+		/// <summary>
+		/// Scrolls to a specific offset.
+		/// </summary>
+		/// <param name="horizontalOffset">Represents the horizontal offset.</param>
+		/// <param name="verticalOffset">Represents the vertical offset.</param>
 		void RequestScrollTo(double horizontalOffset, double verticalOffset, bool instant);
 	}
 }

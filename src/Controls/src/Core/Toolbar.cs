@@ -6,6 +6,11 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	internal interface IToolbarElement
+	{
+		Toolbar Toolbar { get; }
+	}
+
 	public class Toolbar : Microsoft.Maui.IElement
 	{
 		NavigationPage _currentNavigationPage;
@@ -154,6 +159,17 @@ namespace Microsoft.Maui.Controls
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 			BarBackgroundColor = navigationPage.BarBackgroundColor;
 			BarBackground = navigationPage.BarBackground;
+
+#if WINDOWS
+			if (Brush.IsNullOrEmpty(BarBackground) && BarBackgroundColor == null)
+			{
+				BarBackgroundColor = navigationPage.CurrentPage.BackgroundColor ??
+					navigationPage.BackgroundColor;
+
+				BarBackground = navigationPage.CurrentPage.Background ??
+					navigationPage.Background;
+			}
+#endif
 			BarTextColor = navigationPage.BarTextColor;
 			IconColor = NavigationPage.GetIconColor(currentPage);
 			Title = currentPage.Title;
