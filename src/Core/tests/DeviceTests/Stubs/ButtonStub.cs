@@ -9,6 +9,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color TextColor { get; set; }
 
+		public Color StrokeColor { get; set; }
+
+		public double StrokeThickness { get; set; }
+
+		public int CornerRadius { get; set; }
+
 		public double CharacterSpacing { get; set; }
 
 		public Font Font { get; set; }

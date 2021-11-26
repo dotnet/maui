@@ -32,11 +32,9 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				var androidColor = placeholderTextColor.ToNative();
-
-				if (!editText.HintTextColors.IsOneColor(ColorExtensions.States, androidColor))
+				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
 				{
-					var acolor = androidColor.ToArgb();
-					editText.SetHintTextColor(new ColorStateList(ColorExtensions.States, new[] { acolor, acolor }));
+					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 				}
 			}
 		}

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 		// TODO FromPixels/ToPixels is both not terribly descriptive and also possibly sort of inaccurate?
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
-		public static double FromPixels(this Context self, double pixels)
+		public static double FromPixels(this Context? self, double pixels)
 		{
 			EnsureMetrics(self);
 
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 				service.ShowSoftInput(view, ShowFlags.Implicit);
 		}
 
-		public static float ToPixels(this Context self, double dp)
+		public static float ToPixels(this Context? self, double dp)
 		{
 			EnsureMetrics(self);
 
@@ -171,13 +171,15 @@ namespace Microsoft.Maui.Platform
 			return (color & 0x00ffffff) | ((int)Math.Round(originalAlpha * alpha) << 24);
 		}
 
-		static void EnsureMetrics(Context context)
+		static void EnsureMetrics(Context? context)
 		{
 			if (s_displayDensity != float.MinValue)
 				return;
 
-			using (DisplayMetrics? metrics = context?.Resources?.DisplayMetrics)
-				s_displayDensity = metrics != null ? metrics.Density : 0;
+			context ??= Android.App.Application.Context;
+
+			using (DisplayMetrics? metrics = context.Resources?.DisplayMetrics)
+				s_displayDensity = metrics != null ? metrics.Density : 1;
 		}
 
 		public static AActivity? GetActivity(this Context context)
