@@ -122,26 +122,26 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumWidth(this NView nativeView, IView view)
 		{
-			nativeView.MinimumSize = new Tizen.NUI.Size2D(view.MinimumWidth.ToScaledPixel(), view.MinimumHeight.ToScaledPixel());
+			if (view.MinimumWidth.ToScaledPixel() > nativeView.MinimumSize.Width)
+				nativeView.MinimumSize = new Tizen.NUI.Size2D(view.MinimumWidth.ToScaledPixel(), nativeView.MinimumSize.Height);
 		}
 
 		public static void UpdateMinimumHeight(this NView nativeView, IView view)
 		{
-			nativeView.MinimumSize = new Tizen.NUI.Size2D(view.MinimumWidth.ToScaledPixel(), view.MinimumHeight.ToScaledPixel());
+			if (view.MinimumHeight.ToScaledPixel() > nativeView.MinimumSize.Height)
+				nativeView.MinimumSize = new Tizen.NUI.Size2D(nativeView.MinimumSize.Width, view.MinimumHeight.ToScaledPixel());
 		}
 
 		public static void UpdateMaximumWidth(this NView nativeView, IView view)
 		{
-			int maximumWidth = view.MaximumWidth == double.PositiveInfinity ? int.MaxValue : view.MaximumWidth.ToScaledPixel();
-			int maximumHeight = view.MaximumHeight == double.PositiveInfinity ? int.MaxValue : view.MaximumHeight.ToScaledPixel();
-			nativeView.MaximumSize = new Tizen.NUI.Size2D(maximumWidth, maximumHeight);
+			// empty on purpose
+			// NUI MaximumSize is not working properly
 		}
 
 		public static void UpdateMaximumHeight(this NView nativeView, IView view)
 		{
-			int maximumWidth = view.MaximumWidth == double.PositiveInfinity ? int.MaxValue : view.MaximumWidth.ToScaledPixel();
-			int maximumHeight = view.MaximumHeight == double.PositiveInfinity ? int.MaxValue : view.MaximumHeight.ToScaledPixel();
-			nativeView.MaximumSize = new Tizen.NUI.Size2D(maximumWidth, maximumHeight);
+			// empty on purpose
+			// NUI MaximumSize is not working properly
 		}
 
 		public static void UpdateInputTransparent(this EvasObject platformView, IViewHandler handler, IView view)

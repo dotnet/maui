@@ -88,7 +88,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual Size Measure(double availableWidth, double availableHeight)
 		{
-			return new TSize(PlatformView.NaturalSize.Width, PlatformView.NaturalSize.Height).ToDP();
+			var width = Math.Max(PlatformView.MinimumSize.Width, PlatformView.NaturalSize.Width);
+			var height = Math.Max(PlatformView.MinimumSize.Height, PlatformView.NaturalSize.Height);
+			return new TSize(width, height).ToDP();
 		}
 
 		protected override void SetupContainer()
