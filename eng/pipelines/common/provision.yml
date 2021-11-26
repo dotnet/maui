@@ -84,6 +84,10 @@ steps:
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
     - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate Reunion NuGet sources'
+        inputs:
+          nuGetServiceConnections: Project.Reunion.nuget.internal
       - pwsh: |
           $content = Get-Content 'NuGet.config'
           $content = $content.Replace(
