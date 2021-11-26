@@ -100,9 +100,8 @@ steps:
       inputs:
         nuGetServiceConnections: Project.Reunion.nuget.internal
     - pwsh: |
-        $content = Get-Content 'NuGet.config'
-        $content = $content.Replace(
-          '<!-- WASDK_PACKAGE_PLACEHOLDER -->',
-          '<add key="wasdk-internal" value="https://pkgs.dev.azure.com/microsoft/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json" />')
-        Set-Content 'NuGet.config' $content
+        $path = '$(Build.SourcesDirectory)\NuGet.config'
+        [xml]$xml = Get-Content $path
+        $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+        $xml.Save($path)
       displayName: 'Add "wasdk-internal" to NuGet.config'
