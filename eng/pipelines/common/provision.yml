@@ -94,7 +94,7 @@ steps:
             '<!-- WASDK_PACKAGE_PLACEHOLDER -->',
             '<add key="wasdk-internal" value="https://pkgs.dev.azure.com/microsoft/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json" />')
           Set-Content 'NuGet.config' $content
-      displayName: 'Add "wasdk-internal" to NuGet.config'
+        displayName: 'Add "wasdk-internal" to NuGet.config'
 
 
   # Prepare Both
