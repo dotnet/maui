@@ -3,7 +3,7 @@ using AppKit;
 using CoreGraphics;
 using Microsoft.Maui.Graphics.Platform;
 
-namespace Microsoft.Maui.Graphics.Platform.CoreGraphics
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public class DirectRenderer : IGraphicsRenderer
 	{

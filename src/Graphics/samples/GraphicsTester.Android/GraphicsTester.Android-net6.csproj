@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0-android</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>GraphicsTester.Android</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>10.0</LangVersion>
+		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia-net6.csproj" />
+	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj" />
+	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig-net6.csproj" />
+	  <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable-net6.csproj" />
+	</ItemGroup>
+
+</Project>

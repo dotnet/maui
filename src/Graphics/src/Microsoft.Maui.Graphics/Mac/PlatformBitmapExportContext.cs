@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using AppKit;
 using CoreGraphics;
-using Microsoft.Maui.Graphics.Platform.CoreGraphics;
 
 namespace Microsoft.Maui.Graphics.Platform
 {

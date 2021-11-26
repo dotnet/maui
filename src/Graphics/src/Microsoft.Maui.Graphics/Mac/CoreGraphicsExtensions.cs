@@ -1,6 +1,6 @@
 using AppKit;
 
-namespace Microsoft.Maui.Graphics.Platform.CoreGraphics
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class CoreGraphicsExtensions
 	{

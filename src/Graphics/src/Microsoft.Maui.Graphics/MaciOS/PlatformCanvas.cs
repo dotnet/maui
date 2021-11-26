@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
 			_gradientRectangle = rectangle;
-	
+
 			if (paint == null)
 			{
 				paint = Colors.White.AsPaint();

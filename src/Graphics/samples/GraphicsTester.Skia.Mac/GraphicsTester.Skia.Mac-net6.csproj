@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0-macos</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <RootNamespace>GraphicsTester.Skia.Mac</RootNamespace>
+
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-macos'">10.14</SupportedOSPlatformVersion>
+
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+      <EnableCodeSigning>false</EnableCodeSigning>
+      <UseSGen>false</UseSGen>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+      <EnableCodeSigning>false</EnableCodeSigning>
+      <UseSGen>false</UseSGen>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155" />
+        <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.155" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia-net6.csproj" />
+        <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj" />
+        <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable-net6.csproj" />
+    </ItemGroup>
+
+
+</Project>

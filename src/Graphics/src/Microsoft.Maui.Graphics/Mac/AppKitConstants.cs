@@ -2,7 +2,7 @@ using System;
 using Foundation;
 using ObjCRuntime;
 
-namespace Microsoft.Maui.Graphics.Platform.CoreGraphics
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class AppKitConstants
 	{

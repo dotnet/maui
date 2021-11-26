@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using AppKit;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Graphics.Platform.CoreGraphics;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
