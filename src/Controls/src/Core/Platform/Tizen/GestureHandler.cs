@@ -1,55 +1,61 @@
-//using System.ComponentModel;
-//using ElmSharp;
+#nullable enable
 
-//namespace Microsoft.Maui.Controls.Platform
-//{
-//	public abstract class GestureHandler : IGestureController, INotifyPropertyChanged, IRegisterable
-//	{
-//		public IGestureRecognizer Recognizer { get; private set; }
+using System;
+using NGestureDetector = Tizen.NUI.GestureDetector;
+using NView = Tizen.NUI.BaseComponents.View;
 
-//		public abstract GestureLayer.GestureType Type { get; }
+namespace Microsoft.Maui.Controls.Platform
+{
+	public abstract class GestureHandler : IDisposable, IRegisterable
+	{
+		bool _disposedValue;
 
-//		public virtual double Timeout { get; }
+		IViewHandler? _handler;
+		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
+		protected View? View => Element as View;
+		protected NView? NativeView => _handler?.GetWrappedNativeView();
 
-//		protected GestureHandler(IGestureRecognizer recognizer)
-//		{
-//			Recognizer = recognizer;
-//			Recognizer.PropertyChanged += OnRecognizerPropertyChanged;
-//		}
 
-//		public event PropertyChangedEventHandler PropertyChanged;
+		public IGestureRecognizer Recognizer { get; private set; }
 
-//		protected abstract void OnStarted(View sender, object data);
+		public NGestureDetector NativeDetector { get; }
 
-//		protected abstract void OnMoved(View sender, object data);
 
-//		protected abstract void OnCompleted(View sender, object data);
+		public void Attach(IViewHandler handler)
+		{
+			_handler = handler;
+			NativeDetector.Attach(NativeView);
+		}
 
-//		protected abstract void OnCanceled(View sender, object data);
+		public void Detach()
+		{
+			NativeDetector.Detach(NativeView);
+		}
 
-//		void IGestureController.SendStarted(View sender, object data)
-//		{
-//			OnStarted(sender, data);
-//		}
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
 
-//		void IGestureController.SendCompleted(View sender, object data)
-//		{
-//			OnCompleted(sender, data);
-//		}
+		protected abstract NGestureDetector CreateNativeDetector(IGestureRecognizer recognizer);
 
-//		void IGestureController.SendMoved(View sender, object data)
-//		{
-//			OnMoved(sender, data);
-//		}
+		protected GestureHandler(IGestureRecognizer recognizer)
+		{
+			Recognizer = recognizer;
+			NativeDetector = CreateNativeDetector(recognizer);
+		}
 
-//		void IGestureController.SendCanceled(View sender, object data)
-//		{
-//			OnCanceled(sender, data);
-//		}
-
-//		protected virtual void OnRecognizerPropertyChanged(object sender, PropertyChangedEventArgs e)
-//		{
-//			PropertyChanged?.Invoke(this, e);
-//		}
-//	}
-//}
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					NativeDetector.Dispose();
+				}
+				_disposedValue = true;
+			}
+		}
+	}
+}

@@ -1,29 +1,49 @@
-﻿//using ElmSharp;
+﻿#nullable enable
 
-//namespace Microsoft.Maui.Controls.Platform
-//{
-//	public class SwipeGestureHandler : GestureHandler
-//	{
-//		public SwipeGestureHandler(IGestureRecognizer recognizer) : base(recognizer)
-//		{
-//		}
+using NGestureDetector = Tizen.NUI.GestureDetector;
+using NGestureStateType = Tizen.NUI.Gesture.StateType;
+using NPanGestureDetector = Tizen.NUI.PanGestureDetector;
 
-//		public override GestureLayer.GestureType Type => GestureLayer.GestureType.Flick;
+namespace Microsoft.Maui.Controls.Platform
+{
+	public class SwipeGestureHandler : GestureHandler
+	{
+		double _totalX;
+		double _totalY;
 
-//		protected override void OnStarted(View sender, object data) { }
+		public SwipeGestureHandler(IGestureRecognizer recognizer) : base(recognizer)
+		{
+			NativeDetector.Detected += OnDetected;
+		}
 
-//		protected override void OnMoved(View sender, object data) { }
+		ISwipeGestureController Controller => (ISwipeGestureController)base.Recognizer;
+		new SwipeGestureRecognizer Recognizer => (SwipeGestureRecognizer)base.Recognizer;
 
-//		protected override void OnCompleted(View sender, object data)
-//		{
-//			if (Recognizer is SwipeGestureRecognizer swipeGesture)
-//			{
-//				var lineData = (GestureLayer.LineData)data;
-//				(swipeGesture as ISwipeGestureController)?.SendSwipe(sender, DPExtensions.ConvertToScaledDP(lineData.X2 - lineData.X1), DPExtensions.ConvertToScaledDP(lineData.Y2 - lineData.Y1));
-//				(swipeGesture as ISwipeGestureController)?.DetectSwipe(sender, swipeGesture.Direction);
-//			}
-//		}
+		new NPanGestureDetector NativeDetector => (NPanGestureDetector)base.NativeDetector;
 
-//		protected override void OnCanceled(View sender, object data) { }
-//	}
-//}
+		protected override NGestureDetector CreateNativeDetector(IGestureRecognizer recognizer)
+		{
+			return new NPanGestureDetector();
+		}
+
+		void OnDetected(object source, NPanGestureDetector.DetectedEventArgs e)
+		{
+			if (e.PanGesture.State == NGestureStateType.Started)
+			{
+				_totalX = 0;
+				_totalY = 0;
+			}
+			else if (e.PanGesture.State == NGestureStateType.Continuing)
+			{
+				_totalX += e.PanGesture.Displacement.X;
+				_totalY += e.PanGesture.Displacement.Y;
+				Controller.SendSwipe(View, _totalX.ToScaledDP(), _totalY.ToScaledDP());
+			}
+			else if (e.PanGesture.State == NGestureStateType.Finished)
+			{
+				Controller.DetectSwipe(View, Recognizer.Direction);
+			}
+		}
+
+	}
+}

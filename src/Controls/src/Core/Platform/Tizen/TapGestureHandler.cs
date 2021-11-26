@@ -1,46 +1,29 @@
-//using ElmSharp;
+#nullable enable
 
-//namespace Microsoft.Maui.Controls.Platform
-//{
-//	public class TapGestureHandler : GestureHandler
-//	{
-//		public TapGestureHandler(IGestureRecognizer recognizer) : base(recognizer)
-//		{
-//		}
+using NGestureDetector = Tizen.NUI.GestureDetector;
+using NTapGestureDetector = Tizen.NUI.TapGestureDetector;
 
-//		public override GestureLayer.GestureType Type
-//		{
-//			get
-//			{
-//				var recognizer = Recognizer as TapGestureRecognizer;
-//				if (recognizer != null)
-//				{
-//					int numberOfTaps = recognizer.NumberOfTapsRequired;
+namespace Microsoft.Maui.Controls.Platform
+{
+	public class TapGestureHandler : GestureHandler
+	{
+		public TapGestureHandler(IGestureRecognizer recognizer) : base(recognizer)
+		{
+			NativeDetector.Detected += OnTapped;
+		}
 
-//					if (numberOfTaps > 2)
-//						return GestureLayer.GestureType.TripleTap;
-//					else if (numberOfTaps > 1)
-//						return GestureLayer.GestureType.DoubleTap;
-//				}
-//				return GestureLayer.GestureType.Tap;
-//			}
-//		}
+		new TapGestureRecognizer Recognizer => (TapGestureRecognizer)base.Recognizer;
+		new NTapGestureDetector NativeDetector => (NTapGestureDetector)base.NativeDetector;
 
-//		protected override void OnStarted(View sender, object data)
-//		{
-//		}
+		protected override NGestureDetector CreateNativeDetector(IGestureRecognizer recognizer)
+		{
+			return new NTapGestureDetector((uint)Recognizer.NumberOfTapsRequired);
+		}
 
-//		protected override void OnMoved(View sender, object data)
-//		{
-//		}
-
-//		protected override void OnCompleted(View sender, object data)
-//		{
-//			(Recognizer as TapGestureRecognizer)?.SendTapped(sender);
-//		}
-
-//		protected override void OnCanceled(View sender, object data)
-//		{
-//		}
-//	}
-//}
+		void OnTapped(object source, NTapGestureDetector.DetectedEventArgs e)
+		{
+			if (e.TapGesture.NumberOfTaps == Recognizer.NumberOfTapsRequired)
+				Recognizer.SendTapped(View);
+		}
+	}
+}
