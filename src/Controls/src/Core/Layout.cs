@@ -389,14 +389,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 				s_relayoutInProgress = true;
 
-				if (Dispatcher != null)
-				{
-					Dispatcher.BeginInvokeOnMainThread(ResolveLayoutChanges);
-				}
-				else
-				{
-					Device.BeginInvokeOnMainThread(ResolveLayoutChanges);
-				}
+				Dispatcher.DispatchIfRequired(ResolveLayoutChanges);
 			}
 			else
 			{

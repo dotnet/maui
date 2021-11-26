@@ -228,19 +228,6 @@ namespace Microsoft.Maui.Controls
 
 		// These extra internal add methods are here to keep some other old stuff working until we re-add
 		// the Grid convenience methods
-
-		internal void Add(IView view, int left, int top)
-		{
-			if (view == null)
-				throw new ArgumentNullException(nameof(view));
-			if (left < 0)
-				throw new ArgumentOutOfRangeException(nameof(left));
-			if (top < 0)
-				throw new ArgumentOutOfRangeException(nameof(top));
-
-			Add(view, left, left + 1, top, top + 1);
-		}
-
 		internal void Add(IView view, int left, int right, int top, int bottom)
 		{
 			if (view == null)
