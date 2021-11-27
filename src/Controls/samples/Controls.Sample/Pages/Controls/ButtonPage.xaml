@@ -72,20 +72,31 @@
                 <Label
                     Text="Image Source"
                     Style="{StaticResource Headline}"/>
-                <Button ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings.png" Padding="16, 9, 16, 9" />
+                <Button ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings.png" />
                 <Label
                     Text="Image Source with Positioning"
                     Style="{StaticResource Headline}"/>
-                <Button ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" Padding="16, 9, 16, 9" />
-                <Button ContentLayout="Bottom" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" Padding="16, 9, 16, 9" />
-                <Button ContentLayout="Left" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" Padding="16, 9, 16, 9" />
-                <Button ContentLayout="Right" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" Padding="16, 9, 16, 9" />
+                <Button ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" />
+                <Button ContentLayout="Bottom" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" />
+                <Button ContentLayout="Left" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" />
+                <Button ContentLayout="Right" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" />
                 <Label
                     Text="Click To Change Positionng"
                     Style="{StaticResource Headline}"/>
-                <Button x:Name="positionChange" ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" Padding="16, 9, 16, 9" />
+                <Button x:Name="positionChange" ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings.png" Text="settings" />
                 <Button WidthRequest="200"  HorizontalOptions="Fill" x:Name="decreaseSpacing" Text="Decrease Spacing" Clicked="OnDecreaseSpacing" TextColor="White" Background="Black" ></Button>
                 <Button WidthRequest="200" HorizontalOptions="Fill" x:Name="increaseSpacing" Text="Increase Spacing" Clicked="OnIncreasingSpacing" TextColor="White" Background="Black" ></Button>
+                <Label
+                    Text="Padding"
+                    Style="{StaticResource Headline}"/>
+                <Entry
+                    x:Name="paddingEntry"
+                    Placeholder="Enter button padding for button below"
+                    Text="20,10"/>
+                <Button
+                    Text="Button"
+                    HorizontalOptions="Start"
+                    Padding="{Binding Text, Source={Reference paddingEntry}, Converter={StaticResource ThicknessConverter}}"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

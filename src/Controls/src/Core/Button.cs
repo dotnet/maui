@@ -58,10 +58,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(PaddingElement.PaddingProperty, value); }
 		}
 
-		Thickness IPaddingElement.PaddingDefaultValueCreator()
-		{
-			return default(Thickness);
-		}
+		Thickness IPaddingElement.PaddingDefaultValueCreator() => new Thickness(double.NaN);
 
 		public LineBreakMode LineBreakMode
 		{

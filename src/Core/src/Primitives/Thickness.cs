@@ -17,20 +17,13 @@ namespace Microsoft.Maui
 
 		public double Bottom { get; set; }
 
-		public double HorizontalThickness
-		{
-			get { return Left + Right; }
-		}
+		public double HorizontalThickness => Left + Right;
 
-		public double VerticalThickness
-		{
-			get { return Top + Bottom; }
-		}
+		public double VerticalThickness => Top + Bottom;
 
-		public bool IsEmpty
-		{
-			get { return Left == 0 && Top == 0 && Right == 0 && Bottom == 0; }
-		}
+		public bool IsEmpty => Left == 0 && Top == 0 && Right == 0 && Bottom == 0;
+
+		public bool IsNaN => double.IsNaN(Left) && double.IsNaN(Top) && double.IsNaN(Right) && double.IsNaN(Bottom);
 
 		public Thickness(double uniformSize) : this(uniformSize, uniformSize, uniformSize, uniformSize)
 		{

@@ -10,20 +10,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
-		static Thickness? DefaultPadding;
-		static ColorStateList? TransparentColorStateList;
+		// The padding value has to be done here because in the Material Components,
+		// there is a minumum size of the buttons: 88dp x 48dp
+		// So, this is calculated:
+		//   - Vertical: 6dp*2 (inset) + 8.5dp*2 (padding) + 2.5dp*2 (text magic) + 14dp (text size) = 48dp
+		//   - Horizontal: 16dp (from the styles)
+		static Thickness DefaultPadding = new Thickness(16, 8.5);
+		static ColorStateList TransparentColorStateList = Colors.Transparent.ToDefaultColorStateList();
 
 		// not static and each button has a new instance
 		Drawable? DefaultBackground;
 
 		void SetupDefaults(MaterialButton nativeView)
 		{
-			DefaultPadding ??= new Thickness(
-				nativeView.PaddingLeft,
-				nativeView.PaddingTop,
-				nativeView.PaddingRight,
-				nativeView.PaddingBottom);
-
 			DefaultBackground ??= nativeView.Background;
 		}
 
@@ -36,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				IconGravity = MaterialButton.IconGravityTextStart,
 				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
-				IconTint = (TransparentColorStateList ??= Colors.Transparent.ToDefaultColorStateList()),
+				IconTint = TransparentColorStateList,
 				SoundEffectsEnabled = false
 			};
 
