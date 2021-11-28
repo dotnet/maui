@@ -3,7 +3,7 @@ using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using NativeView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	// This allows you to take an existing delegate and wrap it if you want to retain
 	// the behavior of the Accessibility Delegate that's already assigned.

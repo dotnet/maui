@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
@@ -93,7 +94,9 @@ namespace Microsoft.Maui.Controls
 			var response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
 			if (!response.IsSuccessStatusCode)
 			{
-				Internals.Log.Warning("HTTP Request", $"Could not retrieve {uri}, status code {response.StatusCode}");
+				Application.Current?.FindMauiContext()?.CreateLogger<StreamWrapper>()?
+						.LogWarning("Could not retrieve {Uri}, status code {StatusCode}", uri, response.StatusCode);
+
 				return null;
 			}
 

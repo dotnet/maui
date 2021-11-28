@@ -9,16 +9,10 @@ using Android.Widget;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class EditTextExtensions
 	{
-		static readonly int[][] ColorStates =
-		{
-			new[] { global::Android.Resource.Attribute.StateEnabled },
-			new[] { -global::Android.Resource.Attribute.StateEnabled }
-		};
-
 		public static void UpdateText(this EditText editText, IEntry entry)
 		{
 			// Setting the text causes the cursor to reset to position zero
@@ -54,12 +48,8 @@ namespace Microsoft.Maui
 			else
 			{
 				var androidColor = textColor.ToNative();
-
-				if (!editText.TextColors.IsOneColor(ColorStates, androidColor))
-				{
-					var acolor = androidColor.ToArgb();
-					editText.SetTextColor(new ColorStateList(ColorStates, new[] { acolor, acolor }));
-				}
+				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
+					editText.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
 		}
 
@@ -153,12 +143,8 @@ namespace Microsoft.Maui
 			else
 			{
 				var androidColor = placeholderTextColor.ToNative();
-
-				if (!editText.HintTextColors.IsOneColor(ColorExtensions.States, androidColor))
-				{
-					var acolor = androidColor.ToArgb();
-					editText.SetHintTextColor(new ColorStateList(ColorExtensions.States, new[] { acolor, acolor }));
-				}
+				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
+					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
 		}
 

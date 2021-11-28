@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class StackNavigationManager
 	{

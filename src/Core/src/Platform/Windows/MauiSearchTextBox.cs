@@ -15,7 +15,7 @@ using Microsoft.UI.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	/// <summary>
 	///     An intermediate class for injecting bindings for things the default

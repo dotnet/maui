@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiComboBox : ComboBox
 	{

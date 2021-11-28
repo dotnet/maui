@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\src\Compatibility-net6.csproj" />
   </ItemGroup>

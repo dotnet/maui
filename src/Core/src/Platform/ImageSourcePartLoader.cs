@@ -16,7 +16,7 @@ using NativeView = System.Object;
 using NativeImage = System.Object;
 #endif
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public partial class ImageSourcePartLoader
 	{

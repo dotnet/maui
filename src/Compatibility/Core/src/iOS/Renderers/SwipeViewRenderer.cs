@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -702,7 +703,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				catch (Exception)
 				{
 					// UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-					Log.Warning("SwipeView", "Can not load SwipeItem Icon.");
+					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Can not load SwipeItem Icon");
 				}
 			}
 		}

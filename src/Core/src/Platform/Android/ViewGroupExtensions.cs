@@ -2,7 +2,7 @@
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ViewGroupExtensions
 	{
