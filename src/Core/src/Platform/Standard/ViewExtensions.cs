@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Graphics.Rectangle GetNativeViewBounds(this IView view) => view.Frame;
 
-		internal static Matrix4x4 GetViewTransform(this IView view) => new Matrix4x4();
+		internal static Graphics.Matrix4x4 GetViewTransform(this IView view) => new Matrix4x4();
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view) => view.Frame;
 	}
