@@ -321,13 +321,13 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal static Task<byte[]?> RenderAsPNG(this IView view) => view.RenderAsImage(true);
+		public static Task<byte[]?> RenderAsPNG(this IView view) => view.RenderAsImage(true);
 
-		internal static Task<byte[]?> RenderAsJPEG(this IView view) => view.RenderAsImage(false);
+		public static Task<byte[]?> RenderAsJPEG(this IView view) => view.RenderAsImage(false);
 
-		internal static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true) => view.RenderAsImage(skipChildren, true);
+		public static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true) => view.RenderAsImage(skipChildren, true);
 
-		internal static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view.RenderAsImage(skipChildren, false);
+		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view.RenderAsImage(skipChildren, false);
 
 		static Task<byte[]?> RenderAsImage(this UIView nativeView, bool skipChildren, bool asPng)
 		{

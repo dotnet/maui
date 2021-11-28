@@ -213,7 +213,7 @@ namespace Microsoft.Maui
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
 
-		internal static Task<byte[]?> RenderAsPNG(this IView view)
+		public static Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
@@ -222,7 +222,7 @@ namespace Microsoft.Maui
 			return nativeView.RenderAsPNG();
 		}
 
-		internal static Task<byte[]?> RenderAsJPEG(this IView view)
+		public static Task<byte[]?> RenderAsJPEG(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
@@ -231,10 +231,10 @@ namespace Microsoft.Maui
 			return nativeView.RenderAsJPEG();
 		}
 
-		internal static Task<byte[]?> RenderAsPNG(this AView view)
+		public static Task<byte[]?> RenderAsPNG(this AView view)
 			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Png));
 
-		internal static Task<byte[]?> RenderAsJPEG(this AView view) 
+		public static Task<byte[]?> RenderAsJPEG(this AView view) 
 			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
 	}
 }

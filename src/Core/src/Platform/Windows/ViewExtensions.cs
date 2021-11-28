@@ -216,7 +216,7 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
-		internal static async Task<byte[]?> RenderAsPNG(this IView view)
+		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
@@ -225,7 +225,7 @@ namespace Microsoft.Maui
 			return await nativeView.RenderAsPNG();
 		}
 
-		internal static async Task<byte[]?> RenderAsJPEG(this IView view)
+		public static async Task<byte[]?> RenderAsJPEG(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
@@ -234,8 +234,8 @@ namespace Microsoft.Maui
 			return await nativeView.RenderAsJPEG();
 		}
 
-		internal static async Task<byte[]?> RenderAsPNG(this FrameworkElement view) => await view.RenderAsPNGAsync();
+		public static async Task<byte[]?> RenderAsPNG(this FrameworkElement view) => await view.RenderAsPNGAsync();
 
-		internal static async Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => await view.RenderAsJPEGAsync();
+		public static async Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => await view.RenderAsJPEGAsync();
 	}
 }
