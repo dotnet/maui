@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Threading.Tasks;
 using CoreAnimation;
+using Microsoft.Maui.Essentials;
+using System.Numerics;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -321,7 +323,34 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		public static Task<byte[]?> RenderAsPNG(this IView view) => view.RenderAsImage(true);
+
+		public static Task<byte[]?> RenderAsJPEG(this IView view) => view.RenderAsImage(false);
+
+		public static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true) => view.RenderAsImage(skipChildren, true);
+
+		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view.RenderAsImage(skipChildren, false);
+
+		static Task<byte[]?> RenderAsImage(this UIView nativeView, bool skipChildren, bool asPng)
+		{
+			byte[] result;
+			if (asPng)
+				result = nativeView.Window.RenderAsPng(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+			else
+				result = nativeView.Window.RenderAsJpeg(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+			return Task.FromResult<byte[]?>(result);
+		}
+
+		static Task<byte[]?> RenderAsImage(this IView view, bool asPng)
+		{
+			var nativeView = view.GetNative(true);
+			if (nativeView == null)
+				return Task.FromResult<byte[]?>(null);
+			var skipChildren = !(view is IView && !(view is ILayout));
+			return nativeView.RenderAsImage(skipChildren, asPng);
+		}
+		
+		public static Rectangle GetNativeViewBounds(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
@@ -332,7 +361,7 @@ namespace Microsoft.Maui.Platform
 			return nativeView.GetNativeViewBounds();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this UIView nativeView)
+		public static Rectangle GetNativeViewBounds(this UIView nativeView)
 		{
 			if (nativeView == null)
 				return new Rectangle();
@@ -354,7 +383,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		internal static Matrix4x4 GetViewTransform(this IView view)
+		public static Matrix4x4 GetViewTransform(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
@@ -362,13 +391,13 @@ namespace Microsoft.Maui.Platform
 			return nativeView.Layer.GetViewTransform();
 		}
 
-		internal static Matrix4x4 GetViewTransform(this UIView view) 
+		public static Matrix4x4 GetViewTransform(this UIView view) 
 			=> view.Layer.GetViewTransform();
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+		public static Graphics.Rectangle GetBoundingBox(this IView view) 
 			=> view.GetNative(true).GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox (this UIView? nativeView)
+		public static Graphics.Rectangle GetBoundingBox (this UIView? nativeView)
 		{
 			if (nativeView == null)
 				return new Rectangle();

@@ -1,8 +1,10 @@
 #nullable enable
 using System;
+using System.Threading.Tasks;
 using System.Numerics;
 using System.Linq;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
@@ -219,7 +221,29 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(view.Background);
 		}
 
-		internal static Matrix4x4 GetViewTransform(this IView view)
+		public static async Task<byte[]?> RenderAsPNG(this IView view)
+		{
+			var nativeView = view.GetNative(true);
+			if (nativeView == null)
+				return null;
+
+			return await nativeView.RenderAsPNG();
+		}
+
+		public static async Task<byte[]?> RenderAsJPEG(this IView view)
+		{
+			var nativeView = view.GetNative(true);
+			if (nativeView == null)
+				return null;
+
+			return await nativeView.RenderAsJPEG();
+		}
+
+		public static async Task<byte[]?> RenderAsPNG(this FrameworkElement view) => await view.RenderAsPNGAsync();
+
+		public static async Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => await view.RenderAsJPEGAsync();
+		
+		public static Matrix4x4 GetViewTransform(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView == null)
@@ -227,7 +251,7 @@ namespace Microsoft.Maui.Platform
 			return GetViewTransform(nativeView);
 		}
 
-		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
+		public static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
 			var root = element.Parent as UIElement;
 			if (root == null)
@@ -246,7 +270,7 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		public static Rectangle GetNativeViewBounds(this IView view)
 		{
 			var nativeView = view.GetNative(true);
 			if (nativeView != null)
@@ -254,7 +278,7 @@ namespace Microsoft.Maui.Platform
 			return new Rectangle();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this FrameworkElement nativeView)
+		public static Rectangle GetNativeViewBounds(this FrameworkElement nativeView)
 		{
 			if (nativeView == null)
 				return new Rectangle();
@@ -267,10 +291,10 @@ namespace Microsoft.Maui.Platform
 			return new Rectangle();
 		}
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+		public static Graphics.Rectangle GetBoundingBox(this IView view) 
 			=> view.GetNative(true).GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this FrameworkElement? nativeView)
+		public static Graphics.Rectangle GetBoundingBox(this FrameworkElement? nativeView)
 		{
 			if (nativeView == null)
 				return new Rectangle();
