@@ -10,7 +10,7 @@ using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
@@ -121,11 +121,17 @@ namespace Microsoft.Maui
 
 		public static bool GetClipToOutline(this AView view)
 		{
+			if (!view.IsAlive())
+				return false;
+
 			return view.ClipToOutline;
 		}
 
 		public static void SetClipToOutline(this AView view, bool value)
 		{
+			if (!view.IsAlive())
+				return;
+
 			view.ClipToOutline = value;
 		}
 

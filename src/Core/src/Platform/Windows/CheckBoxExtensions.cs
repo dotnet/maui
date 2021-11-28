@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{

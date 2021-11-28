@@ -2,7 +2,7 @@
 using WPoint = Windows.Foundation.Point;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class PrimitiveExtensions
 	{

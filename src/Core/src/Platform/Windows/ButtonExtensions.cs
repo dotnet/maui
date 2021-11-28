@@ -3,13 +3,58 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
+		public static void UpdateStrokeColor(this Button nativeButton, IButtonStroke buttonStroke)
+		{
+			var brush = buttonStroke.StrokeColor?.ToNative();
+
+			if (brush is null)
+			{
+				nativeButton.Resources.Remove("ButtonBorderBrush");
+				nativeButton.Resources.Remove("ButtonBorderBrushPointerOver");
+				nativeButton.Resources.Remove("ButtonBorderBrushPressed");
+				nativeButton.Resources.Remove("ButtonBorderBrushDisabled");
+			}
+			else
+			{
+				nativeButton.Resources["ButtonBorderBrush"] = brush;
+				nativeButton.Resources["ButtonBorderBrushPointerOver"] = brush;
+				nativeButton.Resources["ButtonBorderBrushPressed"] = brush;
+				nativeButton.Resources["ButtonBorderBrushDisabled"] = brush;
+			}
+		}
+
+		public static void UpdateStrokeThickness(this Button nativeButton, IButtonStroke buttonStroke)
+		{
+			if (buttonStroke.StrokeThickness >= 0)
+			{
+				nativeButton.Resources["ButtonBorderThemeThickness"] = WinUIHelpers.CreateThickness(buttonStroke.StrokeThickness);
+			}
+			else
+			{
+				nativeButton.Resources.Remove("ButtonBorderThemeThickness");
+			}
+		}
+
+		public static void UpdateCornerRadius(this Button nativeButton, IButtonStroke buttonStroke)
+		{
+			if (buttonStroke.CornerRadius >= 0)
+			{
+				nativeButton.Resources["ControlCornerRadius"] = WinUIHelpers.CreateCornerRadius(buttonStroke.CornerRadius);
+			}
+			else
+			{
+				nativeButton.Resources.Remove("ControlCornerRadius");
+			}
+		}
+
 		public static void UpdateText(this Button nativeButton, IText text)
 		{
 			if (nativeButton.GetContent<TextBlock>() is TextBlock textBlock)
