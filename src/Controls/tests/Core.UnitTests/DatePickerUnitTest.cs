@@ -154,8 +154,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			datePicker.Date = initialDate;
 
 			DatePicker pickerFromSender = null;
-			DateTime oldDate = new DateTime();
-			DateTime newDate = new DateTime();
+			DateTime? oldDate = null;
+			DateTime? newDate = null;
 
 			datePicker.DateSelected += (s, e) =>
 			{
