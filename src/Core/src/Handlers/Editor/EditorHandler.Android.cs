@@ -81,6 +81,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCursorPosition(EditorHandler handler, ITextInput editor) =>
 			handler.NativeView?.UpdateCursorPosition(editor);
 
+		public static void MapSelectionLength(EditorHandler handler, ITextInput editor) =>
+			handler.NativeView?.UpdateSelectionLength(editor);
+
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
 			VirtualView?.UpdateText(e);
 

@@ -86,6 +86,15 @@ namespace Microsoft.Maui.Platform
 				UpdateCursorSelection(textView, editor);
 		}
 
+		public static void UpdateSelectionLength(this UITextView textView, IEditor editor)
+		{
+			var selectedTextRange = textView.SelectedTextRange;
+			if (selectedTextRange == null)
+				return;
+			if (textView.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End) != editor.SelectionLength)
+				UpdateCursorSelection(textView, editor);
+		}
+
 		public static void UpdateHorizontalTextAlignment(this UITextView textView, ITextAlignment textAlignment)
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
