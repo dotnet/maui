@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<CellTests.TestCell, double> ("Height", v => v.Height, (v, o) => v.Height = o, () => -1, 10),
 			new PropertyTestCase<DatePicker, DateTime> ("MinimumDate", v => v.MinimumDate, (v, o) => v.MinimumDate = o, () => new DateTime (1900, 1, 1), new DateTime (2014, 02, 05)),
 			new PropertyTestCase<DatePicker, DateTime> ("MaximumDate", v => v.MaximumDate, (v, o) => v.MaximumDate = o, () => new DateTime (2100, 12, 31), new DateTime (2014, 02, 05)),
-			new PropertyTestCase<DatePicker, DateTime> ("Date", v => v.Date, (v, o) => v.Date = o, () => DateTime.Now.Date, new DateTime (2008, 5, 5)),
+			new PropertyTestCase<DatePicker, DateTime?> ("Date", v => v.Date, (v, o) => v.Date = o, () => DateTime.Now.Date, new DateTime (2008, 5, 5)),
 			new PropertyTestCase<DatePicker, string> ("Format", v => v.Format, (v, o) => v.Format = o, () => "d", "D"),
 			new PropertyTestCase<Editor, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
 			new PropertyTestCase<Entry, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
