@@ -19,24 +19,9 @@ namespace Microsoft.Maui.Graphics.Native
 		private IFontFamily[] _fontFamilies;
 		private readonly Dictionary<string, Typeface> _typeFaces = new Dictionary<string, Typeface>();
 
-		public NativeFontService() : base("Droid Sans", "Roboto", "Aramo")
+		public NativeFontService() : base()
 		{
 		}
-
-		private static readonly List<string> ExcludeList = new List<string>
-		{
-			"AndroidClock",
-			"AndroidClock-Large",
-			"Clockopia",
-			"Droid Sans Fallback",
-			"Lohit Bengali",
-			"Lohit Devanagari",
-			"Lohit Tamil",
-			"Roboto Test1",
-			"GS_Thai",
-			"GS45_Arab(AndroidOS)",
-			"Symbol Std"
-		};
 
 		public override IFontFamily[] GetFontFamilies()
 		{
@@ -60,9 +45,6 @@ namespace Microsoft.Maui.Graphics.Native
 					var parts = id.Split('-');
 					var familyName = parts[0];
 					var type = parts[1];
-
-					if (familyName.StartsWith("TeXGyre", StringComparison.InvariantCulture))
-						familyName = "TeX Gyre " + familyName.Substring(7);
 
 					if (!families.TryGetValue(familyName, out var family))
 					{
@@ -90,44 +72,6 @@ namespace Microsoft.Maui.Graphics.Native
 					{
 						var suffix = string.Empty;
 						var italic = "Italic";
-						if ("Arimo".Equals(familyName))
-						{
-							familyName = "Arial";
-							id = "Arial";
-							suffix = "MT";
-						}
-						else if ("Tinos".Equals(familyName))
-						{
-							familyName = "Times New Roman";
-							id = "TimesNewRomanPS";
-							suffix = "MT";
-						}
-						else if ("Cousine".Equals(familyName))
-						{
-							familyName = "Courier New";
-							id = "CourierNewPS";
-							suffix = "MT";
-						}
-						else if ("TeX Gyre Termes".Equals(familyName))
-						{
-							familyName = "Times";
-							id = "Times";
-							suffix = "";
-						}
-						else if ("TeX Gyre Heros".Equals(familyName))
-						{
-							familyName = "Helvetica";
-							id = "Helvetica";
-							italic = "Oblique";
-							suffix = "";
-						}
-						else if ("TeX Gyre Cursor".Equals(familyName))
-						{
-							familyName = "Courier";
-							id = "Courier";
-							italic = "Oblique";
-							suffix = "";
-						}
 
 						if (!families.TryGetValue(familyName, out family))
 						{
@@ -229,10 +173,7 @@ namespace Microsoft.Maui.Graphics.Native
 		{
 			if (fontInfo.Family == null)
 				return false;
-
-			if (ExcludeList.Contains(fontInfo.Family))
-				return false;
-
+			
 			if (fontInfo.Family.StartsWith("Samsung"))
 				return false;
 
@@ -243,7 +184,7 @@ namespace Microsoft.Maui.Graphics.Native
 		/// Returns the list of paths that the font service should search for font files.
 		/// </summary>
 		/// <value>The font search paths.</value>
-		protected string[] FontSearchPaths => new[] {"/system/fonts", "/system/font", "/data/fonts", UserFontsPath};
+		protected string[] FontSearchPaths => new[] { UserFontsPath};
 
 		/// <summary>
 		/// The path where application user added fonts are (or should be) installed.
