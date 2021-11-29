@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Visu
 		{
 			if (o is DatePicker dp)
 			{
-				VisualStateManager.GoToState(dp, dateChangedEventArgs.NewDate.Month.ToString());
+				VisualStateManager.GoToState(dp, dateChangedEventArgs.NewDate.Value.Month.ToString());
 			}
 		}
 
