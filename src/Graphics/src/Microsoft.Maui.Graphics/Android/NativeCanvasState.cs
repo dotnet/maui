@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics.Native
 		public float Alpha = 1;
 		private global::Android.Graphics.Paint _fillPaint;
 		private global::Android.Graphics.Paint _strokePaint;
-		private string _fontName = "Arial";
+		private string _fontName = null;
 		private TextPaint _fontPaint;
 		private float _fontSize = 10f;
 		private float _scaleX = 1;
