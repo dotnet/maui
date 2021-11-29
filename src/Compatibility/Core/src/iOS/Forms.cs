@@ -190,12 +190,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-			}
-
 #if __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
@@ -304,11 +298,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				//close approximation to the new Size by multiplying by this scale factor
 				_fontScalingFactor = (double)UIFont.PreferredBody.PointSize / 17f;
 #endif
-			}
-
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
 			}
 
 			public Assembly[] GetAssemblies()
@@ -646,8 +635,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					return result;
 				}
 			}
-
-			public bool IsInvokeRequired => !NSThread.IsMain;
 
 #if __MOBILE__
 			public string RuntimePlatform => Device.iOS;

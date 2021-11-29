@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
 				Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
-				View.BackgroundColor = modalBkgndColor?.ToNative() ?? Microsoft.Maui.ColorExtensions.BackgroundColor;
+				View.BackgroundColor = modalBkgndColor?.ToNative() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 			}
 			else
 			{

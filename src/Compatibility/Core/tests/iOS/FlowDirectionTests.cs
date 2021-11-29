@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;

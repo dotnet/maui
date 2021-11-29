@@ -3,7 +3,7 @@ using NativeView = UIKit.UIButton;
 #elif MONOANDROID
 using NativeView = Google.Android.Material.Button.MaterialButton;
 #elif WINDOWS
-using NativeView = Microsoft.Maui.MauiButton;
+using NativeView = Microsoft.UI.Xaml.Controls.Button;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using NativeView = System.Object;
 #endif
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static IPropertyMapper<IImageButton, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImageButton, IButtonHandler>()
 		{
-			[nameof(IImageButton.Source)] = MapImageSource,
+			[nameof(IImageButton.Source)] = MapImageSource
 		};
 
 		public static IPropertyMapper<ITextButton, IButtonHandler> TextButtonMapper = new PropertyMapper<ITextButton, IButtonHandler>()
@@ -26,13 +26,16 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
-			[nameof(IText.Text)] = MapText,
+			[nameof(IText.Text)] = MapText
 		};
 
 		public static IPropertyMapper<IButton, IButtonHandler> Mapper = new PropertyMapper<IButton, IButtonHandler>(TextButtonMapper, ImageButtonMapper, ViewHandler.ViewMapper)
 		{
 			[nameof(IButton.Background)] = MapBackground,
 			[nameof(IButton.Padding)] = MapPadding,
+			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
+			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
+			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius
 		};
 
 		public ButtonHandler() : base(Mapper)

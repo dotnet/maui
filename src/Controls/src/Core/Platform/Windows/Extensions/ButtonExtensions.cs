@@ -1,26 +1,19 @@
 #nullable enable
-
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
-using WImage = Microsoft.UI.Xaml.Controls.Image;
-using WStretch = Microsoft.UI.Xaml.Media.Stretch;
-using WThickness = Microsoft.UI.Xaml.Thickness;
-using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateContentLayout(this MauiButton mauiButton, Button button)
+		public static void UpdateContentLayout(this UI.Xaml.Controls.Button mauiButton, Button button)
 		{
 			// If the Content isn't the StackPanel setup by Maui.Core then
 			// The user has set a custom Content or the content isn't a mix of text/images
 			if (mauiButton.Content is not StackPanel container)
 				return;
 
-			var image = mauiButton.GetImage();
-			var textBlock = mauiButton.GetTextBlock();
+			var image = mauiButton.GetContent<UI.Xaml.Controls.Image>();
+			var textBlock = mauiButton.GetContent<UI.Xaml.Controls.TextBlock>();
 
 			// If either of these are null then the user has taken control of the content
 			// and we don't know how to apply our changes
@@ -31,14 +24,11 @@ namespace Microsoft.Maui.Controls.Platform
 			var layout = button.ContentLayout;
 			var spacing = layout.Spacing;
 
-			container.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center;
-			container.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center;
-
 			switch (layout.Position)
 			{
 				case Button.ButtonContentLayout.ImagePosition.Top:
 					container.Orientation = Orientation.Vertical;
-					image.Margin = WinUIHelpers.CreateThickness(0, 0, 0, spacing);					
+					image.Margin = WinUIHelpers.CreateThickness(0, 0, 0, spacing);
 					container.Children.Add(image);
 					container.Children.Add(textBlock);
 					break;

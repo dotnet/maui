@@ -1,7 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -62,14 +63,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			SeverityColorConverter.count = 0;
 			InvertBoolenConverter.count = 0;
-			Device.PlatformServices = new MockPlatformServices();
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
-		{
-			Device.PlatformServices = null;
-		}
+		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Test]
 		public void ConverterIsInvoked()

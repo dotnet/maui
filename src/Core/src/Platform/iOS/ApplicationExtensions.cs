@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 				? new UIWindow(windowScene)
 				: new UIWindow();
 
-			var mauiContext = applicationContext.MakeScoped(uiWindow);
+			var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);
 
 			applicationContext.Services?.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

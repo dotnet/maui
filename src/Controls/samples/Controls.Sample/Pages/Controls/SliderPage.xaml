@@ -12,6 +12,17 @@
                 Style="{StaticResource Headline}"/>
             <Slider/>
             <Label
+                Text="Minimum (5) and Maximum (15)"
+                Style="{StaticResource Headline}"/>
+            <Slider 
+                x:Name="MinMaxSlider"
+                Maximum="15"
+                Minimum="5"
+                ValueChanged="OnValueChanged"/>
+            <Label
+                FontSize="Micro"
+                Text="{Binding Source={x:Reference MinMaxSlider}, Path=Value}"/>
+            <Label
                 Text="Disabled"
                 Style="{StaticResource Headline}"/>
             <Slider

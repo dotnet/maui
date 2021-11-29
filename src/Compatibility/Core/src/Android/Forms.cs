@@ -15,6 +15,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen.Android;
 using Microsoft.Maui.Controls.Internals;
@@ -308,13 +309,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Application.AccentColor = GetAccentColor(activity);
 			_ColorButtonNormalSet = false;
 
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				Profile.FramePartition("Log.Listeners");
-				Internals.Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-			}
-
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Profile.FramePartition("Device.PlatformServices");
@@ -490,23 +484,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			double _microSize;
 			double _smallSize;
 
-			static Handler s_handler;
-
 			readonly Context _context;
 
 			public AndroidPlatformServices(Context context)
 			{
 				_context = context;
-			}
-
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				if (s_handler == null || s_handler.Looper != Looper.MainLooper)
-				{
-					s_handler = new Handler(Looper.MainLooper);
-				}
-
-				s_handler.Post(action);
 			}
 
 			public Assembly[] GetAssemblies()
@@ -664,14 +646,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return null;
 			}
 
-			public bool IsInvokeRequired
-			{
-				get
-				{
-					return Looper.MainLooper != Looper.MyLooper();
-				}
-			}
-
 			public string RuntimePlatform => Device.Android;
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
@@ -726,7 +700,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				catch (Exception ex)
 				{
-					Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
+					Application.Current?.FindMauiContext()?.CreateLogger<AndroidPlatformServices>()?
+						.LogWarning(ex, "Error retrieving text appearance");
 				}
 				return false;
 			}

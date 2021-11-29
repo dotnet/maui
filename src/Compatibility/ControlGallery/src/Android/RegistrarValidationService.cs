@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{
-				var sp = MauiApplication.Current.Services.GetRequiredService<IMauiHandlersServiceProvider>();
+				var sp = MauiApplication.Current.Services.GetRequiredService<IMauiHandlersFactory>();
 				renderer = sp.GetHandler(element.GetType());
 			}
 

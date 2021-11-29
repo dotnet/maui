@@ -5,7 +5,7 @@ using Android.Util;
 using Android.Views;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Platform
 {
 	// TODO ezhart At this point, this is almost exactly a clone of LayoutViewGroup; we may be able to drop this class entirely
 	public class ContentViewGroup : ViewGroup

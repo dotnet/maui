@@ -1,7 +1,7 @@
 ﻿using Android.Widget;
 using AGravityFlags = Android.Views.GravityFlags;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{

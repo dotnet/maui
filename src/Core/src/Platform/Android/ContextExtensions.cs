@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Content.Res;
 using Android.OS;
@@ -14,7 +13,7 @@ using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
 using Size = Microsoft.Maui.Graphics.Size;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ContextExtensions
 	{
@@ -27,15 +26,13 @@ namespace Microsoft.Maui
 		// TODO FromPixels/ToPixels is both not terribly descriptive and also possibly sort of inaccurate?
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static double FromPixels(this Context self, double pixels)
+		public static double FromPixels(this Context? self, double pixels)
 		{
 			EnsureMetrics(self);
 
 			return pixels / s_displayDensity;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Size FromPixels(this Context context, double width, double height)
 		{
 			return new Size(context.FromPixels(width), context.FromPixels(height));
@@ -55,12 +52,22 @@ namespace Microsoft.Maui
 				service.ShowSoftInput(view, ShowFlags.Implicit);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static float ToPixels(this Context self, double dp)
+		public static float ToPixels(this Context? self, double dp)
 		{
 			EnsureMetrics(self);
 
 			return (float)Math.Ceiling(dp * s_displayDensity);
+		}
+
+		public static (int left, int top, int right, int bottom) ToPixels(this Context context, Graphics.Rectangle rectangle)
+		{
+			return
+			(
+				(int)context.ToPixels(rectangle.Left),
+				(int)context.ToPixels(rectangle.Top),
+				(int)context.ToPixels(rectangle.Right),
+				(int)context.ToPixels(rectangle.Bottom)
+			);
 		}
 
 		public static bool HasRtlSupport(this Context self)
@@ -164,14 +171,15 @@ namespace Microsoft.Maui
 			return (color & 0x00ffffff) | ((int)Math.Round(originalAlpha * alpha) << 24);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		static void EnsureMetrics(Context context)
+		static void EnsureMetrics(Context? context)
 		{
 			if (s_displayDensity != float.MinValue)
 				return;
 
-			using (DisplayMetrics? metrics = context?.Resources?.DisplayMetrics)
-				s_displayDensity = metrics != null ? metrics.Density : 0;
+			context ??= Android.App.Application.Context;
+
+			using (DisplayMetrics? metrics = context.Resources?.DisplayMetrics)
+				s_displayDensity = metrics != null ? metrics.Density : 1;
 		}
 
 		public static AActivity? GetActivity(this Context context)

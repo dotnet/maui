@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Element.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return Maui.ColorExtensions.ToNative(Element.BarBackgroundColor);
+			return Element.BarBackgroundColor.ToNative();
 		}
 
 		WBrush GetBarBackgroundBrush()
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault())
 				return (WBrush)defaultColor;
-			return Maui.ColorExtensions.ToNative(Element.BarTextColor);
+			return Element.BarTextColor.ToNative();
 		}
 
 		bool GetIsNavBarPossible()

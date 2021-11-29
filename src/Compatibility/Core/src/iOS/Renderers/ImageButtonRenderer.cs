@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using ObjCRuntime;
@@ -111,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception ex)
 			{
-				Controls.Internals.Log.Warning(nameof(ImageRenderer), "Error loading image: {0}", ex);
+				Forms.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Error loading image");
 			}
 		}
 
