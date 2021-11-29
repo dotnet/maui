@@ -41,6 +41,8 @@ namespace Microsoft.Maui.Handlers
 			var right = Context.ToPixels(frame.Right);
 
 			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
+
+			Invoke(nameof(IView.Frame), frame);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
