@@ -44,11 +44,11 @@ namespace Microsoft.Maui.Graphics.Native
 				_defaultFontPaint.SetARGB(255, 0, 0, 0);
 				_defaultFontPaint.AntiAlias = true;
 
-				var arial = NativeFontService.Instance.GetTypeface("Arial");
-				if (arial != null)
-					_defaultFontPaint.SetTypeface(arial);
+				var defaultFont = Typeface.Default;
+				if (defaultFont != null)
+					_defaultFontPaint.SetTypeface(defaultFont);
 				else
-					Logger.Warn("Unable to set the default font paint to Arial");
+					Logger.Warn("Unable to set the default font paint to Default");
 			}
 
 			var state = new NativeCanvasState

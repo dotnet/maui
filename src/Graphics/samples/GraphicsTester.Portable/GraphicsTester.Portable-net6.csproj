@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>GraphicsTester.Portable</AssemblyName>
+        <RootNamespace>GraphicsTester</RootNamespace>
+        <Version>2.0.0</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="Resources\royals.png" />
+        <None Remove="Resources\swirl_pattern.png" />
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\royals.png" />
+        <EmbeddedResource Include="Resources\swirl_pattern.png" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Markdig" Version="0.22.1" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj" />
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig-net6.csproj" />
+    </ItemGroup>
+</Project>
