@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			// So just leave it a whatever value iOS thinks it should be.
 			nativeView.Bounds = new CoreGraphics.CGRect(nativeView.Bounds.X, nativeView.Bounds.Y, rect.Width, rect.Height);
 
-			nativeView.UpdateBackgroundLayerFrame();
+			Invoke(nameof(IView.Frame), rect);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

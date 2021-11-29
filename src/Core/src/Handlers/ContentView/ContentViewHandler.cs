@@ -10,9 +10,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IPicker, PickerHandler> ContentViewCommandMapper = new(ViewCommandMapper)
 		{
-#if __IOS__
-			[nameof(IView.Frame)] = MapFrame,
-#endif
 		};
 
 		public ContentViewHandler() : base(ContentViewMapper, ContentViewCommandMapper)

@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
 
