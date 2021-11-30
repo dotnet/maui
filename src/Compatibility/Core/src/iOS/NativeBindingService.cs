@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
+using ObjCRuntime;
 using UIKit;
 
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.NativeBindingService))]
@@ -9,6 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	[Preserve(AllMembers = true)]
 	class NativeBindingService : INativeBindingService
 	{
+		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
 			var view = target as UIView;

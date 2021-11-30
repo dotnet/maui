@@ -22,6 +22,7 @@
       "src\\Compatibility\\Maps\\src\\iOS\\Compatibility.Maps.iOS.csproj",
       "src\\Controls\\Maps\\src\\Controls.Maps-net6.csproj",
       "src\\Controls\\samples\\Controls.Sample.Profiling\\Maui.Controls.Sample.Profiling.csproj",
+      "src\\Controls\\samples\\Controls.Sample.Sandbox\\Maui.Controls.Sample.Sandbox.csproj",
       "src\\Controls\\samples\\Controls.Sample.SingleProject\\Maui.Controls.Sample.SingleProject.csproj",
       "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample-net6.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks-net6.csproj",

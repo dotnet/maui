@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 
 using Foundation;
+using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -245,9 +247,9 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					await rec.SendDrop(args);
 				}
-				catch (Exception e)
+				catch (Exception dropExc)
 				{
-					Controls.Internals.Log.Warning(nameof(DropGestureRecognizer), $"{e}");
+					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending drop event");
 				}
 			}, (View)element);
 		}

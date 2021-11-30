@@ -12,6 +12,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(AlertsPage), "Alerts",
 				"Displaying an alert, asking a user to make a choice, or displaying a prompt."),
 
+			new SectionModel(typeof(ApplicationControlPage), "App Control",
+				"Demonstrates the app control features."),
+
 			new SectionModel(typeof(AppThemeBindingPage), "AppThemeBindings",
 				"Devices typically include light and dark themes, which each refer to a broad set of appearance preferences that can be set at the operating system level. Applications should respect these system themes, and respond immediately when the system theme changes."),
 
@@ -32,6 +35,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ModalPage), "Modal",
 				"Allows you to push and pop Modal Pages."),
+
+			new SectionModel(typeof(MultiWindowPage), "Multi-Window",
+				"Allows you to open a new Window in the App."),
 
 			new SectionModel(typeof(NavigationGallery), "Navigation Page",
 				"Play with the different Navigation APIs."),

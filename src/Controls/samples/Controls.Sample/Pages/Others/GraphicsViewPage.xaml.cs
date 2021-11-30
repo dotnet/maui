@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -7,6 +8,11 @@ namespace Maui.Controls.Sample.Pages
 		public GraphicsViewPage()
 		{
 			InitializeComponent();
+		}
+
+		void OnButtonClicked(object sender, EventArgs e)
+		{
+			GraphicsView.Invalidate();
 		}
 	}
 

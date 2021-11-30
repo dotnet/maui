@@ -10,8 +10,7 @@
     </views:BasePage.BindingContext>
     <views:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout
-                Margin="12">
+            <VerticalStackLayout Padding="12">
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
@@ -21,6 +20,12 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     IsEnabled="False"/>
+                <Label
+                    Text="Using TextColor"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    TextColor="Purple"/>
                 <Label
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
@@ -35,8 +40,16 @@
                 <Label
                     Text="Password"
                     Style="{StaticResource Headline}" />
+                <HorizontalStackLayout>
+                    <CheckBox x:Name="chkIsPassword" IsChecked="true" />
+                    <Label Text="Is Password" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
                 <Entry
-                    IsPassword="True" />
+                    x:Name="pwdPassword"
+                    IsPassword="{Binding IsChecked, Source={Reference chkIsPassword}}" />
+                <Label
+                    Text="{Binding Text, Source={Reference pwdPassword}}"
+                    Style="{StaticResource Headline}" />
                 <Label
                     Text="With Text"
                     Style="{StaticResource Headline}" />
@@ -82,7 +95,6 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="123"
-                    Style="{StaticResource Headline}" 
                     Keyboard="Numeric"/>
                 <Label
                     Text="HorizontalTextAlignment"
@@ -97,6 +109,29 @@
                     VerticalTextAlignment="End"
                     Text="This should be on the bottom"
                     HeightRequest="100"/>
+                <HorizontalStackLayout>
+                    <Label
+                    x:Name="lblCursor"
+                    Text="CursorPosition = 4"
+                    Style="{StaticResource Headline}" />
+                    <Slider x:Name="sldCursorPosition" ValueChanged="OnSlideCursorPositionValueChanged" WidthRequest="100"/>
+                </HorizontalStackLayout>
+                <Entry
+                    x:Name="entryCursor"
+                    Text="Cursor"
+                    CursorPosition="4"/>
+                <HorizontalStackLayout>
+                    <Label
+                    x:Name="lblSelection"
+                    Text="SelectionLength = 4"
+                    Style="{StaticResource Headline}" />
+                    <Slider x:Name="sldSelection" ValueChanged="OnSlideSelectionValueChanged" WidthRequest="100"/>
+                </HorizontalStackLayout>
+                <Entry
+                    x:Name="entrySelection"
+                    Text="Selection"
+                    CursorPosition="2"
+                    SelectionLength="4"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

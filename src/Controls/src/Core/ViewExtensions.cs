@@ -169,15 +169,10 @@ namespace Microsoft.Maui.Controls
 			return tcs.Task;
 		}
 
-		internal static IAnimationManager? GetAnimationManager(this IAnimatable animatable)
+		internal static IAnimationManager GetAnimationManager(this IAnimatable animatable)
 		{
 			if (animatable is Element e && e.FindMauiContext() is IMauiContext mauiContext)
-			{
-				if (mauiContext is IScopedMauiContext scoped)
-					return scoped.AnimationManager;
-				else
-					return mauiContext.Services.GetService<IAnimationManager>();
-			}
+				return mauiContext.GetAnimationManager();
 
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
 		}
@@ -191,6 +186,20 @@ namespace Microsoft.Maui.Controls
 			{
 				if (parent is Maui.IElement parentView && parentView.Handler?.MauiContext != null)
 					return parentView.Handler.MauiContext;
+			}
+
+			return default;
+		}
+
+		internal static Element? FindParentWith(this Element element, Func<Element, bool> withMatch, bool includeThis = false)
+		{
+			if (includeThis && withMatch(element))
+				return element;
+
+			foreach (var parent in element.GetParentsPath())
+			{
+				if (withMatch(parent))
+					return parent;
 			}
 
 			return default;

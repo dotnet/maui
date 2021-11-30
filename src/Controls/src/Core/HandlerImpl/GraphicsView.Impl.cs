@@ -12,5 +12,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(DrawableProperty, value); }
 			get { return (IDrawable)GetValue(DrawableProperty); }
 		}
+
+		public void Invalidate()
+		{
+			Handler?.Invoke(nameof(IGraphicsView.Invalidate));
+		}
 	}
 }

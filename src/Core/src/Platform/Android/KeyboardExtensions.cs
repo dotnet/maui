@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Android.Text;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class KeyboardExtensions
 	{

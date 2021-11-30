@@ -13,6 +13,7 @@ using WImage = Microsoft.UI.Xaml.Controls.Image;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static Task<string> s_currentPrompt;
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
-			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer),
+			typeof(IVisualElementRenderer), typeof(global::Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				if (bindable is IView view)
@@ -162,9 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception exception)
 			{
-				Log.Warning("Update toolbar items after app resume",
-					$"UpdateToolbarItems failed after app resume: {exception.Message}");
-
+				Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(exception, "UpdateToolbarItems failed after app resume");
 			}
 		}
 

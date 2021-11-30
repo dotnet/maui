@@ -20,6 +20,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 		}
 
+#if !NETSTANDARD
+		private MauiDispatcher ComponentsDispatcher { get; } = new MauiDispatcher();
+#endif
+
 		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD

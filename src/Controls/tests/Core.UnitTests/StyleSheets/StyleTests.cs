@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		{
 			Device.PlatformServices = new MockPlatformServices();
 			Internals.Registrar.RegisterAll(new Type[0]);
+			ApplicationExtensions.CreateAndSetMockApplication();
 		}
 
 		[TearDown]

@@ -25,13 +25,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor.IsNotDefault())
-				run.Foreground = Maui.ColorExtensions.ToNative(span.TextColor);
+				run.Foreground = span.TextColor.ToNative();
 
 			if (!span.IsDefault())
 				run.ApplyFont(span);
 
 			if (span.IsSet(Span.TextDecorationsProperty))
-				run.TextDecorations = (Windows.UI.Text.TextDecorations)span.TextDecorations;
+				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;
 
 			run.CharacterSpacing = span.CharacterSpacing.ToEm();
 
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null)
 				return finalSize;
@@ -199,14 +199,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var elementTextDecorations = Element.TextDecorations;
 
 			if ((elementTextDecorations & TextDecorations.Underline) == 0)
-				textBlock.TextDecorations &= ~Windows.UI.Text.TextDecorations.Underline;
+				textBlock.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Underline;
 			else
-				textBlock.TextDecorations |= Windows.UI.Text.TextDecorations.Underline;
+				textBlock.TextDecorations |= global::Windows.UI.Text.TextDecorations.Underline;
 
 			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
-				textBlock.TextDecorations &= ~Windows.UI.Text.TextDecorations.Strikethrough;
+				textBlock.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Strikethrough;
 			else
-				textBlock.TextDecorations |= Windows.UI.Text.TextDecorations.Strikethrough;
+				textBlock.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
 
 			//TextDecorations are not updated in the UI until the text changes
 			if (textBlock.Inlines != null && textBlock.Inlines.Count > 0)
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Label label = Element;
 			if (label != null && label.TextColor.IsNotDefault())
 			{
-				textBlock.Foreground = Maui.ColorExtensions.ToNative(label.TextColor);
+				textBlock.Foreground = label.TextColor.ToNative();
 			}
 			else
 			{
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					textBlock.Inlines.Clear();
 					// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
-					textBlock.Measure(new Windows.Foundation.Size(double.MaxValue, double.MaxValue));
+					textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
 
 					var heights = new List<double>();
 					for (var i = 0; i < formatted.Spans.Count; i++)
@@ -369,7 +369,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			catch (Exception)
 			{
 				// if anything goes wrong just show the html
-				textBlock.Text = Windows.Data.Html.HtmlUtilities.ConvertToText(Element.Text);
+				textBlock.Text = global::Windows.Data.Html.HtmlUtilities.ConvertToText(Element.Text);
 			}
 		}
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers

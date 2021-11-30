@@ -2,7 +2,7 @@
 using System.Xml.Linq;
 using Microsoft.UI.Xaml.Documents;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class LabelHtmlHelper
 	{

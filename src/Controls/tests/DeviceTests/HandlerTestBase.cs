@@ -1,6 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.DeviceTests
@@ -13,13 +16,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			_mauiApp = MauiApp
 				.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+				})
 				.Build();
 
-#if __ANDROID__
-			MauiContext = new MauiContext(_mauiApp.Services, MauiProgram.CurrentContext);
-#else
-			MauiContext = new MauiContext(_mauiApp.Services);
-#endif
+			MauiContext = new ContextStub(_mauiApp.Services);
 		}
 
 		public void Dispose()

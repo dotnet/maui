@@ -27,6 +27,12 @@
     </_ProvisionDependsOn>
   </PropertyGroup>
 
+  <Target Name="_ReadAllNuGetSources">
+    <XmlPeek XmlInputPath="../../NuGet.config" Query="configuration/packageSources/add[@key!='wasdk-internal']/@value">
+      <Output TaskParameter="Result" ItemName="_AllNuGetSources" />
+    </XmlPeek>
+  </Target>
+
   <!-- Build target provisions ./bin/dotnet/ -->
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
 
@@ -35,7 +41,7 @@
     Running this with ./bin/dotnet/dotnet will work without elevation.
     For a system install, you will need to run this in an admin command-prompt on Windows, or use 'sudo' on Mac.
   -->
-  <Target Name="Install" DependsOnTargets="SetVersions">
+  <Target Name="Install" DependsOnTargets="_ReadAllNuGetSources;SetVersions">
 
     <Error
         Condition=" '$(MSBuildRuntimeType)' != 'Core' "
@@ -67,7 +73,7 @@
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
       <_WorkloadSource Include="$(PackageOutputPath)" />
-      <_WorkloadSource Include="$(DotNet6Feed)" />
+      <_WorkloadSource Include="@(_AllNuGetSources)" />
     </ItemGroup>
     <Exec
         Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_WorkloadSource->'--source &quot;%(Identity)&quot;', ' ')"
@@ -149,9 +155,10 @@
   <Target Name="_InstallWorkloadPacks"
       Condition=" '$(InstallWorkloadPacks)' == 'true' "
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetPacksDirectory).stamp">
+      Outputs="$(DotNetPacksDirectory).stamp"
+      DependsOnTargets="_ReadAllNuGetSources">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --source &quot;$(DotNet6Feed)&quot;"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_AllNuGetSources->'--source &quot;%(Identity)&quot;', ' ')"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />

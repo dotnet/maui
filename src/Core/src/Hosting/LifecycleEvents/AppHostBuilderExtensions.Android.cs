@@ -37,12 +37,24 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.OnStop(activity =>
 				{
+					var window = activity.GetWindow();
+
 					// Activity is no longer visible
-					activity.GetWindow()?.Stopped();
+					window?.Stopped();
+
+					// As of Ice Cream Sandwich, Stopped is guaranteed to be called
+					// even when the activity is finishing or being destroyed
+					// We check for finishing and call destroying here if so
+					if (activity.IsFinishing)
+						window?.Destroying();
 				})
 				.OnDestroy(activity =>
 				{
-					activity.GetWindow()?.Destroying();
+					// Android's onDestroy is not reliably called
+				})
+				.OnBackPressed(activity =>
+				{
+					return activity.GetWindow()?.BackButtonClicked() ?? false;
 				});
 		}
 	}

@@ -11,13 +11,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation"  />
-    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI"  />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\src\Compatibility-net6.csproj" />
   </ItemGroup>

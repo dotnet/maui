@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			((ImageSource)bindable.GetValue(property)).LoadImage(MauiContext, (r) =>
 			{
-				result.SetImageDrawable(r.Value);
+				result.SetImageDrawable(r?.Value);
 			});
 
 			var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(22), LP.MatchParent)

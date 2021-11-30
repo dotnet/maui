@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class TransformationExtensions
 	{
@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 			double scaleX = view.Scale * view.ScaleX;
 			double scaleY = view.Scale * view.ScaleY;
 
-			frameworkElement.RenderTransformOrigin = new Windows.Foundation.Point(anchorX, anchorY);
+			frameworkElement.RenderTransformOrigin = new global::Windows.Foundation.Point(anchorX, anchorY);
 			frameworkElement.RenderTransform = new ScaleTransform { ScaleX = scaleX, ScaleY = scaleY };
 
 			if (rotationX % 360 == 0 && rotationY % 360 == 0 && rotation % 360 == 0 &&

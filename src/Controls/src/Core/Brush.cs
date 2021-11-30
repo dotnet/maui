@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls
 			get { return new SolidColorBrush(null); }
 		}
 
+		public static implicit operator Brush(Color color) => new SolidColorBrush(color);
+
 		public abstract bool IsEmpty { get; }
 
 		public static bool IsNullOrEmpty(Brush brush)

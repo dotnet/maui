@@ -1,6 +1,6 @@
 ﻿using Android.Views;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ScrollViewExtensions
 	{
@@ -35,13 +35,12 @@ namespace Microsoft.Maui
 		{
 			var nativeContent = content == null ? null : content.ToNative(context);
 
-			if (nativeContent == null)
-			{
-				scrollView.RemoveAllViews();
-			}
-			else
+			scrollView.RemoveAllViews();
+
+			if (nativeContent != null)
 			{
 				scrollView.SetContent(nativeContent);
+
 			}
 		}
 	}

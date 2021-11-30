@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception)
 			{
-				Log.Warning("EventTrigger", "Cannot attach EventTrigger to {0}.{1}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
+				Application.Current?.FindMauiContext()?.CreateLogger<EventTrigger>()?.LogWarning("Cannot attach EventTrigger to {Type}.{Event}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
 			}
 			if (_eventinfo != null && _handlerdelegate != null)
 				_eventinfo.AddEventHandler(bindable, _handlerdelegate);

@@ -7,7 +7,7 @@ using static Android.Widget.TextView;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class TextViewExtensions
 	{
@@ -81,6 +81,11 @@ namespace Microsoft.Maui
 				// to gravity, because Android will simply ignore text alignment
 				textView.Gravity = Android.Views.GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
 			}
+		}
+
+		public static void UpdateVerticalTextAlignment(this TextView textView, ITextAlignment textAlignment)
+		{
+			textView.UpdateVerticalAlignment(textAlignment.VerticalTextAlignment);
 		}
 
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
