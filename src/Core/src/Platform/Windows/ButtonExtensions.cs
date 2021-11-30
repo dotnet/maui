@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Platform
 				nativeButton.Resources.Remove("ButtonBorderBrushPointerOver");
 				nativeButton.Resources.Remove("ButtonBorderBrushPressed");
 				nativeButton.Resources.Remove("ButtonBorderBrushDisabled");
+
+				nativeButton.ClearValue(Button.BorderBrushProperty);
 			}
 			else
 			{
@@ -27,6 +29,8 @@ namespace Microsoft.Maui.Platform
 				nativeButton.Resources["ButtonBorderBrushPointerOver"] = brush;
 				nativeButton.Resources["ButtonBorderBrushPressed"] = brush;
 				nativeButton.Resources["ButtonBorderBrushDisabled"] = brush;
+
+				nativeButton.BorderBrush = brush;
 			}
 		}
 
@@ -76,6 +80,8 @@ namespace Microsoft.Maui.Platform
 				nativeButton.Resources.Remove("ButtonBackgroundPointerOver");
 				nativeButton.Resources.Remove("ButtonBackgroundPressed");
 				nativeButton.Resources.Remove("ButtonBackgroundDisabled");
+
+				nativeButton.ClearValue(Button.BackgroundProperty);
 			}
 			else
 			{
@@ -101,7 +107,7 @@ namespace Microsoft.Maui.Platform
 				nativeButton.Resources.Remove("ButtonForegroundDisabled");
 
 				// Windows.Foundation.UniversalApiContract >= 5
-				nativeButton.ClearValue(Button.BackgroundProperty);
+				nativeButton.ClearValue(Button.ForegroundProperty);
 			}
 			else
 			{
