@@ -72,7 +72,6 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_borderPath.Fill = background?.ToNative();
-			_borderPath.Visibility = background != null ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
 		}
 
 		public void UpdateStroke(Paint borderBrush)

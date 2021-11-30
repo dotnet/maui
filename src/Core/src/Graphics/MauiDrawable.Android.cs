@@ -444,7 +444,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			InitializeBorderIfNeeded();
 
-			return _shape != null && _strokeThickness > 0;
+			return _shape != null && (_stroke != null || _borderColor != null);
 		}
 
 		void InitializeBorderIfNeeded()
