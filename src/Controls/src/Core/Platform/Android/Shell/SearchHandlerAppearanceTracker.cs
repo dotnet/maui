@@ -151,6 +151,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateBackgroundColor()
 		{
+			if (_searchHandler.BackgroundColor == null)
+				return;
+
 			var linearLayout = (_control as ViewGroup).GetChildrenOfType<LinearLayout>().FirstOrDefault();
 			linearLayout.SetBackgroundColor(_searchHandler.BackgroundColor.ToNative());
 		}
