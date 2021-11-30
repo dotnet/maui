@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Platform
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-
 		public static void UpdateTextColor(this EditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			editText.UpdateTextColor(entry.TextColor, defaultColor);

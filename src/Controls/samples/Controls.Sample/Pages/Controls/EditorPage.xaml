@@ -13,8 +13,9 @@
                 <Editor />
                 <Label
                     Text="Disabled"
-                    Style="{StaticResource Headline}" />
-                <Editor 
+                    Style="{StaticResource Headline}"/>
+                <Editor
+                    Text="I am disabled"
                     IsEnabled="False"/>
                 <Label
                     Text="Using TextColor"
