@@ -8,6 +8,7 @@
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
     <IsPackable>false</IsPackable>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
