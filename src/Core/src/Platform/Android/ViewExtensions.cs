@@ -244,6 +244,7 @@ namespace Microsoft.Maui.Platform
 
 		public static Task<byte[]?> RenderAsJPEG(this AView view) 
 			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
+
 		internal static Rectangle GetNativeViewBounds(this IView view)
 		{
 			var nativeView = view?.GetNative(true);

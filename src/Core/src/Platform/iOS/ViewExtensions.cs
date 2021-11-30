@@ -348,6 +348,8 @@ namespace Microsoft.Maui.Platform
 				return Task.FromResult<byte[]?>(null);
 			var skipChildren = !(view is IView && !(view is ILayout));
 			return nativeView.RenderAsImage(skipChildren, asPng);
+		}
+
 		internal static Rectangle GetNativeViewBounds(this IView view)
 		{
 			var nativeView = view?.GetNative(true);
