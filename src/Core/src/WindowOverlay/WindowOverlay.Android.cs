@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 			if (nativeWindow == null)
 				return false;
 
-			var handler = Window.Handler as WindowHandler;
+			var handler = Window?.Handler as WindowHandler;
 			if (handler?.MauiContext == null)
 				return false;
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
