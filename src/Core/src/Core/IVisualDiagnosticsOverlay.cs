@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets or sets a value indicating whether to automatically scroll to an element when adding an adorner, if available.
 		/// </summary>
-		bool AutoScrollToElement { get; set; }
+		bool ScrollToElement { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether to enable the element selector on the diagnostics overlay.

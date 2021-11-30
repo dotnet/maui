@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 		public IReadOnlyCollection<IScrollView> ScrollViews => _scrollViews.Keys;
 
 		/// <inheritdoc/>
-		public bool AutoScrollToElement { get; set; }
+		public bool ScrollToElement { get; set; }
 
 		/// <inheritdoc/>
 		public bool EnableElementSelector
@@ -64,7 +64,7 @@ namespace Microsoft.Maui
 			AddScrollableElementHandlers();
 			var result = base.AddWindowElement(adorner);
 
-			if (AutoScrollToElement || scrollToView)
+			if (ScrollToElement || scrollToView)
 				ScrollToView((IVisualTreeElement)adorner.VisualView);
 
 			Invalidate();
@@ -89,7 +89,7 @@ namespace Microsoft.Maui
 			var result = base.AddWindowElement(new RectangleGridAdorner(view, Density, Offset));
 			AddScrollableElementHandlers();
 
-			if (AutoScrollToElement || scrollToView)
+			if (ScrollToElement || scrollToView)
 				ScrollToView(visualElement);
 
 			Invalidate();
@@ -158,7 +158,7 @@ namespace Microsoft.Maui
 			if (drawable is not IAdorner adorner)
 				return false;
 
-			return AddAdorner(adorner, AutoScrollToElement);
+			return AddAdorner(adorner, ScrollToElement);
 		}
 
 		/// <inheritdoc/>
