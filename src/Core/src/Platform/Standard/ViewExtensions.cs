@@ -49,5 +49,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMinimumWidth(this object nativeView, IView view) { }
 
 		public static void UpdateMaximumWidth(this object nativeView, IView view) { }
+
+		public static System.Threading.Tasks.Task<byte[]?> RenderAsPNG(this IView view)
+			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
+
+	    public static System.Threading.Tasks.Task<byte[]?> RenderAsJPEG(this IView view)
+			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
 	}
 }

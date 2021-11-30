@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ALayoutDirection = Android.Views.LayoutDirection;
@@ -216,5 +218,29 @@ namespace Microsoft.Maui.Platform
 
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
+
+		public static Task<byte[]?> RenderAsPNG(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return Task.FromResult<byte[]?>(null);
+
+			return nativeView.RenderAsPNG();
+		}
+
+		public static Task<byte[]?> RenderAsJPEG(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return Task.FromResult<byte[]?>(null);
+
+			return nativeView.RenderAsJPEG();
+		}
+
+		public static Task<byte[]?> RenderAsPNG(this AView view)
+			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Png));
+
+		public static Task<byte[]?> RenderAsJPEG(this AView view) 
+			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
 	}
 }

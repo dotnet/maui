@@ -20,22 +20,99 @@ namespace Microsoft.Maui.Essentials
 			if (view == null)
 				throw new NullReferenceException("Unable to find the main window.");
 
-			var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
-
-			using (var canvas = new Canvas(bitmap))
-			{
-				var drawable = view.Background;
-				if (drawable != null)
-					drawable.Draw(canvas);
-				else
-					canvas.DrawColor(Color.White);
-
-				view.Draw(canvas);
-			}
-
-			var result = new ScreenshotResult(bitmap);
+			var result = new ScreenshotResult(view.Render());
 
 			return Task.FromResult(result);
+		}
+
+		public static Bitmap Render(this View view)
+		{
+			var bitmap = RenderUsingCanvasDrawing(view);
+
+			if (bitmap == null)
+				bitmap = RenderUsingDrawingCache(view);
+
+			return bitmap;
+		}
+
+		public static byte[] RenderAsJPEG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Jpeg, quality);
+
+		public static byte[] RenderAsPNG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Png, quality);
+
+		public static byte[] RenderAsImage(this View view, Bitmap.CompressFormat format, int quality = 100)
+		{
+			byte[] imageBytes = null;
+
+			using (var bitmap = Render(view))
+			{
+				if (bitmap != null)
+				{
+					imageBytes = bitmap.AsImageBytes(format,quality);
+					if (!bitmap.IsRecycled)
+						bitmap.Recycle();
+				}
+			}
+
+			return imageBytes;
+		}
+
+		public static byte[] AsImageBytes(this Bitmap bitmap, Bitmap.CompressFormat format, int quality = 100)
+		{
+			byte[] byteArray = null;
+			using (var mem = new MemoryStream())
+			{
+				bitmap.Compress(format, quality, mem);
+				byteArray = mem.ToArray();
+			}
+
+			return byteArray;
+		}
+
+		public static Bitmap RenderUsingCanvasDrawing(this View view)
+		{
+			try
+			{
+				if (view?.LayoutParameters == null || Bitmap.Config.Argb8888 == null)
+					return null;
+				var width = view.Width;
+				var height = view.Height;
+
+				var bitmap = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
+				if (bitmap == null)
+					return null;
+
+				using (var canvas = new Canvas(bitmap))
+					view.Draw(canvas);
+
+				return bitmap;
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+
+		static Bitmap RenderUsingDrawingCache(this View view)
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			try
+			{
+				var enabled = view.DrawingCacheEnabled;
+				view.DrawingCacheEnabled = true;
+				view.BuildDrawingCache();
+				var cachedBitmap = view.DrawingCache;
+				if (cachedBitmap == null)
+					return null;
+				var bitmap = Bitmap.CreateBitmap(cachedBitmap);
+				view.DrawingCacheEnabled = enabled;
+				return bitmap;
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
 		}
 	}
 
@@ -52,20 +129,16 @@ namespace Microsoft.Maui.Essentials
 			Height = bmp.Height;
 		}
 
-		internal async Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format)
+		internal Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format)
 		{
-			var stream = new MemoryStream();
-
 			var f = format switch
 			{
 				ScreenshotFormat.Jpeg => Bitmap.CompressFormat.Jpeg,
 				_ => Bitmap.CompressFormat.Png,
 			};
 
-			await bmp.CompressAsync(f, 100, stream).ConfigureAwait(false);
-			stream.Position = 0;
-
-			return stream;
+			var result = new MemoryStream(bmp.AsImageBytes(f, 100)) as Stream;
+			return Task.FromResult(result);
 		}
 	}
 }
