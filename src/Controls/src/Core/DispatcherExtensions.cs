@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls
 		public static IDispatcher FindDispatcher(this BindableObject? bindableObject)
 		{
 			// try find the dispatcher in the current hierarchy
-			if (bindableObject is Element element &&
+			if (bindableObject is not Application &&
+				bindableObject is Element element &&
 				element.FindMauiContext() is IMauiContext context &&
 				context.Services.GetService<IDispatcher>() is IDispatcher handlerDispatcher)
 				return handlerDispatcher;
@@ -21,8 +22,7 @@ namespace Microsoft.Maui.Controls
 				return globalDispatcher;
 
 			// try looking on the app
-			if (bindableObject is not Application &&
-				Application.Current?.Dispatcher is IDispatcher appDispatcher)
+			if (Application.Current?.Dispatcher is IDispatcher appDispatcher)
 				return appDispatcher;
 
 			// no dispatchers found at all
