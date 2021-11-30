@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_defaultTextColor = _defaultTextColor ?? textField.TextColor;
 			var targetColor = _searchHandler.TextColor;
 
-			textField.TextColor = targetColor.ToUIColor() ?? _defaultTextColor;
+			textField.TextColor = targetColor?.ToUIColor() ?? _defaultTextColor;
 			UpdateSearchBarTintColor(targetColor);
 			UpdateSearchButtonIconColor(targetColor);
 			UpdateClearPlaceholderIconColor(targetColor);

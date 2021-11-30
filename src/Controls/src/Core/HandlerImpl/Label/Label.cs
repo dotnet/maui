@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 #endif
 		};
 
-		public static new void RemapForControls()
+		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text
