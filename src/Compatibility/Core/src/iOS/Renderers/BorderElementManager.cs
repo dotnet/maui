@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		public static void UpdateBorder(IVisualNativeElementRenderer renderer, IBorderElement backgroundView)
 		{
 			var control = renderer.Control;

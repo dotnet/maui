@@ -47,10 +47,5 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateContent();
 		}
-
-		public static void MapFrame(BorderHandler handler, IBorder border)
-		{
-
-		}
 	}
 }

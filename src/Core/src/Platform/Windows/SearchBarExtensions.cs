@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 			nativeControl.PlaceholderText = searchBar.Placeholder ?? string.Empty;
 		}
 
-		public static void UpdatePlaceholderColor(this AutoSuggestBox nativeControl, ISearchBar searchBar, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush, MauiTextBox? queryTextBox)
+		public static void UpdatePlaceholderColor(this AutoSuggestBox nativeControl, ISearchBar searchBar, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
 				return;
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 			nativeControl.Text = searchBar.Text;
 		}
 
-		public static void UpdateTextColor(this AutoSuggestBox nativeControl, ISearchBar searchBar, Brush? defaultTextColorBrush, Brush? defaultTextColorFocusBrush, MauiTextBox? queryTextBox)
+		public static void UpdateTextColor(this AutoSuggestBox nativeControl, ISearchBar searchBar, Brush? defaultTextColorBrush, Brush? defaultTextColorFocusBrush, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
 				return;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this AutoSuggestBox nativeControl, ISearchBar searchBar, IFontManager fontManager) =>
 			nativeControl.UpdateFont(searchBar.Font, fontManager);
 
-		public static void UpdateHorizontalTextAlignment(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		public static void UpdateHorizontalTextAlignment(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
 				return;
@@ -60,7 +60,7 @@ namespace Microsoft.Maui
 			queryTextBox.TextAlignment = searchBar.HorizontalTextAlignment.ToNative();
 		}
 
-		public static void UpdateVerticalTextAlignment(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		public static void UpdateVerticalTextAlignment(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
 				return;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui
 			queryTextBox.VerticalAlignment = searchBar.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 
-		public static void UpdateMaxLength(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		public static void UpdateMaxLength(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
 				return;
@@ -81,7 +81,7 @@ namespace Microsoft.Maui
 				nativeControl.Text = currentControlText.Substring(0, searchBar.MaxLength);
 		}
 
-		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
 				return;

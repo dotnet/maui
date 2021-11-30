@@ -16,6 +16,32 @@
                 Style="{StaticResource Headline}"/>
             <Stepper
                 IsEnabled="False"/>
+            <Label
+                Text="Background"
+                Style="{StaticResource Headline}"/>
+            <Stepper
+                Background="Red"/>
+            <Label
+                Text="Minimum (25) and Maximum (25)"
+                Style="{StaticResource Headline}"/>
+            <Stepper
+                Minimum="5"
+                Maximum="25"/>
+            <Label
+                Text="Increment (2)"
+                Style="{StaticResource Headline}"/>
+            <Stepper
+                Minimum="0"
+                Maximum="100"
+                Increment="2"/>
+            <Label
+                Text="ValueChanged"
+                Style="{StaticResource Headline}"/>
+            <Stepper
+                Minimum="0"
+                Maximum="100"
+                Increment="1"
+                ValueChanged="OnValueChanged"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

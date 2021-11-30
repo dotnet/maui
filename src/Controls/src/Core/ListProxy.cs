@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -215,13 +216,13 @@ namespace Microsoft.Maui.Controls
 				sync.Callback(ProxiedEnumerable, sync.Context, () =>
 				{
 					e = e.WithCount(Count);
-					_dispatcher.Dispatch(action);
+					_dispatcher.DispatchIfRequired(action);
 				}, false);
 			}
 			else
 			{
 				e = e.WithCount(Count);
-				_dispatcher.Dispatch(action);
+				_dispatcher.DispatchIfRequired(action);
 			}
 		}
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Threading.Tasks;
+using Microsoft.Maui.Platform;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests

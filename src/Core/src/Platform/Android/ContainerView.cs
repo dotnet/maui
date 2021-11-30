@@ -5,7 +5,7 @@ using Android.Widget;
 using Microsoft.Maui.HotReload;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class ContainerView : LinearLayout, IReloadHandler
 	{
