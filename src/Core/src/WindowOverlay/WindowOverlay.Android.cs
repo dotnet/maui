@@ -91,7 +91,6 @@ namespace Microsoft.Maui
 			if (e?.Event == null)
 				return;
 
-			System.Diagnostics.Debug.WriteLine(e);
 			if (e.Event.Action != MotionEventActions.Down && e.Event.ButtonState != MotionEventButtonState.Primary)
 				return;
 
