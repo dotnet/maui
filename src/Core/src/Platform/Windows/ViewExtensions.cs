@@ -2,7 +2,9 @@
 using System;
 using System.Numerics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
@@ -219,6 +221,27 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(view.Background);
 		}
 
+		public static async Task<byte[]?> RenderAsPNG(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return null;
+
+			return await nativeView.RenderAsPNG();
+		}
+
+		public static async Task<byte[]?> RenderAsJPEG(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return null;
+
+			return await nativeView.RenderAsJPEG();
+		}
+
+		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);
+
+		public static Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => view != null ? view.RenderAsJPEGAsync() : Task.FromResult<byte[]?>(null);
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
 			var nativeView = view?.GetNative(true);

@@ -50,6 +50,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumWidth(this object nativeView, IView view) { }
 
+		public static System.Threading.Tasks.Task<byte[]?> RenderAsPNG(this IView view)
+			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
+
+	    public static System.Threading.Tasks.Task<byte[]?> RenderAsJPEG(this IView view)
+			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
 		internal static Graphics.Rectangle GetNativeViewBounds(this IView view) => view.Frame;
 
 		internal static System.Numerics.Matrix4x4 GetViewTransform(this IView view) => new System.Numerics.Matrix4x4();
