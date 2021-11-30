@@ -143,7 +143,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(handler.ContainerView);
 		}
 
-		[Theory("Native View Bounds are not empty")]
+		[Theory(DisplayName = "Native View Bounds are not empty")]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(nativeViewBounds, new Graphics.Rectangle());
 		}
 
-		[Theory("Native View Bounding Box are not empty")]
+		[Theory(DisplayName = "Native View Bounding Box are not empty")]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -176,7 +176,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		[Theory("Native View Transforms are not empty")]
+		[Theory(DisplayName = "Native View Transforms are not empty"
+#if __IOS__
+			, Skip = "https://github.com/dotnet/maui/issues/3600"
+#endif
+			)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
