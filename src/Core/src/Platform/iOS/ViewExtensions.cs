@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Platform
 
 		static Task<byte[]?> RenderAsImage(this UIView nativeView, bool skipChildren, bool asPng)
 		{
-			byte[] result;
+			byte[]? result;
 			if (asPng)
 				result = nativeView?.Window?.RenderAsPng(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
 			else
