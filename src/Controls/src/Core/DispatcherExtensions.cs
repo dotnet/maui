@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Controls
 		public static IDispatcher FindDispatcher(this BindableObject? bindableObject)
 		{
 			// try find the dispatcher in the current hierarchy
-			if (bindableObject is VisualElement visual &&
-				visual.FindMauiContext() is IMauiContext context &&
+			if (bindableObject is Element element &&
+				element.FindMauiContext() is IMauiContext context &&
 				context.Services.GetService<IDispatcher>() is IDispatcher handlerDispatcher)
 				return handlerDispatcher;
 
