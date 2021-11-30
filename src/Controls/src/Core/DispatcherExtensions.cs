@@ -25,6 +25,12 @@ namespace Microsoft.Maui.Controls
 			if (Application.Current?.Dispatcher is IDispatcher appDispatcher)
 				return appDispatcher;
 
+			// Last ditch effort to look on the bindableObject if it's of type Application
+			if (bindableObject is Application app &&
+				app.FindMauiContext() is IMauiContext appMauiContext &&
+				appMauiContext.Services.GetService<IDispatcher>() is IDispatcher appHandlerDispatcher)
+				return appHandlerDispatcher;
+
 			// no dispatchers found at all
 			throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
 		}
