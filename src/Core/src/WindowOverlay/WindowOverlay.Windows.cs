@@ -69,8 +69,8 @@ namespace Microsoft.Maui
 		{
 			if (_frame != null)
 				_frame.Navigating -= FrameNavigating;
-			if (_rootPanel != null)
-				_rootPanel.Children.Remove(_graphicsView);
+			if (_panel != null)
+				_panel.Children.Remove(_graphicsView);
 			if (_nativeWindow != null)
 			{
 				_nativeWindow.Tapped -= ViewTapped;

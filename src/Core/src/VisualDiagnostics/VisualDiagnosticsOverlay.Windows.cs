@@ -13,7 +13,11 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
-			var nativeScroll = scrollBar?.GetNative(true);
+			if (scrollBar == null)
+				return;
+
+			var nativeScroll = scrollBar.GetNative(true);
+
 			if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
 			{
 				if (!_scrollViews.ContainsKey(scrollBar))
