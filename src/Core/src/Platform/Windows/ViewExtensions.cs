@@ -234,8 +234,8 @@ namespace Microsoft.Maui.Platform
 			return await nativeView.RenderAsJPEG();
 		}
 
-		public static async Task<byte[]?> RenderAsPNG(this FrameworkElement view) => await view?.RenderAsPNGAsync();
+		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);
 
-		public static async Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => await view?.RenderAsJPEGAsync();
+		public static Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => view != null ? view.RenderAsJPEGAsync() : Task.FromResult<byte[]?>(null);
 	}
 }
