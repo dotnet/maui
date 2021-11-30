@@ -27,14 +27,14 @@ namespace Microsoft.Maui
 		/// Adds a new adorner to the Visual Diagnostics Overlay.
 		/// </summary>
 		/// <param name="adorner"><see cref="IAdorner"/>.</param>
-		/// <param name="scrollToView">When adding the adorner, scroll to the element. Only applies if the element is contained in an <see cref="IScrollView"/>.</param>
+		/// <param name="scrollToElement">When adding the adorner, scroll to the element. Only applies if the element is contained in an <see cref="IScrollView"/>.</param>
 		bool AddAdorner(IAdorner adorner, bool scrollToElement);
 
 		/// <summary>
 		/// Adds a new adorner to the Visual Diagnostics Overlay. Uses the default Adorner for drawing.
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/>.</param>
-		/// <param name="scrollToView">When adding the adorner, scroll to the element. Only applies if the element is contained in an <see cref="IScrollView"/>.</param>
+		/// <param name="scrollToElement">When adding the adorner, scroll to the element. Only applies if the element is contained in an <see cref="IScrollView"/>.</param>
 		bool AddAdorner(IVisualTreeElement visualElement, bool scrollToElement);
 
 		/// <summary>
