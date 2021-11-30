@@ -154,7 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			$"{((View)viewHandler.NativeView).GetTag(ViewExtensions.AutomationTagId)}";
+			$"{((View)viewHandler.NativeView).GetTag(Microsoft.Maui.Platform.ViewExtensions.AutomationTagId)}";
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
 		{
