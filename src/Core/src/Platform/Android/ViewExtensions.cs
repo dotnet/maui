@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Platform
 
 		public static Task<byte[]?> RenderAsPNG(this IView view)
 		{
-			var nativeView = view.GetNative(true);
+			var nativeView = view?.GetNative(true);
 			if (nativeView == null)
 				return Task.FromResult<byte[]?>(null);
 
@@ -230,7 +230,7 @@ namespace Microsoft.Maui.Platform
 
 		public static Task<byte[]?> RenderAsJPEG(this IView view)
 		{
-			var nativeView = view.GetNative(true);
+			var nativeView = view?.GetNative(true);
 			if (nativeView == null)
 				return Task.FromResult<byte[]?>(null);
 

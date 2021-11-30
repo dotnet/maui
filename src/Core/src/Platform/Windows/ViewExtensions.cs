@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Platform
 
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
-			var nativeView = view.GetNative(true);
+			var nativeView = view?.GetNative(true);
 			if (nativeView == null)
 				return null;
 
@@ -227,15 +227,15 @@ namespace Microsoft.Maui.Platform
 
 		public static async Task<byte[]?> RenderAsJPEG(this IView view)
 		{
-			var nativeView = view.GetNative(true);
+			var nativeView = view?.GetNative(true);
 			if (nativeView == null)
 				return null;
 
 			return await nativeView.RenderAsJPEG();
 		}
 
-		public static async Task<byte[]?> RenderAsPNG(this FrameworkElement view) => await view.RenderAsPNGAsync();
+		public static async Task<byte[]?> RenderAsPNG(this FrameworkElement view) => await view?.RenderAsPNGAsync();
 
-		public static async Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => await view.RenderAsJPEGAsync();
+		public static async Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => await view?.RenderAsJPEGAsync();
 	}
 }

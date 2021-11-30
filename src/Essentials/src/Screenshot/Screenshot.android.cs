@@ -35,9 +35,9 @@ namespace Microsoft.Maui.Essentials
 			return bitmap;
 		}
 
-		public static byte[] RenderAsJPEG(this View view, int quality = 100) => view.RenderAsImage(Bitmap.CompressFormat.Jpeg, quality);
+		public static byte[] RenderAsJPEG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Jpeg, quality);
 
-		public static byte[] RenderAsPNG(this View view, int quality = 100) => view.RenderAsImage(Bitmap.CompressFormat.Png, quality);
+		public static byte[] RenderAsPNG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Png, quality);
 
 		public static byte[] RenderAsImage(this View view, Bitmap.CompressFormat format, int quality = 100)
 		{
