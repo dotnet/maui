@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 	{
 		W2DGraphicsView? _graphicsView;
 		Frame? _frame;
-		RootPanel? _rootPanel;
+		Panel? _panel;
 		FrameworkElement? _nativeWindow;
 
 		/// <inheritdoc/>
@@ -27,11 +27,10 @@ namespace Microsoft.Maui
 			if (_nativeWindow == null)
 				return false;
 			var handler = Window.Handler as WindowHandler;
-			if (handler?._rootPanel == null)
+			if (handler?.MauiContext is not Window _window)
 				return false;
 
-			_rootPanel = handler._rootPanel;
-
+			_panel = _window.Content as Panel;
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
 			if (_nativeWindow is Frame frame)
@@ -51,7 +50,7 @@ namespace Microsoft.Maui
 
 			_graphicsView.SetValue(Canvas.ZIndexProperty, 99);
 			_graphicsView.IsHitTestVisible = false;
-			handler._rootPanel.Children.Add(_graphicsView);
+			_panel?.Children.Add(_graphicsView);
 
 			IsNativeViewInitialized = true;
 			return IsNativeViewInitialized;
