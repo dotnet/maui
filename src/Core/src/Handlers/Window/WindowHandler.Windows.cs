@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UI.Xaml.Window>
 	{
-		internal RootPanel? _rootPanel = null;
+		RootPanel? _rootPanel = null;
 
 		protected override void ConnectHandler(UI.Xaml.Window nativeView)
 		{
