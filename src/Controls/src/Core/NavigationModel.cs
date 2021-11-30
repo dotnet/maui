@@ -91,9 +91,24 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			if (_navTree.Count <= 1)
 				throw new InvalidNavigationException("Can't pop modal without any modals pushed");
+
+			var previousPage = CurrentPage;
 			Page modal = _navTree.Last()[0];
 			_modalStack.Remove(modal);
 			_navTree.Remove(_navTree.Last());
+
+			// Shell handles its own page life cycle events
+			// because you can pop multiple pages in a single
+			// request
+			if (_navTree.Count > 0 && 
+				_navTree[0].Count > 0 &&
+				_navTree[0][0] is not Shell)
+			{
+				previousPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+				previousPage.SendDisappearing();
+				CurrentPage.SendAppearing();
+			}
+
 			return modal;
 		}
 
@@ -162,8 +177,21 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public void PushModal(Page page)
 		{
+			var previousPage = CurrentPage;
 			_navTree.Add(new List<Page> { page });
 			_modalStack.Add(page);
+
+			// Shell handles its own page life cycle events
+			// because you can push multiple pages in a single
+			// request
+			if (_navTree.Count > 0 &&
+				_navTree[0].Count > 0 &&
+				_navTree[0][0] is not Shell)
+			{
+				previousPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+				previousPage.SendDisappearing();
+				page.SendAppearing();
+			}
 		}
 
 		public bool RemovePage(Page page)
