@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 			if (_nativeWindow == null)
 				return false;
 			var handler = Window.Handler as WindowHandler;
-			if (handler == null || handler._rootPanel == null)
+			if (handler?._rootPanel == null)
 				return false;
 
 			_rootPanel = handler._rootPanel;

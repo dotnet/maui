@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view.GetNative(true);
+			var nativeView = view?.GetNative(true);
 			if (nativeView == null)
 				return new Matrix4x4();
 			return GetViewTransform(nativeView);
@@ -229,10 +229,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
-			var root = element.Parent as UIElement;
+			var root = element?.Parent as UIElement;
 			if (root == null)
 				return new Matrix4x4();
-			var offset = element.TransformToVisual(root) as MatrixTransform;
+			var offset = element?.TransformToVisual(root) as MatrixTransform;
 			if (offset == null)
 				return new Matrix4x4();
 			Matrix matrix = offset.Matrix;
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Rectangle GetNativeViewBounds(this IView view)
 		{
-			var nativeView = view.GetNative(true);
+			var nativeView = view?.GetNative(true);
 			if (nativeView != null)
 				return nativeView.GetNativeViewBounds();
 			return new Rectangle();

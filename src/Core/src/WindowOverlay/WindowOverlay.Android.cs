@@ -22,12 +22,12 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var nativeWindow = Window.Content.GetNative(true);
+			var nativeWindow = Window?.Content?.GetNative(true);
 			if (nativeWindow == null)
 				return false;
 
 			var handler = Window.Handler as WindowHandler;
-			if (handler == null || handler.MauiContext == null)
+			if (handler?.MauiContext == null)
 				return false;
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			if (rootManager == null)
@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 			_nativeActivity = activity;
 			_nativeLayer = rootManager.RootView as ViewGroup;
 
-			if (_nativeLayer == null || _nativeLayer.Context == null)
+			if (_nativeLayer?.Context == null)
 				return false;
 
 			if (_nativeActivity?.WindowManager?.DefaultDisplay == null)
@@ -49,7 +49,7 @@ namespace Microsoft.Maui
 			var measuredHeight = _nativeLayer.MeasuredHeight;
 
 			if (_nativeActivity.Window != null)
-				_nativeActivity.Window.DecorView.LayoutChange += DecorView_LayoutChange;
+				_nativeActivity.Window.DecorView.LayoutChange += DecorViewLayoutChange;
 
 			if (_nativeActivity?.Resources?.DisplayMetrics != null)
 				Density = _nativeActivity.Resources.DisplayMetrics.Density;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui
 			if (_graphicsView == null)
 				return false;
 
-			_graphicsView.Touch += TouchLayer_Touch;
+			_graphicsView.Touch += TouchLayerTouch;
 			_nativeLayer.AddView(_graphicsView, 0, new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
 			_graphicsView.BringToFront();
 
@@ -78,18 +78,17 @@ namespace Microsoft.Maui
 		void DeinitializeNativeDependencies()
 		{
 			if (_nativeActivity?.Window != null)
-				_nativeActivity.Window.DecorView.LayoutChange -= DecorView_LayoutChange;
+				_nativeActivity.Window.DecorView.LayoutChange -= DecorViewLayoutChange;
 
-			if (_nativeLayer != null)
-				_nativeLayer.RemoveView(_graphicsView);
+			_nativeLayer?.RemoveView(_graphicsView);
 
 			_graphicsView = null;
 			IsNativeViewInitialized = false;
 		}
 
-		void TouchLayer_Touch(object? sender, View.TouchEventArgs e)
+		void TouchLayerTouch(object? sender, View.TouchEventArgs e)
 		{
-			if (e == null || e.Event == null)
+			if (e?.Event == null)
 				return;
 
 			System.Diagnostics.Debug.WriteLine(e);
@@ -107,7 +106,7 @@ namespace Microsoft.Maui
 			OnTappedInternal(point);
 		}
 
-		void DecorView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
+		void DecorViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)
 		{
 			HandleUIChange();
 			Invalidate();
