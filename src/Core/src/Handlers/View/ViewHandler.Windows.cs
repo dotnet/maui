@@ -5,6 +5,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
+		static partial void MappingFrame(IViewHandler handler, IView view)
+		{
+			// Both Clip and Shadow depend on the Control size.
+			handler.GetWrappedNativeView()?.UpdateClip(view);
+			handler.GetWrappedNativeView()?.UpdateShadow(view);
+		}
+
 		public static void MapTranslationX(IViewHandler handler, IView view) 
 		{ 
 			handler.GetWrappedNativeView()?.UpdateTransformation(view);

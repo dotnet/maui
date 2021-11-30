@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			_mauiApp = MauiApp
 				.CreateBuilder()
+				.RemapForControls()
 				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
@@ -56,5 +58,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected async Task<THandler> CreateHandlerAsync<THandler>(IView view) where THandler : IViewHandler =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
+
+		protected Task<TValue> GetValueAsync<TValue, THandler>(IView view, Func<THandler, TValue> func)
+			 where THandler : IViewHandler
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				return func(handler);
+			});
+		}
 	}
 }
