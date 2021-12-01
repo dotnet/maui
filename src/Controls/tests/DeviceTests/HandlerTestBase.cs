@@ -33,11 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 			((IDisposable)_mauiApp).Dispose();
 
 			_mauiApp = null;
-			App = null;
 			MauiContext = null;
 		}
-
-		protected IApplication App { get; private set; }
 
 		protected IMauiContext MauiContext { get; private set; }
 

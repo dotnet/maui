@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,8 +11,11 @@ namespace Microsoft.Maui.Controls
 		public static IDispatcher FindDispatcher(this BindableObject? bindableObject)
 		{
 			// try find the dispatcher in the current hierarchy
-			if (bindableObject is VisualElement visual &&
-				visual.FindMauiContext() is IMauiContext context &&
+			// Exclude Application because we don't want to jump
+			// directly to the Application IDispatcher at this point
+			if (bindableObject is not Application &&
+				bindableObject is Element element &&
+				element.FindMauiContext() is IMauiContext context &&
 				context.Services.GetService<IDispatcher>() is IDispatcher handlerDispatcher)
 				return handlerDispatcher;
 
@@ -20,8 +23,17 @@ namespace Microsoft.Maui.Controls
 			if (Dispatcher.GetForCurrentThread() is IDispatcher globalDispatcher)
 				return globalDispatcher;
 
-			// try looking on the app
-			if (bindableObject is not Application &&
+			// If BO is of type Application then check for its Dispatcher
+			if (bindableObject is Application app &&
+				app.FindMauiContext() is IMauiContext appMauiContext &&
+				appMauiContext.Services.GetService<IDispatcher>() is IDispatcher appHandlerDispatcher)
+				return appHandlerDispatcher;
+
+			// try looking on the static app
+			// We don't include Application because Application.Dispatcher will call
+			// `FindDispatcher` if it's _dispatcher property isn't initialized so this
+			// could cause a Stack Overflow Exception
+			if (bindableObject is not Application && 
 				Application.Current?.Dispatcher is IDispatcher appDispatcher)
 				return appDispatcher;
 

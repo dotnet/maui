@@ -25,9 +25,15 @@ namespace Microsoft.Maui.Controls
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
-		public Application()
+		public Application() : this(true)
 		{
-			SetCurrentApplication(this);
+		}
+
+		internal Application(bool setCurrentApplication)
+		{
+			if(setCurrentApplication)
+				SetCurrentApplication(this);
+
 			_systemResources = new Lazy<IResourceDictionary>(() =>
 			{
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
