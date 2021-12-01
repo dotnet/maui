@@ -87,5 +87,38 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.NativeView.AssertContainsColor(expectedColor);
 			});
 		}
+
+		[Theory(DisplayName = "Padding Initializes Correctly")]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(1, 1, 1, 1)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(5, 10, 15, 20)]
+		public async Task PaddingInitializesCorrectly(double left, double top, double right, double bottom)
+		{
+			var user = new Thickness(left, top, right, bottom);
+
+			var button = new ButtonStub
+			{
+				Text = "Test",
+				Padding = user
+			};
+
+			var (expected, native) = await GetValueAsync(button, handler =>
+			{
+				var native = GetNativePadding(handler);
+				var scaled = user;
+
+#if __ANDROID__
+				scaled = handler.NativeView.Context!.ToPixels(scaled);
+#endif
+
+				return (scaled, native);
+			});
+
+			Assert.Equal(expected.Left, native.Left);
+			Assert.Equal(expected.Top, native.Top);
+			Assert.Equal(expected.Right, native.Right);
+			Assert.Equal(expected.Bottom, native.Bottom);
+		}
 	}
 }
