@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Hosting
 				});
 
 			builder.AddMauiCompat();
-			builder.RemapForControls();			
+			builder.RemapForControls();
 
 			return builder;
 		}

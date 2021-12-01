@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				if (bitmap != null)
 				{
-					imageBytes = bitmap.AsImageBytes(format,quality);
+					imageBytes = bitmap.AsImageBytes(format, quality);
 					if (!bitmap.IsRecycled)
 						bitmap.Recycle();
 				}
