@@ -160,6 +160,12 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			if (Handler == null)
+			{
+				processStackChanges?.Invoke();
+				return;
+			}
+
 			try
 			{
 				processStackChanges?.Invoke();
