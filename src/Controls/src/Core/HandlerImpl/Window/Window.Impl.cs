@@ -221,6 +221,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Created?.Invoke(this, EventArgs.Empty);
 			OnCreated();
+			Application?.SendStart();
 		}
 
 		void IWindow.Activated()
