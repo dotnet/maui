@@ -160,19 +160,15 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			processStackChanges?.Invoke();
+
 			if (Handler == null)
 			{
-				// Just process the stack changes and exit.
-				// We don't want the `finally` block to run
-				// which is why we invoke the stack changes here and 
-				// then exit opposed to letting it reach the try block
-				processStackChanges?.Invoke();
 				return;
 			}
 
 			try
 			{
-				processStackChanges?.Invoke();
 				Interlocked.Increment(ref _waitingCount);
 
 				// Wait for pending navigation tasks to finish
