@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
+using Foundation;
 using ObjCRuntime;
 using UIKit;
-using Foundation;
-using System.Linq;
-using System.IO;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			if (layer.Sublayers == null)
 				return;
-			foreach(var sublayer in layer.Sublayers)
+			foreach (var sublayer in layer.Sublayers)
 			{
 				ResetLayerVisibilitiesFromSnapshot(sublayer, visibilitySnapshot);
 				if (visibilitySnapshot != null)

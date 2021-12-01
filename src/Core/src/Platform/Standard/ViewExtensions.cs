@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Platform
 		public static System.Threading.Tasks.Task<byte[]?> RenderAsPNG(this IView view)
 			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
 
-	    public static System.Threading.Tasks.Task<byte[]?> RenderAsJPEG(this IView view)
+		public static System.Threading.Tasks.Task<byte[]?> RenderAsJPEG(this IView view)
 			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
 	}
 }
