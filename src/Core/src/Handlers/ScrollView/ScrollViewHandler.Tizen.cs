@@ -105,8 +105,6 @@ namespace Microsoft.Maui.Handlers
 				var x = request.HoriztonalOffset;
 				var y = request.VerticalOffset;
 
-				var region = new Rectangle(x, y, scrollView.Width, scrollView.Height).ToEFLPixel();
-
 				var pos = scrollView.Orientation == ScrollOrientation.Vertical ? y : x;
 
 				handler.PlatformView.ScrollTo(pos.ToPixel(), !request.Instant);
