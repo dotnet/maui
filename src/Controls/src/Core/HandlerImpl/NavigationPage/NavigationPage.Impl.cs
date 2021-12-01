@@ -226,9 +226,16 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			if (Handler == null)
+			{
+				processStackChanges?.Invoke();
+				return;
+			}
+
 			try
 			{
 				processStackChanges?.Invoke();
+
 				Interlocked.Increment(ref _waitingCount);
 				// Wait for pending navigation tasks to finish
 				await SemaphoreSlim.WaitAsync();
