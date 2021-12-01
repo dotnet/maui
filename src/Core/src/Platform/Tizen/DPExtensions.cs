@@ -97,6 +97,8 @@ namespace Microsoft.Maui
 
 		public static double ConvertToScaledDP(int pixel)
 		{
+			if (pixel == int.MaxValue)
+				return double.PositiveInfinity;
 			return pixel / DeviceInfo.ScalingFactor;
 		}
 
