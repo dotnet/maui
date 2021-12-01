@@ -2,8 +2,8 @@
 using System;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Maui.Graphics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {

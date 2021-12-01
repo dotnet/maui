@@ -8,14 +8,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public class CheckBoxRenderer : ViewRenderer<CheckBox, FormsCheckBox>
 	{
-		static WBrush _tintDefaultBrush = Maui.ColorExtensions.ToNative(Colors.Blue);
+		static WBrush _tintDefaultBrush = Colors.Blue.ToNative();
 		bool _disposed = false;
 
 		protected virtual FormsCheckBox CreateNativeControl()
 		{
 			return new FormsCheckBox()
 			{
-				Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsCheckBoxStyle"] as Microsoft.UI.Xaml.Style,			
+				Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsCheckBoxStyle"] as Microsoft.UI.Xaml.Style,
 			};
 		}
 

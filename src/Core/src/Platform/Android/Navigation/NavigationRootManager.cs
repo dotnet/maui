@@ -8,7 +8,7 @@ using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class NavigationRootManager
 	{

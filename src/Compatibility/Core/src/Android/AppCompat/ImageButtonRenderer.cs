@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					if (Element.Aspect == Aspect.AspectFill && OnThisPlatform().GetIsShadowEnabled())
 						Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning("AspectFill isn't fully supported when using shadows. Image may be clipped incorrectly to Border");
-					
+
 					switch (Element.Aspect)
 					{
 						case Aspect.Fill:

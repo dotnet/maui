@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Handlers
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.SetRootView(window.Content);
 			handler.NativeView.SetContentView(rootManager.RootView);
+			if (window.VisualDiagnosticsOverlay != null && rootManager.RootView is ViewGroup group)
+				window.VisualDiagnosticsOverlay.Initialize();
 		}
 
 		public static void MapToolbar(WindowHandler handler, IWindow view)

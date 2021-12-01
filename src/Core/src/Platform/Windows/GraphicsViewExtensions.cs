@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Graphics.Win2D;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class GraphicsViewExtensions
 	{

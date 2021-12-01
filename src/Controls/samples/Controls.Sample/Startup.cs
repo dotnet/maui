@@ -119,9 +119,9 @@ namespace Maui.Controls.Sample
 					PageType.FlyoutPage => typeof(CustomFlyoutPage),
 					PageType.Blazor =>
 #if NET6_0_OR_GREATER
-								typeof(BlazorPage),
+						typeof(BlazorPage),
 #else
-								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
+						throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
 					_ => throw new Exception(),
 				});
@@ -224,16 +224,6 @@ namespace Maui.Controls.Sample
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
 						return true;
 					}
-
-#if __ANDROID__
-					Microsoft.Maui.Handlers.ButtonHandler.NativeViewFactory = (handler) => 
-					{
-						return new Google.Android.Material.Button.MaterialButton(handler.Context) 
-						{ 
-							CornerRadius = 50, SoundEffectsEnabled = true 
-						};
-					};
-#endif
 				});
 
 			return appBuilder.Build();

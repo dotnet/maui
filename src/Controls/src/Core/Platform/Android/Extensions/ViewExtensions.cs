@@ -58,22 +58,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public static bool GetClipToOutline(this AView view)
-		{
-			if (!view.IsAlive())
-				return false;
-
-			return view.ClipToOutline;
-		}
-
-		public static void SetClipToOutline(this AView view, bool value)
-		{
-			if (!view.IsAlive())
-				return;
-
-			view.ClipToOutline = value;
-		}
-
 		public static bool SetElevation(this AView view, float value)
 		{
 			if (!view.IsAlive())

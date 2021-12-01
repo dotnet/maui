@@ -118,8 +118,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(secondPage, firstPage.NavigatedFromArgs.DestinationPage);
 		}
 
-
-
 		[Test]
 		public async Task PushModalPage()
 		{
@@ -132,6 +130,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNotNull(previousPage.NavigatingFromArgs);
 			Assert.AreEqual(previousPage, lcPage.NavigatedToArgs.PreviousPage);
 			Assert.AreEqual(lcPage, previousPage.NavigatedFromArgs.DestinationPage);
+
+			Assert.AreEqual(1, previousPage.DisappearingCount);
+			Assert.AreEqual(1, lcPage.AppearingCount);
 		}
 
 		[Test]
@@ -147,6 +148,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNotNull(poppedPage.NavigatingFromArgs);
 			Assert.AreEqual(poppedPage, firstPage.NavigatedToArgs.PreviousPage);
 			Assert.AreEqual(firstPage, poppedPage.NavigatedFromArgs.DestinationPage);
+
+			Assert.AreEqual(1, poppedPage.AppearingCount);
+			Assert.AreEqual(1, poppedPage.DisappearingCount);
+			Assert.AreEqual(2, firstPage.AppearingCount);
 		}
 
 		[Test]
@@ -168,6 +173,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNotNull(secondModalPage.NavigatingFromArgs);
 			Assert.AreEqual(secondModalPage, firstModalPage.NavigatedToArgs.PreviousPage);
 			Assert.AreEqual(firstModalPage, secondModalPage.NavigatedFromArgs.DestinationPage);
+
+			Assert.AreEqual(1, secondModalPage.DisappearingCount);
+			Assert.AreEqual(1, secondModalPage.AppearingCount);
+
+			Assert.AreEqual(1, firstModalPage.DisappearingCount);
+			Assert.AreEqual(2, firstModalPage.AppearingCount);
 		}
 
 		[Test]
@@ -188,6 +199,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNotNull(firstModalPage.NavigatingFromArgs);
 			Assert.AreEqual(firstModalPage, secondModalPage.NavigatedToArgs.PreviousPage);
 			Assert.AreEqual(secondModalPage, firstModalPage.NavigatedFromArgs.DestinationPage);
+
+			Assert.AreEqual(0, secondModalPage.DisappearingCount);
+			Assert.AreEqual(1, secondModalPage.AppearingCount);
+
+			Assert.AreEqual(1, firstModalPage.DisappearingCount);
+			Assert.AreEqual(1, firstModalPage.AppearingCount);
 		}
 
 		class LCPage : ContentPage
@@ -195,13 +212,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public NavigatedFromEventArgs NavigatedFromArgs { get; private set; }
 			public NavigatingFromEventArgs NavigatingFromArgs { get; private set; }
 			public NavigatedToEventArgs NavigatedToArgs { get; private set; }
-
+			public int AppearingCount { get; private set; }
+			public int DisappearingCount { get; private set; }
 
 			public void ClearNavigationArgs()
 			{
 				NavigatedFromArgs = null;
 				NavigatingFromArgs = null;
 				NavigatedToArgs = null;
+			}
+
+			protected override void OnAppearing()
+			{
+				base.OnAppearing();
+				AppearingCount++;
+			}
+
+			protected override void OnDisappearing()
+			{
+				base.OnDisappearing();
+				DisappearingCount++;
 			}
 
 			protected override void OnNavigatedFrom(NavigatedFromEventArgs args)

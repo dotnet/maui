@@ -14,7 +14,7 @@ using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class StackNavigationManager
 	{

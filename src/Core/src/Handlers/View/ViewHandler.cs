@@ -260,11 +260,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFrame(IViewHandler handler, IView view, object? args)
 		{
 			MappingFrame(handler, view);
-#if WINDOWS
-			// Both Clip and Shadow depend on the Control size.
-			MapClip(handler, view);
-			MapShadow(handler, view);
-#endif
 		}
 	}
 }

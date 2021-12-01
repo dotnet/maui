@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
@@ -151,8 +152,9 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, result, 0);
 		}
 
+
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			$"{((View)viewHandler.NativeView).GetTag(ViewExtensions.AutomationTagId)}";
+			$"{((View)viewHandler.NativeView).GetTag(Microsoft.Maui.Platform.ViewExtensions.AutomationTagId)}";
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
 		{
@@ -284,5 +286,14 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				return Visibility.Hidden;
 		}
+
+		protected Maui.Graphics.Rectangle GetNativeViewBounds(IViewHandler viewHandler) =>
+			((View)viewHandler.NativeView).GetNativeViewBounds();
+
+		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
+			((View)viewHandler.NativeView).GetBoundingBox();
+
+		protected Matrix4x4 GetViewTransform (IViewHandler viewHandler) =>
+			((View)viewHandler.NativeView).GetViewTransform();
 	}
 }

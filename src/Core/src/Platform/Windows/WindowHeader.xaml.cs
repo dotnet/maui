@@ -14,7 +14,7 @@ using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using Microsoft.UI.Xaml.Media;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public partial class WindowHeader
 	{

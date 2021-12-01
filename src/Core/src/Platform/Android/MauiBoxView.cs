@@ -1,7 +1,7 @@
 ﻿using Android.Content;
 using Microsoft.Maui.Graphics.Native;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiBoxView : NativeGraphicsView
 	{

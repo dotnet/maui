@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

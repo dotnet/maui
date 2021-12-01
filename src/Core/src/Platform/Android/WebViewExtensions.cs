@@ -1,6 +1,6 @@
 ﻿using AWebView = Android.Webkit.WebView;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class WebViewExtensions
 	{
