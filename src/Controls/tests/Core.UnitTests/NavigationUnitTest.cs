@@ -693,10 +693,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task PushingPageBeforeSettingHandlerPropagatesAfterSettingHandler()
 		{
 			ContentPage contentPage1 = new ContentPage();
-
 			var navigationPage = new TestNavigationPage(true, setHandler: false);
+
 			await navigationPage.PushAsync(contentPage1);
 			(navigationPage as IView).Handler = new TestNavigationHandler();
+
 			var navTask = navigationPage.CurrentNavigationTask;
 			Assert.IsNotNull(navTask);
 			await navTask;
