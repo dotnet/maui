@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -33,11 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 			((IDisposable)_mauiApp).Dispose();
 
 			_mauiApp = null;
-			App = null;
 			MauiContext = null;
 		}
-
-		protected IApplication App { get; private set; }
 
 		protected IMauiContext MauiContext { get; private set; }
 

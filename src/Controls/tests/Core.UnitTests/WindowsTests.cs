@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -50,6 +51,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(wind1, wind2);
 		}
 
+		[Test]
+		public void AddAndRemoveVisualDiagnosticAdorner()
+		{
+			var app = new Application();
+			var contentPage = new ContentPage();
+			var wind1 = app.LoadPage(contentPage);
+			ValidateSetup(app);
+			var visualElement = contentPage as IVisualTreeElement;
+			Assert.True(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
+			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count > 0);
+			// Can't add existing IVisualTreeElement twice.
+			Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
+
+			var adorner = wind1.VisualDiagnosticsOverlay.WindowElements.First() as IAdorner;
+
+			// Can't add existing Adorner twice.
+			Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(adorner, false));
+
+			Assert.True(wind1.VisualDiagnosticsOverlay.RemoveAdorner(adorner));
+
+			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count == 0);
+		}
 
 		void ValidateSetup(Application app, Page page = null)
 		{

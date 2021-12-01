@@ -1,12 +1,16 @@
+using System.Numerics;
+using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
+using GL = Android.Opengl;
 
 namespace Microsoft.Maui.Platform
 {
@@ -215,6 +219,118 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			((ViewGroup)view.Parent).RemoveView(view);
+		}
+
+		public static Task<byte[]?> RenderAsPNG(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return Task.FromResult<byte[]?>(null);
+
+			return nativeView.RenderAsPNG();
+		}
+
+		public static Task<byte[]?> RenderAsJPEG(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return Task.FromResult<byte[]?>(null);
+
+			return nativeView.RenderAsJPEG();
+		}
+
+		public static Task<byte[]?> RenderAsPNG(this AView view)
+			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Png));
+
+		public static Task<byte[]?> RenderAsJPEG(this AView view)
+			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
+
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView?.Context == null)
+			{
+				return new Rectangle();
+			}
+
+			return nativeView.GetNativeViewBounds();
+		}
+
+		internal static Rectangle GetNativeViewBounds(this View nativeView)
+		{
+			if (nativeView?.Context == null)
+				return new Rectangle();
+
+			var location = new int[2];
+			nativeView.GetLocationOnScreen(location);
+			return new Rectangle(
+				location[0],
+				location[1],
+				(int)nativeView.Context.ToPixels(nativeView.Width),
+				(int)nativeView.Context.ToPixels(nativeView.Height));
+		}
+
+		internal static Matrix4x4 GetViewTransform(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return new Matrix4x4();
+			return nativeView.GetViewTransform();
+		}
+
+		internal static Matrix4x4 GetViewTransform(this View view)
+		{
+			if (view?.Matrix == null || view.Matrix.IsIdentity)
+				return new Matrix4x4();
+
+			var m = new float[16];
+			var v = new float[16];
+			var r = new float[16];
+
+			GL.Matrix.SetIdentityM(r, 0);
+			GL.Matrix.SetIdentityM(v, 0);
+			GL.Matrix.SetIdentityM(m, 0);
+
+			GL.Matrix.TranslateM(v, 0, view.Left, view.Top, 0);
+			GL.Matrix.TranslateM(v, 0, view.PivotX, view.PivotY, 0);
+			GL.Matrix.TranslateM(v, 0, view.TranslationX, view.TranslationY, 0);
+			GL.Matrix.ScaleM(v, 0, view.ScaleX, view.ScaleY, 1);
+			GL.Matrix.RotateM(v, 0, view.RotationX, 1, 0, 0);
+			GL.Matrix.RotateM(v, 0, view.RotationY, 0, 1, 0);
+			GL.Matrix.RotateM(m, 0, view.Rotation, 0, 0, 1);
+
+			GL.Matrix.MultiplyMM(r, 0, v, 0, m, 0);
+			GL.Matrix.TranslateM(m, 0, r, 0, -view.PivotX, -view.PivotY, 0);
+			return new Matrix4x4
+			{
+				M11 = m[0],
+				M12 = m[1],
+				M13 = m[2],
+				M14 = m[3],
+				M21 = m[4],
+				M22 = m[5],
+				M23 = m[6],
+				M24 = m[7],
+				M31 = m[8],
+				M32 = m[9],
+				M33 = m[10],
+				M34 = m[11],
+				Translation = new Vector3(m[12], m[13], m[14]),
+				M44 = m[15]
+			};
+		}
+
+		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+			=> view.GetNative(true).GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox(this View? nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			var rect = new Android.Graphics.Rect();
+			nativeView.GetGlobalVisibleRect(rect);
+			return new Rectangle(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
 		}
 	}
 }

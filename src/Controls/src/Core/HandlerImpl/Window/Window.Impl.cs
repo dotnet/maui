@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -21,11 +22,16 @@ namespace Microsoft.Maui.Controls
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanged: OnPageChanged);
 
+		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 
 		Toolbar IToolbarElement.Toolbar => _toolBar;
 		Toolbar _toolBar;
+
+		public IReadOnlyCollection<IWindowOverlay> Overlays => _overlays.ToList().AsReadOnly();
+
+		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
 		public Window()
 		{
@@ -35,6 +41,7 @@ namespace Microsoft.Maui.Controls
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
 			InternalChildren.CollectionChanged += OnCollectionChanged;
+			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
 		}
 
 		public Window(Page page)
@@ -83,6 +90,38 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == nameof(Page))
 				Handler?.UpdateValue(nameof(IWindow.Content));
+		}
+
+		/// <inheritdoc/>
+		public bool AddOverlay(IWindowOverlay overlay)
+		{
+			if (overlay is IVisualDiagnosticsOverlay)
+				return false;
+
+			// Add the overlay. If it's added, 
+			// Initalize the native layer if it wasn't already,
+			// and call invalidate so it will be drawn.
+			var result = _overlays.Add(overlay);
+			if (result)
+			{
+				overlay.Initialize();
+				overlay.Invalidate();
+			}
+
+			return result;
+		}
+
+		/// <inheritdoc/>
+		public bool RemoveOverlay(IWindowOverlay overlay)
+		{
+			if (overlay is IVisualDiagnosticsOverlay)
+				return false;
+
+			var result = _overlays.Remove(overlay);
+			if (result)
+				overlay.Deinitialize();
+
+			return result;
 		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();

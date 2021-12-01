@@ -42,6 +42,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen.UnitTests")]
 [assembly: InternalsVisibleTo("WinUI.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 
 
 [assembly: Preserve]

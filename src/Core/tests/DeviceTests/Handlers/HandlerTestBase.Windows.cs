@@ -120,6 +120,16 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.RotationY % 360, rY % 360);
 		}
 
+
+		protected Maui.Graphics.Rectangle GetNativeViewBounds(IViewHandler viewHandler) =>
+			((FrameworkElement)viewHandler.NativeView).GetNativeViewBounds();
+
+		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
+			((FrameworkElement)viewHandler.NativeView).GetViewTransform();
+
+		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
+			((FrameworkElement)viewHandler.NativeView).GetBoundingBox();
+
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			AutomationProperties.GetAutomationId((FrameworkElement)viewHandler.NativeView);
 

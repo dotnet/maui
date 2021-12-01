@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			var Control = handler.NativeView as UIView;
 
 			var _defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden || Control is UIControl;
-			Control.AccessibilityElementsHidden = (bool) ((bool?)view.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
+			Control.AccessibilityElementsHidden = (bool)((bool?)view.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
 		}
 	}
 }
