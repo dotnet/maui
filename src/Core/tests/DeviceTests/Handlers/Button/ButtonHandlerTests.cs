@@ -11,6 +11,8 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Button)]
 	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler, ButtonStub>
 	{
+		const int Precision = 4;
+
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{
@@ -115,10 +117,10 @@ namespace Microsoft.Maui.DeviceTests
 				return (scaled, native);
 			});
 
-			Assert.Equal(expected.Left, native.Left);
-			Assert.Equal(expected.Top, native.Top);
-			Assert.Equal(expected.Right, native.Right);
-			Assert.Equal(expected.Bottom, native.Bottom);
+			Assert.Equal(expected.Left, native.Left, Precision);
+			Assert.Equal(expected.Top, native.Top, Precision);
+			Assert.Equal(expected.Right, native.Right, Precision);
+			Assert.Equal(expected.Bottom, native.Bottom, Precision);
 		}
 	}
 }
