@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Threading.Tasks;
 using CoreAnimation;
+using CoreGraphics;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -317,6 +321,92 @@ namespace Microsoft.Maui.Platform
 			{
 				view.Subviews[n].RemoveFromSuperview();
 			}
+		}
+
+		public static Task<byte[]?> RenderAsPNG(this IView view) => view != null ? view.RenderAsImage(true) : Task.FromResult<byte[]?>(null);
+
+		public static Task<byte[]?> RenderAsJPEG(this IView view) => view != null ? view.RenderAsImage(false) : Task.FromResult<byte[]?>(null);
+
+		public static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, true) : Task.FromResult<byte[]?>(null);
+
+		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, false) : Task.FromResult<byte[]?>(null);
+
+		static Task<byte[]?> RenderAsImage(this UIView nativeView, bool skipChildren, bool asPng)
+		{
+			byte[]? result;
+			if (asPng)
+				result = nativeView?.Window?.RenderAsPng(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+			else
+				result = nativeView?.Window?.RenderAsJpeg(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+			return Task.FromResult<byte[]?>(result);
+		}
+
+		static Task<byte[]?> RenderAsImage(this IView view, bool asPng)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return Task.FromResult<byte[]?>(null);
+			var skipChildren = !(view is IView && !(view is ILayout));
+			return nativeView.RenderAsImage(skipChildren, asPng);
+		}
+
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+			{
+				return new Rectangle();
+			}
+
+			return nativeView.GetNativeViewBounds();
+		}
+
+		internal static Rectangle GetNativeViewBounds(this UIView nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			var superview = nativeView;
+			while (superview.Superview is not null)
+			{
+				superview = superview.Superview;
+			}
+
+			var convertPoint = nativeView.ConvertRectToView(nativeView.Bounds, superview);
+
+			var X = convertPoint.X;
+			var Y = convertPoint.Y;
+			var Width = convertPoint.Width;
+			var Height = convertPoint.Height;
+
+			return new Rectangle(X, Y, Width, Height);
+		}
+
+
+		internal static Matrix4x4 GetViewTransform(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return new Matrix4x4();
+			return nativeView.Layer.GetViewTransform();
+		}
+
+		internal static Matrix4x4 GetViewTransform(this UIView view) 
+			=> view.Layer.GetViewTransform();
+
+		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+			=> view.GetNative(true).GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox (this UIView? nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+			var nvb = nativeView.GetNativeViewBounds();
+			var transform = nativeView.GetViewTransform();
+			var radians = transform.ExtractAngleInRadians();
+			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
+			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
+			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
 		}
 	}
 }

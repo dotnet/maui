@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
@@ -73,6 +77,74 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			var backButtonBehavior = Shell.GetBackButtonBehavior(this) ?? new BackButtonBehavior();
 			backButtonBehavior.IsVisible = !backButtonBehavior.IsVisible;
 			Shell.SetBackButtonBehavior(this, backButtonBehavior);
+		}
+
+		void OnToggleSearchHandler(object sender, EventArgs e)
+		{
+			var searchHandler = Shell.GetSearchHandler(this);
+			if (searchHandler != null)
+				RemoveSearchHandler();
+			else
+				AddSearchHandler("text here");
+		}
+
+		protected void AddSearchHandler(string placeholder)
+		{
+			var searchHandler = new CustomSearchHandler();
+
+			searchHandler.ShowsResults = true;
+
+			searchHandler.ClearIconName = "Clear";
+			searchHandler.ClearIconHelpText = "Clears the search field text";
+
+			searchHandler.ClearPlaceholderName = "Voice Search";
+			searchHandler.ClearPlaceholderHelpText = "Start voice search";
+
+			searchHandler.QueryIconName = "Search";
+			searchHandler.QueryIconHelpText = "Press to search app";
+
+			searchHandler.Placeholder = placeholder;
+
+			searchHandler.ClearPlaceholderEnabled = true;
+			searchHandler.ClearPlaceholderIcon = "mic.png";
+
+			Shell.SetSearchHandler(this, searchHandler);
+		}
+
+		protected void RemoveSearchHandler()
+		{
+			ClearValue(Shell.SearchHandlerProperty);
+		}
+	}
+
+	internal class CustomSearchHandler : SearchHandler
+	{
+		protected async override void OnQueryChanged(string oldValue, string newValue)
+		{
+			base.OnQueryChanged(oldValue, newValue);
+
+			if (string.IsNullOrEmpty(newValue))
+			{
+				ItemsSource = null;
+			}
+			else
+			{
+				List<string> results = new List<string>();
+				results.Add(newValue + "initial");
+
+				ItemsSource = results;
+
+				await Task.Delay(2000);
+
+				results = new List<string>();
+
+				for (int i = 0; i < 10; i++)
+				{
+					results.Add(newValue + i);
+				}
+
+				ItemsSource = results;
+			}
 		}
 	}
 }

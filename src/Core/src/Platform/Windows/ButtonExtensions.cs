@@ -3,7 +3,6 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
@@ -21,6 +20,8 @@ namespace Microsoft.Maui.Platform
 				nativeButton.Resources.Remove("ButtonBorderBrushPointerOver");
 				nativeButton.Resources.Remove("ButtonBorderBrushPressed");
 				nativeButton.Resources.Remove("ButtonBorderBrushDisabled");
+
+				nativeButton.ClearValue(Button.BorderBrushProperty);
 			}
 			else
 			{
@@ -28,6 +29,8 @@ namespace Microsoft.Maui.Platform
 				nativeButton.Resources["ButtonBorderBrushPointerOver"] = brush;
 				nativeButton.Resources["ButtonBorderBrushPressed"] = brush;
 				nativeButton.Resources["ButtonBorderBrushDisabled"] = brush;
+
+				nativeButton.BorderBrush = brush;
 			}
 		}
 
@@ -70,12 +73,15 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this Button nativeButton, IButton button)
 		{
 			var brush = button.Background?.ToNative();
+
 			if (brush is null)
 			{
 				nativeButton.Resources.Remove("ButtonBackground");
 				nativeButton.Resources.Remove("ButtonBackgroundPointerOver");
 				nativeButton.Resources.Remove("ButtonBackgroundPressed");
 				nativeButton.Resources.Remove("ButtonBackgroundDisabled");
+
+				nativeButton.ClearValue(Button.BackgroundProperty);
 			}
 			else
 			{
@@ -83,25 +89,36 @@ namespace Microsoft.Maui.Platform
 				nativeButton.Resources["ButtonBackgroundPointerOver"] = brush;
 				nativeButton.Resources["ButtonBackgroundPressed"] = brush;
 				nativeButton.Resources["ButtonBackgroundDisabled"] = brush;
+
+				nativeButton.Background = brush;
 			}
 		}
 
 		public static void UpdateTextColor(this Button nativeButton, ITextStyle button)
 		{
 			var brush = button.TextColor?.ToNative();
+
 			if (brush is null)
 			{
+				// Windows.Foundation.UniversalApiContract < 5
 				nativeButton.Resources.Remove("ButtonForeground");
 				nativeButton.Resources.Remove("ButtonForegroundPointerOver");
 				nativeButton.Resources.Remove("ButtonForegroundPressed");
 				nativeButton.Resources.Remove("ButtonForegroundDisabled");
+
+				// Windows.Foundation.UniversalApiContract >= 5
+				nativeButton.ClearValue(Button.ForegroundProperty);
 			}
 			else
 			{
+				// Windows.Foundation.UniversalApiContract < 5
 				nativeButton.Resources["ButtonForeground"] = brush;
 				nativeButton.Resources["ButtonForegroundPointerOver"] = brush;
 				nativeButton.Resources["ButtonForegroundPressed"] = brush;
 				nativeButton.Resources["ButtonForegroundDisabled"] = brush;
+
+				// Windows.Foundation.UniversalApiContract >= 5
+				nativeButton.Foreground = brush;
 			}
 		}
 
