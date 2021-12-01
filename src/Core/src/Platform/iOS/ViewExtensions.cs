@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading.Tasks;
 using CoreAnimation;
+using CoreGraphics;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -346,6 +348,65 @@ namespace Microsoft.Maui.Platform
 				return Task.FromResult<byte[]?>(null);
 			var skipChildren = !(view is IView && !(view is ILayout));
 			return nativeView.RenderAsImage(skipChildren, asPng);
+		}
+
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+			{
+				return new Rectangle();
+			}
+
+			return nativeView.GetNativeViewBounds();
+		}
+
+		internal static Rectangle GetNativeViewBounds(this UIView nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			var superview = nativeView;
+			while (superview.Superview is not null)
+			{
+				superview = superview.Superview;
+			}
+
+			var convertPoint = nativeView.ConvertRectToView(nativeView.Bounds, superview);
+
+			var X = convertPoint.X;
+			var Y = convertPoint.Y;
+			var Width = convertPoint.Width;
+			var Height = convertPoint.Height;
+
+			return new Rectangle(X, Y, Width, Height);
+		}
+
+
+		internal static Matrix4x4 GetViewTransform(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return new Matrix4x4();
+			return nativeView.Layer.GetViewTransform();
+		}
+
+		internal static Matrix4x4 GetViewTransform(this UIView view) 
+			=> view.Layer.GetViewTransform();
+
+		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+			=> view.GetNative(true).GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox (this UIView? nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+			var nvb = nativeView.GetNativeViewBounds();
+			var transform = nativeView.GetViewTransform();
+			var radians = transform.ExtractAngleInRadians();
+			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
+			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
+			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
 		}
 	}
 }

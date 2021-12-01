@@ -1,5 +1,6 @@
 using System;
 using Android.App;
+using Android.Views;
 using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui.Handlers
@@ -16,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.SetContentView(nativeContent);
 			handler.NativeView.SetContentView(rootManager.RootView);
+			if (window.VisualDiagnosticsOverlay != null && rootManager.RootView is ViewGroup group)
+				window.VisualDiagnosticsOverlay.Initialize();
 		}
 	}
 }
