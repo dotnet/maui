@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Handlers
 		// So, this is calculated:
 		//   - Vertical: 6dp*2 (inset) + 8.5dp*2 (padding) + 2.5dp*2 (text magic) + 14dp (text size) = 48dp
 		//   - Horizontal: 16dp (from the styles)
-		static Thickness DefaultPadding = new Thickness(16, 8.5);
+		public readonly static Thickness DefaultPadding = new Thickness(16, 8.5);
+
 		static ColorStateList TransparentColorStateList = Colors.Transparent.ToDefaultColorStateList();
 
 		// not static and each button has a new instance

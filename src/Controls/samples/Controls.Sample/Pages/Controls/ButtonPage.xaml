@@ -87,6 +87,22 @@
                 <Button WidthRequest="200"  HorizontalOptions="Fill" x:Name="decreaseSpacing" Text="Decrease Spacing" Clicked="OnDecreaseSpacing" TextColor="White" Background="Black" ></Button>
                 <Button WidthRequest="200" HorizontalOptions="Fill" x:Name="increaseSpacing" Text="Increase Spacing" Clicked="OnIncreasingSpacing" TextColor="White" Background="Black" ></Button>
                 <Label
+                    Text="Padding = NaN"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Button"
+                    HorizontalOptions="Start"
+                    Background="LightGrey"
+                    Padding="NaN"/>
+                <Label
+                    Text="Padding = 0"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Button"
+                    HorizontalOptions="Start"
+                    Background="LightGrey"
+                    Padding="0"/>
+                <Label
                     Text="Padding"
                     Style="{StaticResource Headline}"/>
                 <Entry
@@ -96,6 +112,7 @@
                 <Button
                     Text="Button"
                     HorizontalOptions="Start"
+                    Background="LightGrey"
                     Padding="{Binding Text, Source={Reference paddingEntry}, Converter={StaticResource ThicknessConverter}}"/>
             </VerticalStackLayout>
         </ScrollView>

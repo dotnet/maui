@@ -51,11 +51,13 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)(button.Padding.Top + spacingVertical / 2),
-				(float)(button.Padding.Left + spacingHorizontal / 2),
-				(float)(button.Padding.Bottom + spacingVertical / 2),
-				(float)(button.Padding.Right + spacingHorizontal / 2));
+			var padding = button.Padding;
+			if (padding.IsNaN)
+				padding = ButtonHandler.DefaultPadding;
+
+			padding += new Thickness(spacingHorizontal / 2, spacingVertical / 2);
+
+			nativeButton.UpdatePadding(padding);
 		}
 
 		public static void UpdateContentLayout(this UIButton nativeButton, Button button)
