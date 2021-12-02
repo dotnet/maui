@@ -12,7 +12,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using System.ComponentModel;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	// This is needed by WinUI because of 
 	// https://github.com/microsoft/microsoft-ui-xaml/issues/2698#issuecomment-648751713
@@ -87,6 +87,10 @@ namespace Microsoft.Maui
 			if (Header is WindowHeader windowHeader)
 				windowHeader.CommandBar.Background = brush;
 
+			// TODO MAUI: Temporary fix for P11 to eliminate the misalignment between the backbutton 
+			// and the command bar
+
+			_windowHeader.Translation = new System.Numerics.Vector3(0, -1, 0);
 			// This is code that I'm excited I got to work but it'd be nice if it didn't exist
 			// The back button on the NavigationView is part of a different view hierarchy than the Header CommandBar
 			// When you click the "more" button on the command bar it expands vertically using a clip geometry

@@ -68,7 +68,7 @@ steps:
         if (-not $(where.exe pwsh)) {
           $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
           $output = "$env:TEMP\PowerShell.msi"
-          Remove-Item $output
+          Remove-Item -Force $output -ErrorAction Ignore
           Invoke-WebRequest -Uri $url -OutFile $output
           msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
         }
@@ -91,3 +91,17 @@ steps:
     condition: eq(variables['provisioningCake'], 'true')
   - pwsh: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
+
+
+  # Prepare for Reunion packages
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - task: NuGetAuthenticate@0
+      displayName: 'Authenticate Reunion NuGet sources'
+      inputs:
+        nuGetServiceConnections: Project.Reunion.nuget.internal
+    - pwsh: |
+        $path = '$(Build.SourcesDirectory)\NuGet.config'
+        [xml]$xml = Get-Content $path
+        $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+        $xml.Save($path)
+      displayName: 'Add "wasdk-internal" to NuGet.config'

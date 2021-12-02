@@ -3,7 +3,7 @@ using Android.Views;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public interface IStepperHandler
 	{

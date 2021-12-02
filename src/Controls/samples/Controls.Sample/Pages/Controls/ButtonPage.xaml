@@ -31,6 +31,39 @@
                     TextColor="White"
                     Text="Button"/>
                 <Label
+                    Text="BorderColor"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    BorderColor="Red"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    Text="BorderColor"/>
+                <Label
+                    Text="BorderWidth"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    BorderColor="Red"
+                    BorderWidth="4"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    Text="BorderWidth"/>
+                <Label
+                    Text="CornerRadius = 0"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    CornerRadius="0"
+                    BackgroundColor="Purple"
+                    TextColor="White"
+                    Text="CornerRadius"/>
+                <Label
+                    Text="CornerRadius = 10"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    CornerRadius="10"
+                    BackgroundColor="Purple"
+                    TextColor="White"
+                    Text="CornerRadius"/>
+                <Label
                     Text="Character Spacing"
                     Style="{StaticResource Headline}"/>
                 <Button

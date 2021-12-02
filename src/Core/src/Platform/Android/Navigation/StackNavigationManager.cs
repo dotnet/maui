@@ -12,7 +12,7 @@ using AndroidX.Navigation.UI;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class StackNavigationManager
 	{
@@ -438,7 +438,7 @@ namespace Microsoft.Maui
 			{
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
-				
+
 				base.OnFragmentViewDestroyed(fm, f);
 			}
 			#endregion

@@ -14,6 +14,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -215,7 +216,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			catch (Exception exc)
 			{
-				Internals.Log.Warning(nameof(Shell), $"Failed to Navigate Back: {exc}");
+				Application.Current?.FindMauiContext()?.CreateLogger<Shell>()?.LogWarning(exc, "Failed to Navigate Back");
 			}
 		}
 

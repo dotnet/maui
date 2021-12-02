@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -167,7 +168,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 			catch (Exception exc)
 			{
-				Internals.Log.Warning(nameof(Shape), $"Exception while getting shape Bounds: {exc}");
+				Application.Current?.FindMauiContext()?.CreateLogger<Shape>()?.LogWarning(exc,"Exception while getting shape Bounds");
 			}
 
 			var transform = Matrix3x2.Identity;

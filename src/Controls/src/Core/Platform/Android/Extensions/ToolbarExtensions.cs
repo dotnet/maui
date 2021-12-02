@@ -13,6 +13,7 @@ using Android.Views;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = global::Android.Views.View;
@@ -138,7 +139,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var navIconColor = toolbar.IconColor;
 			if (navIconColor != null && nativeToolbar.NavigationIcon != null)
-				DrawableExtensions.SetColorFilter(nativeToolbar.NavigationIcon, navIconColor, FilterMode.SrcAtop);
+				nativeToolbar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
 		}
 
 		public static void UpdateTitle(this AToolbar nativeToolbar, Toolbar toolbar)

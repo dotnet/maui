@@ -553,6 +553,40 @@ namespace Microsoft.Maui.Controls.Platform
 			return true;
 		}
 
+		// This logic should all be replaced once we implement the "InputTransparent" property
+		// https://github.com/dotnet/maui/issues/1190		
+		bool? _previousUserInteractionEnabled;
+		void CalculateUserInteractionEnabled()
+		{
+			if (ElementGestureRecognizers == null || _nativeView == null || _handler?.VirtualView == null)
+				return;
+
+			bool hasGestureRecognizers = ElementGestureRecognizers.Count > 0;
+
+			// If no gestures have ever been added then don't do anything
+			if (!hasGestureRecognizers && _previousUserInteractionEnabled == null)
+				return;
+
+			_previousUserInteractionEnabled ??= _nativeView.UserInteractionEnabled;
+
+			if (hasGestureRecognizers)
+			{
+				_nativeView.UserInteractionEnabled = true;
+			}
+			else
+			{
+				_nativeView.UserInteractionEnabled = _previousUserInteractionEnabled.Value;
+
+				// These are the known places where UserInteractionEnabled is modified inside Maui.Core
+				// Once we implement "InputTransparent" all of this should just get managed the "InputTransparent" mapper property
+				if (_handler.VirtualView is ITextInput)
+					_handler.UpdateValue(nameof(ITextInput.IsReadOnly));
+
+				_handler.UpdateValue(nameof(IView.IsEnabled));
+				_previousUserInteractionEnabled = null;
+			}
+		}
+
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
@@ -565,6 +599,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_shouldReceiveTouch = ShouldReceiveTouch;
 			}
 
+			CalculateUserInteractionEnabled();
 			UIDragInteraction? uIDragInteraction = null;
 			UIDropInteraction? uIDropInteraction = null;
 
@@ -602,6 +637,7 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 
 				var nativeRecognizer = GetNativeRecognizer(recognizer);
+				
 				if (nativeRecognizer != null && _nativeView != null)
 				{
 #if __MOBILE__

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if(this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), true) is IToolbarElement te)
+			if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), true) is IToolbarElement te)
 			{
 				te.Toolbar.ApplyNavigationPage(this);
 			}
@@ -154,10 +155,22 @@ namespace Microsoft.Maui.Controls
 			Action firePostNavigatingEvents,
 			Action fireNavigatedEvents)
 		{
+			if (!_setForMaui || this.IsShimmed())
+			{
+				return;
+			}
+
+			processStackChanges?.Invoke();
+
+			if (Handler == null)
+			{
+				return;
+			}
+
 			try
 			{
-				processStackChanges?.Invoke();
 				Interlocked.Increment(ref _waitingCount);
+
 				// Wait for pending navigation tasks to finish
 				await SemaphoreSlim.WaitAsync();
 
@@ -283,7 +296,7 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 						Owner.RemoveFromInnerChildren(currentPage);
-						Owner.CurrentPage = currentPage;
+						Owner.CurrentPage = newCurrentPage;
 					},
 					() =>
 					{
@@ -370,7 +383,7 @@ namespace Microsoft.Maui.Controls
 
 				if (page == Owner.CurrentPage)
 				{
-					Log.Warning("NavigationPage", "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+					Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 					PopAsync();
 					return;
 				}

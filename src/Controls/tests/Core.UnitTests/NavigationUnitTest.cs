@@ -12,6 +12,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		[TestCase(false)]
 		[TestCase(true)]
+		public async Task HandlerUpdatesDontFireForLegacy(bool withPage)
+		{
+			TestNavigationPage nav =
+				new TestNavigationPage(false, (withPage) ? new ContentPage() : null);
+
+			var handler = new TestNavigationHandler();
+			(nav as IView).Handler = handler;
+
+
+			Assert.IsNull(nav.CurrentNavigationTask);
+			Assert.IsNull(handler.CurrentNavigationRequest);
+		}
+
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task HandlerUpdatesFireWithStartingPage(bool withPage)
+		{
+			TestNavigationPage nav =
+				new TestNavigationPage(true, (withPage) ? new ContentPage() : null);
+
+			var handler = new TestNavigationHandler();
+			(nav as IView).Handler = handler;
+
+			if (!withPage)
+			{
+				Assert.IsNull(nav.CurrentNavigationTask);
+			}
+			else
+			{
+				Assert.IsNotNull(nav.CurrentNavigationTask);
+			}
+		}
+
+		[TestCase(false)]
+		[TestCase(true)]
 		public async Task TestNavigationImplPush(bool useMaui)
 		{
 			NavigationPage nav = new TestNavigationPage(useMaui);
@@ -591,6 +626,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 		}
 
+		[Test]
+		public async Task CurrentPageUpdatesOnPopBeforeAsyncCompletes()
+		{
+			var root = new ContentPage { Title = "Root" };
+			var navPage = new TestNavigationPage(true, root);
+			await navPage.PushAsync(new ContentPage());
+			var popped = navPage.PopAsync();
+			Assert.AreEqual(navPage.CurrentPage, root);
+			await popped;
+			Assert.AreEqual(navPage.CurrentPage, root);
+		}
+
 		[TestCase(false, Description = "CurrentPage should not be set to null when you attempt to pop the last page")]
 		[TestCase(true, Description = "CurrentPage should not be set to null when you attempt to pop the last page")]
 		[Property("Bugzilla", 28335)]
@@ -639,6 +686,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(contentPage1, navigationPage.Navigation.NavigationStack[0]);
 			Assert.AreEqual(contentPage2, navigationPage.Navigation.NavigationStack[1]);
 			Assert.AreEqual(contentPage3, navigationPage.Navigation.NavigationStack[2]);
+			navigationPage.ValidateNavigationCompleted();
+		}
+
+		[Test]
+		public async Task PushingPageBeforeSettingHandlerPropagatesAfterSettingHandler()
+		{
+			ContentPage contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, setHandler: false);
+
+			await navigationPage.PushAsync(contentPage1);
+			(navigationPage as IView).Handler = new TestNavigationHandler();
+
+			var navTask = navigationPage.CurrentNavigationTask;
+			Assert.IsNotNull(navTask);
+			await navTask;
 			navigationPage.ValidateNavigationCompleted();
 		}
 	}

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 #endif
 		};
 
-		public static void RemapForControls()
+		internal static void RemapForControls()
 		{
 			WindowHandler.WindowMapper = ControlsLabelMapper;
 		}

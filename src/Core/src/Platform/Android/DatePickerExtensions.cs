@@ -2,16 +2,10 @@
 using Android.App;
 using Android.Content.Res;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class DatePickerExtensions
 	{
-		static readonly int[][] ColorStates =
-		{
-			new[] { Android.Resource.Attribute.StateEnabled },
-			new[] { -Android.Resource.Attribute.StateEnabled }
-		};
-
 		public static void UpdateFormat(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
 		{
 			nativeDatePicker.SetText(datePicker);
@@ -39,12 +33,8 @@ namespace Microsoft.Maui
 			else
 			{
 				var androidColor = textColor.ToNative();
-
-				if (!nativeDatePicker.TextColors.IsOneColor(ColorStates, androidColor))
-				{
-					var acolor = androidColor.ToArgb();
-					nativeDatePicker.SetTextColor(new ColorStateList(ColorStates, new[] { acolor, acolor }));
-				}
+				if (!nativeDatePicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
+					nativeDatePicker.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
 		}
 

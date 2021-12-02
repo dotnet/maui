@@ -41,7 +41,6 @@ namespace Microsoft.Maui.Controls.Platform
 		public Task<Page> PopModalAsync(bool animated)
 		{
 			Page modal = _navModel.PopModal();
-			((IPageController)modal).SendDisappearing();
 			var source = new TaskCompletionSource<Page>();
 
 			var modalHandler = modal.Handler as INativeViewHandler;
@@ -52,14 +51,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 				for (int i = 0; i <= _rootDecorView.ChildCount; i++)
 				{
-					if(_rootDecorView.GetChildAt(i) is ModalContainer mc &&
+					if (_rootDecorView.GetChildAt(i) is ModalContainer mc &&
 						mc.Modal == modal)
 					{
 						modalContainer = mc;
 					}
 				}
 
-				_= modalContainer ?? throw new InvalidOperationException("Parent is not Modal Container");
+				_ = modalContainer ?? throw new InvalidOperationException("Parent is not Modal Container");
 
 				if (animated)
 				{
@@ -71,7 +70,6 @@ namespace Microsoft.Maui.Controls.Platform
 							{
 								modalContainer.Destroy();
 								source.TrySetResult(modal);
-								CurrentPageController?.SendAppearing();
 								modalContainer = null;
 							}
 						});
@@ -80,7 +78,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					modalContainer.Destroy();
 					source.TrySetResult(modal);
-					CurrentPageController?.SendAppearing();
 				}
 			}
 
@@ -102,7 +99,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public async Task PushModalAsync(Page modal, bool animated)
 		{
-			CurrentPageController?.SendDisappearing();
 			UpdateAccessibilityImportance(CurrentPage, ImportantForAccessibility.NoHideDescendants, false);
 
 			if (_rootDecorView.ChildCount > 0 && _rootDecorView.GetChildAt(0) is AView view)
@@ -124,10 +120,6 @@ namespace Microsoft.Maui.Controls.Platform
 			await presentModal;
 
 			UpdateAccessibilityImportance(modal, ImportantForAccessibility.Auto, true);
-
-			// Verify that the modal is still on the stack
-			if (_navModel.CurrentPage == modal)
-				((IPageController)modal).SendAppearing();
 		}
 
 		Task PresentModal(Page modal, bool animated)

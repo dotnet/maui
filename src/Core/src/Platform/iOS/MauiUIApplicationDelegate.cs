@@ -12,6 +12,7 @@ namespace Microsoft.Maui
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
+		internal const string GetConfigurationSelectorName = "application:configurationForConnectingSceneSession:options:";
 
 		IMauiContext _applicationContext = null!;
 
@@ -43,19 +44,22 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
-			// If < iOS 13, or we're not on mac/ipad, or the Info.plist does not have a scene manifest entry
-			// we need to assume no multi window, and no UISceneDelegate
-			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0)
-				|| (UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac
-					&& UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Pad)
-				|| !NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString("UIApplicationSceneManifest")))
-			{
+			// if there is no scene delegate or support for scene delegates, then we set up the window here
+			if (!this.HasSceneManifest())
 				this.CreateNativeWindow(Application, application, launchOptions);
-			}
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 
 			return true;
+		}
+
+		public override bool RespondsToSelector(Selector? sel)
+		{
+			// if the app is not a multi-window app, then we cannot override the GetConfiguration method
+			if (sel?.Name == GetConfigurationSelectorName && !this.HasSceneManifest())
+				return false;
+
+			return base.RespondsToSelector(sel);
 		}
 
 		public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)

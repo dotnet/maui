@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -12,23 +10,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public abstract class BindingBaseUnitTests : BaseTestFixture
 	{
-		internal class Logger : LogListener
-		{
-			public IReadOnlyList<string> Messages
-			{
-				get { return messages; }
-			}
-
-			public override void Warning(string category, string message)
-			{
-				messages.Add("[" + category + "] " + message);
-			}
-
-			readonly List<string> messages = new List<string>();
-		}
-
-		internal Logger log;
-
 		protected abstract BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null);
 
 		internal class ComplexMockViewModel : MockViewModel
@@ -84,6 +65,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			string[] values = new string[5];
 			ComplexMockViewModel model;
+		}
+
+
+		[SetUp]
+		public override void Setup()
+		{
+			base.Setup();
+			ApplicationExtensions.CreateAndSetMockApplication();
+		}
+
+
+		[TearDown]
+		public override void TearDown()
+		{
+			base.TearDown();
+			Application.ClearCurrent();
 		}
 
 		[Test]
@@ -244,8 +241,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"BindingContext property changed");
 			Assert.AreEqual(value, bindable.GetValue(property),
 				"Target property did not change");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0), "An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[Test, Category("[Binding] Set Value")]
@@ -283,8 +280,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"Target property changed");
 			Assert.AreEqual(value, viewmodel.Text,
 				"BindingContext property did not change");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[Test, Category("[Binding] Set Value")]
@@ -325,8 +323,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"BindingContext property changed");
 			Assert.AreEqual(value, bindable.GetValue(property),
 				"Target property did not change");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[Test, Category("[Binding] Update Value")]
@@ -359,8 +358,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"Bindable did not update on binding context property change");
 			Assert.AreEqual(newvalue, viewmodel.Text,
 				"Source property changed when it shouldn't");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[Test, Category("[Binding] Update Value")]
@@ -400,8 +400,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"Bindable did not update on binding context property change");
 			Assert.AreEqual(newvalue, viewmodel.Text,
 				"Source property changed when it shouldn't");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[Test, Category("[Binding] Update Value")]
@@ -442,8 +444,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"Source property did not update with Target's change");
 			Assert.AreEqual(newvalue2, bindable.GetValue(property),
 				"Target property changed from what it was set to");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[TestCase(true)]
@@ -477,8 +480,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			viewmodel.Text = newvalue;
 			Assert.AreEqual(null, bindable.GetValue(property),
 				"Target updated from old Source property change");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[TestCase(true)]
@@ -518,8 +522,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetValue(property, newvalue);
 			Assert.AreEqual(original, viewmodel.Text,
 				"Source updated from old Target property change");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[TestCase(true)]
@@ -553,8 +558,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			viewmodel.Text = newvalue;
 			Assert.AreEqual(property.DefaultValue, bindable.GetValue(property),
 				"Target updated from old Source property change");
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[Test]
@@ -579,9 +585,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			const string newValue2 = "new value 2";
 			viewmodel.Text = newValue2;
 			Assert.AreEqual(newValue2, bindable.GetValue(property));
-
-			Assert.That(log.Messages.Count, Is.EqualTo(0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
+			var messages = MockApplication.MockLogger.Messages;
+			Assert.That(messages.Count, Is.EqualTo(0),
+				"An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[Test]

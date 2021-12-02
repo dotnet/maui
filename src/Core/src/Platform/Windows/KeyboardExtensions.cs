@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Microsoft.UI.Xaml.Input;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class KeyboardExtensions
 	{

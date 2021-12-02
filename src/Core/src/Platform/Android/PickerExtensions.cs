@@ -1,15 +1,9 @@
 ﻿using Android.Content.Res;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{
-		static readonly int[][] ColorStates =
-		{
- 			new[] { Android.Resource.Attribute.StateEnabled },
- 			new[] { -Android.Resource.Attribute.StateEnabled }
- 		};
-
 		public static void UpdateTitle(this MauiPicker nativePicker, IPicker picker) =>
 			UpdatePicker(nativePicker, picker);
 
@@ -24,12 +18,8 @@ namespace Microsoft.Maui
 			else
 			{
 				var androidColor = titleColor.ToNative();
-
-				if (!nativePicker.TextColors.IsOneColor(ColorStates, androidColor))
-				{
-					var acolor = androidColor.ToArgb();
-					nativePicker.SetHintTextColor(new ColorStateList(ColorStates, new[] { acolor, acolor }));
-				}
+				if (!nativePicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
+					nativePicker.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
 		}
 
@@ -44,12 +34,8 @@ namespace Microsoft.Maui
 			else
 			{
 				var androidColor = textColor.ToNative();
-
-				if (!nativePicker.TextColors.IsOneColor(ColorStates, androidColor))
-				{
-					var acolor = androidColor.ToArgb();
-					nativePicker.SetTextColor(new ColorStateList(ColorStates, new[] { acolor, acolor }));
-				}
+				if (!nativePicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
+					nativePicker.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
 		}
 

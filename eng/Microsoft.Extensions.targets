@@ -5,30 +5,6 @@
   <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
     <SystemCodeDomPackageVersion>4.7.0</SystemCodeDomPackageVersion>
   </PropertyGroup>
-   <!-- Microsoft.Maui.Graphics related Packages -->
-  <PropertyGroup>
-    <MicrosoftGraphicsWin2DVersion>1.0.0.29-preview3</MicrosoftGraphicsWin2DVersion>
-    <MicrosoftMauiGraphicsVersion>6.0.101-preview.11.724</MicrosoftMauiGraphicsVersion>
-    <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
-  </PropertyGroup>
-   <!-- WINUI related Packages -->
-  <PropertyGroup>
-    <_MicrosoftWindowsAppSdkVersion>1.0.0</_MicrosoftWindowsAppSdkVersion>
-    <_MicrosoftWindowsAppSdkVersion Condition="'$(UseInternalWinUIPackages)' == 'true'">1.0.0-20211030.0-CI-experimental</_MicrosoftWindowsAppSdkVersion>
-    <_MicrosoftWebWebView2Version>1.0.961.33</_MicrosoftWebWebView2Version>
-  </PropertyGroup>
-  <!-- Android related Packages -->
-  <PropertyGroup>
-    <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
-    <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.2</_XamarinGoogleCryptoTinkAndroidVersion>
-  </PropertyGroup>
-  <!-- SkiaSharp related Packages -->
-  <PropertyGroup>
-    <_SkiaSharpVersion>2.88.0-preview.155</_SkiaSharpVersion>
-    <_HarfBuzzSharpVersion>2.8.2-preview.155</_HarfBuzzSharpVersion>
-    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.85613e728cab06a91973522a54bbbbba24db72bc.155</_SkiaSharpNativeAssetsVersion>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
     <!-- Debugger workaround -->
     <MtouchExtraArgs>$(MtouchExtraArgs) --setenv:MONO_THREADS_SUSPEND=preemptive</MtouchExtraArgs>
@@ -100,16 +76,12 @@
     />
     <PackageReference
         Update="Microsoft.WindowsAppSDK"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.WindowsAppSDK"
-        Condition="'$(UseInternalWinUIPackages)' == 'true'"
-        NoWarn=" NU1605"
+        Version="$(MicrosoftWindowsAppSDKPackageVersion)"
+        NoWarn="NU1605"
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
-        Version="$(MicrosoftGraphicsWin2DVersion)"
+        Version="$(MicrosoftGraphicsWin2DPackageVersion)"
     />
     <PackageReference
         Update="Xamarin.Android.Glide"

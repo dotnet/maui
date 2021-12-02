@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -57,14 +58,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					if (!spellcheckEnabled)
 					{
-						Log.Warning(null, "CapitalizeSentence only works when spell check is enabled");
+						Application.Current?.FindMauiContext()?.CreateLogger<Keyboard>()?.LogWarning("CapitalizeSentence only works when spell check is enabled");
 					}
 				}
 				else if (capitalizedWordsEnabled)
 				{
 					if (!spellcheckEnabled)
 					{
-						Log.Warning(null, "CapitalizeWord only works when spell check is enabled");
+						Application.Current?.FindMauiContext()?.CreateLogger<Keyboard>()?.LogWarning("CapitalizeWord only works when spell check is enabled");
 					}
 
 					nameValue = InputScopeNameValue.NameOrPhoneNumber;
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				if (capitalizedCharacterEnabled)
 				{
-					Log.Warning(null, "UWP does not support CapitalizeCharacter");
+					Application.Current?.FindMauiContext()?.CreateLogger<Keyboard>()?.LogWarning("UWP does not support CapitalizeCharacter");
 				}
 
 				name.NameValue = nameValue;

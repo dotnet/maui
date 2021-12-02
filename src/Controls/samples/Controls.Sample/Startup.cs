@@ -116,9 +116,9 @@ namespace Maui.Controls.Sample
 					PageType.Main => typeof(CustomNavigationPage),
 					PageType.Blazor =>
 #if NET6_0_OR_GREATER
-								typeof(BlazorPage),
+						typeof(BlazorPage),
 #else
-								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
+						throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
 					_ => throw new Exception(),
 				});
@@ -209,7 +209,7 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
-						.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
+						//.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
@@ -222,7 +222,6 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
-
 #if ANDROID
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{

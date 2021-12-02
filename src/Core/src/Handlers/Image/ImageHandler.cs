@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IImage, IImageHandler> Mapper = new PropertyMapper<IImage, IImageHandler>(ViewHandler.ViewMapper)
 		{
-#if __ANDROID__
+#if __ANDROID__ || WINDOWS
 			[nameof(IImage.Background)] = MapBackground,
 #endif
 			[nameof(IImage.Aspect)] = MapAspect,

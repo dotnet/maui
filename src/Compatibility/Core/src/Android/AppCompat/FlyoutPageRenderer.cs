@@ -11,6 +11,7 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	using global::Android.Graphics.Drawables;
+	using Microsoft.Extensions.Logging;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 	using Microsoft.Maui.Controls.Platform;
@@ -424,7 +425,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (drawable != null)
 					this.SetBackground(drawable);
-			}).FireAndForget(e => Internals.Log.Warning(nameof(FlyoutPageRenderer), $"{e}"));
+			}).FireAndForget(e => Application.Current?.FindMauiContext()?.CreateLogger<FlyoutPageRenderer>()?
+						.LogWarning(e, "Error updating the background image"));
 		}
 
 		void UpdateDetail()

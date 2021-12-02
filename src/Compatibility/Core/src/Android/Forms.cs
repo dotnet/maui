@@ -15,6 +15,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen.Android;
 using Microsoft.Maui.Controls.Internals;
@@ -307,13 +308,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			// This could change if the UI mode changes (e.g., if night mode is enabled)
 			Application.AccentColor = GetAccentColor(activity);
 			_ColorButtonNormalSet = false;
-
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				Profile.FramePartition("Log.Listeners");
-				Internals.Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-			}
 
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because AndroidPlatformServices needs a current activity to launch URIs from
@@ -706,7 +700,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				catch (Exception ex)
 				{
-					Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
+					Application.Current?.FindMauiContext()?.CreateLogger<AndroidPlatformServices>()?
+						.LogWarning(ex, "Error retrieving text appearance");
 				}
 				return false;
 			}

@@ -759,18 +759,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				Action action = () => _expression.Apply();
-				if (_expression._weakTarget != null &&
-					_expression._weakTarget.TryGetTarget(out BindableObject obj) &&
-					obj.Dispatcher.IsInvokeRequired)
-				{
-					obj.Dispatcher.BeginInvokeOnMainThread(action);
-				}
+				if (_expression._weakTarget is not null && _expression._weakTarget.TryGetTarget(out BindableObject obj))
+					obj.Dispatcher.DispatchIfRequired(() => _expression.Apply());
 				else
-				{
-					action();
-				}
-
+					_expression.Apply();
 			}
 
 			public bool TryGetValue(object source, out object value)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -40,23 +41,24 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
-		public NavigationPage() : this(
 #if WINDOWS || ANDROID
-			true
+		const bool UseMauiHandler = true;
 #else
-			false
+		const bool UseMauiHandler = false;
 #endif
-			)
+
+		bool _setForMaui;
+		public NavigationPage() : this(UseMauiHandler)
 		{
 		}
 
-		public NavigationPage(Page root) : this()
+		public NavigationPage(Page root) : this(UseMauiHandler, root)
 		{
-			PushPage(root);
 		}
 
 		internal NavigationPage(bool setforMaui, Page root = null)
 		{
+			_setForMaui = setforMaui;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<NavigationPage>>(() => new PlatformConfigurationRegistry<NavigationPage>(this));
 
 			if (setforMaui)
@@ -210,7 +212,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception e)
 			{
-				Log.Warning(nameof(NavigationPage), $"{e}");
+				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning(e, null);
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 

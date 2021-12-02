@@ -104,5 +104,16 @@ namespace Microsoft.Maui.Controls
 
 			return bounds.Size;
 		}
+
+		internal override void QueueLayoutResolution()
+		{
+			if (Handler != null)
+			{
+				// No need to queue up layout changes in ScrollView 
+				return;
+			}
+
+			base.QueueLayoutResolution();
+		}
 	}
 }

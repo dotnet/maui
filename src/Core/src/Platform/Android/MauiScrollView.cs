@@ -9,7 +9,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Widget;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiScrollView : NestedScrollView, IScrollBarView
 	{
