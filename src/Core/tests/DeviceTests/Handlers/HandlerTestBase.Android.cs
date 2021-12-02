@@ -293,7 +293,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
 			((View)viewHandler.NativeView).GetBoundingBox();
 
-		protected Matrix4x4 GetViewTransform (IViewHandler viewHandler) =>
+		protected Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
 			((View)viewHandler.NativeView).GetViewTransform();
 	}
 }
