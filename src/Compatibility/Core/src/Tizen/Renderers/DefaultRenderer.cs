@@ -62,8 +62,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CheckBoxRenderer : DefaultRenderer { }
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class TabbedPageRenderer : DefaultRenderer { }
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CarouselPageRenderer : DefaultRenderer { }
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FlyoutPageRenderer : DefaultRenderer { }
