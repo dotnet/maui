@@ -25,7 +25,8 @@ namespace Microsoft.Maui.Handlers
 		protected override void SetupContainer()
 		{
 			base.SetupContainer();
-			//PlatformView.ContainerView = ContainerView;
+			ContainerView?.UpdateBorder(VirtualView);
+			ContainerView?.UpdateBackground(VirtualView.Background);
 		}
 
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)

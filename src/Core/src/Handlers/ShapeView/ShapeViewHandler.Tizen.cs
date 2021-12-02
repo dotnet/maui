@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void SetupContainer()
 		{
 			base.SetupContainer();
-			//ContainerView?.UpdateShape(VirtualView.Shape);
+			ContainerView?.UpdateShape(VirtualView.Shape);
 		}
 
 		public static void MapShape(IShapeViewHandler handler, IShapeView shapeView)

@@ -95,22 +95,26 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
-
+			var bounds = PlatformView.GetBounds();
 			var parent = PlatformView.GetParent();
 			parent?.Remove(PlatformView);
 
 			ContainerView ??= new WrapperView();
-			ContainerView.Add(PlatformView);
+			PlatformView.UpdatePosition(new Point(0, 0));
+			ContainerView.Content = PlatformView;
 
 			parent?.Add(ContainerView);
+			ContainerView.UpdateBounds(bounds);
 		}
 
 		protected override void RemoveContainer()
 		{
+			var bounds = ContainerView!.GetBounds();
 			var parent = ContainerView!.GetParent();
 			parent?.Remove(ContainerView!);
-			ContainerView.Remove(PlatformView);
+			ContainerView.Content = null;
 			parent?.Add(PlatformView);
+			PlatformView.UpdateBounds(bounds);
 		}
 
 		protected override void OnPlatformViewDeleted()
