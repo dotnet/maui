@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Graphics
 
 		bool _disposed;
 
+		ARect? _bounds;
 		int _width;
 		int _height;
 
@@ -60,6 +61,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBackgroundColor(AColor? backgroundColor)
 		{
+			if (_backgroundColor == backgroundColor)
+				return;
+
 			_backgroundColor = backgroundColor;
 
 			InvalidateSelf();
@@ -98,6 +102,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBackground(LinearGradientPaint linearGradientPaint)
 		{
+			if (_background == linearGradientPaint)
+				return;
+
 			_invalidatePath = true;
 
 			_backgroundColor = null;
@@ -109,6 +116,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBackground(RadialGradientPaint radialGradientPaint)
 		{
+			if (_background == radialGradientPaint)
+				return;
+
 			_invalidatePath = true;
 
 			_backgroundColor = null;
@@ -130,6 +140,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderShape(IShape? shape)
 		{
+			if (_shape == shape)
+				return;
+
 			_invalidatePath = true;
 
 			_shape = shape;
@@ -140,6 +153,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderColor(AColor? borderColor)
 		{
+			if (_borderColor == borderColor)
+				return;
+
 			_borderColor = borderColor;
 
 			InvalidateSelf();
@@ -178,6 +194,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderBrush(LinearGradientPaint linearGradientPaint)
 		{
+			if (_stroke == linearGradientPaint)
+				return;
+
 			_invalidatePath = true;
 
 			_borderColor = null;
@@ -189,6 +208,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderBrush(RadialGradientPaint radialGradientPaint)
 		{
+			if (_stroke == radialGradientPaint)
+				return;
+
 			_invalidatePath = true;
 
 			_borderColor = null;
@@ -210,9 +232,14 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderWidth(double strokeWidth)
 		{
+			float strokeThickness = (float)(strokeWidth * _density);
+
+			if (_strokeThickness == strokeThickness)
+				return;
+
 			_invalidatePath = true;
 
-			_strokeThickness = (float)(strokeWidth * _density);
+			_strokeThickness = strokeThickness;
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -238,6 +265,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderMiterLimit(float strokeMiterLimit)
 		{
+			if (_strokeMiterLimit == strokeMiterLimit)
+				return;
+
 			_strokeMiterLimit = strokeMiterLimit;
 
 			InvalidateSelf();
@@ -259,6 +289,9 @@ namespace Microsoft.Maui.Graphics
 					aLineJoin = Join.Round;
 					break;
 			}
+
+			if (_strokeLineJoin == aLineJoin)
+				return;
 
 			_strokeLineJoin = aLineJoin;
 
@@ -282,6 +315,9 @@ namespace Microsoft.Maui.Graphics
 					break;
 			}
 
+			if (_strokeLineCap == aLineCap)
+				return;
+
 			_strokeLineCap = aLineCap;
 
 			InvalidateSelf();
@@ -289,18 +325,23 @@ namespace Microsoft.Maui.Graphics
 
 		protected override void OnBoundsChange(ARect? bounds)
 		{
-			if (bounds != null)
+			if (_bounds != bounds)
 			{
-				var width = bounds.Width();
-				var height = bounds.Height();
+				_bounds = bounds;
 
-				if (_width == width && _height == height)
-					return;
+				if (_bounds != null)
+				{
+					var width = _bounds.Width();
+					var height = _bounds.Height();
 
-				_invalidatePath = true;
+					if (_width == width && _height == height)
+						return;
 
-				_width = width;
-				_height = height;
+					_invalidatePath = true;
+
+					_width = width;
+					_height = height;
+				}
 			}
 
 			base.OnBoundsChange(bounds);
