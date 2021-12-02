@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		new public IViewHandler Handler
+		new public IViewHandler? Handler
 		{
 			get => base.Handler as IViewHandler;
 			set => base.Handler = value;
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			IsPlatformEnabled = Handler != null;
 		}
 
-		Paint IView.Background
+		Paint? IView.Background
 		{
 			get
 			{
@@ -254,7 +255,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnShadowChanged(object sender, PropertyChangedEventArgs e)
+		void OnShadowChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(Shadow));
 		}

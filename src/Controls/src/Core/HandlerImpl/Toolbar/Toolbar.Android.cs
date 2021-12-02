@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 					NativeView.AddView(_nativeTitleView);
 				}
 
-				_nativeTitleView.Child = (INativeViewHandler)_nativeTitleViewHandler;
+				_nativeTitleView.Child = (INativeViewHandler?)_nativeTitleViewHandler;
 			}
 		}
 
