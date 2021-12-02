@@ -83,12 +83,36 @@ namespace Microsoft.Maui.Controls.Platform
 
 			UpdateAccessibilityImportance(CurrentPage, ImportantForAccessibility.Auto, true);
 
+			if (_navModel.Modals.Count == 0 && _rootDecorView.ChildCount > 0 && _rootDecorView.GetChildAt(0) is AView view)
+			{
+				view.ImportantForAccessibility = ImportantForAccessibility.Auto;
+
+				if (NativeVersion.IsAtLeast(26))
+					view.SetFocusable(ViewFocusability.FocusableAuto);
+
+				if (view is ViewGroup vg)
+					vg.DescendantFocusability = DescendantFocusability.BeforeDescendants;
+			}
+
 			return source.Task;
 		}
 
 		public async Task PushModalAsync(Page modal, bool animated)
 		{
 			UpdateAccessibilityImportance(CurrentPage, ImportantForAccessibility.NoHideDescendants, false);
+
+			if (_rootDecorView.ChildCount > 0 && _rootDecorView.GetChildAt(0) is AView view)
+			{
+				view.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+
+				if (NativeVersion.IsAtLeast(26))
+					view.SetFocusable(ViewFocusability.NotFocusable);
+
+				// Without setting this the keyboard will still navigate to components behind the modal page
+				if (view is ViewGroup vg)
+					vg.DescendantFocusability = DescendantFocusability.BlockDescendants;
+			}
+
 
 			_navModel.PushModal(modal);
 
