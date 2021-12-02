@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Application(bool setCurrentApplication)
 		{
-			if(setCurrentApplication)
+			if (setCurrentApplication)
 				SetCurrentApplication(this);
 
 			_systemResources = new Lazy<IResourceDictionary>(() =>

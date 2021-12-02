@@ -391,13 +391,13 @@ namespace Microsoft.Maui.Platform
 			return nativeView.Layer.GetViewTransform();
 		}
 
-		internal static Matrix4x4 GetViewTransform(this UIView view) 
+		internal static Matrix4x4 GetViewTransform(this UIView view)
 			=> view.Layer.GetViewTransform();
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+		internal static Graphics.Rectangle GetBoundingBox(this IView view)
 			=> view.GetNative(true).GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox (this UIView? nativeView)
+		internal static Graphics.Rectangle GetBoundingBox(this UIView? nativeView)
 		{
 			if (nativeView == null)
 				return new Rectangle();
