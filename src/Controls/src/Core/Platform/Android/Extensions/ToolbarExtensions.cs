@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls.Platform
 	internal static class ToolbarExtensions
 	{
 		static Drawable? _defaultNavigationIcon;
+		static ColorStateList? _defaultTitleTextColor;
+		static int? _defaultNavigationIconColor;
 
 		public static void UpdateIsVisible(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
@@ -43,16 +45,10 @@ namespace Microsoft.Maui.Controls.Platform
 				if (toolbar.BarHeight != null)
 					lp.Height = (int)nativeToolbar.Context.ToPixels(toolbar.BarHeight.Value);
 				else
-					lp.Height = ActionBarHeight();
+					lp.Height = nativeToolbar.Context?.GetActionBarHeight() ?? 0;
 			}
 
 			nativeToolbar.LayoutParameters = lp;
-
-			int ActionBarHeight()
-			{
-				int actionBarHeight = (int)nativeToolbar.Context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
-				return actionBarHeight;
-			}
 		}
 
 		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -83,33 +79,29 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			bool isNavigated = toolbar.HasBackStack;
-
 			_defaultNavigationIcon ??= nativeToolbar.NavigationIcon;
 
-			if (isNavigated)
+			if (toolbar.BackButtonVisible)
 			{
-				if (toolbar.BackButtonVisible)
+				nativeToolbar.NavigationIcon ??= _defaultNavigationIcon;
+
+				var backButtonTitle = toolbar.BackButtonTitle;
+				ImageSource image = toolbar.TitleIcon;
+
+				if (!string.IsNullOrEmpty(backButtonTitle))
 				{
-					nativeToolbar.NavigationIcon ??= _defaultNavigationIcon;
-
-					var backButtonTitle = toolbar.BackButtonTitle;
-					ImageSource image = toolbar.TitleIcon;
-
-					if (!string.IsNullOrEmpty(backButtonTitle))
-					{
-						nativeToolbar.NavigationContentDescription = backButtonTitle;
-					}
-					else if (image == null ||
-						nativeToolbar.SetNavigationContentDescription(image) == null)
-					{
-						nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
-					}
+					nativeToolbar.NavigationContentDescription = backButtonTitle;
 				}
-				else
+				else if (image == null ||
+					nativeToolbar.SetNavigationContentDescription(image) == null)
 				{
+					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
+				}
+			}
+			else
+			{
+				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable dad && dad.Progress == 1)
 					nativeToolbar.NavigationIcon = null;
-				}
 			}
 
 			nativeToolbar.UpdateIconColor(toolbar);
@@ -121,7 +113,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var tintColor = toolbar.BarBackgroundColor;
 
 			if (tintColor == null)
+			{
 				nativeToolbar.BackgroundTintMode = null;
+			}
 			else
 			{
 				nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
@@ -150,14 +144,36 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var textColor = toolbar.BarTextColor;
-			if (textColor != null)
-				nativeToolbar.SetTitleTextColor(textColor.ToNative().ToArgb());
 
-			if (nativeToolbar.NavigationIcon != null && textColor != null)
+			// Because we use the same toolbar across multiple navigation pages (think tabbed page with nested NavigationPage)
+			// We need to reset the toolbar text color to the default color when it's unset
+			if (_defaultTitleTextColor == null)
 			{
-				var icon = nativeToolbar.NavigationIcon as DrawerArrowDrawable;
-				if (icon != null)
+				var a = TintTypedArray.ObtainStyledAttributes(nativeToolbar.Context?.GetThemedContext(), null, Resource.Styleable.Toolbar, Resource.Attribute.toolbarStyle, 0);
+				_defaultTitleTextColor = a.GetColorStateList(Resource.Styleable.Toolbar_titleTextColor);
+				a.Recycle();
+			}
+
+			if (textColor != null)
+			{
+				nativeToolbar.SetTitleTextColor(textColor.ToNative().ToArgb());
+			}
+			else
+			{
+				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
+			}
+
+			if (nativeToolbar.NavigationIcon is DrawerArrowDrawable icon)
+			{
+				if (textColor != null)
+				{
+					_defaultNavigationIconColor = icon.Color;
 					icon.Color = textColor.ToNative().ToArgb();
+				}
+				else if (_defaultNavigationIconColor != null)
+				{
+					icon.Color = _defaultNavigationIconColor.Value;
+				}
 			}
 		}
 

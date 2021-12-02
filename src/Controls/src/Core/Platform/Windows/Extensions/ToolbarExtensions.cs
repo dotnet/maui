@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 				.IsBackButtonVisible = (toolbar.BackButtonVisible) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
 
 			nativeToolbar.NavigationView.IsBackEnabled = toolbar.BackButtonVisible;
-			toolbar.Handler.UpdateValue(nameof(Toolbar.BarBackground));
+			toolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
 		}
 
 		public static void UpdateBarBackgroundColor(this WindowHeader nativeToolbar, Toolbar toolbar)

@@ -11,14 +11,4 @@ namespace Microsoft.Maui.Controls
 		Popover = 3,
 		SplitOnPortrait = 4
 	}
-
-	public enum MasterBehavior
-
-	{
-		Default = 0,
-		SplitOnLandscape = 1,
-		Split = 2,
-		Popover = 3,
-		SplitOnPortrait = 4
-	}
 }
