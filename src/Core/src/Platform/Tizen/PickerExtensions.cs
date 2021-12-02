@@ -4,11 +4,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{
-		public static void UpdateTitle(this Entry platformPicker, IPicker picker) =>
-			UpdatePicker(platformPicker, picker);
+		public static void UpdateTitle(this Entry platformPicker, IPicker picker) => platformPicker.UpdatePlaceholder(picker.Title);
 
-		public static void UpdateTitleColor(this Entry platformPicker, IPicker picker) =>
-			platformPicker.PlaceholderColor = picker.TitleColor.ToPlatform();
+		public static void UpdateTitleColor(this Entry platformPicker, IPicker picker) => platformPicker.UpdatePlaceholderColor(picker.TitleColor);
 
 		public static void UpdateSelectedIndex(this Entry platformPicker, IPicker picker) =>
 			UpdatePicker(platformPicker, picker);

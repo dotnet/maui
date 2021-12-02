@@ -1,10 +1,8 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using Tizen.UIExtensions.Common;
+﻿using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
-using InputPanelReturnKeyType = ElmSharp.InputPanelReturnKeyType;
-using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
+using GColor = Microsoft.Maui.Graphics.Color;
 using TReturnType = Tizen.UIExtensions.Common.ReturnType;
+using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
 
 namespace Microsoft.Maui.Platform
 {
@@ -52,12 +50,22 @@ namespace Microsoft.Maui.Platform
 			platformEntry.Placeholder = entry.Placeholder ?? string.Empty;
 		}
 
-		public static void UpdatePlaceholderColor(this Entry platformEntry, ITextInput entry)
+		public static void UpdatePlaceholder(this Entry nativeEntry, string placeholder)
+		{
+			nativeEntry.Placeholder = placeholder;
+		}
+
+		public static void UpdatePlaceholderColor(this Entry nativeEntry, ITextInput entry)
 		{
 			platformEntry.PlaceholderColor = entry.PlaceholderColor.ToPlatform();
 		}
 
-		public static void UpdateIsReadOnly(this Entry platformEntry, ITextInput entry)
+		public static void UpdatePlaceholderColor(this Entry nativeEntry, GColor color)
+		{
+			nativeEntry.PlaceholderColor = color.ToNative();
+		}
+
+		public static void UpdateIsReadOnly(this Entry nativeEntry, ITextInput entry)
 		{
 			platformEntry.IsReadOnly = entry.IsReadOnly;
 		}
