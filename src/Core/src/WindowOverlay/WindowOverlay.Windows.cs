@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		W2DGraphicsView? _graphicsView;
 		Frame? _frame;
 		Panel? _panel;
-		FrameworkElement? _nativeWindow;
+		FrameworkElement? _nativeElement;
 
 		/// <inheritdoc/>
 		public virtual bool Initialize()
@@ -23,17 +23,17 @@ namespace Microsoft.Maui
 			if (Window?.Content == null)
 				return false;
 
-			_nativeWindow = Window.Content.GetNative(true);
-			if (_nativeWindow == null)
+			_nativeElement = Window.Content.GetNative(true);
+			if (_nativeElement == null)
 				return false;
 			var handler = Window.Handler as WindowHandler;
-			if (handler?.MauiContext is not Window _window)
+			if (handler?.NativeView is not Window _window)
 				return false;
 
 			_panel = _window.Content as Panel;
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
-			if (_nativeWindow is Frame frame)
+			if (_nativeElement is Frame frame)
 			{
 				_frame = frame;
 				_frame.Navigating += FrameNavigating;
@@ -43,8 +43,8 @@ namespace Microsoft.Maui
 			if (_graphicsView == null)
 				return false;
 
-			_nativeWindow.Tapped += ViewTapped;
-			_nativeWindow.PointerMoved += PointerMoved;
+			_nativeElement.Tapped += ViewTapped;
+			_nativeElement.PointerMoved += PointerMoved;
 			_graphicsView.Tapped += ViewTapped;
 			_graphicsView.PointerMoved += PointerMoved;
 
@@ -71,10 +71,10 @@ namespace Microsoft.Maui
 				_frame.Navigating -= FrameNavigating;
 			if (_panel != null)
 				_panel.Children.Remove(_graphicsView);
-			if (_nativeWindow != null)
+			if (_nativeElement != null)
 			{
-				_nativeWindow.Tapped -= ViewTapped;
-				_nativeWindow.PointerMoved -= PointerMoved;
+				_nativeElement.Tapped -= ViewTapped;
+				_nativeElement.PointerMoved -= PointerMoved;
 			}
 			if (_graphicsView != null)
 			{
