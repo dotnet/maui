@@ -6,6 +6,7 @@ using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					catch (Exception e)
 					{
 						Debug.WriteLine("Could not deserialize properties: " + e.Message);
-						Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while reading Application properties: {e}");
+						Application.Current?.FindMauiContext()?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while writing Application properties");
 					}
 				}
 			}
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					catch (Exception e)
 					{
 						Debug.WriteLine("Could not serialize properties: " + e.Message);
-						Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while writing Application properties: {e}");
+						Application.Current?.FindMauiContext()?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while writing Application properties");
 						return;
 					}
 				}
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				catch (Exception e)
 				{
 					Debug.WriteLine("Could not move new serialized property file over old: " + e.Message);
-					Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while writing Application properties: {e}");
+					Application.Current?.FindMauiContext()?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while writing Application properties");
 				}
 			}
 		}

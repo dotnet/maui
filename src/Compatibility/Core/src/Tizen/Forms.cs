@@ -349,7 +349,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (!IsInitialized)
 			{
-				Internals.Log.Listeners.Add(new XamarinLogListener());
 				if (System.Threading.SynchronizationContext.Current == null)
 				{
 					TizenSynchronizationContext.Initialize();
