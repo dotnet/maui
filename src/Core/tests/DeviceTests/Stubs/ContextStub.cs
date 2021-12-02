@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		IServiceProvider _services;
 		IAnimationManager _manager;
-#if WINDOWS
+#if WINDOWS || ANDROID
 		NavigationRootManager _windowManager;
 #endif
 
@@ -23,9 +23,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			if (serviceType == typeof(IAnimationManager))
 				return _manager ??= _services.GetRequiredService<IAnimationManager>();
-#if __ANDROID__
+#if ANDROID
 			if (serviceType == typeof(Android.Content.Context))
 				return Platform.DefaultContext;
+
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager(this);
 #elif __IOS__
 			if (serviceType == typeof(UIKit.UIWindow))
 				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
@@ -37,8 +40,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return _services.GetService(serviceType);
 		}
 
-		public IMauiHandlersServiceProvider Handlers =>
-			Services.GetRequiredService<IMauiHandlersServiceProvider>();
+		public IMauiHandlersFactory Handlers =>
+			Services.GetRequiredService<IMauiHandlersFactory>();
 
 #if __ANDROID__
 		public Android.Content.Context Context =>

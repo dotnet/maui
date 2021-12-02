@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -20,6 +21,22 @@ namespace Microsoft.Maui.Handlers
 		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
 			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+		}
+
+		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			if (args is IWindow window)
+			{
+				// See if the window's handler has an associated UIWindowScene and UISceneSession
+				var sceneSession = (window.Handler?.NativeView as UIWindow)?.WindowScene?.Session;
+
+				if (sceneSession != null)
+				{
+					// Request that the scene be destroyed
+					// TODO: Error handler?
+					UIApplication.SharedApplication.RequestSceneSessionDestruction(sceneSession, null, null);
+				}
+			}
 		}
 
 #if __MACCATALYST__

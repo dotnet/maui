@@ -2,7 +2,7 @@
 using Windows.UI.Text;
 using FontWeights = Microsoft.UI.Text.FontWeights;
 using FWeight = Windows.UI.Text.FontWeight;
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class FontExtensions
 	{

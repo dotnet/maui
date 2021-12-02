@@ -30,6 +30,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.macOS.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.iOS.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Loader")] // Microsoft.Maui.Controls.Loader.dll, Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider, kzu@microsoft.com
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.Forms")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.UITest.Validator")]
@@ -41,6 +42,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen.UnitTests")]
 [assembly: InternalsVisibleTo("WinUI.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 
 
 [assembly: Preserve]

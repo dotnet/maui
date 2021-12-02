@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
@@ -102,17 +104,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
+			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[TestCase(false)]
 			[TestCase(true)]

@@ -18,19 +18,14 @@ namespace Microsoft.Maui
 
 		public override void OnBackPressed()
 		{
-			var preventBack = false;
-
-			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnPressingBack>(del =>
+			var preventBackPropagation = false;
+			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
 			{
-				preventBack = del(this) || preventBack;
+				preventBackPropagation = del(this) || preventBackPropagation;
 			});
 
-			if (!preventBack)
-			{
-				MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del => del(this));
-
+			if (!preventBackPropagation)
 				base.OnBackPressed();
-			}
 		}
 
 		public override void OnConfigurationChanged(Configuration newConfig)

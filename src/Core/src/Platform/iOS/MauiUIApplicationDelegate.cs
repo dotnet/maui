@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -11,8 +12,9 @@ namespace Microsoft.Maui
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
+		internal const string GetConfigurationSelectorName = "application:configurationForConnectingSceneSession:options:";
 
-		MauiContext _applicationContext = null!;
+		IMauiContext _applicationContext = null!;
 
 		protected MauiUIApplicationDelegate()
 		{
@@ -25,9 +27,11 @@ namespace Microsoft.Maui
 		{
 			var mauiApp = CreateMauiApp();
 
-			Services = mauiApp.Services;
+			var rootContext = new MauiContext(mauiApp.Services);
 
-			_applicationContext = new MauiContext(Services, this);
+			_applicationContext = rootContext.MakeApplicationScope(this);
+
+			Services = _applicationContext.Services;
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 
@@ -40,8 +44,8 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
-			// iOS 13+ uses scene delegates, so skip this
-			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+			// if there is no scene delegate or support for scene delegates, then we set up the window here
+			if (!this.HasSceneManifest())
 				this.CreateNativeWindow(Application, application, launchOptions);
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
@@ -49,8 +53,17 @@ namespace Microsoft.Maui
 			return true;
 		}
 
+		public override bool RespondsToSelector(Selector? sel)
+		{
+			// if the app is not a multi-window app, then we cannot override the GetConfiguration method
+			if (sel?.Name == GetConfigurationSelectorName && !this.HasSceneManifest())
+				return false;
+
+			return base.RespondsToSelector(sel);
+		}
+
 		public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
-			=> new("Default Configuration", connectingSceneSession.Role);
+			=> new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
 
 		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
 		{

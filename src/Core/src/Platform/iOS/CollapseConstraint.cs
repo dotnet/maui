@@ -1,7 +1,8 @@
 ﻿using System;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	/// <summary>
 	/// Constraint which forces a UIView's height to zero

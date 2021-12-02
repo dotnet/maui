@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Diagnostics;
 using Maui.Controls.Sample.ViewModels;
-using Microsoft.Maui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class MainPage
 	{
-		IServiceProvider _services;
-		MainViewModel _viewModel;
+		readonly IServiceProvider _services;
+		readonly MainViewModel _viewModel;
 
 		public MainPage(IServiceProvider services, MainViewModel viewModel)
 		{
@@ -19,12 +20,8 @@ namespace Maui.Controls.Sample.Pages
 
 			_services = services;
 			_viewModel = viewModel;
-		}
 
-		void ShowNewWindow(object sender, EventArgs e)
-		{
-			var mvm = _services.GetService<MainViewModel>();
-			Application.Current.OpenWindow(new Window(new CustomNavigationPage(_services, mvm)));
+			Debug.WriteLine($"Received as parameters, ServiceProvider: {_services != null} and MainViewModel: {_viewModel != null}");
 		}
 	}
 }

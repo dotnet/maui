@@ -12,10 +12,15 @@ namespace Microsoft.Maui.DeviceTests
 			appBuilder
 				.ConfigureLifecycleEvents(life =>
 				{
-#if __ANDROID__
+#if ANDROID
 					life.AddAndroid(android =>
 					{
 						android.OnCreate((a, b) => Platform.Init(a));
+					});
+#elif WINDOWS
+					life.AddWindows(windows =>
+					{
+						windows.OnWindowCreated((w) => Platform.Init(w));
 					});
 #endif
 				})

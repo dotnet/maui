@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -37,18 +38,12 @@ namespace Microsoft.Maui.Controls
 		public static FlowDirection FlowDirection { get; internal set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool IsInvokeRequired
-		{
-			get { return PlatformServices.IsInvokeRequired; }
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IPlatformServices PlatformServices
 		{
 			get
 			{
 				if (s_platformServices == null)
-					throw new InvalidOperationException("You must call Microsoft.Maui.Controls.Forms.Init(); prior to using this property.");
+					throw new InvalidOperationException($"You must call Microsoft.Maui.Controls.Compatibility.Forms.Init(); prior to using this property ({nameof(PlatformServices)}).");
 				return s_platformServices;
 			}
 			set
@@ -70,72 +65,34 @@ namespace Microsoft.Maui.Controls
 			Flags = flags;
 		}
 
-		public static void BeginInvokeOnMainThread(Action action)
-		{
-			PlatformServices.BeginInvokeOnMainThread(action);
-		}
+		//[Obsolete("Use BindableObject.Dispatcher instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static bool IsInvokeRequired =>
+			Application.Current.FindDispatcher().IsDispatchRequired;
 
-		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func)
-		{
-			var tcs = new TaskCompletionSource<T>();
-			BeginInvokeOnMainThread(() =>
-			{
-				try
-				{
-					var result = func();
-					tcs.SetResult(result);
-				}
-				catch (Exception ex)
-				{
-					tcs.SetException(ex);
-				}
-			});
-			return tcs.Task;
-		}
+		//[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static void BeginInvokeOnMainThread(Action action) =>
+			Application.Current.FindDispatcher().Dispatch(action);
 
-		public static Task InvokeOnMainThreadAsync(Action action)
-		{
-			object wrapAction()
-			{ action(); return null; }
-			return InvokeOnMainThreadAsync((Func<object>)wrapAction);
-		}
+		//[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
+			Application.Current.FindDispatcher().DispatchAsync(func);
 
-		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
-		{
-			var tcs = new TaskCompletionSource<T>();
-			BeginInvokeOnMainThread(
-				async () =>
-				{
-					try
-					{
-						var ret = await funcTask().ConfigureAwait(false);
-						tcs.SetResult(ret);
-					}
-					catch (Exception e)
-					{
-						tcs.SetException(e);
-					}
-				}
-			);
+		//[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task InvokeOnMainThreadAsync(Action action) =>
+			Application.Current.FindDispatcher().DispatchAsync(action);
 
-			return tcs.Task;
-		}
+		//[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask) =>
+			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
-		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
-		{
-			async Task<object> wrapFunction()
-			{ await funcTask().ConfigureAwait(false); return null; }
-			return InvokeOnMainThreadAsync(wrapFunction);
-		}
+		//[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask) =>
+			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
-		public static async Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync()
-		{
-			SynchronizationContext ret = null;
-			await InvokeOnMainThreadAsync(() =>
-				ret = SynchronizationContext.Current
-			).ConfigureAwait(false);
-			return ret;
-		}
+		//[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
+			Application.Current.FindDispatcher().GetSynchronizationContextAsync();
 
 		public static double GetNamedSize(NamedSize size, Element targetElement)
 		{
@@ -167,11 +124,6 @@ namespace Microsoft.Maui.Controls
 		public static Color GetNamedColor(string name)
 		{
 			return PlatformServices.GetNamedColor(name);
-		}
-
-		internal static Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			return PlatformServices.GetStreamAsync(uri, cancellationToken);
 		}
 
 		public static class Styles

@@ -5,6 +5,7 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Graphics;
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
@@ -224,15 +225,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 #endif
 
-		public static CGColor ToCGColor(this Color color)
-		{
-#if __MOBILE__
-			return color.ToUIColor().CGColor;
-#else
-			return color.ToNSColor().CGColor;
-#endif
-		}
-
 #if __MOBILE__
 		public static UIColor FromPatternImageFromBundle(string bgImage)
 		{
@@ -243,23 +235,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return UIColor.FromPatternImage(image);
 		}
 #endif
-
-		public static Color ToColor(this UIColor color)
-		{
-			nfloat red;
-			nfloat green;
-			nfloat blue;
-			nfloat alpha;
-#if __MOBILE__
-			color.GetRGBA(out red, out green, out blue, out alpha);
-#else
-			if (color.Type == NSColorType.Catalog)
-				throw new InvalidOperationException("Cannot convert a NSColorType.Catalog color without specifying the color space, use the overload to specify an NSColorSpace");
-
-			color.GetRgba(out red, out green, out blue, out alpha);
-#endif
-			return new Color((float)red, (float)green, (float)blue, (float)alpha);
-		}
 
 #if __MACOS__
 		public static Color ToColor(this UIColor color, NSColorSpace colorSpace)

@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureImageSources();
 				this.ConfigureAnimations();
 				this.ConfigureCrossPlatformLifecycleEvents();
+				this.ConfigureDispatching();
 			}
 		}
 
@@ -107,7 +108,7 @@ namespace Microsoft.Maui.Hosting
 			});
 
 			// This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
-			// Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
+			// Copy the services that were added via MauiAppBuilder.Services into the final IServiceCollection
 			_hostBuilder.ConfigureServices((context, services) =>
 			{
 				// We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults

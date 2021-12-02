@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -22,13 +24,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public virtual void Setup()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
-			Device.PlatformServices = new MockPlatformServices();
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
 		[TearDown]
 		public virtual void TearDown()
 		{
-			Device.PlatformServices = null;
+			DispatcherProvider.SetCurrent(null);
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
 		}
 

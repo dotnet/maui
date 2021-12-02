@@ -33,6 +33,8 @@
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
     <PackageReference Include="Xamarin.AndroidX.Browser" />
+    <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
+    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
     <Compile Include="**\*.android.cs" />
     <Compile Include="**\*.android.*.cs" />
     <Reference Include="System.Numerics" />

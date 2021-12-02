@@ -11,7 +11,9 @@
   <ItemGroup>
     <None Remove="**/*.in.*" />
     <None Update="@(None)" PackagePath="" />
-    <None Include="@(_Files)" PackagePath="targets" Link="targets/%(FileName)%(Extension)" Visible="false" />
+    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.targets" />
+    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
+    <None Include="@(_Files)" PackagePath="Sdk" Link="Sdk/%(FileName)%(Extension)" Visible="false" />
     <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Pack="true" />
   </ItemGroup>
 

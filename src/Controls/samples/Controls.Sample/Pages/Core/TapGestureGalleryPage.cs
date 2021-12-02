@@ -57,8 +57,8 @@ namespace Maui.Controls.Sample.Pages
 
 			changeColorBoxView = new Label
 			{
-				VerticalOptions = LayoutOptions.CenterAndExpand,
-				HorizontalOptions = LayoutOptions.CenterAndExpand,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
 				WidthRequest = 200,
 				HeightRequest = 50,
 				Text = "Tap Gesture Gallery"

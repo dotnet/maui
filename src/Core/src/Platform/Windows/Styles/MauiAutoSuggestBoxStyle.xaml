@@ -1,7 +1,7 @@
 <ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:uwp="using:Microsoft.Maui">
+	xmlns:uwp="using:Microsoft.Maui.Platform">
 
     <Style x:Key="MauiAutoSuggestBoxStyle" TargetType="AutoSuggestBox">
         <Setter Property="VerticalAlignment" Value="Top" />
@@ -17,7 +17,7 @@
                                 <VisualState x:Name="Portrait"/>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <uwp:MauiTextBox 
+                        <uwp:MauiSearchTextBox 
                             x:Name="TextBox"
                             Style="{TemplateBinding TextBoxStyle}"
                             FontFamily="{TemplateBinding FontFamily}"
@@ -58,7 +58,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="AutoSuggestBoxMauiTextBoxStyle" TargetType="uwp:MauiTextBox">
+    <Style x:Key="AutoSuggestBoxMauiTextBoxStyle" TargetType="uwp:MauiSearchTextBox">
         <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
         <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
@@ -79,7 +79,7 @@
         <Setter Property="IsSpellCheckEnabled" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="uwp:MauiTextBox">
+                <ControlTemplate TargetType="uwp:MauiSearchTextBox">
                     <Grid>
                         <Grid.Resources>
                             <Style x:Name="DeleteButtonStyle" TargetType="uwp:MauiCancelButton">

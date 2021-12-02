@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -249,14 +250,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public async Task PushingContentPageToNonNavigationPageThrowsException()
+		public Task PushingContentPageToNonNavigationPageThrowsException() => DispatcherTest.Run(async () =>
 		{
 			Shell shell = new TestShell();
 			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
 			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
 			bool invalidOperationThrown = true;
-			Device.PlatformServices = new MockPlatformServices(invokeOnMainThread: (action) =>
+			DispatcherProviderStubOptions.InvokeOnMainThread = (action) =>
 			{
 				try
 				{
@@ -266,10 +267,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					invalidOperationThrown = true;
 				}
-			});
+			};
 
 			Assert.IsTrue(invalidOperationThrown);
-		}
+		});
 
 
 		[Test]
