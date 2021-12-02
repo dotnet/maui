@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 
 		new public IViewHandler? Handler
 		{
-			get => base.Handler as IViewHandler;
+			get => (IViewHandler?)base.Handler;
 			set => base.Handler = value;
 		}
 
