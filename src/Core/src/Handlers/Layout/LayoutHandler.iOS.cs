@@ -90,6 +90,11 @@ namespace Microsoft.Maui.Handlers
 			NativeView.SetNeedsLayout();
 		}
 
+		public void UpdateZIndex(IView view) 
+		{
+			
+		}
+
 		protected override void DisconnectHandler(LayoutView nativeView)
 		{
 			base.DisconnectHandler(nativeView);

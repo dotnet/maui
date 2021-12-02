@@ -91,6 +91,11 @@ namespace Microsoft.Maui.Handlers
 			NativeView.AddView(child.ToNative(MauiContext, true), index);
 		}
 
+		public void UpdateZIndex(IView view) 
+		{
+		
+		}
+
 		protected override void DisconnectHandler(LayoutViewGroup nativeView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
