@@ -28,8 +28,6 @@ namespace Microsoft.Maui.Graphics
 		int _height;
 
 		Path? _clipPath;
-		Path? _maskPath;
-		APaint? _maskPaint;
 		APaint? _borderPaint;
 
 		IShape? _shape;
@@ -393,13 +391,6 @@ namespace Microsoft.Maui.Graphics
 						{
 							_clipPath.Reset();
 							_clipPath.Set(clipPath);
-
-							if (_maskPath != null && HasBorder())
-							{
-								_maskPath.Reset();
-								_maskPath.AddRect(0, 0, _width, _height, Path.Direction.Cw!);
-								_maskPath.InvokeOp(_clipPath, Path.Op.Difference!);
-							}
 						}
 					}
 				}
@@ -414,9 +405,6 @@ namespace Microsoft.Maui.Graphics
 
 				if (_clipPath != null && _borderPaint != null)
 					canvas.DrawPath(_clipPath, _borderPaint);
-
-				if (_maskPath != null && _maskPaint != null)
-					canvas.DrawPath(_maskPath, _maskPaint);
 
 				canvas.RestoreToCount(saveCount);
 			}
@@ -460,19 +448,6 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (disposing)
 			{
-				if (_maskPath != null)
-				{
-					_maskPath.Dispose();
-					_maskPath = null;
-				}
-
-				if (_maskPaint != null)
-				{
-					_maskPaint.SetXfermode(null);
-					_maskPaint.Dispose();
-					_maskPaint = null;
-				}
-
 				if (_borderPaint != null)
 				{
 					_borderPaint.Dispose();
@@ -494,18 +469,6 @@ namespace Microsoft.Maui.Graphics
 			{
 				DisposeBorder(true);
 				return;
-			}
-
-			if (_maskPath == null)
-				_maskPath = new Path();
-
-			if (_maskPaint == null)
-			{
-				_maskPaint = new APaint(PaintFlags.AntiAlias);
-				_maskPaint.SetStyle(APaint.Style.FillAndStroke);
-
-				PorterDuffXfermode porterDuffClearMode = new PorterDuffXfermode(PorterDuff.Mode.Clear);
-				_maskPaint.SetXfermode(porterDuffClearMode);
 			}
 
 			if (_borderPaint == null)

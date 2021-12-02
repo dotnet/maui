@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			nativeView.UpdateMauiDrawable(border);
+			mauiDrawable?.SetBorderBrush(border.Stroke);
 		}
 
 		public static void UpdateStrokeThickness(this AView nativeView, IBorder border)
@@ -115,7 +116,6 @@ namespace Microsoft.Maui.Platform
 
 			mauiDrawable.SetBackground(border.Background);
 			mauiDrawable.SetBorderShape(border.Shape);
-			mauiDrawable.SetBorderBrush(border.Stroke);
 		}
 	}
 }
