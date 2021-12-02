@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.Dispatcher)]
+	[Category(TestCategory.Gesture)]
 	public class GestureTests : HandlerTestBase
 	{
 		[Fact]
