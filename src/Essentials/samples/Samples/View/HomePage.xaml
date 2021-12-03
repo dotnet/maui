@@ -13,7 +13,7 @@
             ItemsSource="{Binding FilteredItems}"
             SelectionMode="Single"
             SelectionChanged="OnSampleTapped"
-            VerticalOptions="FillAndExpand">
+            VerticalOptions="Fill">
 
             <CollectionView.Header>
                 <SearchBar Placeholder="Filter samples..." Text="{Binding FilterText}" />
