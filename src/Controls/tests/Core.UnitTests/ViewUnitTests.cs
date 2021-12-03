@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using NSubstitute;
 using NUnit.Framework;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
@@ -741,6 +742,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.Clip = null;
 
 			Assert.Null(view.Clip);
+		}
+
+		[Test]
+		public void AssigningElementHandlerThrowsException()
+		{
+			Maui.IElement view = new View();
+			Assert.Throws(typeof(InvalidOperationException), () => view.Handler = new ElementHandlerStub());
 		}
 	}
 }

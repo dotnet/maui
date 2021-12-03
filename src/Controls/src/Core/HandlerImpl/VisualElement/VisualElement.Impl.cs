@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -21,9 +22,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		new public IViewHandler Handler
+		new public IViewHandler? Handler
 		{
-			get => base.Handler as IViewHandler;
+			get => (IViewHandler?)base.Handler;
 			set => base.Handler = value;
 		}
 
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			IsPlatformEnabled = Handler != null;
 		}
 
-		Paint IView.Background
+		Paint? IView.Background
 		{
 			get
 			{
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.Controls
 					return Background;
 				if (BackgroundColor.IsNotDefault())
 					return new SolidColorBrush(BackgroundColor);
+
 				return null;
 			}
 		}
@@ -235,6 +237,18 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IView.Margin => Thickness.Zero;
 
+		IElementHandler? Maui.IElement.Handler
+		{
+			get => base.Handler;
+			set
+			{
+				if (value != null && value is not IViewHandler)
+					throw new InvalidOperationException("Handler must be of type IViewHandler");
+
+				base.Handler = value;
+			}
+		}
+
 		void NotifyShadowChanges()
 		{
 			if (Shadow != null)
@@ -254,7 +268,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnShadowChanged(object sender, PropertyChangedEventArgs e)
+		void OnShadowChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(Shadow));
 		}
