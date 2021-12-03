@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContent(WindowHandler handler, IWindow window)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			
+
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.SetRootView(window.Content);
 			handler.NativeView.SetContentView(rootManager.RootView);
