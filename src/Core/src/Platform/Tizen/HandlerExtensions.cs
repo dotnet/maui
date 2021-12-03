@@ -6,7 +6,37 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
+		internal static EvasObject? GetNative(this IElement view, bool returnWrappedIfPresent)
+		{
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return (view.Handler?.NativeView as EvasObject);
+		}
+
+		internal static EvasObject ToNative(this IElement view, IMauiContext context, bool returnWrappedIfPresent)
+		{
+			var nativeView = view.ToNative(context);
+
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return nativeView;
+		}
+
 		public static EvasObject ToNative(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.NativeView is not EvasObject result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(EvasObject)}");
+			}
+
+			return result;
+		}
+
+		public static INativeViewHandler ToHandler(this IElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
@@ -16,6 +46,7 @@ namespace Microsoft.Maui
 				view = ir.ReplacedView;
 
 			var handler = view.Handler;
+
 			if (handler?.MauiContext != null && handler.MauiContext != context)
 				handler = null;
 
@@ -32,10 +63,7 @@ namespace Microsoft.Maui
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
 
-			if (((INativeViewHandler)handler).NativeView is not EvasObject result)
-				throw new InvalidOperationException($"Unable to convert {view} to {typeof(EvasObject)}");
-
-			return result;
+			return (INativeViewHandler)handler;
 		}
 
 		public static void SetApplicationHandler(this CoreUIApplication nativeApplication, IApplication application, IMauiContext context) =>

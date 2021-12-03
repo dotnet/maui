@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.Children.RemoveAt(index);
 			toBeRemoved.Unrealize();
 
-			NativeView.Children.Insert(index, child.ToNative(MauiContext));
+			NativeView.Children.Insert(index, child.ToNative(MauiContext, true));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);
