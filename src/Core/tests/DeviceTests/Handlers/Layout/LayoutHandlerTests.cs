@@ -154,6 +154,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			children = await InvokeOnMainThreadAsync(() =>
 			{
+				layout[0] = button;
 				handler.Update(0, button);
 				return GetNativeChildren(handler);
 			});
