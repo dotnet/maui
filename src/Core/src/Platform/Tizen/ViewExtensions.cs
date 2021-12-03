@@ -1,12 +1,13 @@
-﻿using ElmSharp;
+﻿using Microsoft.Maui.Graphics;
+using ElmSharp;
 using ElmSharp.Accessible;
-using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.ElmSharp;
 using static Microsoft.Maui.Primitives.Dimension;
+using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui
 {
-	public static class ViewExtensions
+	public static partial class ViewExtensions
 	{
 		public static void UpdateIsEnabled(this EvasObject nativeView, IView view)
 		{

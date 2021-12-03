@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var child in VirtualView)
 			{
-				NativeView.Children.Add(child.ToNative(MauiContext));
+				NativeView.Children.Add(child.ToNative(MauiContext, true));
 				if (child.Handler is INativeViewHandler thandler)
 				{
 					thandler?.SetParent(this);
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Add(child.ToNative(MauiContext));
+			NativeView.Children.Add(child.ToNative(MauiContext, true));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child.Handler is INativeViewHandler thandler && thandler.NativeView is EvasObject childView)
+			if (child.Handler is INativeViewHandler thandler && child?.GetNative(true) is EvasObject childView)
 			{
 				NativeView.Children.Remove(childView);
 				thandler.Dispose();
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Insert(index, child.ToNative(MauiContext));
+			NativeView.Children.Insert(index, child.ToNative(MauiContext, true));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.Children.RemoveAt(index);
 			toBeRemoved.Unrealize();
 
-			NativeView.Children.Insert(index, child.ToNative(MauiContext));
+			NativeView.Children.Insert(index, child.ToNative(MauiContext, true));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);

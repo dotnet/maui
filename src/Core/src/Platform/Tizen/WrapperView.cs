@@ -8,7 +8,7 @@ using SkiaSharp.Views.Tizen;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : Canvas
 	{
