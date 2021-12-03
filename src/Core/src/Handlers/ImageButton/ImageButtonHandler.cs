@@ -1,5 +1,4 @@
-﻿using System;
-#if __IOS__ || MACCATALYST
+﻿#if __IOS__ || MACCATALYST
 using NativeImage = UIKit.UIImage;
 using NativeImageView = UIKit.UIImageView;
 using NativeView = UIKit.UIButton;
@@ -8,6 +7,7 @@ using NativeImage = Android.Graphics.Drawables.Drawable;
 using NativeImageView = Android.Widget.ImageView;
 using NativeView = AndroidX.AppCompat.Widget.AppCompatImageButton;
 #elif WINDOWS
+using System;
 using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
 using NativeImageView = Microsoft.UI.Xaml.Controls.Image;
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
@@ -22,7 +22,13 @@ namespace Microsoft.Maui.Handlers
 	public partial class ImageButtonHandler : IImageButtonHandler
 	{
 		public static IPropertyMapper<IImage, IImageHandler> ImageMapper = new PropertyMapper<IImage, IImageHandler>(ImageHandler.Mapper);
-		public static IPropertyMapper<IImageButton, IImageButtonHandler> Mapper = new PropertyMapper<IImageButton, IImageButtonHandler>(ImageMapper);
+
+		public static IPropertyMapper<IImageButton, IImageButtonHandler> Mapper = new PropertyMapper<IImageButton, IImageButtonHandler>(ImageMapper)
+		{
+			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
+			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
+			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius
+		};
 
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader SourceLoader =>

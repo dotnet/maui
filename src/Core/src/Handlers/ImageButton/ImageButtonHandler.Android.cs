@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Graphics.Drawables;
 using Android.Views;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
@@ -12,7 +9,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override AppCompatImageButton CreateNativeView()
 		{
-			return new AppCompatImageButton(Context);
+			var nativeView = new AppCompatImageButton(Context);
+
+			// These set the defaults so visually it matches up with other platforms
+			nativeView.SetPadding(0, 0, 0, 0);
+			nativeView.SoundEffectsEnabled = false;
+
+			return nativeView;
 		}
 
 		void OnSetImageSource(Drawable? obj)
@@ -24,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.Click -= OnClick;
 			nativeView.Touch -= OnTouch;
+
 			base.DisconnectHandler(nativeView);
 
 			SourceLoader.Reset();
@@ -33,8 +37,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.Click += OnClick;
 			nativeView.Touch += OnTouch;
+
 			base.ConnectHandler(nativeView);
 		}
+
+		[MissingMapper]
+		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+
+		[MissingMapper]
+		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
 
 		void OnTouch(object? sender, View.TouchEventArgs e)
 		{
