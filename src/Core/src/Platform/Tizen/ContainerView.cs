@@ -65,7 +65,11 @@ namespace Microsoft.Maui.Platform
 			if (_view != null)
 			{
 				_ = _context ?? throw new ArgumentNullException(nameof(_context));
+<<<<<<< HEAD
 				MainView = _view.ToPlatform(_context);
+=======
+				MainView = _view.ToNative(_context);
+>>>>>>> 87f5fa6cb ([Tizen] Initial Reloadyfy support)
 			}
 		}
 
