@@ -17,7 +17,10 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 
 				default:
-					nativeLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					if (nativeLabel.AttributedText != null)
+						nativeLabel.AttributedText = label.FormattedText.ToAttributed(label.ToFont(), label.TextColor);
+					else
+						nativeLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;
 			}
 		}

@@ -12,7 +12,10 @@ namespace Microsoft.Maui.Controls.Platform
 			switch (label.TextType)
 			{
 				case TextType.Text:
-					textView.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					if (label.FormattedText != null)
+						textView.TextFormatted = label.FormattedText.ToAttributed(label.ToFont(), label.TextColor, textView);
+					else
+						textView.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;
 				case TextType.Html:
 					textView.UpdateTextHtml(label);
