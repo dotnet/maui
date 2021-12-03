@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Numerics;
+using Microsoft.Maui.Graphics;
 using ElmSharp;
 using ElmSharp.Accessible;
 using Tizen.UIExtensions.ElmSharp;
@@ -144,6 +145,58 @@ namespace Microsoft.Maui
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
 			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
 			nativeView.Resize(view.Width.ToScaledPixel(), view.Height.ToScaledPixel());
+		}
+
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+			{
+				return new Rectangle();
+			}
+
+			return nativeView.GetNativeViewBounds();
+		}
+
+		internal static Rectangle GetNativeViewBounds(this EvasObject nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			return new Rectangle(
+				nativeView.Geometry.X,
+				nativeView.Geometry.Y,
+				nativeView.Geometry.Width,
+				nativeView.Geometry.Height);
+		}
+
+		internal static Matrix4x4 GetViewTransform(this IView view)
+		{
+			var nativeView = view?.GetNative(true);
+			if (nativeView == null)
+				return new Matrix4x4();
+			return nativeView.GetViewTransform();
+		}
+
+		internal static Matrix4x4 GetViewTransform(this EvasObject nativeView)
+			=> nativeView.GetViewTransform();
+
+		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+			=> view.GetNative(true).GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox(this EvasObject? nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			var rect = nativeView.Geometry;
+
+			var nvb = nativeView.GetNativeViewBounds();
+			var transform = nativeView.GetViewTransform();
+			var radians = transform.ExtractAngleInRadians();
+			//TODO: Need to impl
+
+			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
 		}
 	}
 }
