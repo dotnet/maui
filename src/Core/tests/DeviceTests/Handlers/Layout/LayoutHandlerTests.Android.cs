@@ -71,9 +71,9 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 		}
 
-		async Task<string> GetNativeText(AView view)
+		string GetNativeText(AView view)
 		{
-			return await InvokeOnMainThreadAsync<string>(() => (view as TextView).Text);
+			return (view as TextView).Text;
 		}
 
 		async Task AssertZIndexOrder(IReadOnlyList<AView> children)

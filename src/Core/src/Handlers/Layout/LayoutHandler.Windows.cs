@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			NativeView.Children[index] = child.ToNative(MauiContext, true);
-			EnsureZIndexOrdering(child);
+			EnsureZIndexOrder(child);
 		}
 
 		public void UpdateZIndex(IView child) 
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			EnsureZIndexOrdering(child);
+			EnsureZIndexOrder(child);
 		}
 
 		protected override LayoutPanel CreateNativeView()
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		void EnsureZIndexOrdering(IView child) 
+		void EnsureZIndexOrder(IView child) 
 		{
 			if (NativeView.Children.Count == 0)
 			{
