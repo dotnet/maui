@@ -123,6 +123,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			children = await InvokeOnMainThreadAsync(() =>
 			{
+				layout.Insert(0, button);
 				handler.Insert(0, button);
 				return GetNativeChildren(handler);
 			});
@@ -182,6 +183,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			children = await InvokeOnMainThreadAsync(() =>
 			{
+				layout.Insert(0, insertedSlider);
 				handler.Insert(0, insertedSlider);
 				return GetNativeChildren(handler);
 			});
