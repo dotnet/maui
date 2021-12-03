@@ -24,6 +24,9 @@ namespace Microsoft.Maui
 			return nativeView;
 		}
 
+		public static EvasObject ToContainerView(this IElement view, IMauiContext context) =>
+			new ContainerView(context) { CurrentView = view };
+
 		public static EvasObject ToNative(this IElement view, IMauiContext context)
 		{
 			var handler = view.ToHandler(context);
