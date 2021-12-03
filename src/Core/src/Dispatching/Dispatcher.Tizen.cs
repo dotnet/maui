@@ -12,11 +12,14 @@ namespace Microsoft.Maui.Dispatching
 			_context = context;
 		}
 
-		bool IsInvokeRequiredImplementation() =>
+		bool IsDispatchRequiredImplementation() =>
 			_context != SynchronizationContext.Current;
 
-		void BeginInvokeOnMainThreadImplementation(Action action) =>
+		bool DispatchImplementation(Action action)
+		{
 			_context.Post((o) => action(), null);
+			return true;
+		}
 	}
 
 	public partial class DispatcherProvider

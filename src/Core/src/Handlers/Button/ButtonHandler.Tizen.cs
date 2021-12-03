@@ -56,6 +56,15 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapPadding(IButtonHandler handler, IButton button) { }
 
+		[MissingMapper]
+		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke) { }
+
+		[MissingMapper]
+		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke) { }
+
 		void OnButtonClicked(object? sender, EventArgs e)
 		{
 			VirtualView?.Clicked();
