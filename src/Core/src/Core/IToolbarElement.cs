@@ -2,6 +2,6 @@
 {
 	public interface IToolbarElement
 	{
-		IToolbar? Toolbar { get;}
+		IToolbar? Toolbar { get; }
 	}
 }
