@@ -1,6 +1,4 @@
 ﻿using Android.Widget;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -13,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				case TextType.Text:
 					if (label.FormattedText != null)
-						textView.TextFormatted = label.FormattedText.ToAttributed(label.ToFont(), label.TextColor, textView);
+						textView.TextFormatted = label.FormattedText.ToSpannable(label, textView);
 					else
 						textView.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				default:
 					if (nativeLabel.AttributedText != null)
-						nativeLabel.AttributedText = label.FormattedText.ToAttributed(label.ToFont(), label.TextColor);
+						nativeLabel.AttributedText = label.FormattedText.ToAttributed(label);
 					else
 						nativeLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;

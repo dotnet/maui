@@ -1,26 +1,26 @@
-﻿using System.Text;
+﻿#nullable enable
+using System.Text;
 using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
 using Android.Util;
 using Android.Widget;
-using Color = Microsoft.Maui.Graphics.Color;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public static class FormattedStringExtensions
 	{
-		public static SpannableString ToAttributed(this FormattedString formattedString, Font defaultFont, Color defaultForegroundColor, TextView view)
+		public static SpannableString ToSpannable(this FormattedString formattedString, Label label, TextView view)
 		{
 			if (formattedString == null)
-				return null;
+				return new SpannableString(string.Empty);
 
 			var builder = new StringBuilder();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
-				var text = span.Text;
+				var text = TextTransformUtilites.GetTransformedText(span.Text, span.TextTransform);
 				if (text == null)
 					continue;
 
@@ -41,13 +41,10 @@ namespace Microsoft.Maui.Controls.Platform
 				int end = start + text.Length;
 				c = end;
 
-				if (span.TextColor != null)
+				var fgcolor = span.TextColor ?? label?.TextColor;
+				if (fgcolor != null)
 				{
-					spannable.SetSpan(new ForegroundColorSpan(span.TextColor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
-				}
-				else if (defaultForegroundColor != null)
-				{
-					spannable.SetSpan(new ForegroundColorSpan(defaultForegroundColor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new ForegroundColorSpan(fgcolor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
 				}
 
 				if (span.BackgroundColor != null)
@@ -58,15 +55,20 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					spannable.SetSpan(new LineHeightSpan(view, span.LineHeight), start, end, SpanTypes.InclusiveExclusive);
 				}
-				if (!span.IsDefault())
+
+				var font = span.ToFont();
+				if (font.IsDefault && label is not null)
+					font = label.ToFont();
+
+				if (!font.IsDefault)
 				{
-					var spanFont = Font.OfSize(span.FontFamily, span.FontSize).WithAttributes(span.FontAttributes);
-					spannable.SetSpan(new FontSpan(spanFont, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
+					spannable.SetSpan(new FontSpan(font, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 				}
-				else
-					spannable.SetSpan(new FontSpan(defaultFont, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
+
 				if (span.IsSet(Span.TextDecorationsProperty))
+				{
 					spannable.SetSpan(new TextDecorationSpan(span), start, end, SpanTypes.InclusiveInclusive);
+				}
 
 			}
 			return spannable;
@@ -87,9 +89,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public float CharacterSpacing { get; }
 
-			public override void UpdateDrawState(TextPaint tp)
+			public override void UpdateDrawState(TextPaint? tp)
 			{
-				Apply(tp);
+				if (tp != null)
+					Apply(tp);
 			}
 
 			public override void UpdateMeasureState(TextPaint p)
@@ -104,7 +107,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				paint.TextSize = TypedValue.ApplyDimension(
 					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip,
-					value, TextView.Resources.DisplayMetrics);
+					value, TextView?.Resources?.DisplayMetrics ?? Android.App.Application.Context.Resources!.DisplayMetrics);
 
 				paint.LetterSpacing = CharacterSpacing;
 			}
@@ -119,9 +122,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public Span Span { get; }
 
-			public override void UpdateDrawState(TextPaint tp)
+			public override void UpdateDrawState(TextPaint? tp)
 			{
-				Apply(tp);
+				if (tp != null)
+					Apply(tp);
 			}
 
 			public override void UpdateMeasureState(TextPaint p)
@@ -146,15 +150,18 @@ namespace Microsoft.Maui.Controls.Platform
 			public LineHeightSpan(TextView view, double lineHeight)
 			{
 				_lineHeight = lineHeight;
-				Paint.FontMetricsInt fm = view.Paint.GetFontMetricsInt();
-				_ascent = fm.Ascent;
-				_descent = fm.Descent;
+				var fm = view.Paint?.GetFontMetricsInt();
+				_ascent = fm?.Ascent ?? 1;
+				_descent = fm?.Descent ?? 1;
 			}
 
-			public void ChooseHeight(Java.Lang.ICharSequence text, int start, int end, int spanstartv, int v, Paint.FontMetricsInt fm)
+			public void ChooseHeight(Java.Lang.ICharSequence? text, int start, int end, int spanstartv, int v, Paint.FontMetricsInt? fm)
 			{
-				fm.Ascent = (int)(_ascent * _lineHeight);
-				fm.Descent = (int)(_descent * _lineHeight);
+				if (fm != null)
+				{
+					fm.Ascent = (int)(_ascent * _lineHeight);
+					fm.Descent = (int)(_descent * _lineHeight);
+				}
 			}
 		}
 	}

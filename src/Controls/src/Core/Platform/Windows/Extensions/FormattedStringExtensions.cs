@@ -1,15 +1,21 @@
-using Microsoft.UI.Text;
-using Microsoft.UI.Xaml;
+#nullable enable
+using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
-using Windows.UI.Text;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public static class FormattedStringExtensions
 	{
-		public static void UpdateText(this TextBlock textBlock, FormattedString formatted)
+		public static void UpdateInlines(this TextBlock textBlock, Label label)
 		{
+			var formatted = label.FormattedText;
+			if (formatted == null)
+				return;
+
 			textBlock.Inlines.Clear();
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
@@ -18,23 +24,32 @@ namespace Microsoft.Maui.Controls.Platform
 			for (var i = 0; i < formatted.Spans.Count; i++)
 			{
 				var span = formatted.Spans[i];
-
-				var run = span.ToRun();
-				heights.Add(Control.FindDefaultLineHeight(run));
+				var run = span.ToRun(label);
+				heights.Add(textBlock.FindDefaultLineHeight(run));
 				textBlock.Inlines.Add(run);
 			}
-			_inlineHeights = heights;
 		}
 
-		public static Run ToRun(this Span span)
+		public static Run ToRun(this Span span, Label label)
 		{
-			var run = new Run { Text = span.Text ?? string.Empty };
+			var text = TextTransformUtilites.GetTransformedText(span.Text, span.TextTransform);
+			
+			var run = new Run { Text = text ?? string.Empty };
 
-			if (span.TextColor.IsNotDefault())
-				run.Foreground = span.TextColor.ToNative();
+			var fgcolor = span.TextColor ?? label?.TextColor;
+			if (fgcolor is not null)
+				run.Foreground = fgcolor.ToNative();
 
-			if (!span.IsDefault())
-				run.ApplyFont(span);
+			// NOTE: Background is not supported in Run
+
+			var font = span.ToFont();
+			if (font.IsDefault && label is not null)
+				font = label.ToFont();
+
+			if (!font.IsDefault)
+			{
+				run.ApplyFont(font);
+			}
 
 			if (span.IsSet(Span.TextDecorationsProperty))
 				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;

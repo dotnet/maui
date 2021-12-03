@@ -1,46 +1,24 @@
+#nullable enable
 using Foundation;
-using System;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 #if !MACOS
 using ObjCRuntime;
 using UIKit;
-
-namespace Microsoft.Maui.Controls.Platform
 #else
 using AppKit;
 using UIColor = AppKit.NSColor;
 using UITextAlignment = AppKit.NSTextAlignment;
-namespace Microsoft.Maui.Controls.Platform
 #endif
+
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class FormattedStringExtensions
 	{
-		public static NSAttributedString ToAttributed(this Span span, Font defaultFont, Color defaultForegroundColor)
-		{
-			if (span == null)
-				return null;
-
-			var fgcolor = span.TextColor;
-			if (fgcolor == null)
-				fgcolor = defaultForegroundColor;
-			if (fgcolor == null)
-				fgcolor = UIColor.SystemFillColor.ToColor();
-
-#if !MACOS
-			return new NSAttributedString(span.Text, null, fgcolor.ToNative(),
-				span.BackgroundColor.ToNative(), kerning: (float)span.CharacterSpacing);
-#else
-			return new NSAttributedString(span.Text, null, fgcolor.ToNSColor(),
-				span.BackgroundColor.ToNSColor(), kerningAdjustment: (float)span.CharacterSpacing);
-#endif
-		}
-
-		public static NSAttributedString ToAttributed(this FormattedString formattedString, Font defaultFont,
-			Color defaultForegroundColor)
+		public static NSAttributedString ToAttributed(this FormattedString formattedString, Label label)
 		{
 			if (formattedString == null)
-				return null;
+				return new NSAttributedString(string.Empty);
+
 			var attributed = new NSMutableAttributedString();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
@@ -48,86 +26,45 @@ namespace Microsoft.Maui.Controls.Platform
 				if (span.Text == null)
 					continue;
 
-				attributed.Append(span.ToAttributed(defaultFont, defaultForegroundColor));
+				attributed.Append(span.ToAttributed(label));
 			}
 
 			return attributed;
 		}
 
-		internal static NSAttributedString ToAttributed(this Span span, BindableObject owner, Color defaultForegroundColor, TextAlignment textAlignment, double lineHeight = -1.0)
+		internal static NSAttributedString ToAttributed(this Span span, Label label)
 		{
-			if (span == null)
-				return null;
+			var text = TextTransformUtilites.GetTransformedText(span.Text, span.TextTransform);
+			if (text is null)
+				return new NSAttributedString(string.Empty);
 
-			var text = span.Text;
-			if (text == null)
-				return null;
+			var style = new NSMutableParagraphStyle();
+			var lineHeight = span.LineHeight >= 0 
+				? span.LineHeight 
+				: label?.LineHeight ?? -1;
 
-			NSMutableParagraphStyle style = new NSMutableParagraphStyle();
-			lineHeight = span.LineHeight >= 0 ? span.LineHeight : lineHeight;
 			if (lineHeight >= 0)
 			{
 				style.LineHeightMultiple = new nfloat(lineHeight);
 			}
 
-			switch (textAlignment)
+			if (label is not null)
 			{
-				case TextAlignment.Start:
-					style.Alignment = UITextAlignment.Left;
-					break;
-				case TextAlignment.Center:
-					style.Alignment = UITextAlignment.Center;
-					break;
-				case TextAlignment.End:
-					style.Alignment = UITextAlignment.Right;
-					break;
-				default:
-					style.Alignment = UITextAlignment.Left;
-					break;
+				style.Alignment = label.HorizontalTextAlignment switch
+				{
+					TextAlignment.Start => UITextAlignment.Left,
+					TextAlignment.Center => UITextAlignment.Center,
+					TextAlignment.End => UITextAlignment.Right,
+					_ => UITextAlignment.Left
+				};
 			}
 
+			var font = span.ToFont();
+			if (font.IsDefault && label is not null)
+				font = label.ToFont();
 
-#if !MACOS
-			UIFont targetFont;
-			if (span.IsDefault())
-				targetFont = ((IFontElement)owner).ToUIFont();
-			else
-				targetFont = span.ToUIFont();
-#else
-			NSFont targetFont;
-			if (span.IsDefault())
-				targetFont = ((IFontElement)owner).ToNSFont();
-			else
-				targetFont = span.ToNSFont();
-#endif
-			var fgcolor = span.TextColor;
-
-			if (fgcolor == null)
-				fgcolor = defaultForegroundColor;
-
-			if (owner is Entry && fgcolor != null)
-				fgcolor = defaultForegroundColor;
-
-#if !MACOS
-			if (fgcolor == null)
-				fgcolor = UIColor.SystemFillColor.ToColor();
-			UIColor spanFgColor;
-			UIColor spanBgColor = null;
-			spanFgColor = fgcolor.ToNative();
-
-			spanBgColor = span.BackgroundColor?.ToNative();
-#else
-
-			if (fgcolor.IsDefault)
-				fgcolor = ColorExtensions.LabelColor.ToColor(NSColorSpace.GenericRGBColorSpace);
-			NSColor spanFgColor;
-			NSColor spanBgColor;
-			spanFgColor = fgcolor.ToNSColor();
-			spanBgColor = span.BackgroundColor.ToNSColor();
-#endif
-
-			bool hasUnderline = false;
-			bool hasStrikethrough = false;
+			var hasUnderline = false;
+			var hasStrikethrough = false;
 			if (span.IsSet(Span.TextDecorationsProperty))
 			{
 				var textDecorations = span.TextDecorations;
@@ -135,39 +72,29 @@ namespace Microsoft.Maui.Controls.Platform
 				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
 			}
 #if !MACOS
-			var attrString = new NSAttributedString(text, targetFont, spanFgColor, spanBgColor,
+			var attrString = new NSAttributedString(
+				text,
+				font.IsDefault ? null : font.ToUIFont(),
+				(span.TextColor ?? label?.TextColor)?.ToNative(),
+				span.BackgroundColor?.ToNative(),
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None, paragraphStyle: style, kerning: (float)span.CharacterSpacing);
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				paragraphStyle: style,
+				kerning: (float)span.CharacterSpacing);
 #else
-			var attrString = new NSAttributedString(text, targetFont, spanFgColor, spanBgColor,
+			var attrString = new NSAttributedString(
+				text,
+				font.IsDefault ? null : font.ToNSFont(),
+				(span.TextColor ?? label?.TextColor)?.ToNative(),
+				span.BackgroundColor?.ToNative(),
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None, paragraphStyle: style, kerningAdjustment: (float)span.CharacterSpacing);
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				paragraphStyle: style,
+				kerningAdjustment: (float)span.CharacterSpacing);
 #endif
 
 			return attrString;
 		}
 
-		internal static NSAttributedString ToAttributed(this FormattedString formattedString, BindableObject owner,
-			Color defaultForegroundColor, TextAlignment textAlignment = TextAlignment.Start, double lineHeight = -1.0)
-		{
-			if (formattedString == null)
-				return null;
-
-			var attributed = new NSMutableAttributedString();
-
-			for (int i = 0; i < formattedString.Spans.Count; i++)
-			{
-				Span span = formattedString.Spans[i];
-
-				var attributedString = span.ToAttributed(owner, defaultForegroundColor, textAlignment, lineHeight);
-
-				if (attributedString == null)
-					continue;
-
-				attributed.Append(attributedString);
-			}
-
-			return attributed;
-		}
 	}
 }

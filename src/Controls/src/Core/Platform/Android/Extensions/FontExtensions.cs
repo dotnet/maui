@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static Typeface ToTypeface(this IFontElement self)
 		{
-			if (self.IsDefault())
+			if (self.ToFont().IsDefault)
 				return CompatServiceProvider.FontManager.DefaultTypeface;
 
 			var font = Font.OfSize(self.FontFamily, self.FontSize).WithAttributes(self.FontAttributes);
