@@ -71,6 +71,24 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ShadowProperty, value); }
 		}
 
+		internal static readonly BindableProperty ZIndexProperty =
+			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(View), default(int), 
+				propertyChanged: ZIndexPropertyChanged);
+
+		static void ZIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue) 
+		{
+			if (bindable is IView view)
+			{
+				view.Handler?.Invoke(nameof(IView.ZIndex));
+			}
+		}
+
+		public int ZIndex
+		{
+			get { return (int)GetValue(ZIndexProperty); }
+			set { SetValue(ZIndexProperty, value); }
+		}
+
 		public Size DesiredSize { get; protected set; }
 
 		public void Arrange(Rectangle bounds)

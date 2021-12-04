@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
@@ -60,6 +62,28 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 				action?.Invoke();
 				nativeLayout.AssertContainsColor(color);
 			});
+		}
+
+		string GetNativeText(UIView view)
+		{
+			return (view as UILabel).Text;
+		}
+
+		async Task AssertZIndexOrder(IReadOnlyList<UIView> children)
+		{
+			// Lots of ways we could compare the two lists, but dumping them both to comma-separated strings
+			// makes it easy to give the test useful output
+
+			string expected = await InvokeOnMainThreadAsync(() => {
+				return children.OrderBy(nativeView => GetNativeText(nativeView))
+					.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
+			});
+
+			string actual = await InvokeOnMainThreadAsync(() => {
+				return children.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
+			});
+
+			Assert.Equal(expected, actual);
 		}
 	}
 }
