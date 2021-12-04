@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				? mauiAssetFileProvider
 				: new CompositeFileProvider(customFileProvider, mauiAssetFileProvider);
 
-			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, ComponentsDispatcher, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
 
 			if (RootComponents != null)
 			{
