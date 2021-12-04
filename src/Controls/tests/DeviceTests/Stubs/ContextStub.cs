@@ -1,7 +1,9 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -37,6 +39,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager(this);
 #endif
+
+			if (serviceType == typeof(IDispatcher))
+				return _services.GetService(serviceType) ?? TestDispatcher.Current;
 
 			return _services.GetService(serviceType);
 		}

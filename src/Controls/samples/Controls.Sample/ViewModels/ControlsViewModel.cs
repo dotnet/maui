@@ -36,6 +36,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ImagePage), "Image",
 				"Displays an image."),
 
+			new SectionModel(typeof(ImageButtonPage), "ImageButton",
+				"ImageButton is a rectangular object that displays an image, and which fires a Clicked event when it's been pressed."),
+
 			new SectionModel(typeof(IndicatorPage), "IndicatorView",
 				"IndicatorView displays indicators. It can also represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
 

@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
+using Android.Views;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui

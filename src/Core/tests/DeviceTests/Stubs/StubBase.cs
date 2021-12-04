@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : IView
+	public class StubBase : IView, IVisualTreeElement
 	{
 		IElementHandler IElement.Handler
 		{
@@ -15,6 +16,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public bool IsEnabled { get; set; } = true;
+
+		public List<StubBase> Children { get; set; }
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
 
@@ -111,5 +114,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			return new Size(widthConstraint, heightConstraint);
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => this.Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
+
+		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent as IVisualTreeElement;
 	}
 }

@@ -4,40 +4,29 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
-using Android.Content.Res;
-using Android.Graphics;
-using Android.Graphics.Drawables;
+using Android.Runtime;
 using Android.Views;
-using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Graphics.Drawable;
-using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
-namespace Microsoft.Maui.Controls.Handlers
+namespace Microsoft.Maui.Controls
 {
-	public partial class ToolbarHandler : ElementHandler<Toolbar, MaterialToolbar>
+	public partial class Toolbar
 	{
-		IViewHandler? _titleViewHandler;
-		Container? _titleView;
+		IViewHandler? _nativeTitleViewHandler;
+		Container? _nativeTitleView;
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
 
 		NavigationRootManager? NavigationRootManager =>
-			MauiContext?.GetNavigationRootManager();
+			Handler?.MauiContext?.GetNavigationRootManager();
 
-		protected override MaterialToolbar CreateNativeElement()
-		{
-			return NavigationRootManager!
-						.NavigationLayout
-						.FindViewById<MaterialToolbar>(Resource.Id.navigationlayout_toolbar)!;
-		}
+		MaterialToolbar NativeView => Handler?.NativeView as MaterialToolbar ?? throw new InvalidOperationException("Native View not set");
 
-		protected virtual void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			var toolbarItems = VirtualView.ToolbarItems;
+			var toolbarItems = ToolbarItems;
 			List<ToolbarItem> newToolBarItems = new List<ToolbarItem>();
 			if (toolbarItems != null)
 				newToolBarItems.AddRange(toolbarItems);
@@ -46,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				NativeView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
-		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
+		void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
 		{
 			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
 			ToolbarExtensions.UpdateMenuItemIcon(MauiContext, menuItem, toolBarItem, null);
@@ -59,7 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentMenuItems == null)
 				return;
 
-			NativeView.UpdateMenuItems(VirtualView.ToolbarItems, MauiContext, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			NativeView.UpdateMenuItems(ToolbarItems, MauiContext, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		void UpdateTitleView()
@@ -67,43 +56,42 @@ namespace Microsoft.Maui.Controls.Handlers
 			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
 			_ = MauiContext.Context ?? throw new ArgumentNullException(nameof(MauiContext.Context));
 
-			VisualElement titleView = VirtualView.TitleView;
-			if (_titleViewHandler != null)
+			VisualElement titleView = TitleView;
+			if (_nativeTitleViewHandler != null)
 			{
-				var reflectableType = _titleViewHandler as System.Reflection.IReflectableType;
-				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _titleViewHandler.GetType();
+				var reflectableType = _nativeTitleViewHandler as System.Reflection.IReflectableType;
+				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _nativeTitleViewHandler.GetType();
 				if (titleView == null || Internals.Registrar.Registered.GetHandlerTypeForObject(titleView) != rendererType)
 				{
-					if (_titleView != null)
-						_titleView.Child = null;
+					if (_nativeTitleView != null)
+						_nativeTitleView.Child = null;
 
-					if (_titleViewHandler?.VirtualView != null)
-						_titleViewHandler.VirtualView.Handler = null;
+					if (_nativeTitleViewHandler?.VirtualView != null)
+						_nativeTitleViewHandler.VirtualView.Handler = null;
 
-					_titleViewHandler = null;
+					_nativeTitleViewHandler = null;
 				}
 			}
 
 			if (titleView == null)
 				return;
 
-			if (_titleViewHandler != null)
-				_titleViewHandler.SetVirtualView(titleView);
+			if (_nativeTitleViewHandler != null)
+				_nativeTitleViewHandler.SetVirtualView(titleView);
 			else
 			{
 				titleView.ToNative(MauiContext);
-				_titleViewHandler = titleView.Handler;
+				_nativeTitleViewHandler = titleView.Handler;
 
-				if (_titleView == null)
+				if (_nativeTitleView == null)
 				{
-					_titleView = new Container(MauiContext.Context);
-					NativeView.AddView(_titleView);
+					_nativeTitleView = new Container(MauiContext.Context);
+					NativeView.AddView(_nativeTitleView);
 				}
 
-				_titleView.Child = (INativeViewHandler)_titleViewHandler;
+				_nativeTitleView.Child = (INativeViewHandler?)_nativeTitleViewHandler;
 			}
 		}
-
 
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2)
 		{
@@ -127,7 +115,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.UpdateMenu();
+			arg2.UpdateMenu();
 		}
 
 		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2)
@@ -142,7 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.UpdateTitleView();
+			arg2.UpdateTitleView();
 		}
 
 		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2)

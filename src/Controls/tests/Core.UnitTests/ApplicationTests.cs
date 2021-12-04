@@ -165,13 +165,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(window.Page, app.MainPage);
 		}
 
+		[Test]
+		public void OnStartFiresOnceFromWindowCreated()
+		{
+			var window = new Window { Page = new ContentPage() };
+			var app = new StubApp { MainWindow = window };
+			var iapp = app as IApplication;
+			var win = iapp.CreateWindow(null);
+
+			Assert.AreEqual(0, app.OnStartCount);
+			(window as IWindow).Created();
+			Assert.AreEqual(1, app.OnStartCount);
+			(window as IWindow).Created();
+			Assert.AreEqual(1, app.OnStartCount);
+
+		}
+
 		class StubApp : Application
 		{
+			public int OnStartCount { get; private set; }
+			public StubApp() : base(false)
+			{
+
+			}
+
 			public Window MainWindow { get; set; }
 
 			protected override Window CreateWindow(IActivationState activationState)
 			{
 				return MainWindow;
+			}
+
+			protected override void OnStart()
+			{
+				base.OnStart();
+				OnStartCount++;
 			}
 		}
 	}

@@ -7,16 +7,19 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
-namespace Microsoft.Maui.Controls.Handlers
+namespace Microsoft.Maui.Controls
 {
-#if ANDROID || WINDOWS
-	public partial class ToolbarHandler
+
+	public partial class Toolbar
 	{
-		public static IPropertyMapper<Toolbar, ToolbarHandler> Mapper =
-			   new PropertyMapper<Toolbar, ToolbarHandler>(ElementMapper)
+		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
+
+		public static IPropertyMapper<Toolbar, ToolbarHandler> ControlsToolbarMapper =
+			   new PropertyMapper<Toolbar, ToolbarHandler>(ToolbarHandler.Mapper)
 			   {
-				   [nameof(Toolbar.IsVisible)] = MapIsVisible,
-				   [nameof(Toolbar.BackButtonVisible)] = MapBackButtonVisible,
+#if ANDROID || WINDOWS
+				   [nameof(IToolbar.IsVisible)] = MapIsVisible,
+				   [nameof(IToolbar.BackButtonVisible)] = MapBackButtonVisible,				   
 				   [nameof(Toolbar.TitleIcon)] = MapTitleIcon,
 				   [nameof(Toolbar.TitleView)] = MapTitleView,
 				   [nameof(Toolbar.IconColor)] = MapIconColor,
@@ -31,15 +34,12 @@ namespace Microsoft.Maui.Controls.Handlers
 				   [PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName] = MapToolbarPlacement,
 				   [PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName] = MapToolbarDynamicOverflowEnabled,
 #endif
+#endif
 			   };
 
-		public static CommandMapper<Toolbar, ToolbarHandler> CommandMapper = new()
+		public static void RemapForControls()
 		{
-		};
-
-		public ToolbarHandler() : base(Mapper, CommandMapper)
-		{
+			ToolbarHandler.Mapper = ControlsToolbarMapper;
 		}
 	}
-#endif
 }

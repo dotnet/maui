@@ -9,6 +9,7 @@
             <Button Clicked="PushClicked" Text="Push Page" />
             <Button Clicked="PushModalClicked" Text="Push Modal Page" />
             <Button Clicked="PushNavigationModalClicked" Text="Push Modal Navigation Page" />
+            <Button Clicked="PushFlyoutPageClicked" Text="Push Modal Flyout Page" />
             <Button x:Name="PushModal" Clicked="PopModalClicked" Text="Pop Modal Page" />
         </VerticalStackLayout>
     </views:BasePage.Content>

@@ -32,5 +32,6 @@
 		public const string TimePicker = "TimePicker";
 		public const string View = "View";
 		public const string WebView = "WebView";
+		public const string WindowOverlay = "WindowOverlay";
 	}
 }

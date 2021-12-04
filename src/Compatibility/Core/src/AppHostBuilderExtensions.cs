@@ -60,19 +60,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-		static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
-		{
-			builder.ConfigureImageSources(services =>
-			{
-				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
-				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
-				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
-				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
-			});
-
-			return builder;
-		}
-
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
 			builder.ConfigureCompatibilityLifecycleEvents();
@@ -161,12 +148,7 @@ namespace Microsoft.Maui.Controls.Hosting
 				});
 
 			builder.AddMauiCompat();
-
-			// Update the mappings for IView/View to work specifically for Controls
-			VisualElement.RemapForControls();
-			Label.RemapForControls();
-			Button.RemapForControls();
-			Window.RemapForControls();
+			builder.RemapForControls();
 
 			return builder;
 		}
