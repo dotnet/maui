@@ -81,6 +81,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Semantics Semantics { get; set; } = new Semantics();
 
+		public int ZIndex { get; set; }
+
 		public Size Arrange(Rectangle bounds)
 		{
 			Frame = bounds;

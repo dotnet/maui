@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILayoutHandler.Clear)] = MapClear,
 			[nameof(ILayoutHandler.Insert)] = MapInsert,
 			[nameof(ILayoutHandler.Update)] = MapUpdate,
+			[nameof(ILayoutHandler.UpdateZIndex)] = MapUpdateZIndex,
 		};
 
 		public LayoutHandler() : base(LayoutMapper, LayoutCommandMapper)
@@ -37,7 +38,6 @@ namespace Microsoft.Maui.Handlers
 		{
 
 		}
-
 
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
@@ -78,6 +78,14 @@ namespace Microsoft.Maui.Handlers
 			if (arg is LayoutHandlerUpdate args)
 			{
 				handler.Update(args.Index, args.View);
+			}
+		}
+
+		private static void MapUpdateZIndex(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			if (arg is IView view)
+			{
+				handler.UpdateZIndex(view);
 			}
 		}
 	}
