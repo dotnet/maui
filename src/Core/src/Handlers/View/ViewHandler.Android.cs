@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if(appbarLayout.ChildCount > 0 && 
+			if (appbarLayout.ChildCount > 0 &&
 				appbarLayout.GetChildAt(0) == nativeToolBar)
 			{
 				return;

@@ -637,7 +637,7 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 
 				var nativeRecognizer = GetNativeRecognizer(recognizer);
-				
+
 				if (nativeRecognizer != null && _nativeView != null)
 				{
 #if __MOBILE__

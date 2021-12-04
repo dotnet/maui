@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
 		}
 
-		public IEnumerable<ToolbarItem> ToolbarItems { get => _toolbarItems; set => SetProperty(ref _toolbarItems, value); }		
+		public IEnumerable<ToolbarItem> ToolbarItems { get => _toolbarItems; set => SetProperty(ref _toolbarItems, value); }
 		public double? BarHeight { get => _barHeight; set => SetProperty(ref _barHeight, value); }
 		public string BackButtonTitle { get => _backButtonTitle; set => SetProperty(ref _backButtonTitle, value); }
 		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 				_currentPage.PropertyChanged -= OnPropertyChanged;
 
 			_currentPage = _currentNavigationPage.CurrentPage;
-			_currentNavigationPage.CurrentPage.PropertyChanged += OnPropertyChanged;			
+			_currentNavigationPage.CurrentPage.PropertyChanged += OnPropertyChanged;
 		}
 
 		void ApplyChanges(NavigationPage navigationPage)

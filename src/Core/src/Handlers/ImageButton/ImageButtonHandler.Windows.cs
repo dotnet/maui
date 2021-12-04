@@ -57,6 +57,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			(handler.NativeView as Button)?.UpdateCornerRadius(buttonStroke);
+    }
+
+		public static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
+		{
+			(handler.NativeView as Button)?.UpdateBackground(imageButton);
 		}
 
 		void OnSetImageSource(ImageSource? nativeImageSource)
