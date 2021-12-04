@@ -1,23 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Handlers;
 using WebViewAppShared;
 using Xunit;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 {
 	[Category(TestCategory.BlazorWebView)]
-	public partial class BlazorWebViewTests : HandlerTestBase
+	public class BlazorWebViewTests : HandlerTestBase
 	{
 		[Fact]
-		public async Task BlazorPassing()
+		public async Task BasicBlazorComponentClick()
 		{
 			EnsureHandlerCreated(additionalCreationActions: appBuilder =>
 			{
@@ -32,16 +27,15 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 					{ "index.html", TestStaticFilesContents.DefaultMauiIndexHtmlContent },
 				},
 			};
-			bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(TestComponent1), Selector="#app", });
+			bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(TestComponent1), Selector = "#app", });
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var bwvHandler = CreateHandler<BlazorWebViewHandler>(bwv);
-
 				var nativeWebView = bwvHandler.NativeView;
-
 				await WebViewHelpers.WaitForWebViewReady(nativeWebView);
 
+				// Click a button in a Razor component 3 times
 				await WebViewHelpers.WaitForControlDiv(bwvHandler.NativeView, controlValueToWaitFor: "0");
 
 				var c1 = await WebViewHelpers.ExecuteScriptAsync(bwvHandler.NativeView, "document.getElementById('incrementButton').click()");
@@ -56,8 +50,9 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 
 				await WebViewHelpers.WaitForControlDiv(bwvHandler.NativeView, controlValueToWaitFor: "3");
 
+				// And the counter value should increment from 0 to 3.
 				var actualFinalCounterValue = await WebViewHelpers.ExecuteScriptAsync(bwvHandler.NativeView, "document.getElementById('counterValue').innerText");
-				actualFinalCounterValue = actualFinalCounterValue.Trim('\"');
+				actualFinalCounterValue = actualFinalCounterValue.Trim('\"'); // some platforms return quoted values, so we trim them
 				Assert.Equal("3", actualFinalCounterValue);
 			});
 
@@ -73,11 +68,10 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"" />
     <title>Blazor app</title>
     <base href=""/"" />
-    <link href=""css/app.css"" rel=""stylesheet"" />
 </head>
 
 <body>
-	This HTML is coming from a custom provider!
+	This test HTML is coming from a custom provider!
     <div id=""app""></div>
 
     <div id=""blazor-error-ui"">
