@@ -8,11 +8,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
 	public static class WebViewHelpers
 	{
+		const int MaxWaitTimes = 5;
+		const int WaitTimeInMS = 100;
+
 		public static async Task WaitForWebViewReady(WebView2 wv2)
 		{
-			const int MaxWaitTimes = 5;
-			const int WaitTimeInMS = 100;
-
 			CoreWebView2 coreWebView2 = null;
 			for (int i = 0; i < MaxWaitTimes; i++)
 			{
@@ -54,8 +54,6 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 		public static async Task WaitForControlDiv(WebView2 webView2, string controlValueToWaitFor)
 		{
-			const int MaxWaitTimes = 5;
-			const int WaitTimeInMS = 100;
 			var quotedExpectedValue = "\"" + controlValueToWaitFor + "\"";
 			for (int i = 0; i < MaxWaitTimes; i++)
 			{

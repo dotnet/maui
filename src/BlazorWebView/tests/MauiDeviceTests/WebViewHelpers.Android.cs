@@ -9,19 +9,18 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
 	public static class WebViewHelpers
 	{
+		const int MaxWaitTimes = 10;
+		const int WaitTimeInMS = 200;
+
 		public static async Task WaitForWebViewReady(AWebView webview)
 		{
-			const int MaxWaitTimes = 10;
-			const int WaitTimeInMS = 200;
 			for (int i = 0; i < MaxWaitTimes; i++)
 			{
 				var blazorObject = await ExecuteScriptAsync(webview, "window.Blazor !== null");
 				if (blazorObject == "true")
 				{
-					Log.Warn("eilon", $"FOUND BLAZOBJ: {blazorObject}");
 					return;
 				}
-				Log.Warn("blazorwebview", $"window.Blazor not found, waiting {WaitTimeInMS}ms...");
 				await Task.Delay(WaitTimeInMS);
 			}
 
@@ -37,20 +36,19 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 		public static async Task WaitForControlDiv(AWebView webView, string controlValueToWaitFor)
 		{
-			const int MaxWaitTimes = 10;
-			const int WaitTimeInMS = 200;
 			var quotedExpectedValue = "\"" + controlValueToWaitFor + "\"";
+			var latestControlValue = "<no value yet>";
 			for (int i = 0; i < MaxWaitTimes; i++)
 			{
-				var controlValue = await ExecuteScriptAsync(webView, "document.getElementById('controlDiv').innerText");
-				if (controlValue == quotedExpectedValue)
+				latestControlValue = await ExecuteScriptAsync(webView, "document.getElementById('controlDiv').innerText");
+				if (latestControlValue == quotedExpectedValue)
 				{
 					return;
 				}
 				await Task.Delay(WaitTimeInMS);
 			}
 
-			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'.");
+			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'. Most recent value was '{latestControlValue}'.");
 		}
 
 		class JavascriptResult : Java.Lang.Object, IValueCallback
