@@ -6,8 +6,8 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
@@ -22,12 +22,19 @@ namespace Microsoft.Maui.Controls
 
 		IAppIndexingProvider? _appIndexProvider;
 		ReadOnlyCollection<Element>? _logicalChildren;
+		bool _isStarted;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
-		public Application()
+		public Application() : this(true)
 		{
-			SetCurrentApplication(this);
+		}
+
+		internal Application(bool setCurrentApplication)
+		{
+			if (setCurrentApplication)
+				SetCurrentApplication(this);
+
 			_systemResources = new Lazy<IResourceDictionary>(() =>
 			{
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
@@ -239,30 +246,19 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<Page>? PageDisappearing;
 
-		async void SaveProperties()
-		{
-			try
-			{
-				await SetPropertiesAsync();
-			}
-			catch (Exception exc)
-			{
-				Internals.Log.Warning(nameof(Application), $"Exception while saving Application Properties: {exc}");
-			}
-		}
-
 		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
-		public async Task SavePropertiesAsync()
-		{
-			if (Dispatcher.IsInvokeRequired)
+		public Task SavePropertiesAsync() =>
+			Dispatcher.DispatchIfRequiredAsync(async () =>
 			{
-				Dispatcher.BeginInvokeOnMainThread(SaveProperties);
-			}
-			else
-			{
-				await SetPropertiesAsync();
-			}
-		}
+				try
+				{
+					await SetPropertiesAsync();
+				}
+				catch (Exception exc)
+				{
+					this.FindMauiContext()?.CreateLogger<Application>()?.LogWarning(exc, "Exception while saving Application Properties");
+				}
+			});
 
 		public IPlatformElementConfiguration<T, Application> On<T>() where T : IConfigPlatform
 		{
@@ -348,6 +344,10 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendStart()
 		{
+			if (_isStarted)
+				return;
+
+			_isStarted = true;
 			OnStart();
 		}
 
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls
 			var deserializer = DependencyService.Get<IDeserializer>();
 			if (deserializer == null)
 			{
-				Log.Warning("Startup", "No IDeserialzier was found registered");
+				Current?.FindMauiContext()?.CreateLogger<Application>()?.LogWarning("No IDeserializer was found registered");
 				return new Dictionary<string, object>(4);
 			}
 

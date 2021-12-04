@@ -41,6 +41,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorX)] = MapAnchorX,
 			[nameof(IView.AnchorY)] = MapAnchorY,
 			[nameof(IViewHandler.ContainerView)] = MapContainerView,
+#if ANDROID
+			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
+#endif
 		};
 
 		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new()
@@ -257,11 +260,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFrame(IViewHandler handler, IView view, object? args)
 		{
 			MappingFrame(handler, view);
-#if WINDOWS
-			// Both Clip and Shadow depend on the Control size.
-			MapClip(handler, view);
-			MapShadow(handler, view);
-#endif
 		}
 	}
 }

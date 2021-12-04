@@ -1,7 +1,7 @@
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class UIApplicationExtensions
 	{

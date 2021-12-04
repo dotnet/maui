@@ -41,11 +41,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return new ColorStateList(States, new[] { color.ToAndroid().ToArgb(), disabled });
 		}
 
-		public static Color ToColor(this AColor color)
-		{
-			return Color.FromUint((uint)color.ToArgb());
-		}
-
 		internal static ColorStateList ToDefaultColorStateList(this Color color)
 		{
 			return ToDefaultColorStateList(color.ToAndroid());

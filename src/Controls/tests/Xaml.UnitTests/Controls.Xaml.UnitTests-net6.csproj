@@ -42,6 +42,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\Core\tests\UnitTests\TestClasses\DispatcherStub.cs" Link="DispatcherStub.cs" />
+    <Compile Include="..\Core.UnitTests\Log.cs" Link="Log.cs" />
     <Compile Include="..\Core.UnitTests\MockPlatformServices.cs" />
     <Compile Include="..\Core.UnitTests\BaseTestFixture.cs" />
   </ItemGroup>

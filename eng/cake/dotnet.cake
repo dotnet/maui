@@ -190,7 +190,7 @@ Task("dotnet-pack")
         //     - libSkiaSharp.pdb
         //     - libHarfBuzzSharp.pdb
         var assetsDir = "./artifacts/additional-assets";
-        var nativeAssetsVersion = XmlPeek("./eng/Microsoft.Extensions.targets", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
+        var nativeAssetsVersion = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
         NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
         {
             Version = nativeAssetsVersion,

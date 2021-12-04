@@ -13,9 +13,9 @@ namespace Samples.View
 			InitializeComponent();
 		}
 
-		async void OnSampleTapped(object sender, SelectionChangedEventArgs  e)
+		async void OnSampleTapped(object sender, SelectionChangedEventArgs e)
 		{
-			var item = e.CurrentSelection.FirstOrDefault() as SampleItem;
+			var item = e.CurrentSelection?.FirstOrDefault() as SampleItem;
 			if (item == null)
 				return;
 

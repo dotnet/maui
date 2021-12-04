@@ -2,7 +2,7 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class TextBoxExtensions
 	{
@@ -86,6 +86,7 @@ namespace Microsoft.Maui
 		public static void UpdatePlaceholderColor(this TextBox textBox, IPlaceholder placeholder)
 		{
 			var brush = placeholder.PlaceholderColor?.ToNative();
+
 			if (brush is null)
 			{
 				// Windows.Foundation.UniversalApiContract < 5

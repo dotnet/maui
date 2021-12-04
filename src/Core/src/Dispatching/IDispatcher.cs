@@ -4,8 +4,8 @@ namespace Microsoft.Maui.Dispatching
 {
 	public interface IDispatcher
 	{
-		void BeginInvokeOnMainThread(Action action);
+		bool Dispatch(Action action);
 
-		bool IsInvokeRequired { get; }
+		bool IsDispatchRequired { get; }
 	}
 }

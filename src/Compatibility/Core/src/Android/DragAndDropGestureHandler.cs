@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Android.Content;
 using Android.Views;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
 using ADragFlags = Android.Views.DragFlags;
 using AUri = Android.Net.Uri;
@@ -235,7 +236,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 				catch (Exception exc)
 				{
-					Internals.Log.Warning(nameof(DropGestureRecognizer), $"{exc}");
+					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(exc, "Error sending event");
 				}
 			});
 		}

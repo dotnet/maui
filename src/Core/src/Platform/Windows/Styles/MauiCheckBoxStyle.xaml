@@ -2,7 +2,7 @@
 <ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:win="using:Microsoft.Maui">
+	xmlns:win="using:Microsoft.Maui.Platform">
 
     <Style TargetType="win:MauiCheckBox">
         <Setter Property="Background" Value="Transparent"/>

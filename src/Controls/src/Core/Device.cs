@@ -68,31 +68,31 @@ namespace Microsoft.Maui.Controls
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsInvokeRequired =>
-			Application.Current.GetDispatcher().IsInvokeRequired;
+			Application.Current.FindDispatcher().IsDispatchRequired;
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static void BeginInvokeOnMainThread(Action action) =>
-			Application.Current.GetDispatcher().BeginInvokeOnMainThread(action);
+			Application.Current.FindDispatcher().Dispatch(action);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
-			Application.Current.GetDispatcher().InvokeOnMainThreadAsync(func);
+			Application.Current.FindDispatcher().DispatchAsync(func);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task InvokeOnMainThreadAsync(Action action) =>
-			Application.Current.GetDispatcher().InvokeOnMainThreadAsync(action);
+			Application.Current.FindDispatcher().DispatchAsync(action);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask) =>
-			Application.Current.GetDispatcher().InvokeOnMainThreadAsync(funcTask);
+			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask) =>
-			Application.Current.GetDispatcher().InvokeOnMainThreadAsync(funcTask);
+			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
-			Application.Current.GetDispatcher().GetMainThreadSynchronizationContextAsync();
+			Application.Current.FindDispatcher().GetSynchronizationContextAsync();
 
 		public static double GetNamedSize(NamedSize size, Element targetElement)
 		{

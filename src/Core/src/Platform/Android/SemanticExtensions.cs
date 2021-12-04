@@ -1,24 +1,12 @@
-﻿using System;
-using Android.Text;
-using Android.Views;
-using Android.Views.Accessibility;
+﻿using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
-using Microsoft.Maui.Platform;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class SemanticExtensions
 	{
-		public static void SetSemanticFocus(this IView element)
-		{
-			if (element?.Handler?.NativeView is not View view)
-				throw new NullReferenceException("Can't access view from a null handler");
-
-			view.SendAccessibilityEvent(EventTypes.ViewFocused);
-		}
-
 		public static void UpdateSemanticNodeInfo(this View nativeView, IView virtualView, AccessibilityNodeInfoCompat? info)
 		{
 			if (info == null)

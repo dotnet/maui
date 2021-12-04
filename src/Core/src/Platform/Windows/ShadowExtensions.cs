@@ -13,7 +13,7 @@ using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class ShadowExtensions
 	{

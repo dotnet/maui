@@ -6,10 +6,58 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
+		public static void UpdateStrokeColor(this Button nativeButton, IButtonStroke buttonStroke)
+		{
+			var brush = buttonStroke.StrokeColor?.ToNative();
+
+			if (brush is null)
+			{
+				nativeButton.Resources.Remove("ButtonBorderBrush");
+				nativeButton.Resources.Remove("ButtonBorderBrushPointerOver");
+				nativeButton.Resources.Remove("ButtonBorderBrushPressed");
+				nativeButton.Resources.Remove("ButtonBorderBrushDisabled");
+
+				nativeButton.ClearValue(Button.BorderBrushProperty);
+			}
+			else
+			{
+				nativeButton.Resources["ButtonBorderBrush"] = brush;
+				nativeButton.Resources["ButtonBorderBrushPointerOver"] = brush;
+				nativeButton.Resources["ButtonBorderBrushPressed"] = brush;
+				nativeButton.Resources["ButtonBorderBrushDisabled"] = brush;
+
+				nativeButton.BorderBrush = brush;
+			}
+		}
+
+		public static void UpdateStrokeThickness(this Button nativeButton, IButtonStroke buttonStroke)
+		{
+			if (buttonStroke.StrokeThickness >= 0)
+			{
+				nativeButton.Resources["ButtonBorderThemeThickness"] = WinUIHelpers.CreateThickness(buttonStroke.StrokeThickness);
+			}
+			else
+			{
+				nativeButton.Resources.Remove("ButtonBorderThemeThickness");
+			}
+		}
+
+		public static void UpdateCornerRadius(this Button nativeButton, IButtonStroke buttonStroke)
+		{
+			if (buttonStroke.CornerRadius >= 0)
+			{
+				nativeButton.Resources["ControlCornerRadius"] = WinUIHelpers.CreateCornerRadius(buttonStroke.CornerRadius);
+			}
+			else
+			{
+				nativeButton.Resources.Remove("ControlCornerRadius");
+			}
+		}
+
 		public static void UpdateText(this Button nativeButton, IText text)
 		{
 			if (nativeButton.GetContent<TextBlock>() is TextBlock textBlock)
@@ -25,12 +73,15 @@ namespace Microsoft.Maui
 		public static void UpdateBackground(this Button nativeButton, IButton button)
 		{
 			var brush = button.Background?.ToNative();
+
 			if (brush is null)
 			{
 				nativeButton.Resources.Remove("ButtonBackground");
 				nativeButton.Resources.Remove("ButtonBackgroundPointerOver");
 				nativeButton.Resources.Remove("ButtonBackgroundPressed");
 				nativeButton.Resources.Remove("ButtonBackgroundDisabled");
+
+				nativeButton.ClearValue(Button.BackgroundProperty);
 			}
 			else
 			{
@@ -38,25 +89,36 @@ namespace Microsoft.Maui
 				nativeButton.Resources["ButtonBackgroundPointerOver"] = brush;
 				nativeButton.Resources["ButtonBackgroundPressed"] = brush;
 				nativeButton.Resources["ButtonBackgroundDisabled"] = brush;
+
+				nativeButton.Background = brush;
 			}
 		}
 
 		public static void UpdateTextColor(this Button nativeButton, ITextStyle button)
 		{
 			var brush = button.TextColor?.ToNative();
+
 			if (brush is null)
 			{
+				// Windows.Foundation.UniversalApiContract < 5
 				nativeButton.Resources.Remove("ButtonForeground");
 				nativeButton.Resources.Remove("ButtonForegroundPointerOver");
 				nativeButton.Resources.Remove("ButtonForegroundPressed");
 				nativeButton.Resources.Remove("ButtonForegroundDisabled");
+
+				// Windows.Foundation.UniversalApiContract >= 5
+				nativeButton.ClearValue(Button.ForegroundProperty);
 			}
 			else
 			{
+				// Windows.Foundation.UniversalApiContract < 5
 				nativeButton.Resources["ButtonForeground"] = brush;
 				nativeButton.Resources["ButtonForegroundPointerOver"] = brush;
 				nativeButton.Resources["ButtonForegroundPressed"] = brush;
 				nativeButton.Resources["ButtonForegroundDisabled"] = brush;
+
+				// Windows.Foundation.UniversalApiContract >= 5
+				nativeButton.Foreground = brush;
 			}
 		}
 
