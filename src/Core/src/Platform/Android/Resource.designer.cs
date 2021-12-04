@@ -18,6 +18,9 @@ namespace Microsoft.Maui
 
 		public partial class Attribute
 		{
+			// aapt resource value: 0x7F030007
+			public static int actionBarSize = 2130903047;
+
 			// aapt resource value: 0x7F0300E4
 			public static int colorSwitchThumbNormal = 2130903268;
 
@@ -69,6 +72,9 @@ namespace Microsoft.Maui
 			// aapt resource value: 0x7F080059
 			public static int automation_tag_id = 2131230809;
 
+			// aapt resource value: 0x7F080132
+			public static int navigation_layout = 2131231026;
+
 			// aapt resource value: 0x7F08013C
 			public static int navigationlayout_appbar = 2131231036;
 
@@ -79,7 +85,7 @@ namespace Microsoft.Maui
 			public static int navigationlayout_content = 2131231038;
 
 			// aapt resource value: 0x7F08013F
-			public static int navigationlayout_toolbar = 2131231039;
+			public static int maui_toolbar = 2131231039;
 
 			// aapt resource value: 0x7F080140
 			public static int navigationlayout_toptabs = 2131231040;
@@ -104,6 +110,12 @@ namespace Microsoft.Maui
 
 		public partial class Layout
 		{
+			// aapt resource value: 0x7F0B002E
+			public static int drawer_layout = 2131427374;
+
+			// aapt resource value: 0x7F0B003E
+			public static int maui_toolbar = 2131427390;
+
 			// aapt resource value: 0x7F0B005A
 			public static int navigationlayout = 2131427418;
 

@@ -41,6 +41,9 @@ namespace Microsoft.Maui.Controls
 			// aapt resource value: 0x7F030007
 			public static int actionBarSize = 2130903047;
 
+			// aapt resource value: 0x7F0303F1
+			public static int toolbarStyle = 2130904049;
+
 			static Attribute()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -102,9 +105,6 @@ namespace Microsoft.Maui.Controls
 			// aapt resource value: 0x7F0801CD
 			public static int navigationlayout_toptabs = 2131231181;
 
-			// aapt resource value: 0x7F08013F
-			public static int navigationlayout_toolbar = 2131231039;
-
 			static Id()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -115,6 +115,9 @@ namespace Microsoft.Maui.Controls
 		{
 			// aapt resource value: 0x7F0B001C
 			public static int bottomtablayout = 2131427356;
+
+			// aapt resource value: 0x7F0B003E
+			public static int maui_toolbar = 2131427390;
 
 			// aapt resource value: 0x7F0B002E
 			public static int fragment_backstack = 2131427374;
@@ -140,6 +143,50 @@ namespace Microsoft.Maui.Controls
 			public static int design_bottom_navigation_height = 2131099751;
 
 			static Dimension()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+		}
+
+		public partial class Styleable
+		{
+			// aapt resource value: { 0x10100AF,0x1010140,0x7F03007B,0x7F0300C8,0x7F0300C9,0x7F0300EE,0x7F0300EF,0x7F0300F0,0x7F0300F1,0x7F0300F2,0x7F0300F3,0x7F03024B,0x7F03024C,0x7F03026C,0x7F030274,0x7F0302A2,0x7F0302A3,0x7F0302DA,0x7F030342,0x7F030344,0x7F030345,0x7F0303B0,0x7F0303B4,0x7F0303B5,0x7F0303B6,0x7F0303B7,0x7F0303B8,0x7F0303B9,0x7F0303BA,0x7F0303BB }
+			public static int[] Toolbar = new int[] {
+					16842927,
+					16843072,
+					2130903163,
+					2130903240,
+					2130903241,
+					2130903278,
+					2130903279,
+					2130903280,
+					2130903281,
+					2130903282,
+					2130903283,
+					2130903627,
+					2130903628,
+					2130903660,
+					2130903668,
+					2130903714,
+					2130903715,
+					2130903770,
+					2130903874,
+					2130903876,
+					2130903877,
+					2130903984,
+					2130903988,
+					2130903989,
+					2130903990,
+					2130903991,
+					2130903992,
+					2130903993,
+					2130903994,
+					2130903995};
+
+			// aapt resource value: 29
+			public static int Toolbar_titleTextColor = 29;
+
+			static Styleable()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
 			}

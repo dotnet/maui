@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		internal TestNavigationPage(bool setforMaui, Page root = null, bool setHandler = true) : base(setforMaui, root)
 		{
+			Title = "Title";
 			if (setforMaui && setHandler)
 			{
 				base.Handler = new TestNavigationHandler();

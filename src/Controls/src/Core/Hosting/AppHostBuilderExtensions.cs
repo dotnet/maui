@@ -63,10 +63,11 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 #if WINDOWS || ANDROID
 			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
-			{ typeof(Toolbar), typeof(Controls.Handlers.ToolbarHandler) },
+			{ typeof(Toolbar), typeof(ToolbarHandler) },
 #endif
 #if __ANDROID__
 			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
+			{ typeof(FlyoutPage), typeof(FlyoutViewHandler) },
 #endif
 		};
 
@@ -92,6 +93,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
+			Toolbar.RemapForControls();
 			Window.RemapForControls();
 
 			return builder;

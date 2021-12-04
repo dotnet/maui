@@ -41,6 +41,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorX)] = MapAnchorX,
 			[nameof(IView.AnchorY)] = MapAnchorY,
 			[nameof(IViewHandler.ContainerView)] = MapContainerView,
+#if ANDROID
+			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
+#endif
 		};
 
 		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new()
