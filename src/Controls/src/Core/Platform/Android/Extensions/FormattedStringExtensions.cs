@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using System.Text;
 using Android.Graphics;
 using Android.Text;
@@ -15,6 +16,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (formattedString == null)
 				return new SpannableString(string.Empty);
+
+			IFontManager? fontManager = default;
 
 			var builder = new StringBuilder();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
@@ -41,7 +44,7 @@ namespace Microsoft.Maui.Controls.Platform
 				int end = start + text.Length;
 				c = end;
 
-				var fgcolor = span.TextColor ?? label?.TextColor;
+				var fgcolor = span.TextColor ?? label.TextColor;
 				if (fgcolor != null)
 				{
 					spannable.SetSpan(new ForegroundColorSpan(fgcolor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
@@ -57,12 +60,16 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				var font = span.ToFont();
-				if (font.IsDefault && label is not null)
+				if (font.IsDefault)
 					font = label.ToFont();
 
 				if (!font.IsDefault)
 				{
-					spannable.SetSpan(new FontSpan(font, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
+					spannable.SetSpan(
+						new FontSpan(font, view, span.CharacterSpacing.ToEm(), fontManager ??= label.Handler.GetRequiredService<IFontManager>()),
+						start,
+						end,
+						SpanTypes.InclusiveInclusive);
 				}
 
 				if (span.IsSet(Span.TextDecorationsProperty))
@@ -76,18 +83,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		class FontSpan : MetricAffectingSpan
 		{
-			public FontSpan(Font font, TextView view, float characterSpacing)
+			public FontSpan(Font font, TextView view, float characterSpacing, IFontManager fontManager)
 			{
 				Font = font;
 				TextView = view;
 				CharacterSpacing = characterSpacing;
+				FontManager = fontManager;
 			}
 
-			public Font Font { get; }
-
-			public TextView TextView { get; }
-
-			public float CharacterSpacing { get; }
+			public readonly IFontManager FontManager;
+			public readonly Font Font;
+			public readonly TextView TextView;
+			public readonly float CharacterSpacing;
 
 			public override void UpdateDrawState(TextPaint? tp)
 			{
@@ -102,7 +109,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void Apply(Paint paint)
 			{
-				paint.SetTypeface(Font.ToTypeface());
+				paint.SetTypeface(Font.ToTypeface(FontManager));
 				float value = (float)Font.Size;
 
 				paint.TextSize = TypedValue.ApplyDimension(

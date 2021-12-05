@@ -227,21 +227,21 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.PlatformInvalidator = platformServices;
 #endif
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers();
+				RegisterCompatRenderers(context);
 
 			ExpressionSearch.Default = new iOSExpressionSearch();
 
 			IsInitialized = true;
 		}
 
-		internal static void RegisterCompatRenderers()
+		internal static void RegisterCompatRenderers(IMauiContext context)
 		{
 			if (!IsInitializedRenderers)
 			{
 				IsInitializedRenderers = true;
 
 				// Only need to do this once
-				Controls.Internals.Registrar.RegisterAll(new[]
+				Controls.Internals.Registrar.RegisterAll(context, new[]
 				{
 					typeof(ExportRendererAttribute),
 					typeof(ExportCellAttribute),

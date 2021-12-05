@@ -351,13 +351,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_useLegacyColorManagement)
 			{
 				var color = targetColor == null || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
-				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
+				UpdateAttributedPlaceholder(formatted.ToAttributed(Element.GetFontManager(), defaultColor: color));
 			}
 			else
 			{
 				// Using VSM color management; take whatever is in Element.PlaceholderColor
 				var color = targetColor == null ? _defaultPlaceholderColor : targetColor;
-				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
+				UpdateAttributedPlaceholder(formatted.ToAttributed(Element.GetFontManager(), defaultColor: color));
 			}
 
 			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing));

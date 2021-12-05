@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected virtual IShellPageRendererTracker CreatePageRendererTracker()
 		{
-			return new ShellPageRendererTracker(this);
+			return new ShellPageRendererTracker(this, Element.GetFontManager());
 		}
 
 		protected virtual IShellFlyoutContentRenderer CreateShellFlyoutContentRenderer()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
@@ -360,14 +361,15 @@ namespace Microsoft.Maui.Controls.Internals
 			Effects[resolutionName + "." + id] = effectType;
 		}
 
-		public static void RegisterAll(Type[] attrTypes)
+		public static void RegisterAll(IMauiContext context, Type[] attrTypes)
 		{
-			RegisterAll(attrTypes, default(InitializationFlags));
+			RegisterAll(context, attrTypes, default(InitializationFlags));
 		}
 
-		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags)
+		public static void RegisterAll(IMauiContext context, Type[] attrTypes, InitializationFlags flags)
 		{
 			RegisterAll(
+				context,
 				Device.GetAssemblies(),
 				Device.PlatformServices.GetType().GetTypeInfo().Assembly,
 				attrTypes,
@@ -376,6 +378,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		internal static void RegisterAll(
+			IMauiContext context,
 			Assembly[] assemblies,
 			Assembly defaultRendererAssembly,
 			Type[] attrTypes,
@@ -395,6 +398,8 @@ namespace Microsoft.Maui.Controls.Internals
 				assemblies[indexOfExecuting] = assemblies[0];
 				assemblies[0] = defaultRendererAssembly;
 			}
+
+			var fontRegistrar =  context.Services.GetRequiredService<IFontRegistrar>();
 
 			// Don't use LINQ for performance reasons
 			// Naive implementation can easily take over a second to run
@@ -418,7 +423,7 @@ namespace Microsoft.Maui.Controls.Internals
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							CompatServiceProvider.RegisterFont(fa.FontFileName, fa.Alias, assembly);
+							fontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{

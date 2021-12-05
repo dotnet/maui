@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 			else
 			{
-				NativeButton.Typeface = font.ToTypeface();
+				NativeButton.Typeface = font.ToTypeface(Element.GetFontManager());
 				NativeButton.SetTextSize(ComplexUnitType.Sp, (float)font.Size);
 			}
 		}

@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
 		{
-			return new ShellItemRenderer(this);
+			return new ShellItemRenderer(this, Element.GetFontManager());
 		}
 
 		protected virtual IShellSectionRenderer CreateShellSectionRenderer(ShellSection shellSection)

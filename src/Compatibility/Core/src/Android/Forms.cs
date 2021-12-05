@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitializedRenderers = true;
 		}
 
-		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)
+		internal static void RegisterCompatRenderers(IMauiContext context, InitializationOptions? maybeOptions)
 		{
 			if (!IsInitializedRenderers)
 			{
@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				else
 				{
 					// Only need to do this once
-					Registrar.RegisterAll(new[] {
+					Registrar.RegisterAll(context, new[] {
 						typeof(ExportRendererAttribute),
 						typeof(ExportCellAttribute),
 						typeof(ExportImageSourceHandlerAttribute),
@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FramePartition("RegisterAll");
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers(maybeOptions);
+				RegisterCompatRenderers(context, maybeOptions);
 
 			Profile.FramePartition("Epilog");
 

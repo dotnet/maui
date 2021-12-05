@@ -171,10 +171,6 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			public void Initialize(IServiceProvider services)
 			{
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
-				CompatServiceProvider.SetServiceProvider(services);
-#endif
-
 				if (services.GetService<IGraphicsService>() is IGraphicsService graphicsService)
 					GraphicsPlatform.RegisterGlobalService(graphicsService);
 

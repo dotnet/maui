@@ -5,13 +5,18 @@ using Android.Content;
 using Android.Graphics;
 using Android.Util;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Paint = Android.Graphics.Paint;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	public sealed class FontImageSourceHandler : IImageSourceHandler
 	{
+		IFontManager _fontManager;
+		IFontManager FontManager => _fontManager ??= Application.Current?.FindMauiContext()?.Services?.GetService<IFontManager>();
+
 		public Task<Bitmap> LoadImageAsync(
 			ImageSource imagesource,
 			Context context,
@@ -29,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					AntiAlias = true,
 				};
 
-				paint.SetTypeface(fontsource.FontFamily.ToTypeface());
+				paint.SetTypeface(fontsource.FontFamily.ToTypeface(FontManager));
 
 				var width = (int)(paint.MeasureText(fontsource.Glyph) + .5f);
 				var baseline = (int)(-paint.Ascent() + .5f);

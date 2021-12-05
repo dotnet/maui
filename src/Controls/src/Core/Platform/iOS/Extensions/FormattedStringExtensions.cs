@@ -1,6 +1,7 @@
 #nullable enable
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 #if !MACOS
 using ObjCRuntime;
 using UIKit;
@@ -15,6 +16,10 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static NSAttributedString ToAttributed(this FormattedString formattedString, Label label)
+			=> formattedString.ToAttributed(label.GetFontManager(), label?.LineHeight ?? 0, label?.HorizontalTextAlignment ?? TextAlignment.Start, label?.ToFont(), label?.TextColor);
+
+
+		public static NSAttributedString ToAttributed(this FormattedString formattedString, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null)
 		{
 			if (formattedString == null)
 				return new NSAttributedString(string.Empty);
@@ -26,13 +31,16 @@ namespace Microsoft.Maui.Controls.Platform
 				if (span.Text == null)
 					continue;
 
-				attributed.Append(span.ToAttributed(label));
+				attributed.Append(span.ToAttributed(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor));
 			}
 
 			return attributed;
 		}
 
-		internal static NSAttributedString ToAttributed(this Span span, Label label)
+		public static NSAttributedString ToAttributed(this Span span, Label label, IFontManager fontManager)
+			=> span.ToAttributed(fontManager, label?.LineHeight ?? 0, label?.HorizontalTextAlignment ?? TextAlignment.Start, label?.ToFont(), label?.TextColor);
+
+		public static NSAttributedString ToAttributed(this Span span, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null)
 		{
 			var text = TextTransformUtilites.GetTransformedText(span.Text, span.TextTransform);
 			if (text is null)
@@ -41,27 +49,24 @@ namespace Microsoft.Maui.Controls.Platform
 			var style = new NSMutableParagraphStyle();
 			var lineHeight = span.LineHeight >= 0 
 				? span.LineHeight 
-				: label?.LineHeight ?? -1;
+				: defaultLineHeight;
 
 			if (lineHeight >= 0)
 			{
 				style.LineHeightMultiple = new nfloat(lineHeight);
 			}
 
-			if (label is not null)
+			style.Alignment = defaultHorizontalAlignment switch
 			{
-				style.Alignment = label.HorizontalTextAlignment switch
-				{
-					TextAlignment.Start => UITextAlignment.Left,
-					TextAlignment.Center => UITextAlignment.Center,
-					TextAlignment.End => UITextAlignment.Right,
-					_ => UITextAlignment.Left
-				};
-			}
-
+				TextAlignment.Start => UITextAlignment.Left,
+				TextAlignment.Center => UITextAlignment.Center,
+				TextAlignment.End => UITextAlignment.Right,
+				_ => UITextAlignment.Left
+			};
+			
 			var font = span.ToFont();
-			if (font.IsDefault && label is not null)
-				font = label.ToFont();
+			if (font.IsDefault && defaultFont.HasValue)
+				font = defaultFont.Value;
 
 			var hasUnderline = false;
 			var hasStrikethrough = false;
@@ -71,11 +76,14 @@ namespace Microsoft.Maui.Controls.Platform
 				hasUnderline = (textDecorations & TextDecorations.Underline) != 0;
 				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
 			}
+
+			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
+
 #if !MACOS
 			var attrString = new NSAttributedString(
 				text,
-				font.IsDefault ? null : font.ToUIFont(),
-				(span.TextColor ?? label?.TextColor)?.ToNative(),
+				platformFont,
+				(span.TextColor ?? defaultColor)?.ToNative(),
 				span.BackgroundColor?.ToNative(),
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
@@ -84,8 +92,8 @@ namespace Microsoft.Maui.Controls.Platform
 #else
 			var attrString = new NSAttributedString(
 				text,
-				font.IsDefault ? null : font.ToNSFont(),
-				(span.TextColor ?? label?.TextColor)?.ToNative(),
+				platformFont,
+				(span.TextColor ?? defaultColor)?.ToNative(),
 				span.BackgroundColor?.ToNative(),
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,

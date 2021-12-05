@@ -59,15 +59,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		Page _page;
 		NSCache _nSCache;
 		SearchHandlerAppearanceTracker _searchHandlerAppearanceTracker;
+		IFontManager _fontManager;
 
 		BackButtonBehavior BackButtonBehavior { get; set; }
 		UINavigationItem NavigationItem { get; set; }
 
-		public ShellPageRendererTracker(IShellContext context)
+		public ShellPageRendererTracker(IShellContext context, IFontManager fontManager)
 		{
 			_context = context;
 			_nSCache = new NSCache();
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
+			_fontManager = fontManager;
 		}
 
 		public async void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -609,7 +611,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			searchBar.ShowsBookmarkButton = SearchHandler.ClearPlaceholderEnabled;
 
-			_searchHandlerAppearanceTracker = new SearchHandlerAppearanceTracker(searchBar, SearchHandler);
+			_searchHandlerAppearanceTracker = new SearchHandlerAppearanceTracker(searchBar, SearchHandler, _fontManager);
 
 			UpdateFlowDirection();
 			UpdateAutomationId();

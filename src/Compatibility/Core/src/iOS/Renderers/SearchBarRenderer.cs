@@ -329,13 +329,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var color = Element.IsEnabled && targetColor != null
 					? targetColor : ColorExtensions.PlaceholderColor.ToColor();
 
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
+				_textField.AttributedPlaceholder = formatted.ToAttributed(Element.GetFontManager(), defaultColor: color);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 
 			}
 			else
 			{
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, targetColor == null
+				_textField.AttributedPlaceholder = formatted.ToAttributed(Element.GetFontManager(), defaultColor: targetColor == null
 					? ColorExtensions.PlaceholderColor.ToColor() : targetColor);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 			}

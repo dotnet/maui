@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateFormattedText()
 		{
 #if __MOBILE__
-			Control.AttributedText = _formatted.ToAttributed(Element, Element.TextColor, Element.HorizontalTextAlignment, Element.LineHeight);
+			Control.AttributedText = _formatted.ToAttributed(Element);
 #else
 			Control.AttributedStringValue = _formatted.ToAttributed(Element, Element.TextColor, Element.HorizontalTextAlignment, Element.LineHeight);
 #endif

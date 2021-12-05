@@ -24,31 +24,31 @@ namespace Microsoft.Maui.Controls.Platform
 			for (var i = 0; i < formatted.Spans.Count; i++)
 			{
 				var span = formatted.Spans[i];
-				var run = span.ToRun(label);
+				var run = span.ToRun(label, label.Handler.GetRequiredService<IFontManager>());
 				heights.Add(textBlock.FindDefaultLineHeight(run));
 				textBlock.Inlines.Add(run);
 			}
 		}
 
-		public static Run ToRun(this Span span, Label label)
+		public static Run ToRun(this Span span, Label label, IFontManager? fontManager = null)
 		{
 			var text = TextTransformUtilites.GetTransformedText(span.Text, span.TextTransform);
 			
 			var run = new Run { Text = text ?? string.Empty };
 
-			var fgcolor = span.TextColor ?? label?.TextColor;
+			var fgcolor = span.TextColor ?? label.TextColor;
 			if (fgcolor is not null)
 				run.Foreground = fgcolor.ToNative();
 
 			// NOTE: Background is not supported in Run
 
 			var font = span.ToFont();
-			if (font.IsDefault && label is not null)
+			if (font.IsDefault)
 				font = label.ToFont();
 
 			if (!font.IsDefault)
 			{
-				run.ApplyFont(font);
+				run.ApplyFont(font, fontManager ?? label.Handler.GetRequiredService<IFontManager>());
 			}
 
 			if (span.IsSet(Span.TextDecorationsProperty))
