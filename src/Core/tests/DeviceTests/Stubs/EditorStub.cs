@@ -35,8 +35,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public TextAlignment VerticalTextAlignment { get; set; }
 
-		public int CursorPosition {	get; set; }
-		
+		public int CursorPosition { get; set; }
+
 		public int SelectionLength { get; set; }
 
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
