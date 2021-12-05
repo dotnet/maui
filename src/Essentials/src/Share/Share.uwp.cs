@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Essentials
 	{
 		static Task PlatformRequestAsync(ShareTextRequest request)
 		{
-			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(Platform.CurrentWindow);
+			var hwnd = Platform.CurrentWindowHandle;
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
 
 			dataTransferManager.DataRequested += ShareTextHandler;
