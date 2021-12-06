@@ -44,6 +44,11 @@ namespace Microsoft.Maui.Handlers
 			SourceLoader.Reset();
 		}
 
+		public static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
+		{
+			(handler.NativeView as Button)?.UpdateBackground(imageButton);
+		}
+
 		void OnSetImageSource(ImageSource? nativeImageSource)
 		{
 			NativeView.UpdateImageSource(nativeImageSource);

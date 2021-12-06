@@ -332,5 +332,32 @@ namespace Microsoft.Maui.Platform
 			nativeView.GetGlobalVisibleRect(rect);
 			return new Rectangle(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
 		}
+
+		internal static T? GetParentOfType<T>(this IViewParent? view)
+			where T : class
+		{
+			if (view is T t)
+				return t;
+
+			while (view != null)
+			{
+				T? parent = view?.Parent as T;
+				if (parent != null)
+					return parent;
+
+				view = view?.Parent;
+			}
+
+			return default;
+		}
+
+		internal static T? GetParentOfType<T>(this AView view)
+			where T : class
+		{
+			if (view is T t)
+				return t;
+
+			return view.Parent?.GetParentOfType<T>();
+		}
 	}
 }

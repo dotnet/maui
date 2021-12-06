@@ -51,5 +51,16 @@ namespace Microsoft.Maui.Handlers
 			if (window.VisualDiagnosticsOverlay != null && handler?._rootPanel != null)
 				window.VisualDiagnosticsOverlay.Initialize();
 		}
+
+		public static void MapToolbar(WindowHandler handler, IWindow view)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
+
+			if (view is IToolbarElement tb && tb.Toolbar != null)
+			{
+				_ = tb.Toolbar.ToNative(handler.MauiContext);
+			}
+		}
+
 	}
 }

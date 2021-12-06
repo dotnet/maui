@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Detail))]
-	public class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
+	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
 	{
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
 
@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Controls
 		Page _flyout;
 
 		Rectangle _flyoutBounds;
+
+		IFlyoutPageController FlyoutPageController => this;
 
 		public Page Detail
 		{
@@ -51,6 +53,12 @@ namespace Microsoft.Maui.Controls
 				_detail = value;
 				InternalChildren.Add(_detail);
 				OnPropertyChanged();
+
+				if (this.HasAppeared)
+				{
+					previousDetail?.SendDisappearing();
+					_detail?.SendAppearing();
+				}
 
 				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail));
 				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail));
@@ -98,6 +106,12 @@ namespace Microsoft.Maui.Controls
 				InternalChildren.Add(_flyout);
 				OnPropertyChanged();
 
+				if (this.HasAppeared)
+				{
+					previousFlyout?.SendDisappearing();
+					_flyout?.SendAppearing();
+				}
+
 				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout));
 				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
 			}
@@ -109,11 +123,9 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FlyoutLayoutBehaviorProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool CanChangeIsPresented { get; set; } = true;
+		bool IFlyoutPageController.CanChangeIsPresented { get; set; } = true;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle DetailBounds
+		Rectangle IFlyoutPageController.DetailBounds
 		{
 			get { return _detailBounds; }
 			set
@@ -125,8 +137,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle FlyoutBounds
+		Rectangle IFlyoutPageController.FlyoutBounds
 		{
 			get { return _flyoutBounds; }
 			set
@@ -138,8 +149,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool ShouldShowSplitMode
+		bool IFlyoutPageController.ShouldShowSplitMode
 		{
 			get
 			{
@@ -174,13 +184,19 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Flyout == null || Detail == null)
 				throw new InvalidOperationException("Flyout and Detail must be set before using a FlyoutPage");
+
+#if !ANDROID
 			_flyout.Layout(_flyoutBounds);
 			_detail.Layout(_detailBounds);
+#endif
 		}
 
 		protected override void OnAppearing()
 		{
-			CanChangeIsPresented = true;
+			Flyout?.SendAppearing();
+			Detail?.SendAppearing();
+
+			FlyoutPageController.CanChangeIsPresented = true;
 			UpdateFlyoutLayoutBehavior(this);
 			base.OnAppearing();
 		}
@@ -228,11 +244,11 @@ namespace Microsoft.Maui.Controls
 
 		internal static void UpdateFlyoutLayoutBehavior(FlyoutPage page)
 		{
-			if (page.ShouldShowSplitMode)
+			if (page is IFlyoutPageController fpc && fpc.ShouldShowSplitMode)
 			{
 				page.SetValueCore(IsPresentedProperty, true);
 				if (page.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default)
-					page.CanChangeIsPresented = false;
+					fpc.CanChangeIsPresented = false;
 			}
 		}
 
@@ -241,9 +257,8 @@ namespace Microsoft.Maui.Controls
 
 		static void OnIsPresentedPropertyChanging(BindableObject sender, object oldValue, object newValue)
 		{
-			var page = (FlyoutPage)sender;
-			if (!page.CanChangeIsPresented)
-				throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", page.FlyoutLayoutBehavior));
+			if (sender is FlyoutPage fp && fp is IFlyoutPageController fpc && !fpc.CanChangeIsPresented)
+				throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", fp.FlyoutLayoutBehavior));
 		}
 
 		static void OnFlyoutLayoutBehaviorPropertyChanged(BindableObject sender, object oldValue, object newValue)

@@ -76,33 +76,5 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!isInLayout && !view.IsLayoutRequested)
 				view.RequestLayout();
 		}
-
-		internal static T GetParentOfType<T>(this IViewParent view)
-			where T : class
-		{
-			if (view is T t)
-				return t;
-
-			while (view != null)
-			{
-				T parent = view.Parent as T;
-				if (parent != null)
-					return parent;
-
-				view = view.Parent;
-			}
-
-			return default(T);
-		}
-
-		internal static T GetParentOfType<T>(this AView view)
-			where T : class
-		{
-
-			if (view is T t)
-				return t;
-
-			return view.Parent.GetParentOfType<T>();
-		}
 	}
 }

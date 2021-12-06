@@ -81,6 +81,8 @@ namespace Microsoft.Maui.UnitTests
 
 		public double AnchorY { get; set; }
 
+		public int ZIndex { get; set; }
+
 		public Size Arrange(Rectangle bounds) => Size.Zero;
 
 		public void InvalidateArrange() { }

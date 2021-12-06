@@ -10,32 +10,15 @@ using Microsoft.UI.Xaml.Controls;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
-namespace Microsoft.Maui.Controls.Handlers
+namespace Microsoft.Maui.Controls
 {
-	public partial class ToolbarHandler : ElementHandler<Toolbar, WindowHeader>
+	public partial class Toolbar
 	{
 		readonly ImageConverter _imageConverter = new ImageConverter();
 		readonly ImageSourceIconElementConverter _imageSourceIconElementConverter = new ImageSourceIconElementConverter();
 
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
-
-
-		protected override WindowHeader CreateNativeElement()
-		{
-			if(NavigationRootManager?.RootView is NavigationView nv &&
-				nv.Header is WindowHeader windowHeader)
-			{
-				windowHeader.NavigationView = nv as MauiNavigationView;
-				return windowHeader;
-			}
-
-			return new WindowHeader()
-			{
-				NavigationView = NavigationRootManager?.RootView as MauiNavigationView
-			};
-		}
-
 
 		internal void UpdateMenu()
 		{
@@ -55,7 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			commandBar.PrimaryCommands.Clear();
 			commandBar.SecondaryCommands.Clear();
 
-			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(VirtualView.ToolbarItems ?? new ToolbarItem[0]);
+			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(ToolbarItems ?? new ToolbarItem[0]);
 
 			foreach (ToolbarItem item in toolbarItems)
 			{
@@ -126,7 +109,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.UpdateMenu();
+			arg2.UpdateMenu();
 		}
 
 		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2)

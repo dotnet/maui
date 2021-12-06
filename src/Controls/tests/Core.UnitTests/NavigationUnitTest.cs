@@ -690,6 +690,141 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void TabBarSetsOnWindowForSingleNavigationPage()
+		{
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			var window = new Window(navigationPage);
+
+			Assert.IsNotNull(window.Toolbar);
+			Assert.IsNull(contentPage1.Toolbar);
+			Assert.IsNull(navigationPage.Toolbar);
+
+		}
+
+		[Test]
+		public void TabBarSetsOnFlyoutPage()
+		{
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = navigationPage,
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+
+			var window = new Window(flyoutPage);
+
+			Assert.IsNull(window.Toolbar);
+			Assert.IsNull(contentPage1.Toolbar);
+			Assert.IsNull(navigationPage.Toolbar);
+			Assert.IsNotNull(flyoutPage.Toolbar);
+		}
+
+		[Test]
+		public void TabBarSetsOnWindowWithFlyoutPageNestedInTabbedPage()
+		{
+			// TabbedPage => FlyoutPage => NavigationPage
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = navigationPage,
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+			var tabbedPage = new TabbedPage()
+			{
+				Children =
+				{
+					flyoutPage
+				}
+			};
+
+			var window = new Window(tabbedPage);
+
+			Assert.IsNotNull(window.Toolbar);
+			Assert.IsNull(contentPage1.Toolbar);
+			Assert.IsNull(navigationPage.Toolbar);
+			Assert.IsNull(flyoutPage.Toolbar);
+			Assert.IsNull(tabbedPage.Toolbar);
+		}
+
+		[Test]
+		public async Task TabBarSetsOnModalPageWhenWindowAlsoHasNavigationPage()
+		{
+			var window = new Window(new TestNavigationPage(true, new ContentPage()));
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			await window.Navigation.PushModalAsync(navigationPage);
+
+			Assert.IsNotNull(window.Toolbar);
+			Assert.IsNull(contentPage1.Toolbar);
+			Assert.IsNotNull(navigationPage.Toolbar);
+		}
+
+		[Test]
+		public async Task TabBarSetsOnModalPageForSingleNavigationPage()
+		{
+			var window = new Window(new ContentPage());
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			await window.Navigation.PushModalAsync(navigationPage);
+
+			Assert.IsNull(window.Toolbar);
+			Assert.IsNull(contentPage1.Toolbar);
+			Assert.IsNotNull(navigationPage.Toolbar);
+		}
+
+		[Test]
+		public async Task TabBarSetsOnFlyoutPageInsideModalPage()
+		{
+			var window = new Window(new ContentPage());
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = navigationPage,
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+
+			await window.Navigation.PushModalAsync(flyoutPage);
+
+			Assert.IsNull(window.Toolbar);
+			Assert.IsNull(contentPage1.Toolbar);
+			Assert.IsNull(navigationPage.Toolbar);
+			Assert.IsNotNull(flyoutPage.Toolbar);
+		}
+
+		[Test]
+		public async Task TabBarSetsOnModalPageWithFlyoutPageNestedInTabbedPage()
+		{
+			// ModalPage => TabbedPage => FlyoutPage => NavigationPage
+			var window = new Window(new ContentPage());
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = navigationPage,
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+			var tabbedPage = new TabbedPage()
+			{
+				Children =
+				{
+					flyoutPage
+				}
+			};
+
+			await window.Navigation.PushModalAsync(tabbedPage);
+
+			Assert.IsNull(window.Toolbar);
+			Assert.IsNull(contentPage1.Toolbar);
+			Assert.IsNull(navigationPage.Toolbar);
+			Assert.IsNull(flyoutPage.Toolbar);
+			Assert.IsNotNull(tabbedPage.Toolbar);
+		}
+
+		[Test]
 		public async Task PushingPageBeforeSettingHandlerPropagatesAfterSettingHandler()
 		{
 			ContentPage contentPage1 = new ContentPage();

@@ -124,8 +124,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Task PresentModal(Page modal, bool animated)
 		{
-			modal.Toolbar ??= new Toolbar();
-
 			var modalContainer = new ModalContainer(_window, modal);
 
 			_rootDecorView.AddView(modalContainer);
@@ -215,7 +213,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				if (Context == null || NavigationRootManager == null)
+				if (Context == null || NavigationRootManager?.RootView == null)
 				{
 					SetMeasuredDimension(0, 0);
 					return;
@@ -231,7 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (Context == null || NavigationRootManager == null)
+				if (Context == null || NavigationRootManager?.RootView == null)
 					return;
 
 				NavigationRootManager
@@ -303,13 +301,11 @@ namespace Microsoft.Maui.Controls.Platform
 					var modalContext = _mauiWindowContext
 						.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 
-					_modal.Toolbar ??= new Toolbar();
-					_ = _modal.Toolbar.ToNative(modalContext);
-
 					_navigationRootManager = modalContext.GetNavigationRootManager();
-					_navigationRootManager.SetContentView(_modal.ToNative(modalContext));
+					_navigationRootManager.SetRootView(_modal, modalContext);
 
-					return _navigationRootManager.RootView;
+					return _navigationRootManager?.RootView ??
+						throw new InvalidOperationException("Root view not initialized");
 				}
 			}
 		}

@@ -308,7 +308,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return false;
 				}
 
-				return nativeView.Context.Equals(Activity);
+				return nativeView.Context.GetActivity()?.Equals(Activity) ?? false;
 			}
 
 			// This is a proxy dialog builder class to support both pre-appcompat and appcompat dialogs for Alert,
