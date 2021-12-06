@@ -64,6 +64,15 @@ namespace Microsoft.Maui.Handlers
 
 		void OnContentLayoutUpdated(object? sender, LayoutEventArgs e)
 		{
+			// It is workaround,
+			// in some case, before set a size of ScrollView, if content was filled with sized items,
+			// after size of ScrollView was updated, a content position was moved to somewhere.
+			if (VirtualView != null && VirtualView.PresentedContent != null)
+			{
+				var frame = VirtualView.PresentedContent.Frame;
+				VirtualView.PresentedContent.ToNative(MauiContext!)?.Move((int)e.Geometry.X + frame.X.ToScaledPixel(), (int)e.Geometry.Y + frame.Y.ToScaledPixel());
+			}
+
 			UpdateContentSize();
 		}
 
@@ -71,9 +80,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = Canvas ?? throw new InvalidOperationException($"{nameof(Canvas)} cannot be null");
 
-			// TODO: should consider Padding.HorizontalThickness/VerticalThickness here.
-			Canvas.MinimumWidth = VirtualView.ContentSize.Width.ToScaledPixel();
-			Canvas.MinimumHeight = VirtualView.ContentSize.Height.ToScaledPixel();
+			if (VirtualView == null || VirtualView.PresentedContent == null)
+			    return;
+			    
+			Canvas.MinimumWidth = (VirtualView.PresentedContent.Margin.HorizontalThickness + VirtualView.PresentedContent.Frame.Width + VirtualView.Padding.HorizontalThickness).ToScaledPixel();
+			Canvas.MinimumHeight = (VirtualView.PresentedContent.Margin.VerticalThickness + VirtualView.PresentedContent.Frame.Height + VirtualView.Padding.VerticalThickness).ToScaledPixel();
 
 			// elm-scroller updates the CurrentRegion after render
 			EcoreMainloop.Post(() =>
@@ -101,11 +112,6 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateContentSize();
 		}
 
-		public static void MapContentSize(ScrollViewHandler handler, IScrollView scrollView)
-		{
-			handler.UpdateContentSize();
-		}
-
 		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
@@ -128,8 +134,14 @@ namespace Microsoft.Maui.Handlers
 				var x = request.HoriztonalOffset;
 				var y = request.VerticalOffset;
 
-				var region = new Rectangle(x, y, scrollView.Width, scrollView.Height).ToEFLPixel();
-				handler.NativeView.ScrollTo(region, true);
+				var region = new ElmSharp.Rect
+				{
+					X = x.ToScaledPixel(),
+					Y = y.ToScaledPixel(),
+					Width = handler.NativeView!.Geometry.Width,
+					Height = handler.NativeView!.Geometry.Height
+				};
+				handler.NativeView.ScrollTo(region, !request.Instant);
 
 				if (request.Instant)
 				{
