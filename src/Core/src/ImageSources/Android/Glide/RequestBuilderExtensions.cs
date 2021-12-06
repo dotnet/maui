@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
@@ -21,15 +22,22 @@ namespace Microsoft.Maui.BumptechGlide
 		{
 			var callback = new RequestListener();
 
-			requestBuilder = requestBuilder.AddListener(callback);
+			try
+			{
+				requestBuilder = requestBuilder.AddListener(callback);
 
-			var target = requestBuilder.Submit();
+				var target = requestBuilder.Submit();
 
-			var drawable = await callback.Result;
-			if (drawable == null)
-				return null;
+				var drawable = await callback.Result;
+				if (drawable == null)
+					return null;
 
-			return new ImageSourceServiceResult(drawable, () => requestManager.Clear(target));
+				return new ImageSourceServiceResult(drawable, () => requestManager.Clear(target));
+			}
+			finally
+			{
+				GC.KeepAlive(callback);
+			}
 		}
 
 		class RequestListener : Java.Lang.Object, Bumptech.Glide.Request.IRequestListener
@@ -43,13 +51,13 @@ namespace Microsoft.Maui.BumptechGlide
 
 			public Task<Drawable> Result => tcsDrawable.Task;
 
-			public bool OnLoadFailed(GlideException exception, Object model, ITarget target, bool isFirstResource)
+			public bool OnLoadFailed(GlideException exception, Java.Lang.Object model, ITarget target, bool isFirstResource)
 			{
 				tcsDrawable.TrySetException(exception);
 				return false; // True would prevent target.OnLoadFailed from being called - not necessary here
 			}
 
-			public bool OnResourceReady(Object result, Object model, ITarget target, DataSource dataSource, bool isFirstResource)
+			public bool OnResourceReady(Java.Lang.Object result, Java.Lang.Object model, ITarget target, DataSource dataSource, bool isFirstResource)
 			{
 				tcsDrawable.TrySetResult(result.JavaCast<Drawable>());
 				return false; // True would prevent target.OnResourceReady from being called - not necessary here
