@@ -124,6 +124,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override Size MeasureItem(int index, int widthConstraint, int heightConstraint)
 		{
+			if (widthConstraint > heightConstraint)
+			{
+				widthConstraint = int.MaxValue;
+			}
+			if (heightConstraint > widthConstraint)
+			{
+				heightConstraint = int.MaxValue;
+			}
+
 			var item = this[index];
 			if (item != null && _dataBindedViewTable.TryGetValue(item, out View? createdView) && createdView != null)
 			{

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using TCollectionView = Tizen.UIExtensions.ElmSharp.CollectionView;
 
@@ -54,6 +55,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return VirtualView.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins).Request;
 		}
 	}
 }
