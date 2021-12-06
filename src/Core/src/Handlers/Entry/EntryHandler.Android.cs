@@ -70,12 +70,8 @@ namespace Microsoft.Maui.Handlers
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-
-		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
-			VirtualView.UpdateText(e);
-
 		// This is a Android-specific mapping
-		public static void MapBackground(EntryHandler handler, IEntry entry)
+		public static void MapBackground(EntryHandler handler, IEntry entry) =>
 			handler.NativeView?.UpdateBackground(entry);
 
 		public static void MapText(EntryHandler handler, IEntry entry) =>
