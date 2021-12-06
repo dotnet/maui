@@ -74,12 +74,14 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			// Lots of ways we could compare the two lists, but dumping them both to comma-separated strings
 			// makes it easy to give the test useful output
 
-			string expected = await InvokeOnMainThreadAsync(() => {
+			string expected = await InvokeOnMainThreadAsync(() =>
+			{
 				return children.OrderBy(nativeView => GetNativeText(nativeView))
 					.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
 			});
 
-			string actual = await InvokeOnMainThreadAsync(() => {
+			string actual = await InvokeOnMainThreadAsync(() =>
+			{
 				return children.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
 			});
 

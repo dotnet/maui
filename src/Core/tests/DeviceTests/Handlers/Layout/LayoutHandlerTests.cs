@@ -194,7 +194,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			Assert.Same(addedSlider.Handler.ContainerView, children[1]);
 		}
 
-		LabelStub CreateZTestLabel(int zIndex) 
+		LabelStub CreateZTestLabel(int zIndex)
 		{
 			return new LabelStub() { Text = zIndex.ToString("000"), ZIndex = zIndex };
 		}
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			}
 		}
 
-		async Task InitZTestLabel(ILabel label) 
+		async Task InitZTestLabel(ILabel label)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{

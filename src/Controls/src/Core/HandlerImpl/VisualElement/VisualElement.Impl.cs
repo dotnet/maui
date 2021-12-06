@@ -72,10 +72,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal static readonly BindableProperty ZIndexProperty =
-			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(View), default(int), 
+			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(View), default(int),
 				propertyChanged: ZIndexPropertyChanged);
 
-		static void ZIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue) 
+		static void ZIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is IView view)
 			{
