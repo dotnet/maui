@@ -2,7 +2,7 @@
 using Tizen.Applications;
 using ElmSharp;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class HandlerExtensions
 	{

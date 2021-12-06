@@ -6,7 +6,7 @@ using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
 using TSize = Tizen.UIExtensions.Common.Size;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class LayoutCanvas : Canvas, IMeasurable
 	{
