@@ -1,4 +1,5 @@
 namespace MauiApp1;
+
 public class NewPage1 : ContentPage
 {
 	public NewPage1()
