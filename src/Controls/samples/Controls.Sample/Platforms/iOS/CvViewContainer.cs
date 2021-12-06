@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UIKit;
+using ObjCRuntime;
+using Microsoft.Main.Platform;
 
 namespace Microsoft.Maui
 {
