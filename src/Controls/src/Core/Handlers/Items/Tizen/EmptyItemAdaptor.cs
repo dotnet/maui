@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public EmptyItemAdaptor(ItemsView itemsView, IEnumerable items, DataTemplate template) : base(itemsView, items, template)
 		{
-			_context = itemsView.Handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_context = itemsView.Handler!.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 		}
 
 		public static EmptyItemAdaptor Create(ItemsView itemsView)

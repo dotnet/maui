@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ElmSharp;
 using Tizen.UIExtensions.ElmSharp;
-using DPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
+using DPExtensions = Microsoft.Maui.Platform.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemTemplate = template;
 			Element = itemsView;
 			IsSelectable = itemsView is SelectableItemsView;
-			_context = itemsView.Handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_context = itemsView.Handler!.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 		}
 
 		protected DataTemplate ItemTemplate { get; set; }

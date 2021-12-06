@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.Children.Clear();
 
-			foreach (var child in VirtualView)
+			foreach (var child in VirtualView.OrderByZIndex())
 			{
 				NativeView.Children.Add(child.ToNative(MauiContext, true));
 				if (child.Handler is INativeViewHandler thandler)
@@ -66,7 +66,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Add(child.ToNative(MauiContext, true));
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+			NativeView.Children.Insert(targetIndex, child.ToNative(MauiContext, true));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);
@@ -103,7 +104,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Insert(index, child.ToNative(MauiContext, true));
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+			NativeView.Children.Insert(targetIndex, child.ToNative(MauiContext, true));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);
@@ -120,10 +122,54 @@ namespace Microsoft.Maui.Handlers
 			NativeView.Children.RemoveAt(index);
 			toBeRemoved.Unrealize();
 
-			NativeView.Children.Insert(index, child.ToNative(MauiContext, true));
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+			NativeView.Children.Insert(targetIndex, child.ToNative(MauiContext, true));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);
+			}
+		}
+
+		public void UpdateZIndex(IView child)
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			EnsureZIndexOrder(child);
+		}
+
+		void EnsureZIndexOrder(IView child)
+		{
+			if (NativeView.Children.Count == 0)
+			{
+				return;
+			}
+
+			var nativeChildView = child.ToNative(MauiContext!, true);
+			var currentIndex = NativeView.Children.IndexOf(nativeChildView);
+
+			if (currentIndex == -1)
+			{
+				return;
+			}
+
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+			if (targetIndex > currentIndex)
+			{
+				child.ToNative(MauiContext!, true).RaiseTop();
+				for (int i = targetIndex+1; i < NativeView.Children.Count; i++)
+				{
+					NativeView.Children[i].RaiseTop();
+				}
+			}
+			else
+			{
+				child.ToNative(MauiContext!, true).Lower();
+				for (int i = targetIndex-1; i >= 0; i--)
+				{
+					NativeView.Children[i].Lower();
+				}
 			}
 		}
 	}
