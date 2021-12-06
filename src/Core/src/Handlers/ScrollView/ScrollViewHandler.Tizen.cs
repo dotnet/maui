@@ -83,7 +83,11 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView != null && VirtualView.PresentedContent != null)
 			{
 				var frame = VirtualView.PresentedContent.Frame;
+<<<<<<< HEAD
 				VirtualView.PresentedContent.ToPlatform(MauiContext!)?.Move((int)e.Geometry.X + frame.X.ToScaledPixel(), (int)e.Geometry.Y + frame.Y.ToScaledPixel());
+=======
+				VirtualView.PresentedContent.ToNative(MauiContext!)?.Move((int)e.Geometry.X + frame.X.ToScaledPixel(), (int)e.Geometry.Y + frame.Y.ToScaledPixel());
+>>>>>>> dea789f26 (Fix ScrollView ContentSize and Padding margin (#291))
 			}
 
 			UpdateContentSize();
@@ -151,10 +155,17 @@ namespace Microsoft.Maui.Handlers
 				{
 					X = x.ToScaledPixel(),
 					Y = y.ToScaledPixel(),
+<<<<<<< HEAD
 					Width = handler.PlatformView!.Geometry.Width,
 					Height = handler.PlatformView!.Geometry.Height
 				};
 				handler.PlatformView.ScrollTo(region, !request.Instant);
+=======
+					Width = handler.NativeView!.Geometry.Width,
+					Height = handler.NativeView!.Geometry.Height
+				};
+				handler.NativeView.ScrollTo(region, !request.Instant);
+>>>>>>> dea789f26 (Fix ScrollView ContentSize and Padding margin (#291))
 
 				if (request.Instant)
 				{
