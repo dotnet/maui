@@ -43,9 +43,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			LoadUrl(url, true);
 		}
 
-		void LoadUrl(string url, bool fireNavigatingCanceled)
+		public void LoadUrl(string url, bool fireNavigatingCanceled)
 		{
-			if (!fireNavigatingCanceled || !SendNavigatingCanceled(url))
+			Task.Run(() => LoadUrlAsync(url, fireNavigatingCanceled));
+		}
+
+		async Task LoadUrlAsync(string url, bool fireNavigatingCanceled)
+		{
+			if (!fireNavigatingCanceled || !await SendNavigatingCanceledAsync(url))
 			{
 				_eventState = WebNavigationEvent.NewPage;
 				if (url != null && !url.StartsWith('/') && !Uri.IsWellFormedUriString(url, UriKind.Absolute))
@@ -57,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		protected internal bool SendNavigatingCanceled(string url)
+		protected internal async Task<bool> SendNavigatingCanceledAsync(string url)
 		{
 			if (Element == null || string.IsNullOrWhiteSpace(url))
 				return true;
@@ -65,12 +70,49 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (url == AssetBaseUrl)
 				return false;
 
-			var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = url }, url);
+			var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = url }, url, true);
 			SyncNativeCookies(url);
 			ElementController.SendNavigating(args);
 			UpdateCanGoBackForward();
-			UrlCanceled = args.Cancel ? null : url;
-			return args.Cancel;
+
+			var cancel = false;
+
+			if (args.DeferralRequested)
+			{
+				cancel = await EvaluateShouldCancelNavigation(args);
+			}
+
+			if (cancel)
+			{
+				// TODO: Add event for when navigation is cancelled
+				// WebViewController.SendNavigationCancelled(..)
+				UrlCanceled = url;
+			}
+
+			return args.Cancelled;
+		}
+
+		private async Task<bool> EvaluateShouldCancelNavigation(WebNavigatingEventArgs args)
+		{
+			bool shouldCancel = false;
+
+			try
+			{
+				shouldCancel = !await Task.Run(() => args.DeferredTask);
+			}
+			catch (TaskCanceledException)
+			{
+				// This is to prevent an unhandled exception killing the app
+			}
+			catch (Exception)
+			{
+				//TODO: Is there an internal logger for MAUI?
+				//Log.Warning("diagnostics", "an exception occurred sending navigating cancelled");
+				//Log.Warning("diagnostics", ex.ToString());
+			}
+
+			// Default to not cancel navigation incase exception is thrown
+			return false;
 		}
 
 		protected override void Dispose(bool disposing)
