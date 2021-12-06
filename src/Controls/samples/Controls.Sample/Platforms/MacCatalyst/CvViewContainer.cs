@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UIKit;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {

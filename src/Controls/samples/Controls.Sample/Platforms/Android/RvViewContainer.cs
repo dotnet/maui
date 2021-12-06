@@ -5,6 +5,7 @@ using AViewGroup = Android.Views.ViewGroup;
 using Microsoft.Maui;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {

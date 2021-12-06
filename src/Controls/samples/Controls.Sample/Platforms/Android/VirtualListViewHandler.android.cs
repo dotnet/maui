@@ -4,6 +4,7 @@ using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Handlers;
 using System;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {

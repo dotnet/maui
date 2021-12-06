@@ -2,6 +2,7 @@
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using ObjCRuntime;
 
 namespace Microsoft.Maui
 {
