@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui.Primitives;
-using NSubstitute;
-using Xunit;
-using Microsoft.Maui.Handlers;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
-using System.Collections;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Primitives;
+using NSubstitute;
+using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public bool IgnoreSafeArea { get; }
 			public Thickness Padding { get; }
 			IElementHandler IElement.Handler { get; set; }
-			
+
 			public void InvalidateArrange()
 			{
 				throw new System.NotImplementedException();
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void LayoutHandlerIndexFollowsZOrder() 
+		public void LayoutHandlerIndexFollowsZOrder()
 		{
 			var layout = new FakeLayout();
 			var view0 = CreateTestView(zIndex: 10);
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view1 = CreateTestView(zIndex: 10);
 			var view2 = CreateTestView(zIndex: 10);
 			var view3 = CreateTestView(zIndex: 100);
-			
+
 			layout.Add(view0);
 			layout.Add(view1);
 			layout.Add(view2);

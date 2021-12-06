@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal static class LayoutExtensions 
+	internal static class LayoutExtensions
 	{
 		class ZIndexComparer : IComparer<IView>
 		{
@@ -20,15 +20,15 @@ namespace Microsoft.Maui.Handlers
 
 		static ZIndexComparer s_comparer = new();
 
-		public static IView[] OrderByZIndex(this ILayout layout) 
+		public static IView[] OrderByZIndex(this ILayout layout)
 		{
 			var ordered = new IView[layout.Count];
 			layout.CopyTo(ordered, 0);
 			Array.Sort(ordered, s_comparer);
 			return ordered;
 		}
-		
-		public static int GetLayoutHandlerIndex(this ILayout layout, IView view) 
+
+		public static int GetLayoutHandlerIndex(this ILayout layout, IView view)
 		{
 			return layout.OrderByZIndex().IndexOf(view);
 		}
