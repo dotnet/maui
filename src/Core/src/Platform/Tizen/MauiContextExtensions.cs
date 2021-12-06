@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ElmSharp;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static partial class MauiContextExtensions
 	{

@@ -1,10 +1,9 @@
 using System;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
 using EWindow = ElmSharp.Window;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class CoreUIAppExtensions
 	{

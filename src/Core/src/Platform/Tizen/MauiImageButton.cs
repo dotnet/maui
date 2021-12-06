@@ -5,7 +5,7 @@ using Tizen.UIExtensions.ElmSharp;
 using TButton = Tizen.UIExtensions.ElmSharp.Button;
 using TImage = Tizen.UIExtensions.ElmSharp.Image;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiImageButton : Canvas
 	{

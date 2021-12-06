@@ -6,7 +6,7 @@ using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
 using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class DPExtensions
 	{
@@ -53,16 +53,6 @@ namespace Microsoft.Maui
 		public static int ToPixel(this double dp)
 		{
 			return (int)Math.Round(dp * DeviceInfo.DPI / 160.0);
-		}
-
-		public static int ToScaledPixel(this double dp)
-		{
-			return (int)Math.Round(dp * DeviceInfo.ScalingFactor);
-		}
-
-		public static double ToScaledDP(this int pixel)
-		{
-			return pixel / DeviceInfo.ScalingFactor;
 		}
 
 		public static float ToScaledDP(this float pixel)

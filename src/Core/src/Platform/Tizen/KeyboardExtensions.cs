@@ -2,7 +2,7 @@
 using TKeyboard = Tizen.UIExtensions.Common.Keyboard;
 using TEntry = Tizen.UIExtensions.ElmSharp.Entry;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class KeyboardExtensions
 	{

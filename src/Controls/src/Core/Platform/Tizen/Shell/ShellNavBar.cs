@@ -11,6 +11,7 @@ using TButton = Tizen.UIExtensions.ElmSharp.Button;
 using TImage = Tizen.UIExtensions.ElmSharp.Image;
 using TLabel = Tizen.UIExtensions.ElmSharp.Label;
 using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
+using TDPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -355,10 +356,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Geometry.Width == 0 || Geometry.Height == 0)
 				return;
 
-			int menuSize = DPExtensions.ConvertToScaledPixel(this.GetDefaultMenuSize());
-			int menuMargin = DPExtensions.ConvertToScaledPixel(this.GetDefaultMargin());
-			int titleHMargin = DPExtensions.ConvertToScaledPixel(this.GetDefaultMargin());
-			int titleVMargin = DPExtensions.ConvertToScaledPixel(this.GetDefaultTitleVMargin());
+			int menuSize = TDPExtensions.ConvertToScaledPixel(this.GetDefaultMenuSize());
+			int menuMargin = TDPExtensions.ConvertToScaledPixel(this.GetDefaultMargin());
+			int titleHMargin = TDPExtensions.ConvertToScaledPixel(this.GetDefaultMargin());
+			int titleVMargin = TDPExtensions.ConvertToScaledPixel(this.GetDefaultTitleVMargin());
 
 			var bound = Geometry;
 

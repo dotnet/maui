@@ -3,7 +3,7 @@ using System.Linq;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class ModalStack : EBox
 	{

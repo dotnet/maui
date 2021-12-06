@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class WrapperViewDrawables : IWrapperViewDrawables
 	{

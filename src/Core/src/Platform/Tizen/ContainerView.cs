@@ -2,7 +2,7 @@
 using Microsoft.Maui.HotReload;
 using ElmSharp;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class ContainerView : Box, IReloadHandler
 	{

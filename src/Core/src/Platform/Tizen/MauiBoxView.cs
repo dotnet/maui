@@ -1,7 +1,7 @@
 ﻿using ElmSharp;
 using Microsoft.Maui.Graphics.Skia.Views;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiBoxView : SkiaGraphicsView
 	{

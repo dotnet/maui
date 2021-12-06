@@ -3,7 +3,7 @@ using ElmSharp;
 using Tizen.UIExtensions.ElmSharp;
 using TWebView = Tizen.WebView.WebView;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiWebView : WidgetLayout, IWebViewDelegate
 	{

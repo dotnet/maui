@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tizen.UIExtensions.ElmSharp;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ImageExtensions
 	{

@@ -6,7 +6,7 @@ using Tizen.UIExtensions.ElmSharp;
 using static Microsoft.Maui.Primitives.Dimension;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{

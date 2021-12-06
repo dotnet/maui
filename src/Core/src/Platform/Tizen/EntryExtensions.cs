@@ -5,7 +5,7 @@ using Tizen.UIExtensions.ElmSharp;
 using InputPanelReturnKeyType = ElmSharp.InputPanelReturnKeyType;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class EntryExtensions
 	{

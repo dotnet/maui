@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
 using Tizen.UIExtensions.ElmSharp;
+using DPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {

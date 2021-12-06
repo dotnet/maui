@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ElmSharp;
-using ERect = ElmSharp.Rect;
+using Tizen.UIExtensions.ElmSharp;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class TransformationExtensions
 	{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 				return;
 
 			// prepare the EFL effect structure
-			ERect geometry = nativeView.Geometry;
+			Rect geometry = nativeView.Geometry;
 			EvasMap map = new EvasMap(4);
 			map.PopulatePoints(geometry, 0);
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal static void ApplyScale(this IView view, EvasMap map, ERect geometry, ref bool changed)
+		internal static void ApplyScale(this IView view, EvasMap map, Rect geometry, ref bool changed)
 		{
 			var scale = view.Scale;
 			var scaleX = view.ScaleX * scale;
@@ -72,7 +72,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal static void ApplyRotation(this IView view, EvasObject nativeView, EvasMap map, ERect geometry, ref bool changed)
+		internal static void ApplyRotation(this IView view, EvasObject nativeView, EvasMap map, Rect geometry, ref bool changed)
 		{
 			var rotationX = view.RotationX;
 			var rotationY = view.RotationY;
@@ -93,7 +93,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal static void ApplyTranslation(this IView view, EvasMap map, ERect geometry, ref bool changed)
+		internal static void ApplyTranslation(this IView view, EvasMap map, Rect geometry, ref bool changed)
 		{
 			var shiftX = view.TranslationX.ToScaledPixel();
 			var shiftY = view.TranslationY.ToScaledPixel();

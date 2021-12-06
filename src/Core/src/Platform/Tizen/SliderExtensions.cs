@@ -2,7 +2,7 @@
 using Tizen.UIExtensions.ElmSharp;
 using EColor = ElmSharp.Color;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{

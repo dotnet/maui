@@ -3,7 +3,7 @@ using Tizen.UIExtensions.ElmSharp;
 using TLineBreakMode = Tizen.UIExtensions.Common.LineBreakMode;
 using TTextDecorationse = Tizen.UIExtensions.Common.TextDecorations;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class LabelExtensions
 	{

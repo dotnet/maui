@@ -1,7 +1,7 @@
 ﻿using ElmSharp;
 using Tizen.UIExtensions.ElmSharp;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ScrollViewExtensions
 	{

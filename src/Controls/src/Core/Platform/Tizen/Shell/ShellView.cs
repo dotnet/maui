@@ -16,6 +16,7 @@ using TImage = Tizen.UIExtensions.ElmSharp.Image;
 using TNavigationView = Tizen.UIExtensions.ElmSharp.NavigationView;
 using TSelectedItemChangedEventArgs = Tizen.UIExtensions.ElmSharp.SelectedItemChangedEventArgs;
 using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
+using TDPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -404,7 +405,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var requestSize = _headerView.Measure(widthConstraint, heightConstraint);
 				if(_navigationView.Header != null)
-					_navigationView.Header.MinimumHeight = DPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
+					_navigationView.Header.MinimumHeight = TDPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
 			}
 		}
 
@@ -414,7 +415,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var requestSize = _footerView.Measure(widthConstraint, heightConstraint);
 				if (_navigationView.Footer != null)
-					_navigationView.Footer.MinimumHeight = DPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
+					_navigationView.Footer.MinimumHeight = TDPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
 			}
 		}
 

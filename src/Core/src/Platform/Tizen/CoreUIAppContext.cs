@@ -8,7 +8,7 @@ using Tizen.UIExtensions.ElmSharp;
 using Tizen.UIExtensions.Common;
 using ELayout = ElmSharp.Layout;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class CoreUIAppContext
 	{

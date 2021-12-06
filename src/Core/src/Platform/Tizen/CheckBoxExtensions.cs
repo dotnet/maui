@@ -1,7 +1,7 @@
 ﻿using ElmSharp;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{

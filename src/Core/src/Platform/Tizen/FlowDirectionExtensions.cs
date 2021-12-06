@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class FlowDirectionExtensions
 	{

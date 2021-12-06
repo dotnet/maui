@@ -7,6 +7,7 @@ using TCollectionViewSelectionMode = Tizen.UIExtensions.ElmSharp.CollectionViewS
 using TItemSizingStrategy = Tizen.UIExtensions.ElmSharp.ItemSizingStrategy;
 using TSelectedItemChangedEventArgs = Tizen.UIExtensions.ElmSharp.SelectedItemChangedEventArgs;
 using TSnapPointsType = Tizen.UIExtensions.ElmSharp.SnapPointsType;
+using DPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {
