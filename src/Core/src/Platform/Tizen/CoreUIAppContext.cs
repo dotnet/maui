@@ -7,7 +7,7 @@ using ElmSharp.Wearable;
 using Tizen.UIExtensions.ElmSharp;
 using ELayout = ElmSharp.Layout;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class CoreUIAppContext
 	{
