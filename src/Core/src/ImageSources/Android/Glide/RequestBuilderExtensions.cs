@@ -3,31 +3,57 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Runtime;
 using Bumptech.Glide;
+using Bumptech.Glide.Load;
+using Bumptech.Glide.Load.Engine;
+using Bumptech.Glide.Request.Target;
+using Java.Lang;
 
 namespace Microsoft.Maui.BumptechGlide
 {
 	public static class RequestBuilderExtensions
 	{
-		public static async Task<Drawable?> SubmitAsync(this RequestBuilder requestBuilder, CancellationToken cancellationToken = default)
-		{
-			var target = requestBuilder.Submit();
-
-			return await target.AsTask<Drawable>(cancellationToken);
-		}
-
 		public static Task<ImageSourceServiceResult?> SubmitAsync(this RequestBuilder requestBuilder, Context context, CancellationToken cancellationToken = default) =>
 			requestBuilder.SubmitAsync(Glide.With(context), cancellationToken);
 
 		public static async Task<ImageSourceServiceResult?> SubmitAsync(this RequestBuilder requestBuilder, RequestManager requestManager, CancellationToken cancellationToken = default)
 		{
+			var callback = new RequestListener();
+
+			requestBuilder = requestBuilder.AddListener(callback);
+
 			var target = requestBuilder.Submit();
 
-			var drawable = await target.AsTask<Drawable>(cancellationToken);
+			var drawable = await callback.Result;
 			if (drawable == null)
 				return null;
 
 			return new ImageSourceServiceResult(drawable, () => requestManager.Clear(target));
+		}
+
+		class RequestListener : Java.Lang.Object, Bumptech.Glide.Request.IRequestListener
+		{
+			public RequestListener()
+			{
+				tcsDrawable = new TaskCompletionSource<Drawable>();
+			}
+
+			readonly TaskCompletionSource<Drawable> tcsDrawable;
+
+			public Task<Drawable> Result => tcsDrawable.Task;
+
+			public bool OnLoadFailed(GlideException exception, Object model, ITarget target, bool isFirstResource)
+			{
+				tcsDrawable.TrySetException(exception);
+				return false; // True would prevent target.OnLoadFailed from being called - not necessary here
+			}
+
+			public bool OnResourceReady(Object result, Object model, ITarget target, DataSource dataSource, bool isFirstResource)
+			{
+				tcsDrawable.TrySetResult(result.JavaCast<Drawable>());
+				return false; // True would prevent target.OnResourceReady from being called - not necessary here
+			}
 		}
 	}
 }
