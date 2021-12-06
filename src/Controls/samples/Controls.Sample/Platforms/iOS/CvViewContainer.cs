@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UIKit;
 using ObjCRuntime;
-using Microsoft.Main.Platform;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {
