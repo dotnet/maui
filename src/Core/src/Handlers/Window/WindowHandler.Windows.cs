@@ -15,11 +15,11 @@ namespace Microsoft.Maui.Handlers
 			if (_rootPanel == null)
 			{
 				// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-				//MauiWinUIApplication.Current.Resources.TryGetValue("MauiRootContainerStyle", out object? style);
+				MauiWinUIApplication.Current.Resources.TryGetValue("MauiRootContainerStyle", out object? style);
 
 				_rootPanel = new RootPanel
 				{
-					//Style = style as UI.Xaml.Style
+					Style = style as UI.Xaml.Style
 				};
 			}
 

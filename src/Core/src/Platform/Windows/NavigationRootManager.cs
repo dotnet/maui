@@ -83,9 +83,6 @@ namespace Microsoft.Maui.Platform
 			_navigationRootView.SetWindowTitle(title);
 		}
 
-		internal CommandBar? GetCommandBar() =>
-			_windowHeader?.CommandBar;
-
 		internal void SetToolbar(FrameworkElement toolBar)
 		{
 			_windowHeader = toolBar as WindowHeader;

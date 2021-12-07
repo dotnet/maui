@@ -19,7 +19,6 @@
     <uwp:ColorConverter x:Key="ColorConverter" />
     
     <Style x:Key="MauiRootContainerStyle" TargetType="Grid">
-        <!--<Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />-->
 	</Style>
 
 </ResourceDictionary>
