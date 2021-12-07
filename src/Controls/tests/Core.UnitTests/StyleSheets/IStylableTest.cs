@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		public void SetUp()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new Type[0]);
+			Internals.Registrar.RegisterAll(new MockMauiContext(), new Type[0]);
 		}
 
 		[TestCase]

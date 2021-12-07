@@ -28,9 +28,5 @@ namespace Microsoft.Maui.Controls
 
 		public static Font ToFont(this IFontElement element) =>
 			Font.OfSize(element.FontFamily, element.FontSize, enableScaling: element.FontAutoScalingEnabled).WithAttributes(element.FontAttributes);
-
-		public static IFontManager GetFontManager(this Element element)
-			=> element.Handler.GetRequiredService<IFontManager>();
-
 	}
 }

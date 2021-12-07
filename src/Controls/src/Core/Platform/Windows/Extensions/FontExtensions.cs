@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -42,5 +43,8 @@ namespace Microsoft.Maui.Controls.Platform
 			NamedSize.Title => 24,
 			_ => throw new ArgumentOutOfRangeException(nameof(size)),
 		};
+
+		internal static IFontManager GetFontManager(this Element element)
+			=> element.Handler?.GetRequiredService<IFontManager>() ?? MauiWinUIApplication.Current.Services.GetRequiredService<IFontManager>();
 	}
 }

@@ -1,5 +1,6 @@
 #nullable enable
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 #if !MACOS
@@ -16,7 +17,12 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static NSAttributedString ToAttributed(this FormattedString formattedString, Label label)
-			=> formattedString.ToAttributed(label.GetFontManager(), label?.LineHeight ?? 0, label?.HorizontalTextAlignment ?? TextAlignment.Start, label?.ToFont(), label?.TextColor);
+			=> formattedString.ToAttributed(
+				label.GetFontManager(),
+				label?.LineHeight ?? 0,
+				label?.HorizontalTextAlignment ?? TextAlignment.Start,
+				label?.ToFont(),
+				label?.TextColor);
 
 
 		public static NSAttributedString ToAttributed(this FormattedString formattedString, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null)
@@ -37,8 +43,13 @@ namespace Microsoft.Maui.Controls.Platform
 			return attributed;
 		}
 
-		public static NSAttributedString ToAttributed(this Span span, Label label, IFontManager fontManager)
-			=> span.ToAttributed(fontManager, label?.LineHeight ?? 0, label?.HorizontalTextAlignment ?? TextAlignment.Start, label?.ToFont(), label?.TextColor);
+		public static NSAttributedString ToAttributed(this Span span, Label label)
+			=> span.ToAttributed(
+				label.GetFontManager(),
+				label?.LineHeight ?? 0,
+				label?.HorizontalTextAlignment ?? TextAlignment.Start,
+				label?.ToFont(),
+				label?.TextColor);
 
 		public static NSAttributedString ToAttributed(this Span span, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null)
 		{

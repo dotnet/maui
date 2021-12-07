@@ -2,6 +2,7 @@
 using Android.Graphics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -23,5 +24,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static Typeface ToTypeface(this string fontfamily, IFontManager fontManager, FontAttributes attr = FontAttributes.None)
 			=> fontManager.GetTypeface(Font.OfSize(fontfamily, 0.0).WithAttributes(attr)) ?? fontManager.DefaultTypeface;
+
+		internal static IFontManager GetFontManager(this Element element)
+			=> element.Handler?.GetRequiredService<IFontManager>() ?? MauiApplication.Current.Services.GetRequiredService<IFontManager>();
 	}
 }

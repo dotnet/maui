@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -17,5 +18,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static UIFont ToUIFont<TFontElement>(this TFontElement fontElement) where TFontElement : Element, IFontElement
 			=> fontElement.ToFont().ToUIFont(fontElement.GetFontManager());
+
+		internal static IFontManager GetFontManager(this Element element)
+			=> element.Handler?.GetRequiredService<IFontManager>() ?? MauiUIApplicationDelegate.Current.Services.GetRequiredService<IFontManager>();
 	}
 }
