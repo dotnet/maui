@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -27,10 +28,10 @@ namespace Microsoft.Maui.Controls
 			(this as IButtonController).SendReleased();
 		}
 
-		void IButton.ImageSourceLoaded()
-		{
-		}
+		double IButtonStroke.StrokeThickness => (double)GetValue(BorderWidthProperty);
 
-		IImageSource IButton.ImageSource => Source;
+		Color IButtonStroke.StrokeColor => (Color)GetValue(BorderColorProperty);
+
+		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
 	}
 }

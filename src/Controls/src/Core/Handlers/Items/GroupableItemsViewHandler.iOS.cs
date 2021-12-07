@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Handlers;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ScrollToRequested(sender, args);
 		}
 
-		public static void MapIsGrouped(GroupableItemsViewHandler<TItemsView> handler, GroupableItemsView itemsView) 
+		public static void MapIsGrouped(GroupableItemsViewHandler<TItemsView> handler, GroupableItemsView itemsView)
 		{
 			handler.Controller?.UpdateItemsSource();
 		}

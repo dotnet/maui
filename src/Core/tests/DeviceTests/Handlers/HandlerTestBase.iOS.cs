@@ -4,6 +4,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
@@ -147,6 +148,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			return nativeView.IsAccessibilityElement;
 		}
+
+		protected Maui.Graphics.Rectangle GetNativeViewBounds(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).GetNativeViewBounds();
+
+		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).GetBoundingBox();
+
+		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).GetViewTransform();
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityLabel;

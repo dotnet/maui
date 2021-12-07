@@ -16,17 +16,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 
 		}
-		
+
 		public static PropertyMapper<TItemsView, ItemsViewHandler<TItemsView>> ItemsViewMapper = new PropertyMapper<TItemsView, ItemsViewHandler<TItemsView>>(ViewHandler.ViewMapper)
-		{			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
-					[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
-					[Controls.ItemsView.VerticalScrollBarVisibilityProperty.PropertyName] = MapVerticalScrollBarVisibility,
-					[Controls.ItemsView.ItemTemplateProperty.PropertyName] = MapItemTemplate,
-					[Controls.ItemsView.EmptyViewProperty.PropertyName] = MapEmptyView,
-					[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
-					[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
-					[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-					[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
+		{
+			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
+			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
+			[Controls.ItemsView.VerticalScrollBarVisibilityProperty.PropertyName] = MapVerticalScrollBarVisibility,
+			[Controls.ItemsView.ItemTemplateProperty.PropertyName] = MapItemTemplate,
+			[Controls.ItemsView.EmptyViewProperty.PropertyName] = MapEmptyView,
+			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
+			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
+			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
 		};
 	}
 }

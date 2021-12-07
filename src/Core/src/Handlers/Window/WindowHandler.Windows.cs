@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
 		{
 			var windowManager = MauiContext?.GetNavigationRootManager();
-			windowManager?.Connect(VirtualView);
+			windowManager?.Connect(VirtualView.Content);
 
 			_rootPanel?.Children?.Clear();
 			nativeView.Content = null;
@@ -43,9 +43,24 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
-			windowManager.Connect(handler.VirtualView);
+			windowManager.Connect(handler.VirtualView.Content);
 			handler?._rootPanel?.Children?.Clear();
+
 			handler?._rootPanel?.Children?.Add(windowManager.RootView);
+
+			if (window.VisualDiagnosticsOverlay != null && handler?._rootPanel != null)
+				window.VisualDiagnosticsOverlay.Initialize();
 		}
+
+		public static void MapToolbar(WindowHandler handler, IWindow view)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
+
+			if (view is IToolbarElement tb && tb.Toolbar != null)
+			{
+				_ = tb.Toolbar.ToNative(handler.MauiContext);
+			}
+		}
+
 	}
 }

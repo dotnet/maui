@@ -19,6 +19,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			throw new System.NotImplementedException();
 		}
 
+		public void OpenWindow(IWindow window)
+		{
+			_windows.Add(window);
+		}
+
+		public void CloseWindow(IWindow window)
+		{
+			_windows.Remove(window);
+		}
+
 		public void ThemeChanged() { }
 	}
 }

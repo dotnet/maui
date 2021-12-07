@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureImageSources();
 				this.ConfigureAnimations();
 				this.ConfigureCrossPlatformLifecycleEvents();
+				this.ConfigureDispatching();
 			}
 		}
 
@@ -107,7 +108,7 @@ namespace Microsoft.Maui.Hosting
 			});
 
 			// This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
-			// Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
+			// Copy the services that were added via MauiAppBuilder.Services into the final IServiceCollection
 			_hostBuilder.ConfigureServices((context, services) =>
 			{
 				// We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
@@ -242,13 +243,16 @@ namespace Microsoft.Maui.Hosting
 						}
 
 						logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-						logging.AddConsole();
 						logging.AddDebug();
-						logging.AddEventSourceLogger();
 
 						if (isWindows)
 						{
-							// Add the EventLogLoggerProvider on windows machines
+							// The Console logger creates a new thread, which isn't ideal for mobile platforms:
+							// https://github.com/dotnet/runtime/blob/57bfe474518ab5b7cfe6bf7424a79ce3af9d6657/src/libraries/Microsoft.Extensions.Logging.Console/src/ConsoleLoggerProcessor.cs#L25-L29
+							// https://github.com/dotnet/runtime/blob/57bfe474518ab5b7cfe6bf7424a79ce3af9d6657/src/libraries/Microsoft.Extensions.Logging.Console/src/ConsoleLoggerProcessor.cs#L64
+							logging.AddConsole();
+							logging.AddEventSourceLogger();
+							// AddEventLog() should be windows-only
 							logging.AddEventLog();
 						}
 

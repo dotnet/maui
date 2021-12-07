@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static class MauiAppBuilderExtensions
 	{
-		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder)
+		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
 		{
 			builder.Services.TryAddSingleton<IApplication, TApp>();
@@ -51,24 +52,11 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
+		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication
 		{
 			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
 			builder.SetupDefaults();
-			return builder;
-		}
-
-		static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
-		{
-			builder.ConfigureImageSources(services =>
-			{
-				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
-				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
-				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
-				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
-			});
-
 			return builder;
 		}
 
@@ -160,12 +148,7 @@ namespace Microsoft.Maui.Controls.Hosting
 				});
 
 			builder.AddMauiCompat();
-
-			// Update the mappings for IView/View to work specifically for Controls
-			VisualElement.RemapForControls();
-			Label.RemapForControls();
-			Button.RemapForControls();
-			Window.RemapForControls();
+			builder.RemapForControls();
 
 			return builder;
 		}

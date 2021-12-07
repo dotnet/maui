@@ -5,18 +5,23 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
-		public static void CreateNativeWindow(this UI.Xaml.Application nativeApplication, IApplication application, UI.Xaml.LaunchActivatedEventArgs? args)
+		public static void CreateNativeWindow(this UI.Xaml.Application nativeApplication, IApplication application, UI.Xaml.LaunchActivatedEventArgs? args) =>
+			nativeApplication.CreateNativeWindow(application, new OpenWindowRequest(LaunchArgs: args));
+
+		public static void CreateNativeWindow(this UI.Xaml.Application nativeApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return;
 
 			var winuiWndow = new MauiWinUIWindow();
 
-			var mauiContext = applicationContext!.MakeScoped(winuiWndow);
+			var mauiContext = applicationContext!.MakeWindowScope(winuiWndow, out var windowScope);
 
 			applicationContext.Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
-			var activationState = new ActivationState(mauiContext, args);
+			var activationState = args?.State is not null
+				? new ActivationState(mauiContext, args.State)
+				: new ActivationState(mauiContext, args?.LaunchArgs);
 
 			var window = application.CreateWindow(activationState);
 

@@ -1,4 +1,5 @@
 ﻿using CoreGraphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers

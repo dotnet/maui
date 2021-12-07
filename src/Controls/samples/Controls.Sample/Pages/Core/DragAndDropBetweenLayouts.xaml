@@ -14,8 +14,12 @@
             </BoxView>
         </DataTemplate>
     </views:BasePage.Resources>
-    <StackLayout Orientation="Horizontal">
-        <ScrollView HorizontalOptions="FillAndExpand">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <ScrollView Grid.Column="0">
             <StackLayout 
                     x:Name="SLAllColors" 
                     BindableLayout.ItemTemplate="{StaticResource colorTemplate}" BindableLayout.ItemsSource="{Binding AllColors}">
@@ -28,7 +32,7 @@
                 </StackLayout.GestureRecognizers>
             </StackLayout>
         </ScrollView>
-        <ScrollView HorizontalOptions="FillAndExpand">
+        <ScrollView Grid.Column="1">
             <StackLayout x:Name="SLRainbow" BindableLayout.ItemTemplate="{StaticResource colorTemplate}" BindableLayout.ItemsSource="{Binding RainbowColors}">
                 <StackLayout.GestureRecognizers>
                     <DropGestureRecognizer 
@@ -39,5 +43,5 @@
                 </StackLayout.GestureRecognizers>
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 </views:BasePage>

@@ -2,7 +2,7 @@
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SwitchExtensions
 	{

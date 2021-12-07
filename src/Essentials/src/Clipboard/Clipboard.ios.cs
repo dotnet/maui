@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials

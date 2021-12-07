@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml;
 using WinRT;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				//WindowsRuntimeMarshal.AddEventHandler(add, remove, s_handlerinfo);
 			}
 			catch (Exception) {
-				Log.Warning(nameof(NativeEventWrapper), "Can not attach NativeEventWrapper.");
+				Application.Current?.FindMauiContext()?.CreateLogger<NativeEventWrapper>()?.LogWarning("Can not attach NativeEventWrapper.");
 			}
 		}
 

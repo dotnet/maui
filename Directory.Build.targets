@@ -6,6 +6,11 @@
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
+  <PropertyGroup>
+     <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
+    <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
+  </PropertyGroup>
+
   <!-- platform version number information -->
   <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
@@ -41,9 +46,6 @@
     <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
-  <!-- HACK: Prevent the Platform checks -->
-  <Target Name="BinPlaceBootstrapDll" />
-
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
   <ItemGroup>
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
@@ -53,5 +55,7 @@
   <ItemGroup>
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.18" TargetingPackVersion="10.0.18362.18" />
   </ItemGroup>
+
+  <Target Name="ComputeXamarinTargetFrameworks" />
 
 </Project>

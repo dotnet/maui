@@ -6,22 +6,22 @@ using Android.Views;
 using AndroidX.AppCompat.View;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.DrawerLayout.Widget;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.AppBar;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class StackNavigationManager
 	{
-		Toolbar? _toolbar;
 		NavHostFragment? _navHost;
 		FragmentNavigator? _fragmentNavigator;
 		NavGraph? _navGraph;
 		IView? _currentPage;
-		CoordinatorLayout? _navigationLayout;
 		ProcessBackClick BackClick { get; }
 		internal IView? VirtualView { get; private set; }
 		internal INavigationView? NavigationView { get; private set; }
@@ -41,9 +41,6 @@ namespace Microsoft.Maui
 		internal NavGraph NavGraph => _navGraph ??
 			throw new InvalidOperationException($"NavGraph cannot be null");
 
-		internal CoordinatorLayout NavigationLayout => _navigationLayout ??
-			throw new InvalidOperationException($"NavigationLayout cannot be null");
-
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
@@ -55,10 +52,6 @@ namespace Microsoft.Maui
 		{
 			BackClick = new ProcessBackClick(this);
 		}
-
-		internal Toolbar? Toolbar =>
-			_toolbar ??=
-			NavigationLayout.FindViewById<MaterialToolbar>(Resource.Id.navigationlayout_toolbar);
 
 		/*
 		 * The important thing to know going into reading this method is that it's not possible to
@@ -207,6 +200,13 @@ namespace Microsoft.Maui
 			// The Navigation Graph can get really confused
 			if (NavGraph.StartDestination != startId)
 				NavGraph.StartDestination = startId;
+
+			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
+			// point in time that we can setup toolbar colors for the incoming page
+			if (NavigationView is INavigationView te && te.Toolbar?.Handler != null)
+			{
+				te.Toolbar.Handler.UpdateValue(nameof(IToolbar.BackButtonVisible));
+			}
 		}
 
 		public virtual FragmentNavigator.Destination AddFragmentDestination()
@@ -274,18 +274,19 @@ namespace Microsoft.Maui
 		{
 		}
 
-		public virtual void Connect(IView navigationView, CoordinatorLayout nativeView)
+		public virtual void Connect(IView navigationView)
 		{
 			VirtualView = navigationView;
 			NavigationView = (INavigationView)navigationView;
-			_navigationLayout = nativeView;
 
 			var fragmentManager = MauiContext?.GetFragmentManager();
 			_ = fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
 			_ = NavigationView ?? throw new InvalidOperationException($"VirtualView cannot be null");
 
-			_navHost = (NavHostFragment)
-				fragmentManager.FindFragmentById(Resource.Id.nav_host);
+			var navHostFragment = fragmentManager.FindFragmentById(Resource.Id.nav_host);
+			_navHost = (NavHostFragment)navHostFragment;
+
+			System.Diagnostics.Debug.WriteLine($"_navHost: {_navHost} {_navHost.GetHashCode()}");
 
 			_fragmentNavigator =
 				(FragmentNavigator)NavHost
@@ -318,23 +319,10 @@ namespace Microsoft.Maui
 		protected virtual void OnToolbarBackButtonClicked()
 		{
 			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
-			var stack = new List<IView>(NavigationStack);
-			stack.RemoveAt(stack.Count - 1);
-			ApplyNavigationRequest(new NavigationRequest(stack, true));
+			_ = MauiContext.GetActivity().GetWindow()?.BackButtonClicked();
 		}
 
 		internal void ToolbarBackButtonClicked() => OnToolbarBackButtonClicked();
-
-		protected virtual void OnHardwareBackButtonClicked()
-		{
-			if (MauiContext.GetActivity().GetWindow()?.BackButtonClicked() == false &&
-				NavigationStack.Count == 1)
-			{
-				MauiContext.GetActivity().FinishAffinity();
-			}
-		}
-
-		internal void HardwareBackButtonClicked() => OnHardwareBackButtonClicked();
 
 		// Fragments are always destroyed if they aren't visible
 		// The Handler/NativeView associated with the visible IView remain intact
@@ -406,18 +394,18 @@ namespace Microsoft.Maui
 			AndroidX.Fragment.App.FragmentManager.FragmentLifecycleCallbacks,
 			NavController.IOnDestinationChangedListener
 		{
-			StackNavigationManager _navigationManager;
+			StackNavigationManager _stackNavigationManager;
 
 			public Callbacks(StackNavigationManager navigationLayout)
 			{
-				_navigationManager = navigationLayout;
+				_stackNavigationManager = navigationLayout;
 			}
 			#region IOnDestinationChangedListener
 
 			void NavController.IOnDestinationChangedListener.OnDestinationChanged(
 				NavController p0, NavDestination p1, Bundle p2)
 			{
-				_navigationManager.OnDestinationChanged(p0, p1, p2);
+				_stackNavigationManager.OnDestinationChanged(p0, p1, p2);
 			}
 			#endregion
 
@@ -425,34 +413,50 @@ namespace Microsoft.Maui
 			public override void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f)
 			{
 				if (f is NavigationViewFragment pf)
-					_navigationManager.OnNavigationViewFragmentResumed(fm, pf);
+					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);
 
+				AToolbar? nativeToolbar = null;
+				IToolbar? toolbar = null;
 
-				// This wires up the hardware back button to this fragment
-				f.RequireActivity()
-					.OnBackPressedDispatcher
-					.AddCallback(f, _navigationManager.BackClick);
-
+				if (_stackNavigationManager.NavigationView?.Toolbar is IToolbar tb &&
+					tb?.Handler?.NativeView is AToolbar ntb)
+				{
+					nativeToolbar = ntb;
+					toolbar = tb;
+				}
 
 				// Wire up the toolbar to the currently made visible Fragment
 				var controller = NavHostFragment.FindNavController(f);
-				var appbarConfig =
+				var appbarConfigBuilder =
 					new AppBarConfiguration
-						.Builder(controller.Graph)
-						.Build();
+						.Builder(_stackNavigationManager.NavGraph);
 
-				if (_navigationManager.Toolbar != null)
+				if (nativeToolbar != null && toolbar != null)
 				{
+					// TODO: MAUI Hackey way of wiring up Drawer Layout
+					// But currently you can only have a nav bar with a Navigation View	
+					if (nativeToolbar.Parent is DrawerLayout dl1)
+						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl1);
+					else if (nativeToolbar.Parent?.Parent is DrawerLayout dl2)
+						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl2);
+					else if (nativeToolbar.Parent?.Parent?.Parent is DrawerLayout dl3)
+						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl3);
+
+					var appbarConfig =
+						appbarConfigBuilder.Build();
+
 					NavigationUI
-						.SetupWithNavController(_navigationManager.Toolbar, controller, appbarConfig);
+						.SetupWithNavController(nativeToolbar, controller, appbarConfig);
 
-					_navigationManager.Toolbar.SetNavigationOnClickListener(_navigationManager.BackClick);
+					// the call to SetupWithNavController resets the Navigation Icon
+					toolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+
+					if (toolbar.BackButtonVisible && toolbar.IsVisible)
+					{
+						// Wiring up to this will break the Drawer Toggle button if it's visible
+						nativeToolbar.SetNavigationOnClickListener(_stackNavigationManager.BackClick);
+					}
 				}
-			}
-
-			public override void OnFragmentAttached(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f, Context context)
-			{
-				base.OnFragmentAttached(fm, f, context);
 			}
 
 			public override void OnFragmentViewDestroyed(
@@ -460,19 +464,9 @@ namespace Microsoft.Maui
 				AndroidX.Fragment.App.Fragment f)
 			{
 				if (f is NavigationViewFragment pf)
-					_navigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
+					_stackNavigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
 
 				base.OnFragmentViewDestroyed(fm, f);
-			}
-
-			public override void OnFragmentCreated(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f, Bundle savedInstanceState)
-			{
-				base.OnFragmentCreated(fm, f, savedInstanceState);
-
-				// This wires up the hardware back button to this fragment
-				f.RequireActivity()
-					.OnBackPressedDispatcher
-					.AddCallback(f, _navigationManager.BackClick);
 			}
 			#endregion
 

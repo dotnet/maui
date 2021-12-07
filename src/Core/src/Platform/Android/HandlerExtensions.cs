@@ -3,23 +3,55 @@ using Android.App;
 using Android.Content;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class HandlerExtensions
 	{
+		internal static AView? GetNative(this IElement view, bool returnWrappedIfPresent)
+		{
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return (view.Handler?.NativeView as AView);
+
+		}
+
+		internal static AView ToNative(this IElement view, IMauiContext context, bool returnWrappedIfPresent)
+		{
+			var nativeView = view.ToNative(context);
+
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return nativeView;
+
+		}
+
 		public static AView ToContainerView(this IElement view, IMauiContext context) =>
 			new ContainerView(context) { CurrentView = view };
 
 		public static AView ToNative(this IElement view, IMauiContext context)
 		{
+			var handler = view.ToHandler(context);
+
+			if (handler.NativeView is not AView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(AView)}");
+			}
+			return result;
+		}
+
+		public static IElementHandler ToHandler(this IElement view, IMauiContext context)
+		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
-			// This is how MVU works. It collapses views down
+			//This is how MVU works. It collapses views down
 			if (view is IReplaceableView ir)
 				view = ir.ReplacedView;
 
 			var handler = view.Handler;
+
 			if (handler?.MauiContext != null && handler.MauiContext != context)
 				handler = null;
 
@@ -36,13 +68,7 @@ namespace Microsoft.Maui
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
 
-			if (handler is INativeViewHandler nvh && nvh.NativeView is AView)
-				return nvh.NativeView;
-
-			if (handler.NativeView is AView result)
-				return result;
-
-			throw new InvalidOperationException($"Unable to convert {view} to {typeof(AView)}");
+			return (IElementHandler)handler;
 		}
 
 		public static void SetApplicationHandler(this Application nativeApplication, IApplication application, IMauiContext context) =>

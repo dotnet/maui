@@ -1,10 +1,11 @@
 ﻿using System;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 using WebKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiWKWebView : WKWebView, IWebViewDelegate
 	{

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class StrokeExtensions
 	{

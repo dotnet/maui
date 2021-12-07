@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Platform.iOS
+namespace Microsoft.Maui.Platform
 {
 	public static class UIPageControlExtensions
 	{

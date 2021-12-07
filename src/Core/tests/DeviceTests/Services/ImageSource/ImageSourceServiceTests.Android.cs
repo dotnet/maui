@@ -156,8 +156,7 @@ namespace Microsoft.Maui.DeviceTests
 						.Load(bitmapFile, Platform.DefaultContext)
 						.SetOnlyRetrieveFromCache(true)
 						.SetDiskCacheStrategy(DiskCacheStrategy.None)
-						.Submit()
-						.AsTask();
+						.SubmitAsync(Platform.DefaultContext);
 				}
 				catch (ExecutionException ex) when (ex.Cause is GlideException)
 				{

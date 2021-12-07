@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void TearDown()
 			{
 				Device.PlatformServices = null;
+				Application.ClearCurrent();
 			}
 
 			[TestCase(false)]

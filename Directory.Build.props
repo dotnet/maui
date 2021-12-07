@@ -66,7 +66,6 @@
     <DotNetLibraryPacksDirectory>$(DotNetDirectory)library-packs/</DotNetLibraryPacksDirectory>
     <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
     <DotNetTemplatePacksDirectory>$(DotNetDirectory)template-packs/</DotNetTemplatePacksDirectory>
-    <DotNet6Feed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json</DotNet6Feed>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -80,8 +79,6 @@
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
     <ProduceReferenceAssemblyInOutDir>True</ProduceReferenceAssemblyInOutDir>
     <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
-    <!-- When setting UseInternalWinUIPackages=true, make sure to also uncomment the "wasdk-internal" nuget source in NuGet.config -->
-    <!-- <UseInternalWinUIPackages>true</UseInternalWinUIPackages> -->
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>

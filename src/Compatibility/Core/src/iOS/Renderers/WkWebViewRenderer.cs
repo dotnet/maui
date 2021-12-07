@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -196,12 +197,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// local file loading here and see if that works:
 				if (!LoadFile(url))
 				{
-					Log.Warning(nameof(WkWebViewRenderer), $"Unable to Load Url {url}: {formatException}");
+					Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(formatException, "Unable to Load Url {url} ", url);
 				}
 			}
 			catch (Exception exc)
 			{
-				Log.Warning(nameof(WkWebViewRenderer), $"Unable to Load Url {url}: {exc}");
+				Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(exc, "Unable to Load Url {url}", url);
 			}
 		}
 
@@ -225,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception ex)
 			{
-				Log.Warning(nameof(WkWebViewRenderer), $"Could not load {url} as local file: {ex}");
+				Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(ex, "Could not load {url} as local file", url);
 			}
 
 			return false;
@@ -622,7 +623,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception exc)
 			{
-				Log.Warning(nameof(WkWebViewRenderer), $"Syncing Existing Cookies Failed: {exc}");
+				Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(exc, "Syncing Existing Cookies Failed");
 			}
 
 			Reload();
@@ -735,7 +736,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				catch (Exception exc)
 				{
-					Log.Warning(nameof(WkWebViewRenderer), $"Failed to Sync Cookies {exc}");
+					Forms.MauiContext?.CreateLogger<WkWebViewRenderer>()?.LogWarning(exc, "Failed to Sync Cookies");
 				}
 
 				var args = new WebNavigatedEventArgs(_lastEvent, WebView.Source, url, WebNavigationResult.Success);

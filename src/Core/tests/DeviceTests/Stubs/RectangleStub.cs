@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class RectangleStub : IShape
+	public class RectangleStub : StubBase, IShape
 	{
 		public RectangleStub()
 		{

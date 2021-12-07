@@ -10,7 +10,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Microsoft.Maui.Graphics;
 using System;
 
-namespace Microsoft.Maui.Platform.Windows
+namespace Microsoft.Maui.Platform
 {
 	public class MauiPageControl : ItemsControl
 	{

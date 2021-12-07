@@ -1,36 +1,27 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Android.App;
-using Android.Content;
 using Android.Content.Res;
-using Android.Graphics;
-using Android.OS;
-using Android.Runtime;
 using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Platform;
 using AImageButton = Android.Widget.ImageButton;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
-using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public class SearchHandlerAppearanceTracker : IDisposable
 	{
+		readonly EditText _editText;
+		readonly IShellContext _shellContext;
+
 		SearchHandler _searchHandler;
 		bool _disposed;
 		AView _control;
-		AppCompatEditText _editText;
 		InputTypes _inputType;
-		IShellContext _shellContext;
+
 		IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 		ColorStateList DefaultTextColors { get; set; }
 		ColorStateList DefaultPlaceholderTextColors { get; set; }
@@ -42,7 +33,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_control = searchView.View;
 			_searchHandler.PropertyChanged += SearchHandlerPropertyChanged;
 			_searchHandler.FocusChangeRequested += SearchHandlerFocusChangeRequested;
-			_editText = (_control as ViewGroup).GetChildrenOfType<AppCompatEditText>().FirstOrDefault();
+			_editText = (_control as ViewGroup).GetChildrenOfType<EditText>().FirstOrDefault();
 			DefaultTextColors = _editText.TextColors;
 			DefaultPlaceholderTextColors = _editText.HintTextColors;
 			UpdateSearchBarColors();
@@ -160,6 +151,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateBackgroundColor()
 		{
+			if (_searchHandler.BackgroundColor == null)
+				return;
+
 			var linearLayout = (_control as ViewGroup).GetChildrenOfType<LinearLayout>().FirstOrDefault();
 			linearLayout.SetBackgroundColor(_searchHandler.BackgroundColor.ToNative());
 		}

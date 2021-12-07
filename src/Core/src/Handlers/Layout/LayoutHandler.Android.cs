@@ -1,5 +1,6 @@
 using System;
 using Android.Views;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -36,9 +37,10 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 
 			NativeView.RemoveAllViews();
-			foreach (var child in VirtualView)
+
+			foreach (var child in VirtualView.OrderByZIndex())
 			{
-				NativeView.AddView(child.ToNative(MauiContext));
+				NativeView.AddView(child.ToNative(MauiContext, true));
 			}
 		}
 
@@ -48,7 +50,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.AddView(child.ToNative(MauiContext));
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+			NativeView.AddView(child.ToNative(MauiContext, true), targetIndex);
 		}
 
 		public void Remove(IView child)
@@ -56,12 +59,11 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.Handler?.NativeView is View view)
+			if (child?.GetNative(true) is View view)
 			{
 				NativeView.RemoveView(view);
 			}
 		}
-
 
 		void Clear(LayoutViewGroup nativeView)
 		{
@@ -79,7 +81,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.AddView(child.ToNative(MauiContext), index);
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+			NativeView.AddView(child.ToNative(MauiContext, true), targetIndex);
 		}
 
 		public void Update(int index, IView child)
@@ -89,7 +92,17 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			NativeView.RemoveViewAt(index);
-			NativeView.AddView(child.ToNative(MauiContext), index);
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+			NativeView.AddView(child.ToNative(MauiContext, true), targetIndex);
+		}
+
+		public void UpdateZIndex(IView child)
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			EnsureZIndexOrder(child);
 		}
 
 		protected override void DisconnectHandler(LayoutViewGroup nativeView)
@@ -97,6 +110,43 @@ namespace Microsoft.Maui.Handlers
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
 			Clear(nativeView);
 			base.DisconnectHandler(nativeView);
+		}
+
+		void EnsureZIndexOrder(IView child)
+		{
+			if (NativeView.ChildCount == 0)
+			{
+				return;
+			}
+
+			AView nativeChildView = child.ToNative(MauiContext!, true);
+			var currentIndex = IndexOf(NativeView, nativeChildView);
+
+			if (currentIndex == -1)
+			{
+				return;
+			}
+
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+
+			if (currentIndex != targetIndex)
+			{
+				NativeView.RemoveViewAt(currentIndex);
+				NativeView.AddView(nativeChildView, targetIndex);
+			}
+		}
+
+		int IndexOf(ViewGroup viewGroup, AView view)
+		{
+			for (int n = 0; n < viewGroup.ChildCount; n++)
+			{
+				if (viewGroup.GetChildAt(n) == view)
+				{
+					return n;
+				}
+			}
+
+			return -1;
 		}
 	}
 }

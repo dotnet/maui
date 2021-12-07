@@ -9,12 +9,6 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
-			new SectionModel(typeof(ImageButtonPage), "ImageButton",
-				"ImageButton is a rectangular object that displays an image, and which fires a Clicked event when it's been pressed."),
-
-			new SectionModel(typeof(CollectionViewPage), "CollectionView",
-				"CollectionView displays a scrollable list of selectable data items, using different layout specifications. It aims to provide a more flexible, and performant alternative to ListView. "),
-
 			new SectionModel(typeof(CarouselViewPage), "CarouselView",
 				"CarouselView displays a scrollable list of data items."),
 
@@ -32,6 +26,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(TabbedPageGallery), "TabbedPage",
 				"Display pages as a set of Tabs."),
+
+			new SectionModel(typeof(AndExpandPage), "AndExpand",
+				"StackLayout with legacy AndExpand options"),
 		};
 	}
 }

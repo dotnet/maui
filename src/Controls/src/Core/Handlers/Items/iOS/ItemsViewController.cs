@@ -4,6 +4,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -217,7 +218,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateFlowDirection()
 		{
-		//CollectionView.UpdateFlowDirection(ItemsView);
+			CollectionView.UpdateFlowDirection(ItemsView);
 
 			if (_emptyViewDisplayed)
 			{
@@ -415,7 +416,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					//Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
 				}
-					
+
 
 				uiView?.Dispose();
 				uiView = null;

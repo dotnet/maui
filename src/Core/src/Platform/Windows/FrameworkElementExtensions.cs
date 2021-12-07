@@ -1,22 +1,30 @@
 ﻿#nullable enable
 using System;
-using System.Linq;
-using Microsoft.UI.Xaml;
 using System.Collections.Concurrent;
-using Microsoft.UI.Xaml.Media;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class FrameworkElementExtensions
 	{
 		static readonly Lazy<ConcurrentDictionary<Type, DependencyProperty>> ForegroundProperties =
 			new Lazy<ConcurrentDictionary<Type, DependencyProperty>>(() => new ConcurrentDictionary<Type, DependencyProperty>());
+
+		public static T? GetResource<T>(this FrameworkElement element, string key, T? def = default)
+		{
+			if (element.Resources.TryGetValue(key, out var resource))
+				return (T?)resource;
+
+			return def;
+		}
 
 		public static WBrush GetForeground(this FrameworkElement element)
 		{
@@ -73,14 +81,15 @@ namespace Microsoft.Maui
 
 		internal static IEnumerable<T?> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
 		{
-			int myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
+			var myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
 			for (int i = 0; i < myChildrenCount; i++)
 			{
 				var child = VisualTreeHelper.GetChild(parent, i);
-				var controlName = child.GetValue(FrameworkElement.NameProperty) as string;
 
-				if (controlName == elementName && child is T t)
+				if (child is T t && elementName.Equals(child.GetValue(FrameworkElement.NameProperty)))
+				{
 					yield return t;
+				}
 				else
 				{
 					foreach (var subChild in child.GetDescendantsByName<T>(elementName))
@@ -89,9 +98,24 @@ namespace Microsoft.Maui
 			}
 		}
 
+		internal static T? GetDescendantByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
+		{
+			var myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
+			for (int i = 0; i < myChildrenCount; i++)
+			{
+				var child = VisualTreeHelper.GetChild(parent, i);
+
+				if (child is T t && elementName.Equals(child.GetValue(FrameworkElement.NameProperty)))
+					return t;
+				else if (child.GetDescendantByName<T>(elementName) is T tChild)
+					return tChild;
+			}
+			return null;
+		}
+
 		internal static T? GetFirstDescendant<T>(this DependencyObject element) where T : FrameworkElement
 		{
-			int count = VisualTreeHelper.GetChildrenCount(element);
+			var count = VisualTreeHelper.GetChildrenCount(element);
 			for (var i = 0; i < count; i++)
 			{
 				DependencyObject child = VisualTreeHelper.GetChild(element, i);
@@ -99,7 +123,6 @@ namespace Microsoft.Maui
 				if ((child as T ?? GetFirstDescendant<T>(child)) is T target)
 					return target;
 			}
-
 			return null;
 		}
 

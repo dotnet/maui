@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Animations;
+
 #if __ANDROID__
 using Microsoft.Maui.Platform;
 #endif
@@ -13,11 +14,11 @@ namespace Microsoft.Maui.Hosting
 		{
 #if __ANDROID__
 			builder.Services.TryAddSingleton<IEnergySaverListenerManager>(svcs => new EnergySaverListenerManager());
-			builder.Services.TryAddTransient<ITicker>(svcs => new NativeTicker(svcs.GetRequiredService<IEnergySaverListenerManager>()));
+			builder.Services.TryAddScoped<ITicker>(svcs => new NativeTicker(svcs.GetRequiredService<IEnergySaverListenerManager>()));
 #else
-			builder.Services.TryAddTransient<ITicker>(svcs => new NativeTicker());
+			builder.Services.TryAddScoped<ITicker>(svcs => new NativeTicker());
 #endif
-			builder.Services.TryAddTransient<IAnimationManager>(svcs => new AnimationManager(svcs.GetRequiredService<ITicker>()));
+			builder.Services.TryAddScoped<IAnimationManager>(svcs => new AnimationManager(svcs.GetRequiredService<ITicker>()));
 
 			return builder;
 		}

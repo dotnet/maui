@@ -1,7 +1,7 @@
 ﻿using Android.Widget;
 using AGravityFlags = Android.Views.GravityFlags;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{
@@ -14,6 +14,11 @@ namespace Microsoft.Maui
 		}
 
 		public static void UpdateVerticalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
+		{
+			view.Gravity = alignment.ToVerticalGravityFlags() | orMask;
+		}
+
+		public static void UpdateVerticalAlignment(this TextView view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
 			view.Gravity = alignment.ToVerticalGravityFlags() | orMask;
 		}

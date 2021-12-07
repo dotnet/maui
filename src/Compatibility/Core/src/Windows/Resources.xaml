@@ -16,7 +16,6 @@
         <ResourceDictionary Source="FlyoutPageControlStyle.xaml" />
 		<ResourceDictionary Source="TabbedPageStyle.xaml" />
 		<ResourceDictionary Source="SliderStyle.xaml" />
-		<ResourceDictionary Source="CollectionView/ItemsViewStyles.xaml" />
         <ResourceDictionary Source="PickerStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
@@ -349,10 +348,6 @@
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
-	</Style>
-
-	<Style TargetType="TextBox">
-		<Setter Property="Margin" Value="0" />
 	</Style>
 
 	<Style TargetType="ToggleSwitch">

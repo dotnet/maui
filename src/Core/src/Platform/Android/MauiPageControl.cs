@@ -9,7 +9,7 @@ using AShapes = Android.Graphics.Drawables.Shapes;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 
-namespace Microsoft.Maui.Platform.Android
+namespace Microsoft.Maui.Platform
 {
 	public class MauiPageControl : LinearLayout
 	{

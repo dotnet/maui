@@ -1,8 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Foundation;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -15,6 +12,13 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? ButtonTextColorDefaultHighlighted;
 		static UIColor? ButtonTextColorDefaultNormal;
 
+		void SetupDefaults(UIButton nativeView)
+		{
+			ButtonTextColorDefaultNormal ??= nativeView.TitleColor(UIControlState.Normal);
+			ButtonTextColorDefaultHighlighted ??= nativeView.TitleColor(UIControlState.Highlighted);
+			ButtonTextColorDefaultDisabled ??= nativeView.TitleColor(UIControlState.Disabled);
+		}
+
 		protected override UIButton CreateNativeView()
 		{
 			var button = new UIButton(UIButtonType.System);
@@ -24,6 +28,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton nativeView)
 		{
+			SetupDefaults(nativeView);
+
 			nativeView.TouchUpInside += OnButtonTouchUpInside;
 			nativeView.TouchUpOutside += OnButtonTouchUpOutside;
 			nativeView.TouchDown += OnButtonTouchDown;
@@ -39,11 +45,19 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		void SetupDefaults(UIButton nativeView)
+		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			ButtonTextColorDefaultNormal = nativeView.TitleColor(UIControlState.Normal);
-			ButtonTextColorDefaultHighlighted = nativeView.TitleColor(UIControlState.Highlighted);
-			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
+			handler.TypedNativeView?.UpdateStrokeColor(buttonStroke);
+		}
+
+		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.TypedNativeView?.UpdateStrokeThickness(buttonStroke);
+		}
+
+		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.TypedNativeView?.UpdateCornerRadius(buttonStroke);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
@@ -92,16 +106,14 @@ namespace Microsoft.Maui.Handlers
 			{
 				NativeView.SetImage(null, UIControlState.Normal);
 			}
-
-			VirtualView.ImageSourceLoaded();
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IButton image) =>
+		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
 		{
-			if (image.ImageSource == null)
+			if (image.Source == null)
 			{
 				return Task.CompletedTask;
 			}

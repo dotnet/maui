@@ -142,5 +142,60 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.NotNull(handler.ContainerView);
 		}
+
+		[Theory(DisplayName = "Native View Bounds are not empty")]
+		[InlineData(1)]
+		[InlineData(100)]
+		[InlineData(1000)]
+		public async Task ReturnsNonEmptyNativeViewBounds(int size)
+		{
+			var view = new TStub()
+			{
+				Height = size,
+				Width = size,
+			};
+
+			var nativeViewBounds = await GetValueAsync(view, handler => GetNativeViewBounds(handler));
+			Assert.NotEqual(nativeViewBounds, new Graphics.Rectangle());
+		}
+
+		[Theory(DisplayName = "Native View Bounding Box are not empty")]
+		[InlineData(1)]
+		[InlineData(100)]
+		[InlineData(1000)]
+		public async Task ReturnsNonEmptyNativeBoundingBounds(int size)
+		{
+			var view = new TStub()
+			{
+				Height = size,
+				Width = size,
+			};
+
+			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
+			Assert.NotEqual(nativeBoundingBox, new Graphics.Rectangle());
+		}
+
+
+		[Theory(DisplayName = "Native View Transforms are not empty"
+#if __IOS__
+			, Skip = "https://github.com/dotnet/maui/issues/3600"
+#endif
+			)]
+		[InlineData(1)]
+		[InlineData(100)]
+		[InlineData(1000)]
+		public async Task ReturnsNonEmptyNativeViewTransforms(int size)
+		{
+			var view = new TStub()
+			{
+				Height = size,
+				Width = size,
+				Scale = .5,
+				Rotation = size,
+			};
+
+			var nativeViewTransform = await GetValueAsync(view, handler => GetViewTransform(handler));
+			Assert.NotEqual(nativeViewTransform, new System.Numerics.Matrix4x4());
+		}
 	}
 }

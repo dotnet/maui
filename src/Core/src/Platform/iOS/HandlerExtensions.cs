@@ -1,11 +1,34 @@
 using System;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class HandlerExtensions
 	{
+		const string UIApplicationSceneManifestKey = "UIApplicationSceneManifest";
+
+		internal static UIView? GetNative(this IElement view, bool returnWrappedIfPresent)
+		{
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return (view.Handler?.NativeView as UIView);
+
+		}
+
+		internal static UIView ToNative(this IElement view, IMauiContext context, bool returnWrappedIfPresent)
+		{
+			var nativeView = view.ToNative(context);
+
+			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
+				return nativeHandler.NativeView;
+
+			return nativeView;
+
+		}
+
 		public static UIViewController ToUIViewController(this IElement view, IMauiContext context)
 		{
 			var nativeView = view.ToNative(context);
@@ -50,13 +73,14 @@ namespace Microsoft.Maui
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
 
-			if (((INativeViewHandler)handler).NativeView is not UIView result)
-			{
-				throw new InvalidOperationException($"Unable to convert {view} to {typeof(UIView)}");
-			}
-
 			return (INativeViewHandler)handler;
 		}
+
+		// If < iOS 13 or the Info.plist does not have a scene manifest entry we need to assume no multi window, and no UISceneDelegate.
+		// We cannot check for iPads/Mac because even on the iPhone it uses the scene delegate if one is specified in the manifest.
+		public static bool HasSceneManifest(this UIApplicationDelegate nativeApplication) =>
+			UIDevice.CurrentDevice.CheckSystemVersion(13, 0) &&
+			NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString(UIApplicationSceneManifestKey));
 
 		public static void SetApplicationHandler(this UIApplicationDelegate nativeApplication, IApplication application, IMauiContext context) =>
 			SetHandler(nativeApplication, application, context);

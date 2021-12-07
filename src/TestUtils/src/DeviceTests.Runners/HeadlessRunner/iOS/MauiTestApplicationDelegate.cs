@@ -7,6 +7,7 @@ using Microsoft.DotNet.XHarness.iOS.Shared.Execution;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner

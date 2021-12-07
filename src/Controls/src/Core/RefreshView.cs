@@ -14,8 +14,9 @@ namespace Microsoft.Maui.Controls
 		public RefreshView()
 		{
 			IsClippedToBounds = true;
-			VerticalOptions = LayoutOptions.FillAndExpand;
-			HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning disable CS0618 // Type or member is obsolete
+			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RefreshView>>(() => new PlatformConfigurationRegistry<RefreshView>(this));
 		}

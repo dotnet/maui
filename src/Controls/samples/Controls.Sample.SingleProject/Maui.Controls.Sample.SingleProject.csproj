@@ -43,7 +43,7 @@
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <OutputType>WinExe</OutputType>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>

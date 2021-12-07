@@ -1,7 +1,11 @@
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls
 {
-	public partial class Button : IButton, IText
+	public partial class Button : IButton, ITextButton, IImageButton
 	{
+		bool _wasImageLoading;
+
 		void IButton.Clicked()
 		{
 			(this as IButtonController).SendClicked();
@@ -17,13 +21,28 @@ namespace Microsoft.Maui.Controls
 			(this as IButtonController).SendReleased();
 		}
 
-		void IButton.ImageSourceLoaded()
+		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
-			Handler?.UpdateValue(nameof(ContentLayout));
+			if (!isLoading && _wasImageLoading)
+				Handler?.UpdateValue(nameof(ContentLayout));
+
+			_wasImageLoading = isLoading;
 		}
 
-		IImageSource IButton.ImageSource => ImageSource;
-
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+
+		Aspect IImage.Aspect => Aspect.Fill;
+
+		bool IImage.IsOpaque => true;
+
+		IImageSource IImageSourcePart.Source => ImageSource;
+
+		bool IImageSourcePart.IsAnimationPlaying => false;
+
+		double IButtonStroke.StrokeThickness => (double)GetValue(BorderWidthProperty);
+
+		Color IButtonStroke.StrokeColor => (Color)GetValue(BorderColorProperty);
+
+		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
 	}
 }
