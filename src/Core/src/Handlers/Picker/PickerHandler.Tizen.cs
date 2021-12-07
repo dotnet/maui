@@ -75,6 +75,9 @@ namespace Microsoft.Maui.Handlers
 
 		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
 		{
+			if (e.Touch.GetState(0) != Tizen.NUI.PointStateType.Up)
+				return false;
+
 			if (VirtualView == null)
 				return false;
 
