@@ -6,6 +6,10 @@
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
+
+
+    <!-- iOS Simulator -->
+    
     <RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">iossimulator-x64</RuntimeIdentifier>
 
     <!-- Hot RESTART -->
