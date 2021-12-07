@@ -17,8 +17,8 @@
     <x:Boolean x:Key="MicrosoftMauiCoreIncluded">true</x:Boolean>
 
     <uwp:ColorConverter x:Key="ColorConverter" />
-    
-    <Style x:Key="MauiRootContainerStyle" TargetType="Grid">
+
+    <Style x:Key="MauiRootContainerStyle" TargetType="Panel">
 	</Style>
 
 </ResourceDictionary>
