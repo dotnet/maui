@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
-using Android.Views;
 using Android.Runtime;
+using Android.Views;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 					NativeView.AddView(_nativeTitleView);
 				}
 
-				_nativeTitleView.Child = (INativeViewHandler)_nativeTitleViewHandler;
+				_nativeTitleView.Child = (INativeViewHandler?)_nativeTitleViewHandler;
 			}
 		}
 
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls
 		{
 			arg1.NativeView.UpdateBackButton(arg2);
 		}
-		
+
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
 		{
 			arg2.UpdateMenu();
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateIsVisible(arg2);			
+			arg1.NativeView.UpdateIsVisible(arg2);
 		}
 
 		internal class Container : ViewGroup

@@ -122,9 +122,9 @@ namespace Microsoft.Maui.Controls
 			get { return (FlyoutLayoutBehavior)GetValue(FlyoutLayoutBehaviorProperty); }
 			set { SetValue(FlyoutLayoutBehaviorProperty, value); }
 		}
-				
+
 		bool IFlyoutPageController.CanChangeIsPresented { get; set; } = true;
-		
+
 		Rectangle IFlyoutPageController.DetailBounds
 		{
 			get { return _detailBounds; }

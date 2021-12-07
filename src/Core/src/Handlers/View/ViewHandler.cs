@@ -50,6 +50,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
 			[nameof(IView.Frame)] = MapFrame,
+			[nameof(IView.ZIndex)] = MapZIndex,
 		};
 
 		bool _hasContainer;
@@ -260,6 +261,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFrame(IViewHandler handler, IView view, object? args)
 		{
 			MappingFrame(handler, view);
+		}
+
+		public static void MapZIndex(IViewHandler handler, IView view, object? args)
+		{
+			if (view.Parent is ILayout layout)
+			{
+				layout.Handler?.Invoke(nameof(ILayoutHandler.UpdateZIndex), view);
+			}
 		}
 	}
 }

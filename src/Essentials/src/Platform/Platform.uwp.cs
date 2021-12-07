@@ -4,6 +4,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using WindowActivationState = Windows.UI.Core.CoreWindowActivationState;
 #elif WINDOWS
+using System;
 using Microsoft.UI.Xaml;
 #endif
 
@@ -17,6 +18,9 @@ namespace Microsoft.Maui.Essentials
 			set => _currentWindow = value;
 		}
 
+		internal static IntPtr CurrentWindowHandle
+			=> WinRT.Interop.WindowNative.GetWindowHandle(CurrentWindow);
+	
 		internal const string AppManifestFilename = "AppxManifest.xml";
 		internal const string AppManifestXmlns = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
 		internal const string AppManifestUapXmlns = "http://schemas.microsoft.com/appx/manifest/uap/windows10";

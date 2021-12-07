@@ -138,5 +138,10 @@ namespace Microsoft.Maui
 		/// Method that is called to invalidate the layout of this View.
 		/// </summary>
 		void InvalidateArrange();
+
+		/// <summary>
+		/// Determines the drawing order of this IView within an ILayout; higher z-indexes will draw over lower z-indexes.
+		/// </summary>
+		int ZIndex { get; }
 	}
 }

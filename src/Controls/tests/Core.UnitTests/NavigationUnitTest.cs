@@ -823,7 +823,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNull(flyoutPage.Toolbar);
 			Assert.IsNotNull(tabbedPage.Toolbar);
 		}
-		
+
 		[Test]
 		public async Task PushingPageBeforeSettingHandlerPropagatesAfterSettingHandler()
 		{
