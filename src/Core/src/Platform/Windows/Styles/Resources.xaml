@@ -11,14 +11,15 @@
         <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
         <ResourceDictionary Source="MauiSliderStyle.xaml" />
         <ResourceDictionary Source="MauiStepperStyle.xaml" />
+        <ResourceDictionary Source="NavigationRootViewStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <x:Boolean x:Key="MicrosoftMauiCoreIncluded">true</x:Boolean>
 
     <uwp:ColorConverter x:Key="ColorConverter" />
     
-    <Style x:Key="MauiRootContainerStyle" TargetType="Panel">
-		<Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+    <Style x:Key="MauiRootContainerStyle" TargetType="Grid">
+        <!--<Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />-->
 	</Style>
 
 </ResourceDictionary>
