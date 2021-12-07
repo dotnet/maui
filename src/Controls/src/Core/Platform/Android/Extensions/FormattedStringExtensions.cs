@@ -6,6 +6,7 @@ using Android.Text;
 using Android.Text.Style;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -65,8 +66,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (!font.IsDefault)
 				{
+					fontManager ??= label.Handler?.GetRequiredService<IFontManager>()
+						?? MauiApplication.Current.Services.GetRequiredService<IFontManager>();
+
 					spannable.SetSpan(
-						new FontSpan(font, view, span.CharacterSpacing.ToEm(), fontManager ??= label.Handler.GetRequiredService<IFontManager>()),
+						new FontSpan(font, view, span.CharacterSpacing.ToEm(), fontManager),
 						start,
 						end,
 						SpanTypes.InclusiveInclusive);

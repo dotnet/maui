@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
@@ -20,11 +21,14 @@ namespace Microsoft.Maui.Controls.Platform
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
 
+			var fontManager = label.Handler?.GetRequiredService<IFontManager>()
+						?? MauiWinUIApplication.Current.Services.GetRequiredService<IFontManager>();
+
 			var heights = new List<double>();
 			for (var i = 0; i < formatted.Spans.Count; i++)
 			{
 				var span = formatted.Spans[i];
-				var run = span.ToRun(label, label.Handler.GetRequiredService<IFontManager>());
+				var run = span.ToRun(label, fontManager);
 				heights.Add(textBlock.FindDefaultLineHeight(run));
 				textBlock.Inlines.Add(run);
 			}
@@ -48,7 +52,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (!font.IsDefault)
 			{
-				run.ApplyFont(font, fontManager ?? label.Handler.GetRequiredService<IFontManager>());
+				fontManager ??= label.Handler?.GetRequiredService<IFontManager>()
+					?? MauiWinUIApplication.Current.Services.GetRequiredService<IFontManager>();
+
+				run.ApplyFont(font, fontManager);
 			}
 
 			if (span.IsSet(Span.TextDecorationsProperty))
