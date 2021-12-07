@@ -33,6 +33,9 @@
     <ProjectReference Include="../../../src/Controls/src/Core.Design/Controls.Core.Design-net6.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Xaml.Design/Controls.Xaml.Design-net6.csproj" />
     <ProjectReference Include="../../../src/Compatibility/Core/src/Compatibility-net6.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
     <ProjectReference Include="../../../src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj" />
   </ItemGroup>
 
