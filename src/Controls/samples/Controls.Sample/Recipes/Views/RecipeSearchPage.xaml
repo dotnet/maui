@@ -22,8 +22,8 @@
 
         <vlv:VirtualListView
             GridLayout.Row="2"
-			HorizontalOptions="FillAndExpand"
-			VerticalOptions="FillAndExpand"
+			HorizontalOptions="Fill"
+			VerticalOptions="Fill"
 			Adapter="{Binding Adapter}"
             x:Name="vListView"
 			SelectionMode="None">

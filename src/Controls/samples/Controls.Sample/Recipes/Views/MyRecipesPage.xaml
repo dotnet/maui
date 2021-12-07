@@ -21,8 +21,8 @@
             x:Name="vMyRecipesListView"
             WidthRequest="350"
             HeightRequest="570"
-			HorizontalOptions="FillAndExpand"
-			VerticalOptions="FillAndExpand"
+			HorizontalOptions="Fill"
+			VerticalOptions="Fill"
 			Adapter="{Binding Adapter}"
             Orientation="Horizontal"
 			SelectionMode="None">
@@ -31,13 +31,13 @@
                     <vlv:VirtualViewCell  x:Name="self">
                         <Grid RowDefinitions="*, Auto" 
                               Padding="0,0,20,0" 
-                              HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
+                              HorizontalOptions="Fill" VerticalOptions="Fill" 
                               Background="{Binding Source={x:Reference self}, Path=SectionIndex, Converter={StaticResource evenIndexBackgroundConverter}}"
                               SemanticProperties.Description="{Binding RecipeName}">
                             <Grid.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="MyRecipesPage_Tapped" NumberOfTapsRequired="1"  />
                             </Grid.GestureRecognizers>
-                            <Image Source="{Binding ImageUrl}" VerticalOptions="FillAndExpand" WidthRequest="340" Aspect="AspectFill"/>
+                            <Image Source="{Binding ImageUrl}" VerticalOptions="Fill" WidthRequest="340" Aspect="AspectFill"/>
                             <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="24" VerticalTextAlignment="Center" FontAttributes="Bold" />
                         </Grid>
                     </vlv:VirtualViewCell>
