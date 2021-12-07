@@ -20,28 +20,12 @@ namespace Microsoft.Maui.Platform
 	{
 		public static readonly DependencyProperty IsBackButtonVisibleProperty
 			= DependencyProperty.Register(nameof(IsBackButtonVisible), typeof(NavigationViewBackButtonVisible), typeof(WindowHeader), 
-				new PropertyMetadata(default(NavigationViewBackButtonVisible), OnIsBackButtonVisibleChanged));
-
-		static void OnIsBackButtonVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-		}
-
-		//internal TranslateTransform? ClipGeometryTransform { get; private set; }
-		//internal RectangleGeometry? LayoutRootClip { get; private set; }
-		//internal Grid? LayoutRoot { get; private set; }
+				null);
 
 		public WindowHeader()
 		{
 			InitializeComponent();
 		}
-
-		//protected override void OnApplyTemplate()
-		//{
-		//	base.OnApplyTemplate();
-		//	ClipGeometryTransform = (TranslateTransform)GetTemplateChild("ClipGeometryTransform");
-		//	LayoutRoot = (Grid)GetTemplateChild("LayoutRoot");
-		//	LayoutRootClip = LayoutRoot.Clip;
-		//}
 
 		internal string? Title
 		{
