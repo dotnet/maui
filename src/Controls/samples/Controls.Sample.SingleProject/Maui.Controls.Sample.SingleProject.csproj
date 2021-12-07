@@ -8,7 +8,17 @@
     <!-- uncomment this to run code on a device
     dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:run -f net6.0-ios -p:_DeviceNames=:vs2:udid=00008030-001125213CD0802E
     -->
-		<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">ios-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">iossimulator-x64</RuntimeIdentifier>
+
+    <!-- Hot RESTART -->
+
+    <!--<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">iosarm</RuntimeIdentifier>-->
+
+
+    <!-- phsyical device on Mac or remoting to mac -->
+    <!--<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">ios-arm64</RuntimeIdentifier>
+      <ProvisioningType Condition=" $(RuntimeIdentifier.Equals('ios-arm6')) ">manual</ProvisioningType>
+    -->
   </PropertyGroup>
 
   <PropertyGroup>
@@ -47,6 +57,11 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <OutputType>WinExe</OutputType>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-ios|AnyCPU'">
+    <CodesignKey>Apple Development: Shane NEuville %288692K2PTQ6%29</CodesignKey>
+    <CodesignProvision>VS: WildCard Development</CodesignProvision>
   </PropertyGroup>
 
   <ItemGroup>

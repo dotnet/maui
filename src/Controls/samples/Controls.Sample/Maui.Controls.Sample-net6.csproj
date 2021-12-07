@@ -6,6 +6,16 @@
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
+    <RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">iossimulator-x64</RuntimeIdentifier>
+
+    <!-- Hot RESTART -->
+    
+    <!--<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">iosarm</RuntimeIdentifier>-->
+
+
+    <!-- phsyical device on Mac or remoting to mac -->
+    <!--<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">ios-arm64</RuntimeIdentifier>
+    -->
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
