@@ -2,6 +2,7 @@ using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui;
 using System.Threading;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.DualScreen
 {
@@ -79,10 +80,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 		static object OnMinModePropertyCreate(BindableObject bindable)
 		{
 			double returnValue = 641d;
-			if (Device.info == null)
+			if (DeviceDisplay.MainDisplayInfo.Density <= 0)
 				return returnValue;
 
-			returnValue = 641d / Device.info.ScalingFactor;
+			returnValue = 641d / DeviceDisplay.MainDisplayInfo.Density;
 			return returnValue;
 		}
 

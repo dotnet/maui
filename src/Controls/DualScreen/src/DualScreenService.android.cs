@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
+using Microsoft.Maui.Platform;
 
 [assembly: Dependency(typeof(DualScreenService.DualScreenServiceImpl))]
 
