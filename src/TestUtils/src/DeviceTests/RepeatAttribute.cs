@@ -12,25 +12,18 @@ namespace Microsoft.Maui.DeviceTests
 	/// [Repeat(100)]
 	/// public async Task TheSameImageSourceReturnsTheSameBitmap(int _)
 	/// </summary>
-	public sealed class RepeatAttribute : Xunit.Sdk.DataAttribute
+	public sealed class RepeatAttribute : DataAttribute
 	{
-		private readonly int count;
+		readonly int _count;
 
 		public RepeatAttribute(int count)
 		{
-			if (count < 1)
-			{
-				throw new System.ArgumentOutOfRangeException(
-					paramName: nameof(count),
-					message: "Repeat count must be greater than 0."
-					);
-			}
-			this.count = count;
+			this._count = count;
 		}
 
-		public override System.Collections.Generic.IEnumerable<object[]> GetData(System.Reflection.MethodInfo testMethod)
+		public override IEnumerable<object[]> GetData(MethodInfo testMethod)
 		{
-			foreach (var iterationNumber in Enumerable.Range(start: 1, count: this.count))
+			foreach (var iterationNumber in Enumerable.Range(start: 1, count: this._count))
 			{
 				yield return new object[] { iterationNumber };
 			}

@@ -140,17 +140,13 @@ namespace Microsoft.Maui.DeviceTests
 			result2.Dispose();
 		}
 
-		static async Task<bool> TryCollectFile(string bitmapFile)
+		async Task<bool> TryCollectFile(string bitmapFile)
 		{
 			var collected = false;
 
 			for (var i = 0; i < GCCollectRetries && !collected; i++)
 			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				await Task.Delay(10);
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+				await WaitForGC();
 
 				try
 				{
