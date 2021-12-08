@@ -144,21 +144,30 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var collected = false;
 
-			for (var i = 0; i < GCCollectRetries; i++)
+			for (var i = 0; i < GCCollectRetries && !collected; i++)
 			{
 				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				await Task.Delay(10);
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
 
 				try
 				{
 					// the OnlyRetrieveFromCache means that if it is not already loaded, then throw
-					await Glide
-						.With(Platform.DefaultContext)
-						.Load(bitmapFile, Platform.DefaultContext)
-						.SetOnlyRetrieveFromCache(true)
-						.SetDiskCacheStrategy(DiskCacheStrategy.None)
-						.SubmitAsync(Platform.DefaultContext);
+					_ = await Glide
+							.With(Platform.DefaultContext)
+							.Load(bitmapFile, Platform.DefaultContext)
+							.SetOnlyRetrieveFromCache(true)
+							.SetDiskCacheStrategy(DiskCacheStrategy.None)
+							.SubmitAsync(Platform.DefaultContext);
 				}
 				catch (ExecutionException ex) when (ex.Cause is GlideException)
+				{
+					// no-op becasue we are waiting for this
+					collected = true;
+				}
+				catch(GlideException)
 				{
 					// no-op becasue we are waiting for this
 					collected = true;
