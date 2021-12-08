@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Skia.Views;
+﻿using System;
+using System.Collections.Generic;
 using ElmSharp;
 
 namespace Microsoft.Maui
@@ -18,8 +17,21 @@ namespace Microsoft.Maui
 			if (nativeScroll != null)
 			{
 				_scrollViews.Add(scrollBar, nativeScroll);
+				if (nativeScroll is Scroller scroller)
+				{
+					scroller.Scrolled += OnScrolled;
+				}
 			}
-			//TODO : Need to impl
+		}
+
+		public override void HandleUIChange()
+		{
+			base.HandleUIChange();
+
+			if (WindowElements.Count > 0)
+				RemoveAdorners();
+
+			Invalidate();
 		}
 
 		/// <inheritdoc/>
@@ -27,10 +39,17 @@ namespace Microsoft.Maui
 		{
 			foreach (var scroll in _scrollViews.Values)
 			{
-				//TODO : Need to impl
+				if (scroll is Scroller scroller)
+				{
+					scroller.Scrolled -= OnScrolled;
+				}
 			}
-
 			_scrollViews.Clear();
+		}
+
+		void OnScrolled(object? sender, EventArgs e)
+		{
+			Invalidate();
 		}
 	}
 }

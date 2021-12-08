@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeContent = window.Content.ToContainerView(handler.MauiContext);
 			handler.MauiContext.Context.SetContent(nativeContent);
+
+			if (window.VisualDiagnosticsOverlay != null)
+				window.VisualDiagnosticsOverlay.Initialize();
 		}
 	}
 }

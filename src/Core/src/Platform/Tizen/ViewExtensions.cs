@@ -163,11 +163,7 @@ namespace Microsoft.Maui.Platform
 			if (nativeView == null)
 				return new Rectangle();
 
-			return new Rectangle(
-				nativeView.Geometry.X,
-				nativeView.Geometry.Y,
-				nativeView.Geometry.Width,
-				nativeView.Geometry.Height);
+			return nativeView.Geometry.ToDP();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
@@ -179,7 +175,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static Matrix4x4 GetViewTransform(this EvasObject nativeView)
-			=> nativeView.GetViewTransform();
+			=> new Matrix4x4();
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view)
 			=> view.GetNative(true).GetBoundingBox();
@@ -189,14 +185,7 @@ namespace Microsoft.Maui.Platform
 			if (nativeView == null)
 				return new Rectangle();
 
-			var rect = nativeView.Geometry;
-
-			var nvb = nativeView.GetNativeViewBounds();
-			var transform = nativeView.GetViewTransform();
-			var radians = transform.ExtractAngleInRadians();
-			//TODO: Need to impl
-
-			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
+			return nativeView.Geometry.ToDP();
 		}
 	}
 }

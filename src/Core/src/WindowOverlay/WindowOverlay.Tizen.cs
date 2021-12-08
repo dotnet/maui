@@ -1,8 +1,5 @@
-﻿using System.Linq;
-using Microsoft.Maui.Graphics;
+﻿using ElmSharp;
 using Microsoft.Maui.Graphics.Skia.Views;
-using Microsoft.Maui.Handlers;
-using ElmSharp;
 using Point = Microsoft.Maui.Graphics.Point;
 
 namespace Microsoft.Maui
@@ -10,6 +7,7 @@ namespace Microsoft.Maui
 	public partial class WindowOverlay
 	{
 		SkiaGraphicsView? _graphicsView;
+		GestureLayer? _touchLayer;
 
 		public virtual bool Initialize()
 		{
@@ -19,16 +17,30 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var nativeWindow = Window?.Content?.GetNative(true);
+			var nativeWindow = Window.Content?.GetNative(true);
 			if (nativeWindow == null)
 				return false;
 
-			var handler = Window?.Handler as WindowHandler;
+			var handler = Window.Handler as WindowHandler;
 			if (handler?.MauiContext == null)
 				return false;
 
-			//TODO: Need to impl
-			return false;
+			_graphicsView = new SkiaGraphicsView(handler.MauiContext.Context!.BaseLayout);
+			_graphicsView.Drawable = this;
+			_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
+
+			_touchLayer = new GestureLayer(handler.MauiContext.Context!.BaseLayout);
+			_touchLayer.Attach(_graphicsView);
+			_touchLayer.SetTapCallback(GestureLayer.GestureType.Tap, GestureLayer.GestureState.Start, (data) =>
+			{
+				var x = _touchLayer.EvasCanvas.Pointer.X;
+				var y = _touchLayer.EvasCanvas.Pointer.Y;
+				OnTappedInternal(new Point(DPExtensions.ConvertToScaledDP(x), DPExtensions.ConvertToScaledDP(y)));
+			});
+
+			handler.MauiContext.Context.SetOverlay(_graphicsView);
+			IsNativeViewInitialized = true;
+			return IsNativeViewInitialized;
 		}
 
 		public void Invalidate()
@@ -38,10 +50,28 @@ namespace Microsoft.Maui
 
 		void DeinitializeNativeDependencies()
 		{
-			//TODO: Need to impl
+			if (Window == null)
+				return;
 
+			var nativeWindow = Window?.Content?.GetNative(true);
+			if (nativeWindow == null)
+				return;
+
+			var handler = Window?.Handler as WindowHandler;
+			if (handler?.MauiContext == null)
+				return;
+
+			_graphicsView?.Unrealize();
 			_graphicsView = null;
 			IsNativeViewInitialized = false;
+		}
+
+		partial void OnDisableUITouchEventPassthroughSet()
+		{
+			if (_graphicsView != null)
+			{
+				_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
+			}
 		}
 	}
 }
