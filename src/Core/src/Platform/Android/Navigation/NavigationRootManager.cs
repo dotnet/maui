@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 		// handlers and various bits use this to start interacting with rootview
 		internal event EventHandler? RootViewChanged;
 
-		internal View NavigationLayout => _navigationLayout 
+		internal View NavigationLayout => _navigationLayout
 			?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
 
 		LayoutInflater LayoutInflater => _mauiContext?.GetLayoutInflater()
@@ -69,12 +69,12 @@ namespace Microsoft.Maui.Platform
 			{
 				_rootView = _navigationLayout;
 			}
-			
+
 			if (DrawerLayout == null)
 			{
 				SetContentView(containerView);
 			}
-			else if(NavigationLayout.Parent == null)
+			else if (NavigationLayout.Parent == null)
 			{
 				NavigationLayout.LayoutParameters =
 					new DrawerLayout.LayoutParams(DrawerLayout.LayoutParams.MatchParent, DrawerLayout.LayoutParams.MatchParent);
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view == null)
 			{
-				if(_viewFragment != null)
+				if (_viewFragment != null)
 				{
 					FragmentManager
 						.BeginTransaction()

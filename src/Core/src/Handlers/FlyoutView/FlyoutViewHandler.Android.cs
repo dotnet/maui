@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 
 			_flyoutView.LayoutParameters =
 				new DrawerLayout.LayoutParams(
-					DrawerLayout.LayoutParams.WrapContent, 
+					DrawerLayout.LayoutParams.WrapContent,
 					DrawerLayout.LayoutParams.MatchParent,
 					(int)GravityFlags.Start);
 

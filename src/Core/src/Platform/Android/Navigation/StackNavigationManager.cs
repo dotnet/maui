@@ -11,8 +11,8 @@ using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.AppBar;
-using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
