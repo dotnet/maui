@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -52,6 +53,16 @@ namespace Microsoft.Maui.Handlers
 				oldParent?.Children.Insert(idx, NativeView);
 			else
 				oldParent?.Children.Add(NativeView);
+		}
+
+		static double AdjustForExplicitSize(double externalConstraint, double explicitValue)
+		{
+			if (double.IsNaN(explicitValue))
+			{
+				return externalConstraint;
+			}
+
+			return Math.Max(externalConstraint, explicitValue);
 		}
 	}
 }

@@ -9,6 +9,9 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
+			new SectionModel(typeof(ClippingPage), "Clipping",
+				"Layouts clip"),
+
 			new SectionModel(typeof(AbsoluteLayoutPage), "AbsoluteLayout",
 				"An AbsoluteLayout is used to position and size children using explicit values. The position is specified by the upper-left corner of the child relative to the upper-left corner of the AbsoluteLayout, in device-independent units."),
 
@@ -44,6 +47,8 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ZIndexPage), "Z-Index",
 				"Demonstrations of the ZIndex property"),
+
+			
 		};
 	}
 }
