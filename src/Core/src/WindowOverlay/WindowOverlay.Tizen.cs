@@ -73,5 +73,13 @@ namespace Microsoft.Maui
 				_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
 			}
 		}
+
+		partial void OnDisableUITouchEventPassthroughSet()
+		{
+			if (_graphicsView != null)
+			{
+				_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
+			}
+		}
 	}
 }

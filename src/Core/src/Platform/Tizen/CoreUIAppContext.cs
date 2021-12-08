@@ -87,6 +87,14 @@ namespace Microsoft.Maui.Platform
 			ModalStack.Push(content);
 		}
 
+		public void SetOverlay(EvasObject? content)
+		{
+			content?.SetAlignment(-1, -1);
+			content?.SetWeight(1, 1);
+			content?.Show();
+			MainWindow.AddResizeObject(content);
+		}
+
 		public void SetBackButtonPressedHandler(Func<bool> handler)
 		{
 			_handleBackButtonPressed = handler;
@@ -130,11 +138,6 @@ namespace Microsoft.Maui.Platform
 					BaseCircleSurface = new CircleSurface(conformant);
 				}
 				conformant.SetContent(BaseLayout);
-
-				if (DeviceType == DeviceType.Watch)
-				{
-					BaseCircleSurface = new CircleSurface(conformant);
-				}
 			}
 
 			MainWindow.Active();
