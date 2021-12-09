@@ -36,6 +36,12 @@ namespace Microsoft.Maui.Platform
 			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(label);
 		}
 
+		public static void UpdateVerticalTextAlignment(this UILabel nativeLabel, ILabel label)
+		{
+			if (nativeLabel is MauiLabel mauiLabel)
+				mauiLabel.UpdateVerticalAlignment(label);
+		}
+		
 		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)
 		{
 			nativeLabel.SetLineBreakMode(label);
