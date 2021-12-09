@@ -44,34 +44,4 @@ namespace Microsoft.Maui.Handlers
 			// Empty on purpose
 		}
 	}
-
-	// TODO : Will be removed. Use ImageEx temporaily before Tizen.UIExtension.Image fixing.
-	class ImageEx : Image, IMeasurable
-	{
-		public ImageEx(ElmSharp.EvasObject parent) : base(parent) { }
-
-		Size IMeasurable.Measure(double availableWidth, double availableHeight)
-		{
-			var imageSize = ObjectSize;
-			var size = new Size()
-			{
-				Width = imageSize.Width,
-				Height = imageSize.Height,
-			};
-
-			if (0 != availableWidth && 0 != availableHeight
-				&& (imageSize.Width > availableWidth || imageSize.Height > availableHeight))
-			{
-				// when available size is limited and insufficient for the image ...
-				double imageRatio = imageSize.Width / imageSize.Height;
-				double availableRatio = availableWidth / availableHeight;
-				// depending on the relation between availableRatio and imageRatio, copy the availableWidth or availableHeight
-				// and calculate the size which preserves the image ratio, but does not exceed the available size
-				size.Width = availableRatio > imageRatio ? imageSize.Width * availableHeight / imageSize.Height : availableWidth;
-				size.Height = availableRatio > imageRatio ? availableHeight : imageSize.Height * availableWidth / imageSize.Width;
-			}
-
-			return size;
-		}
-	}
 }
