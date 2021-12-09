@@ -7,7 +7,7 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : IView, IVisualTreeElement
+	public class StubBase : ElementStub, IView, IVisualTreeElement
 	{
 		IElementHandler IElement.Handler
 		{
@@ -27,13 +27,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Rectangle Frame { get; set; }
 
-		public IViewHandler Handler { get; set; }
+		public new IViewHandler Handler 
+		{
+			get => (IViewHandler)base.Handler;
+			set => base.Handler = value;
+		}
 
 		public IShape Clip { get; set; }
 
 		public IShadow Shadow { get; set; }
-
-		public IElement Parent { get; set; }
 
 		public Size DesiredSize { get; set; } = new Size(50, 50);
 
