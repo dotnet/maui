@@ -111,6 +111,7 @@ namespace Microsoft.Maui.Hosting
 			// Copy the services that were added via MauiAppBuilder.Services into the final IServiceCollection
 			_hostBuilder.ConfigureServices((context, services) =>
 			{
+				services.AddSingleton<HostedServiceExecutor>();
 				// We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
 				// at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
 				// until now, so we cannot clear these services even though some are redundant because
@@ -148,6 +149,7 @@ namespace Microsoft.Maui.Hosting
 			_host.RunDeferredCallbacks(_hostBuilder);
 
 			_builtApplication = new MauiApp(_hostBuilder.Build());
+			_builtApplication.Services.GetRequiredService<HostedServiceExecutor>().StartAsync(default);
 
 			// Mark the service collection as read-only to prevent future modifications
 			_services.IsReadOnly = true;
