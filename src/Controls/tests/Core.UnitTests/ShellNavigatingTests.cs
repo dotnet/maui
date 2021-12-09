@@ -963,20 +963,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		ShellNavigatingEventArgs CreateShellNavigatedEventArgs() =>
 			new ShellNavigatingEventArgs("..", "../newstate", ShellNavigationSource.Push, true);
-
-		public class PageWithDependency : ContentPage
-		{
-			public Dependency TestDependency { get; set; }
-
-			public PageWithDependency(Dependency dependency)
-			{
-				TestDependency = dependency;
-			}
-		}
-
-		public class Dependency
-		{
-			public int Test { get; set; }
-		} 
 	}
 }

@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 		Element _parent;
 		bool _canRecycle; // aka IsDeclarative
+		readonly Type _type;
 
 		internal ElementTemplate()
 		{
@@ -20,15 +21,9 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException("type");
 
 			_canRecycle = true;
+			_type = type;
 
-			LoadTemplate = () =>
-			{
-				if (_parent?.FindMauiContext()?.Services != null)
-				{
-					return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(_parent.FindMauiContext().Services, type);
-				}
-				return Activator.CreateInstance(type);
-			};
+			LoadTemplate = () => Activator.CreateInstance(type);
 		}
 
 		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException("loadTemplate");
@@ -42,6 +37,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool CanRecycle => _canRecycle;
+		internal Type Type => _type;
+
 		Element IElement.Parent
 		{
 			get { return _parent; }

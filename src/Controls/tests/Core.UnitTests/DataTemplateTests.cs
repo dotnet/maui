@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Microsoft.Maui.Controls;
-using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -121,43 +119,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 			Assert.That(() => template.CreateContent(), Throws.InstanceOf<InvalidOperationException>());
-		}
-
-		[Test]
-		public void CreateContentWithDependencyResolution()
-		{
-			var serviceCollection = new ServiceCollection();
-			serviceCollection.AddTransient<Dependency>();
-			IServiceProvider services = serviceCollection.BuildServiceProvider();
-			var fakeMauiContext = Substitute.For<IMauiContext>();
-			var fakeHandler = Substitute.For<IElementHandler>();
-			fakeMauiContext.Services.Returns(services);
-			fakeHandler.MauiContext.Returns(fakeMauiContext);
-			var fakeApplication = new Application();
-			fakeApplication.Handler = fakeHandler;
-			Application.Current = fakeApplication;
-
-			var template = new DataTemplate(typeof(PageWithDependency));
-			var obj = template.CreateContent();
-			Assert.That(obj, Is.InstanceOf<PageWithDependency>());
-			var page = obj as PageWithDependency;
-			Assert.That(page, Is.Not.Null);
-			Assert.That(page.TestDependency, Is.Not.Null);
-		}
-
-		class PageWithDependency : ContentPage
-		{
-			public Dependency TestDependency { get; set; }
-
-			public PageWithDependency(Dependency dependency)
-			{
-				TestDependency = dependency;
-			}
-		}
-
-		class Dependency
-		{
-			public int Test { get; set; }
 		}
 	}
 }

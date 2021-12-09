@@ -365,6 +365,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 
 				public override Element GetOrCreate(IServiceProvider services) => _contentPage;
+
+				public override Element GetOrCreate() => _contentPage;
 			}
 
 			public Action<ShellNavigatedEventArgs> OnNavigatedHandler { get; set; }
@@ -479,5 +481,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public class TestPage1 : ContentPage { }
 		public class TestPage2 : ContentPage { }
 		public class TestPage3 : ContentPage { }
+		
+		public class PageWithDependency : ContentPage
+		{
+			public Dependency TestDependency { get; set; }
+
+			public PageWithDependency(Dependency dependency)
+			{
+				TestDependency = dependency;
+			}
+		}
+
+		public class Dependency
+		{
+			public int Test { get; set; }
+		}
 	}
 }
