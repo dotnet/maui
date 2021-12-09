@@ -21,4 +21,7 @@
   <shortcut-list />
   <dependencies />
   <provides-appdefined-privileges />
+  <privileges>
+    <privilege>http://tizen.org/privilege/internet</privilege>
+  </privileges>
 </manifest>

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
-			return new ImageEx(NativeParent);
+			return new Image(NativeParent);
 		}
 
 		protected override void DisconnectHandler(Image nativeView)
@@ -41,53 +41,18 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static async Task MapSourceAsync(IImageHandler handler, IImage image)
+		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
 			if (handler.NativeView == null)
-				return;
+				return Task.CompletedTask;
 
-			// TODO : fix it later
-			//return handler.SourceLoader.UpdateImageSourceAsync();
-
-			var token = handler.SourceLoader.SourceManager.BeginLoad();
-			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			var result = await handler.TypedNativeView.UpdateSourceAsync(image, provider, token);
-			handler.SourceLoader.SourceManager.CompleteLoad(result);
+			handler.TypedNativeView.Clear();
+			return handler.SourceLoader.UpdateImageSourceAsync();
 		}
 
 		void OnSetImageSource(Image? obj)
 		{
 			//Empty on purpose
-		}
-	}
-
-	// TODO : Will be removed. Use ImageEx temporaily before Tizen.UIExtension.Image fixing.
-	class ImageEx : Image, IMeasurable
-	{
-		public ImageEx(ElmSharp.EvasObject parent) : base(parent) { }
-
-		Size IMeasurable.Measure(double availableWidth, double availableHeight)
-		{
-			var imageSize = ObjectSize;
-			var size = new Size()
-			{
-				Width = imageSize.Width,
-				Height = imageSize.Height,
-			};
-
-			if (0 != availableWidth && 0 != availableHeight
-				&& (imageSize.Width > availableWidth || imageSize.Height > availableHeight))
-			{
-				// when available size is limited and insufficient for the image ...
-				double imageRatio = imageSize.Width / imageSize.Height;
-				double availableRatio = availableWidth / availableHeight;
-				// depending on the relation between availableRatio and imageRatio, copy the availableWidth or availableHeight
-				// and calculate the size which preserves the image ratio, but does not exceed the available size
-				size.Width = availableRatio > imageRatio ? imageSize.Width * availableHeight / imageSize.Height : availableWidth;
-				size.Height = availableRatio > imageRatio ? availableHeight : imageSize.Height * availableWidth / imageSize.Width;
-			}
-
-			return size;
 		}
 	}
 }
