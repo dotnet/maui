@@ -163,7 +163,7 @@ namespace Microsoft.Maui.DeviceTests
 					// no-op becasue we are waiting for this
 					collected = true;
 				}
-				catch(GlideException)
+				catch (GlideException)
 				{
 					// no-op becasue we are waiting for this
 					collected = true;
