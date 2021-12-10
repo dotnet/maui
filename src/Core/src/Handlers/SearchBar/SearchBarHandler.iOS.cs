@@ -32,8 +32,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.CancelButtonClicked += OnCancelClicked;
 			nativeView.SearchButtonClicked += OnSearchButtonClicked;
-			nativeView.TextPropertySet += OnTextPropertySet;
+			nativeView.TextChanged += OnTextChanged;
 			nativeView.ShouldChangeTextInRange += ShouldChangeText;
+
+			nativeView.OnEditingStarted += OnEditingStarted;
+			nativeView.OnEditingStopped += OnEditingEnded;
 
 			base.ConnectHandler(nativeView);
 			SetupDefaults(nativeView);
@@ -43,8 +46,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.CancelButtonClicked -= OnCancelClicked;
 			nativeView.SearchButtonClicked -= OnSearchButtonClicked;
-			nativeView.TextPropertySet -= OnTextPropertySet;
+			nativeView.TextChanged -= OnTextChanged;
 			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
+
+			nativeView.OnEditingStarted -= OnEditingStarted;
+			nativeView.OnEditingStopped -= OnEditingEnded;
+
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -153,16 +160,26 @@ namespace Microsoft.Maui.Handlers
 			NativeView?.ResignFirstResponder();
 		}
 
-		void OnTextPropertySet(object? sender, EventArgs e)
+		void OnTextChanged(object sender, UISearchBarTextChangedEventArgs a)
 		{
 			if (VirtualView != null)
-				VirtualView.UpdateText(NativeView?.Text);
+				VirtualView.UpdateText(a.SearchText);
 		}
 
 		bool ShouldChangeText(UISearchBar searchBar, NSRange range, string text)
 		{
 			var newLength = searchBar?.Text?.Length + text.Length - range.Length;
 			return newLength <= VirtualView?.MaxLength;
+		}
+
+		void OnEditingEnded(object? sender, EventArgs e)
+		{
+			// TODO: UnFocus.
+		}
+
+		void OnEditingStarted(object? sender, EventArgs e)
+		{
+			// TODO: Focus.
 		}
 	}
 }
