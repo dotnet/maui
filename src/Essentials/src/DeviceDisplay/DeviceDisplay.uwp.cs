@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Runtime.InteropServices;
+using Microsoft.UI.Windowing;
 using Windows.Graphics.Display;
 using Windows.Graphics.Display.Core;
 using Windows.System.Display;
@@ -47,20 +49,20 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		public DisplayInfo GetMainDisplayInfo() =>
-			GetMainDisplayInfo(null);
-
-		DisplayInfo GetMainDisplayInfo(DisplayInformation? di = null)
+		public DisplayInfo GetMainDisplayInfo()
 		{
-			di ??= DisplayInformation.GetForCurrentView();
+			var appWindow = GetAppWindowForCurrentWindow();
+			DEVMODE vDevMode = new DEVMODE();
+			EnumDisplaySettings(null!, -1, ref vDevMode);
 
-			var rotation = CalculateRotation(di);
+			var rotation = CalculateRotation(vDevMode);
 			var perpendicular =
 				rotation == DisplayRotation.Rotation90 ||
 				rotation == DisplayRotation.Rotation270;
 
-			var w = di.ScreenWidthInRawPixels;
-			var h = di.ScreenHeightInRawPixels;
+			var w = appWindow.Size.Width;
+			var h = appWindow.Size.Height;
+
 
 			var hdi = HdmiDisplayInformation.GetForCurrentView();
 			var hdm = hdi?.GetCurrentDisplayMode();
@@ -68,8 +70,8 @@ namespace Microsoft.Maui.Essentials
 			return new DisplayInfo(
 				width: perpendicular ? h : w,
 				height: perpendicular ? w : h,
-				density: di.LogicalDpi / 96.0,
-				orientation: CalculateOrientation(di),
+				density: 999,//di.LogicalDpi / 96.0, TODO FIX
+				orientation: GetWindowOrientationWin32() == DisplayOrientations.Landscape ? DisplayOrientation.Landscape : DisplayOrientation.Portrait,
 				rotation: rotation,
 				rate: (float)(hdm?.RefreshRate ?? 0));
 		}
@@ -98,8 +100,11 @@ namespace Microsoft.Maui.Essentials
 
 		void OnDisplayInformationChanged(DisplayInformation di, object args)
 		{
-			var metrics = GetMainDisplayInfo(di);
-			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
+
+			//var metrics = GetMainDisplayInfo(di);
+
+			// TODO this is just so it compiles
+			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(new DisplayInfo()));
 		}
 
 		DisplayOrientation CalculateOrientation(DisplayInformation di)
@@ -117,10 +122,26 @@ namespace Microsoft.Maui.Essentials
 			return DisplayOrientation.Unknown;
 		}
 
-		static DisplayRotation CalculateRotation(DisplayInformation di)
+		static DisplayRotation CalculateRotation(DEVMODE devMode)
 		{
-			var native = di.NativeOrientation;
-			var current = di.CurrentOrientation;
+			DisplayOrientations native = DisplayOrientations.Portrait;
+			switch (devMode.dmDisplayOrientation)
+			{
+				case 0:
+					native = DisplayOrientations.Portrait;
+					break;
+				case 1:
+					native = DisplayOrientations.Landscape;
+					break;
+				case 2:
+					native = DisplayOrientations.LandscapeFlipped;
+					break;
+				case 3:
+					native = DisplayOrientations.PortraitFlipped;
+					break;
+			}
+
+			var current = GetWindowOrientationWin32();
 
 			if (native == DisplayOrientations.Portrait)
 			{
@@ -152,6 +173,71 @@ namespace Microsoft.Maui.Essentials
 			}
 
 			return DisplayRotation.Unknown;
+		}
+
+		static AppWindow GetAppWindowForCurrentWindow()
+		{
+			var myWndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(Essentials.Platform.CurrentWindowHandle);
+			return AppWindow.GetFromWindowId(myWndId);
+		}
+
+		[DllImport("User32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		internal static extern Boolean EnumDisplaySettings(
+			byte[] lpszDeviceName, 
+			[param: MarshalAs(UnmanagedType.U4)] int iModeNum,
+			[In, Out] ref DEVMODE lpDevMode);
+
+		static DisplayOrientations GetWindowOrientationWin32()
+		{
+			var appWindow = GetAppWindowForCurrentWindow();
+			DisplayOrientations orientationEnum;
+			int theScreenWidth = appWindow.Size.Width;
+			int theScreenHeight = appWindow.Size.Height;
+			if (theScreenWidth > theScreenHeight)
+				orientationEnum = DisplayOrientations.Landscape;
+			else
+				orientationEnum = DisplayOrientations.Portrait;
+
+			return orientationEnum;
+		}
+
+		public struct DEVMODE
+		{
+			private const int CCHDEVICENAME = 0x20;
+			private const int CCHFORMNAME = 0x20;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+			public string dmDeviceName;
+			public short dmSpecVersion;
+			public short dmDriverVersion;
+			public short dmSize;
+			public short dmDriverExtra;
+			public int dmFields;
+			public int dmPositionX;
+			public int dmPositionY;
+			public int dmDisplayOrientation;
+			public int dmDisplayFixedOutput;
+			public short dmColor;
+			public short dmDuplex;
+			public short dmYResolution;
+			public short dmTTOption;
+			public short dmCollate;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+			public string dmFormName;
+			public short dmLogPixels;
+			public int dmBitsPerPel;
+			public int dmPelsWidth;
+			public int dmPelsHeight;
+			public int dmDisplayFlags;
+			public int dmDisplayFrequency;
+			public int dmICMMethod;
+			public int dmICMIntent;
+			public int dmMediaType;
+			public int dmDitherType;
+			public int dmReserved1;
+			public int dmReserved2;
+			public int dmPanningWidth;
+			public int dmPanningHeight;
 		}
 	}
 }
