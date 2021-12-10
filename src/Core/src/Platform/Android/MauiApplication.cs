@@ -24,6 +24,7 @@ namespace Microsoft.Maui
 			RegisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
 
 			var mauiApp = CreateMauiApp();
+			mauiApp.StartBackgroundServices();
 
 			var rootContext = new MauiContext(mauiApp.Services, this);
 
