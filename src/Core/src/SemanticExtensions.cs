@@ -31,10 +31,7 @@ namespace Microsoft.Maui
 #elif __IOS__ || MACCATALYST
 			UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, platformView);
 #elif TIZEN
-			if (element.Handler.PlatformView is not AccessibleObject)
-				return;
-
-			//TODO : Need to implement
+			(platformView as IAccessibleObject)?.Highlight();
 #endif
 		}
 	}
