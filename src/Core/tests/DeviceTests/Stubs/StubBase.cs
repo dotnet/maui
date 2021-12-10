@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Rectangle Frame { get; set; }
 
-		public new IViewHandler Handler 
+		public new IViewHandler Handler
 		{
 			get => (IViewHandler)base.Handler;
 			set => base.Handler = value;
