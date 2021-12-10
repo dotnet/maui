@@ -16,10 +16,8 @@
     
     <!--<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">iosarm</RuntimeIdentifier>-->
 
-
-    <!-- phsyical device on Mac or remoting to mac -->
-    <!--<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">ios-arm64</RuntimeIdentifier>
-    -->
+    <!-- physical device on Mac or remoting to mac -->
+    <!-- <RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">ios-arm64</RuntimeIdentifier> -->
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">

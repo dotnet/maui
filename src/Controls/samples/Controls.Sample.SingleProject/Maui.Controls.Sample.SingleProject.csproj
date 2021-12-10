@@ -17,11 +17,11 @@
 
     <!--<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">iosarm</RuntimeIdentifier>-->
 
-
-    <!-- phsyical device on Mac or remoting to mac -->
-    <!--<RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">ios-arm64</RuntimeIdentifier>
-      <ProvisioningType Condition=" $(RuntimeIdentifier.Equals('ios-arm6')) ">manual</ProvisioningType>
-    -->
+    <!-- physical device on Mac or remoting to mac -->
+    <!-- <RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">ios-arm64</RuntimeIdentifier> -->
+    
+    <!-- remoting to mac -->
+    <!-- <ProvisioningType Condition=" $(RuntimeIdentifier.Equals('ios-arm6')) ">manual</ProvisioningType> -->
   </PropertyGroup>
 
   <PropertyGroup>
