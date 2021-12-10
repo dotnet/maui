@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var mauiApp = CreateMauiApp();
-			mauiApp.StartBackgroundServices();
+			mauiApp.StartAsync().GetAwaiter().GetResult();
 
 			var rootContext = new MauiContext(mauiApp.Services);
 
