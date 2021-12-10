@@ -70,6 +70,12 @@ namespace Microsoft.Maui.Platform
 						.ConfigureAwait(false);
 
 					SourceManager.CompleteLoad(result);
+#elif TIZEN
+					PlatformImage image = (PlatformView as PlatformImage)??new PlatformImage(PlatformView);
+					var result = await imageSource.UpdateSourceAsync(image, ImageSourceServiceProvider, SetImage!, token)
+						.ConfigureAwait(false);
+
+						SourceManager.CompleteLoad(result);
 #else
 					await Task.CompletedTask;
 #endif
