@@ -39,11 +39,15 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTextColor(button);
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IButton image) =>
+		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
 		{
+			if (image.Source == null)
+			{
+				return Task.CompletedTask;
+			}
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
