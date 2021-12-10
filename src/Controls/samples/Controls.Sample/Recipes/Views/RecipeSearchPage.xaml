@@ -29,11 +29,11 @@
 			SelectionMode="None">
             <vlv:VirtualListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid HandlerChanged="OnImageHandlerChanged" HeightRequest="220" SemanticProperties.Description="{Binding Recipe.RecipeName}">
+                    <Grid HandlerChanged="OnImageHandlerChanged" HeightRequest="220">
                         <Grid.GestureRecognizers>
                             <TapGestureRecognizer Tapped="RecipeSearchPage_Tapped" NumberOfTapsRequired="1"  />
                         </Grid.GestureRecognizers>
-                        <Image HeightRequest="220" Source="{Binding Recipe.ImageUrl}" Aspect="AspectFill"/>
+                        <Image HeightRequest="220" Source="{Binding Recipe.ImageUrl}" Aspect="AspectFill"             AutomationProperties.IsInAccessibleTree="False"/>
                         <Label Background="White" TextColor="Black"
                                 Padding="5"
                                 VerticalOptions="End"
