@@ -29,12 +29,7 @@
                    SearchCommand="{Binding SearchCommand}"
                    SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"/>
         
-        <Label Grid.Column="0" Grid.Row="2" Text="{Binding NoResultsLabel}"
-               IsVisible="{Binding NoResultsVisible}" FontSize="24"
-               Padding="20,0,20,0" HorizontalTextAlignment="Center"
-               FontAttributes="Italic" TextColor="{StaticResource Primary}"/>
-        
-        <Grid Grid.Column="0" Grid.Row="2" Margin="20,5" IsVisible="{Binding RecipeTypeButtonsVisible}">
+        <Grid Grid.Column="0" Grid.Row="2" Margin="20,5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
