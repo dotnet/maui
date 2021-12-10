@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IViewHandler handler, IEditor editor) { }
 		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
 		public static void MapMaxLength(IViewHandler handler, IEditor editor) { }
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
+		public static void MapIsSpellCheckEnabled(IViewHandler handler, IEditor editor) { }
+		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEditor editor) { }
 		public static void MapFont(IViewHandler handler, IEditor editor) { }
 		public static void MapIsReadOnly(IViewHandler handler, IEditor editor) { }
-		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor) { }
-		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor) { }
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
+		public static void MapHorizontalTextAlignment(IViewHandler handler, IEditor editor) { }
+		public static void MapVerticalTextAlignment(IViewHandler handler, IEditor editor) { }
+		public static void MapKeyboard(IViewHandler handler, IEditor editor) { }
 	}
 }

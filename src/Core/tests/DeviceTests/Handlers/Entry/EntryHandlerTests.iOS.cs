@@ -151,6 +151,9 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativePlaceholder(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Placeholder;
 
+		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).SpellCheckingType == UITextSpellCheckingType.Yes;
+
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
 

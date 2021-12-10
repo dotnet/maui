@@ -92,6 +92,9 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
+		public static void MapIsSpellCheckEnabled(IViewHandler handler, ISearchBar searchBar) { }
+
+		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
 
 		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)

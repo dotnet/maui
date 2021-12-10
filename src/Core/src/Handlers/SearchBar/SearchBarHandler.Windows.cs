@@ -81,6 +81,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(searchBar, handler._defaultTextColorBrush, handler._defaultTextColorFocusBrush, handler._queryTextBox);
 		}
 
+		public static void MapIsSpellCheckEnabled(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateIsSpellCheckEnabled(searchBar, handler._queryTextBox);
+		}
+
 		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) 
 		{
 			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar, handler._queryTextBox);

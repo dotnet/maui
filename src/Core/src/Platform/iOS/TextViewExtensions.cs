@@ -44,6 +44,14 @@ namespace Microsoft.Maui.Platform
 				textView.AttributedText = newText;
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this UITextView textView, IEditor editor)
+		{
+			if (editor.IsSpellCheckEnabled)
+				textView.SpellCheckingType = UITextSpellCheckingType.Yes;
+			else
+				textView.SpellCheckingType = UITextSpellCheckingType.No;
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this UITextView textView, IEditor editor)
 		{
 			if (editor.IsTextPredictionEnabled)
@@ -71,7 +79,10 @@ namespace Microsoft.Maui.Platform
 			textView.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
+				textView.UpdateIsSpellCheckEnabled(editor);
 				textView.UpdateIsTextPredictionEnabled(editor);
+			}
 
 			textView.ReloadInputViews();
 		}

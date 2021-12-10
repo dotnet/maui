@@ -138,6 +138,9 @@ namespace Microsoft.Maui.DeviceTests
 			return inputType.HasFlag(InputTypes.TextVariationPassword) || inputType.HasFlag(InputTypes.NumberVariationPassword);
 		}
 
+		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>	
+			!GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
+
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
 			!GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 

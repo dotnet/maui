@@ -183,6 +183,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).UserInteractionEnabled;
 
+		bool GetNativeIsSpellCheckEnabled(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).SpellCheckingType == UITextSpellCheckingType.Yes;
+
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
 

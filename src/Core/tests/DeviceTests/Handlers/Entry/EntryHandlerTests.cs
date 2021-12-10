@@ -69,6 +69,19 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, "Placeholder");
 		}
 
+		[Theory(DisplayName = "Is Spell Check Enabled")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsSpellCheckEnabledCorrectly(bool isSpellCheckEnabled)
+		{
+			var entry = new EntryStub()
+			{
+				IsSpellCheckEnabled = isSpellCheckEnabled
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isSpellCheckEnabled);
+		}
+
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
 		[InlineData(true)]
 		[InlineData(false)]

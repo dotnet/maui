@@ -63,6 +63,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsReadOnly(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateIsReadOnly(editor);
 
+		public static void MapIsSpellCheckEnabled(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateIsSpellCheckEnabled(editor);
+
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
 

@@ -27,6 +27,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public int MaxLength { get; set; } = int.MaxValue;
 
+		public bool IsSpellCheckEnabled { get; set; } = true;
+
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public Keyboard Keyboard { get; set; }

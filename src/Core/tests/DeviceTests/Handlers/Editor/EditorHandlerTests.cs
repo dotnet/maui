@@ -210,6 +210,24 @@ namespace Microsoft.Maui.DeviceTests
 			//Assert.Equal(expectedText, editor.Text);
 		}
 
+		[Theory(DisplayName = "Is Spell Check Enabled")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsSpellCheckEnabledCorrectly(bool isSpellCheckEnabled)
+		{
+			var editor = new EditorStub()
+			{
+				IsSpellCheckEnabled = isSpellCheckEnabled
+			};
+
+			var nativeIsSpellCheckEnabled = await GetValueAsync(editor, handler =>
+			{
+				return GetNativeIsSpellCheckEnabled(handler);
+			});
+
+			Assert.Equal(isSpellCheckEnabled, nativeIsSpellCheckEnabled);
+		}
+
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
 		[InlineData(true)]
 		[InlineData(false)]

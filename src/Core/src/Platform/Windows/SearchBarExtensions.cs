@@ -81,6 +81,14 @@ namespace Microsoft.Maui.Platform
 				nativeControl.Text = currentControlText.Substring(0, searchBar.MaxLength);
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
+		{
+			if (queryTextBox == null)
+				return;
+
+			queryTextBox.IsSpellCheckEnabled = searchBar.IsSpellCheckEnabled;
+		}
+		
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)

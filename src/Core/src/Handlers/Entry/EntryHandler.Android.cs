@@ -1,10 +1,6 @@
 ﻿using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Android.Runtime;
 using Android.Text;
-using Android.Views;
-using Android.Views.InputMethods;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
@@ -62,6 +58,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry) =>
 			handler?.NativeView?.UpdateVerticalTextAlignment(entry);
+
+		public static void MapIsSpellCheckEnabled(EntryHandler handler, IEntry entry) =>
+			handler.NativeView?.UpdateIsSpellCheckEnabled(entry);
 
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) =>
 			handler.NativeView?.UpdateIsTextPredictionEnabled(entry);

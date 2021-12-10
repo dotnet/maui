@@ -51,6 +51,14 @@ namespace Microsoft.Maui.Platform
 			textField.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNative();
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this UITextField textField, IEntry entry)
+		{
+			if (entry.IsSpellCheckEnabled)
+				textField.SpellCheckingType = UITextSpellCheckingType.Yes;
+			else
+				textField.SpellCheckingType = UITextSpellCheckingType.No;
+		}
+		
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)
 		{
 			if (entry.IsTextPredictionEnabled)
@@ -119,7 +127,10 @@ namespace Microsoft.Maui.Platform
 			textField.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
+				textField.UpdateIsSpellCheckEnabled(entry);
 				textField.UpdateIsTextPredictionEnabled(entry);
+			}
 
 			textField.ReloadInputViews();
 		}

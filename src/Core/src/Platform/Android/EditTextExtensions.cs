@@ -67,11 +67,21 @@ namespace Microsoft.Maui.Platform
 			editText.UpdateVerticalAlignment(entry.VerticalTextAlignment);
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEntry entry)
+		{
+			editText.SetInputType(entry);
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEditor editor)
+		{
+			editText.SetInputType(editor);
+		}
+		
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEditor editor)
 		{
 			if (editor.IsTextPredictionEnabled)
@@ -296,10 +306,11 @@ namespace Microsoft.Maui.Platform
 
 				if (keyboard is not CustomKeyboard)
 				{
-					// TODO: IsSpellCheckEnabled handling must be here.
-
 					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 					{
+						if (!textInput.IsSpellCheckEnabled)
+							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+
 						if (!textInput.IsTextPredictionEnabled)
 							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
 					}

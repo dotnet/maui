@@ -19,6 +19,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsPassword { get; set; }
 
+		public bool IsSpellCheckEnabled { get; set; } = true;
+
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public string Placeholder { get; set; }

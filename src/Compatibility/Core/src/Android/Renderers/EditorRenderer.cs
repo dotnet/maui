@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
-		[PortHandler("Partially Ported")]
+		[PortHandler]
 		void UpdateInputType()
 		{
 			Editor model = Element;

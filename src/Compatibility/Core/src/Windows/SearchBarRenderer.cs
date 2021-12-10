@@ -274,6 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				() => _queryTextBox.ForegroundFocusBrush, brush => _queryTextBox.ForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateIsSpellCheckEnabled()
 		{
 			if (_queryTextBox == null)

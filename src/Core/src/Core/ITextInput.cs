@@ -11,6 +11,11 @@ namespace Microsoft.Maui
 		new string Text { get; set; }
 
 		/// <summary>
+		/// Gets a value that controls whether spell checking is enabled.
+		/// </summary>
+		bool IsSpellCheckEnabled { get; }
+
+		/// <summary>
 		/// Gets a value that controls whether text prediction and automatic text correction is on or off.
 		/// </summary>
 		bool IsTextPredictionEnabled { get; }

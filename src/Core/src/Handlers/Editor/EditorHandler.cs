@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEditor.Font)] = MapFont,
 			[nameof(IEditor.IsReadOnly)] = MapIsReadOnly,
+			[nameof(IEditor.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
 			[nameof(IEditor.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEditor.MaxLength)] = MapMaxLength,
 			[nameof(IEditor.Placeholder)] = MapPlaceholder,

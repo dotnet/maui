@@ -126,6 +126,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).Focusable;
 
+		bool GetNativeIsSpellCheckEnabled(EditorHandler editorHandler) =>
+			!GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
+
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 
