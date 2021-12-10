@@ -37,7 +37,7 @@
                 <StackLayout  BindableLayout.ItemsSource="{Binding RecipeList}" Padding="20,5">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate>
-                            <Label Text="{Binding .}" TextColor="Black" VerticalOptions="Center"/>
+                            <Label Text="{Binding .}" TextColor="Black" VerticalOptions="Center" WidthRequest="340" LineBreakMode="WordWrap"/>
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </StackLayout>

@@ -27,16 +27,16 @@ namespace Recipes.Services
                         new Ingredient() { IngredientItem = "1 tbsp salt", IngredientChecked = false },
                         new Ingredient() { IngredientItem = "1 tbsp pepper", IngredientChecked = false },
                     },
-                    RecipeBody = "1. Grab a bowl, and add the scallion (chopped), eggs (cracked), salt, pepper\n" +
-					"2. Thoroughly beat the egg mixture\n" +
-                    "3. Heat the pan on the stove, and add 3 turns of oil\n" +
-                    "4. Once pan is ready/warm, pour in the egg mixture; if using 8 eggs, pour in only half\n" +
+                    RecipeBody = "1. Grab a bowl, and add the scallion (chopped), eggs (cracked), salt, pepper.\n" +
+					"2. Thoroughly beat the egg mixture.\n" +
+                    "3. Heat the pan on the stove, and add 3 turns of oil.\n" +
+                    "4. Once pan is ready/warm, pour in the egg mixture; if using 8 eggs, pour in only half.\n" +
                     "5. Tilt the pan around so egg mixture fills the pan.\n" +
-                    "6. Begin folding the egg over from the edge of the pan\n" +
-                    "7. Continually fold egg over while pushing uncooked egg to the other side of the pan and shaping it\n" +
-                    "8. Once completely folded, remove from pan\n" +
-                    "9. Repeat steps 3 - 8 if there is remaining egg mixture\n" +
-                    "10. Cut the 달걀말이 into pieces"
+                    "6. Begin folding the egg over from the edge of the pan.\n" +
+                    "7. Continually fold egg over while pushing uncooked egg to the other side of the pan and shaping it.\n" +
+                    "8. Once completely folded, remove from pan.\n" +
+                    "9. Repeat steps 3 - 8 if there is remaining egg mixture.\n" +
+                    "10. Cut the 달걀말이 into pieces."
                 },
                 new Item
                 {
@@ -56,14 +56,14 @@ namespace Recipes.Services
                         new Ingredient() { IngredientItem = "소고기 (beef / thin brisket) (optional", IngredientChecked = false },
                         new Ingredient() { IngredientItem = "tofu (optional)", IngredientChecked = false },
                     },
-                    RecipeBody = "1. Pour water into the pot so that it fills about about 1/3 of the pot. Bring the water to a boil\n" +
-                    "2. Put the bagged 다시 into the pot\n" +
-                    "3. 10 minutes later, add the 된장 and 미소 된장 into the pot\n" +
-                    "4. Stir the ingredients in the soup mixture, as it continues to boil\n" +
-                    "5. Add in the 고추가루\n" +
-                    "6. Add in the potato, carrots, onion chunks. These veggies should be chopped in advance into 1/2” - 1” pieces\n" +
-                    "7. Add in any additional ingredients you have! (i.e. beef, tofu, etc.)\n" +
-                    "8. If you have, add in the Korean squash! This should also have been chopped in advance into 1/2” - 1” pieces\n" +
+                    RecipeBody = "1. Pour water into the pot so that it fills about about 1/3 of the pot. Bring the water to a boil.\n" +
+                    "2. Put the bagged 다시 into the pot.\n" +
+                    "3. 10 minutes later, add the 된장 and 미소 된장 into the pot.\n" +
+                    "4. Stir the ingredients in the soup mixture, as it continues to boil.\n" +
+                    "5. Add in the 고추가루.\n" +
+                    "6. Add in the potato, carrots, onion chunks. These veggies should be chopped in advance into 1/2” - 1” pieces.\n" +
+                    "7. Add in any additional ingredients you have! (i.e. beef, tofu, etc.).\n" +
+                    "8. If you have, add in the Korean squash! This should also have been chopped in advance into 1/2” - 1” pieces.\n" +
                     "9. Continue to boil until ready to serve. Use ladle to remove any froth floating on the soup’s surface"
                 },
                 new Item
@@ -79,16 +79,16 @@ namespace Recipes.Services
                         new Ingredient() { IngredientItem = "olive oil", IngredientChecked = false },
                         new Ingredient() { IngredientItem = "salt", IngredientChecked = false },
                         new Ingredient() { IngredientItem = "pepper", IngredientChecked = false },
-                        new Ingredient() { IngredientItem = "scallion (optional", IngredientChecked = false },
+                        new Ingredient() { IngredientItem = "scallion (optional)", IngredientChecked = false },
                     },
                     RecipeBody = "1. Thaw frozen salmon for at least 2 hours.\n" +
-                    "2. Salt and pepper the salmon on both sides\n" +
+                    "2. Salt and pepper the salmon on both sides.\n" +
                     "3. Oil the pan.\n" +
-                    "4. Place the seasoned salmon into the pan, covering the bottom with a single layer\n" +
-                    "5. Mix masago, mayo, and scallion (chopped) together in a small bowl\n" +
-                    "6. Spread a thin layer of the mixture onto the salmon\n" +
-                    "7. Preheat the oven to 350ºF\n" +
-                    "8. Cover the pan with foil and poke holes with a fork\n" +
+                    "4. Place the seasoned salmon into the pan, covering the bottom with a single layer.\n" +
+                    "5. Mix masago, mayo, and scallion (chopped) together in a small bowl.\n" +
+                    "6. Spread a thin layer of the mixture onto the salmon.\n" +
+                    "7. Preheat the oven to 350ºF.\n" +
+                    "8. Cover the pan with foil and poke holes with a fork.\n" +
                     "9. Bake the salmon! (combination fast bake ~30 minutes)"
                 }
             };
