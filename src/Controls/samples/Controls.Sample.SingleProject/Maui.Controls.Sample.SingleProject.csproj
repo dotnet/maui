@@ -62,11 +62,6 @@
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-ios|AnyCPU'">
-    <CodesignKey>Apple Development: Shane NEuville %288692K2PTQ6%29</CodesignKey>
-    <CodesignProvision>VS: WildCard Development</CodesignProvision>
-  </PropertyGroup>
-
   <ItemGroup>
     <Content Remove="Properties\launchSettings.json" />
   </ItemGroup>
