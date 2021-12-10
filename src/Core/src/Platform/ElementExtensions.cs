@@ -15,7 +15,12 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using BasePlatformType = WinRT.IWinRTObject;
 using PlatformWindow = Microsoft.UI.Xaml.Window;
 using PlatformApplication = Microsoft.UI.Xaml.Application;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using NativeView = ElmSharp.EvasObject;
+using BasePlatformType = System.Object;
+using PlatformWindow = ElmSharp.Window;
+using PlatformApplication = Tizen.Applications.CoreUIApplication;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 using BasePlatformType = System.Object;
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
