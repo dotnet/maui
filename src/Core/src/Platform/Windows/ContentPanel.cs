@@ -17,6 +17,12 @@ namespace Microsoft.Maui.Platform
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
+			//if (availableSize.Width == double.PositiveInfinity)
+			//	return Size.Zero.ToNative();
+			//if (availableSize.Height == double.PositiveInfinity)
+			//	return Size.Zero.ToNative();
+
+
 			if (CrossPlatformMeasure == null)
 			{
 				return base.MeasureOverride(availableSize);

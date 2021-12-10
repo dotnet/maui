@@ -43,12 +43,18 @@
                                         Style="{StaticResource CaptionTextBlockStyle}" />
                                 </StackPanel>
                             </Border>
+                            <ContentPresenter Canvas.ZIndex="0"></ContentPresenter>
+                            
+                            <!--<ContentControl
+                                x:Name="MainContentPane"
+                                 Canvas.ZIndex="0" />
+                            
                             <maui:MauiNavigationView 
                                     x:Name="NavigationViewControl"
                                     IsTitleBarAutoPaddingEnabled="False"
                                     Canvas.ZIndex="0">
                                 <ContentPresenter></ContentPresenter>
-                            </maui:MauiNavigationView>
+                            </maui:MauiNavigationView>-->
                         </Grid>
                     </Page>
                 </ControlTemplate>

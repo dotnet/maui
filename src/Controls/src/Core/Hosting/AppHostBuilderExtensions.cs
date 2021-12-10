@@ -12,14 +12,7 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
-#if __IOS__ || __ANDROID__
 			{ typeof(CollectionView), typeof(CollectionViewHandler) },
-#endif
-
-#if WINDOWS
-			{ typeof(CollectionView), typeof(CollectionViewHandler) },
-#endif
-
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
@@ -64,10 +57,10 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS || ANDROID
 			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
 			{ typeof(Toolbar), typeof(ToolbarHandler) },
+			{ typeof(FlyoutPage), typeof(FlyoutViewHandler) },
 #endif
 #if __ANDROID__
 			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
-			{ typeof(FlyoutPage), typeof(FlyoutViewHandler) },
 #endif
 		};
 

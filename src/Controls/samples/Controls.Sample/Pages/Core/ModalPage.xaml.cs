@@ -69,7 +69,10 @@ namespace Maui.Controls.Sample.Pages
 			var flyoutPage = new FlyoutPage()
 			{
 				Detail = newMainPage,
-				Flyout = CustomFlyoutPage.CreateFlyout()
+				Flyout = new ContentPage()
+				{
+					Content = new Label() { Text = "Flyout Text" }
+				}
 			};
 
 			await Navigation.PushModalAsync(flyoutPage);

@@ -11,29 +11,29 @@ namespace Microsoft.Maui.Platform
 	public class NavigationRootManager
 	{
 		IMauiContext _mauiContext;
-		NavigationRootView _navigationRootView;
+		NavigationRootView _rootView;
 		WindowHeader? _windowHeader;
 
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
-			_navigationRootView = new NavigationRootView();
-			_navigationRootView.BackRequested += OnBackRequested;
-			_navigationRootView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+			_rootView = new NavigationRootView();
+			_rootView.BackRequested += OnBackRequested;
+			_rootView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
-			if (_navigationRootView.AppTitleBar != null)
+			if (_rootView.AppTitleBar != null)
 			{
 				var nativeWindow = _mauiContext.GetNativeWindow();
 				nativeWindow.ExtendsContentIntoTitleBar = true;
 				UpdateAppTitleBar(true);
 			}
 
-			if (_navigationRootView.NavigationViewControl != null)
+			if (_rootView.NavigationViewControl != null)
 			{
-				_navigationRootView.NavigationViewControl.Header = _windowHeader;
+				_rootView.NavigationViewControl.Header = _windowHeader;
 			}
 		}
 
@@ -42,13 +42,26 @@ namespace Microsoft.Maui.Platform
 			_mauiContext.GetNativeWindow().GetWindow()?.BackButtonClicked();
 		}
 
-		public FrameworkElement RootView => _navigationRootView;
+		public FrameworkElement RootView => _rootView;
 
 		public virtual void Connect(IView view)
 		{
 			_ = view.ToNative(_mauiContext);
 			var nativeView = view.GetNative(true);
-			_navigationRootView.Content = nativeView;
+
+			NavigationView rootNavigationView;
+			if (nativeView is NavigationView nv)
+			{
+				rootNavigationView = nv;
+				_rootView.Content = nativeView;
+				nv.IsPaneToggleButtonVisible = true;
+			}
+			else
+			{
+				rootNavigationView = new MauiNavigationView();
+				rootNavigationView.Content = nativeView;
+				_rootView.Content = rootNavigationView;
+			}
 
 			var nativeWindow = _mauiContext.GetNativeWindow();
 			nativeWindow.Activated += OnWindowActivated;
@@ -64,23 +77,23 @@ namespace Microsoft.Maui.Platform
 		internal void UpdateAppTitleBar(bool isActive)
 		{
 			var nativeWindow = _mauiContext.GetNativeWindow();
-			if (_navigationRootView.AppTitleBar != null)
+			if (_rootView.AppTitleBar != null)
 			{
 				if (isActive)
 				{
-					_navigationRootView.Visibility = UI.Xaml.Visibility.Visible;
-					nativeWindow.SetTitleBar(_navigationRootView.AppTitleBar);
+					_rootView.Visibility = UI.Xaml.Visibility.Visible;
+					nativeWindow.SetTitleBar(_rootView.AppTitleBar);
 				}
 				else
 				{
-					_navigationRootView.Visibility = UI.Xaml.Visibility.Collapsed;
+					_rootView.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
 		}
 
 		internal void SetWindowTitle(string? title)
 		{
-			_navigationRootView.SetWindowTitle(title);
+			_rootView.SetWindowTitle(title);
 		}
 
 		internal void SetToolbar(FrameworkElement toolBar)
@@ -90,7 +103,7 @@ namespace Microsoft.Maui.Platform
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)
 		{
-			if (_navigationRootView.AppTitle == null)
+			if (_rootView.AppTitle == null)
 				return;
 
 			SolidColorBrush defaultForegroundBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorPrimaryBrush"];
@@ -98,11 +111,11 @@ namespace Microsoft.Maui.Platform
 
 			if (e.WindowActivationState == WindowActivationState.Deactivated)
 			{
-				_navigationRootView.AppTitle.Foreground = inactiveForegroundBrush;
+				_rootView.AppTitle.Foreground = inactiveForegroundBrush;
 			}
 			else
 			{
-				_navigationRootView.AppTitle.Foreground = defaultForegroundBrush;
+				_rootView.AppTitle.Foreground = defaultForegroundBrush;
 			}
 		}
 	}
