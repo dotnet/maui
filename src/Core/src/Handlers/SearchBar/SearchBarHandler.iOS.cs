@@ -150,6 +150,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSearchButtonClicked(object? sender, EventArgs e)
 		{
+			if (VirtualView != null)
+				VirtualView.UpdateText(NativeView?.Text);
+
 			VirtualView?.SearchButtonPressed();
 			NativeView?.ResignFirstResponder();
 		}
