@@ -1,8 +1,5 @@
 using System;
-using System.Drawing;
 using Foundation;
-using Microsoft.Extensions.DependencyInjection;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -37,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SearchButtonClicked += OnSearchButtonClicked;
 			nativeView.TextPropertySet += OnTextPropertySet;
 			nativeView.ShouldChangeTextInRange += ShouldChangeText;
+
 			base.ConnectHandler(nativeView);
 			SetupDefaults(nativeView);
 		}
@@ -47,6 +45,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SearchButtonClicked -= OnSearchButtonClicked;
 			nativeView.TextPropertySet -= OnTextPropertySet;
 			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
+
 			base.DisconnectHandler(nativeView);
 		}
 
@@ -62,8 +61,6 @@ namespace Microsoft.Maui.Handlers
 				_cancelButtonTextColorDefaultHighlighted = cancelButton.TitleColor(UIControlState.Highlighted);
 				_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
 			}
-
-
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
@@ -124,8 +121,10 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateTextColor(searchBar, handler._defaultTextColor);
 		}
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar, handler?._editor);
+		}
 
 		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
 		{
