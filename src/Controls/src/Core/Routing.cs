@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls
 			return keys;
 		}
 
-		public static Element GetOrCreateContent(string route, IServiceProvider services)
+		public static Element GetOrCreateContent(string route, IServiceProvider services = null)
 		{
 			Element result = null;
 

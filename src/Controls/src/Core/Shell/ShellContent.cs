@@ -67,9 +67,10 @@ namespace Microsoft.Maui.Controls
 				{
 					template.LoadTemplate = () =>
 					{
-						if (Parent?.FindMauiContext()?.Services != null)
+						var services = Parent?.FindMauiContext()?.Services;
+						if (services != null)
 						{
-							return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(Parent.FindMauiContext().Services, template.Type);
+							return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, template.Type);
 						}
 						return Activator.CreateInstance(template.Type);
 					};
