@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar)
-		{ 
+		{
 			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar, handler.QueryEditor);
 		}
 
