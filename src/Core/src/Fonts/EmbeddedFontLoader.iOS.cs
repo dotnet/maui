@@ -14,14 +14,25 @@ namespace Microsoft.Maui
 		{
 			try
 			{
-				if (font.ResourceStream == null)
-					throw new InvalidOperationException("ResourceStream was null.");
+				CGFont? cgFont;
 
-				var data = NSData.FromStream(font.ResourceStream);
-				if (data == null)
-					throw new InvalidOperationException("Unable to load font stream data.");
-				var provider = new CGDataProvider(data);
-				var cgFont = CGFont.CreateFromProvider(provider);
+				if (font.ResourceStream == null)
+				{
+					if (!System.IO.File.Exists(font.FontName))
+						throw new InvalidOperationException("ResourceStream was null.");
+
+					var provider = new CGDataProvider(font.FontName);
+					cgFont = CGFont.CreateFromProvider(provider);
+				}
+				else
+				{
+					var data = NSData.FromStream(font.ResourceStream);
+					if (data == null)
+						throw new InvalidOperationException("Unable to load font stream data.");
+					var provider = new CGDataProvider(data);
+					cgFont = CGFont.CreateFromProvider(provider);
+				}
+				
 				if (cgFont == null)
 					throw new InvalidOperationException("Unable to load font from the stream.");
 
