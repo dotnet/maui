@@ -11,7 +11,19 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public async Task GetPngScreenshot()
 		{
-			var mediaFile = await Screenshot.CaptureAsync();
+			ScreenshotResult mediaFile = null;
+
+			for (int i = 0; i < 2; i++)
+			{
+				try
+				{
+					mediaFile = await Screenshot.CaptureAsync();
+					break;
+				}
+				catch { }
+				await Task.Delay(1000);
+			}
+
 			var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Png);
 			Assert.True(png.Length > 0);
 		}
@@ -19,7 +31,19 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public async Task GetJpegScreenshot()
 		{
-			var mediaFile = await Screenshot.CaptureAsync();
+			ScreenshotResult mediaFile = null;
+
+			for (int i = 0; i < 2; i++)
+			{
+				try
+				{
+					mediaFile = await Screenshot.CaptureAsync();
+					break;
+				}
+				catch { }
+				await Task.Delay(1000);
+			}
+
 			var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Jpeg);
 			Assert.True(png.Length > 0);
 		}
