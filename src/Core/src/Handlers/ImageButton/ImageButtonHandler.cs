@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
-			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius
+			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius,
 #if WINDOWS
 			[nameof(IImageButton.Background)] = MapBackground,
 #endif
