@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (yIsProportional)
 			{
-				result.Y =Math.Round((region.Height - result.Height) * bounds.Y);
+				result.Y = Math.Round((region.Height - result.Height) * bounds.Y);
 			}
 			else
 			{
