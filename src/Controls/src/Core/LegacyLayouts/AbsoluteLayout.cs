@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (xIsProportional)
 			{
-				result.X = DeviceDisplay.MainDisplayInfo.DisplayRound((region.Width - result.Width) * bounds.X);
+				result.X = Math.Round((region.Width - result.Width) * bounds.X);
 			}
 			else
 			{
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (yIsProportional)
 			{
-				result.Y = DeviceDisplay.MainDisplayInfo.DisplayRound((region.Height - result.Height) * bounds.Y);
+				result.Y =Math.Round((region.Height - result.Height) * bounds.Y);
 			}
 			else
 			{
