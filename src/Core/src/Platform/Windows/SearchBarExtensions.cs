@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Platform
 				nativeControl.Text = currentControlText.Substring(0, searchBar.MaxLength);
 		}
 		
-		public static void UpdateIsReadOnly(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		public static void UpdateIsReadOnly(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
 				return;
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Platform
 			queryTextBox.IsReadOnly = searchBar.IsReadOnly;
 		}
 		
-		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
 				return;
