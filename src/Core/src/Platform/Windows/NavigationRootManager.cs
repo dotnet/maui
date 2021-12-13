@@ -54,7 +54,6 @@ namespace Microsoft.Maui.Platform
 			{
 				rootNavigationView = nv;
 				_rootView.Content = nativeView;
-				nv.IsPaneToggleButtonVisible = true;
 			}
 			else
 			{

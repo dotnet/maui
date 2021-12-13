@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IFlyoutView.Flyout)] = MapFlyout,
 			[nameof(IFlyoutView.Detail)] = MapDetail,
+			[nameof(IFlyoutView.IsPresented)] = MapIsPresented,
+			[nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
 		};
 
 		readonly FlyoutPanel _flyoutPanel;
@@ -25,15 +27,31 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiNavigationView CreateNativeView()
 		{
 			var navigationView = new MauiNavigationView();
-
 			navigationView.PaneFooter = _flyoutPanel;
-			navigationView.FlyoutPaneSizeChanged += (_, __) =>
-			{
-				_flyoutPanel.Height = NativeView.FlyoutPaneSize.Height;
-				_flyoutPanel.Width = NativeView.FlyoutPaneSize.Width;
-			};
-
 			return navigationView;
+		}
+
+		protected override void ConnectHandler(MauiNavigationView nativeView)
+		{
+			nativeView.FlyoutPaneSizeChanged += OnFlyoutPaneSizeChanged;
+			nativeView.PaneOpened += OnPaneOepened;
+		}
+
+		protected override void DisconnectHandler(MauiNavigationView nativeView)
+		{
+			nativeView.FlyoutPaneSizeChanged += OnFlyoutPaneSizeChanged;
+			nativeView.PaneOpened -= OnPaneOepened;
+		}
+
+		void OnFlyoutPaneSizeChanged(object? sender, EventArgs e)
+		{
+			_flyoutPanel.Height = NativeView.FlyoutPaneSize.Height;
+			_flyoutPanel.Width = NativeView.FlyoutPaneSize.Width;
+		}
+
+		void OnPaneOepened(NavigationView sender, object args)
+		{
+			VirtualView.IsPresented = sender.IsPaneOpen;
 		}
 
 		void UpdateDetail()
@@ -63,6 +81,34 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFlyout(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			handler.UpdateFlyout();
+		}
+
+		public static void MapIsPresented(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			handler.NativeView.IsPaneOpen = flyoutView.IsPresented;
+		}
+
+		public static void MapFlyoutBehavior(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			var nativeView = handler.NativeView;
+
+			switch (flyoutView.FlyoutBehavior)
+			{
+				case FlyoutBehavior.Flyout:
+					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					nativeView.IsPaneToggleButtonVisible = true;
+					break;
+				case FlyoutBehavior.Locked:
+					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+					nativeView.IsPaneToggleButtonVisible = false;
+					break;
+				case FlyoutBehavior.Disabled:
+					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					nativeView.IsPaneToggleButtonVisible = false;
+					nativeView.IsPaneOpen = false;
+					break;
+
+			}
 		}
 
 		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
