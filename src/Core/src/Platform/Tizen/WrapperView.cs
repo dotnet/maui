@@ -94,7 +94,6 @@ namespace Microsoft.Maui.Platform
 			{
 				UpdateDrawableCanvasGeometry();
 			}
-			_mauiDrawable.Bounds = GetBounds();
 			_drawableCanvas.Value.Invalidate();
 		}
 
@@ -171,21 +170,37 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_drawableCanvas.IsValueCreated)
 			{
-				_drawableCanvas.Value.Geometry = Geometry.ExpandTo(Shadow);
+				var shadowMargin = GetShadowMargin(Shadow);
+				_drawableCanvas.Value.UpdateBounds(Geometry.ToDP().ExpandTo(shadowMargin).ToPixel());
+				_mauiDrawable.ShadowThickness = shadowMargin;
 			}
 		}
 
-		Graphics.Rectangle GetBounds()
+		Thickness GetShadowMargin(IShadow? shadow)
 		{
-			var drawableGeometry = _drawableCanvas.Value.Geometry;
-			var borderThickness = _mauiDrawable.Border != null ? _mauiDrawable.Border.StrokeThickness : 0;
-			var padding = (borderThickness / 2).ToPixel();
-			var left = Geometry.Left - drawableGeometry.Left + padding;
-			var top = Geometry.Top - drawableGeometry.Top + padding;
-			var width = Geometry.Width - (padding * 2);
-			var height = Geometry.Height - (padding * 2);
+			double left = 0;
+			double top = 0;
+			double right = 0;
+			double bottom = 0;
 
-			return new Tizen.UIExtensions.Common.Rect(left, top, width, height).ToDP();
+			var offsetX = shadow == null ? 0 : shadow.Offset.X;
+			var offsetY = shadow == null ? 0 : shadow.Offset.Y;
+			var blurRadius = shadow == null ? 0 : ((double)shadow.Radius);
+			var spreadSize = blurRadius * 3;
+			var spreadLeft = offsetX - spreadSize;
+			var spreadRight = offsetX + spreadSize;
+			var spreadTop = offsetY - spreadSize;
+			var spreadBottom = offsetY + spreadSize;
+			if (left > spreadLeft)
+				left = spreadLeft;
+			if (top > spreadTop)
+				top = spreadTop;
+			if (right < spreadRight)
+				right = spreadRight;
+			if (bottom < spreadBottom)
+				bottom = spreadBottom;
+
+			return new Thickness(Math.Abs(left), Math.Abs(top), Math.Abs(right), Math.Abs(bottom));
 		}
 	}
 

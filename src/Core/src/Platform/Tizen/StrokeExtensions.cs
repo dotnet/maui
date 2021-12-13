@@ -72,7 +72,6 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 			if (canvas == null && !hasBorder)
 				return;
-
 			nativeView.UpdateMauiDrawable(border);
 		}
 
