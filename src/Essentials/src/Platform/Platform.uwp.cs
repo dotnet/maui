@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Essentials
 	public static partial class Platform
 	{
 		const uint DISPLAY_CHANGED = 126;
-		const uint DPI_CHANGED = 126;
+		const uint DPI_CHANGED = 736;
 
 		static internal event EventHandler CurrentWindowChanged;
 		static internal event EventHandler CurrentWindowDisplayChanged;
