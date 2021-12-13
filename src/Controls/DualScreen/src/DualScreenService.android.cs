@@ -24,14 +24,15 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		}
 
+		[Obsolete()]
 		public static void Init(IFoldableContext activity)
 		{
-			global::Android.Util.Log.Debug("JWM", "DualScreenService.Init - Android detected");
-			DependencyService.Register<DualScreenServiceImpl>();
-			DualScreenServiceImpl.Init(activity);
+			//global::Android.Util.Log.Debug("JWM", "DualScreenService.Init - Android detected");
+			//DependencyService.Register<DualScreenServiceImpl>();
+			//DualScreenServiceImpl.Init(activity);
 		}
 
-		internal class DualScreenServiceImpl : IDualScreenService //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
+		internal class DualScreenServiceImpl : IDualScreenService, IFoldableContext //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
 		{
 			ScreenHelper _helper;
 			HingeSensor _singleUseHingeSensor;

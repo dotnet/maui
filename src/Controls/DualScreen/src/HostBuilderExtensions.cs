@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.DualScreen
 {
@@ -13,8 +14,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 	{
 		public static MauiAppBuilder UseDualScreen(this MauiAppBuilder builder)
 		{
-			//builder.Services.AddSingleton<IHostedService>();
 #if ANDROID
+			builder.Services.AddScoped(typeof(IFoldableContext), typeof(DualScreenServiceImpl));
+
 			var consumer = new Consumer();
 			AndroidX.Window.Java.Layout.WindowInfoRepositoryCallbackAdapter wir = null;
 
@@ -28,6 +30,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 					})
 					.OnStart((activity) =>
 					{
+						consumer.SetFoldableContext(
+							activity.GetWindow().Handler.MauiContext.Services.GetService(
+								typeof(IFoldableContext)));
+
 						// FUTURE USE
 						wir.AddWindowLayoutInfoListener(runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
 					})
@@ -45,6 +51,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 					});
 				});
 			});
+
+
 #endif
 
 			return builder;
@@ -77,7 +85,14 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			global::Android.Util.Log.Info("JWM2", "%%% LayoutStateChangeCallback.Accept");
 			global::Android.Util.Log.Info("JWM2", "%%% " + newLayoutInfo.ToString());
+
+			// set rect
+			//ifc.
 		}
+		public void SetFoldableContext (IFoldableContext foldableContext) {
+			ifc = foldableContext;
+		}
+		IFoldableContext ifc;
 	}
 #endif
 }
