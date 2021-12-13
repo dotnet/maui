@@ -32,7 +32,6 @@
 
   <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" ExcludeAssets="runtime" />
-    <PackageReference Include="Tizen.NET" Version="8.0.0.15631" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
