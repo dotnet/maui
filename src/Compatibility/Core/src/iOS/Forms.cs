@@ -636,7 +636,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-#if __MOBILE__
+#if MACCATALYST
+			public string RuntimePlatform => Device.macOS;
+#elif __MOBILE__
 			public string RuntimePlatform => Device.iOS;
 #else
 			public string RuntimePlatform => Device.macOS;
