@@ -13,8 +13,14 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
-		public static IPropertyMapper<IView, IViewHandler> ViewMapper = new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
-		{
+		public static IPropertyMapper<IView, IViewHandler> ViewMapper =
+#if ANDROID
+			// Use a custom mapper for Android which knows how to batch the initial property sets
+			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementMapper)
+#else
+			new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
+#endif
+			{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Clip)] = MapClip,
 			[nameof(IView.Shadow)] = MapShadow,
@@ -120,6 +126,19 @@ namespace Microsoft.Maui.Handlers
 
 		private protected sealed override object OnCreateNativeElement() =>
 			OnCreateNativeView();
+
+#if ANDROID
+		// This sets up AndroidBatchPropertyMapper
+		public override void SetVirtualView(IElement element)
+		{
+			base.SetVirtualView(element);
+
+			if (element is IView view)
+			{
+				((NativeView?)NativeView)?.Initialize(view);
+			}
+		}
+#endif
 
 #if !NETSTANDARD
 		private protected abstract void OnConnectHandler(NativeView nativeView);
