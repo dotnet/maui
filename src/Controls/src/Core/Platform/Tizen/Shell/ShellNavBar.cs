@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (titleView != null)
 			{
-				var _nativeTitleView = titleView.ToNative(MauiContext);
+				var _nativeTitleView = titleView.ToNative(MauiContext, true);
 				_nativeTitleView.Show();
 				PackEnd(_nativeTitleView);
 			}

@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					_navigationView.Header = _headerView.ToNative(MauiContext);
+					_navigationView.Header = _headerView.ToNative(MauiContext, true);
 					_headerView.MeasureInvalidated += OnHeaderSizeChanged;
 				}
 			}
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_footerView != null)
 			{
-				_navigationView.Footer = _footerView.ToNative(MauiContext);
+				_navigationView.Footer = _footerView.ToNative(MauiContext, true);
 				_footerView.MeasureInvalidated += OnFooterSizeChanged;
 			}
 			else

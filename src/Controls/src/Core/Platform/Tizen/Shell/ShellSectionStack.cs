@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var nativePage = request.Page.ToNative(MauiContext);
+			var nativePage = request.Page.ToNative(MauiContext, true);
 			if (nativePage == null)
 			{
 				request.Task = Task.FromException<bool>(new ArgumentException("Can't found page on stack", nameof(request.Page)));
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var nativePage = request.Page.ToNative(MauiContext);
+			var nativePage = request.Page.ToNative(MauiContext, true);
 			_viewStack.Push(nativePage);
 			request.Task = Task.FromResult(true);
 			Device.BeginInvokeOnMainThread(() =>
@@ -248,13 +248,13 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var before = request.BeforePage.ToNative(MauiContext);
+			var before = request.BeforePage.ToNative(MauiContext, true);
 			if (before == null)
 			{
 				request.Task = Task.FromException<bool>(new ArgumentException("Can't found page on stack", nameof(request.BeforePage)));
 				return;
 			}
-			var page = request.Page.ToNative(MauiContext);
+			var page = request.Page.ToNative(MauiContext, true);
 			_viewStack.Insert(before, page);
 			request.Task = Task.FromResult(true);
 		}

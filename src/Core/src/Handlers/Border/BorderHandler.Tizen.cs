@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.PresentedContent is IView view)
 			{
-				NativeView.Children.Add(view.ToNative(MauiContext));
+				NativeView.Children.Add(view.ToNative(MauiContext, true));
 				if (view.Handler is INativeViewHandler thandler)
 				{
 					thandler?.SetParent(this);

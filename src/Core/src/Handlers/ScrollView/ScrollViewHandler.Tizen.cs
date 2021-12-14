@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView != null && VirtualView.PresentedContent != null)
 			{
 				var frame = VirtualView.PresentedContent.Frame;
-				VirtualView.PresentedContent.ToNative(MauiContext!)?.Move((int)e.Geometry.X + frame.X.ToScaledPixel(), (int)e.Geometry.Y + frame.Y.ToScaledPixel());
+				VirtualView.PresentedContent.ToNative(MauiContext!, true)?.Move((int)e.Geometry.X + frame.X.ToScaledPixel(), (int)e.Geometry.Y + frame.Y.ToScaledPixel());
 			}
 
 			UpdateContentSize();
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			handler.Canvas.UnPackAll();
-			handler.Canvas.PackEnd(scrollView.PresentedContent.ToNative(handler.MauiContext));
+			handler.Canvas.PackEnd(scrollView.PresentedContent.ToNative(handler.MauiContext, true));
 			if (scrollView.PresentedContent.Handler is INativeViewHandler thandler)
 			{
 				thandler?.SetParent(handler);
