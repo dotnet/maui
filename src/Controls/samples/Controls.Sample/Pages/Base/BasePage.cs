@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Pages.Base
 
 		Page PreparePage(SectionModel model)
 		{
-			var page = (Page)Activator.CreateInstance(model.Type);
+			var page = (Handler?.MauiContext?.Services?.GetService(model.Type) as Page) ?? (Page)Activator.CreateInstance(model.Type);
 			page.Title = model.Title;
 
 			return page;

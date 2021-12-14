@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using ObjCRuntime;
 using UIKit;
 
@@ -168,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				catch (Exception exc)
 				{
-					Internals.Log.Warning(nameof(ShellPageRendererTracker), $"Failed to update toolbar items: {exc}");
+					Forms.MauiContext?.CreateLogger<ShellPageRendererTracker>()?.LogWarning(exc, "Failed to update toolbar items");
 				}
 			}
 		}

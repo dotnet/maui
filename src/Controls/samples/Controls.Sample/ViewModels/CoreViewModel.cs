@@ -30,6 +30,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(EffectsPage), "Effects",
 				"Apply Effects to a View."),
 
+			new SectionModel(typeof(CustomFlyoutPage), "FlyoutPage",
+				"Demonstrates using a Flyout Page."),
+
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
 

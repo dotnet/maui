@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample.Controls
 				}
 			}
 
-			BordelessEntryServiceBuilder.HandlersCollection ??= services.GetRequiredService<IMauiHandlersServiceProvider>().GetCollection();
+			BordelessEntryServiceBuilder.HandlersCollection ??= services.GetRequiredService<IMauiHandlersFactory>().GetCollection();
 
 			if (BordelessEntryServiceBuilder.PendingHandlers.Count > 0)
 			{

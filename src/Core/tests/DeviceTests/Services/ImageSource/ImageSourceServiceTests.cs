@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -62,12 +63,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public void ResultsDisposeCorrectlyAndOnce()
+		public async Task ResultsDisposeCorrectlyAndOnce()
 		{
 			var dispose = 0;
 
 			var cache = new CustomImageCacheStub();
-			var image = cache.Get(Colors.Red);
+			var image = await InvokeOnMainThreadAsync(() => cache.Get(Colors.Red));
 
 			var result = new ImageSourceServiceResult(image, () => dispose++);
 

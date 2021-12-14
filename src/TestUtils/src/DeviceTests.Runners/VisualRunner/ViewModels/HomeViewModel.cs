@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			NavigateToTestAssemblyCommand = new Command<TestAssemblyViewModel?>(NavigateToTestAssemblyExecute);
 		}
 
-		public ObservableCollection<TestAssemblyViewModel> TestAssemblies { get; }
+		public ObservableCollection<TestAssemblyViewModel> TestAssemblies { get; private set; }
 
 		public Command CreditsCommand { get; }
 
@@ -68,10 +68,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			{
 				var allTests = await _runner.DiscoverAsync();
 
-				foreach (var vm in allTests)
-				{
-					TestAssemblies.Add(vm);
-				}
+				TestAssemblies = new ObservableCollection<TestAssemblyViewModel>(allTests);
+				RaisePropertyChanged(nameof(TestAssemblies));
 			}
 			finally
 			{

@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public RelativeLayout()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 			_children = new RelativeElementCollection(InternalChildren, this);
 			_children.Parent = this;
 

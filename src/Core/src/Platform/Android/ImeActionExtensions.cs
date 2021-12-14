@@ -1,7 +1,7 @@
 ﻿using System;
 using Android.Views.InputMethods;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ImeActionExtensions
 	{

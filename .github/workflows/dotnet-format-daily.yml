@@ -2,6 +2,11 @@ name: Daily code format check
 on:
   schedule:
     - cron: 0 0 * * * # Every day at midnight (UTC)
+
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   dotnet-format:
     runs-on: windows-latest

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 
 			savedInstanceState ??= activity.Intent?.Extras;
 
-			var mauiContext = applicationContext.MakeScoped(activity);
+			var mauiContext = applicationContext.MakeWindowScope(activity, out var windowScope);
 
 			applicationContext.Services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

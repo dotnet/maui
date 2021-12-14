@@ -27,9 +27,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Editor), true, BindingMode.Default);
 
 		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
-			=> ((Editor)bindable)?.InvalidateMeasure());
+			=> ((Editor)bindable)?.UpdateAutoSizeOption());
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
+
+		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
@@ -70,7 +72,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HorizontalTextAlignmentProperty, value); }
 		}
 
-		public TextAlignment VerticalTextAlignment { get; set; }
+		public TextAlignment VerticalTextAlignment
+		{
+			get { return (TextAlignment)GetValue(VerticalTextAlignmentProperty); }
+			set { SetValue(VerticalTextAlignmentProperty, value); }
+		}
 
 		public bool FontAutoScalingEnabled
 		{
@@ -80,7 +86,7 @@ namespace Microsoft.Maui.Controls
 
 		protected void UpdateAutoSizeOption()
 		{
-			if (AutoSize == EditorAutoSizeOption.TextChanges)
+			if (AutoSize == EditorAutoSizeOption.TextChanges && this.IsShimmed())
 			{
 				InvalidateMeasure();
 			}

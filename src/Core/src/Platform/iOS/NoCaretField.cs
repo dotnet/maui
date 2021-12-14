@@ -2,7 +2,7 @@
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class NoCaretField : UITextField
 	{

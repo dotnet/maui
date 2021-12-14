@@ -9,6 +9,7 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -251,7 +252,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				catch (Exception e)
 				{
-					Controls.Internals.Log.Warning(nameof(DropGestureRecognizer), $"{e}");
+					Forms.MauiContext?.CreateLogger<DropGestureRecognizer>()?.LogWarning(e, null);
 				}
 			}, (View)element);
 		}

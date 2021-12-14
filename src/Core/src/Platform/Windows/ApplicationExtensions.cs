@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 
 			var winuiWndow = new MauiWinUIWindow();
 
-			var mauiContext = applicationContext!.MakeScoped(winuiWndow);
+			var mauiContext = applicationContext!.MakeWindowScope(winuiWndow, out var windowScope);
 
 			applicationContext.Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

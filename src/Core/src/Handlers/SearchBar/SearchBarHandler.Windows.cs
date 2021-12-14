@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 		Brush? _defaultDeleteButtonForegroundColorBrush;
 		Brush? _defaultDeleteButtonBackgroundColorBrush;
 
-		MauiTextBox? _queryTextBox;
+		MauiSearchTextBox? _queryTextBox;
 		MauiCancelButton? _cancelButton;
 
 		protected override AutoSuggestBox CreateNativeView() => new AutoSuggestBox
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			_queryTextBox = NativeView?.GetFirstDescendant<MauiTextBox>();
+			_queryTextBox = NativeView?.GetFirstDescendant<MauiSearchTextBox>();
 
 			if(_queryTextBox != null)
 			{

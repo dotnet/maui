@@ -11,6 +11,9 @@ namespace Maui.Controls.Sample.ViewModels
 		{
 			new SectionModel(typeof(ImageButtonPage), "ImageButton",
 				"ImageButton is a rectangular object that displays an image, and which fires a Clicked event when it's been pressed."),
+			
+			new SectionModel(typeof(CarouselViewPage), "CarouselView",
+				"CarouselView displays a scrollable list of data items."),
 
 			new SectionModel(typeof(FramePage), "Frame",
 				"The Frame class derives from ContentView and displays a border, or frame, around its child."),
@@ -26,6 +29,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(TabbedPageGallery), "TabbedPage",
 				"Display pages as a set of Tabs."),
+
+			new SectionModel(typeof(AndExpandPage), "AndExpand",
+				"StackLayout with legacy AndExpand options"),
 		};
 	}
 }

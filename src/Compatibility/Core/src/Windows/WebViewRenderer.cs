@@ -13,6 +13,7 @@ using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using WWebView = Microsoft.UI.Xaml.Controls.WebView2;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -90,7 +91,7 @@ if(bases.length == 0){
 				}
 				catch (Exception exc)
 				{
-					Internals.Log.Warning(nameof(WebViewRenderer), $"Failed to load: {uri} {exc}");
+					Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning(exc, "Failed to load: {uri}", uri);
 				}
 			}
 			else
@@ -102,7 +103,7 @@ if(bases.length == 0){
 				}
 				catch (Exception exc)
 				{
-					Internals.Log.Warning(nameof(WebViewRenderer), $"Failed to load: {uri} {exc}");
+					Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning(exc, "Failed to load: {uri}", uri);
 				}
 			}
 		}
@@ -368,7 +369,7 @@ if(bases.length == 0){
 					}
 					catch (Exception exc)
 					{
-						Log.Warning(nameof(WebView), $"Eval of script failed: {exc} Script: {eventArg.Script}");
+						Application.Current?.FindMauiContext()?.CreateLogger<WebView>()?.LogWarning(exc, "Eval of script failed Script: {eventArg.Script}", eventArg.Script);
 					}
 				});
 		}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls
 				if (_style == value)
 					return;
 				if (value != null && !value.TargetType.IsAssignableFrom(TargetType))
-					Log.Warning("Styles", $"Style TargetType {value.TargetType.FullName} is not compatible with element target type {TargetType}");
+					Application.Current?.FindMauiContext()?.CreateLogger<Style>()?.LogWarning("Style TargetType {FullName} is not compatible with element target type {TargetType}", value.TargetType.FullName, TargetType);
 				SetStyle(ImplicitStyle, ClassStyles, value);
 			}
 		}

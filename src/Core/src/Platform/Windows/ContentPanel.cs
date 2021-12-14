@@ -8,7 +8,7 @@ using WDoubleCollection = Microsoft.UI.Xaml.Media.DoubleCollection;
 using WPenLineCap = Microsoft.UI.Xaml.Media.PenLineCap;
 using WPenLineJoin = Microsoft.UI.Xaml.Media.PenLineJoin;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Platform
 {
 	public class ContentPanel : Panel
 	{
@@ -72,7 +72,6 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			_borderPath.Fill = background?.ToNative();
-			_borderPath.Visibility = background != null ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
 		}
 
 		public void UpdateStroke(Paint borderBrush)

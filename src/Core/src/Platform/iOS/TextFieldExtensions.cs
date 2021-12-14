@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class TextFieldExtensions
 	{
@@ -66,17 +66,14 @@ namespace Microsoft.Maui
 				textField.AttributedText = newText;
 		}
 
-		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
-		{
-			textField.UpdatePlaceholder(entry, null);
-		}
-
-		public static void UpdatePlaceholder(this UITextField textField, IEntry entry, Color? defaultPlaceholderColor)
+		public static void UpdatePlaceholder(this UITextField textField, IEntry entry, Color? defaultPlaceholderColor = null)
 		{
 			var placeholder = entry.Placeholder;
-
 			if (placeholder == null)
+			{
+				textField.AttributedPlaceholder = null;
 				return;
+			}
 
 			var placeholderColor = entry.PlaceholderColor;
 			var foregroundColor = placeholderColor ?? defaultPlaceholderColor;
@@ -109,6 +106,10 @@ namespace Microsoft.Maui
 			var textAttr = textField.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 			if (textAttr != null)
 				textField.AttributedText = textAttr;
+
+			textAttr = textField.AttributedPlaceholder?.WithCharacterSpacing(textStyle.CharacterSpacing);
+			if (textAttr != null)
+				textField.AttributedPlaceholder = textAttr;
 		}
 
 		public static void UpdateKeyboard(this UITextField textField, IEntry entry)
