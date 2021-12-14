@@ -1,4 +1,5 @@
-﻿using ObjCRuntime;
+﻿using System.Globalization;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeDatePicker.UpdateDate(datePicker, null);
 		}
-
+						
 		public static void UpdateTextColor(this MauiDatePicker nativeDatePicker, IDatePicker datePicker, UIColor? defaultTextColor)
 		{
 			var textColor = datePicker.TextColor;
@@ -38,7 +39,33 @@ namespace Microsoft.Maui.Platform
 			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
 
-			nativeDatePicker.Text = datePicker.Date.ToString(datePicker.Format);
+			// Can't use Element.Format because it won't display the correct format if the region and language are set differently
+			if (picker != null && string.IsNullOrWhiteSpace(datePicker.Format) || datePicker.Format.Equals("d") || datePicker.Format.Equals("D"))
+			{
+				NSDateFormatter dateFormatter = new NSDateFormatter();
+				dateFormatter.TimeZone = NSTimeZone.FromGMT(0);
+
+				if (datePicker.Format?.Equals("D") == true)
+				{
+					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
+					var strDate = dateFormatter.StringFor(picker?.Date);
+					nativeDatePicker.Text = strDate;
+				}
+				else
+				{
+					dateFormatter.DateStyle = NSDateFormatterStyle.Short;
+					var strDate = dateFormatter.StringFor(picker?.Date);
+					nativeDatePicker.Text = strDate;
+				}
+			}
+			else if (datePicker.Format.Contains("/"))
+			{
+				nativeDatePicker.Text = datePicker.Date.ToString(datePicker.Format, CultureInfo.InvariantCulture);
+			}
+			else
+			{
+				nativeDatePicker.Text = datePicker.Date.ToString(datePicker.Format);
+			}
 
 			nativeDatePicker.UpdateCharacterSpacing(datePicker);
 		}
@@ -67,6 +94,11 @@ namespace Microsoft.Maui.Platform
 			{
 				picker.MaximumDate = datePicker.MaximumDate.ToNSDate();
 			}
+		}
+
+		public static void UpdateTextAlignment(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
+		{
+			// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 		}
 	}
 }

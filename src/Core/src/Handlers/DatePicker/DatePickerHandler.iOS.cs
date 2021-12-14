@@ -1,6 +1,5 @@
 ﻿using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -51,14 +50,21 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiDatePicker nativeView)
 		{
+			nativeView.EditingDidBegin += OnStarted;
+			nativeView.EditingDidEnd += OnEnded;
+
 			if (_picker != null)
 				_picker.ValueChanged += OnValueChanged;
 
 			base.ConnectHandler(nativeView);
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiDatePicker nativeView)
 		{
+			nativeView.EditingDidBegin -= OnStarted;
+			nativeView.EditingDidEnd -= OnEnded;
+
 			if (_picker != null)
 				_picker.ValueChanged -= OnValueChanged;
 
@@ -72,12 +78,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFormat(datePicker);
+			handler.NativeView?.UpdateFormat(datePicker, handler._picker);
 		}
 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.NativeView?.UpdateDate(datePicker, handler._picker);
 		}
 
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
@@ -107,9 +113,24 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColor);
 		}
 
+		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateTextAlignment(datePicker);
+		}
+		
 		void OnValueChanged(object? sender, EventArgs? e)
 		{
 			SetVirtualViewDate();
+		}
+
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			// TODO: Focus.
+		}
+
+		void OnEnded(object? sender, EventArgs eventArgs)
+		{
+			// TODO: UnFocus.
 		}
 
 		void SetVirtualViewDate()

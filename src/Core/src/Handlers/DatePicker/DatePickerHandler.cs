@@ -6,6 +6,8 @@
 		{
 #if __ANDROID__
 			[nameof(IDatePicker.Background)] = MapBackground,
+#elif __IOS__
+			[nameof(IDatePicker.FlowDirection)] = MapFlowDirection,
 #endif
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IDatePicker.Date)] = MapDate,
