@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 		public bool ForceContainer { get; set; }
 
 		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
 			VirtualView?.Clip != null ||
 			VirtualView?.Shadow != null ||
 			ForceContainer ||
