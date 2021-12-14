@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateScaleX(this AView nativeView, IView view)
 		{
-			nativeView.ScaleX = (float)view.Scale * (float)view.ScaleX;
+			nativeView.ScaleX = (float)(view.Scale * view.ScaleX);
 		}
 
 		public static void UpdateScaleY(this AView nativeView, IView view)
 		{
-			nativeView.ScaleY = (float)view.Scale * (float)view.ScaleY;
+			nativeView.ScaleY = (float)(view.Scale * view.ScaleY);
 		}
 
 		public static void UpdateRotation(this AView nativeView, IView view)
@@ -56,11 +56,8 @@ namespace Microsoft.Maui.Platform
 			if (nativeView.Context == null)
 				return;
 
-			float currentPivot = nativeView.PivotX;
-			var target = (float)(view.AnchorX * nativeView.Context.ToPixels(view.Frame.Width));
-
-			if (currentPivot != target)
-				nativeView.PivotX = target;
+			var pivotX = (float)(view.AnchorX * nativeView.Context.ToPixels(view.Frame.Width));
+			ViewHelper.SetPivotXIfNeeded(nativeView, pivotX);
 		}
 
 		public static void UpdateAnchorY(this AView nativeView, IView view)
@@ -68,11 +65,8 @@ namespace Microsoft.Maui.Platform
 			if (nativeView.Context == null)
 				return;
 
-			float currentPivot = nativeView.PivotY;
-			var target = (float)(view.AnchorY * nativeView.Context.ToPixels(view.Frame.Height));
-
-			if (currentPivot != target)
-				nativeView.PivotY = target;
+			var pivotY = (float)(view.AnchorY * nativeView.Context.ToPixels(view.Frame.Height));
+			ViewHelper.SetPivotYIfNeeded(nativeView, pivotY);
 		}
 	}
 }

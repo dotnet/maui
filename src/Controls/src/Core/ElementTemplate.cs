@@ -60,7 +60,13 @@ namespace Microsoft.Maui.Controls
 		public object CreateContent()
 		{
 			if (LoadTemplate == null)
-				throw new InvalidOperationException("LoadTemplate should not be null");
+			{
+				// Returning a Label here instead of throwing an exception because HotReload may temporarily be in state
+				// where the user is creating a template; this keeps everything else (which expects a result from CreateContent)
+				// from crashing during that time. 
+				return new Label(); 
+			}
+
 			if (this is DataTemplateSelector)
 				throw new InvalidOperationException("Cannot call CreateContent directly on a DataTemplateSelector");
 
