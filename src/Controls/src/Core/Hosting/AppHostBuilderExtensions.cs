@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS || ANDROID
 			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
 			{ typeof(Toolbar), typeof(ToolbarHandler) },
+			{ typeof(RadioButton), typeof(RadioButtonHandler) },
 #endif
 #if __ANDROID__
 			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
