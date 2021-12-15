@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		ItemDecoration _itemDecoration;
 
+		ItemTouchHelper _itemTouchHelper;
+		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
+
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(context)
 		{
 			GetItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
@@ -86,6 +89,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_itemDecoration != null)
 			{
 				RemoveItemDecoration(_itemDecoration);
+			}
+
+			if (_itemTouchHelper != null)
+			{
+				_itemTouchHelper.AttachToRecyclerView(null);
+				_itemTouchHelper.Dispose();
+				_itemTouchHelper = null;
+			}
+
+			if (_itemTouchHelperCallback != null)
+			{
+				_itemTouchHelperCallback.Dispose();
+				_itemTouchHelperCallback = null;
 			}
 		}
 
@@ -221,7 +237,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			UpdateEmptyView();
 
+			_itemTouchHelperCallback?.SetAdapter(ItemsViewAdapter as IItemTouchHelperAdapter);
+
 			oldItemViewAdapter?.Dispose();
+		}
+
+		public virtual void UpdateCanReorderItems()
+		{
+			var canReorderItems = (ItemsView as ReorderableItemsView)?.CanReorderItems == true;
+
+			if (canReorderItems)
+			{
+				if (_itemTouchHelperCallback == null)
+				{
+					_itemTouchHelperCallback = new SimpleItemTouchHelperCallback();
+				}
+				if (_itemTouchHelper == null)
+				{
+					_itemTouchHelper = new ItemTouchHelper(_itemTouchHelperCallback);
+					_itemTouchHelper.AttachToRecyclerView(this);
+				}
+				_itemTouchHelperCallback.SetAdapter(ItemsViewAdapter as IItemTouchHelperAdapter);
+			}
+			else
+			{
+				if (_itemTouchHelper != null)
+				{
+					_itemTouchHelper.AttachToRecyclerView(null);
+					_itemTouchHelper.Dispose();
+					_itemTouchHelper = null;
+				}
+				if (_itemTouchHelperCallback != null)
+				{
+					_itemTouchHelperCallback.Dispose();
+					_itemTouchHelperCallback = null;
+				}
+			}
 		}
 
 		public virtual void UpdateLayoutManager()
@@ -385,11 +436,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
 			AddItemDecoration(_itemDecoration);
+
+			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
+			{
+				// SpacingItemDecoration applies spacing to all items & all 4 sides of the items.
+				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
+				// Horizontal & vertical spacing should only exist between items. 
+				var horizontalPadding = -spacingDecoration.HorizontalOffset;
+				var verticalPadding = -spacingDecoration.VerticalOffset;
+				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+			}
 		}
 
 		protected virtual ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
 		{
-			return new SpacingItemDecoration(itemsLayout);
+			return new SpacingItemDecoration(Context, itemsLayout);
 		}
 
 		protected virtual void ReconcileFlowDirectionAndLayout()

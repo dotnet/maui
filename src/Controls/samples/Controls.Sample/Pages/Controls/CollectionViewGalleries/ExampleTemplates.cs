@@ -490,6 +490,55 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			});
 		}
 
+		public static DataTemplate GroupItemTemplate()
+		{
+			return new DataTemplate(() =>
+			{
+				var templateLayout = new StackLayout();
+
+				var label = new Label
+				{
+					Margin = new Thickness(5, 0, 0, 0),
+				};
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+
+				templateLayout.Children.Add(label);
+
+				return templateLayout;
+			});
+		}
+
+		public static DataTemplate GroupHeaderTemplate()
+		{
+			return new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					BackgroundColor = Colors.LightGreen,
+					FontSize = 16,
+					FontAttributes = FontAttributes.Bold,
+				};
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+
+				return label;
+			});
+		}
+
+		public static DataTemplate GroupFooterTemplate()
+		{
+			return new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					BackgroundColor = Colors.Orange,
+					Margin = new Thickness(0, 0, 0, 15),
+				};
+				label.SetBinding(Label.TextProperty, new Binding("Count", stringFormat: "Total members: {0:D}"));
+
+				return label;
+			});
+		}
+
 		static void More_Clicked(object sender, EventArgs e)
 		{
 			throw new NotImplementedException();

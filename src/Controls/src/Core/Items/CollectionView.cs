@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	public class CollectionView : GroupableItemsView
+	public class CollectionView : ReorderableItemsView
 	{
 	}
 }
