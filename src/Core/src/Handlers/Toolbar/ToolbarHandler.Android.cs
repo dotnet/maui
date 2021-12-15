@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Handlers
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
 
+		ProcessBackClick? _processBackClick;
+		ProcessBackClick BackNavigationClick => _processBackClick ??= new ProcessBackClick(this);
+
 		protected override MaterialToolbar CreateNativeElement()
 		{
 			LayoutInflater? li = MauiContext?.GetLayoutInflater();
@@ -44,7 +47,10 @@ namespace Microsoft.Maui.Handlers
 		internal void SetupWithDrawerLayout(DrawerLayout? drawerLayout)
 		{
 			if (_drawerLayout == drawerLayout)
+			{
+				NativeView.SetNavigationOnClickListener(BackNavigationClick);
 				return;
+			}
 
 			_drawerLayout = drawerLayout;
 			SetupToolbar();
@@ -53,7 +59,10 @@ namespace Microsoft.Maui.Handlers
 		internal void SetupWithNavController(NavController navController, StackNavigationManager stackNavigationManager)
 		{
 			if (_navController == navController && _stackNavigationManager == stackNavigationManager)
+			{
+				NativeView.SetNavigationOnClickListener(BackNavigationClick);
 				return;
+			}
 
 			_navController = navController;
 			_stackNavigationManager = stackNavigationManager;
@@ -77,6 +86,37 @@ namespace Microsoft.Maui.Handlers
 
 			NavigationUI
 				.SetupWithNavController(NativeView, _navController, appbarConfig);
+
+			// the call to SetupWithNavController resets the Navigation Icon
+			UpdateValue(nameof(IToolbar.BackButtonVisible));
+			NativeView.SetNavigationOnClickListener(BackNavigationClick);
+		}
+
+		void BackClick()
+		{
+			if (VirtualView.BackButtonVisible && VirtualView.IsVisible)
+			{
+				_ = MauiContext?.GetActivity().GetWindow()?.BackButtonClicked();
+			}
+			else
+			{
+				_drawerLayout?.Open();
+			}
+		}
+
+		class ProcessBackClick : Java.Lang.Object, View.IOnClickListener
+		{
+			ToolbarHandler _toolbarHandler;
+
+			public ProcessBackClick(ToolbarHandler toolbarHandler)
+			{
+				_toolbarHandler = toolbarHandler;
+			}
+
+			public void OnClick(View? v)
+			{
+				_toolbarHandler.BackClick();
+			}
 		}
 	}
 }

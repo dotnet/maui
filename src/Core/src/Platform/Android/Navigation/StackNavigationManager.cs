@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Platform
 		FragmentNavigator? _fragmentNavigator;
 		NavGraph? _navGraph;
 		IView? _currentPage;
-		ProcessBackClick BackClick { get; }
 		internal IView? VirtualView { get; private set; }
 		internal INavigationView? NavigationView { get; private set; }
 		internal bool IsNavigating => ActiveRequestedArgs != null;
@@ -56,9 +55,7 @@ namespace Microsoft.Maui.Platform
 					this);
 
 			MauiContext =
-				mauiContext.MakeScoped(inflater, context: inflater.Context);
-
-			BackClick = new ProcessBackClick(this);
+				mauiContext.MakeScoped(inflater, context: inflater.Context);						
 		}
 
 		/*
@@ -324,14 +321,6 @@ namespace Microsoft.Maui.Platform
 			ApplyNavigationRequest(e);
 		}
 
-		protected virtual void OnToolbarBackButtonClicked()
-		{
-			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
-			_ = MauiContext.GetActivity().GetWindow()?.BackButtonClicked();
-		}
-
-		internal void ToolbarBackButtonClicked() => OnToolbarBackButtonClicked();
-
 		// Fragments are always destroyed if they aren't visible
 		// The Handler/NativeView associated with the visible IView remain intact
 		// The performance hit of destorying/recreating fragments should be negligible
@@ -444,15 +433,6 @@ namespace Microsoft.Maui.Platform
 					if(toolbar.Handler is ToolbarHandler th)
 					{
 						th.SetupWithNavController(controller, _stackNavigationManager);
-					}
-
-					// the call to SetupWithNavController resets the Navigation Icon
-					toolbar.Handler.UpdateValue(nameof(IToolbar.BackButtonVisible));
-
-					if (toolbar.BackButtonVisible && toolbar.IsVisible)
-					{
-						// Wiring up to this will break the Drawer Toggle button if it's visible
-						nativeToolbar.SetNavigationOnClickListener(_stackNavigationManager.BackClick);
 					}
 				}
 			}
