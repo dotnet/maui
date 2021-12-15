@@ -149,8 +149,6 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			nativeToolBar.RemoveFromParent();
-
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 	}

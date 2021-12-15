@@ -11,9 +11,9 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 			if (Application.Current.MainPage == null)
-				Detail = new NavigationPage(new FlyoutPageGallery());
+				Detail = new CustomNavigationPage(services, viewModel);
 			else
-				Detail = new NavigationPage(new FlyoutPageGallery());
+				Detail = new MainPage(services, viewModel);
 
 			Flyout = CreateFlyout();
 		}

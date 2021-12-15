@@ -74,11 +74,5 @@ namespace Microsoft.Maui.Platform
 
 		internal Func<double, double, Graphics.Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Graphics.Rectangle, Graphics.Size>? CrossPlatformArrange { get; set; }
-
-		public override LayoutParams? LayoutParameters 
-		{ 
-			get => base.LayoutParameters; 
-			set => base.LayoutParameters = value; 
-		}
 	}
 }

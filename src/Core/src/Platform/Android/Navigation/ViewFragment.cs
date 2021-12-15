@@ -20,20 +20,5 @@ namespace Microsoft.Maui.Platform
 		{
 			return _aView;
 		}
-
-		public override void OnResume()
-		{
-			base.OnResume();
-		}
-
-		public override void OnDestroy()
-		{
-			base.OnDestroy();
-		}
-
-		public override void OnDestroyView()
-		{
-			base.OnDestroyView();
-		}
 	}
 }

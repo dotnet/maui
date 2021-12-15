@@ -44,10 +44,6 @@ namespace Microsoft.Maui.Platform
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
-		//public IMauiContext MauiContext =>
-		//	VirtualView?.Handler?.MauiContext
-		//	 ?? throw new InvalidOperationException("MauiContext cannot be null");
-
 		public IMauiContext MauiContext { get; }
 
 		public StackNavigationManager(IMauiContext mauiContext)

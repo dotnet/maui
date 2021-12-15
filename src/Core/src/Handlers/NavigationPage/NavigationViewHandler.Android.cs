@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Handlers
 
 		StackNavigationManager CreateNavigationManager()
 		{
-			return _stackNavigationManager ??= new StackNavigationManager(MauiContext!);
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			return _stackNavigationManager ??= new StackNavigationManager(MauiContext);
 		}
 
 		protected override void ConnectHandler(View nativeView)
