@@ -11,6 +11,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 			flyoutBehaviorPicker.ItemsSource = Enum.GetNames(typeof(FlyoutLayoutBehavior));
+			flyoutBehaviorPicker.SelectedItem = FlyoutHeaderBehavior.Default.ToString();
 			flyoutBehaviorPicker.SelectedIndexChanged += OnFlyoutBehaviorPickerSelectedIndexChanged;
 		}
 

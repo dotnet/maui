@@ -10,9 +10,7 @@
             <Label x:Name="lblPresented"></Label>
             <Button Text="Show Flyout" Clicked="ShowFlyout" />
             <Button Text="Close Flyout" Clicked="CloseFlyout" />
-            <Label
-                    Text="Clipped Image using GeometryGroup"
-                    Style="{StaticResource Headline}"/>
+            <Label Text="Is Gesture Enabled For Flyout" Style="{StaticResource Headline}"/>
             <CheckBox IsChecked="true" CheckedChanged="OnGestureEnabledCheckChanged"></CheckBox>
             <Picker x:Name="flyoutBehaviorPicker"></Picker>
         </StackLayout>
