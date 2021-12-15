@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Essentials
 				return DeviceIdiom.TV;
 			else if (uiMode == UiMode.TypeDesk)
 				return DeviceIdiom.Desktop;
-			else if (Essentials.Platform.HasApiLevel(BuildVersionCodes.KitkatWatch) && uiMode == UiMode.TypeWatch)
+			else if (uiMode == UiMode.TypeWatch)
 				return DeviceIdiom.Watch;
 
 			return DeviceIdiom.Unknown;
