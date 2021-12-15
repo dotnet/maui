@@ -44,12 +44,24 @@ namespace Microsoft.Maui.Platform
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
-		public IMauiContext MauiContext =>
-			VirtualView?.Handler?.MauiContext
-			 ?? throw new InvalidOperationException("MauiContext cannot be null");
+		//public IMauiContext MauiContext =>
+		//	VirtualView?.Handler?.MauiContext
+		//	 ?? throw new InvalidOperationException("MauiContext cannot be null");
 
-		public StackNavigationManager()
+		public IMauiContext MauiContext { get; }
+
+		public StackNavigationManager(IMauiContext mauiContext)
 		{
+			var currentInflater = mauiContext.GetLayoutInflater();
+			var inflater =
+				new StackLayoutInflater(
+					currentInflater,
+					currentInflater.Context,
+					this);
+
+			MauiContext =
+				mauiContext.MakeScoped(inflater, context: inflater.Context);
+
 			BackClick = new ProcessBackClick(this);
 		}
 

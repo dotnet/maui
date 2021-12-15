@@ -51,6 +51,11 @@ namespace Microsoft.Maui.LifecycleEvents
 				.OnDestroy(activity =>
 				{
 					// Android's onDestroy is not reliably called
+					if (!activity.IsFinishing)
+					{
+						var window = activity.GetWindow();
+						window?.Destroying();
+					}
 				})
 				.OnBackPressed(activity =>
 				{

@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.DismissEvent += (sender, args) =>
 				{
-					_dialog.Dispose();
+					_dialog?.Dispose();
 					_dialog = null;
 				};
 

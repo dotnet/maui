@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override View CreateNativeView()
 		{
-			LayoutInflater? li = MauiContext?.GetLayoutInflater();
+			LayoutInflater? li = CreateNavigationManager().MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
 			var view = li.Inflate(Resource.Layout.fragment_backstack, null).JavaCast<FragmentContainerView>();
@@ -22,23 +22,25 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		public override void SetMauiContext(IMauiContext mauiContext)
+		//public override void SetMauiContext(IMauiContext mauiContext)
+		//{
+		//	var currentInflater = mauiContext.GetLayoutInflater();
+		//	var inflater =
+		//		new StackNavigationManager.StackLayoutInflater(
+		//			currentInflater,
+		//			currentInflater.Context,
+		//			CreateNavigationManager());
+
+		//	mauiContext =
+		//		mauiContext.MakeScoped(inflater, context: inflater.Context);
+
+		//	base.SetMauiContext(mauiContext);
+		//}
+
+		StackNavigationManager CreateNavigationManager()
 		{
-			var currentInflater = mauiContext.GetLayoutInflater();
-			var inflater =
-				new StackNavigationManager.StackLayoutInflater(
-					currentInflater,
-					currentInflater.Context,
-					CreateNavigationManager());
-
-			mauiContext =
-				mauiContext.MakeScoped(inflater, context: inflater.Context);
-
-			base.SetMauiContext(mauiContext);
+			return _stackNavigationManager ??= new StackNavigationManager(MauiContext!);
 		}
-
-		StackNavigationManager CreateNavigationManager() =>
-			_stackNavigationManager ??= new StackNavigationManager();
 
 		protected override void ConnectHandler(View nativeView)
 		{
