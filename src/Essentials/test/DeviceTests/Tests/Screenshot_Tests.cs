@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			return Utils.OnMainThread(async () =>
 			{
+				await Task.Delay(500);
 				ScreenshotResult mediaFile = await Screenshot.CaptureAsync();
 				var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Png);
 				Assert.True(png.Length > 0);
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			return Utils.OnMainThread(async () =>
 			{
+				await Task.Delay(500);
 				ScreenshotResult mediaFile = await Screenshot.CaptureAsync();
 				var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Jpeg);
 				Assert.True(png.Length > 0);
