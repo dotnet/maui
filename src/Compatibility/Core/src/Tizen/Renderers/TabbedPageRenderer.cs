@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Padding = new Thickness(0);
 				HasShadow = false;
-				BorderColor = GColors.Gray;
+				BorderColor = GColors.DarkGray;
 				BackgroundColor = GColors.White;
 
 				var label = new XLabel
@@ -156,7 +156,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					FontSize = 16,
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalTextAlignment = TextAlignment.Center,
-					TextColor = GColors.Black,
 				};
 				label.SetBinding(XLabel.TextProperty, new Binding("Title"));
 				label.SetBinding(XLabel.TextColorProperty, new Binding("BarTextColor", source: _page));
@@ -176,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 						},
 						new RowDefinition
 						{
-							Height = 3,
+							Height = 5,
 						}
 					}
 				};
