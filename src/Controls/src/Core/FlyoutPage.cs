@@ -257,8 +257,18 @@ namespace Microsoft.Maui.Controls
 
 		static void OnIsPresentedPropertyChanging(BindableObject sender, object oldValue, object newValue)
 		{
-			if (sender is FlyoutPage fp && fp is IFlyoutPageController fpc && !fpc.CanChangeIsPresented)
-				throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", fp.FlyoutLayoutBehavior));
+			if (sender is Maui.IElement element && element.IsShimmed())
+			{
+				if (sender is FlyoutPage fp && fp is IFlyoutPageController fpc && !fpc.CanChangeIsPresented)
+					throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", fp.FlyoutLayoutBehavior));
+			}
+			else
+			{
+				if((!(bool)newValue) && sender is IFlyoutPageController fpc && fpc.ShouldShowSplitMode && sender is FlyoutPage fp)
+				{
+					throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", fp.FlyoutLayoutBehavior));
+				}
+			}
 		}
 
 		static void OnFlyoutLayoutBehaviorPropertyChanged(BindableObject sender, object oldValue, object newValue)

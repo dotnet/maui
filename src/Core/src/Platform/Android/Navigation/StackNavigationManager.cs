@@ -443,25 +443,15 @@ namespace Microsoft.Maui.Platform
 					new AppBarConfiguration
 						.Builder(_stackNavigationManager.NavGraph);
 
-				if (nativeToolbar != null && toolbar != null)
+				if (nativeToolbar != null && toolbar != null && toolbar.Handler?.MauiContext != null)
 				{
-					// TODO: MAUI Hackey way of wiring up Drawer Layout
-					// But currently you can only have a nav bar with a Navigation View	
-					if (nativeToolbar.Parent is DrawerLayout dl1)
-						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl1);
-					else if (nativeToolbar.Parent?.Parent is DrawerLayout dl2)
-						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl2);
-					else if (nativeToolbar.Parent?.Parent?.Parent is DrawerLayout dl3)
-						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl3);
-
-					var appbarConfig =
-						appbarConfigBuilder.Build();
-
-					NavigationUI
-						.SetupWithNavController(nativeToolbar, controller, appbarConfig);
+					if(toolbar.Handler is ToolbarHandler th)
+					{
+						th.SetupWithNavController(controller, _stackNavigationManager);
+					}
 
 					// the call to SetupWithNavController resets the Navigation Icon
-					toolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+					toolbar.Handler.UpdateValue(nameof(IToolbar.BackButtonVisible));
 
 					if (toolbar.BackButtonVisible && toolbar.IsVisible)
 					{

@@ -22,21 +22,6 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		//public override void SetMauiContext(IMauiContext mauiContext)
-		//{
-		//	var currentInflater = mauiContext.GetLayoutInflater();
-		//	var inflater =
-		//		new StackNavigationManager.StackLayoutInflater(
-		//			currentInflater,
-		//			currentInflater.Context,
-		//			CreateNavigationManager());
-
-		//	mauiContext =
-		//		mauiContext.MakeScoped(inflater, context: inflater.Context);
-
-		//	base.SetMauiContext(mauiContext);
-		//}
-
 		StackNavigationManager CreateNavigationManager()
 		{
 			return _stackNavigationManager ??= new StackNavigationManager(MauiContext!);

@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
-using AndroidX.Fragment.App;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -15,8 +11,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		View? _flyoutView;
 		View? _detailView;
-		const int DefaultFlyoutSize = 320;
-		const int DefaultSmallFlyoutSize = 240;
 		const uint DefaultScrimColor = 0x99000000;
 		View? _navigationRoot;
 		LinearLayoutCompat? _sideBySideView;
@@ -38,15 +32,17 @@ namespace Microsoft.Maui.Handlers
 			return dl;
 		}
 
-		double DefaultWidthFlyout
+		double FlyoutWidth
 		{
 			get
 			{
-				if (NativeView.Resources?.DisplayMetrics == null)
-					return 0;
+				var width = VirtualView.FlyoutWidth;
+				if (width == -1)
+					width = LinearLayoutCompat.LayoutParams.MatchParent;
+				else
+					width = Context.ToPixels(width);
 
-				double w = Context.FromPixels(NativeView.Resources.DisplayMetrics.WidthPixels);
-				return (double)Context.ToPixels(w < DefaultSmallFlyoutSize ? w : (w < DefaultFlyoutSize ? DefaultSmallFlyoutSize : DefaultFlyoutSize));
+				return width;
 			}
 		}
 
@@ -152,7 +148,7 @@ namespace Microsoft.Maui.Handlers
 				flyoutView.RemoveFromParent();
 				var layoutParameters =
 					new LinearLayoutCompat.LayoutParams(
-						(int)DefaultWidthFlyout,
+						(int)FlyoutWidth,
 						LinearLayoutCompat.LayoutParams.MatchParent,
 						0);
 
@@ -161,6 +157,9 @@ namespace Microsoft.Maui.Handlers
 
 			if (_sideBySideView.Parent != NativeView)
 				DrawerLayout.AddView(_sideBySideView);
+
+			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
+				th.SetupWithDrawerLayout(null);
 		}
 
 		void LayoutAsFlyout()
@@ -178,7 +177,7 @@ namespace Microsoft.Maui.Handlers
 
 				var layoutParameters =
 					new DrawerLayout.LayoutParams(
-						DrawerLayout.LayoutParams.MatchParent,
+						(int)FlyoutWidth,
 						DrawerLayout.LayoutParams.MatchParent,
 						(int)GravityFlags.Start);
 
@@ -197,6 +196,44 @@ namespace Microsoft.Maui.Handlers
 				DrawerLayout.AddView(_navigationRoot, layoutParameters);
 				UpdateDetailsFragmentView();
 			}
+
+			DrawerLayout.CloseDrawer(flyoutView);
+
+			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
+				th.SetupWithDrawerLayout(DrawerLayout);
+		}
+
+		void UpdateIsPresented()
+		{
+			if (_flyoutView?.Parent == DrawerLayout)
+			{
+				if (VirtualView.IsPresented)
+					DrawerLayout.OpenDrawer(_flyoutView);
+				else
+					DrawerLayout.CloseDrawer(_flyoutView);
+			}
+		}
+
+		void UpdateFlyoutBehavior()
+		{
+			var behavior = VirtualView.FlyoutBehavior;
+			var details = _detailView;
+			if (details == null)
+				return;
+
+			switch (behavior)
+			{
+				case FlyoutBehavior.Disabled:
+				case FlyoutBehavior.Locked:
+					DrawerLayout.CloseDrawers();
+					DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
+					break;
+				case FlyoutBehavior.Flyout:
+					DrawerLayout.SetDrawerLockMode(VirtualView.IsGestureEnabled ? DrawerLayout.LockModeUnlocked : DrawerLayout.LockModeLockedClosed);
+					break;
+			}
+
+			LayoutViews();
 		}
 
 		protected override void ConnectHandler(View nativeView)
@@ -213,7 +250,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)
 		{
-			if (VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout)
+			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout)
 				VirtualView.IsPresented = DrawerLayout.IsDrawerVisible(_flyoutView);
 		}
 
@@ -229,36 +266,34 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFlyoutBehavior(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			var behavior = flyoutView.FlyoutBehavior;
-			var nativeView = handler.NativeView;
-			var details = handler._detailView;
-			if (details == null)
-				return;
-
-			switch (behavior)
-			{
-				case FlyoutBehavior.Disabled:
-				case FlyoutBehavior.Locked:
-					handler.DrawerLayout.CloseDrawers();
-					handler.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
-					break;
-				case FlyoutBehavior.Flyout:
-					handler.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeUnlocked);
-					break;
-			}
-
-			handler.LayoutViews();
+			handler.UpdateFlyoutBehavior();
 		}
 
 		public static void MapIsPresented(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			if (flyoutView.FlyoutBehavior != FlyoutBehavior.Locked)
-			{
-				if (flyoutView.IsPresented)
-					handler.DrawerLayout.OpenDrawer(handler._flyoutView);
-				else
-					handler.DrawerLayout.CloseDrawer(handler._flyoutView);
-			}
+			handler.UpdateIsPresented();
+		}
+
+		public static void MapFlyoutWidth(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			var nativeFlyoutView = handler._flyoutView;
+			if (nativeFlyoutView?.LayoutParameters == null)
+				return;
+
+			nativeFlyoutView.LayoutParameters.Width = (int)handler.FlyoutWidth;
+		}
+
+		public static void MapToolbar(FlyoutViewHandler handler, IFlyoutView view)
+		{
+			ViewHandler.MapToolbar(handler, view);
+
+			if (handler.VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && handler.VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
+				th.SetupWithDrawerLayout(handler.DrawerLayout);
+		}
+
+		public static void MapIsGestureEnabled(FlyoutViewHandler handler, IFlyoutView view)
+		{
+			handler.UpdateFlyoutBehavior();
 		}
 	}
 }
