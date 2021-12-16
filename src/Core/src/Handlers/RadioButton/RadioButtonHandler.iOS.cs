@@ -3,15 +3,18 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class RadioButtonHandler : ViewHandler<IRadioButton, UIView>
+	public partial class RadioButtonHandler : ViewHandler<IRadioButton, ContentView>
 	{
-		protected override UIView CreateNativeView()
+		protected override ContentView CreateNativeView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			var contentView = new ContentView();
-			return contentView;
+			return new ContentView
+			{
+				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
+				CrossPlatformArrange = VirtualView.CrossPlatformArrange
+			};
 		}
 
 		public override void SetVirtualView(IView view)
@@ -20,8 +23,27 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (NativeView is ContentView cv)
-				cv.View = view;
+			NativeView.View = view;
+			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+		}
+
+		void UpdateContent()
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			// Cleanup the old view when reused
+			NativeView.ClearSubviews();
+
+			if (VirtualView.PresentedContent is IView view)
+				NativeView.AddSubview(view.ToNative(MauiContext));
+		}
+
+		public static void MapContent(RadioButtonHandler handler, IContentView page)
+		{
+			handler.UpdateContent();
 		}
 
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
@@ -37,10 +59,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle)
-		{
-		}
-
-		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton)
 		{
 		}
 	}

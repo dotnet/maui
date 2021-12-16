@@ -13,5 +13,19 @@
 		public Font Font { get; set; }
 
 		public object Content { get; set; }
+
+		public IView PresentedContent { get; set; }
+
+		public Thickness Padding { get; set; }
+
+		public Size CrossPlatformArrange(Rectangle bounds)
+		{
+			return bounds.Size;
+		}
+
+		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			return new Size(widthConstraint, heightConstraint);
+		}
 	}
 }
