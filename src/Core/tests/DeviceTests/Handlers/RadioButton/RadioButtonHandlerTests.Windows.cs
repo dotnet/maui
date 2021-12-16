@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AndroidX.AppCompat.Widget;
-
-namespace Microsoft.Maui.DeviceTests
+﻿namespace Microsoft.Maui.DeviceTests
 {
     public partial class RadioButtonHandlerTests
     {
-        AppCompatRadioButton GetNativeRadioButton(RadioButtonHandler radioButtonHandler) =>
-            (AppCompatRadioButton)radioButtonHandler.NativeView;
+        UI.Xaml.Controls.RadioButton GetNativeRadioButton(RadioButtonHandler radioButtonHandler) =>
+            radioButtonHandler.NativeView;
 
         bool GetNativeIsChecked(RadioButtonHandler radioButtonHandler) =>
-            GetNativeRadioButton(radioButtonHandler).Checked;
+            GetNativeRadioButton(radioButtonHandler).IsChecked ?? false;
     }
 }
