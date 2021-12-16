@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Window), typeof(WindowHandler) },
 			{ typeof(ImageButton), typeof(ImageButtonHandler) },
 			{ typeof(IndicatorView), typeof(IndicatorViewHandler) },
+			{ typeof(RadioButton), typeof(RadioButtonHandler) },
 #if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
 			
@@ -64,7 +65,6 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS || ANDROID
 			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
 			{ typeof(Toolbar), typeof(ToolbarHandler) },
-			{ typeof(RadioButton), typeof(RadioButtonHandler) },
 #endif
 #if __ANDROID__
 			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
@@ -94,6 +94,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
+			RadioButton.RemapForControls();
 			FlyoutPage.RemapForControls();
 			Toolbar.RemapForControls();
 			Window.RemapForControls();
