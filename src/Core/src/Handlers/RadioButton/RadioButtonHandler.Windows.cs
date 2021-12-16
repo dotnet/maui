@@ -10,5 +10,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateIsChecked(radioButton);
 		}
+
+		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle) =>
+			handler.NativeView?.UpdateTextColor(textStyle);
+
+		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle) =>
+			handler.NativeView?.UpdateCharacterSpacing(textStyle);
+
+		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton) =>
+			handler.NativeView?.UpdateContent(radioButton);
+
+		public static void MapFont(RadioButtonHandler handler, ITextStyle button)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.NativeView?.UpdateFont(button, fontManager);
+		}
 	}
 }

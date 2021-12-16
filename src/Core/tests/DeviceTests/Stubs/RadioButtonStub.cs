@@ -11,5 +11,7 @@
 		public double CharacterSpacing { get; set; }
 
 		public Font Font { get; set; }
+
+		public object Content { get; set; }
 	}
 }

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color? defaultColor)
 		{
 			var textColor = textStyle.TextColor?.ToNative() ?? defaultColor?.ToNative();
 

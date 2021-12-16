@@ -8,5 +8,10 @@ namespace Microsoft.Maui
 		{
 			nativeRadioButton.Checked = radioButton.IsChecked;
 		}
+
+		public static void UpdateContent(this AppCompatRadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			nativeRadioButton.Text = $"{radioButton.Content}";
+		}
 	}
 }

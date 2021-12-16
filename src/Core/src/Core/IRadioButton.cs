@@ -9,5 +9,6 @@ namespace Microsoft.Maui
 		/// Gets or sets a Boolean value that indicates whether this RadioButton is checked.
 		/// </summary>
 		bool IsChecked { get; set; }
+		object Content { get; }
 	}
 }
