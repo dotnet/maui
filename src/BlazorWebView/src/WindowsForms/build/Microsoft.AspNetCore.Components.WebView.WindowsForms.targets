@@ -3,7 +3,7 @@
   <PropertyGroup>
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
-    <CoreCompileDependsOn Condition="'$(PublishProtocol)' == 'ClickOnce'">$(CoreCompileDependsOn);StaticWebAssetsPrepareForRun</CoreCompileDependsOn>
+    <CoreCompileDependsOn Condition="'$(PublishProtocol)' == 'ClickOnce' or '$(PublishProtocol)' == 'FileSystem'">$(CoreCompileDependsOn);StaticWebAssetsPrepareForRun</CoreCompileDependsOn>
   </PropertyGroup>
 
   <Target Name="AddStaticWebAssetsForClickOnce" AfterTargets="ComputeFilesToPublish" Condition="'$(PublishProtocol)' == 'ClickOnce'">
@@ -12,6 +12,15 @@
     </ComputeStaticWebAssetsTargetPaths>
     <ItemGroup>
       <ContentWithTargetPath Include="@(_ClickOnceAssetCandidate)" KeepMetadata="TargetPath" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddStaticWebAssetsForAppXBundle" BeforeTargets="PublishItemsOutputGroup" Condition="'$(PublishProtocol)' == 'FileSystem'">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_AppXBundleAssetCandidate" />
+    </ComputeStaticWebAssetsTargetPaths>
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(_AppXBundleAssetCandidate)" RelativePath="%(_AppXBundleAssetCandidate.TargetPath)" KeepMetadata="TargetPath" />
     </ItemGroup>
   </Target>
 

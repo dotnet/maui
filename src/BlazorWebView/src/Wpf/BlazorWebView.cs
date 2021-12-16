@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -154,11 +155,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
-			var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
-			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
+			string appRootDir;
+			var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
+			if (!string.IsNullOrEmpty(entryAssemblyLocation))
+			{
+				appRootDir = Path.GetDirectoryName(entryAssemblyLocation);
+			}
+			else
+			{
+				appRootDir = Environment.CurrentDirectory;
+			}
+			var hostPageFullPath = Path.GetFullPath(Path.Combine(appRootDir, HostPage));
+			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath);
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
 
-			var customFileProvider = CreateFileProvider(contentRootDir);
-			var assetFileProvider = new PhysicalFileProvider(contentRootDir);
+			var customFileProvider = CreateFileProvider(contentRootDirFullPath);
+			var assetFileProvider = new PhysicalFileProvider(contentRootDirFullPath);
 			IFileProvider fileProvider = customFileProvider == null
 				? assetFileProvider
 				: new CompositeFileProvider(customFileProvider, assetFileProvider);
