@@ -20,7 +20,8 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			NativeView.View = view;
+			if (NativeView is ContentView cv)
+				cv.View = view;
 		}
 
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
