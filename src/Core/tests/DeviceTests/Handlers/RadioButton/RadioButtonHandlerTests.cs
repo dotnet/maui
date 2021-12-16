@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿#if !IOS
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -7,7 +8,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class RadioButtonHandlerTests : HandlerTestBase<RadioButtonHandler, RadioButtonStub>
 	{
-#if !IOS
 		[Theory(DisplayName = "IsChecked Initializes Correctly")]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -34,6 +34,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatIsChecked, values.ViewValue);
 			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
-#endif
 	}
 }
+#endif
