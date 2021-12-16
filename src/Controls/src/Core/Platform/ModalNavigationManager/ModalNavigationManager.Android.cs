@@ -81,14 +81,29 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			UpdateAccessibilityImportance(CurrentPage, ImportantForAccessibility.Auto, true);
-
+			RestoreFocusability(GetCurrentRootView());
 			return source.Task;
+		}
+
+		// The CurrentPage doesn't represent the root of the native hierarchy.
+		// So we need to retrieve the root view the page is part of if we want
+		// to be sure to disable all focusability
+		AView GetCurrentRootView()
+		{
+			return CurrentPage
+					.Handler
+					?.MauiContext
+					?.GetNavigationRootManager()
+					.RootView ?? 
+					CurrentPage.GetNative(true) ??
+					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
 		public async Task PushModalAsync(Page modal, bool animated)
 		{
-			UpdateAccessibilityImportance(CurrentPage, ImportantForAccessibility.NoHideDescendants, false);
+			var viewToHide = GetCurrentRootView();
+
+			RemoveFocusability(viewToHide);
 
 			_navModel.PushModal(modal);
 
@@ -96,7 +111,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			await presentModal;
 
-			UpdateAccessibilityImportance(modal, ImportantForAccessibility.Auto, true);
+			GetCurrentRootView().SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
 		}
 
 		Task PresentModal(Page modal, bool animated)
@@ -132,17 +147,27 @@ namespace Microsoft.Maui.Controls.Platform
 			return source.Task.ContinueWith(task => NavAnimationInProgress = false);
 		}
 
-
-		void UpdateAccessibilityImportance(Page page, ImportantForAccessibility importantForAccessibility, bool forceFocus)
+		void RestoreFocusability(AView nativeView)
 		{
+			nativeView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 
-			var pageRenderer = page.Handler as INativeViewHandler;
-			if (pageRenderer?.NativeView == null)
-				return;
-			pageRenderer.NativeView.ImportantForAccessibility = importantForAccessibility;
-			if (forceFocus)
-				pageRenderer.NativeView.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
+			if (NativeVersion.IsAtLeast(26))
+				nativeView.SetFocusable(ViewFocusability.FocusableAuto);
 
+			if (nativeView is ViewGroup vg)
+				vg.DescendantFocusability = DescendantFocusability.BeforeDescendants;
+		}
+
+		void RemoveFocusability(AView nativeView)
+		{
+			nativeView.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+
+			if (NativeVersion.IsAtLeast(26))
+				nativeView.SetFocusable(ViewFocusability.NotFocusable);
+
+			// Without setting this the keyboard will still navigate to components behind the modal page
+			if (nativeView is ViewGroup vg)
+				vg.DescendantFocusability = DescendantFocusability.BlockDescendants;
 		}
 
 		internal bool HandleBackPressed()
