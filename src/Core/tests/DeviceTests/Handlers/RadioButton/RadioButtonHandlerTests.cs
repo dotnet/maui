@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
