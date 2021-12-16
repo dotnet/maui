@@ -68,7 +68,7 @@ namespace Recipes.ViewModels
         private async void OnSave()
         {
             List<Ingredient> ingredientList = new List<Ingredient>();
-            string[] ingredientStringList = Ingredients.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] ingredientStringList = (Ingredients ?? String.Empty).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string ingredientString in ingredientStringList)
 				ingredientList.Add(new Ingredient { IngredientItem = ingredientString });
 
