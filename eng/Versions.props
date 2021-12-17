@@ -73,9 +73,7 @@
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.85613e728cab06a91973522a54bbbbba24db72bc.155</_SkiaSharpNativeAssetsVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- NOTE: temporarily hardcode 6.0.100, until we have new branding on dotnet/runtime packs -->
-    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">6.0.100</DotNetPreviewVersionBand>
     <!-- Trim all characters after first `-` or `+` is encountered. -->
-    <!-- <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetPreviewVersionBand> -->
+    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetPreviewVersionBand>
   </PropertyGroup>
 </Project>
