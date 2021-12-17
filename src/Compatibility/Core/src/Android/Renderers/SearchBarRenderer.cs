@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			var sizerequest = base.GetDesiredSize(widthConstraint, heightConstraint);
-			if (Forms.SdkInt == BuildVersionCodes.N && heightConstraint == 0 && sizerequest.Request.Height == 0)
+			if (Forms.IsNougatOrNewer && heightConstraint == 0 && sizerequest.Request.Height == 0)
 			{
 				sizerequest.Request = new Size(sizerequest.Request.Width, _defaultHeight);
 			}
@@ -268,9 +268,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			if (!Forms.IsLollipopOrNewer)
-				return;
-
 			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (_editText != null)

@@ -132,7 +132,39 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			var appbarLayout = nativeView.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar) ??
+			var appbarLayout = nativeView.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
+
+			if(appbarLayout == null)
+				appbarLayout = rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
+
+			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext, true);
+
+			if (appbarLayout == null || nativeToolBar == null)
+			{
+				return;
+			}
+
+			if (nativeToolBar.Parent == appbarLayout)
+			{
+				return;
+			}
+
+			appbarLayout.AddView(nativeToolBar, 0);
+		}
+
+
+		internal static void MapToolbar(IElementHandler handler, IToolbarElement te)
+		{
+			if (te.Toolbar == null)
+				return;
+
+			var rootManager = handler.MauiContext?.GetNavigationRootManager();
+			rootManager?.SetToolbarElement(te);
+
+			var nativeView = handler.NativeView as View;
+
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var appbarLayout = nativeView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar) ??
 				rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
 
 			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext, true);
@@ -150,5 +182,7 @@ namespace Microsoft.Maui.Handlers
 
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
+
+
 	}
 }

@@ -7,13 +7,18 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsRunning(this ProgressBar progressBar, IActivityIndicator activityIndicator)
 		{
+			progressBar.Visibility = GetActivityIndicatorVisibility (activityIndicator);
+		}
+
+		internal static ViewStates GetActivityIndicatorVisibility(this IActivityIndicator activityIndicator)
+		{
 			if (activityIndicator.Visibility == Visibility.Visible)
 			{
-				progressBar.Visibility = activityIndicator.IsRunning ? ViewStates.Visible : ViewStates.Invisible;
+				return activityIndicator.IsRunning ? ViewStates.Visible : ViewStates.Invisible;
 			}
 			else
 			{
-				progressBar.Visibility = activityIndicator.Visibility.ToNativeVisibility();
+				return activityIndicator.Visibility.ToNativeVisibility();
 			}
 		}
 

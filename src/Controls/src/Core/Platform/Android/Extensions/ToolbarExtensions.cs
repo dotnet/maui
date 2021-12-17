@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable dad && dad.Progress == 1)
+				if (!toolbar.DrawerToggleVisible)
 					nativeToolbar.NavigationIcon = null;
 			}
 

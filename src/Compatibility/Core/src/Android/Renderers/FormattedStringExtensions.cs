@@ -77,10 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				Font = font;
 				TextView = view;
-				if (Forms.IsLollipopOrNewer)
-				{
-					CharacterSpacing = characterSpacing;
-				}
+				CharacterSpacing = characterSpacing;
 			}
 
 			public Font Font { get; }
@@ -108,10 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip,
 					value, TextView.Resources.DisplayMetrics);
 
-				if (Forms.IsLollipopOrNewer)
-				{
-					paint.LetterSpacing = CharacterSpacing;
-				}
+				paint.LetterSpacing = CharacterSpacing;
 			}
 		}
 

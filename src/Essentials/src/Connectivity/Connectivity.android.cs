@@ -120,56 +120,49 @@ namespace Microsoft.Maui.Essentials
 					var currentAccess = NetworkAccess.None;
 					var manager = Platform.ConnectivityManager;
 
-					if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
-					{
 #pragma warning disable CS0618 // Type or member is obsolete
-						var networks = manager.GetAllNetworks();
+					var networks = manager.GetAllNetworks();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-						// some devices running 21 and 22 only use the older api.
-						if (networks.Length == 0 && (int)Build.VERSION.SdkInt < 23)
-						{
-							ProcessAllNetworkInfo();
-							return currentAccess;
-						}
-
-						foreach (var network in networks)
-						{
-							try
-							{
-								var capabilities = manager.GetNetworkCapabilities(network);
-
-								if (capabilities == null)
-									continue;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-								var info = manager.GetNetworkInfo(network);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-#pragma warning disable CS0618 // Type or member is obsolete
-								if (info == null || !info.IsAvailable)
-#pragma warning restore CS0618 // Type or member is obsolete
-									continue;
-
-								// Check to see if it has the internet capability
-								if (!capabilities.HasCapability(NetCapability.Internet))
-								{
-									// Doesn't have internet, but local is possible
-									currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Local);
-									continue;
-								}
-
-								ProcessNetworkInfo(info);
-							}
-							catch
-							{
-								// there is a possibility, but don't worry
-							}
-						}
-					}
-					else
+					// some devices running 21 and 22 only use the older api.
+					if (networks.Length == 0 && !OperatingSystem.IsAndroidVersionAtLeast(23))
 					{
 						ProcessAllNetworkInfo();
+						return currentAccess;
+					}
+
+					foreach (var network in networks)
+					{
+						try
+						{
+							var capabilities = manager.GetNetworkCapabilities(network);
+
+							if (capabilities == null)
+								continue;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+							var info = manager.GetNetworkInfo(network);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+#pragma warning disable CS0618 // Type or member is obsolete
+							if (info == null || !info.IsAvailable)
+#pragma warning restore CS0618 // Type or member is obsolete
+								continue;
+
+							// Check to see if it has the internet capability
+							if (!capabilities.HasCapability(NetCapability.Internet))
+							{
+								// Doesn't have internet, but local is possible
+								currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Local);
+								continue;
+							}
+
+							ProcessNetworkInfo(info);
+						}
+						catch
+						{
+							// there is a possibility, but don't worry
+						}
 					}
 
 					void ProcessAllNetworkInfo()
@@ -211,40 +204,26 @@ namespace Microsoft.Maui.Essentials
 				Permissions.EnsureDeclared<Permissions.NetworkState>();
 
 				var manager = Platform.ConnectivityManager;
-				if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+#pragma warning disable CS0618 // Type or member is obsolete
+				var networks = manager.GetAllNetworks();
+#pragma warning restore CS0618 // Type or member is obsolete
+				foreach (var network in networks)
 				{
 #pragma warning disable CS0618 // Type or member is obsolete
-					var networks = manager.GetAllNetworks();
-#pragma warning restore CS0618 // Type or member is obsolete
-					foreach (var network in networks)
+					NetworkInfo info = null;
+					try
 					{
-#pragma warning disable CS0618 // Type or member is obsolete
-						NetworkInfo info = null;
-						try
-						{
-							info = manager.GetNetworkInfo(network);
-						}
-						catch
-						{
-							// there is a possibility, but don't worry about it
-						}
+						info = manager.GetNetworkInfo(network);
+					}
+					catch
+					{
+						// there is a possibility, but don't worry about it
+					}
 #pragma warning restore CS0618 // Type or member is obsolete
 
-						var p = ProcessNetworkInfo(info);
-						if (p.HasValue)
-							yield return p.Value;
-					}
-				}
-				else
-				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					foreach (var info in manager.GetAllNetworkInfo())
-#pragma warning restore CS0618 // Type or member is obsolete
-					{
-						var p = ProcessNetworkInfo(info);
-						if (p.HasValue)
-							yield return p.Value;
-					}
+					var p = ProcessNetworkInfo(info);
+					if (p.HasValue)
+						yield return p.Value;
 				}
 
 #pragma warning disable CS0618 // Type or member is obsolete
