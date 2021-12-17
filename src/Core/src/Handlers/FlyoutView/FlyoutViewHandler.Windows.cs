@@ -130,6 +130,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				case FlyoutBehavior.Flyout:
 					nativeView.IsPaneToggleButtonVisible = true;
+					// Workaround for
+					// https://github.com/microsoft/microsoft-ui-xaml/issues/6493
+					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
 					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 					break;
 				case FlyoutBehavior.Locked:
