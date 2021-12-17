@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			var expectSupported = false;
 
 #if __ANDROID__
-			expectSupported = Platform.SdkInt >= 25;
+			expectSupported = OperatingSystem.IsAndroidVersionAtLeast(25);
 #elif __IOS__
 			expectSupported = Platform.HasOSVersion(9, 0);
 #endif

@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			base.OnAttachedToWindow();
 
-			if (Forms.IsLollipopOrNewer && Control != null)
+			if (Control != null)
 				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
 		}
 

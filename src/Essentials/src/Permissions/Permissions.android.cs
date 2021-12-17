@@ -311,22 +311,17 @@ namespace Microsoft.Maui.Essentials
 						permissions.Add((Manifest.Permission.AddVoicemail, true));
 					if (IsDeclaredInManifest(Manifest.Permission.UseSip))
 						permissions.Add((Manifest.Permission.UseSip, true));
-
-#if __ANDROID_26__
 					if (Platform.HasApiLevelO)
 					{
 						if (IsDeclaredInManifest(Manifest.Permission.AnswerPhoneCalls))
 							permissions.Add((Manifest.Permission.AnswerPhoneCalls, true));
 					}
-#endif
 
 #pragma warning disable CS0618 // Type or member is obsolete
 					if (IsDeclaredInManifest(Manifest.Permission.ProcessOutgoingCalls))
 					{
-#if __ANDROID_29__
-						if (Platform.HasApiLevel(BuildVersionCodes.Q))
+						if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.Q))
 							System.Diagnostics.Debug.WriteLine($"{Manifest.Permission.ProcessOutgoingCalls} is deprecated in Android 10");
-#endif
 						permissions.Add((Manifest.Permission.ProcessOutgoingCalls, true));
 					}
 #pragma warning restore CS0618 // Type or member is obsolete

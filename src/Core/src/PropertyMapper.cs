@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	public abstract class PropertyMapper : IPropertyMapper
 	{
-		readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new();
+		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new();
 
 		IPropertyMapper[]? _chained;
 
@@ -101,7 +101,7 @@ namespace Microsoft.Maui
 		public virtual IReadOnlyCollection<string> UpdateKeys =>
 			_updateKeys ?? PopulateKeys(ref _updateKeys);
 
-		public IEnumerable<string> GetKeys()
+		public virtual IEnumerable<string> GetKeys()
 		{
 			foreach (var key in _mapper.Keys)
 				yield return key;

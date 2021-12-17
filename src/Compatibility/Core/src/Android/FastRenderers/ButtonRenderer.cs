@@ -364,10 +364,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				LetterSpacing = Button.CharacterSpacing.ToEm();
-			}
+			LetterSpacing = Button.CharacterSpacing.ToEm();
 		}
 
 		float IBorderVisualElementRenderer.ShadowRadius => ShadowRadius;
