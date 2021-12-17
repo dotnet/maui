@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer && Control is TextView textControl)
+			if (Control is TextView textControl)
 			{
 				textControl.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}

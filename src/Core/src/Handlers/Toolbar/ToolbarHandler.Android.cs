@@ -6,6 +6,10 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
+using AndroidX.DrawerLayout.Widget;
+using AndroidX.Navigation;
+using AndroidX.Navigation.UI;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Handlers;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -16,6 +20,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
+
+		ProcessBackClick? _processBackClick;
+		ProcessBackClick BackNavigationClick => _processBackClick ??= new ProcessBackClick(this);
 
 		protected override MaterialToolbar CreateNativeElement()
 		{
@@ -31,6 +38,85 @@ namespace Microsoft.Maui.Handlers
 			};
 
 			return view;
+		}
+
+		DrawerLayout? _drawerLayout;
+		NavController? _navController;
+		StackNavigationManager? _stackNavigationManager;
+
+		internal void SetupWithDrawerLayout(DrawerLayout? drawerLayout)
+		{
+			if (_drawerLayout == drawerLayout)
+			{
+				NativeView.SetNavigationOnClickListener(BackNavigationClick);
+				return;
+			}
+
+			_drawerLayout = drawerLayout;
+			SetupToolbar();
+		}
+
+		internal void SetupWithNavController(NavController navController, StackNavigationManager stackNavigationManager)
+		{
+			if (_navController == navController && _stackNavigationManager == stackNavigationManager)
+			{
+				NativeView.SetNavigationOnClickListener(BackNavigationClick);
+				return;
+			}
+
+			_navController = navController;
+			_stackNavigationManager = stackNavigationManager;
+			SetupToolbar();
+		}
+
+		void SetupToolbar()
+		{
+			if (_stackNavigationManager == null || _navController == null)
+				return;
+
+			var appbarConfigBuilder =
+					   new AppBarConfiguration
+						   .Builder(_stackNavigationManager.NavGraph);
+
+			if (_drawerLayout != null)
+				appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(_drawerLayout);
+
+			var appbarConfig =
+				appbarConfigBuilder.Build();
+
+			NavigationUI
+				.SetupWithNavController(NativeView, _navController, appbarConfig);
+
+			// the call to SetupWithNavController resets the Navigation Icon
+			UpdateValue(nameof(IToolbar.BackButtonVisible));
+			NativeView.SetNavigationOnClickListener(BackNavigationClick);
+		}
+
+		void BackClick()
+		{
+			if (VirtualView.BackButtonVisible && VirtualView.IsVisible)
+			{
+				_ = MauiContext?.GetActivity().GetWindow()?.BackButtonClicked();
+			}
+			else
+			{
+				_drawerLayout?.Open();
+			}
+		}
+
+		class ProcessBackClick : Java.Lang.Object, View.IOnClickListener
+		{
+			ToolbarHandler _toolbarHandler;
+
+			public ProcessBackClick(ToolbarHandler toolbarHandler)
+			{
+				_toolbarHandler = toolbarHandler;
+			}
+
+			public void OnClick(View? v)
+			{
+				_toolbarHandler.BackClick();
+			}
 		}
 	}
 }

@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Essentials
 				throw new PlatformNotSupportedException("Unable to start text-to-speech engine, not supported on device.");
 
 			var max = maxSpeechInputLengthDefault;
-			if (Platform.HasApiLevel(BuildVersionCodes.JellyBeanMr2))
+			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.JellyBeanMr2))
 				max = AndroidTextToSpeech.MaxSpeechInputLength;
 
 			return textToSpeech.SpeakAsync(text, max, options, cancelToken);
@@ -187,16 +187,13 @@ namespace Microsoft.Maui.Essentials
 		{
 			await Initialize();
 
-			if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+			try
 			{
-				try
-				{
-					return tts.AvailableLanguages.Select(a => new Locale(a.Language, a.Country, a.DisplayName, string.Empty));
-				}
-				catch (Exception ex)
-				{
-					Debug.WriteLine("Unable to query language on new API, attempting older api: " + ex);
-				}
+				return tts.AvailableLanguages.Select(a => new Locale(a.Language, a.Country, a.DisplayName, string.Empty));
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Unable to query language on new API, attempting older api: " + ex);
 			}
 
 			return JavaLocale.GetAvailableLocales()
@@ -233,22 +230,14 @@ namespace Microsoft.Maui.Essentials
 #pragma warning disable 0618
 		void SetDefaultLanguage()
 		{
-			if (Platform.HasApiLevel(BuildVersionCodes.JellyBeanMr2))
+			try
 			{
-				try
-				{
-					if (tts.DefaultLanguage == null && tts.Language != null)
-						tts.SetLanguage(tts.Language);
-					else if (tts.DefaultLanguage != null)
-						tts.SetLanguage(tts.DefaultLanguage);
-				}
-				catch
-				{
-					if (tts.Language != null)
-						tts.SetLanguage(tts.Language);
-				}
+				if (tts.DefaultLanguage == null && tts.Language != null)
+					tts.SetLanguage(tts.Language);
+				else if (tts.DefaultLanguage != null)
+					tts.SetLanguage(tts.DefaultLanguage);
 			}
-			else
+			catch
 			{
 				if (tts.Language != null)
 					tts.SetLanguage(tts.Language);

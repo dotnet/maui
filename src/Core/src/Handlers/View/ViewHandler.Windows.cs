@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace Microsoft.Maui.Handlers
@@ -59,7 +60,24 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapAnchorY(IViewHandler handler, IView view) 
 		{ 
-			handler.GetWrappedNativeView()?.UpdateTransformation(view); 
+			handler.GetWrappedNativeView()?.UpdateTransformation(view);
+		}
+
+		public static void MapToolbar(IViewHandler handler, IView view)
+		{
+			if (view is IToolbarElement tb)
+				MapToolbar(handler, tb);
+		}
+
+		internal static void MapToolbar(IElementHandler handler, IToolbarElement toolbarElement)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
+
+			if (toolbarElement.Toolbar != null)
+			{
+				var toolBar = toolbarElement.Toolbar.ToNative(handler.MauiContext, true);
+				handler.MauiContext.GetNavigationRootManager().SetToolbar(toolBar);
+			}
 		}
 	}
 }

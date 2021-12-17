@@ -79,11 +79,6 @@ namespace Microsoft.Maui.Platform
 			return (self.ApplicationInfo?.Flags & AApplicationInfoFlags.SupportsRtl) == AApplicationInfoFlags.SupportsRtl;
 		}
 
-		public static int? TargetSdkVersion(this Context self)
-		{
-			return (int?)self?.ApplicationInfo?.TargetSdkVersion;
-		}
-
 		public static double GetThemeAttributeDp(this Context self, int resource)
 		{
 			using (var value = new TypedValue())
@@ -150,7 +145,7 @@ namespace Microsoft.Maui.Platform
 					{
 						if (context.Resources != null)
 						{
-							if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
+							if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
 								return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
 							else
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -361,10 +361,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
+			LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		[PortHandler]
