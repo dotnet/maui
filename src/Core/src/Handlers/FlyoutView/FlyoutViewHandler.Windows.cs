@@ -6,7 +6,6 @@ using Windows.Foundation;
 
 namespace Microsoft.Maui.Handlers
 {
-
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, MauiNavigationView>
 	{
 		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
@@ -48,15 +47,15 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.Content = VirtualView.Detail.GetNative(true);
 		}
-		
+
 		void UpdateFlyout()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView.Flyout.ToNative(MauiContext);
-			
+
 			_flyoutPanel.Children.Clear();
 
-			if(VirtualView.Flyout.GetNative(true) is UIElement element)
+			if (VirtualView.Flyout.GetNative(true) is UIElement element)
 				_flyoutPanel.Children.Add(element);
 		}
 
@@ -77,13 +76,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFlyoutWidth(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			var template = handler.NativeView.TemplateSettings;
-			if (flyoutView.Width != -1)
+			if (flyoutView.Width >= 0)
 				handler.NativeView.OpenPaneLength = flyoutView.Width;
 			else
-				handler.NativeView.OpenPaneLength = 540;
-				// At some point this Template Setting is going to show up with a bump to winui
-				//handler.NativeView.OpenPaneLength = handler.NativeView.TemplateSettings.OpenPaneWidth;
+				handler.NativeView.OpenPaneLength = 320;
+			// At some point this Template Setting is going to show up with a bump to winui
+			//handler.NativeView.OpenPaneLength = handler.NativeView.TemplateSettings.OpenPaneWidth;
 
 		}
 
@@ -110,6 +108,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public static void MapIsGestureEnabled(FlyoutViewHandler handler, IFlyoutView view)
+		{
+		}
+
 		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
 		// The measure call passes in PositiveInfinity for the measurements which causes the layout system
 		// to crash. So we use this Panel to facilitate more constrained measuring values
@@ -127,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 			protected override Size MeasureOverride(Size availableSize)
 			{
 				if (FlyoutContent == null)
-					return Size.Empty;
+					return new Size(0, 0);
 
 				FlyoutContent.Measure(availableSize);
 				return FlyoutContent.DesiredSize;
@@ -136,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 			protected override Size ArrangeOverride(Size finalSize)
 			{
 				if (FlyoutContent == null)
-					return Size.Empty;
+					return new Size(0, 0);
 
 				FlyoutContent.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 				return new Size(FlyoutContent.ActualWidth, FlyoutContent.ActualHeight);
