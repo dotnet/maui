@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Numerics;
 using Microsoft.Maui.Graphics;
+#if NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using INativeViewHandler = Microsoft.Maui.IViewHandler;
+#endif
 
 namespace Microsoft.Maui
 {
@@ -13,5 +16,8 @@ namespace Microsoft.Maui
 		internal static double ExtractAngleInRadians(this Matrix4x4 matrix) => Math.Atan2(matrix.M21, matrix.M11);
 
 		internal static double ExtractAngleInDegrees(this Matrix4x4 matrix) => ExtractAngleInRadians(matrix) * 180 / Math.PI;
+
+		public static INativeViewHandler ToHandler(this IView view, IMauiContext context) =>
+			(INativeViewHandler)ElementExtensions.ToHandler(view, context);
 	}
 }

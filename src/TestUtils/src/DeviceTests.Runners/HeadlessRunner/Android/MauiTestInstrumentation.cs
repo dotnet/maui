@@ -83,7 +83,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			var name = Path.GetFileName(resultsFile);
 
 			string finalPath;
-			if ((int)Build.VERSION.SdkInt < 30)
+			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
 				var root = Application.Context.GetExternalFilesDir(null)!.AbsolutePath!;
 				var dir = Path.Combine(root, guid);

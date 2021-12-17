@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					SkipCategories = Traits
 						.GetSkipTraits()
 #if __ANDROID__
-						.Append($"{Traits.FileProvider}={Traits.FeatureSupport.ToExclude(Platform.HasApiLevel(24))}")
+						.Append($"{Traits.FileProvider}={Traits.FeatureSupport.ToExclude(OperatingSystem.IsAndroidVersionAtLeast(24))}")
 #endif
 						.ToList(),
 				})

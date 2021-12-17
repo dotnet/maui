@@ -97,10 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					}
 					else
 					{
-						if (Forms.SdkInt >= BuildVersionCodes.JellyBean)
-						{
-							aSwitch.TrackDrawable.SetColorFilter(switchCell.OnColor, FilterMode.Multiply);
-						}
+						aSwitch.TrackDrawable.SetColorFilter(switchCell.OnColor, FilterMode.Multiply);
 					}
 				}
 				else
