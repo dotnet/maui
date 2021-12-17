@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls
 			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, (Picker)this);
+			FontManager.DefaultFontSize;
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			HandleFontChanged();

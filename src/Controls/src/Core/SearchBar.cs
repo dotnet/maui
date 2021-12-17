@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, (SearchBar)this);
+			FontManager.DefaultFontSize;
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			HandleFontChanged();

@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls
 			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, (Button)this);
+			FontManager.DefaultFontSize;
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			HandleFontChanged();

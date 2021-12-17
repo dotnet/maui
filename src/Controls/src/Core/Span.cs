@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, new Label());
+			FontManager.DefaultFontSize;
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
 		{

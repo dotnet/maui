@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls
 			UpdateAutoSizeOption();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, (Editor)this);
+			FontManager.DefaultFontSize;
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			UpdateAutoSizeOption();
