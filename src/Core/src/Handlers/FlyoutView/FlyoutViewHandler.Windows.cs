@@ -129,15 +129,8 @@ namespace Microsoft.Maui.Handlers
 			switch (flyoutView.FlyoutBehavior)
 			{
 				case FlyoutBehavior.Flyout:
-					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 					nativeView.IsPaneToggleButtonVisible = true;
-
-					if (nativeView.IsBackButtonVisible == NavigationViewBackButtonVisible.Visible)
-					{
-						nativeView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
-						nativeView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
-					}
-
+					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 					break;
 				case FlyoutBehavior.Locked:
 					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
