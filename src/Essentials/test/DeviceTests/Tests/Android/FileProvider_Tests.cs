@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.Equal("content", shareableUri.Scheme);
 			Assert.Equal("com.microsoft.maui.essentials.devicetests.fileProvider", shareableUri.Authority);
 
-			if (Platform.HasApiLevel(29))
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
 			{
 #pragma warning disable CS0618 // Type or member is obsolete
 				var externalRoot = AndroidEnvironment.ExternalStorageDirectory.AbsolutePath;

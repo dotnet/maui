@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (Drawable != null)
 			{
-				if ((int)Forms.SdkInt >= 18 && backgroundDrawable != null)
+				if (backgroundDrawable != null)
 				{
 					var outlineBounds = backgroundDrawable.GetPaddingBounds(canvas.Width, canvas.Height);
 					var width = (float)canvas.Width;
