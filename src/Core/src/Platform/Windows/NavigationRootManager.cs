@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Platform
 			nativeWindow.Activated += OnWindowActivated;
 
 			UpdateAppTitleBar(true);
+			SetWindowTitle(_mauiContext.GetNativeWindow().GetWindow()?.Title);
 		}
 
 		public virtual void Disconnect(IView view)
@@ -115,6 +116,7 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				_rootView.AppTitle.Foreground = defaultForegroundBrush;
+				SetWindowTitle(_mauiContext.GetNativeWindow().GetWindow()?.Title);
 			}
 		}
 	}
