@@ -28,7 +28,7 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>ac1f871651b210b7e44adc06eb547427d3600e52</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.1-mauipre.1.21602.7">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>01b3d6d1366fc1273e71b3664f9e64351126c3cc</Sha>
     </Dependency>
@@ -115,7 +115,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>3992fc3841133e15ad322842d35adb8c249a824f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.1-mauipre.1.21602.7" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.0" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>ae1a6cbe225b99c0bf38b7e31bf60cb653b73a52</Sha>
     </Dependency>
