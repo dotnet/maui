@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
@@ -37,7 +38,15 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateContent(this RadioButton nativeRadioButton, IRadioButton radioButton) =>
-			nativeRadioButton.Content = $"{radioButton.Content}";
+		public static void UpdateContent(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			_ = radioButton.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			if (radioButton.Content is IView view)
+				nativeRadioButton.Content = view.ToNative(radioButton.Handler.MauiContext, true);
+			else
+				nativeRadioButton.Content = $"{radioButton.Content}";
+		}
+			
 	}
 }
