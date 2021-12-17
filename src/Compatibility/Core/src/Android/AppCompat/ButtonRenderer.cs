@@ -187,11 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				NativeButton.LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
-
+			NativeButton.LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		void IOnClickListener.OnClick(AView v) => ButtonElementManager.OnClick(Element, Element, v);

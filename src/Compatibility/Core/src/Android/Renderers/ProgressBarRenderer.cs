@@ -69,19 +69,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else
 			{
-				if (Forms.SdkInt < BuildVersionCodes.Lollipop)
-				{
-					(Control.Indeterminate ? Control.IndeterminateDrawable :
-						Control.ProgressDrawable).SetColorFilter(color, FilterMode.SrcIn);
-				}
+				var tintList = ColorStateList.ValueOf(color.ToAndroid());
+				if (Control.Indeterminate)
+					Control.IndeterminateTintList = tintList;
 				else
-				{
-					var tintList = ColorStateList.ValueOf(color.ToAndroid());
-					if (Control.Indeterminate)
-						Control.IndeterminateTintList = tintList;
-					else
-						Control.ProgressTintList = tintList;
-				}
+					Control.ProgressTintList = tintList;
 			}
 		}
 
