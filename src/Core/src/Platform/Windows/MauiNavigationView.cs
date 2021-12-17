@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Platform
 			MenuItemsSource = null;
 			IsPaneToggleButtonVisible = false;
 			PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			IsTitleBarAutoPaddingEnabled = false;
 			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
 			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
 		}

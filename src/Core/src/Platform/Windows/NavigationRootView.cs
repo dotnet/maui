@@ -114,6 +114,10 @@ namespace Microsoft.Maui.Platform
 			{
 				AppTitleBar.Margin = new WThickness(topIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 			}
+			else if(NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+			{
+				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
+			}
 			else if (NavigationViewControl.DisplayMode == NavigationViewDisplayMode.Minimal)
 			{
 				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);

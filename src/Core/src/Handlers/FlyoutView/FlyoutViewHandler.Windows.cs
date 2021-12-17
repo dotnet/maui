@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, MauiNavigationView>
 	{
 		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
-
+		long? _registerCallbackToken;
 		protected override MauiNavigationView CreateNativeView()
 		{
 			var navigationView = new MauiNavigationView();
@@ -21,18 +21,55 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.FlyoutPaneSizeChanged += OnFlyoutPaneSizeChanged;
 			nativeView.PaneOpened += OnPaneOepened;
+			_registerCallbackToken = nativeView.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, BackButtonVisibleChanged);
 		}
 
 		protected override void DisconnectHandler(MauiNavigationView nativeView)
 		{
 			nativeView.FlyoutPaneSizeChanged += OnFlyoutPaneSizeChanged;
 			nativeView.PaneOpened -= OnPaneOepened;
+
+			if(_registerCallbackToken != null)
+			{
+				nativeView.UnregisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, _registerCallbackToken.Value);
+				_registerCallbackToken = null;
+			}
 		}
 
 		void OnFlyoutPaneSizeChanged(object? sender, EventArgs e)
 		{
 			_flyoutPanel.Height = NativeView.FlyoutPaneSize.Height;
 			_flyoutPanel.Width = NativeView.FlyoutPaneSize.Width;
+			UpdateFlyoutPanelMargin();
+		}
+
+
+		void BackButtonVisibleChanged(DependencyObject sender, DependencyProperty dp)
+			=> UpdateFlyoutPanelMargin();
+
+		void UpdateFlyoutPanelMargin()
+		{
+			// The left pane on NavigationView currently doesn't account for a custom title bar
+			// If you hide the backbutton and pane toggle button it will shift content up into the custom title
+			// bar. There currently isn't a property associated with this padding it's just set inside the
+			// source code on the PaneContentGrid
+			if (NativeView.IsBackButtonVisible == NavigationViewBackButtonVisible.Collapsed &&
+				NativeView.PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+			{
+				_flyoutPanel.Margin = new UI.Xaml.Thickness(
+					_flyoutPanel.Margin.Left,
+					40,
+					_flyoutPanel.Margin.Right,
+					_flyoutPanel.Margin.Bottom);
+			}
+			else
+			{
+				_flyoutPanel.Margin = new UI.Xaml.Thickness(
+					_flyoutPanel.Margin.Left,
+					0,
+					_flyoutPanel.Margin.Right,
+					_flyoutPanel.Margin.Bottom);
+			}
 		}
 
 		void OnPaneOepened(NavigationView sender, object args)
@@ -94,6 +131,13 @@ namespace Microsoft.Maui.Handlers
 				case FlyoutBehavior.Flyout:
 					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 					nativeView.IsPaneToggleButtonVisible = true;
+
+					if (nativeView.IsBackButtonVisible == NavigationViewBackButtonVisible.Visible)
+					{
+						nativeView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+						nativeView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
+					}
+
 					break;
 				case FlyoutBehavior.Locked:
 					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
@@ -106,6 +150,8 @@ namespace Microsoft.Maui.Handlers
 					break;
 
 			}
+
+			handler.UpdateFlyoutPanelMargin();
 		}
 
 		public static void MapIsGestureEnabled(FlyoutViewHandler handler, IFlyoutView view)
