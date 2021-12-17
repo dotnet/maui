@@ -38,10 +38,14 @@
                 Text="ValueChanged"
                 Style="{StaticResource Headline}"/>
             <Stepper
+                x:Name="ValueChangedStepper"
                 Minimum="0"
                 Maximum="100"
                 Increment="1"
                 ValueChanged="OnValueChanged"/>
+            <Label
+                FontSize="Micro"
+                Text="{Binding Source={x:Reference ValueChangedStepper}, Path=Value}"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

@@ -4,6 +4,7 @@ using Bumptech.Glide.Load;
 using Bumptech.Glide.Load.Data;
 using Bumptech.Glide.Load.Model;
 using Bumptech.Glide.Signature;
+using Java.IO;
 
 namespace Microsoft.Maui.BumptechGlide
 {
@@ -32,8 +33,17 @@ namespace Microsoft.Maui.BumptechGlide
 
 			public void Cancel() { }
 
-			public void Cleanup() =>
-				_model?.Dispose();
+			public void Cleanup()
+			{
+				if (_model is InputStream inputStream)
+				{
+					try
+					{
+						inputStream.Close();
+					}
+					catch (IOException) { }
+				}
+			}
 
 			public void LoadData(Priority priority, IDataFetcherDataCallback callback) =>
 				callback.OnDataReady(_model);

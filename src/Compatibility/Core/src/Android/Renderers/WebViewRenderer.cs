@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateMixedContentMode()
 		{
-			if (Control != null && ((int)Forms.SdkInt >= 21))
+			if (Control != null)
 			{
 				Control.Settings.MixedContentMode = (MixedContentHandling)Element.OnThisPlatform().MixedContentMode();
 			}

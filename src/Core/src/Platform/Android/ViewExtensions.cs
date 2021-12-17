@@ -16,8 +16,48 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		const int DefaultAutomationTagId = -1;
-		public static int AutomationTagId { get; set; } = DefaultAutomationTagId;
+		public static int AutomationTagId { get; set; } = Resource.Id.automation_tag_id;
+
+		public static void Initialize(this AView nativeView, IView view)
+		{
+			var context = nativeView.Context;
+			if (context == null)
+				return;
+
+			var pivotX = (float)(view.AnchorX * context.ToPixels(view.Frame.Width));
+			var pivotY = (float)(view.AnchorY * context.ToPixels(view.Frame.Height));
+			int visibility;
+
+			if (view is IActivityIndicator a)
+			{
+				visibility = (int)a.GetActivityIndicatorVisibility();
+			}
+			else
+			{
+				visibility = (int)view.Visibility.ToNativeVisibility();
+			}
+
+			// NOTE: use named arguments for clarity
+			ViewHelper.Set(nativeView,
+				automationTagId: AutomationTagId,
+				automationId: view.AutomationId,
+				visibility: visibility,
+				layoutDirection: (int)GetLayoutDirection(view),
+				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
+				minimumWidth: (int)context.ToPixels(view.MinimumWidth),
+				enabled: view.IsEnabled,
+				alpha: (float)view.Opacity,
+				translationX: context.ToPixels(view.TranslationX),
+				translationY: context.ToPixels(view.TranslationY),
+				scaleX: (float)(view.Scale * view.ScaleX),
+				scaleY: (float)(view.Scale * view.ScaleY),
+				rotation: (float)view.Rotation,
+				rotationX: (float)view.RotationX,
+				rotationY: (float)view.RotationY,
+				pivotX: pivotX,
+				pivotY: pivotY
+			);
+		}
 
 		public static void UpdateIsEnabled(this AView nativeView, IView view)
 		{
@@ -106,19 +146,25 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			nativeView.LayoutDirection = GetLayoutDirection(view);
+		}
+
+		static ALayoutDirection GetLayoutDirection(IView view)
+		{
 			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
 				view.FlowDirection == FlowDirection.MatchParent)
 			{
-				nativeView.LayoutDirection = ALayoutDirection.Inherit;
+				return ALayoutDirection.Inherit;
 			}
 			else if (view.FlowDirection == FlowDirection.RightToLeft)
 			{
-				nativeView.LayoutDirection = ALayoutDirection.Rtl;
+				return ALayoutDirection.Rtl;
 			}
 			else if (view.FlowDirection == FlowDirection.LeftToRight)
 			{
-				nativeView.LayoutDirection = ALayoutDirection.Ltr;
+				return ALayoutDirection.Ltr;
 			}
+			return ALayoutDirection.Inherit;
 		}
 
 		public static bool GetClipToOutline(this AView view)
@@ -139,11 +185,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateAutomationId(this AView nativeView, IView view)
 		{
-			if (AutomationTagId == DefaultAutomationTagId)
-			{
-				AutomationTagId = Resource.Id.automation_tag_id;
-			}
-
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
 		}
 
@@ -155,70 +196,45 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateWidth(this AView nativeView, IView view)
 		{
 			// GetDesiredSize will take the specified Width into account during the layout
-			if (!nativeView.IsInLayout)
-			{
-				nativeView.RequestLayout();
-			}
+			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateHeight(this AView nativeView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			if (!nativeView.IsInLayout)
-			{
-				nativeView.RequestLayout();
-			}
+			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateMinimumHeight(this AView nativeView, IView view)
 		{
 			var value = (int)nativeView.Context!.ToPixels(view.MinimumHeight);
 			nativeView.SetMinimumHeight(value);
-
-			if (!nativeView.IsInLayout)
-			{
-				nativeView.RequestLayout();
-			}
+			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateMinimumWidth(this AView nativeView, IView view)
 		{
 			var value = (int)nativeView.Context!.ToPixels(view.MinimumWidth);
 			nativeView.SetMinimumWidth(value);
-
-			if (!nativeView.IsInLayout)
-			{
-				nativeView.RequestLayout();
-			}
+			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateMaximumHeight(this AView nativeView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			if (!nativeView.IsInLayout)
-			{
-				nativeView.RequestLayout();
-			}
+			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateMaximumWidth(this AView nativeView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			if (!nativeView.IsInLayout)
-			{
-				nativeView.RequestLayout();
-			}
+			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void RemoveFromParent(this AView view)
 		{
-			if (view == null)
-				return;
-
-			if (view.Parent == null)
-				return;
-
-			((ViewGroup)view.Parent).RemoveView(view);
+			if (view != null)
+				ViewHelper.RemoveFromParent(view);
 		}
 
 		public static Task<byte[]?> RenderAsPNG(this IView view)

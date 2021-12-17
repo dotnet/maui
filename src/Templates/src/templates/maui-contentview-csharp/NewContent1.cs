@@ -1,17 +1,14 @@
-using Microsoft.Maui.Controls;
+namespace MauiApp1;
 
-namespace MauiApp1
+public class NewContent1 : ContentView
 {
-	public class NewContent1 : ContentView
+	public NewContent1()
 	{
-		public NewContent1()
+		Content = new StackLayout
 		{
-			Content = new StackLayout
-			{
-				Children = {
-					new Label { Text = "Welcome to .NET MAUI!" }
-				}
-			};
-		}
+			Children = {
+				new Label { Text = "Welcome to .NET MAUI!" }
+			}
+		};
 	}
 }

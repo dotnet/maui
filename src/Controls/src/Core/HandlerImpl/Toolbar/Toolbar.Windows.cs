@@ -28,7 +28,10 @@ namespace Microsoft.Maui.Controls
 			if (NavigationRootManager.RootView is not MauiNavigationView)
 				return;
 
-			var commandBar = NavigationRootManager.GetCommandBar();
+			if (Handler.NativeView is not WindowHeader wh)
+				return;
+
+			var commandBar = wh.CommandBar;
 
 			if (commandBar == null)
 			{

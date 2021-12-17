@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Platform
 		FragmentNavigator? _fragmentNavigator;
 		NavGraph? _navGraph;
 		IView? _currentPage;
-		ProcessBackClick BackClick { get; }
 		internal IView? VirtualView { get; private set; }
 		internal INavigationView? NavigationView { get; private set; }
 		internal bool IsNavigating => ActiveRequestedArgs != null;
@@ -44,13 +43,19 @@ namespace Microsoft.Maui.Platform
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
-		public IMauiContext MauiContext =>
-			VirtualView?.Handler?.MauiContext
-			 ?? throw new InvalidOperationException("MauiContext cannot be null");
+		public IMauiContext MauiContext { get; }
 
-		public StackNavigationManager()
+		public StackNavigationManager(IMauiContext mauiContext)
 		{
-			BackClick = new ProcessBackClick(this);
+			var currentInflater = mauiContext.GetLayoutInflater();
+			var inflater =
+				new StackLayoutInflater(
+					currentInflater,
+					currentInflater.Context,
+					this);
+
+			MauiContext =
+				mauiContext.MakeScoped(inflater, context: inflater.Context);						
 		}
 
 		/*
@@ -316,14 +321,6 @@ namespace Microsoft.Maui.Platform
 			ApplyNavigationRequest(e);
 		}
 
-		protected virtual void OnToolbarBackButtonClicked()
-		{
-			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
-			_ = MauiContext.GetActivity().GetWindow()?.BackButtonClicked();
-		}
-
-		internal void ToolbarBackButtonClicked() => OnToolbarBackButtonClicked();
-
 		// Fragments are always destroyed if they aren't visible
 		// The Handler/NativeView associated with the visible IView remain intact
 		// The performance hit of destorying/recreating fragments should be negligible
@@ -431,30 +428,11 @@ namespace Microsoft.Maui.Platform
 					new AppBarConfiguration
 						.Builder(_stackNavigationManager.NavGraph);
 
-				if (nativeToolbar != null && toolbar != null)
+				if (nativeToolbar != null && toolbar != null && toolbar.Handler?.MauiContext != null)
 				{
-					// TODO: MAUI Hackey way of wiring up Drawer Layout
-					// But currently you can only have a nav bar with a Navigation View	
-					if (nativeToolbar.Parent is DrawerLayout dl1)
-						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl1);
-					else if (nativeToolbar.Parent?.Parent is DrawerLayout dl2)
-						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl2);
-					else if (nativeToolbar.Parent?.Parent?.Parent is DrawerLayout dl3)
-						appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(dl3);
-
-					var appbarConfig =
-						appbarConfigBuilder.Build();
-
-					NavigationUI
-						.SetupWithNavController(nativeToolbar, controller, appbarConfig);
-
-					// the call to SetupWithNavController resets the Navigation Icon
-					toolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
-
-					if (toolbar.BackButtonVisible && toolbar.IsVisible)
+					if(toolbar.Handler is ToolbarHandler th)
 					{
-						// Wiring up to this will break the Drawer Toggle button if it's visible
-						nativeToolbar.SetNavigationOnClickListener(_stackNavigationManager.BackClick);
+						th.SetupWithNavController(controller, _stackNavigationManager);
 					}
 				}
 			}
