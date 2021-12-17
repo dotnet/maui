@@ -35,6 +35,6 @@ namespace Microsoft.Maui.Controls
 			return bounds.Size;
 		}
 
-		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? ((IView)Content);
+		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? (Content as IView);
 	}
 }
