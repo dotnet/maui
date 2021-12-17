@@ -14,11 +14,8 @@ namespace Maui.Controls.Sample
 			{
 				Text = $"{galleryName}",
 				AutomationId = automationId,
-				FontSize = 10,
-				HeightRequest = Device.RuntimePlatform == Device.Android ? 40 : 30,
 				HorizontalOptions = LayoutOptions.Fill,
-				Margin = 5,
-				Padding = 5
+				Margin = 5
 			};
 			button.Clicked += async (sender, args) =>
 			{
