@@ -9,20 +9,7 @@ namespace Microsoft.Maui.Handlers
 
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, MauiNavigationView>
 	{
-		public static IPropertyMapper<IFlyoutView, FlyoutViewHandler> Mapper = new PropertyMapper<IFlyoutView, FlyoutViewHandler>(ViewHandler.ViewMapper)
-		{
-			[nameof(IFlyoutView.Flyout)] = MapFlyout,
-			[nameof(IFlyoutView.Detail)] = MapDetail,
-			[nameof(IFlyoutView.IsPresented)] = MapIsPresented,
-			[nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
-		};
-
-		readonly FlyoutPanel _flyoutPanel;
-
-		public FlyoutViewHandler() : base(Mapper)
-		{
-			_flyoutPanel = new FlyoutPanel();
-		}
+		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
 
 		protected override MauiNavigationView CreateNativeView()
 		{
@@ -86,6 +73,18 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsPresented(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			handler.NativeView.IsPaneOpen = flyoutView.IsPresented;
+		}
+
+		public static void MapFlyoutWidth(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			var template = handler.NativeView.TemplateSettings;
+			if (flyoutView.Width != -1)
+				handler.NativeView.OpenPaneLength = flyoutView.Width;
+			else
+				handler.NativeView.OpenPaneLength = 540;
+				// At some point this Template Setting is going to show up with a bump to winui
+				//handler.NativeView.OpenPaneLength = handler.NativeView.TemplateSettings.OpenPaneWidth;
+
 		}
 
 		public static void MapFlyoutBehavior(FlyoutViewHandler handler, IFlyoutView flyoutView)
