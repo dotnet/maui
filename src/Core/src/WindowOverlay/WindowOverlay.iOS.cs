@@ -13,7 +13,6 @@ namespace Microsoft.Maui
 		PassthroughView? _passthroughView;
 		IDisposable? _frameObserver;
 		NativeGraphicsView? _graphicsView;
-		UIWindow? _uiWindow;
 
 		public virtual bool Initialize()
 		{
@@ -23,8 +22,6 @@ namespace Microsoft.Maui
 			var nativeLayer = Window?.GetNative(true);
 			if (nativeLayer is not UIWindow nativeWindow)
 				return false;
-
-			_uiWindow = nativeWindow;
 
 			if (nativeWindow?.RootViewController?.View == null)
 				return false;
@@ -84,12 +81,6 @@ namespace Microsoft.Maui
 
 		void FrameAction(Foundation.NSObservedChange obj)
 		{
-			//if (this._passthroughView != null && this._uiWindow?.RootViewController?.View != null)
-			//	this._passthroughView.Frame = this._uiWindow.RootViewController.View.Frame;
-
-			//if (this._graphicsView != null && this._uiWindow?.RootViewController?.View != null)
-			//	this._graphicsView.Frame = this._uiWindow.RootViewController.View.Frame;
-
 			HandleUIChange();
 			Invalidate();
 		}
@@ -112,9 +103,6 @@ namespace Microsoft.Maui
 				: base(frame)
 			{
 				overlay = windowOverlay;
-				//AutoresizingMask = UIViewAutoresizing.All;
-				//AutosizesSubviews = true;
-				//TranslatesAutoresizingMaskIntoConstraints = true;
 			}
 
 			public override bool PointInside(CGPoint point, UIEvent? uievent)
