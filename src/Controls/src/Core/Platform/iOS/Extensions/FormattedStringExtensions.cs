@@ -22,10 +22,11 @@ namespace Microsoft.Maui.Controls.Platform
 				label?.LineHeight ?? 0,
 				label?.HorizontalTextAlignment ?? TextAlignment.Start,
 				label?.ToFont(),
-				label?.TextColor);
+				label?.TextColor,
+				label?.TextTransform ?? TextTransform.Default);
 
 
-		public static NSAttributedString ToAttributed(this FormattedString formattedString, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null)
+		public static NSAttributedString ToAttributed(this FormattedString formattedString, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			if (formattedString == null)
 				return new NSAttributedString(string.Empty);
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (span.Text == null)
 					continue;
 
-				attributed.Append(span.ToAttributed(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor));
+				attributed.Append(span.ToAttributed(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform));
 			}
 
 			return attributed;
@@ -49,11 +50,14 @@ namespace Microsoft.Maui.Controls.Platform
 				label?.LineHeight ?? 0,
 				label?.HorizontalTextAlignment ?? TextAlignment.Start,
 				label?.ToFont(),
-				label?.TextColor);
+				label?.TextColor,
+				label?.TextTransform ?? TextTransform.None);
 
-		public static NSAttributedString ToAttributed(this Span span, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null)
+		public static NSAttributedString ToAttributed(this Span span, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
-			var text = TextTransformUtilites.GetTransformedText(span.Text, span.TextTransform);
+			var transform = span.TextTransform != TextTransform.Default	? span.TextTransform : defaultTextTransform;
+
+			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 			if (text is null)
 				return new NSAttributedString(string.Empty);
 

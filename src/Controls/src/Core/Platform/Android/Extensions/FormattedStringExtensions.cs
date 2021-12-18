@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Controls.Platform
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
-				var text = TextTransformUtilites.GetTransformedText(span.Text, span.TextTransform);
+
+				var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : label.TextTransform;
+
+				var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 				if (text == null)
 					continue;
 
