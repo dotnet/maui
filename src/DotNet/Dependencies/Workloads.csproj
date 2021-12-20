@@ -6,10 +6,9 @@
     <!-- TODO: hardcode 6.0.100 until we get: https://github.com/dotnet/runtime/pull/62787 -->
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.100" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetPreviewVersionBand)"     Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
-    <!-- TODO: xamarin-macios workloads will temporarily need to be 6.0.100 -->
-    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.100" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.100"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.100"        Version="[$(MicrosofttvOSSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.100"       Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetPreviewVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetPreviewVersionBand)"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(DotNetPreviewVersionBand)"        Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(DotNetPreviewVersionBand)"       Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
   </ItemGroup>
 </Project>
