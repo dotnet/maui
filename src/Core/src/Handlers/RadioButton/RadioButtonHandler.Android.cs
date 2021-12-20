@@ -1,10 +1,13 @@
-﻿using Android.Widget;
+﻿using Android.Views;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class RadioButtonHandler : ViewHandler<IRadioButton, AppCompatRadioButton>
+	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
+		AppCompatRadioButton? PlatformRadioButton => (NativeView as AppCompatRadioButton);
+
 		protected override AppCompatRadioButton CreateNativeView()
 		{
 			return new AppCompatRadioButton(Context)
@@ -13,41 +16,43 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(AppCompatRadioButton nativeView)
+		protected override void ConnectHandler(View nativeView)
 		{
-			nativeView.CheckedChange += OnCheckChanged;
+			if(PlatformRadioButton != null)
+				PlatformRadioButton.CheckedChange += OnCheckChanged;
 		}
 
-		protected override void DisconnectHandler(AppCompatRadioButton nativeView)
+		protected override void DisconnectHandler(View nativeView)
 		{
-			nativeView.CheckedChange -= OnCheckChanged;
+			if (PlatformRadioButton != null)
+				PlatformRadioButton.CheckedChange -= OnCheckChanged;
 		}
 
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.NativeView?.UpdateIsChecked(radioButton);
+			handler.PlatformRadioButton?.UpdateIsChecked(radioButton);
 		}
 
 		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.NativeView?.UpdateContent(radioButton);
+			handler.PlatformRadioButton?.UpdateContent(radioButton);
 		}
 
 		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle)
 		{
-			handler.NativeView?.UpdateTextColor(textStyle);
+			handler.PlatformRadioButton?.UpdateTextColor(textStyle);
 		}
 
 		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(textStyle);
+			handler.PlatformRadioButton?.UpdateCharacterSpacing(textStyle);
 		}
 
 		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(textStyle, fontManager);
+			handler.PlatformRadioButton?.UpdateFont(textStyle, fontManager);
 		}
 
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)

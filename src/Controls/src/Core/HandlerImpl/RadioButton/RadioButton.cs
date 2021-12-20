@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<RadioButton, RadioButtonHandler> ControlsRadioButtonMapper =
 			   new PropertyMapper<RadioButton, RadioButtonHandler>(RadioButtonHandler.Mapper)
 			   {
-#if IOS
+#if IOS || ANDROID
 				   [nameof(IRadioButton.Content)] = MapContent
 #endif
 			   };
@@ -17,6 +17,10 @@ namespace Microsoft.Maui.Controls
 		internal new static void RemapForControls()
 		{
 			RadioButtonHandler.Mapper = ControlsRadioButtonMapper;
+
+#if ANDROID
+			RadioButtonHandler.NativeViewFactory = CreatePlatformView;
+#endif
 		}
 	}
 }
