@@ -81,6 +81,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IgnoreSafeArea => false;
 
+		public bool ClipsToBounds { get; set; }
+
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 	}
 }
