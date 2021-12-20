@@ -173,6 +173,19 @@ namespace Microsoft.Maui.Handlers
 			_sideBySideView?.RemoveAllViews();
 			_sideBySideView?.RemoveFromParent();
 
+			if (_navigationRoot.Parent != NativeView)
+			{
+				_navigationRoot.RemoveFromParent();
+
+				var layoutParameters =
+					new LinearLayoutCompat.LayoutParams(
+						LinearLayoutCompat.LayoutParams.MatchParent,
+						LinearLayoutCompat.LayoutParams.MatchParent);
+
+				DrawerLayout.AddView(_navigationRoot, 0, layoutParameters);
+				UpdateDetailsFragmentView();
+			}
+
 			if (flyoutView.Parent != NativeView)
 			{
 				flyoutView.RemoveFromParent();
@@ -183,20 +196,10 @@ namespace Microsoft.Maui.Handlers
 						DrawerLayout.LayoutParams.MatchParent,
 						(int)GravityFlags.Start);
 
+				// Flyout has to get added after the content otherwise clicking anywhere
+				// on the flyout will cause it to close and gesture
+				// recognizers inside the flyout won't fire
 				DrawerLayout.AddView(flyoutView, layoutParameters);
-			}
-
-			if (_navigationRoot.Parent != NativeView)
-			{
-				_navigationRoot.RemoveFromParent();
-
-				var layoutParameters =
-					new LinearLayoutCompat.LayoutParams(
-						LinearLayoutCompat.LayoutParams.MatchParent,
-						LinearLayoutCompat.LayoutParams.MatchParent);
-
-				DrawerLayout.AddView(_navigationRoot, layoutParameters);
-				UpdateDetailsFragmentView();
 			}
 
 			DrawerLayout.CloseDrawer(flyoutView);
