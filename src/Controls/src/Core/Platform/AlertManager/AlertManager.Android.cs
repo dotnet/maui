@@ -7,6 +7,7 @@ using Android.Content;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls.Internals;
 using AButton = Android.Widget.Button;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
@@ -64,10 +65,19 @@ namespace Microsoft.Maui.Controls.Platform
 				Activity = context;
 				MauiContext = mauiContext;
 
-				MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
+				// TODO ezhart All of these OnX methods could just take the messages directly, no need for the lambdas to unpack
+
+				WeakReferenceMessenger.Default.Register<Activity, PageBusyMessage>(Activity, (r, m) => OnPageBusy(m.Page, m.IsBusy));
+				//MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
+
+				WeakReferenceMessenger.Default.Register<Activity, PageAlertMessage>(Activity, (r, m) => OnAlertRequested(m.Page, m.Arguments));
+				//MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
+
+				WeakReferenceMessenger.Default.Register<Activity, PromptMessage>(Activity, (r, m) => OnPromptRequested(m.Page, m.Arguments));
+				//MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
+
+				WeakReferenceMessenger.Default.Register<Activity, ActionSheetMessage>(Activity, (r, m) => OnActionSheetRequested(m.Page, m.Arguments));
+				//MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
 			}
 
 			public Activity Activity { get; }
@@ -75,10 +85,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
-				MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
-				MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
+				//MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
+				//MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
+				//MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
+				//MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
 			}
 
 			public void ResetBusyCount()
@@ -303,7 +313,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					return false;
 				}
-
+				
 				return nativeView.Context.GetActivity()?.Equals(Activity) ?? false;
 			}
 

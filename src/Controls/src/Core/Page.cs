@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls
 {
@@ -168,9 +169,15 @@ namespace Microsoft.Maui.Controls
 			args.FlowDirection = flowDirection;
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send(this, ActionSheetSignalName, args);
+			{
+				WeakReferenceMessenger.Default.Send(new ActionSheetMessage(this, args));
+				//MessagingCenter.Send(this, ActionSheetSignalName, args);
+			}
 			else
-				_pendingActions.Add(() => MessagingCenter.Send(this, ActionSheetSignalName, args));
+			{
+				_pendingActions.Add(() => WeakReferenceMessenger.Default.Send(new ActionSheetMessage(this, args)));
+				//_pendingActions.Add(() => MessagingCenter.Send(this, ActionSheetSignalName, args));
+			}
 
 			return args.Result.Task;
 		}
@@ -199,9 +206,15 @@ namespace Microsoft.Maui.Controls
 			args.FlowDirection = flowDirection;
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send(this, AlertSignalName, args);
+			{
+				WeakReferenceMessenger.Default.Send(new PageAlertMessage(this, args));
+				//MessagingCenter.Send(this, AlertSignalName, args);
+			}
 			else
-				_pendingActions.Add(() => MessagingCenter.Send(this, AlertSignalName, args));
+			{
+				_pendingActions.Add(() => WeakReferenceMessenger.Default.Send(new PageAlertMessage(this, args)));
+				//_pendingActions.Add(() => MessagingCenter.Send(this, AlertSignalName, args));
+			}
 
 			return args.Result.Task;
 		}
@@ -211,9 +224,15 @@ namespace Microsoft.Maui.Controls
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send(this, PromptSignalName, args);
+			{
+				WeakReferenceMessenger.Default.Send(new PromptMessage(this, args));
+				//MessagingCenter.Send(this, PromptSignalName, args);
+			}
 			else
-				_pendingActions.Add(() => MessagingCenter.Send(this, PromptSignalName, args));
+			{
+				_pendingActions.Add(() => WeakReferenceMessenger.Default.Send(new PromptMessage(this, args)));
+				//_pendingActions.Add(() => MessagingCenter.Send(this, PromptSignalName, args));
+			}
 
 			return args.Result.Task;
 		}
@@ -430,9 +449,15 @@ namespace Microsoft.Maui.Controls
 			if (IsBusy)
 			{
 				if (IsPlatformEnabled)
-					MessagingCenter.Send(this, BusySetSignalName, true);
+				{
+					WeakReferenceMessenger.Default.Send(new PageBusyMessage(this, true));
+					//MessagingCenter.Send(this, BusySetSignalName, true);
+				}
 				else
-					_pendingActions.Add(() => MessagingCenter.Send(this, BusySetSignalName, true));
+				{
+					_pendingActions.Add(() => WeakReferenceMessenger.Default.Send(new PageBusyMessage(this, true)));
+					//_pendingActions.Add(() => MessagingCenter.Send(this, BusySetSignalName, true));
+				}
 			}
 
 			OnAppearing();
@@ -453,7 +478,9 @@ namespace Microsoft.Maui.Controls
 			_hasAppeared = false;
 
 			if (IsBusy)
-				MessagingCenter.Send(this, BusySetSignalName, false);
+			{
+				WeakReferenceMessenger.Default.Send(new PageBusyMessage(this, false));
+			}
 
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendDisappearing();
@@ -510,7 +537,8 @@ namespace Microsoft.Maui.Controls
 			if (!_hasAppeared)
 				return;
 
-			MessagingCenter.Send(this, BusySetSignalName, IsBusy);
+			WeakReferenceMessenger.Default.Send(new PageBusyMessage(this, IsBusy));
+			//MessagingCenter.Send(this, BusySetSignalName, IsBusy);
 		}
 
 		void OnToolbarItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -563,5 +591,55 @@ namespace Microsoft.Maui.Controls
 
 			_titleView = newTitleView;
 		}
+	}
+
+
+	// TODO ezhart These Pages could probably all be IView
+	public class PageBusyMessage 
+	{
+		public PageBusyMessage(Page page, bool isBusy)
+		{
+			Page = page;
+			IsBusy = isBusy;
+		}
+
+		public Page Page { get; set; }
+		public bool IsBusy { get; set; }
+	}
+
+	public class PageAlertMessage
+	{
+		public PageAlertMessage(Page page, AlertArguments arguments)
+		{
+			Page = page;
+			Arguments = arguments;
+		}
+
+		public Page Page { get; set; }
+		public AlertArguments Arguments { get; set; }
+	}
+
+	public class PromptMessage 
+	{
+		public PromptMessage(Page page, PromptArguments arguments)
+		{
+			Page = page;
+			Arguments = arguments;
+		}
+
+		public Page Page { get; set; }
+		public PromptArguments Arguments { get; set; }
+	}
+
+	public class ActionSheetMessage
+	{
+		public ActionSheetMessage(Page page, ActionSheetArguments arguments)
+		{
+			Page = page;
+			Arguments = arguments;
+		}
+
+		public Page Page { get; set; }
+		public ActionSheetArguments Arguments { get; set; }
 	}
 }
