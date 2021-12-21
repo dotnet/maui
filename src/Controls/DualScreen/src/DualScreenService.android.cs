@@ -24,16 +24,19 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		}
 
-		[Obsolete()]
 		public static void Init(IFoldableContext activity)
 		{
-			//global::Android.Util.Log.Debug("JWM", "DualScreenService.Init - Android detected");
-			//DependencyService.Register<DualScreenServiceImpl>();
-			//DualScreenServiceImpl.Init(activity);
+			global::Android.Util.Log.Debug("JWM", "DualScreenService.Init - Android detected");
+			DependencyService.Register<DualScreenServiceImpl>();
+			DualScreenServiceImpl.Init(activity);
 		}
 
 		internal class DualScreenServiceImpl : IDualScreenService, IFoldableContext //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
 		{
+			public bool isSeparating { get { return _isSpanned; } set { _isSpanned = value; } }
+			public Rectangle FoldingFeatureBounds { get { return _hingeDp; } set { _hingeDp = value; } }
+			public Rectangle WindowBounds { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
 			ScreenHelper _helper;
 			HingeSensor _singleUseHingeSensor;
 			static IFoldableContext _mainActivity;
@@ -51,6 +54,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 
 			public event EventHandler<FoldEventArgs> OnLayoutChanged;
+			public event EventHandler<FoldEventArgs> FoldingFeatureChanged;
 
 			[Internals.Preserve(Conditional = true)]
 			public DualScreenServiceImpl()
@@ -94,6 +98,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				Update();
 				//HACK:FOLDABLE sends message to TwoPaneView, but nothing happens there...
 				OnLayoutChanged?.Invoke(sender, ea); 
+				FoldingFeatureChanged?.Invoke(sender, ea);
 			}
 
 			public static void Init(IFoldableContext activity)

@@ -27,16 +27,16 @@ namespace Maui.Controls.Sample.Droid
 	[IntentFilter(
 		new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
 		Categories = new[] { Android.Content.Intent.CategoryDefault })]
-	public class MainActivity : MauiAppCompatActivity
-		, Microsoft.Maui.Controls.DualScreen.IFoldableContext // AndroidX.Core.Util.IConsumer
+	public class MainActivity : MauiAppCompatActivity, AndroidX.Core.Util.IConsumer
+		, Microsoft.Maui.Controls.DualScreen.IFoldableContext
 	{
 		WindowInfoRepositoryCallbackAdapter wir;
 		IWindowMetricsCalculator wmc;
 
 		#region IFoldableContext properties
-		public bool isSeparating { get; protected set; }
-		public Rectangle FoldingFeatureBounds { get; protected set; }
-		public Rectangle WindowBounds { get; protected set; }
+		public bool isSeparating { get; set; }
+		public Rectangle FoldingFeatureBounds { get; set; }
+		public Rectangle WindowBounds { get; set; }
 		public event EventHandler<Microsoft.Maui.Controls.DualScreen.FoldEventArgs> FoldingFeatureChanged;
 		#endregion
 
