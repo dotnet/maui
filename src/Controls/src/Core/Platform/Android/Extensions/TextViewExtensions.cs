@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				case TextType.Text:
 					if (label.FormattedText != null)
-						textView.TextFormatted = label.FormattedText.ToSpannable(label, textView);
+						textView.TextFormatted = label.ToSpannableString();
 					else
 						textView.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;

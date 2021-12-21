@@ -12,51 +12,63 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static void UpdateInlines(this TextBlock textBlock, Label label)
-		{
-			var formatted = label.FormattedText;
-			if (formatted == null)
-				return;
+			=> UpdateInlines(textBlock, label.FormattedText, label.LineHeight, label.HorizontalTextAlignment, label.ToFont(), label.TextColor, label.TextTransform);
 
+		public static void UpdateInlines(this TextBlock textBlock, FormattedString formattedString, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		{
 			textBlock.Inlines.Clear();
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
 
-			var fontManager = label.Handler?.GetRequiredService<IFontManager>()
-						?? MauiWinUIApplication.Current.Services.GetRequiredService<IFontManager>();
+			var runs = formattedString.ToRuns(defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform);
 
 			var heights = new List<double>();
-			for (var i = 0; i < formatted.Spans.Count; i++)
+			foreach (var run in runs)
 			{
-				var span = formatted.Spans[i];
-				var run = span.ToRun(label, fontManager);
 				heights.Add(textBlock.FindDefaultLineHeight(run));
 				textBlock.Inlines.Add(run);
 			}
 		}
 
-		public static Run ToRun(this Span span, Label label, IFontManager? fontManager = null)
+		public static IEnumerable<Run> ToRuns(this FormattedString formattedString, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
-			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : label.TextTransform;
+			var runs = new List<Run>();
+
+			if (formattedString != null && formattedString.Spans != null)
+			{
+				var fontManager = formattedString.GetFontManager() ?? MauiWinUIApplication.Current.Services.GetRequiredService<IFontManager>();
+
+				for (var i = 0; i < formattedString.Spans.Count; i++)
+				{
+					var span = formattedString.Spans[i];
+					var run = span.ToRun(fontManager, defaultFont, defaultColor, defaultTextTransform);
+					runs.Add(run);
+				}
+			}
+
+			return runs;
+		}
+
+		public static Run ToRun(this Span span, IFontManager fontManager, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		{
+			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
 			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 			
 			var run = new Run { Text = text ?? string.Empty };
 
-			var fgcolor = span.TextColor ?? label.TextColor;
+			var fgcolor = span.TextColor ?? defaultColor;
 			if (fgcolor is not null)
 				run.Foreground = fgcolor.ToNative();
 
 			// NOTE: Background is not supported in Run
 
 			var font = span.ToFont();
-			if (font.IsDefault)
-				font = label.ToFont();
+			if (font.IsDefault && defaultFont.HasValue)
+				font = defaultFont.Value;
 
 			if (!font.IsDefault)
 			{
-				fontManager ??= label.Handler?.GetRequiredService<IFontManager>()
-					?? MauiWinUIApplication.Current.Services.GetRequiredService<IFontManager>();
-
 				run.ApplyFont(font, fontManager);
 			}
 

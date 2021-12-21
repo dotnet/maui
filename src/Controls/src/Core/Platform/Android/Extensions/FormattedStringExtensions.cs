@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Text;
+using Android.Content;
 using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
@@ -13,19 +14,20 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class FormattedStringExtensions
 	{
-		public static SpannableString ToSpannable(this FormattedString formattedString, Label label, TextView view)
+		public static SpannableString ToSpannableString(this Label label)
+			=> ToSpannableString(label.FormattedText, label.GetFontManager(), (label.Handler?.NativeView as TextView)?.Paint, label.Handler?.MauiContext?.Context, label.LineHeight, label.HorizontalTextAlignment, label.ToFont(), label.TextColor, label.TextTransform);
+
+		public static SpannableString ToSpannableString(this FormattedString formattedString, IFontManager fontManager, TextPaint? textPaint = null, Context? context = null, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Graphics.Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			if (formattedString == null)
 				return new SpannableString(string.Empty);
-
-			IFontManager? fontManager = default;
 
 			var builder = new StringBuilder();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
 
-				var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : label.TextTransform;
+				var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
 				var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 				if (text == null)
@@ -48,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 				int end = start + text.Length;
 				c = end;
 
-				var fgcolor = span.TextColor ?? label.TextColor;
+				var fgcolor = span.TextColor ?? defaultColor;
 				if (fgcolor != null)
 				{
 					spannable.SetSpan(new ForegroundColorSpan(fgcolor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
@@ -58,22 +60,24 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					spannable.SetSpan(new BackgroundColorSpan(span.BackgroundColor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
 				}
-				if (span.LineHeight >= 0)
+
+				var lineHeight = span.LineHeight >= 0
+					? span.LineHeight
+					: defaultLineHeight;
+
+				if (lineHeight >= 0)
 				{
-					spannable.SetSpan(new LineHeightSpan(view, span.LineHeight), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new LineHeightSpan(textPaint, lineHeight), start, end, SpanTypes.InclusiveExclusive);
 				}
 
 				var font = span.ToFont();
-				if (font.IsDefault)
-					font = label.ToFont();
+				if (font.IsDefault && defaultFont.HasValue)
+					font = defaultFont.Value;
 
 				if (!font.IsDefault)
 				{
-					fontManager ??= label.Handler?.GetRequiredService<IFontManager>()
-						?? MauiApplication.Current.Services.GetRequiredService<IFontManager>();
-
 					spannable.SetSpan(
-						new FontSpan(font, view, span.CharacterSpacing.ToEm(), fontManager),
+						new FontSpan(font, context, span.CharacterSpacing.ToEm(), defaultHorizontalAlignment, fontManager),
 						start,
 						end,
 						SpanTypes.InclusiveInclusive);
@@ -90,18 +94,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 		class FontSpan : MetricAffectingSpan
 		{
-			public FontSpan(Font font, TextView view, float characterSpacing, IFontManager fontManager)
+			public FontSpan(Font font, Context? context, float characterSpacing, TextAlignment? horizontalTextAlignment, IFontManager fontManager)
 			{
 				Font = font;
-				TextView = view;
+				Context = context;
 				CharacterSpacing = characterSpacing;
 				FontManager = fontManager;
+				HorizontalTextAlignment = horizontalTextAlignment;
 			}
 
 			public readonly IFontManager FontManager;
 			public readonly Font Font;
-			public readonly TextView TextView;
+			public readonly Context? Context;
 			public readonly float CharacterSpacing;
+			public readonly TextAlignment? HorizontalTextAlignment;
 
 			public override void UpdateDrawState(TextPaint? tp)
 			{
@@ -121,9 +127,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 				paint.TextSize = TypedValue.ApplyDimension(
 					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip,
-					value, TextView?.Resources?.DisplayMetrics ?? Android.App.Application.Context.Resources!.DisplayMetrics);
+					value, Context?.Resources?.DisplayMetrics ?? Android.App.Application.Context.Resources!.DisplayMetrics);
 
 				paint.LetterSpacing = CharacterSpacing;
+
+				if (HorizontalTextAlignment.HasValue)
+				{
+					paint.TextAlign = HorizontalTextAlignment.Value switch
+					{
+						TextAlignment.Start => Paint.Align.Left,
+						TextAlignment.Center => Paint.Align.Center,
+						TextAlignment.End => Paint.Align.Right,
+						_ => Paint.Align.Left
+					};
+				}
 			}
 		}
 
@@ -161,10 +178,10 @@ namespace Microsoft.Maui.Controls.Platform
 			private int _ascent;
 			private int _descent;
 
-			public LineHeightSpan(TextView view, double lineHeight)
+			public LineHeightSpan(TextPaint? paint, double lineHeight)
 			{
 				_lineHeight = lineHeight;
-				var fm = view.Paint?.GetFontMetricsInt();
+				var fm = paint?.GetFontMetricsInt();
 				_ascent = fm?.Ascent ?? 1;
 				_descent = fm?.Descent ?? 1;
 			}

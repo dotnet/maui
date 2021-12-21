@@ -16,17 +16,18 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class FormattedStringExtensions
 	{
-		public static NSAttributedString ToAttributed(this FormattedString formattedString, Label label)
-			=> formattedString.ToAttributed(
+		public static NSAttributedString? ToNSAttributedString(this Label label)
+			=> ToNSAttributedString(
+				label.FormattedText,
 				label.GetFontManager(),
-				label?.LineHeight ?? 0,
-				label?.HorizontalTextAlignment ?? TextAlignment.Start,
-				label?.ToFont(),
-				label?.TextColor,
-				label?.TextTransform ?? TextTransform.Default);
+				label.LineHeight,
+				label.HorizontalTextAlignment,
+				label.ToFont(),
+				label.TextColor,
+				label.TextTransform);
 
 
-		public static NSAttributedString ToAttributed(this FormattedString formattedString, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		public static NSAttributedString ToNSAttributedString(this FormattedString formattedString, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			if (formattedString == null)
 				return new NSAttributedString(string.Empty);
@@ -38,22 +39,13 @@ namespace Microsoft.Maui.Controls.Platform
 				if (span.Text == null)
 					continue;
 
-				attributed.Append(span.ToAttributed(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform));
+				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform));
 			}
 
 			return attributed;
 		}
 
-		public static NSAttributedString ToAttributed(this Span span, Label label)
-			=> span.ToAttributed(
-				label.GetFontManager(),
-				label?.LineHeight ?? 0,
-				label?.HorizontalTextAlignment ?? TextAlignment.Start,
-				label?.ToFont(),
-				label?.TextColor,
-				label?.TextTransform ?? TextTransform.None);
-
-		public static NSAttributedString ToAttributed(this Span span, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		public static NSAttributedString ToNSAttributedString(this Span span, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			var transform = span.TextTransform != TextTransform.Default	? span.TextTransform : defaultTextTransform;
 

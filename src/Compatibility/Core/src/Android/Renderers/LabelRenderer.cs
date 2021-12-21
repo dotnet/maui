@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				FormattedString formattedText = Element.FormattedText ?? Element.Text;
 
 				Font f = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
-				_view.TextFormatted = _spannableString = formattedText.ToSpannable(Element, _view);
+				_view.TextFormatted = _spannableString = formattedText.ToSpannableString(Element.GetFontManager());
 
 				_wasFormatted = true;
 			}
