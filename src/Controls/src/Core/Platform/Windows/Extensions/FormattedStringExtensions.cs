@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static Run ToRun(this Span span, Label label, IFontManager? fontManager = null)
 		{
-			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
+			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : label.TextTransform;
 
 			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 			
