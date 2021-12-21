@@ -81,16 +81,14 @@ namespace Microsoft.Maui
 			}
 		}
 
-		protected HashSet<string> PopulateKeys(ref HashSet<string>? returnList)
+		private HashSet<string> PopulateKeys()
 		{
-			_updateKeys = new HashSet<string>();
-
+			var keys = new HashSet<string>(StringComparer.Ordinal);
 			foreach (var key in GetKeys())
 			{
-				_updateKeys.Add(key);
+				keys.Add(key);
 			}
-
-			return returnList ?? new HashSet<string>();
+			return keys;
 		}
 
 		protected virtual void ClearKeyCache()
@@ -98,8 +96,7 @@ namespace Microsoft.Maui
 			_updateKeys = null;
 		}
 
-		public virtual IReadOnlyCollection<string> UpdateKeys =>
-			_updateKeys ?? PopulateKeys(ref _updateKeys);
+		public virtual IReadOnlyCollection<string> UpdateKeys => _updateKeys ??= PopulateKeys();
 
 		public virtual IEnumerable<string> GetKeys()
 		{
