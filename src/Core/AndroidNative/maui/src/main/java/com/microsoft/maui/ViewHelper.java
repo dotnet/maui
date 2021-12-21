@@ -33,8 +33,6 @@ public class ViewHelper {
 
     public static void set(
         View view,
-        int automationTagId,
-        String automationId,
         int visibility,
         int layoutDirection,
         int minimumHeight,
@@ -52,7 +50,6 @@ public class ViewHelper {
         float pivotY)
     {
         requestLayoutIfNeeded(view);
-        view.setTag(automationTagId, automationId);
         view.setVisibility(visibility);
         view.setLayoutDirection(layoutDirection);
         view.setMinimumHeight(minimumHeight);

@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		public static int AutomationTagId { get; set; } = Resource.Id.automation_tag_id;
-
 		public static void Initialize(this AView nativeView, IView view)
 		{
 			var context = nativeView.Context;
@@ -39,8 +37,6 @@ namespace Microsoft.Maui.Platform
 
 			// NOTE: use named arguments for clarity
 			ViewHelper.Set(nativeView,
-				automationTagId: AutomationTagId,
-				automationId: view.AutomationId,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
@@ -185,7 +181,23 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateAutomationId(this AView nativeView, IView view)
 		{
-			nativeView.SetTag(AutomationTagId, view.AutomationId);
+			if (!string.IsNullOrWhiteSpace(view.AutomationId))
+			{
+				var importantForAccessibility = nativeView.ImportantForAccessibility;
+				nativeView.ContentDescription = view.AutomationId;
+
+				// Android automatically sets ImportantForAccessibility to "Yes" when you set the ContentDescription.
+				// We are only setting the ContentDescription here for Automation testing purposes so
+				// we don't want Layouts/images/Other controls to automatically toggle to Yes.
+				// Unfortunately Android (AFAICT) doesn't have an obvious way of calculating what "Auto" will be interpreted as
+				// iOS is kind of enough to indicate that anything inheriting from "UIControl" but the Android documentation
+				// just says "Android uses heuristics to figure out what Auto will mean"
+				// It seems like if we just toggle this back to "Auto" that everything just works.
+				if (importantForAccessibility == ImportantForAccessibility.Auto)
+				{
+					nativeView.ImportantForAccessibility = ImportantForAccessibility.Auto;
+				}
+			}
 		}
 
 		public static void InvalidateMeasure(this AView nativeView, IView view)

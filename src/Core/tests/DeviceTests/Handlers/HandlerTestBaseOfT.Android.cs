@@ -153,8 +153,43 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
+		[Fact(DisplayName = "AutomationId Sets Important For Accessibility Set To No On Correct Controls")]
+		[InlineData()]
+		public async Task AutomationIdSetsImportantForAccessibilitySetToNoOnCorrectControls()
+		{
+			var view = new TStub
+			{
+				AutomationId = "TestId"
+			};
+
+			var important = await GetValueAsync(view, handler => GetSemanticNativeElement(handler).ImportantForAccessibility);
+						
+			switch (view)
+			{
+				case ITextInput:
+				case IRadioButton:
+				case ISwitch:
+				case IActivityIndicator:
+				case IButton:
+				case ICheckBox:
+				case IDatePicker:
+				case IPicker:
+				case ITimePicker:
+				case IText:
+				case ISlider:
+				case IProgress:
+					Assert.Equal(ImportantForAccessibility.Yes, important);
+					break;
+
+				default:
+					Assert.Equal(ImportantForAccessibility.No, important);
+					break;
+			}
+		}
+
+
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			$"{((View)viewHandler.NativeView).GetTag(Microsoft.Maui.Platform.ViewExtensions.AutomationTagId)}";
+			$"{((View)viewHandler.NativeView).ContentDescription}";
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
 		{
