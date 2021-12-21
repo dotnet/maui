@@ -19,10 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 
-			var nativeText = await InvokeOnMainThreadAsync(() =>
-			{
-				return handler.NativeView.Text;
-			});
+			var nativeText = await InvokeOnMainThreadAsync(() => TextForHandler(handler));
 
 			Assert.Equal(expected, nativeText);
 		}
@@ -42,10 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 
-			var nativeText = await InvokeOnMainThreadAsync(() =>
-			{
-				return handler.NativeView.AttributedText?.Value;
-			});
+			var nativeText = await InvokeOnMainThreadAsync(() => TextForHandler(handler));
 
 			Assert.Equal("Hello" + expected, nativeText);
 		}
@@ -62,12 +56,21 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 
-			var nativeText = await InvokeOnMainThreadAsync(() =>
-			{
-				return handler.NativeView.AttributedText?.Value;
-			});
+			var nativeText = await InvokeOnMainThreadAsync(() => TextForHandler(handler));
 
 			Assert.Equal("helloWORLDNEW", nativeText);
+		}
+
+
+		string TextForHandler(LabelHandler handler)
+		{
+#if __IOS__
+				return handler.NativeView.AttributedText?.Value;
+#elif __ANDROID__
+				return handler.NativeView.TextFormatted.ToString();
+#elif WINDOWS
+			return handler.NativeView.Text;
+#endif
 		}
 	}
 }
