@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				Assert.AreEqual(View.HorizontalOptionsProperty.DefaultValue, button.HorizontalOptions);
 				Assert.AreEqual(View.VerticalOptionsProperty.DefaultValue, button.VerticalOptions);
-				Assert.AreEqual(10, button.FontSize);
+				Assert.AreEqual(Maui.FontManager.DefaultFontSize, button.FontSize);
 				Assert.AreEqual(Button.TextColorProperty.DefaultValue, button.TextColor);
 				Assert.AreEqual(Button.FontAttributesProperty.DefaultValue, button.FontAttributes);
 			}
