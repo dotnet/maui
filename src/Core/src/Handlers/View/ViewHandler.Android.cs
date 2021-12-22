@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.NativeView as View) as MauiAccessibilityDelegateCompat;
-			
+
 			if (handler.NativeView is not NativeView nativeView)
 				return;
 
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Handlers
 			var desc = view.Semantics?.Description;
 			var hint = view.Semantics?.Hint;
 
-			if (!string.IsNullOrWhiteSpace(hint) || 
+			if (!string.IsNullOrWhiteSpace(hint) ||
 				!string.IsNullOrWhiteSpace(desc) ||
 				!string.IsNullOrWhiteSpace(view.AutomationId))
 			{
@@ -112,14 +112,13 @@ namespace Microsoft.Maui.Handlers
 					ViewCompat.SetAccessibilityDelegate(nativeView, accessibilityDelegate);
 				}
 
-				var thing = new NestedScrollView.AccessibilityDelegate();
 				// We use MauiAccessibilityDelegateCompat to fix the issue of AutomationId on android breaking accessibility
 				// Because AutomationId gets set on the contentDesc we have to clear that out on the accessibility node
-				//if (!string.IsNullOrWhiteSpace(hint) ||
-				//	!string.IsNullOrWhiteSpace(desc))
-				//{
-				//	nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
-				//}
+				if (!string.IsNullOrWhiteSpace(hint) ||
+					!string.IsNullOrWhiteSpace(desc))
+				{
+					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
+				}
 			}
 			else if (accessibilityDelegate != null)
 			{
@@ -142,7 +141,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			var appbarLayout = nativeView.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
 
-			if(appbarLayout == null)
+			if (appbarLayout == null)
 				appbarLayout = rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
 
 			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext, true);
