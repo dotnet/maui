@@ -102,10 +102,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static View GetSemanticNativeElement(this View nativeView)
 		{
-			if (nativeView is AndroidX.AppCompat.Widget.SearchView sv)
-				return sv.FindViewById(Resource.Id.search_button)!;
-
-			return nativeView;
+			return ViewHelper.GetSemanticNativeElement(nativeView)!;
 		}
 	}
 }
