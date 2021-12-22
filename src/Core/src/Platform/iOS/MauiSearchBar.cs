@@ -49,7 +49,5 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 		}
-
-		public event EventHandler? TextPropertySet;
 	}
 }
