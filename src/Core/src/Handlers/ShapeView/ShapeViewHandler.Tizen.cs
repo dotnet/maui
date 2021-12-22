@@ -4,14 +4,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ShapeViewHandler : ViewHandler<IShapeView, MauiShapeView>
 	{
-		protected virtual double MinimumSize => 40d;
-
 		protected override MauiShapeView CreatePlatformView()
 		{
-			return new MauiShapeView()
-			{
-				MinimumSize = new Tizen.NUI.Size2D(MinimumSize.ToScaledPixel(), MinimumSize.ToScaledPixel())
-			};
+			return new MauiShapeView();
 		}
 
 		protected override void SetupContainer()
