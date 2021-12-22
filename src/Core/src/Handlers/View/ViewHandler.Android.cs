@@ -94,6 +94,9 @@ namespace Microsoft.Maui.Handlers
 			var desc = view.Semantics?.Description;
 			var hint = view.Semantics?.Hint;
 
+			// We use MauiAccessibilityDelegateCompat to fix the issue of AutomationId breaking accessibility
+			// Because AutomationId gets set on the contentDesc we have to clear that out on the accessibility node via
+			// the use of our MauiAccessibilityDelegateCompat
 			if (!string.IsNullOrWhiteSpace(hint) ||
 				!string.IsNullOrWhiteSpace(desc) ||
 				!string.IsNullOrWhiteSpace(view.AutomationId))
@@ -112,8 +115,6 @@ namespace Microsoft.Maui.Handlers
 					ViewCompat.SetAccessibilityDelegate(nativeView, accessibilityDelegate);
 				}
 
-				// We use MauiAccessibilityDelegateCompat to fix the issue of AutomationId on android breaking accessibility
-				// Because AutomationId gets set on the contentDesc we have to clear that out on the accessibility node
 				if (!string.IsNullOrWhiteSpace(hint) ||
 					!string.IsNullOrWhiteSpace(desc))
 				{
