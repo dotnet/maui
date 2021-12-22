@@ -38,7 +38,7 @@
             <Label 
                 Text="{Binding Items.Count, StringFormat='Number of items: {0}'}" />-->
 
-        <Grid>
+        <Grid HorizontalOptions="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
@@ -52,10 +52,10 @@
                     <Button FontSize="10" Text="Toggle Refresh" Clicked="OnTriggerRefreshClicked"></Button>
                     <Button FontSize="10" Text="Toggle Is Enabled" Clicked="OnToggleEnabledClicked"></Button>
                 </HorizontalStackLayout>
-                <HorizontalStackLayout>
+                <VerticalStackLayout>
                     <Label FontSize="10" Text="{Binding RefreshText}"></Label>
                     <Label FontSize="10" Text="{Binding EnabledText}"></Label>
-                </HorizontalStackLayout>
+                </VerticalStackLayout>
             </VerticalStackLayout>
             <RefreshView  Grid.Row="1"
                 x:Name="refreshView"
