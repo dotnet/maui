@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.CancelButtonClicked += OnCancelClicked;
 			nativeView.SearchButtonClicked += OnSearchButtonClicked;
-			nativeView.TextChanged += OnTextChanged;
+			nativeView.TextSetOrChanged += OnTextPropertySet;
 			nativeView.ShouldChangeTextInRange += ShouldChangeText;
 
 			nativeView.OnEditingStarted += OnEditingStarted;
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.CancelButtonClicked -= OnCancelClicked;
 			nativeView.SearchButtonClicked -= OnSearchButtonClicked;
-			nativeView.TextChanged -= OnTextChanged;
+			nativeView.TextSetOrChanged -= OnTextPropertySet;
 			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
 
 			nativeView.OnEditingStarted -= OnEditingStarted;
@@ -160,11 +160,8 @@ namespace Microsoft.Maui.Handlers
 			NativeView?.ResignFirstResponder();
 		}
 
-		void OnTextChanged(object? sender, UISearchBarTextChangedEventArgs a)
-		{
-			if (VirtualView != null)
-				VirtualView.UpdateText(a.SearchText);
-		}
+		void OnTextPropertySet(object? sender, UISearchBarTextChangedEventArgs a) =>
+			VirtualView.UpdateText(a.SearchText);
 
 		bool ShouldChangeText(UISearchBar searchBar, NSRange range, string text)
 		{
