@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		public static int AutomationTagId { get; set; } = Resource.Id.automation_tag_id;
-
 		public static void Initialize(this AView nativeView, IView view)
 		{
 			var context = nativeView.Context;
@@ -39,8 +37,6 @@ namespace Microsoft.Maui.Platform
 
 			// NOTE: use named arguments for clarity
 			ViewHelper.Set(nativeView,
-				automationTagId: AutomationTagId,
-				automationId: view.AutomationId,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
@@ -185,7 +181,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateAutomationId(this AView nativeView, IView view)
 		{
-			nativeView.SetTag(AutomationTagId, view.AutomationId);
+			if (!string.IsNullOrWhiteSpace(view.AutomationId))
+			{
+				ViewHelper.SetContentDescriptionForAutomationId(nativeView, view.AutomationId);
+			}
 		}
 
 		public static void InvalidateMeasure(this AView nativeView, IView view)
