@@ -153,7 +153,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			$"{((View)viewHandler.NativeView).ContentDescription}";
+			$"{GetSemanticNativeElement(viewHandler.NativeView).ContentDescription}";
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
 		{
