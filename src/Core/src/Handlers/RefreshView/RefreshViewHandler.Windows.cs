@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.UI.Core;
@@ -90,15 +92,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			var refreshControl = sender as RefreshContainer;
 
-			if (refreshControl == null)
+			if (refreshControl == null || MauiContext == null)
 				return;
 
 			refreshControl.Loaded -= OnLoaded;
-			_ = refreshControl.Dispatcher.RunAsync(CoreDispatcherPriority.Low, () =>
-			{
-				_isLoaded = true;
-				UpdateIsRefreshing();
-			});
+			MauiContext.Services
+				.GetRequiredService<IDispatcher>()
+				.Dispatch(() =>
+				{
+					_isLoaded = true;
+					UpdateIsRefreshing();
+				});
 		}
 
 		void OnRefresh(object sender, RefreshRequestedEventArgs args)

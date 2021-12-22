@@ -57,10 +57,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Window), typeof(WindowHandler) },
 			{ typeof(ImageButton), typeof(ImageButtonHandler) },
 			{ typeof(IndicatorView), typeof(IndicatorViewHandler) },
-#if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
-			
-#endif
 #if WINDOWS || ANDROID
 			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
 			{ typeof(Toolbar), typeof(ToolbarHandler) },
