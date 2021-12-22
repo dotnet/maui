@@ -183,6 +183,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!string.IsNullOrWhiteSpace(view.AutomationId))
 			{
+				nativeView = nativeView.GetSemanticNativeElement();
 				var importantForAccessibility = nativeView.ImportantForAccessibility;
 				nativeView.ContentDescription = view.AutomationId;
 

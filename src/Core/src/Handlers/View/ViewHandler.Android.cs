@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Views;
 using AndroidX.Core.View;
+using AndroidX.Core.Widget;
 using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -84,38 +85,45 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.NativeView as View) as MauiAccessibilityDelegateCompat;
+			
+			if (handler.NativeView is not NativeView nativeView)
+				return;
 
-			if (view.Semantics != null && accessibilityDelegate == null)
+			nativeView = nativeView.GetSemanticNativeElement();
+
+			var desc = view.Semantics?.Description;
+			var hint = view.Semantics?.Hint;
+
+			if (!string.IsNullOrWhiteSpace(hint) || 
+				!string.IsNullOrWhiteSpace(desc) ||
+				!string.IsNullOrWhiteSpace(view.AutomationId))
 			{
-				if (handler.NativeView is not NativeView nativeView)
-					return;
-
-				if (nativeView is AndroidX.AppCompat.Widget.SearchView sv)
-					nativeView = sv.FindViewById(Resource.Id.search_button)!;
-
-				if (!string.IsNullOrWhiteSpace(view.Semantics.Hint) || !string.IsNullOrWhiteSpace(view.Semantics.Description))
+				if (accessibilityDelegate == null)
 				{
-					if (accessibilityDelegate == null)
+					var currentDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
+					if (currentDelegate is MauiAccessibilityDelegateCompat)
+						currentDelegate = null;
+
+					accessibilityDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
 					{
-						var currentDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
-						if (currentDelegate is MauiAccessibilityDelegateCompat)
-							currentDelegate = null;
+						Handler = handler
+					};
 
-						accessibilityDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
-						{
-							Handler = handler
-						};
-
-						ViewCompat.SetAccessibilityDelegate(nativeView, accessibilityDelegate);
-					}
-				}
-				else if (accessibilityDelegate != null)
-				{
-					ViewCompat.SetAccessibilityDelegate(nativeView, null);
+					ViewCompat.SetAccessibilityDelegate(nativeView, accessibilityDelegate);
 				}
 
-				if (accessibilityDelegate != null)
-					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
+				var thing = new NestedScrollView.AccessibilityDelegate();
+				// We use MauiAccessibilityDelegateCompat to fix the issue of AutomationId on android breaking accessibility
+				// Because AutomationId gets set on the contentDesc we have to clear that out on the accessibility node
+				//if (!string.IsNullOrWhiteSpace(hint) ||
+				//	!string.IsNullOrWhiteSpace(desc))
+				//{
+				//	nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
+				//}
+			}
+			else if (accessibilityDelegate != null)
+			{
+				ViewCompat.SetAccessibilityDelegate(nativeView, null);
 			}
 		}
 

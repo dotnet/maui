@@ -171,8 +171,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		public View GetSemanticNativeElement(IViewHandler viewHandler)
 		{
-			if (viewHandler.NativeView is AndroidX.AppCompat.Widget.SearchView sv)
-				return sv.FindViewById(Resource.Id.search_button)!;
+			if (viewHandler.NativeView is View sv)
+				return sv.GetSemanticNativeElement();
 
 			return (View)viewHandler.NativeView;
 		}
