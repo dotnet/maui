@@ -12,6 +12,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.production.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.production.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Resources\Dokdo-Regular.ttf" />
   </ItemGroup>
 

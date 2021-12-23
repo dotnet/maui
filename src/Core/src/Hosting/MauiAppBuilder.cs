@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -105,6 +106,25 @@ namespace Microsoft.Maui.Hosting
 				{
 					builder.Properties[kvp.Key] = kvp.Value;
 				}
+			});
+
+			_hostBuilder.ConfigureAppConfiguration((hostingContext, config) =>
+			{
+				var env = hostingContext.HostingEnvironment;
+
+				config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+					.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
+				if (env.IsDevelopment())
+				{
+					var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+					if (appAssembly != null)
+					{
+						config.AddUserSecrets(appAssembly, optional: true);
+					}
+				}
+
+				config.AddEnvironmentVariables();
 			});
 
 			// This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).

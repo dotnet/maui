@@ -80,5 +80,16 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Assert.Equal("value 1", value);
 		}
+
+		[Fact]
+		public void ConfigureServicesAppSettingsJson()
+		{
+			var builder = MauiApp.CreateBuilder();
+			
+			var mauiApp = builder.Build();
+
+			var connString = mauiApp.Configuration.GetConnectionString("DefaultConnection");
+			Assert.Equal("Data Source=test.db", connString);
+		}
 	}
 }
