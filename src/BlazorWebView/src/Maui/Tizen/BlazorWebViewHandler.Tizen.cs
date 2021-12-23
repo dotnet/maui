@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Handlers;
 using Tizen.WebView;
@@ -99,10 +98,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// unclear there's any other use case. We can add more options later if so.
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+
+			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
+
 			var resContentRootDir = Path.Combine(TApplication.Current.DirectoryInfo.Resource, contentRootDir);
 			var mauiAssetFileProvider = new PhysicalFileProvider(resContentRootDir);
 
-			_webviewManager = new TizenWebViewManager(this, NativeWebView, Services!, ComponentsDispatcher, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			IFileProvider fileProvider = customFileProvider == null
+				? mauiAssetFileProvider
+				: new CompositeFileProvider(customFileProvider, mauiAssetFileProvider);
+
+			_webviewManager = new TizenWebViewManager(this, NativeWebView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)
@@ -134,8 +140,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						header += $"{item.Key}:{item.Value}\r\n";
 					}
 					header += "\r\n";
-					var body = new StreamReader(content).ReadToEnd();
-					NativeWebView.SetInterceptRequestResponse(request, header, body, (uint)body.Length);
+
+					using (MemoryStream memstream = new MemoryStream())
+					{
+						content.CopyTo(memstream);
+						var body = memstream.ToArray();
+						NativeWebView.SetInterceptRequestResponse(request, header, body, (uint)body.Length);
+					}
 					return;
 				}
 			}
