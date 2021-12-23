@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
@@ -121,6 +120,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// unclear there's any other use case. We can add more options later if so.
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+
+			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
+
 			var resContentRootDir = Path.Combine(TApplication.Current.DirectoryInfo.Resource, contentRootDir);
 			var mauiAssetFileProvider = new PhysicalFileProvider(resContentRootDir);
 

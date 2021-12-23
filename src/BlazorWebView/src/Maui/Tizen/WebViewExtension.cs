@@ -26,14 +26,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				ewk_context_inspector_server_start(contextHandle.Value, port);
 		}
 
-		public static bool SetInterceptRequestResponse(this TWebView webView, IntPtr request, string header, string body, uint length)
-#pragma warning restore IDE0060 // Remove unused parameter
+		public static bool SetInterceptRequestResponse(this TWebView webView, IntPtr request, string header, byte[] body, uint length)
         {
             return ewk_intercept_request_response_set(request, header, body, length);
         }
 
-        public static bool IgnoreInterceptRequest(this TWebView webView, IntPtr request)
-#pragma warning restore IDE0060 // Remove unused parameter
+		public static bool IgnoreInterceptRequest(this TWebView webView, IntPtr request)
         {
             return ewk_intercept_request_ignore(request);
         }
@@ -71,5 +69,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		[DllImport(ChromiumEwk)]
 		internal static extern bool ewk_intercept_request_response_set(IntPtr request, string header, string body, uint length);
+
+		[DllImport(ChromiumEwk)]
+		internal static extern bool ewk_intercept_request_response_set(IntPtr request, string header, byte[] body, uint length);
 	}
 }
