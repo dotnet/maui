@@ -3,7 +3,6 @@ using System.IO;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Handlers;
 using Tizen.WebView;
-using TApplication = Tizen.Applications.Application;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
 
@@ -100,10 +99,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
 			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
-
-			var resContentRootDir = Path.Combine(TApplication.Current.DirectoryInfo.Resource, contentRootDir);
-			var mauiAssetFileProvider = new PhysicalFileProvider(resContentRootDir);
-
+			var mauiAssetFileProvider = new TizenMauiAssetFileProvider(contentRootDir);
 			IFileProvider fileProvider = customFileProvider == null
 				? mauiAssetFileProvider
 				: new CompositeFileProvider(customFileProvider, mauiAssetFileProvider);
@@ -132,6 +128,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (url.StartsWith(AppOrigin))
 			{
 				var allowFallbackOnHostPage = url.EndsWith("/");
+				url = QueryStringHelper.RemovePossibleQueryString(url);
 				if (_webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
 					var header = $"HTTP/1.0 200 OK\r\n";
