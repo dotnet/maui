@@ -5,7 +5,6 @@ using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Tizen.WebView;
-using TApplication = Tizen.Applications.Application;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
 
