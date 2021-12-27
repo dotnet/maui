@@ -63,6 +63,18 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+				if (template.Type != null)
+				{
+					template.LoadTemplate = () =>
+					{
+						var services = Parent?.FindMauiContext()?.Services;
+						if (services != null)
+						{
+							return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, template.Type);
+						}
+						return Activator.CreateInstance(template.Type);
+					};
+				}
 				result = ContentCache ?? (Page)template.CreateContent(content, this);
 				ContentCache = result;
 			}
