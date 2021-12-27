@@ -62,21 +62,21 @@ namespace Microsoft.Maui.Platform
 			Binding visibilityBinding = new Binding();
 			visibilityBinding.Source = this;
 			visibilityBinding.Path = new PropertyPath("Header.Visibility");
-			visibilityBinding.Mode = BindingMode.OneWay;
+			visibilityBinding.Mode = BindingMode.TwoWay;
 			visibilityBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(HeaderContent, VisibilityProperty, visibilityBinding);
 
 			Binding backgroundBinding = new Binding();
 			backgroundBinding.Source = this;
 			backgroundBinding.Path = new PropertyPath("Header.Background");
-			backgroundBinding.Mode = BindingMode.OneWay;
+			backgroundBinding.Mode = BindingMode.TwoWay;
 			backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(HeaderContent, BackgroundProperty, backgroundBinding);
 
 			Binding isBackButtonVisible = new Binding();
 			isBackButtonVisible.Source = this;
 			isBackButtonVisible.Path = new PropertyPath("Header.IsBackButtonVisible");
-			isBackButtonVisible.Mode = BindingMode.OneWay;
+			isBackButtonVisible.Mode = BindingMode.TwoWay;
 			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
 
@@ -101,7 +101,8 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateFlyoutPaneSize()
 		{
-			if (PaneContentGrid == null) return;
+			if (PaneContentGrid == null)
+				return;
 
 			FlyoutPaneSize = new Size(OpenPaneLength, PaneContentGrid.ActualHeight - _paneHeaderContentHeight);
 			FlyoutPaneSizeChanged?.Invoke(this, EventArgs.Empty);
