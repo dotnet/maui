@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Platform
 			{
 				UpdateDrawableCanvasGeometry();
 			}
-			_mauiDrawable.Bounds = GetDrawableBounds();
+
+			// TODO
+			//_mauiDrawable.Bounds = GetDrawableBounds();
 			_drawableCanvas.Value.Invalidate();
 		}
 

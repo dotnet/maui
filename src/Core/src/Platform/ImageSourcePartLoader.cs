@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Platform
 
 					SourceManager.CompleteLoad(result);
 #elif TIZEN
-					PlatformImage image = (PlatformView as PlatformImage)??new PlatformImage(PlatformView);
+					PlatformImage image = (NativeView as PlatformImage)??new PlatformImage();
 					var result = await imageSource.UpdateSourceAsync(image, ImageSourceServiceProvider, SetImage!, token)
 						.ConfigureAwait(false);
 

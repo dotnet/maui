@@ -1,5 +1,4 @@
-﻿using ElmSharp;
-using Microsoft.Maui.Graphics.Skia.Views;
+﻿using Tizen.UIExtensions.NUI.GraphicsView;
 using Point = Microsoft.Maui.Graphics.Point;
 
 namespace Microsoft.Maui
@@ -7,7 +6,6 @@ namespace Microsoft.Maui
 	public partial class WindowOverlay
 	{
 		SkiaGraphicsView? _graphicsView;
-		GestureLayer? _touchLayer;
 
 		public virtual bool Initialize()
 		{
@@ -25,22 +23,13 @@ namespace Microsoft.Maui
 			if (handler?.MauiContext == null)
 				return false;
 
-			_graphicsView = new SkiaGraphicsView(platformWindow);
+			_graphicsView = new SkiaGraphicsView();
 			_graphicsView.Drawable = this;
-			_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
+			
+			// TODO
 
-			_touchLayer = new GestureLayer(platformWindow);
-			_touchLayer.Attach(_graphicsView);
-			_touchLayer.SetTapCallback(GestureLayer.GestureType.Tap, GestureLayer.GestureState.Start, (data) =>
-			{
-				var x = _touchLayer.EvasCanvas.Pointer.X;
-				var y = _touchLayer.EvasCanvas.Pointer.Y;
-				OnTappedInternal(new Point(DPExtensions.ConvertToScaledDP(x), DPExtensions.ConvertToScaledDP(y)));
-			});
-
-			platformWindow.SetOverlay(_graphicsView);
-			IsPlatformViewInitialized = true;
-			return IsPlatformViewInitialized;
+			IsNativeViewInitialized = true;
+			return IsNativeViewInitialized;
 		}
 
 		public void Invalidate()
@@ -61,17 +50,14 @@ namespace Microsoft.Maui
 			if (handler?.MauiContext == null)
 				return;
 
-			_graphicsView?.Unrealize();
+			_graphicsView?.Dispose();
 			_graphicsView = null;
 			IsPlatformViewInitialized = false;
 		}
 
 		partial void OnDisableUITouchEventPassthroughSet()
 		{
-			if (_graphicsView != null)
-			{
-				_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
-			}
+			// TODO
 		}
 
 		partial void OnDisableUITouchEventPassthroughSet()

@@ -6,7 +6,6 @@ using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Tizen.NUI;
-using TApplication = Tizen.Applications.Application;
 using NWebView = Tizen.NUI.BaseComponents.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -133,8 +132,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
-			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
-			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+			var contentRootDir = System.IO.Path.GetDirectoryName(HostPage!) ?? string.Empty;
+			var hostPageRelativePath = System.IO.Path.GetRelativePath(contentRootDir, HostPage!);
 
 			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			_webviewManager = new TizenWebViewManager(
 				this,
-				PlatformWebView,
+				NativeView,
 				Services!,
 				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
@@ -158,7 +157,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
-				WebView = PlatformWebView,
+				WebView = NativeView,
 			});
 
 			if (RootComponents != null)

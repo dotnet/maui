@@ -1,44 +1,18 @@
 ﻿using System;
 using Microsoft.Maui.HotReload;
-using ElmSharp;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContainerView : Box, IReloadHandler
+	public class ContainerView : ViewGroup, IReloadHandler
 	{
 		readonly IMauiContext? _context;
 
-		EvasObject? _mainView;
 		IElement? _view;
 
-		public ContainerView(IMauiContext context) : this(context.GetPlatformParent(), context)
-		{
-		}
-
-		public ContainerView(EvasObject parent, IMauiContext context) : base(parent)
+		public ContainerView(IMauiContext context)
 		{
 			_context = context;
-		}
-
-		public EvasObject? MainView
-		{
-			get => _mainView;
-			set
-			{
-				if (_mainView != null)
-				{
-					UnPack(_mainView);
-				}
-
-				_mainView = value;
-
-				if (_mainView != null)
-				{
-					_mainView.SetAlignment(-1, -1);
-					_mainView.SetWeight(1, 1);
-					PackEnd(_mainView);
-				}
-			}
 		}
 
 		public IElement? CurrentView
@@ -60,12 +34,15 @@ namespace Microsoft.Maui.Platform
 				MauiHotReloadHelper.AddActiveView(ihr);
 			}
 
-			MainView = null;
+			Children.Clear();
 
 			if (_view != null)
 			{
 				_ = _context ?? throw new ArgumentNullException(nameof(_context));
-				MainView = _view.ToPlatform(_context);
+				var nativeView = _view.ToPlatform(_context);
+				nativeView.WidthSpecification = Tizen.NUI.BaseComponents.LayoutParamPolicies.MatchParent;
+				nativeView.HeightSpecification = Tizen.NUI.BaseComponents.LayoutParamPolicies.MatchParent;
+				Children.Add(nativeView);
 			}
 		}
 

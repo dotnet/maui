@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿using System;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -12,22 +13,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			handler.PlatformView.UpdateAdaptor(itemsView);
 		}
 
 		public static void MapFooterTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			handler.PlatformView.UpdateAdaptor(itemsView);
 		}
 
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			handler.PlatformView.UpdateItemsLayout(itemsView);
 		}
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			handler.PlatformView.UpdateItemsLayout(itemsView);
 		}
 	}
 }

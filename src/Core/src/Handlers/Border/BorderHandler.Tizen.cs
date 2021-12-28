@@ -1,4 +1,5 @@
 ﻿using System;
+using ContentViewGroup = Microsoft.Maui.Platform.ContentViewGroup;
 
 namespace Microsoft.Maui.Handlers
 {
