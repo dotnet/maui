@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -112,8 +113,32 @@ namespace Microsoft.Maui.Hosting
 			{
 				var env = hostingContext.HostingEnvironment;
 
-				config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-					.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+				var rootAssembly = Assembly.GetEntryAssembly();
+				var appSettingsStream = rootAssembly?.GetManifestResourceStream($"appsettings.{env.EnvironmentName}.json");
+
+				//Should find in real MAUI app, if appsettings.{env}.json is embedded resource. Otherwise for unittests try find the root assembly and get resource stream.
+				if (appSettingsStream == null)
+				{
+					var frames = new StackTrace().GetFrames();
+
+					appSettingsStream = frames.Select(x =>
+					{
+						var assembly = x.GetMethod()!.ReflectedType!.Assembly;
+						var manifestName = assembly!.GetManifestResourceNames().FirstOrDefault(mn => mn.EndsWith($"appsettings.{env.EnvironmentName}.json", StringComparison.OrdinalIgnoreCase));
+						if (manifestName == null)
+						{
+							return null;
+						}
+
+						return assembly.GetManifestResourceStream(manifestName);
+					}).FirstOrDefault(x => x != null);
+				}
+
+				//If nothing found then no embedded resource has been set for current project.
+				if (appSettingsStream == null)
+					return;
+
+				config.AddJsonStream(appSettingsStream);
 
 				if (env.IsDevelopment())
 				{

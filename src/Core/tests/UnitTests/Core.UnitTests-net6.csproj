@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="appsettings.production.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="appsettings.production.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
