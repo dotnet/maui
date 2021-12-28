@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Handlers
@@ -9,22 +8,39 @@ namespace Microsoft.Maui.Handlers
 
 		INativeViewHandler? _contentHandler;
 
+<<<<<<< HEAD
 		protected override ScrollView CreatePlatformView() => new ScrollView();
+=======
+		protected override ScrollView CreateNativeView() => new();
+>>>>>>> f2e29bdb2 (Fix ScrollView ContentSize (#324))
 
 		protected override void ConnectHandler(ScrollView platformView)
 		{
 			base.ConnectHandler(platformView);
 
+<<<<<<< HEAD
 			platformView.Scrolling += OnScrolled;
 			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
 
+=======
+			nativeView.Scrolling += OnScrolled;
+			nativeView.ScrollAnimationEnded += ScrollAnimationEnded;
+			nativeView.Relayout += OnRelayout;
+>>>>>>> f2e29bdb2 (Fix ScrollView ContentSize (#324))
 		}
 
 		protected override void DisconnectHandler(ScrollView platformView)
 		{
+<<<<<<< HEAD
 			base.DisconnectHandler(platformView);
 			platformView.Scrolling -= OnScrolled;
 			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
+=======
+			base.DisconnectHandler(nativeView);
+			nativeView.Scrolling -= OnScrolled;
+			nativeView.ScrollAnimationEnded -= ScrollAnimationEnded;
+			nativeView.Relayout -= OnRelayout;
+>>>>>>> f2e29bdb2 (Fix ScrollView ContentSize (#324))
 		}
 
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -46,11 +62,21 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateContentSize()
 		{
+<<<<<<< HEAD
 			var width = Math.Max(VirtualView.ContentSize.Width.ToScaledPixel(), 100);
 			var height = Math.Max(VirtualView.ContentSize.Height.ToScaledPixel(), 100);
 
 			PlatformView.ContentContainer.SizeWidth = width;
 			PlatformView.ContentContainer.SizeHeight = height;
+=======
+			if (VirtualView != null && VirtualView.PresentedContent != null)
+			{
+				var width = Math.Max((VirtualView.PresentedContent.Margin.HorizontalThickness + VirtualView.PresentedContent.Frame.Width + VirtualView.Padding.HorizontalThickness).ToScaledPixel(), 100);
+				var height = Math.Max((VirtualView.PresentedContent.Margin.VerticalThickness + VirtualView.PresentedContent.Frame.Height + VirtualView.Padding.VerticalThickness).ToScaledPixel(), 100);
+				NativeView.ContentContainer.SizeWidth = width;
+				NativeView.ContentContainer.SizeHeight = height;
+			}
+>>>>>>> f2e29bdb2 (Fix ScrollView ContentSize (#324))
 		}
 
 		void UpdateContent(INativeViewHandler? content)
@@ -65,9 +91,14 @@ namespace Microsoft.Maui.Handlers
 
 			if (_contentHandler != null)
 			{
-				PlatformView.ContentContainer.Add(_contentHandler.PlatformView);
-				UpdateContentSize();
+				NativeView.ContentContainer.Add(_contentHandler.PlatformView);
 			} 
+			UpdateContentSize();
+		}
+
+		void OnRelayout(object? sender, EventArgs e)
+		{
+			UpdateContentSize();
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
