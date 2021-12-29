@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
@@ -655,30 +656,43 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal void SubscribeToAlertsAndActionSheets()
 		{
 			var busyCount = 0;
-			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
+
+			WeakReferenceMessenger.Default.Register<Platform, PageBusyMessage>(this, (platform, message) =>
 			{
+				var sender = message.Page;
+				var enabled = message.IsBusy;
+
 				if (!PageIsChildOfPlatform(sender))
 					return;
 				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
 				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = busyCount > 0;
 			});
 
-			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
+			WeakReferenceMessenger.Default.Register<Platform, PageAlertMessage>(this, (platform, message) =>
 			{
+				var sender = message.Page;
+				var arguments = message.Arguments;
+
 				if (!PageIsChildOfPlatform(sender))
 					return;
 				PresentAlert(arguments);
 			});
 
-			MessagingCenter.Subscribe(this, Page.PromptSignalName, (Page sender, PromptArguments arguments) =>
+			WeakReferenceMessenger.Default.Register<Platform, PromptMessage>(this, (platform, message) =>
 			{
+				var sender = message.Page;
+				var arguments = message.Arguments;
+
 				if (!PageIsChildOfPlatform(sender))
 					return;
 				PresentPrompt(arguments);
 			});
 
-			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments arguments) =>
+			WeakReferenceMessenger.Default.Register<Platform, ActionSheetMessage>(this, (platform, message) =>
 			{
+				var sender = message.Page;
+				var arguments = message.Arguments;
+
 				if (!PageIsChildOfPlatform(sender))
 					return;
 
@@ -695,10 +709,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		internal void UnsubscribeFromAlertsAndActionsSheets()
 		{
-			MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName);
-			MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
-			MessagingCenter.Unsubscribe<Page, PromptArguments>(this, Page.PromptSignalName);
-			MessagingCenter.Unsubscribe<Page, bool>(this, Page.BusySetSignalName);
 		}
 
 		internal void MarkForRemoval()

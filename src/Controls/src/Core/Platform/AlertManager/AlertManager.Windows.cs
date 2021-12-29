@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -46,10 +47,10 @@ namespace Microsoft.Maui.Controls.Platform
 				Window = window;
 				MauiContext = mauiContext;
 
-				MessagingCenter.Subscribe<Page, bool>(Window, Page.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName, OnActionSheetRequested);
+				WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageBusyMessage>(Window, OnPageBusy);
+				WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageAlertMessage>(Window, OnAlertRequested);
+				WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PromptMessage>(Window, OnPromptRequested);
+				WeakReferenceMessenger.Default.Register<UI.Xaml.Window, ActionSheetMessage>(Window, OnActionSheetRequested);
 			}
 
 			public UI.Xaml.Window Window { get; }
@@ -57,19 +58,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
-				MessagingCenter.Unsubscribe<Page, bool>(Window, Page.BusySetSignalName);
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(Window, Page.AlertSignalName);
-				MessagingCenter.Unsubscribe<Page, PromptArguments>(Window, Page.PromptSignalName);
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName);
 			}
 
-			void OnPageBusy(Page sender, bool enabled)
+			void OnPageBusy(UI.Xaml.Window window, PageBusyMessage message)
 			{
+				var sender = message.Page;
+				var busy = message.IsBusy;
+
 				// TODO: Wrap the pages in a Canvas, and dynamically add a ProgressBar
 			}
 
-			async void OnAlertRequested(Page sender, AlertArguments arguments)
+			async void OnAlertRequested(UI.Xaml.Window window, PageAlertMessage message)
 			{
+				var arguments = message.Arguments;
+
 				string content = arguments.Message ?? string.Empty;
 				string title = arguments.Title ?? string.Empty;
 
@@ -113,8 +115,10 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentAlert = null;
 			}
 
-			async void OnPromptRequested(Page sender, PromptArguments arguments)
+			async void OnPromptRequested(UI.Xaml.Window window, PromptMessage message)
 			{
+				var arguments = message.Arguments;
+
 				var promptDialog = new PromptDialog
 				{
 					Title = arguments.Title ?? string.Empty,
@@ -147,8 +151,11 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentPrompt = null;
 			}
 
-			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
+			void OnActionSheetRequested(UI.Xaml.Window window, ActionSheetMessage message)
 			{
+				var sender = message.Page;
+				var arguments = message.Arguments;
+
 				bool userDidSelect = false;
 
 				if (arguments.FlowDirection == FlowDirection.MatchParent)

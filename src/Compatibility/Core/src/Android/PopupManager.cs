@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls.Internals;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
@@ -50,20 +51,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			internal PopupRequestHelper(Activity context)
 			{
 				Activity = context;
-				MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
+
+				WeakReferenceMessenger.Default.Register<Activity, PageBusyMessage>(Activity, (r, m) => OnPageBusy(m.Page, m.IsBusy));
+				WeakReferenceMessenger.Default.Register<Activity, PageAlertMessage>(Activity, (r, m) => OnAlertRequested(m.Page, m.Arguments));
+				WeakReferenceMessenger.Default.Register<Activity, PromptMessage>(Activity, (r, m) => OnPromptRequested(m.Page, m.Arguments));
+				WeakReferenceMessenger.Default.Register<Activity, ActionSheetMessage>(Activity, (r, m) => OnActionSheetRequested(m.Page, m.Arguments));
 			}
 
 			public Activity Activity { get; }
 
 			public void Dispose()
 			{
-				MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
-				MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
 			}
 
 			public void ResetBusyCount()

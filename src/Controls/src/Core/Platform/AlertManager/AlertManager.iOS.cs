@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
@@ -49,41 +50,39 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				Window = window;
 
-				MessagingCenter.Subscribe<Page, bool>(Window, Page.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName, OnActionSheetRequested);
+				WeakReferenceMessenger.Default.Register<UIWindow, PageBusyMessage>(Window, OnPageBusy);
+				WeakReferenceMessenger.Default.Register<UIWindow, PageAlertMessage>(Window, OnAlertRequested);
+				WeakReferenceMessenger.Default.Register<UIWindow, PromptMessage>(Window, OnPromptRequested);
+				WeakReferenceMessenger.Default.Register<UIWindow, ActionSheetMessage>(Window, OnActionSheetRequested);
 			}
 
 			public UIWindow Window { get; }
 
 			public void Dispose()
 			{
-				MessagingCenter.Unsubscribe<Page, bool>(Window, Page.BusySetSignalName);
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(Window, Page.AlertSignalName);
-				MessagingCenter.Unsubscribe<Page, PromptArguments>(Window, Page.PromptSignalName);
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName);
 			}
 
-			void OnPageBusy(IView sender, bool enabled)
+			void OnPageBusy(UIWindow window, PageBusyMessage message)
 			{
+				var enabled = message.IsBusy;
+
 				_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
 				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = _busyCount > 0;
 			}
 
-			void OnAlertRequested(IView sender, AlertArguments arguments)
+			void OnAlertRequested(UIWindow window, PageAlertMessage message)
 			{
-				PresentAlert(arguments);
+				PresentAlert(message.Arguments);
 			}
 
-			void OnPromptRequested(IView sender, PromptArguments arguments)
+			void OnPromptRequested(UIWindow window, PromptMessage message)
 			{
-				PresentPrompt(arguments);
+				PresentPrompt(message.Arguments);
 			}
 
-			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
+			void OnActionSheetRequested(UIWindow window, ActionSheetMessage message)
 			{
-				PresentActionSheet(arguments);
+				PresentActionSheet(message.Arguments);
 			}
 
 			void PresentAlert(AlertArguments arguments)

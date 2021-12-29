@@ -14,6 +14,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 using Microsoft.Extensions.Logging;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -136,10 +137,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			_container.SizeChanged += OnRendererSizeChanged;
 
-			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
+			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageBusyMessage>(page, (window, message) =>
 			{
 				Microsoft.UI.Xaml.Controls.ProgressBar indicator = GetBusyIndicator();
-				indicator.Visibility = enabled ? WVisibility.Visible : WVisibility.Collapsed;
+				indicator.Visibility = message.IsBusy ? WVisibility.Visible : WVisibility.Collapsed;
 			});
 
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
@@ -601,13 +602,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		internal static void SubscribeAlertsAndActionSheets()
 		{
-			MessagingCenter.Subscribe<Page, AlertArguments>(Forms.MainWindow, Page.AlertSignalName, OnPageAlert);
-			MessagingCenter.Subscribe<Page, ActionSheetArguments>(Forms.MainWindow, Page.ActionSheetSignalName, OnPageActionSheet);
-			MessagingCenter.Subscribe<Page, PromptArguments>(Forms.MainWindow, Page.PromptSignalName, OnPagePrompt);
+			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageAlertMessage>(Forms.MainWindow, OnPageAlert);
+			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PromptMessage>(Forms.MainWindow, OnPagePrompt);
+			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, ActionSheetMessage>(Forms.MainWindow, OnPageActionSheet);
 		}
 
-		static void OnPageActionSheet(Page sender, ActionSheetArguments options)
+		static void OnPageActionSheet(UI.Xaml.Window window, ActionSheetMessage message)
 		{
+			var sender = message.Page;
+			var options = message.Arguments;
+
 			bool userDidSelect = false;
 
 			if (options.FlowDirection == FlowDirection.MatchParent)
@@ -654,8 +658,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		static async void OnPagePrompt(Page sender, PromptArguments options)
+		static async void OnPagePrompt(UI.Xaml.Window window, PromptMessage message)
 		{
+			var sender = message.Page;
+			var options = message.Arguments;
+
 			var promptDialog = new PromptDialog
 			{
 				Title = options.Title ?? string.Empty,
@@ -693,8 +700,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return null;
 		}
 
-		static async void OnPageAlert(Page sender, AlertArguments options)
+		static async void OnPageAlert(UI.Xaml.Window window, PageAlertMessage message)
 		{
+			var sender = message.Page;
+			var options = message.Arguments;
+
 			string content = options.Message ?? string.Empty;
 			string title = options.Title ?? string.Empty;
 

@@ -65,19 +65,10 @@ namespace Microsoft.Maui.Controls.Platform
 				Activity = context;
 				MauiContext = mauiContext;
 
-				// TODO ezhart All of these OnX methods could just take the messages directly, no need for the lambdas to unpack
-
-				WeakReferenceMessenger.Default.Register<Activity, PageBusyMessage>(Activity, (r, m) => OnPageBusy(m.Page, m.IsBusy));
-				//MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
-
-				WeakReferenceMessenger.Default.Register<Activity, PageAlertMessage>(Activity, (r, m) => OnAlertRequested(m.Page, m.Arguments));
-				//MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
-
-				WeakReferenceMessenger.Default.Register<Activity, PromptMessage>(Activity, (r, m) => OnPromptRequested(m.Page, m.Arguments));
-				//MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
-
-				WeakReferenceMessenger.Default.Register<Activity, ActionSheetMessage>(Activity, (r, m) => OnActionSheetRequested(m.Page, m.Arguments));
-				//MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
+				WeakReferenceMessenger.Default.Register<Activity, PageBusyMessage>(Activity, OnPageBusy);
+				WeakReferenceMessenger.Default.Register<Activity, PageAlertMessage>(Activity, OnAlertRequested);
+				WeakReferenceMessenger.Default.Register<Activity, PromptMessage>(Activity, OnPromptRequested);
+				WeakReferenceMessenger.Default.Register<Activity, ActionSheetMessage>(Activity, OnActionSheetRequested);
 			}
 
 			public Activity Activity { get; }
@@ -85,10 +76,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
-				//MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
-				//MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
-				//MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
-				//MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
 			}
 
 			public void ResetBusyCount()
@@ -96,8 +83,11 @@ namespace Microsoft.Maui.Controls.Platform
 				_busyCount = 0;
 			}
 
-			void OnPageBusy(IView sender, bool enabled)
+			void OnPageBusy(Activity activity, PageBusyMessage message)
 			{
+				var sender = message.Page;
+				var enabled = message.IsBusy;
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -109,15 +99,18 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateProgressBarVisibility(_busyCount > 0);
 			}
 
-			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
+			void OnActionSheetRequested(Activity activity, ActionSheetMessage message)
 			{
+				var sender = message.Page;
+				var arguments = message.Arguments;
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
 					return;
 				}
 
-				var builder = new DialogBuilder(Activity);
+				var builder = new DialogBuilder(activity);
 
 				builder.SetTitle(arguments.Title);
 				string[] items = arguments.Buttons.ToArray();
@@ -168,8 +161,11 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			void OnAlertRequested(IView sender, AlertArguments arguments)
+			void OnAlertRequested(Activity activity, PageAlertMessage message)
 			{
+				var sender = message.Page;
+				var arguments = message.Arguments;
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -177,7 +173,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				int messageID = 16908299;
-				var alert = new DialogBuilder(Activity).Create();
+				var alert = new DialogBuilder(activity).Create();
 
 				if (alert == null)
 					return;
@@ -232,15 +228,18 @@ namespace Microsoft.Maui.Controls.Platform
 				return TextDirection.Ltr;
 			}
 
-			void OnPromptRequested(IView sender, PromptArguments arguments)
+			void OnPromptRequested(Activity activity, PromptMessage message)
 			{
+				var sender = message.Page;
+				var arguments = message.Arguments;
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
 					return;
 				}
 
-				var alertDialog = new DialogBuilder(Activity).Create();
+				var alertDialog = new DialogBuilder(activity).Create();
 
 				if (alertDialog == null)
 					return;
@@ -248,12 +247,12 @@ namespace Microsoft.Maui.Controls.Platform
 				alertDialog.SetTitle(arguments.Title);
 				alertDialog.SetMessage(arguments.Message);
 
-				var frameLayout = new FrameLayout(Activity);
-				var editText = new EditText(Activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
+				var frameLayout = new FrameLayout(activity);
+				var editText = new EditText(activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
 				var layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
 				{
-					LeftMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density),
-					RightMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density)
+					LeftMargin = (int)(22 * activity.Resources.DisplayMetrics.Density),
+					RightMargin = (int)(22 * activity.Resources.DisplayMetrics.Density)
 				};
 
 				editText.LayoutParameters = layoutParams;

@@ -15,14 +15,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView
 	{
-		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
-
-		public const string AlertSignalName = "Microsoft.Maui.Controls.SendAlert";
-
-		public const string PromptSignalName = "Microsoft.Maui.Controls.SendPrompt";
-
-		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
-
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
 
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
