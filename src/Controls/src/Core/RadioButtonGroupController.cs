@@ -1,4 +1,5 @@
 using System;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls
 {
@@ -27,12 +28,9 @@ namespace Microsoft.Maui.Controls
 				UpdateGroupNames(layout, _groupName);
 			}
 
-			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
-				RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupNameChanged>(this, RadioButton.GroupNameChangedMessage,
-				HandleRadioButtonGroupNameChanged);
-			MessagingCenter.Subscribe<RadioButton, RadioButtonValueChanged>(this, RadioButton.ValueChangedMessage,
-				HandleRadioButtonValueChanged);
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupSelectionChanged>(this, HandleRadioButtonGroupSelectionChanged);
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupNameChanged>(this, HandleRadioButtonGroupNameChanged);
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonValueChanged>(this, HandleRadioButtonValueChanged);
 		}
 
 		bool MatchesScope(RadioButtonScopeMessage message)
@@ -40,8 +38,10 @@ namespace Microsoft.Maui.Controls
 			return RadioButtonGroup.GetVisualRoot(_layout) == message.Scope;
 		}
 
-		void HandleRadioButtonGroupSelectionChanged(RadioButton selected, RadioButtonGroupSelectionChanged args)
+		void HandleRadioButtonGroupSelectionChanged(RadioButtonGroupController controller, RadioButtonGroupSelectionChanged args)
 		{
+			var selected = args.RadioButton;
+
 			if (selected.GroupName != _groupName || !MatchesScope(args))
 			{
 				return;
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls
 			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, selected.Value);
 		}
 
-		void HandleRadioButtonGroupNameChanged(RadioButton radioButton, RadioButtonGroupNameChanged args)
+		void HandleRadioButtonGroupNameChanged(RadioButtonGroupController controller, RadioButtonGroupNameChanged args)
 		{
 			if (args.OldName != _groupName || !MatchesScope(args))
 			{
@@ -60,8 +60,10 @@ namespace Microsoft.Maui.Controls
 			_layout.ClearValue(RadioButtonGroup.SelectedValueProperty);
 		}
 
-		void HandleRadioButtonValueChanged(RadioButton radioButton, RadioButtonValueChanged args)
+		void HandleRadioButtonValueChanged(RadioButtonGroupController controller, RadioButtonValueChanged args)
 		{
+			var radioButton = args.RadioButton;
+
 			if (radioButton.GroupName != _groupName || !MatchesScope(args))
 			{
 				return;
@@ -132,8 +134,7 @@ namespace Microsoft.Maui.Controls
 
 			if (radioButtonValue != null)
 			{
-				MessagingCenter.Send(_layout, RadioButtonGroup.GroupValueChangedMessage,
-					new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
+				WeakReferenceMessenger.Default.Send(new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
 			}
 		}
 

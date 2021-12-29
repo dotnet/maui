@@ -17,12 +17,12 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public class NavigationRenderer : UINavigationController, IVisualElementRenderer, IEffectControlProvider
 	{
-		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
 		bool _appeared;
 		bool _ignorePopCall;
 		bool _loaded;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(FormsNavigationBar), null)
 		{
-			MessagingCenter.Subscribe<IVisualElementRenderer>(this, UpdateToolbarButtons, sender =>
+			WeakReferenceMessenger.Default.Register<UpdateToolBarButtonsMessage>(this, (receiver, message) => 
 			{
 				if (!ViewControllers.Any())
 					return;
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (disposing)
 			{
-				MessagingCenter.Unsubscribe<IVisualElementRenderer>(this, UpdateToolbarButtons);
+				WeakReferenceMessenger.Default.Unregister<UpdateToolBarButtonsMessage>(this);
 
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
@@ -1711,4 +1711,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 	}
+
+	internal class UpdateToolBarButtonsMessage { }
 }

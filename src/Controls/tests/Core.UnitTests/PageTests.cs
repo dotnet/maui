@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void TearDown()
 		{
 			base.TearDown();
-			MessagingCenter.ClearSubscribers();
+			WeakReferenceMessenger.Default.Reset();
 		}
 
 		[Test]
@@ -308,7 +309,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BusyNotSentWhenNotVisible()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
+
+			WeakReferenceMessenger.Default.Register<PageBusyMessage>(this, (r, m) => sent = true);
 
 			new ContentPage { IsBusy = true };
 
@@ -319,9 +321,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BusySentWhenBusyPageAppears()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
+			
+			WeakReferenceMessenger.Default.Register<PageBusyMessage>(this, (r, m) => 
 			{
-				Assert.That(b, Is.True);
+				Assert.That(m.IsBusy, Is.True);
 				sent = true;
 			});
 
@@ -342,9 +345,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((IPageController)page).SendAppearing();
 
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
+			WeakReferenceMessenger.Default.Register<PageBusyMessage>(this, (r, m) =>
 			{
-				Assert.That(b, Is.False);
+				Assert.That(m.IsBusy, Is.True);
 				sent = true;
 			});
 
@@ -357,7 +360,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BusySentWhenVisiblePageSetToBusy()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
+			WeakReferenceMessenger.Default.Register<PageBusyMessage>(this, (r, m) => sent = true);
 
 			var page = new ContentPage();
 			_ = new Window(page);
@@ -376,7 +379,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			AlertArguments args = null;
-			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments e) => args = e);
+			WeakReferenceMessenger.Default.Register<PageAlertMessage>(this, (r, m) => args = m.Arguments);
 
 			var task = page.DisplayAlert("Title", "Message", "Accept", "Cancel");
 
@@ -399,7 +402,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			ActionSheetArguments args = null;
-			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments e) => args = e);
+
+			WeakReferenceMessenger.Default.Register<ActionSheetMessage>(this, (r, m) => args = m.Arguments);
 
 			var task = page.DisplayActionSheet("Title", "Cancel", "Destruction", "Other 1", "Other 2");
 

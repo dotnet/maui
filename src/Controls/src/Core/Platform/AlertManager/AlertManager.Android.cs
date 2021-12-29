@@ -76,6 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
+				WeakReferenceMessenger.Default.UnregisterAll(Activity);
 			}
 
 			public void ResetBusyCount()

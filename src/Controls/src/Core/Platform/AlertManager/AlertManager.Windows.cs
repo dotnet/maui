@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
+				WeakReferenceMessenger.Default.UnregisterAll(Window);
 			}
 
 			void OnPageBusy(UI.Xaml.Window window, PageBusyMessage message)

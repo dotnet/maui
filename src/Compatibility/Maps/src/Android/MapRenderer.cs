@@ -27,13 +27,12 @@ using Circle = Microsoft.Maui.Controls.Maps.Circle;
 using Math = System.Math;
 using Polygon = Microsoft.Maui.Controls.Maps.Polygon;
 using Polyline = Microsoft.Maui.Controls.Maps.Polyline;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 {
 	public class MapRenderer : ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
 	{
-		const string MoveMessageName = "MapMoveToRegion";
-
 		static Bundle s_bundle;
 
 		bool _disposed;
@@ -82,8 +81,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				if (Element != null)
 				{
-					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
-
+					WeakReferenceMessenger.Default.Unregister<MapSpan>(this);
+					
 					((ObservableCollection<Pin>)Element.Pins).CollectionChanged -= OnPinCollectionChanged;
 					foreach (Pin pin in Element.Pins)
 					{
@@ -142,7 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 					child.PropertyChanged -= MapElementPropertyChanged;
 				}
 
-				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
+				WeakReferenceMessenger.Default.Unregister<MapSpan>(this);
 
 				if (NativeMap != null)
 				{
@@ -158,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 			Control.GetMapAsync(this);
 
-			MessagingCenter.Subscribe<Map, MapSpan>(this, MoveMessageName, OnMoveToRegionMessage, Map);
+			WeakReferenceMessenger.Default.Register<MapRenderer, MapSpan>(this, (renderer, args) => OnMoveToRegionMessage(renderer.Element, args));
 
 			((INotifyCollectionChanged)Map.Pins).CollectionChanged += OnPinCollectionChanged;
 			((INotifyCollectionChanged)Map.MapElements).CollectionChanged += OnMapElementCollectionChanged;

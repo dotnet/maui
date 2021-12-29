@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -391,7 +392,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 
 				FlyoutPage.UpdateFlyoutLayoutBehavior();
-				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+
+				WeakReferenceMessenger.Default.Send(new UpdateToolBarButtonsMessage());
 			}
 
 			base.WillRotate(toInterfaceOrientation, duration);
@@ -449,7 +451,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
-				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+				WeakReferenceMessenger.Default.Send(new UpdateToolBarButtonsMessage());
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -470,7 +472,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else if (e.Is(Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty))
 				UpdateFlyoutLayoutBehavior(base.View.Bounds.Size);
 
-			MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+			WeakReferenceMessenger.Default.Send(new UpdateToolBarButtonsMessage());
 		}
 
 		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)

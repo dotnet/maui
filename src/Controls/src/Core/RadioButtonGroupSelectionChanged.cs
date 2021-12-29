@@ -9,7 +9,12 @@ namespace Microsoft.Maui.Controls
 
 	internal class RadioButtonGroupSelectionChanged : RadioButtonScopeMessage
 	{
-		public RadioButtonGroupSelectionChanged(Element scope) : base(scope) { }
+		public RadioButtonGroupSelectionChanged(Element scope, RadioButton radioButton) : base(scope) 
+		{
+			RadioButton = radioButton;
+		}
+
+		public RadioButton RadioButton { get; }
 	}
 
 	internal class RadioButtonGroupNameChanged : RadioButtonScopeMessage
@@ -24,7 +29,12 @@ namespace Microsoft.Maui.Controls
 
 	internal class RadioButtonValueChanged : RadioButtonScopeMessage
 	{
-		public RadioButtonValueChanged(Element scope) : base(scope) { }
+		public RadioButtonValueChanged(Element scope, RadioButton radioButton) : base(scope) 
+		{
+			RadioButton = radioButton;
+		}
+
+		public RadioButton RadioButton { get; }
 	}
 
 	internal class RadioButtonGroupValueChanged : RadioButtonScopeMessage

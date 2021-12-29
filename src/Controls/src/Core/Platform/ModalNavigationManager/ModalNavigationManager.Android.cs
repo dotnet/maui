@@ -11,6 +11,7 @@ using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				_navAnimationInProgress = value;
 				if (value)
-					MessagingCenter.Send(this, CloseContextActionsSignalName);
+					WeakReferenceMessenger.Default.Send(new CloseContextActionsMessage());
 			}
 		}
 

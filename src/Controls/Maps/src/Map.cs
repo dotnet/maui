@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Maps
@@ -153,7 +154,8 @@ namespace Microsoft.Maui.Controls.Maps
 			if (mapSpan == null)
 				throw new ArgumentNullException(nameof(mapSpan));
 			LastMoveToRegion = mapSpan;
-			MessagingCenter.Send(this, "MapMoveToRegion", mapSpan);
+
+			WeakReferenceMessenger.Default.Send(mapSpan);
 		}
 
 		void PinsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -163,12 +162,10 @@ namespace Microsoft.Maui.Controls
 			if (IsPlatformEnabled)
 			{
 				WeakReferenceMessenger.Default.Send(new ActionSheetMessage(this, args));
-				//MessagingCenter.Send(this, ActionSheetSignalName, args);
 			}
 			else
 			{
 				_pendingActions.Add(() => WeakReferenceMessenger.Default.Send(new ActionSheetMessage(this, args)));
-				//_pendingActions.Add(() => MessagingCenter.Send(this, ActionSheetSignalName, args));
 			}
 
 			return args.Result.Task;
@@ -200,12 +197,10 @@ namespace Microsoft.Maui.Controls
 			if (IsPlatformEnabled)
 			{
 				WeakReferenceMessenger.Default.Send(new PageAlertMessage(this, args));
-				//MessagingCenter.Send(this, AlertSignalName, args);
 			}
 			else
 			{
 				_pendingActions.Add(() => WeakReferenceMessenger.Default.Send(new PageAlertMessage(this, args)));
-				//_pendingActions.Add(() => MessagingCenter.Send(this, AlertSignalName, args));
 			}
 
 			return args.Result.Task;
@@ -218,12 +213,10 @@ namespace Microsoft.Maui.Controls
 			if (IsPlatformEnabled)
 			{
 				WeakReferenceMessenger.Default.Send(new PromptMessage(this, args));
-				//MessagingCenter.Send(this, PromptSignalName, args);
 			}
 			else
 			{
 				_pendingActions.Add(() => WeakReferenceMessenger.Default.Send(new PromptMessage(this, args)));
-				//_pendingActions.Add(() => MessagingCenter.Send(this, PromptSignalName, args));
 			}
 
 			return args.Result.Task;
@@ -443,12 +436,10 @@ namespace Microsoft.Maui.Controls
 				if (IsPlatformEnabled)
 				{
 					WeakReferenceMessenger.Default.Send(new PageBusyMessage(this, true));
-					//MessagingCenter.Send(this, BusySetSignalName, true);
 				}
 				else
 				{
 					_pendingActions.Add(() => WeakReferenceMessenger.Default.Send(new PageBusyMessage(this, true)));
-					//_pendingActions.Add(() => MessagingCenter.Send(this, BusySetSignalName, true));
 				}
 			}
 
@@ -530,7 +521,6 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			WeakReferenceMessenger.Default.Send(new PageBusyMessage(this, IsBusy));
-			//MessagingCenter.Send(this, BusySetSignalName, IsBusy);
 		}
 
 		void OnToolbarItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -584,7 +574,6 @@ namespace Microsoft.Maui.Controls
 			_titleView = newTitleView;
 		}
 	}
-
 
 	// TODO ezhart These Pages could probably all be IView
 	public class PageBusyMessage 

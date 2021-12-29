@@ -1,4 +1,5 @@
 using System;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -14,9 +15,6 @@ namespace Microsoft.Maui.Controls
 		public const string TemplateRootName = "Root";
 		public const string CheckedIndicator = "CheckedIndicator";
 		public const string UncheckedButton = "Button";
-
-		internal const string GroupNameChangedMessage = "RadioButtonGroupNameChanged";
-		internal const string ValueChangedMessage = "RadioButtonValueChanged";
 
 		// Template Parts
 		TapGestureRecognizer _tapGestureRecognizer;
@@ -381,8 +379,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			MessagingCenter.Send(this, ValueChangedMessage,
-						new RadioButtonValueChanged(RadioButtonGroup.GetVisualRoot(this)));
+			WeakReferenceMessenger.Default.Send(new RadioButtonValueChanged(RadioButtonGroup.GetVisualRoot(this), this));
 		}
 
 		void OnGroupNamePropertyChanged(string oldGroupName, string newGroupName)
@@ -391,48 +388,48 @@ namespace Microsoft.Maui.Controls
 			{
 				if (string.IsNullOrEmpty(oldGroupName))
 				{
-					MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
-						RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-					MessagingCenter.Subscribe<Compatibility.Layout<View>, RadioButtonGroupValueChanged>(this,
-						RadioButtonGroup.GroupValueChangedMessage, HandleRadioButtonGroupValueChanged);
+					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupSelectionChanged>(this, HandleRadioButtonGroupSelectionChanged);
+					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupValueChanged>(this, HandleRadioButtonGroupValueChanged);
 				}
 
-				MessagingCenter.Send(this, GroupNameChangedMessage,
-					new RadioButtonGroupNameChanged(RadioButtonGroup.GetVisualRoot(this), oldGroupName));
+				WeakReferenceMessenger.Default.Send(new RadioButtonGroupNameChanged(RadioButtonGroup.GetVisualRoot(this), oldGroupName));
 			}
 			else
 			{
 				if (!string.IsNullOrEmpty(oldGroupName))
 				{
-					MessagingCenter.Unsubscribe<RadioButton, RadioButtonGroupSelectionChanged>(this, RadioButtonGroup.GroupSelectionChangedMessage);
-					MessagingCenter.Unsubscribe<Compatibility.Layout<View>, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
+					WeakReferenceMessenger.Default.Unregister<RadioButtonGroupSelectionChanged>(this);
+					WeakReferenceMessenger.Default.Unregister<RadioButtonGroupValueChanged>(this);
 				}
 			}
 		}
 
-		bool MatchesScope(RadioButtonScopeMessage message)
+		static bool MatchesScope(RadioButtonScopeMessage message, RadioButton radioButton)
 		{
-			return RadioButtonGroup.GetVisualRoot(this) == message.Scope;
+			return RadioButtonGroup.GetVisualRoot(radioButton) == message.Scope;
 		}
 
-		void HandleRadioButtonGroupSelectionChanged(RadioButton selected, RadioButtonGroupSelectionChanged args)
+		static void HandleRadioButtonGroupSelectionChanged(RadioButton receiver, RadioButtonGroupSelectionChanged args)
 		{
-			if (!IsChecked || selected == this || string.IsNullOrEmpty(GroupName) || GroupName != selected.GroupName || !MatchesScope(args))
+			var selected = args.RadioButton;
+
+			if (!receiver.IsChecked || selected == receiver || string.IsNullOrEmpty(receiver.GroupName) || receiver.GroupName != selected.GroupName || !MatchesScope(args, receiver))
 			{
 				return;
 			}
 
-			IsChecked = false;
+			receiver.IsChecked = false;
 		}
 
-		void HandleRadioButtonGroupValueChanged(Compatibility.Layout<View> layout, RadioButtonGroupValueChanged args)
+		static void HandleRadioButtonGroupValueChanged(RadioButton radioButton, RadioButtonGroupValueChanged args)
 		{
-			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || Value != args.Value || !MatchesScope(args))
+			if (radioButton.IsChecked || string.IsNullOrEmpty(radioButton.GroupName) || radioButton.GroupName != args.GroupName 
+				|| radioButton.Value != args.Value || !MatchesScope(args, radioButton))
 			{
 				return;
 			}
 
-			IsChecked = true;
+			radioButton.IsChecked = true;
 		}
 
 		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)

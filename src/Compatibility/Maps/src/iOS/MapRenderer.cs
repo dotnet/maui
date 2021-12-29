@@ -11,6 +11,7 @@ using RectangleF = CoreGraphics.CGRect;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using CommunityToolkit.Mvvm.Messaging;
 
 #if __MOBILE__
 using UIKit;
@@ -33,8 +34,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 #if __MOBILE__
 		UITapGestureRecognizer _mapClickedGestureRecognizer;
 #endif
-
-		const string MoveMessageName = "MapMoveToRegion";
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -64,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				if (Element != null)
 				{
 					var mapModel = (Map)Element;
-					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
+					WeakReferenceMessenger.Default.Unregister<MapSpan>(this);
 					((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnPinCollectionChanged;
 					((ObservableCollection<MapElement>)mapModel.MapElements).CollectionChanged -= OnMapElementCollectionChanged;
 					foreach (Pin pin in mapModel.Pins)
@@ -118,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			{
 				var mapModel = (Map)e.OldElement;
 
-				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
+				WeakReferenceMessenger.Default.Unregister<MapSpan>(this);
 
 				((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnPinCollectionChanged;
 				foreach (Pin pin in mapModel.Pins)
@@ -165,7 +164,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 #endif
 				}
 
-				MessagingCenter.Subscribe<Map, MapSpan>(this, MoveMessageName, (s, a) => MoveToRegion(a), mapModel);
+				WeakReferenceMessenger.Default.Register<MapRenderer, MapSpan>(this, (renderer, args) => MoveToRegion(args));
+
 				if (mapModel.LastMoveToRegion != null)
 					MoveToRegion(mapModel.LastMoveToRegion, false);
 

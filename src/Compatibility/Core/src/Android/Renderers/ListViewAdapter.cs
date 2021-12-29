@@ -7,6 +7,7 @@ using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AListView = Android.Widget.ListView;
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			realListView.OnItemClickListener = this;
 			realListView.OnItemLongClickListener = this;
 
-			MessagingCenter.Subscribe<ListViewAdapter>(this, Platform.CloseContextActionsSignalName, lva => CloseContextActions());
+			WeakReferenceMessenger.Default.Register<CloseContextActionsMessage>(this, (recipient, msg) => CloseContextActions());
 
 			InvalidateCount();
 		}
@@ -436,7 +437,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				CloseContextActions();
 
-				MessagingCenter.Unsubscribe<ListViewAdapter>(this, Platform.CloseContextActionsSignalName);
+				WeakReferenceMessenger.Default.Unregister<CloseContextActionsMessage>(this);
 
 				_realListView.OnItemClickListener = null;
 				_realListView.OnItemLongClickListener = null;

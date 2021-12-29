@@ -1,12 +1,10 @@
 using System.Collections;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls
 {
 	public static class RadioButtonGroup
 	{
-		internal const string GroupSelectionChangedMessage = "RadioButtonGroupSelectionChanged";
-		internal const string GroupValueChangedMessage = "RadioButtonGroupValueChanged";
-
 		static readonly BindableProperty RadioButtonGroupControllerProperty =
 			BindableProperty.CreateAttached("RadioButtonGroupController", typeof(RadioButtonGroupController), typeof(Compatibility.Layout<View>), default(RadioButtonGroupController),
 			defaultValueCreator: (b) => new RadioButtonGroupController((Compatibility.Layout<View>)b),
@@ -54,8 +52,7 @@ namespace Microsoft.Maui.Controls
 				? GroupByParent(radioButton)
 				: GetVisualRoot(radioButton);
 
-			MessagingCenter.Send(radioButton, GroupSelectionChangedMessage,
-				new RadioButtonGroupSelectionChanged(scope));
+			WeakReferenceMessenger.Default.Send(new RadioButtonGroupSelectionChanged(scope, radioButton));
 		}
 
 		internal static Element GroupByParent(RadioButton radioButton)

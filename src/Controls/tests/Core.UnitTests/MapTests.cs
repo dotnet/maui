@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Maps;
 using NUnit.Framework;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -127,11 +128,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(null, map.VisibleRegion);
 
 			bool signaled = false;
-			MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", (s, a) =>
+
+			WeakReferenceMessenger.Default.Register<MapSpan>(this, (receiver, args) => 
 			{
 				signaled = true;
-				map.SetVisibleRegion(a);
-			}, map);
+				map.SetVisibleRegion(args);
+			});
 
 			map.MoveToRegion(new MapSpan(new Position(1, 2), 3, 4));
 			Assert.AreEqual(new MapSpan(new Position(1, 2), 3, 4), map.LastMoveToRegion);

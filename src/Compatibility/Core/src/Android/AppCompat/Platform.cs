@@ -7,6 +7,7 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -26,8 +27,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		internal static string PackageName { get; private set; }
 		internal static string GetPackageName() => PackageName;
-
-		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -81,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					return;
 				_navAnimationInProgress = value;
 				if (value)
-					MessagingCenter.Send(this, CloseContextActionsSignalName);
+					WeakReferenceMessenger.Default.Send(new CloseContextActionsMessage());
 			}
 		}
 
