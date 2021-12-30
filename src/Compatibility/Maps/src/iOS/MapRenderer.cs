@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 #endif
 				}
 
-				WeakReferenceMessenger.Default.Register<MapRenderer, MapSpan>(this, (r, m) => r.MoveToRegion(m));
+				WeakReferenceMessenger.Default.Register<MapRenderer, MapSpan>(this, static (r, m) => r.MoveToRegion(m));
 
 				if (mapModel.LastMoveToRegion != null)
 					MoveToRegion(mapModel.LastMoveToRegion, false);

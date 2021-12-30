@@ -50,20 +50,20 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				Window = window;
 
-				WeakReferenceMessenger.Default.Register<UIWindow, PageBusyMessage>(Window, OnPageBusy);
-				WeakReferenceMessenger.Default.Register<UIWindow, PageAlertMessage>(Window, OnAlertRequested);
-				WeakReferenceMessenger.Default.Register<UIWindow, PromptMessage>(Window, OnPromptRequested);
-				WeakReferenceMessenger.Default.Register<UIWindow, ActionSheetMessage>(Window, OnActionSheetRequested);
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PageBusyMessage>(this, static (r,m) => r.OnPageBusy(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PageAlertMessage>(this, static (r, m) => r.OnAlertRequested(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PromptMessage>(this, static (r, m) => r.OnPromptRequested(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, ActionSheetMessage>(this, static (r, m) => r.OnActionSheetRequested(m));
 			}
 
 			public UIWindow Window { get; }
 
 			public void Dispose()
 			{
-				WeakReferenceMessenger.Default.UnregisterAll(Window);
+				WeakReferenceMessenger.Default.UnregisterAll(this);
 			}
 
-			void OnPageBusy(UIWindow window, PageBusyMessage message)
+			void OnPageBusy(PageBusyMessage message)
 			{
 				var enabled = message.IsBusy;
 
@@ -71,17 +71,17 @@ namespace Microsoft.Maui.Controls.Platform
 				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = _busyCount > 0;
 			}
 
-			void OnAlertRequested(UIWindow window, PageAlertMessage message)
+			void OnAlertRequested(PageAlertMessage message)
 			{
 				PresentAlert(message.Arguments);
 			}
 
-			void OnPromptRequested(UIWindow window, PromptMessage message)
+			void OnPromptRequested(PromptMessage message)
 			{
 				PresentPrompt(message.Arguments);
 			}
 
-			void OnActionSheetRequested(UIWindow window, ActionSheetMessage message)
+			void OnActionSheetRequested(ActionSheetMessage message)
 			{
 				PresentActionSheet(message.Arguments);
 			}

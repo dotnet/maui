@@ -52,16 +52,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				Activity = context;
 
-				WeakReferenceMessenger.Default.Register<Activity, PageBusyMessage>(Activity, (r, m) => OnPageBusy(m.Page, m.IsBusy));
-				WeakReferenceMessenger.Default.Register<Activity, PageAlertMessage>(Activity, (r, m) => OnAlertRequested(m.Page, m.Arguments));
-				WeakReferenceMessenger.Default.Register<Activity, PromptMessage>(Activity, (r, m) => OnPromptRequested(m.Page, m.Arguments));
-				WeakReferenceMessenger.Default.Register<Activity, ActionSheetMessage>(Activity, (r, m) => OnActionSheetRequested(m.Page, m.Arguments));
+				WeakReferenceMessenger.Default.Register<PopupRequestHelper, PageBusyMessage>(this, static (r, m) => r.OnPageBusy(m.Page, m.IsBusy));
+				WeakReferenceMessenger.Default.Register<PopupRequestHelper, PageAlertMessage>(this, static (r, m) => r.OnAlertRequested(m.Page, m.Arguments));
+				WeakReferenceMessenger.Default.Register<PopupRequestHelper, PromptMessage>(this, static (r, m) => r.OnPromptRequested(m.Page, m.Arguments));
+				WeakReferenceMessenger.Default.Register<PopupRequestHelper, ActionSheetMessage>(this, static (r, m) => r.OnActionSheetRequested(m.Page, m.Arguments));
 			}
 
 			public Activity Activity { get; }
 
 			public void Dispose()
 			{
+				WeakReferenceMessenger.Default.UnregisterAll(this);
 			}
 
 			public void ResetBusyCount()

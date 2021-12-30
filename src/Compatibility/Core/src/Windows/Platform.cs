@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			_container.SizeChanged += OnRendererSizeChanged;
 
-			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageBusyMessage>(page, (window, message) =>
+			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageBusyMessage>(page, (_, message) =>
 			{
 				Microsoft.UI.Xaml.Controls.ProgressBar indicator = GetBusyIndicator();
 				indicator.Visibility = message.IsBusy ? WVisibility.Visible : WVisibility.Collapsed;
@@ -602,12 +602,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		internal static void SubscribeAlertsAndActionSheets()
 		{
-			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageAlertMessage>(Forms.MainWindow, OnPageAlert);
-			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PromptMessage>(Forms.MainWindow, OnPagePrompt);
-			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, ActionSheetMessage>(Forms.MainWindow, OnPageActionSheet);
+			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageAlertMessage>(Forms.MainWindow, (r,m) => OnPageAlert(m));
+			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PromptMessage>(Forms.MainWindow, (r, m) => OnPagePrompt(m));
+			WeakReferenceMessenger.Default.Register<UI.Xaml.Window, ActionSheetMessage>(Forms.MainWindow, (r, m) => OnPageActionSheet(m));
 		}
 
-		static void OnPageActionSheet(UI.Xaml.Window window, ActionSheetMessage message)
+		static void OnPageActionSheet(ActionSheetMessage message)
 		{
 			var sender = message.Page;
 			var options = message.Arguments;
@@ -658,7 +658,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		static async void OnPagePrompt(UI.Xaml.Window window, PromptMessage message)
+		static async void OnPagePrompt(PromptMessage message)
 		{
 			var sender = message.Page;
 			var options = message.Arguments;
@@ -700,7 +700,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return null;
 		}
 
-		static async void OnPageAlert(UI.Xaml.Window window, PageAlertMessage message)
+		static async void OnPageAlert(PageAlertMessage message)
 		{
 			var sender = message.Page;
 			var options = message.Arguments;

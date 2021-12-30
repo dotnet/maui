@@ -157,8 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 			Control.GetMapAsync(this);
 
-			WeakReferenceMessenger.Default.Register<MapRenderer, MapSpan>(this, 
-				(r, m) => r.OnMoveToRegionMessage(r.Element, m));
+			WeakReferenceMessenger.Default.Register<MapRenderer, MapSpan>(this, static (r, m) => r.OnMoveToRegionMessage(r.Element, m));
 
 			((INotifyCollectionChanged)Map.Pins).CollectionChanged += OnPinCollectionChanged;
 			((INotifyCollectionChanged)Map.MapElements).CollectionChanged += OnMapElementCollectionChanged;

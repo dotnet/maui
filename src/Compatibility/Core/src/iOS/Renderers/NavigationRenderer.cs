@@ -40,11 +40,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(FormsNavigationBar), null)
 		{
-			WeakReferenceMessenger.Default.Register<UpdateToolBarButtonsMessage>(this, (receiver, message) => 
+			WeakReferenceMessenger.Default.Register<NavigationRenderer, UpdateToolBarButtonsMessage>(this, static (receiver, message) => 
 			{
-				if (!ViewControllers.Any())
+				if (!receiver.ViewControllers.Any())
 					return;
-				var parentingViewController = GetParentingViewController();
+				var parentingViewController = receiver.GetParentingViewController();
 				parentingViewController?.UpdateLeftBarButtonItem();
 			});
 		}

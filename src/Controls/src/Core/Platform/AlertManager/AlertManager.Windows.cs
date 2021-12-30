@@ -47,10 +47,10 @@ namespace Microsoft.Maui.Controls.Platform
 				Window = window;
 				MauiContext = mauiContext;
 
-				WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageBusyMessage>(Window, OnPageBusy);
-				WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PageAlertMessage>(Window, OnAlertRequested);
-				WeakReferenceMessenger.Default.Register<UI.Xaml.Window, PromptMessage>(Window, OnPromptRequested);
-				WeakReferenceMessenger.Default.Register<UI.Xaml.Window, ActionSheetMessage>(Window, OnActionSheetRequested);
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PageBusyMessage>(this, static (r,m) => r.OnPageBusy(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PageAlertMessage>(this, static (r, m) => r.OnAlertRequested(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PromptMessage>(this, static (r, m) => r.OnPromptRequested(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, ActionSheetMessage>(this, static (r, m) => r.OnActionSheetRequested(m));
 			}
 
 			public UI.Xaml.Window Window { get; }
@@ -58,10 +58,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
-				WeakReferenceMessenger.Default.UnregisterAll(Window);
+				WeakReferenceMessenger.Default.UnregisterAll(this);
 			}
 
-			void OnPageBusy(UI.Xaml.Window window, PageBusyMessage message)
+			void OnPageBusy(PageBusyMessage message)
 			{
 				var sender = message.Page;
 				var busy = message.IsBusy;
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// TODO: Wrap the pages in a Canvas, and dynamically add a ProgressBar
 			}
 
-			async void OnAlertRequested(UI.Xaml.Window window, PageAlertMessage message)
+			async void OnAlertRequested(PageAlertMessage message)
 			{
 				var arguments = message.Arguments;
 
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentAlert = null;
 			}
 
-			async void OnPromptRequested(UI.Xaml.Window window, PromptMessage message)
+			async void OnPromptRequested(PromptMessage message)
 			{
 				var arguments = message.Arguments;
 
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentPrompt = null;
 			}
 
-			void OnActionSheetRequested(UI.Xaml.Window window, ActionSheetMessage message)
+			void OnActionSheetRequested(ActionSheetMessage message)
 			{
 				var sender = message.Page;
 				var arguments = message.Arguments;

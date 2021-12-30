@@ -65,10 +65,10 @@ namespace Microsoft.Maui.Controls.Platform
 				Activity = context;
 				MauiContext = mauiContext;
 
-				WeakReferenceMessenger.Default.Register<Activity, PageBusyMessage>(Activity, OnPageBusy);
-				WeakReferenceMessenger.Default.Register<Activity, PageAlertMessage>(Activity, OnAlertRequested);
-				WeakReferenceMessenger.Default.Register<Activity, PromptMessage>(Activity, OnPromptRequested);
-				WeakReferenceMessenger.Default.Register<Activity, ActionSheetMessage>(Activity, OnActionSheetRequested);
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PageBusyMessage>(this, static (r,m) => r.OnPageBusy(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PageAlertMessage>(this, static (r, m) => r.OnAlertRequested(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, PromptMessage>(this, static (r, m) => r.OnPromptRequested(m));
+				WeakReferenceMessenger.Default.Register<AlertRequestHelper, ActionSheetMessage>(this, static (r, m) => r.OnActionSheetRequested(m));
 			}
 
 			public Activity Activity { get; }
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_busyCount = 0;
 			}
 
-			void OnPageBusy(Activity activity, PageBusyMessage message)
+			void OnPageBusy(PageBusyMessage message)
 			{
 				var sender = message.Page;
 				var enabled = message.IsBusy;
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateProgressBarVisibility(_busyCount > 0);
 			}
 
-			void OnActionSheetRequested(Activity activity, ActionSheetMessage message)
+			void OnActionSheetRequested(ActionSheetMessage message)
 			{
 				var sender = message.Page;
 				var arguments = message.Arguments;
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				var builder = new DialogBuilder(activity);
+				var builder = new DialogBuilder(Activity);
 
 				builder.SetTitle(arguments.Title);
 				string[] items = arguments.Buttons.ToArray();
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			void OnAlertRequested(Activity activity, PageAlertMessage message)
+			void OnAlertRequested(PageAlertMessage message)
 			{
 				var sender = message.Page;
 				var arguments = message.Arguments;
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				int messageID = 16908299;
-				var alert = new DialogBuilder(activity).Create();
+				var alert = new DialogBuilder(Activity).Create();
 
 				if (alert == null)
 					return;
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return TextDirection.Ltr;
 			}
 
-			void OnPromptRequested(Activity activity, PromptMessage message)
+			void OnPromptRequested(PromptMessage message)
 			{
 				var sender = message.Page;
 				var arguments = message.Arguments;
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				var alertDialog = new DialogBuilder(activity).Create();
+				var alertDialog = new DialogBuilder(Activity).Create();
 
 				if (alertDialog == null)
 					return;
@@ -248,12 +248,12 @@ namespace Microsoft.Maui.Controls.Platform
 				alertDialog.SetTitle(arguments.Title);
 				alertDialog.SetMessage(arguments.Message);
 
-				var frameLayout = new FrameLayout(activity);
-				var editText = new EditText(activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
+				var frameLayout = new FrameLayout(Activity);
+				var editText = new EditText(Activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
 				var layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
 				{
-					LeftMargin = (int)(22 * activity.Resources.DisplayMetrics.Density),
-					RightMargin = (int)(22 * activity.Resources.DisplayMetrics.Density)
+					LeftMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density),
+					RightMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density)
 				};
 
 				editText.LayoutParameters = layoutParams;
