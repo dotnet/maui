@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			var rootContext = new MauiContext(mauiApp.Services);
+			var rootContext = new MauiContext(mauiApp.Services, CoreAppContext.GetInstance(this));
 
 			var platformWindow = CoreAppExtensions.GetDefaultWindow();
 			platformWindow.Initialize();

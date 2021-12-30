@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Platform
 
 		public static IWindow GetWindow(this CoreApplication application)
 		{
-			var nativeWindow = CoreUIAppContext.GetInstance(application)?.MainWindow;
+			var nativeWindow = CoreAppContext.GetInstance(application)?.MainWindow;
+
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{
 				if (window?.Handler?.PlatformView is Window win && win == MainWindow)
@@ -50,6 +51,7 @@ namespace Microsoft.Maui.Platform
 			applicationContext.Services.InvokeLifecycleEvents<TizenLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext);
+
 			var window = application.CreateWindow(activationState);
 
 			tizenWindow.SetWindowHandler(window, mauiContext);

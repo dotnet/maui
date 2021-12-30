@@ -18,8 +18,8 @@ using PlatformApplication = Microsoft.UI.Xaml.Application;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
 using BasePlatformType = System.Object;
-using PlatformWindow = ElmSharp.Window;
-using PlatformApplication = Tizen.Applications.CoreUIApplication;
+using PlatformWindow = Tizen.NUI.Window;
+using PlatformApplication = Tizen.Applications.CoreApplication;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 using BasePlatformType = System.Object;
