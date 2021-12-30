@@ -388,8 +388,8 @@ namespace Microsoft.Maui.Controls
 			{
 				if (string.IsNullOrEmpty(oldGroupName))
 				{
-					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupSelectionChanged>(this, (r,m) => r.HandleRadioButtonGroupSelectionChanged(m));
-					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupValueChanged>(this, (r,m) => r.HandleRadioButtonGroupValueChanged(m));
+					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupSelectionChanged>(this, static (r,m) => r.HandleRadioButtonGroupSelectionChanged(m));
+					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupValueChanged>(this, static (r,m) => r.HandleRadioButtonGroupValueChanged(m));
 				}
 
 				WeakReferenceMessenger.Default.Send(new RadioButtonGroupNameChanged(RadioButtonGroup.GetVisualRoot(this), oldGroupName));

@@ -28,9 +28,9 @@ namespace Microsoft.Maui.Controls
 				UpdateGroupNames(layout, _groupName);
 			}
 
-			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupSelectionChanged>(this, (r,m) => r.HandleRadioButtonGroupSelectionChanged(m));
-			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupNameChanged>(this, (r,m) => HandleRadioButtonGroupNameChanged(m));
-			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonValueChanged>(this, (r,m) => r.HandleRadioButtonValueChanged(m));
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupSelectionChanged>(this, static (r,m) => r.HandleRadioButtonGroupSelectionChanged(m));
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupNameChanged>(this, static (r,m) => r.HandleRadioButtonGroupNameChanged(m));
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonValueChanged>(this, static (r,m) => r.HandleRadioButtonValueChanged(m));
 		}
 
 		bool MatchesScope(RadioButtonScopeMessage message)
