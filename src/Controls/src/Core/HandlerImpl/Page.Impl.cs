@@ -80,5 +80,5 @@ namespace Microsoft.Maui.Controls
 		internal Page DestinationPage { get; }
 	}
 
-	public sealed record CloseContextActionsMessage { }
+	public sealed class CloseContextActionsMessage { }
 }
