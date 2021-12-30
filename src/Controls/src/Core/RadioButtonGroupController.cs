@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls
 
 			if (radioButtonValue != null)
 			{
-				WeakReferenceMessenger.Default.Send(new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
+				WeakReferenceMessenger.Default.Send(new RadioButtonGroupValueChanged(RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue, _groupName));
 			}
 		}
 

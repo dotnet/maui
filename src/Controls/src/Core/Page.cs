@@ -576,51 +576,12 @@ namespace Microsoft.Maui.Controls
 	}
 
 	// TODO ezhart These Pages could probably all be IView
-	public class PageBusyMessage 
-	{
-		public PageBusyMessage(Page page, bool isBusy)
-		{
-			Page = page;
-			IsBusy = isBusy;
-		}
+	public sealed record PageBusyMessage(Page Page, bool IsBusy);
 
-		public Page Page { get; set; }
-		public bool IsBusy { get; set; }
-	}
+	public sealed record PageAlertMessage(Page Page, AlertArguments Arguments);
 
-	public class PageAlertMessage
-	{
-		public PageAlertMessage(Page page, AlertArguments arguments)
-		{
-			Page = page;
-			Arguments = arguments;
-		}
-
-		public Page Page { get; set; }
-		public AlertArguments Arguments { get; set; }
-	}
-
-	public class PromptMessage 
-	{
-		public PromptMessage(Page page, PromptArguments arguments)
-		{
-			Page = page;
-			Arguments = arguments;
-		}
-
-		public Page Page { get; set; }
-		public PromptArguments Arguments { get; set; }
-	}
-
-	public class ActionSheetMessage
-	{
-		public ActionSheetMessage(Page page, ActionSheetArguments arguments)
-		{
-			Page = page;
-			Arguments = arguments;
-		}
-
-		public Page Page { get; set; }
-		public ActionSheetArguments Arguments { get; set; }
-	}
+	public sealed record PromptMessage(Page Page, PromptArguments Arguments);
+		
+	public sealed record ActionSheetMessage(Page Page, ActionSheetArguments Arguments);
 }
+

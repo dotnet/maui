@@ -1712,5 +1712,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
-	internal class UpdateToolBarButtonsMessage { }
+	internal sealed record UpdateToolBarButtonsMessage { }
 }
