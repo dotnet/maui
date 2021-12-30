@@ -28,9 +28,9 @@ namespace Microsoft.Maui.Controls
 				UpdateGroupNames(layout, _groupName);
 			}
 
-			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupSelectionChanged>(this, HandleRadioButtonGroupSelectionChanged);
-			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupNameChanged>(this, HandleRadioButtonGroupNameChanged);
-			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonValueChanged>(this, HandleRadioButtonValueChanged);
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupSelectionChanged>(this, (r,m) => r.HandleRadioButtonGroupSelectionChanged(m));
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonGroupNameChanged>(this, (r,m) => HandleRadioButtonGroupNameChanged(m));
+			WeakReferenceMessenger.Default.Register<RadioButtonGroupController, RadioButtonValueChanged>(this, (r,m) => r.HandleRadioButtonValueChanged(m));
 		}
 
 		bool MatchesScope(RadioButtonScopeMessage message)
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 			return RadioButtonGroup.GetVisualRoot(_layout) == message.Scope;
 		}
 
-		void HandleRadioButtonGroupSelectionChanged(RadioButtonGroupController controller, RadioButtonGroupSelectionChanged args)
+		void HandleRadioButtonGroupSelectionChanged(RadioButtonGroupSelectionChanged args)
 		{
 			var selected = args.RadioButton;
 
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls
 			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, selected.Value);
 		}
 
-		void HandleRadioButtonGroupNameChanged(RadioButtonGroupController controller, RadioButtonGroupNameChanged args)
+		void HandleRadioButtonGroupNameChanged(RadioButtonGroupNameChanged args)
 		{
 			if (args.OldName != _groupName || !MatchesScope(args))
 			{
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 			_layout.ClearValue(RadioButtonGroup.SelectedValueProperty);
 		}
 
-		void HandleRadioButtonValueChanged(RadioButtonGroupController controller, RadioButtonValueChanged args)
+		void HandleRadioButtonValueChanged(RadioButtonValueChanged args)
 		{
 			var radioButton = args.RadioButton;
 

@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			realListView.OnItemClickListener = this;
 			realListView.OnItemLongClickListener = this;
 
-			WeakReferenceMessenger.Default.Register<CloseContextActionsMessage>(this, (recipient, msg) => CloseContextActions());
+			WeakReferenceMessenger.Default.Register<CloseContextActionsMessage>(this, (r, m) => r.CloseContextActions());
 
 			InvalidateCount();
 		}

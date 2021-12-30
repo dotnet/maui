@@ -388,8 +388,8 @@ namespace Microsoft.Maui.Controls
 			{
 				if (string.IsNullOrEmpty(oldGroupName))
 				{
-					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupSelectionChanged>(this, HandleRadioButtonGroupSelectionChanged);
-					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupValueChanged>(this, HandleRadioButtonGroupValueChanged);
+					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupSelectionChanged>(this, (r,m) => r.HandleRadioButtonGroupSelectionChanged(m));
+					WeakReferenceMessenger.Default.Register<RadioButton, RadioButtonGroupValueChanged>(this, (r,m) => r.HandleRadioButtonGroupValueChanged(m));
 				}
 
 				WeakReferenceMessenger.Default.Send(new RadioButtonGroupNameChanged(RadioButtonGroup.GetVisualRoot(this), oldGroupName));
@@ -404,32 +404,31 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static bool MatchesScope(RadioButtonScopeMessage message, RadioButton radioButton)
+		bool MatchesScope(RadioButtonScopeMessage message)
 		{
-			return RadioButtonGroup.GetVisualRoot(radioButton) == message.Scope;
+			return RadioButtonGroup.GetVisualRoot(this) == message.Scope;
 		}
 
-		static void HandleRadioButtonGroupSelectionChanged(RadioButton receiver, RadioButtonGroupSelectionChanged args)
+		void HandleRadioButtonGroupSelectionChanged(RadioButtonGroupSelectionChanged args)
 		{
 			var selected = args.RadioButton;
 
-			if (!receiver.IsChecked || selected == receiver || string.IsNullOrEmpty(receiver.GroupName) || receiver.GroupName != selected.GroupName || !MatchesScope(args, receiver))
+			if (!IsChecked || selected == this || string.IsNullOrEmpty(GroupName) || GroupName != selected.GroupName || !MatchesScope(args))
 			{
 				return;
 			}
 
-			receiver.IsChecked = false;
+			IsChecked = false;
 		}
 
-		static void HandleRadioButtonGroupValueChanged(RadioButton radioButton, RadioButtonGroupValueChanged args)
+		void HandleRadioButtonGroupValueChanged(RadioButtonGroupValueChanged args)
 		{
-			if (radioButton.IsChecked || string.IsNullOrEmpty(radioButton.GroupName) || radioButton.GroupName != args.GroupName 
-				|| radioButton.Value != args.Value || !MatchesScope(args, radioButton))
+			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || Value != args.Value || !MatchesScope(args))
 			{
 				return;
 			}
 
-			radioButton.IsChecked = true;
+			IsChecked = true;
 		}
 
 		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)
