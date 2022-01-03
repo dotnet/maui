@@ -17,6 +17,7 @@
 		<ResourceDictionary Source="TabbedPageStyle.xaml" />
 		<ResourceDictionary Source="SliderStyle.xaml" />
         <ResourceDictionary Source="PickerStyle.xaml" />
+        <ResourceDictionary Source="ListViewStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <x:Boolean x:Key="MicrosoftMauiControlsCompatibilityIncluded">true</x:Boolean>
@@ -30,7 +31,6 @@
 	<uwp:BoolToVisibilityConverter x:Key="InvertedBoolVisibilityConverter" FalseIsVisible="True" />
 	<uwp:PageToRenderedElementConverter x:Key="PageToRenderer" />
     <maui:ImageConverter x:Key="ImageConverter" />
-	<uwp:ViewToRendererConverter x:Key="ViewToRenderer" />
 	<uwp:ColorConverter x:Key="ColorConverter" />
 	<uwp:HorizontalTextAlignmentConverter x:Key="HorizontalTextAlignmentConverter" />
 	<uwp:TextAlignmentToHorizontalAlignmentConverter x:Key="AlignmentConverter" />
@@ -96,10 +96,6 @@
 		<Setter Property="Content" Value="" />
 	</Style>
 
-    <DataTemplate x:Key="CellTemplate">
-		<uwp:CellControl HorizontalContentAlignment="Stretch" Height="{Binding Cell.RenderHeight,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource HeightConverter}}" />
-	</DataTemplate>
-
 	<DataTemplate x:Key="TableRoot">
 		<TextBlock Margin="0,20,0,0" Text="{Binding Title,Converter={StaticResource LowerConverter}}" Style="{ThemeResource TitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" />
 	</DataTemplate>
@@ -107,38 +103,7 @@
 	<DataTemplate x:Key="TableSection">
 		<TextBlock Margin="0,20,0,0" Text="{Binding Title,Converter={StaticResource LowerConverter}}" Style="{ThemeResource SubtitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" Foreground="{Binding TextColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
 	</DataTemplate>
-	
-	<uwp:ListViewGroupStyleSelector x:Key="ListViewGroupSelector" />
-
-	<DataTemplate x:Key="ListViewGroupTemplate">
-		<TextBlock Text="{Binding}" Style="{ThemeResource BaseTextBlockStyle}" />
-	</DataTemplate>
-	
-	<GroupStyle x:Key="ListViewGroup" HidesIfEmpty="False">
-		<GroupStyle.HeaderContainerStyle>
-			<Style TargetType="ListViewHeaderItem">
-				<Setter Property="Template">
-					<Setter.Value>
-						<ControlTemplate>
-							<uwp:ListGroupHeaderPresenter />
-						</ControlTemplate>
-					</Setter.Value>
-				</Setter>
-			</Style>
-		</GroupStyle.HeaderContainerStyle>
-		<GroupStyle.HeaderTemplate>
-			<DataTemplate>
-                <uwp:CellControl IsGroupHeader="true" HorizontalContentAlignment="Stretch" />
-			</DataTemplate>
-		</GroupStyle.HeaderTemplate>
-	</GroupStyle>
-	
-	<DataTemplate x:Key="ViewCell">
-        <ContentControl DataContext="{Binding Cell}">
-            <ContentPresenter Height="{Binding RenderHeight, Converter={StaticResource HeightConverter}}" Content="{Binding View, Converter={StaticResource ViewToRenderer}}" />
-        </ContentControl>
-    </DataTemplate>
-
+    
 	<DataTemplate x:Key="ContainedPageTemplate">
 		<ContentPresenter Content="{Binding Converter={StaticResource PageToRenderer}}">
 			<ContentPresenter.Resources>
@@ -149,56 +114,9 @@
 		</ContentPresenter>
 	</DataTemplate>
 
-	<DataTemplate x:Key="View">
-		<ContentPresenter Content="{Binding Converter={StaticResource ViewToRenderer}}" />
-	</DataTemplate>
-
 	<SolidColorBrush x:Key="TabButtonPointerOverBackgroundBrush" Color="#44888888" />
 	<SolidColorBrush x:Key="TabButtonBackgroundBrush" Color="#29888888" />
 
-	<Style x:Key="FormsListViewItem" TargetType="ListViewItem">
-		<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-		<Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-		<Setter Property="Background" Value="Transparent" />
-		<Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
-		<Setter Property="TabNavigation" Value="Local" />
-		<Setter Property="IsHoldingEnabled" Value="True" />
-		<Setter Property="Padding" Value="0" />
-		<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-		<Setter Property="VerticalContentAlignment" Value="Center" />
-		<Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
-		<Setter Property="MinHeight" Value="0" />
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="ListViewItem">
-					<ListViewItemPresenter
-						CheckBrush="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
-						ContentMargin="{TemplateBinding Padding}"
-						CheckMode="Inline"
-						ContentTransitions="{TemplateBinding ContentTransitions}"
-						CheckBoxBrush="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
-						DragForeground="{ThemeResource ListViewItemDragForegroundThemeBrush}"
-						DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
-						DragBackground="{ThemeResource ListViewItemDragBackgroundThemeBrush}"
-						DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
-						FocusBorderBrush="{ThemeResource SystemControlForegroundAltHighBrush}"
-						FocusSecondaryBorderBrush="{ThemeResource SystemControlForegroundBaseHighBrush}"
-						HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-						PointerOverForeground="{ThemeResource SystemControlHighlightAltBaseHighBrush}"
-						PressedBackground="{ThemeResource SystemControlHighlightListMediumBrush}"
-						PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}"
-						PointerOverBackground="{ThemeResource SystemControlHighlightListLowBrush}"
-						ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
-						SelectedPressedBackground="{ThemeResource SystemControlHighlightListAccentHighBrush}"
-						SelectionCheckMarkVisualEnabled="True"
-						SelectedForeground="{ThemeResource SystemControlHighlightAltBaseHighBrush}"
-						SelectedPointerOverBackground="{ThemeResource SystemControlHighlightListAccentMediumBrush}"
-						SelectedBackground="{ThemeResource SystemControlHighlightListAccentLowBrush}"
-						VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
     <Style x:Key="FormsCarouselViewItem" TargetType="FlipViewItem">
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />

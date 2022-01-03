@@ -2,11 +2,12 @@ using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WRect = Windows.Foundation.Rect; 
+using WRect = Windows.Foundation.Rect;
+using Microsoft.Maui;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ViewToHandlerConverter : Microsoft.UI.Xaml.Data.IValueConverter
+	public class ViewToRendererConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var page = value as Page;
 				if (page != null)
 				{
-					return page.ToNative(page.FindMauiContext());
+					return page.ToNative(page.FindMauiContext(), true);
 				}
 			}
 
@@ -50,10 +51,8 @@ namespace Microsoft.Maui.Controls.Platform
 				_view = view;
 				_view.MeasureInvalidated += OnMeasureInvalidated;
 
-				var renderer = view.ToNative(view.FindMauiContext());
-
-				FrameworkElement = renderer;
-				Children.Add(renderer);
+				FrameworkElement = view.ToNative(view.FindMauiContext(), true);
+				Children.Add(FrameworkElement);
 
 				// make sure we re-measure once the template is applied
 				if (FrameworkElement != null)
@@ -63,7 +62,7 @@ namespace Microsoft.Maui.Controls.Platform
 						// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
 						// with all the controls in a consistent native state (i.e., loaded) so they'll actually
 						// have Bounds set
-						(_view as Controls.Compatibility.Layout)?.ForceLayout();
+						(_view as IView)?.InvalidateMeasure();
 						InvalidateMeasure();
 					};
 				}
@@ -77,7 +76,8 @@ namespace Microsoft.Maui.Controls.Platform
 			protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 			{
 				_view.IsInNativeLayout = true;
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, finalSize.Width, finalSize.Height));
+				// TODO MAUI:
+				//Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, finalSize.Width, finalSize.Height));
 
 				if (_view.Width <= 0 || _view.Height <= 0)
 				{

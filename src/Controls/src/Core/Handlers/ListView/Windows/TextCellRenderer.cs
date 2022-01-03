@@ -3,14 +3,24 @@ using System.Windows.Input;
 using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WApplication = Microsoft.UI.Xaml.Application;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class TextCellRenderer : ICellRenderer
+	public abstract class CellRenderer : ElementHandler<Cell, WDataTemplate>, IRegisterable, ICellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public CellRenderer() : base(ElementHandler.ElementMapper)
+		{
+		}
+
+		protected override WDataTemplate CreateNativeElement() =>
+			GetTemplate(VirtualView);
+
+		public abstract WDataTemplate GetTemplate(Cell cell);
+	}
+
+	public class TextCellRenderer : CellRenderer
+	{
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			if (cell.RealParent is ListView)
 			{
@@ -42,33 +52,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
-	public class EntryCellRenderer : ICellRenderer
+	public class EntryCellRenderer : CellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			return (WDataTemplate)WApplication.Current.Resources["EntryCell"];
 		}
 	}
 
-	public class ViewCellRenderer : ICellRenderer
+	public class ViewCellRenderer : CellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			return (WDataTemplate)WApplication.Current.Resources["ViewCell"];
 		}
 	}
 
-	public class SwitchCellRenderer : ICellRenderer
+	public class SwitchCellRenderer : CellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			return (WDataTemplate)WApplication.Current.Resources["SwitchCell"];
 		}
 	}
 
-	public class ImageCellRenderer : ICellRenderer
+	public class ImageCellRenderer : CellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			//if (cell.Parent is ListView)
 			//	return (WDataTemplate)WApplication.Current.Resources["ListImageCell"];

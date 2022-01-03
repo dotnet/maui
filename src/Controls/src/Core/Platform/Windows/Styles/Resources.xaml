@@ -7,6 +7,7 @@
         <ResourceDictionary Source="MauiControlsPageControlStyle.xaml" />
         <ResourceDictionary Source="ShellPageWrapper.xaml" />
         <ResourceDictionary Source="ShellStyles.xaml" />
+        <ResourceDictionary Source="../ListView/ListViewStyles.xaml" />
         <ResourceDictionary Source="../CollectionView/ItemsViewStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
