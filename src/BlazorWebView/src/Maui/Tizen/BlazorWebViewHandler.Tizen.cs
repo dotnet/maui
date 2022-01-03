@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 using Tizen.WebView;
 using TChromium = Tizen.WebView.Chromium;
@@ -49,8 +50,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override WebViewContainer CreateNativeView()
 		{
 			TChromium.Initialize();
-			Context!.CurrentApplication!.Terminated += (s, e) => TChromium.Shutdown();
-			return new WebViewContainer(Context!.NativeParent);
+			MauiApplication.Current.Terminated += (s, e) => TChromium.Shutdown();
+
+			return new WebViewContainer(NativeParent!);
 		}
 
 		protected override void ConnectHandler(WebViewContainer nativeView)

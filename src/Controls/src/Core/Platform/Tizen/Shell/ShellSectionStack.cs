@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _disposed = false;
 		bool _navBarIsVisible = true;
 
-		public ShellSectionStack(ShellSection section, IMauiContext context) : base(context?.Context?.BaseLayout)
+		public ShellSectionStack(ShellSection section, IMauiContext context) : base(context.GetNativeParent())
 		{
 			ShellSection = section;
 			MauiContext = context;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected EvasObject? NativeParent
 		{
-			get => MauiContext?.Context?.BaseLayout;
+			get => MauiContext?.GetNativeParent();
 		}
 
 		public virtual bool NavBarIsVisible

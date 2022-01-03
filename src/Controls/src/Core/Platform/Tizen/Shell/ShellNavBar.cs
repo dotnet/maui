@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Platform
 		private bool disposedValue;
 		bool _isTV = Device.Idiom == TargetIdiom.TV;
 
-		public ShellNavBar(IMauiContext context) : base(context?.Context?.BaseLayout)
+		public ShellNavBar(IMauiContext context) : base(context?.GetNativeParent())
 		{
 			MauiContext = context;
 
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected EvasObject? NativeParent
 		{
-			get => MauiContext?.Context?.BaseLayout;
+			get => MauiContext?.GetNativeParent();
 		}
 
 		public IShellController ShellController => Shell.Current;

@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var nativeWindow = Window.Content?.GetNative(true);
+			var nativeWindow = Window.Content?.GetNative(true) as Window;
 			if (nativeWindow == null)
 				return false;
 
@@ -25,11 +25,11 @@ namespace Microsoft.Maui
 			if (handler?.MauiContext == null)
 				return false;
 
-			_graphicsView = new SkiaGraphicsView(handler.MauiContext.Context!.BaseLayout);
+			_graphicsView = new SkiaGraphicsView(nativeWindow);
 			_graphicsView.Drawable = this;
 			_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
 
-			_touchLayer = new GestureLayer(handler.MauiContext.Context!.BaseLayout);
+			_touchLayer = new GestureLayer(nativeWindow);
 			_touchLayer.Attach(_graphicsView);
 			_touchLayer.SetTapCallback(GestureLayer.GestureType.Tap, GestureLayer.GestureState.Start, (data) =>
 			{
@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 				OnTappedInternal(new Point(DPExtensions.ConvertToScaledDP(x), DPExtensions.ConvertToScaledDP(y)));
 			});
 
-			handler.MauiContext.Context.SetOverlay(_graphicsView);
+			nativeWindow.SetOverlay(_graphicsView);
 			IsNativeViewInitialized = true;
 			return IsNativeViewInitialized;
 		}

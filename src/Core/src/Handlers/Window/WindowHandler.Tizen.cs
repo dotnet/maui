@@ -10,10 +10,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContent(WindowHandler handler, IWindow window)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = handler.MauiContext.Context ?? throw new InvalidOperationException($"{nameof(CoreUIAppContext)} should have been set by base class.");
 
 			var nativeContent = window.Content.ToContainerView(handler.MauiContext);
-			handler.MauiContext.Context.SetContent(nativeContent);
+
+			nativeContent.SetAlignment(-1, -1);
+			nativeContent.SetWeight(1, 1);
+			nativeContent.Show();
+			handler.MauiContext.GetModalStack().Reset();
+			handler.MauiContext.GetModalStack().Push(nativeContent);
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();

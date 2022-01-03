@@ -1,8 +1,9 @@
 using System;
-using Tizen.Applications;
+using ElmSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Tizen.Applications;
 
 namespace Microsoft.Maui
 {
@@ -21,9 +22,16 @@ namespace Microsoft.Maui
 		{
 			base.OnPreCreate();
 
+			Elementary.Initialize();
+			Elementary.ThemeOverlay();
+
 			var mauiApp = CreateMauiApp();
 
-			var rootContext = new MauiContext(mauiApp.Services, CoreUIAppContext.GetInstance(this));
+			var rootContext = new MauiContext(mauiApp.Services);
+
+			var nativeWindow = CoreAppExtensions.GetDefaultWindow();
+			nativeWindow.Initialize();
+			rootContext.AddWeakSpecific(nativeWindow);
 
 			_applicationContext = rootContext.MakeApplicationScope(this);
 
@@ -41,6 +49,7 @@ namespace Microsoft.Maui
 			this.SetApplicationHandler(Application, _applicationContext);
 
 			this.CreateNativeWindow(Application);
+
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
 		}

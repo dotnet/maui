@@ -71,6 +71,14 @@ namespace Microsoft.Maui.Platform
 			});
 		}
 
+		public void Reset()
+		{
+			while (InternalStack.Count > 0)
+			{
+				Pop();
+			}
+		}
+
 		void UpdateTopView()
 		{
 			if (_lastTop != InternalStack.LastOrDefault())

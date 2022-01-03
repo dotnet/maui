@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected EvasObject? NativeParent
 		{
-			get => MauiContext?.Context?.BaseLayout;
+			get => MauiContext.GetNativeParent();
 		}
 
 		public EvasObject NativeView

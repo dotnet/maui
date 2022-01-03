@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		EvasObject? _mainView;
 		IElement? _view;
 
-		public ContainerView(IMauiContext context) : this(context!.Context!.BaseLayout, context)
+		public ContainerView(IMauiContext context) : this(context.GetNativeParent(), context)
 		{
 		}
 

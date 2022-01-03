@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected EvasObject? NativeParent
 		{
-			get => MauiContext?.Context?.BaseLayout;
+			get => MauiContext?.GetNativeParent();
 		}
 
 		ISearchHandlerController SearchHandlerController => Element;

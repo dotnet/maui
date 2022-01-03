@@ -14,12 +14,6 @@ namespace Microsoft.Maui
 		{
 			AddWeakSpecific(context);
 		}
-#elif TIZEN
-		public MauiContext(IServiceProvider services, CoreUIAppContext context)
-			: this(services)
-		{
-			AddWeakSpecific(context);
-		}
 #endif
 
 		public MauiContext(IServiceProvider services)
@@ -35,9 +29,6 @@ namespace Microsoft.Maui
 #if __ANDROID__
 		public Android.Content.Context? Context =>
 			Services.GetService<Android.Content.Context>();
-#elif TIZEN
-		public CoreUIAppContext? Context =>
-			Services.GetService<CoreUIAppContext>();
 #endif
 
 		internal void AddSpecific<TService>(TService instance)

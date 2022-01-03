@@ -55,7 +55,7 @@ namespace Microsoft.Maui
 #elif WINDOWS
 			return imageSourceService.GetImageSourceAsync(imageSource);
 #elif TIZEN
-			var nativeImage = new NativeImage(mauiContext.Context!.NativeParent!);
+			var nativeImage = new NativeImage(mauiContext.GetNativeParent());
 			return imageSourceService.GetImageAsync(imageSource, nativeImage);
 #else
 			throw new NotImplementedException();

@@ -25,11 +25,9 @@ namespace Microsoft.Maui.Handlers
 
 		public void SetParent(INativeViewHandler parent) => Parent = parent;
 
-		public CoreUIAppContext? Context => MauiContext?.Context;
-
 		public INativeViewHandler? Parent { get; private set; }
 
-		public EvasObject? NativeParent => Context?.BaseLayout;
+		public EvasObject? NativeParent => MauiContext?.GetNativeParent();
 
 		~ViewHandler()
 		{

@@ -342,9 +342,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static void SetupInit(IMauiContext context, InitializationOptions options = null)
 		{
-			Context = context.Context.CurrentApplication;
-			NativeParent = context.Context.NativeParent;
 			MauiContext = context;
+			Context = options?.Context ?? MauiApplication.Current;
+			NativeParent = context.GetNativeParent();
 			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			if (!IsInitialized)

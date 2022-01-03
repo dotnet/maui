@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Hosting
 				// This creates a dummy MauiContext.
 
 				var services = MauiApplication.Current.Services;
-				MauiContext mauiContext = new MauiContext(services, CoreUIAppContext.GetInstance(MauiApplication.Current));
+				MauiContext mauiContext = new MauiContext(services);
 				ActivationState state = new ActivationState(mauiContext);
 
 				var options = services.GetService<InitializationOptions>();

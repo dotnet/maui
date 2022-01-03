@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 		GenItemClass _defaultClass = null;
 		IReadOnlyList<object> _itemsSource;
 
-		public ShellSearchResultList(IMauiContext context) : base(context?.Context?.BaseLayout)
+		public ShellSearchResultList(IMauiContext context) : base(context?.GetNativeParent())
 		{
 			MauiContext = context;
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected EvasObject NativeParent
 		{
-			get => MauiContext?.Context?.BaseLayout;
+			get => MauiContext.GetNativeParent();
 		}
 
 		public void UpdateLayout()
