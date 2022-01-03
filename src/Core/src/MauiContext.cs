@@ -19,12 +19,6 @@ namespace Microsoft.Maui
 		{
 			AddWeakSpecific(context);
 		}
-#elif TIZEN
-		public MauiContext(IServiceProvider services, CoreUIAppContext context)
-			: this(services)
-		{
-			AddWeakSpecific(context);
-		}
 #endif
 
 		public MauiContext(IServiceProvider services)

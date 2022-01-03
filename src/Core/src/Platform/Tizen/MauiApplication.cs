@@ -44,9 +44,16 @@ namespace Microsoft.Maui
 
 			Services = _applicationContext.Services;
 
+			Elementary.Initialize();
+			Elementary.ThemeOverlay();
+
 			var mauiApp = CreateMauiApp();
 
-			var rootContext = new MauiContext(mauiApp.Services, CoreUIAppContext.GetInstance(this));
+			var rootContext = new MauiContext(mauiApp.Services);
+
+			var nativeWindow = CoreAppExtensions.GetDefaultWindow();
+			nativeWindow.Initialize();
+			rootContext.AddWeakSpecific(nativeWindow);
 
 			_applicationContext = rootContext.MakeApplicationScope(this);
 

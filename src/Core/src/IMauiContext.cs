@@ -10,8 +10,6 @@ namespace Microsoft.Maui
 
 #if __ANDROID__
 		Android.Content.Context? Context { get; }
-#elif TIZEN
-		CoreUIAppContext? Context { get; }
 #endif
 	}
 }
