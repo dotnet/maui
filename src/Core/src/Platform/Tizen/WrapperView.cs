@@ -15,17 +15,15 @@ namespace Microsoft.Maui.Platform
 		Lazy<SkiaGraphicsView> _drawableCanvas;
 		Lazy<SKClipperView> _clipperView;
 		EvasObject? _content;
-		MauiDrawable _mauiDrawable;
 
 		public WrapperView(EvasObject parent) : base(parent)
 		{
-			_mauiDrawable = new MauiDrawable();
 			_drawableCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
 				var view = new SkiaGraphicsView(parent)
 				{
 					IgnorePixelScaling = true,
-					Drawable = _mauiDrawable,
+					Drawable = new MauiDrawable(),
 					PassEvents = true
 				};
 				view.Show();
@@ -55,25 +53,27 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateBackground(Paint? paint)
 		{
-			_mauiDrawable.Background = paint;
-			_drawableCanvas.Value.Invalidate();
+			UpdateDrawableCanvas(paint);
 		}
 
 		public void UpdateShape(IShape? shape)
 		{
-			_mauiDrawable.Shape = shape;
-			UpdateDrawableCanvas(false);
+			UpdateDrawableCanvas(shape);
 		}
 
 		public void UpdateBorder(IBorder border)
 		{
-			_mauiDrawable.Border = border;
+			((MauiDrawable)_drawableCanvas.Value.Drawable).Border = border;
 			UpdateShape(border.Shape);
 		}
 
 		partial void ShadowChanged()
 		{
-			_mauiDrawable.Shadow = Shadow;
+			if (!_drawableCanvas.IsValueCreated && Shadow is null)
+				return;
+
+			((MauiDrawable)_drawableCanvas.Value.Drawable).Shadow = Shadow;
+
 			if (Shadow != null)
 			{
 				_drawableCanvas.Value.SetClip(null);
@@ -83,9 +83,30 @@ namespace Microsoft.Maui.Platform
 
 		partial void ClipChanged()
 		{
-			_mauiDrawable.Clip = Clip;
+			if (_drawableCanvas.IsValueCreated || Clip is not null)
+			{
+				((MauiDrawable)_drawableCanvas.Value.Drawable).Clip = Clip;
+				UpdateDrawableCanvas(false);
+			}
 			_clipperView.Value.Invalidate();
-			UpdateDrawableCanvas(false);
+		}
+
+		void UpdateDrawableCanvas(Paint? paint)
+		{
+			if (_drawableCanvas.IsValueCreated || paint is not null)
+			{
+				((MauiDrawable)_drawableCanvas.Value.Drawable).Background = paint;
+				_drawableCanvas.Value.Invalidate();
+			}
+		}
+
+		void UpdateDrawableCanvas(IShape? shape)
+		{
+			if (_drawableCanvas.IsValueCreated || shape is not null)
+			{
+				((MauiDrawable)_drawableCanvas.Value.Drawable).Shape = shape;
+				_drawableCanvas.Value.Invalidate();
+			}
 		}
 
 		void UpdateDrawableCanvas(bool isShadowUpdated)
@@ -172,7 +193,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var shadowMargin = GetShadowMargin(Shadow);
 				_drawableCanvas.Value.UpdateBounds(Geometry.ToDP().ExpandTo(shadowMargin).ToPixel());
-				_mauiDrawable.ShadowThickness = shadowMargin;
+				((MauiDrawable)_drawableCanvas.Value.Drawable).ShadowThickness = shadowMargin;
 			}
 		}
 

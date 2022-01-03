@@ -42,20 +42,19 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this EvasObject nativeView, IView view)
 		{
+			var paint = view.Background;
+
 			if (nativeView is WrapperView wrapperView)
 			{
-				wrapperView.UpdateBackground(view.Background);
+				wrapperView.UpdateBackground(paint);
 			}
 			else if (nativeView is BorderView borderView)
 			{
-				borderView.ContainerView?.UpdateBackground(view.Background);
+				borderView.ContainerView?.UpdateBackground(paint);
 			}
-			else
+			else if (paint is not null)
 			{
-				if (view.Background is SolidPaint paint)
-				{
-					nativeView.UpdateBackgroundColor(paint.Color.ToNative());
-				}
+				nativeView.UpdateBackgroundColor(paint.ToNative());
 			}
 		}
 
