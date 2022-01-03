@@ -21,11 +21,9 @@ namespace Microsoft.Maui.Platform
 		Lazy<SkiaGraphicsView> _drawableCanvas;
 		Lazy<SKClipperView> _clipperView;
 		EvasObject? _content;
-		MauiDrawable _mauiDrawable;
 
 		public WrapperView(EvasObject parent) : base(parent)
 		{
-			_mauiDrawable = new MauiDrawable();
 			_drawableCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
 				var view = new SkiaGraphicsView(parent)
