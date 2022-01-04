@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		internal static void UpdateTextAlignment(this EditText view, TextAlignment horizontal, TextAlignment vertical)
 		{
-			if (!view.Context.HasRtlSupport())
+			if (!Rtl.IsSupported)
 			{
 				view.Gravity = vertical.ToVerticalGravityFlags() | horizontal.ToHorizontalGravityFlags();
 			}

@@ -136,12 +136,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateHorizontalTextAlignment()
 		{
-			_editText.UpdateHorizontalAlignment(_searchHandler.HorizontalTextAlignment, _control.Context.HasRtlSupport(), Microsoft.Maui.TextAlignment.Center.ToVerticalGravityFlags());
+			_editText.UpdateHorizontalAlignment(_searchHandler.HorizontalTextAlignment, TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
 		void UpdateVerticalTextAlignment()
 		{
-			_editText.UpdateVerticalAlignment(_searchHandler.VerticalTextAlignment, Microsoft.Maui.TextAlignment.Center.ToVerticalGravityFlags());
+			_editText.UpdateVerticalAlignment(_searchHandler.VerticalTextAlignment, TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
 		void UpdateTextTransform()

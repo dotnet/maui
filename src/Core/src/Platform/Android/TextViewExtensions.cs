@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this TextView textView, ITextAlignment text)
 		{
-			if (textView.Context!.HasRtlSupport())
+			if (Rtl.IsSupported)
 			{
 				// We want to use TextAlignment where possible because it doesn't conflict with the
 				// overall gravity of the underlying control

@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this EditText editText, ITextAlignment textAlignment)
 		{
-			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
+			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment);
 		}
 
 		public static void UpdateVerticalTextAlignment(this EditText editText, ITextAlignment entry)

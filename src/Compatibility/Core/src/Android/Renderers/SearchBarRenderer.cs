@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_editText == null)
 				return;
 
-			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment, Context.HasRtlSupport(), Microsoft.Maui.TextAlignment.Center.ToVerticalGravityFlags());
+			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment, Microsoft.Maui.TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
 		[PortHandler]

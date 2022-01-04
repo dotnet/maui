@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.PM;
@@ -95,12 +96,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 		}
 
-		protected static void ToggleRTLSupport(Context context, bool enabled)
-		{
-			context.ApplicationInfo.Flags = enabled
-				? context.ApplicationInfo.Flags | ApplicationInfoFlags.SupportsRtl
-				: context.ApplicationInfo.Flags & ~ApplicationInfoFlags.SupportsRtl;
-		}
+		static readonly Lazy<FieldInfo> isSupported = new Lazy<FieldInfo>(() => {
+			var type = Type.GetType("Microsoft.Maui.Platform.Rtl, Microsoft.Maui", throwOnError: true);
+			var field = type.GetField("IsSupported");
+			Assert.IsNotNull(field, "Microsoft.Maui.Platform.Rtl.IsSupported not found!");
+			return field;
+		});
+
+		protected static bool IsRTLSupported => (bool)isSupported.Value.GetValue(null);
+
+		protected static void SetIsRTLSupported(bool value) => isSupported.Value.SetValue(null, value);
 
 		protected IVisualElementRenderer GetRenderer(VisualElement element)
 		{

@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Adds semantics to every View for accessibility
 		/// </summary>
-		Semantics Semantics { get; }
+		Semantics? Semantics { get; }
 
 		/// <summary>
 		/// Gets the Path used to define the outline of the contents of a View.
