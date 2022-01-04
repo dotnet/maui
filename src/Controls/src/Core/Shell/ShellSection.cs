@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Controls
 			return (ShellSection)(ShellContent)page;
 		}
 
-		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, bool? animate, List<string> globalRoutes, bool isRelativePopping)
+		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, List<string> globalRoutes, bool isRelativePopping)
 		{
 			string route = "";
 			List<Page> navStack = null;
@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls
 							continue;
 						}
 
-						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, i == globalRoutes.Count - 1, false);
+						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, services, i == globalRoutes.Count - 1, false);
 						if (IsModal(page))
 						{
 							await PushModalAsync(page, IsNavigationAnimated(page));
@@ -469,9 +469,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, bool isLast, bool isPopping)
+		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
-			var content = Routing.GetOrCreateContent(route) as Page;
+			var content = Routing.GetOrCreateContent(route, services) as Page;
 			if (content == null)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
@@ -481,7 +481,7 @@ namespace Microsoft.Maui.Controls
 			return content;
 		}
 
-		internal async Task GoToAsync(ShellNavigationRequest request, ShellRouteParameters queryData, bool? animate, bool isRelativePopping)
+		internal async Task GoToAsync(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, bool isRelativePopping)
 		{
 			List<string> globalRoutes = request.Request.GlobalRoutes;
 			if (globalRoutes == null || globalRoutes.Count == 0)
@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			await PrepareCurrentStackForBeingReplaced(request, queryData, animate, globalRoutes, isRelativePopping);
+			await PrepareCurrentStackForBeingReplaced(request, queryData, services, animate, globalRoutes, isRelativePopping);
 
 			List<Page> modalPageStacks = new List<Page>();
 			List<Page> nonModalPageStacks = new List<Page>();
@@ -512,7 +512,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
 			{
 				bool isLast = i == globalRoutes.Count - 1;
-				var content = GetOrCreateFromRoute(globalRoutes[i], queryData, isLast, false);
+				var content = GetOrCreateFromRoute(globalRoutes[i], queryData, services, isLast, false);
 				if (content == null)
 				{
 					break;

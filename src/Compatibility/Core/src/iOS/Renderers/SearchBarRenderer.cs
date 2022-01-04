@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
+		[PortHandler]
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -54,6 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.Dispose(disposing);
 		}
 
+		[PortHandler]
 		protected override void OnElementChanged(ElementChangedEventArgs<SearchBar> e)
 		{
 			if (e.NewElement != null)
