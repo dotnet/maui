@@ -15,15 +15,15 @@
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
 
-    <!-- <DotNetVersionBandMonoToolchain>6.0.100</DotNetVersionBandMonoToolchain> -->
+    <DotNetVersionBandMonoToolchain>6.0.200</DotNetVersionBandMonoToolchain> -->
     <DotNetVersionBandEmscripten>6.0.100</DotNetVersionBandEmscripten>
     <!-- <DotNetVersionBandAndroid></DotNetVersionBandAndroid> -->
     <DotNetVersionBandApple>6.0.100</DotNetVersionBandApple>
   </PropertyGroup>
   <PropertyGroup>
     <!-- NOTE: temporarily hardcode 6.0.100, until we have new branding on dotnet/runtime packs -->
-    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">6.0.200</DotNetPreviewVersionBand>
+    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.200</DotNetVersionBand>
     <!-- Trim all characters after first `-` or `+` is encountered. -->
-    <!-- <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetPreviewVersionBand> -->
+    <!-- <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetVersionBand> -->
   </PropertyGroup>
 </Project>

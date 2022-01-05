@@ -17,7 +17,7 @@
     <DotNetToolPath>$(DotNetDirectoryWithSlash)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectoryWithSlash)packs/</DotNetPacksDirectory>
     <DotNetLibraryPacksDirectory>$(DotNetDirectoryWithSlash)library-packs/</DotNetLibraryPacksDirectory>
-    <DotNetSdkManifestsDirectory>$(DotNetDirectoryWithSlash)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectoryWithSlash)sdk-manifests/$(DotNetVersionBand)/</DotNetSdkManifestsDirectory>
     <DotNetTemplatePacksDirectory>$(DotNetDirectoryWithSlash)template-packs/</DotNetTemplatePacksDirectory>
   </PropertyGroup>
   <PropertyGroup>
