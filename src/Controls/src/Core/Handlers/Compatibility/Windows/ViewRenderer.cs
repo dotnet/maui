@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -20,13 +21,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public TElement? Element => ((IElementHandler)this).VirtualView as TElement;
 		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView;
 		public FrameworkElement? Parent => Control?.Parent as FrameworkElement;
-
+		bool _initialElementChangeCalled;
 		public ViewRenderer(IPropertyMapper mapper) : base(ViewHandler.ViewMapper)
 		{
 		}
 
-		protected abstract override TNativeView CreateNativeView();
+		protected override TNativeView CreateNativeView()
+		{
+			var oldElement = Element;
+			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, Element));
+			_initialElementChangeCalled = true;
+			return NativeView;
+		}
 
+		protected void SetNativeControl(TNativeView control)
+		{
+			// TODO MAUI: LOG ISSUE
+			if (Control != null && control != Control)
+				throw new InvalidOperationException("Changing the NativeView is currently not supported");
+
+			base.NativeView = control;
+		}
 
 		private protected override void OnConnectHandler(FrameworkElement nativeView)
 		{
@@ -42,7 +57,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var oldElement = Element;
 			base.SetVirtualView(view);
-			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, Element));
+
+			if (oldElement != null || !_initialElementChangeCalled)
+				OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, Element));
 		}
 
 		protected virtual Size MinimumSize()

@@ -10,12 +10,6 @@ namespace Microsoft.Maui.Handlers
 		FrameworkElement? INativeViewHandler.NativeView => this.GetWrappedNativeView();
 		FrameworkElement? INativeViewHandler.ContainerView => ContainerView;
 
-		public new WrapperView? ContainerView
-		{
-			get => (WrapperView?)base.ContainerView;
-			protected set => base.ContainerView = value;
-		}
-
 		public override void NativeArrange(Rectangle rect)
 		{
 			var nativeView = this.GetWrappedNativeView();
@@ -59,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 			oldParent?.Children.Remove(NativeView);
 
 			ContainerView ??= new WrapperView();
-			ContainerView.Child = NativeView;
+			((WrapperView)ContainerView).Child = NativeView;
 
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.Children.Insert(idx, ContainerView);
@@ -77,7 +71,7 @@ namespace Microsoft.Maui.Handlers
 			var oldIndex = oldParent?.Children.IndexOf(ContainerView);
 			oldParent?.Children.Remove(ContainerView);
 
-			ContainerView.Child = null;
+			((WrapperView)ContainerView).Child = null;
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)

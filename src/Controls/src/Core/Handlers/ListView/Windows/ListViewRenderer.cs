@@ -73,24 +73,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		protected override WListView CreateNativeView()
-		{
-			List = new ListViewTransparent(this)
-			{
-				IsSynchronizedWithCurrentItem = false,
-				ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
-				HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
-				FooterTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
-				ItemContainerStyle = (Microsoft.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
-				GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
-			};
-
-
-			List.SelectionChanged += OnControlSelectionChanged;
-
-			return List;
-		}
-
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
 			base.OnElementChanged(e);
@@ -111,6 +93,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.NewElement.ItemSelected += OnElementItemSelected;
 				e.NewElement.ScrollToRequested += OnElementScrollToRequested;
 				((ITemplatedItemsView<Cell>)e.NewElement).TemplatedItems.CollectionChanged += OnCollectionChanged;
+
+				if (List == null)
+				{
+					List = new ListViewTransparent(this)
+					{
+						IsSynchronizedWithCurrentItem = false,
+						ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
+						HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
+						FooterTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
+						ItemContainerStyle = (Microsoft.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
+						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
+					};
+
+					List.SelectionChanged += OnControlSelectionChanged;
+					SetNativeControl(List);
+				}
 
 				ReloadData();
 
@@ -412,6 +410,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			List.Header = Element.HeaderElement;
 		}
 
+
+		public override bool NeedsContainer 
+			=> ContainerView != null;
+
+		protected override void SetupContainer()
+		{
+		}
+
+		protected override void RemoveContainer()
+		{
+
+		}
+
 		void UpdateGrouping()
 		{
 			bool grouping = Element.IsGroupingEnabled;
@@ -435,22 +446,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					// Since we reuse our ScrollTo, we have to wait until the change completes or ChangeView has odd behavior.
 					_zoom.ViewChangeCompleted += OnViewChangeCompleted;
 
-					// Specific order to let SNC unparent the ListView for us
-					// TODO MAUI
-					//SetNativeControl(_zoom);
 					_zoom.ZoomedInView = List;
 				}
 				else
 				{
 					_zoom.CanChangeViews = true;
 				}
+
+				ContainerView = _zoom;
 			}
 			else
 			{
 				if (_zoom != null)
 					_zoom.CanChangeViews = false;
-				//else if (List != Control)
-				//	SetNativeControl(List);
 			}
 		}
 
