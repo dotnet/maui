@@ -36,19 +36,6 @@ namespace Microsoft.Maui.Essentials
 			// If we explicitly want only external locations we need to do some permissions checking
 			var externalOnly = TemporaryLocation == FileProviderLocation.External;
 
-			// Check to see if we are >= API Level 19 (KitKat) since we don't need to declare the permission on these API levels to save to the external cache/storage
-			// If we're not on 19 or higher we do need to check for permissions, but if we aren't limiting to external only, don't throw an exception if the
-			// permission wasn't declared because we can always fall back to internal cache
-			var hasPermission = Platform.HasApiLevel(BuildVersionCodes.Kitkat);
-
-			if (!hasPermission)
-			{
-				hasPermission = Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.WriteExternalStorage);
-
-				if (!hasPermission && externalOnly)
-					throw new PermissionException("Cannot access external storage, the explicitly chosen FileProviderLocation.");
-			}
-
 			// make sure the external storage is available
 			var hasExternalMedia = Platform.AppContext.ExternalCacheDir != null && IsMediaMounted(Platform.AppContext.ExternalCacheDir);
 
@@ -62,17 +49,13 @@ namespace Microsoft.Maui.Essentials
 
 			// based on permssions, return the correct directory
 			// if permission were required, then it would have already thrown
-			return hasPermission && hasExternalMedia
+			return hasExternalMedia
 				? Platform.AppContext.ExternalCacheDir
 				: Platform.AppContext.CacheDir;
 		}
 
 		static bool IsMediaMounted(Java.IO.File location) =>
-			Platform.HasApiLevel(BuildVersionCodes.Lollipop)
-				? AndroidEnvironment.GetExternalStorageState(location) == AndroidEnvironment.MediaMounted
-#pragma warning disable CS0618 // Type or member is obsolete
-				: AndroidEnvironment.GetStorageState(location) == AndroidEnvironment.MediaMounted;
-#pragma warning restore CS0618 // Type or member is obsolete
+			AndroidEnvironment.GetExternalStorageState(location) == AndroidEnvironment.MediaMounted;
 
 		internal static bool IsFileInPublicLocation(string filename)
 		{

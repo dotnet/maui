@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Platform
 {
 	public class NavigationRootManager
 	{
-		View? _navigationLayout;
 		IMauiContext _mauiContext;
 		AView? _rootView;
 		ViewFragment? _viewFragment;
@@ -21,9 +20,6 @@ namespace Microsoft.Maui.Platform
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
 		internal event EventHandler? RootViewChanged;
-
-		internal View NavigationLayout => _navigationLayout
-			?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
 
 		LayoutInflater LayoutInflater => _mauiContext?.GetLayoutInflater()
 			?? throw new InvalidOperationException($"LayoutInflater missing");
@@ -49,11 +45,7 @@ namespace Microsoft.Maui.Platform
 		{
 			mauiContext = mauiContext ?? _mauiContext;
 			var containerView = view.ToContainerView(mauiContext);
-			_navigationLayout = containerView.FindViewById(Resource.Id.navigation_layout);
-			_navigationLayout ??=
-				LayoutInflater
-					.Inflate(Resource.Layout.navigationlayout, null)
-					.JavaCast<CoordinatorLayout>();
+			var navigationLayout = containerView.FindViewById(Resource.Id.navigation_layout);
 
 			if (containerView is DrawerLayout dl)
 			{
@@ -67,19 +59,17 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				_rootView = _navigationLayout;
+				navigationLayout ??=
+				   LayoutInflater
+					   .Inflate(Resource.Layout.navigationlayout, null)
+					   .JavaCast<CoordinatorLayout>();
+
+				_rootView = navigationLayout;
 			}
 
 			if (DrawerLayout == null)
 			{
 				SetContentView(containerView);
-			}
-			else if (NavigationLayout.Parent == null)
-			{
-				NavigationLayout.LayoutParameters =
-					new DrawerLayout.LayoutParams(DrawerLayout.LayoutParams.MatchParent, DrawerLayout.LayoutParams.MatchParent);
-
-				DrawerLayout.AddView(NavigationLayout, 0);
 			}
 
 			RootViewChanged?.Invoke(this, EventArgs.Empty);
@@ -93,10 +83,7 @@ namespace Microsoft.Maui.Platform
 
 		}
 
-		internal virtual void SetContentView(AView? view) =>
-			SetContentView(view, FragmentManager);
-
-		internal virtual void SetContentView(AView? view, FragmentManager fragmentManager)
+		void SetContentView(AView? view)
 		{
 			if (view == null)
 			{
@@ -112,11 +99,11 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				_viewFragment = new ViewFragment(view);
-				fragmentManager
-						.BeginTransaction()
-						.Replace(Resource.Id.navigationlayout_content, _viewFragment)
-						.SetReorderingAllowed(true)
-						.Commit();
+				FragmentManager
+					.BeginTransaction()
+					.Replace(Resource.Id.navigationlayout_content, _viewFragment)
+					.SetReorderingAllowed(true)
+					.Commit();
 			}
 		}
 	}

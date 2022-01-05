@@ -44,15 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void SetColor(Color color)
 		{
 			var progress = color?.ToAndroid() ?? DefaultColor;
-
-			if (Forms.IsLollipopOrNewer)
-			{
-				IndeterminateTintList = ColorStateList.ValueOf(progress);
-			}
-			else
-			{
-				(Indeterminate ? IndeterminateDrawable : ProgressDrawable).SetColorFilter(color.ToAndroid(), FilterMode.SrcIn);
-			}
+			IndeterminateTintList = ColorStateList.ValueOf(progress);
 		}
 
 		public void SetBackground(Color color, Brush brush)
@@ -101,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			l += (width - squareSize) / 2;
 			t += (height - squareSize) / 2;
 			int strokeWidth;
-			if (Forms.SdkInt < BuildVersionCodes.N)
+			if (!Forms.IsNougatOrNewer)
 				strokeWidth = squareSize / _paddingRatio23;
 			else
 				strokeWidth = squareSize / _paddingRatio;

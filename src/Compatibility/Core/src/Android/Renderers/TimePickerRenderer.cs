@@ -37,9 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ElementController.SetValueFromRenderer(TimePicker.TimeProperty, new TimeSpan(hourOfDay, minute, 0));
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 
-			if (Forms.IsLollipopOrNewer)
-				_dialog.CancelEvent -= OnCancelButtonClicked;
-
+			_dialog.CancelEvent -= OnCancelButtonClicked;
 			_dialog = null;
 		}
 
@@ -59,8 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateCharacterSpacing();
 			UpdateFont();
 
-			if ((int)Forms.SdkInt > 16)
-				Control.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
+			Control.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -98,9 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_dialog.Hide();
 				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 
-				if (Forms.IsLollipopOrNewer)
-					_dialog.CancelEvent -= OnCancelButtonClicked;
-
+				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog?.Dispose();
 				_dialog = null;
 			}
@@ -109,10 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hours, int minutes)
 		{
 			var dialog = new TimePickerDialog(Context, this, hours, minutes, Is24HourView);
-
-			if (Forms.IsLollipopOrNewer)
-				dialog.CancelEvent += OnCancelButtonClicked;
-
+			dialog.CancelEvent += OnCancelButtonClicked;
 			return dialog;
 		}
 
@@ -127,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (disposing)
 			{
-				if (Forms.IsLollipopOrNewer && _dialog.IsAlive())
+				if (_dialog.IsAlive())
 					_dialog.CancelEvent -= OnCancelButtonClicked;
 
 				_dialog?.Dispose();
@@ -183,10 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
+			EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		[PortHandler]
