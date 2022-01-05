@@ -80,6 +80,11 @@ namespace Microsoft.Maui.Platform
 			if (nativeView is WrapperView wrapper)
 				wrapper.Shadow = view.Shadow;
 		}
+		public static void UpdateBorder(this AView nativeView, IView view)
+		{
+			if (nativeView is WrapperView wrapper)
+				wrapper.Border = (view as IBorder)?.Border;
+		}
 
 		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{

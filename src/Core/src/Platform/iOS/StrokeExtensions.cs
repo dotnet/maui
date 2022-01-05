@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Platform
 			nativeView.UpdateMauiCALayer(border);
 		}
 
-		internal static void UpdateMauiCALayer(this UIView nativeView, IBorderStroke border)
+		internal static void UpdateMauiCALayer(this UIView nativeView, IBorderStroke? border)
 		{
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
 
@@ -124,17 +124,21 @@ namespace Microsoft.Maui.Platform
 
 			if (backgroundLayer is MauiCALayer mauiCALayer)
 			{
+				backgroundLayer.Frame = nativeView.Bounds;
 				if (border is IView v)
 					mauiCALayer.SetBackground(v.Background);
 				else
 					mauiCALayer.SetBackground(new SolidPaint(Colors.Transparent));
-				mauiCALayer.SetBorderBrush(border.Stroke);
-				mauiCALayer.SetBorderWidth(border.StrokeThickness);
-				mauiCALayer.SetBorderDash(border.StrokeDashPattern, border.StrokeDashOffset);
-				mauiCALayer.SetBorderMiterLimit(border.StrokeMiterLimit);
-				mauiCALayer.SetBorderLineJoin(border.StrokeLineJoin);
-				mauiCALayer.SetBorderLineCap(border.StrokeLineCap);
-				mauiCALayer.SetBorderShape(border.Shape);
+				mauiCALayer.SetBorderBrush(border?.Stroke);
+				mauiCALayer.SetBorderWidth(border?.StrokeThickness ?? 0);
+				mauiCALayer.SetBorderDash(border?.StrokeDashPattern, border?.StrokeDashOffset ?? 0);
+				mauiCALayer.SetBorderMiterLimit(border?.StrokeMiterLimit ?? 0);
+				if (border != null)
+				{
+					mauiCALayer.SetBorderLineJoin(border.StrokeLineJoin);
+					mauiCALayer.SetBorderLineCap(border.StrokeLineCap);
+				}
+				mauiCALayer.SetBorderShape(border?.Shape);
 			}
 		}
 	}

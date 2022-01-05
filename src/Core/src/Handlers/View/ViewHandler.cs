@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.AnchorX)] = MapAnchorX,
 				[nameof(IView.AnchorY)] = MapAnchorY,
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+				[nameof(IBorder.Border)] = MapBorderView,
 #if ANDROID || WINDOWS
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
@@ -97,7 +98,7 @@ namespace Microsoft.Maui.Handlers
 				
 				return false;
 #else
-				return VirtualView?.Clip != null || VirtualView?.Shadow != null;
+				return VirtualView?.Clip != null || VirtualView?.Shadow != null || (VirtualView as IBorder)?.Border != null;
 #endif
 			}
 		}
@@ -273,6 +274,23 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
+		}
+
+		public static void MapBorderView(IViewHandler handler, IView view)
+		{
+			var border = (view as IBorder)?.Border;
+
+			if (border != null)
+			{
+				handler.HasContainer = true;
+			}
+			else
+			{
+				if (handler is ViewHandler viewHandler)
+					handler.HasContainer = viewHandler.NeedsContainer;
+			}
+
+ 			((NativeView?)handler.ContainerView)?.UpdateBorder(view);
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view);

@@ -74,7 +74,14 @@ namespace Microsoft.Maui.Platform
 				wrapper.Shadow = view.Shadow;
 			}
 		}
-		
+
+		public static void UpdateBorder(this FrameworkElement nativeView, IView view)
+		{
+			var border = (view as IBorder)?.Border;
+			if (nativeView is WrapperView wrapperView)
+				wrapperView.Border = border;
+		}
+
 		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
