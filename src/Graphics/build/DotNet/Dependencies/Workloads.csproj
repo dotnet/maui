@@ -1,14 +1,18 @@
 <Project Sdk="Microsoft.Build.NoTargets">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <DotNetVersionBandMonoToolchain Condition="'$(DotNetVersionBandMonoToolchain)' == ''">$(DotNetVersionBand)</DotNetVersionBandMonoToolchain>
+    <DotNetVersionBandEmscripten Condition="'$(DotNetVersionBandEmscripten)' == ''">$(DotNetVersionBand)</DotNetVersionBandEmscripten>
+    <DotNetVersionBandAndroid Condition="'$(DotNetVersionBandAndroid)' == ''">$(DotNetVersionBand)</DotNetVersionBandAndroid>
+    <DotNetVersionBandApple Condition="'$(DotNetVersionBandApple)' == ''">$(DotNetVersionBand)</DotNetVersionBandApple>
   </PropertyGroup>
   <ItemGroup>
-    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-$(DotNetPreviewVersionBand)"  Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-$(DotNetPreviewVersionBand)"      Version="[$(MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetPreviewVersionBand)"              Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetPreviewVersionBand)"          Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetPreviewVersionBand)"                  Version="[$(MicrosoftiOSSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(DotNetPreviewVersionBand)"                 Version="[$(MicrosofttvOSSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(DotNetPreviewVersionBand)"                Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-$(DotNetVersionBandMonoToolchain)"  Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-$(DotNetVersionBandEmscripten)"         Version="[$(MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetVersionBandAndroid)"                    Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetVersionBandApple)"                  Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetVersionBandApple)"                          Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(DotNetVersionBandApple)"                         Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(DotNetVersionBandApple)"                        Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
   </ItemGroup>
 </Project>
