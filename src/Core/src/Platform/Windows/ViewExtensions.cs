@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Platform
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 		}
 
-		public static void UpdateBackground(this ContentPanel nativeView, IBorder border) 
+		public static void UpdateBackground(this ContentPanel nativeView, IBorderStroke border) 
 		{
 			var hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -88,9 +88,9 @@ namespace Microsoft.Maui.Platform
 			{
 				nativeView?.UpdateBorderBackground(border);
 			}
-			else
+			else if(border is IView v)
 			{
-				nativeView?.UpdateNativeViewBackground(border);
+				nativeView?.UpdateNativeViewBackground(v);
 			}
 		}
 
@@ -197,14 +197,16 @@ namespace Microsoft.Maui.Platform
 			nativeView.MaxWidth = view.MaximumWidth;
 		}
 
-		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IView view)
+		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IBorderStroke border)
 		{
-			(nativeView as ContentPanel)?.UpdateBackground(view.Background);
+
+			if(border is IView v)
+			(nativeView as ContentPanel)?.UpdateBackground(v.Background);
 
 			if (nativeView is Control control)
 				control.UpdateBackground((Paint?)null);
-			else if (nativeView is Border border)
-				border.UpdateBackground(null);
+			else if (nativeView is Border b)
+				b.UpdateBackground(null);
 			else if (nativeView is Panel panel)
 				panel.UpdateBackground(null);
 		}

@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorder, ContentViewGroup>
+	public partial class BorderHandler : ViewHandler<IBorderView, ContentViewGroup>
 	{
 		protected override ContentViewGroup CreateNativeView()
 		{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 				NativeView.AddView(view.ToNative(MauiContext));
 		}
 
-		public static void MapContent(BorderHandler handler, IBorder border)
+		public static void MapContent(BorderHandler handler, IBorderView border)
 		{
 			handler.UpdateContent();
 		}
