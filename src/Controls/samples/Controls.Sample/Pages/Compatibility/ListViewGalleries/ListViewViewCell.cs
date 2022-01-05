@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Pages.ListViewGalleries
 					return cell;
 				}),
 
-				ItemsSource = Enumerable.Range(0, 2)
+				ItemsSource = Enumerable.Range(0, 100)
 					.Select(i => (i % 2 == 0) ? new { Text = "Coffee: ", Image = "coffee.png" } : new { Text = "Vegetables: ", Image = "vegetables.jpg" })
 					.ToList()
 			};
