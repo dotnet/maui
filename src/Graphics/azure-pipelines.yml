@@ -102,10 +102,10 @@ stages:
               displayName: install .NET
               errorActionPreference: stop
 
-            - pwsh: |
-                rm $env:DOTNET_ROOT\metadata\workloads\6.0.200\installertype\msi
-              displayName: don't use msi .net
-              errorActionPreference: stop
+            #- pwsh: |
+            #    rm $env:DOTNET_ROOT\metadata\workloads\6.0.200\installertype\msi
+            #  displayName: don't use msi .net
+            #  errorActionPreference: stop
 
             - pwsh: |
                 dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT" -p:InstallDotNet=false
