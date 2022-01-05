@@ -1,7 +1,9 @@
 using System.IO;
 using System.Threading.Tasks;
 using Foundation;
+#if !(MACCATALYST || MACOS)
 using MessageUI;
+#endif
 using ObjCRuntime;
 using UIKit;
 
@@ -10,19 +12,28 @@ namespace Microsoft.Maui.Essentials
 	public static partial class Email
 	{
 		internal static bool IsComposeSupported =>
+#if !(MACCATALYST || MACOS)
 			MFMailComposeViewController.CanSendMail ||
-			MainThread.InvokeOnMainThread(() => UIApplication.SharedApplication.CanOpenUrl(NSUrl.FromString("mailto:")));
+				MainThread.InvokeOnMainThread(() => UIApplication.SharedApplication.CanOpenUrl(NSUrl.FromString("mailto:")));
+#else
+			false;
+#endif
 
 		static Task PlatformComposeAsync(EmailMessage message)
 		{
+#if !(MACCATALYST || MACOS)
 			if (MFMailComposeViewController.CanSendMail)
 				return ComposeWithMailCompose(message);
 			else
 				return ComposeWithUrl(message);
+#else
+			return Task.CompletedTask;
+#endif
 		}
 
 		static Task ComposeWithMailCompose(EmailMessage message)
 		{
+#if !(MACCATALYST || MACOS)
 			// do this first so we can throw as early as possible
 			var parentController = Platform.GetCurrentViewController();
 
@@ -61,6 +72,9 @@ namespace Microsoft.Maui.Essentials
 			parentController.PresentViewController(controller, true, null);
 
 			return tcs.Task;
+#else
+			return Task.CompletedTask;
+#endif
 		}
 
 		static async Task ComposeWithUrl(EmailMessage message)
