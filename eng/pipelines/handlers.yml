@@ -128,6 +128,7 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  provisioningVS: true
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -227,6 +228,7 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  provisioningVS: true
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -271,6 +273,7 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  provisioningVS: true
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
