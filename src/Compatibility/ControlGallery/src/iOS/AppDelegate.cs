@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			// Create and add a native Button 
 			var uibutton = new UIButton(UIButtonType.System);
 			uibutton.SetTitle("Toggle Text Amount", UIControlState.Normal);
-			uibutton.Font = UIFont.FromName("Helvetica", 14f);
+			uibutton.TitleLabel.Font = UIFont.FromName("Helvetica", 14f);
 
 
 			uibutton.TouchUpInside += (sender, args) =>
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			var uibuttonColor = new UIButton(UIButtonType.System);
 			uibuttonColor.SetTitle("Toggle Text Color Binding", UIControlState.Normal);
-			uibuttonColor.Font = UIFont.FromName("Helvetica", 14f);
+			uibuttonColor.TitleLabel.Font = UIFont.FromName("Helvetica", 14f);
 			uibuttonColor.TouchUpInside += (sender, args) => uilabel.TextColor = UIColor.Blue;
 
 			var nativeColorConverter = new ColorConverter();
