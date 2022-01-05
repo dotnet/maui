@@ -6,9 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Platform
 {
-	internal static partial class MauiContextExtensions
+	public static partial class MauiContextExtensions
 	{
-		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
+		internal static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
 			var config = mauiContext?.Context?.Resources?.Configuration;
 			if (config == null)
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 			return config.LayoutDirection.ToFlowDirection();
 		}
 
-		public static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext) =>
+		internal static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<NavigationRootManager>();
 
 		public static LayoutInflater GetLayoutInflater(this IMauiContext mauiContext)
@@ -44,11 +44,11 @@ namespace Microsoft.Maui.Platform
 				?? throw new InvalidOperationException("FragmentManager Not Found");
 		}
 
-		public static AppCompatActivity GetActivity(this IMauiContext mauiContext) =>
+		internal static AppCompatActivity GetActivity(this IMauiContext mauiContext) =>
 			(mauiContext.Context?.GetActivity() as AppCompatActivity)
 			?? throw new InvalidOperationException("AppCompatActivity Not Found");
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext,
+		internal static IMauiContext MakeScoped(this IMauiContext mauiContext,
 			LayoutInflater? layoutInflater = null,
 			FragmentManager? fragmentManager = null,
 			Android.Content.Context? context = null,

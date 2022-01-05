@@ -5,6 +5,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
+using AndroidX.Navigation.Fragment;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
 

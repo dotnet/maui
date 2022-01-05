@@ -7,6 +7,7 @@ using AndroidX.AppCompat.View;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
@@ -31,8 +32,10 @@ namespace Microsoft.Maui.Platform
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
-		internal NavHostFragment NavHost =>
+		public NavHostFragment NavHost =>
 			_navHost ?? throw new InvalidOperationException($"NavHost cannot be null");
+
+		public NavController NavController => NavHost.NavController;
 
 		internal FragmentNavigator FragmentNavigator =>
 			_fragmentNavigator ?? throw new InvalidOperationException($"FragmentNavigator cannot be null");
@@ -55,7 +58,7 @@ namespace Microsoft.Maui.Platform
 					this);
 
 			MauiContext =
-				mauiContext.MakeScoped(inflater, context: inflater.Context);						
+				mauiContext.MakeScoped(inflater, context: inflater.Context);
 		}
 
 		/*
@@ -95,7 +98,6 @@ namespace Microsoft.Maui.Platform
 			ActiveRequestedArgs = args;
 			IReadOnlyList<IView> newPageStack = args.NavigationStack;
 			bool animated = args.Animated;
-			var navController = NavHost.NavController;
 			var previousNavigationStack = NavigationStack;
 			var previousNavigationStackCount = previousNavigationStack.Count;
 			bool initialNavigation = NavigationStack.Count == 0;
@@ -159,7 +161,7 @@ namespace Microsoft.Maui.Platform
 				for (int i = fragmentNavDestinations.Count; i < newPageStack.Count; i++)
 				{
 					var dest = AddFragmentDestination();
-					navController.Navigate(dest.Id);
+					Navigate(args, dest.Id);
 				}
 			}
 			// User just wants to replace the currently visible page but the number
@@ -169,14 +171,14 @@ namespace Microsoft.Maui.Platform
 			else if (newPageStack.Count == fragmentNavDestinations.Count)
 			{
 				int lastFragId = fragmentNavDestinations[newPageStack.Count - 1].Id;
-				navController.PopBackStack();
-				navController.Navigate(lastFragId);
+				PopBackStack(args);
+				Navigate(args, lastFragId);
 			}
 			// Our back stack has more entries on it then  
 			else
 			{
 				int popToId = fragmentNavDestinations[newPageStack.Count - 1].Id;
-				navController.PopBackStack(popToId, false);
+				PopBackStack(args, popToId, false);
 			}
 
 			// We only keep destinations around that are on the backstack
@@ -212,6 +214,22 @@ namespace Microsoft.Maui.Platform
 			{
 				te.Toolbar.Handler.UpdateValue(nameof(IToolbar.BackButtonVisible));
 			}
+		}
+
+		void Navigate(NavigationRequest args, int resId)
+		{
+			NavigationView?
+				.Handler?
+				.Invoke(nameof(NavControllerNavigateToResIdRequest),
+				new NavControllerNavigateToResIdRequest(this, args, resId, null, null, null));
+		}
+
+		void PopBackStack(NavigationRequest args, int? destinationId = null, bool? inclusive = null)
+		{
+			NavigationView?
+				.Handler?
+				.Invoke(nameof(NavControllerPopBackStackRequest),
+				new NavControllerPopBackStackRequest(this, args, destinationId, inclusive));
 		}
 
 		public virtual FragmentNavigator.Destination AddFragmentDestination()
@@ -430,7 +448,7 @@ namespace Microsoft.Maui.Platform
 
 				if (nativeToolbar != null && toolbar != null && toolbar.Handler?.MauiContext != null)
 				{
-					if(toolbar.Handler is ToolbarHandler th)
+					if (toolbar.Handler is ToolbarHandler th)
 					{
 						th.SetupWithNavController(controller, _stackNavigationManager);
 					}
