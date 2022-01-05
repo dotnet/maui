@@ -19,6 +19,7 @@ namespace Maui.Controls.Sample.Pages.ListViewGalleries
 					cell.SetBinding(ImageCell.ImageSourceProperty, ".");
 					return cell;
 				}),
+
 				ItemsSource = Enumerable.Range(0, 100)
 					.Select(i => (i % 2 == 0) ? "coffee.png" : "vegetables.jpg")
 					.ToList()

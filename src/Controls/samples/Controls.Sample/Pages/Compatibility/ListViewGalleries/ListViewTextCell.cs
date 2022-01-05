@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Pages.ListViewGalleries
 					cell.SetBinding(TextCell.TextProperty, ".");
 					return cell;
 				}),
-				ItemsSource = Enumerable.Range(0, 100).Select(i=> $"Text {i}").ToList()
+				ItemsSource = Enumerable.Range(0, 100).Select(i => $"Text {i}").ToList()
 			};
 		}
 	}
