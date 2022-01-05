@@ -103,7 +103,7 @@ stages:
               errorActionPreference: stop
 
             #- pwsh: |
-            #    rm $env:DOTNET_ROOT\metadata\workloads\6.0.100\installertype\msi
+            #    rm $env:DOTNET_ROOT\metadata\workloads\6.0.200\installertype\msi
             #  displayName: don't use msi .net
             #  errorActionPreference: stop
 
