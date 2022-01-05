@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility
+namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BoundsTypeConverter")]
 	public sealed class BoundsTypeConverter : TypeConverter
