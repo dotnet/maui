@@ -204,16 +204,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnRemovePageRequested(object sender, NavigationRequestedEventArgs nre)
 		{
-			Console.WriteLine($"OnRemovePageRequest!!!!!!! - start - {nre.Page}");
-
-
-
 			Control.RemovePage(GetNavigationItem(nre.Page));
 			_pageMap.Remove(nre.Page);
 			Platform.GetRenderer(nre.Page)?.Dispose();
 			nre.Task = Task.FromResult(true);
-
-			Console.WriteLine($"OnRemovePageRequest!!!!!!! - end");
 		}
 
 		void OnInsertPageBeforeRequested(object sender, NavigationRequestedEventArgs nre)

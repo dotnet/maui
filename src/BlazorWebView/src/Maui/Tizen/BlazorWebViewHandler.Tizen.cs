@@ -88,6 +88,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (url.StartsWith(AppOrigin))
 			{
 				var allowFallbackOnHostPage = url.EndsWith("/");
+				url = QueryStringHelper.RemovePossibleQueryString(url);
 				if (_webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
 					var header = $"HTTP/1.0 200 OK\r\n";

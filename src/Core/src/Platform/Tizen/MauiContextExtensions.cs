@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Tizen.UIExtensions.NUI;
 using Tizen.NUI;
 
 namespace Microsoft.Maui.Platform
@@ -7,5 +8,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static Window GetPlatformWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<Window>();
+
+		public static NavigationStack GetModalStack(this IMauiContext mauiContext) =>
+			mauiContext.GetNativeWindow().GetModalStack()!;
 	}
 }

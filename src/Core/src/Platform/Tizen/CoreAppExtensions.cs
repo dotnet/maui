@@ -1,6 +1,4 @@
 using System;
-using System.Reflection;
-using ElmSharp;
 using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
 using Tizen.NUI;
@@ -9,15 +7,11 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class CoreAppExtensions
 	{
-		public static Window? MainWindow { get; set; }
-
 		public static IWindow GetWindow(this CoreApplication application)
 		{
-			var nativeWindow = CoreAppContext.GetInstance(application)?.MainWindow;
-
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.PlatformView is Window win && win == MainWindow)
+				if (window?.Handler?.PlatformView is Window win && win == GetDefaultWindow())
 					return window;
 			}
 
@@ -51,7 +45,6 @@ namespace Microsoft.Maui.Platform
 			applicationContext.Services.InvokeLifecycleEvents<TizenLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext);
-
 			var window = application.CreateWindow(activationState);
 
 			tizenWindow.SetWindowHandler(window, mauiContext);
@@ -81,21 +74,9 @@ namespace Microsoft.Maui.Platform
 			return userInfo;
 		}
 
-		public static EWindow GetDefaultWindow()
+		public static Window GetDefaultWindow()
 		{
-			if (MainWindow != null)
-				return MainWindow;
-
-			return MainWindow = GetPreloadedWindow() ?? new EWindow("MauiDefaultWindow");
-		}
-
-		static EWindow? GetPreloadedWindow()
-		{
-			var type = typeof(EWindow);
-			// Use reflection to avoid breaking compatibility. ElmSharp.Window.CreateWindow() is has been added since API6.
-			var methodInfo = type.GetMethod("CreateWindow", BindingFlags.NonPublic | BindingFlags.Static);
-
-			return (EWindow?)methodInfo?.Invoke(null, new object[] { "FormsWindow" });
+			return Window.Instance;
 		}
 	}
 }
