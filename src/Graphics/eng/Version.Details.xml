@@ -4,7 +4,7 @@
       <Uri>https://github.com/dotnet/installer</Uri>
       <Sha>284e87c2680b1b29f9c07743bdd2d45b88a4bcd6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.1" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.1" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>3a25a7f1cc446b60678ed25c9d829420d6321eba</Sha>
     </Dependency>
