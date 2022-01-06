@@ -1517,7 +1517,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-			protected internal FormsNavigationBar(IntPtr handle) : base(handle)
+			protected internal FormsNavigationBar(NativeHandle handle) : base(handle)
 			{
 			}
 

@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 
 			readonly IntPtr _handle;
 
-			NSApplication(IntPtr handle)
+			NSApplication(NativeHandle handle)
 			{
 				_handle = handle;
 			}
