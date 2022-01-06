@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Controls.Platform;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -17,7 +18,10 @@ namespace Microsoft.Maui.DeviceTests
 			formattedString.Spans.Add(new Span { Text = "HELLO" });
 			formattedString.Spans.Add(new Span { Text = "WORLD" });
 
-			var fontManager = formattedString.GetFontManager();
+			var label = new Label();
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
 			var plainText = formattedString.ToString();
 			var actual = await InvokeOnMainThreadAsync(() =>
