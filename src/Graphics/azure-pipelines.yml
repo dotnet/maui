@@ -73,7 +73,7 @@ stages:
             vmImage: windows-2022
           steps:
 
-            - template: eng/pipelines/common/provision.yml
+            - template: eng/pipelines/common/provision.yaml
                 parameters:
                   platform: 'windows'
 
