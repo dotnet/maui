@@ -132,14 +132,14 @@ stages:
                 dir "C:\Program Files (x86)\Windows Kits\10\References\"
               displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
 
-            - pwsh: |
-                $VS_ROOT = (& dotnet vs where --prop=InstallationPath)[0]
-                echo "##vso[task.setvariable variable=VS_ROOT]$VS_ROOT"
-                $MSBUILD_EXE = "$VS_ROOT\MSBuild\Current\Bin\MSBuild.exe"
-                echo "##vso[task.setvariable variable=MSBUILD_EXE]$MSBUILD_EXE"
-                echo "Using MSBuild: $MSBUILD_EXE"
-              displayName: set up the msbuild envvar
-              errorActionPreference: stop
+            #- pwsh: |
+            #    $VS_ROOT = (& dotnet vs where --prop=InstallationPath)[0]
+            #    echo "##vso[task.setvariable variable=VS_ROOT]$VS_ROOT"
+            #    $MSBUILD_EXE = "$VS_ROOT\MSBuild\Current\Bin\MSBuild.exe"
+            #    echo "##vso[task.setvariable variable=MSBUILD_EXE]$MSBUILD_EXE"
+            #    echo "Using MSBuild: $MSBUILD_EXE"
+            #  displayName: set up the msbuild envvar
+            #  errorActionPreference: stop
 
             #- pwsh: |
             #    & $env:MSBUILD_EXE /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
