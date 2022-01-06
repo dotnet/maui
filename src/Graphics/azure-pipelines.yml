@@ -2,7 +2,7 @@ variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
   DotNet.Cli.Telemetry.OptOut: true
-  provisioningVS: true
+  provisioningVS: false
   provisionator.path: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
   provisionator.vs: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
   provisionator.extraArguments: '--v'
