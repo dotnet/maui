@@ -23,7 +23,5 @@
   <PropertyGroup>
     <!-- NOTE: temporarily hardcode 6.0.100, until we have new branding on dotnet/runtime packs -->
     <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.200</DotNetVersionBand>
-    <!-- Trim all characters after first `-` or `+` is encountered. -->
-    <!-- <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetVersionBand> -->
   </PropertyGroup>
 </Project>
