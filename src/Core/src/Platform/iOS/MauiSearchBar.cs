@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		protected internal MauiSearchBar(IntPtr handle) : base(handle)
+		protected internal MauiSearchBar(NativeHandle handle) : base(handle)
 		{
 		}
 

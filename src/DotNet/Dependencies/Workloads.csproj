@@ -3,8 +3,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <!-- TODO: hardcode 6.0.100 until we get: https://github.com/dotnet/runtime/pull/62787 -->
-    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.100" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-$(DotNetPreviewVersionBand)" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+    <!-- TODO: emsdk still on 6.0.100 -->
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100"     Version="[$(MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetPreviewVersionBand)"     Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetPreviewVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
