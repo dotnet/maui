@@ -73,6 +73,10 @@ stages:
             vmImage: windows-2022
           steps:
 
+            - template: eng/pipelines/common/provision.yml
+                parameters:
+                  platform: 'windows'
+
             - task: NuGetToolInstaller@0
               displayName: install new nuget
               inputs:
