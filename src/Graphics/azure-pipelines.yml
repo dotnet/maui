@@ -139,7 +139,7 @@ stages:
 
             - pwsh: |
                 # $VS_ROOT = (& dotnet vs where -version '[17.1,18.0)' --prop=InstallationPath)[0]
-                $VS_ROOT = 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise'
+                $VS_ROOT = 'C:\Program Files\Microsoft Visual Studio\2022\Preview'
                 echo "##vso[task.setvariable variable=VS_ROOT]$VS_ROOT"
                 $MSBUILD_EXE = "$VS_ROOT\MSBuild\Current\Bin\MSBuild.exe"
                 echo "##vso[task.setvariable variable=MSBUILD_EXE]$MSBUILD_EXE"
