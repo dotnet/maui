@@ -141,9 +141,9 @@ stages:
               displayName: set up the msbuild envvar
               errorActionPreference: stop
 
-            - pwsh: |
-                & $env:MSBUILD_EXE /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
-              displayName: build classic solutions
+            #- pwsh: |
+            #    & $env:MSBUILD_EXE /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
+            #  displayName: build classic solutions
 
             - pwsh: |
                 & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
