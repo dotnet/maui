@@ -146,7 +146,7 @@ stages:
             #  displayName: build classic solutions
 
             - pwsh: |
-                & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
+                & msbuild /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
               displayName: build net6 solutions
 
             - task: NuGetCommand@2
