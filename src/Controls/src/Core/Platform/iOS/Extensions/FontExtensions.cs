@@ -20,6 +20,6 @@ namespace Microsoft.Maui.Controls.Platform
 			=> fontElement.ToFont().ToUIFont(fontElement.GetFontManager());
 
 		internal static IFontManager GetFontManager(this Element element)
-			=> element.Handler?.GetRequiredService<IFontManager>() ?? MauiUIApplicationDelegate.Current.Services.GetRequiredService<IFontManager>();
+			=> element?.FindMauiContext()?.Services?.GetRequiredService<IFontManager>() ?? MauiUIApplicationDelegate.Current.Services.GetRequiredService<IFontManager>();
 	}
 }

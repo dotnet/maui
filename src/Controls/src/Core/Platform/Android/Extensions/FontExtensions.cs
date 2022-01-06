@@ -26,6 +26,6 @@ namespace Microsoft.Maui.Controls.Platform
 			=> fontManager.GetTypeface(Font.OfSize(fontfamily, 0.0).WithAttributes(attr)) ?? fontManager.DefaultTypeface;
 
 		internal static IFontManager GetFontManager(this Element element)
-			=> element.Handler?.GetRequiredService<IFontManager>() ?? MauiApplication.Current.Services.GetRequiredService<IFontManager>();
+			=> element?.FindMauiContext()?.Services?.GetRequiredService<IFontManager>() ?? MauiApplication.Current.Services.GetRequiredService<IFontManager>();
 	}
 }
