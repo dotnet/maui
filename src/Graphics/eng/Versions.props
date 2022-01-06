@@ -14,7 +14,7 @@
     <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.11.546</MicrosoftmacOSSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
-    <DotNetVersionBandMonoToolchain>6.0.200</DotNetVersionBandMonoToolchain>
+    <DotNetVersionBandMonoToolchain>6.0.100</DotNetVersionBandMonoToolchain>
     <DotNetVersionBandEmscripten>6.0.100</DotNetVersionBandEmscripten>
     <!-- <DotNetVersionBandAndroid></DotNetVersionBandAndroid> -->
     <DotNetVersionBandApple>6.0.100</DotNetVersionBandApple>
