@@ -1,5 +1,5 @@
 using System;
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	internal interface IDisconnectable
 	{

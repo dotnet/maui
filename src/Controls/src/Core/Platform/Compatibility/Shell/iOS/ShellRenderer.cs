@@ -7,10 +7,13 @@ using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellRenderer : UIViewController, IShellContext, IVisualElementRenderer, IEffectControlProvider
+	public class ShellRenderer : UIViewController, IShellContext, INativeViewHandler
 	{
+		public static IPropertyMapper<Shell, ShellRenderer> Mapper = new PropertyMapper<Shell, ShellRenderer>(ViewHandler.ViewMapper);
+		public static CommandMapper<Shell, ShellRenderer> CommandMapper = new CommandMapper<Shell, ShellRenderer>(ViewHandler.ViewCommandMapper);
+
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public ShellRenderer()
 		{
@@ -69,6 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		IShellFlyoutRenderer _flyoutRenderer;
 		Task _activeTransition = Task.CompletedTask;
 		IShellItemRenderer _incomingRenderer;
+		IMauiContext _mauiContext;
 
 		IShellFlyoutRenderer FlyoutRenderer
 		{
@@ -91,13 +95,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public Shell Shell => (Shell)Element;
 		public UIViewController ViewController => FlyoutRenderer.ViewController;
 
-		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint) => new SizeRequest(new Size(100, 100));
-
-		public void RegisterEffect(Effect effect)
-		{
-			throw new NotImplementedException();
-		}
-
 		public void SetElement(VisualElement element)
 		{
 			if (Element != null)
@@ -106,6 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnElementSet((Shell)Element);
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(null, Element));
+			Mapper.UpdateProperties(this, Element);
 		}
 
 		public virtual void SetElementSize(Size size)
@@ -131,12 +129,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected virtual IShellFlyoutRenderer CreateFlyoutRenderer()
 		{
-			// HACK
-			if (UIApplication.SharedApplication?.Delegate?.GetType()?.FullName == "XamarinFormsPreviewer.iOS.AppDelegate")
-			{
-				return new DesignerFlyoutRenderer(this);
-			}
-
 			return new ShellFlyoutRenderer()
 			{
 				FlyoutTransition = new SlideFlyoutTransition()
@@ -207,7 +199,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception exc)
 			{
-				Forms.MauiContext?.CreateLogger<ShellRenderer>()?.LogWarning(exc, "Failed on changing current item");
+				_mauiContext?.CreateLogger<ShellRenderer>()?.LogWarning(exc, "Failed on changing current item");
 			}
 		}
 
@@ -275,7 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception exc)
 			{
-				Forms.MauiContext?.CreateLogger<ShellRenderer>()?.LogWarning(exc, "Failed to SetCurrentShellItemController");
+				_mauiContext?.CreateLogger<ShellRenderer>()?.LogWarning(exc, "Failed to SetCurrentShellItemController");
 			}
 		}
 
@@ -289,13 +281,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_incomingRenderer != value ||
 				value.ShellItem != this.Shell.CurrentItem)
 			{
-				(value as Controls.Platform.Compatibility.IDisconnectable)?.Disconnect();
+				(value as IDisconnectable)?.Disconnect();
 				value?.Dispose();
 				return;
 			}
 
 			var oldRenderer = _currentShellItemRenderer;
-			(oldRenderer as Controls.Platform.Compatibility.IDisconnectable)?.Disconnect();
+			(oldRenderer as IDisconnectable)?.Disconnect();
 			var newRenderer = value;
 
 			_currentShellItemRenderer = value;
@@ -332,11 +324,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected virtual void UpdateBackgroundColor()
 		{
-			var color = Shell.BackgroundColor;
+			var color = Shell.BackgroundColor.ToNative();
 			if (color == null)
-				color = ColorExtensions.BackgroundColor.ToColor();
+				color = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor;
 
-			FlyoutRenderer.View.BackgroundColor = color.ToUIColor();
+			FlyoutRenderer.View.BackgroundColor = color;
 		}
 
 		void SetupCurrentShellItem()
@@ -351,26 +343,52 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		// this won't work on the previewer if it's private
-		internal class DesignerFlyoutRenderer : IShellFlyoutRenderer
+		bool IViewHandler.HasContainer { get => false; set { } }
+
+		object IViewHandler.ContainerView => null;
+
+		IView IViewHandler.VirtualView => Element;
+
+		object IElementHandler.NativeView => NativeView;
+
+		Maui.IElement IElementHandler.VirtualView => Element;
+
+		IMauiContext IElementHandler.MauiContext => _mauiContext;
+
+		UIView INativeViewHandler.NativeView => NativeView;
+
+		UIView INativeViewHandler.ContainerView => null;
+
+		UIViewController INativeViewHandler.ViewController => this;
+
+		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) => new Size(100, 100);
+
+		void IViewHandler.NativeArrange(Rectangle rect)
 		{
-			readonly UIViewController _parent;
+			//TODO I don't think we need this
+		}
 
-			public DesignerFlyoutRenderer(UIViewController parent)
-			{
-				_parent = parent;
-			}
-			public UIViewController ViewController => _parent;
+		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
+		{
+			_mauiContext = mauiContext;
+		}
 
-			public UIView View => _parent.View;
+		void IElementHandler.SetVirtualView(Maui.IElement view)
+		{
+			SetElement((VisualElement)view);		}
 
-			public void AttachFlyout(IShellContext context, UIViewController content)
-			{
-			}
+		void IElementHandler.UpdateValue(string property)
+		{
+			Mapper.UpdateProperty(this, Element, property);
+		}
 
-			public void Dispose()
-			{
-			}
+		void IElementHandler.Invoke(string command, object args)
+		{
+			CommandMapper.Invoke(this, Element, command, args);
+		}
+
+		void IElementHandler.DisconnectHandler()
+		{
 		}
 	}
 }

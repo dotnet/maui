@@ -8,9 +8,9 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellSectionRootRenderer : UIViewController, IShellSectionRootRenderer, Controls.Platform.Compatibility.IDisconnectable
+	public class ShellSectionRootRenderer : UIViewController, IShellSectionRootRenderer, IDisconnectable
 	{
 		#region IShellSectionRootRenderer
 
@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		ShellContent _currentContent;
 		int _currentIndex = 0;
 		IShellSectionRootHeader _header;
-		IVisualElementRenderer _isAnimatingOut;
-		Dictionary<ShellContent, IVisualElementRenderer> _renderers = new Dictionary<ShellContent, IVisualElementRenderer>();
+		INativeViewHandler _isAnimatingOut;
+		Dictionary<ShellContent, INativeViewHandler> _renderers = new Dictionary<ShellContent, INativeViewHandler>();
 		IShellPageRendererTracker _tracker;
 		bool _didLayoutSubviews;
 		int _lastTabThickness = Int32.MinValue;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidLoad();
 
 			_containerArea = new UIView();
-			if (Forms.IsiOS11OrNewer)
+			if (NativeVersion.IsAtLeast(11))
 				_containerArea.InsetsLayoutMarginsFromSafeArea = false;
 
 			View.AddSubview(_containerArea);
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 
 
-		void Controls.Platform.Compatibility.IDisconnectable.Disconnect()
+		void IDisconnectable.Disconnect()
 		{
 			_pageAnimation?.StopAnimation(true);
 			_pageAnimation = null;
@@ -141,9 +141,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				foreach (var renderer in _renderers)
 				{
 					var oldRenderer = renderer.Value;
-					var element = oldRenderer.Element;
-					element?.ClearValue(Platform.RendererProperty);
-					(renderer.Value as Controls.Platform.Compatibility.IDisconnectable)?.Disconnect();
+					var element = oldRenderer.VirtualView;
+					(renderer.Value as IDisconnectable)?.Disconnect();
 				}
 			}
 		}
@@ -155,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (disposing && ShellSection != null)
 			{
-				(this as Controls.Platform.Compatibility.IDisconnectable).Disconnect();
+				(this as IDisconnectable).Disconnect();
 
 				this.RemoveFromParentViewController();
 
@@ -172,9 +171,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (oldRenderer.ViewController != null)
 						oldRenderer.ViewController.RemoveFromParentViewController();
 
-					var element = oldRenderer.Element;
-					element?.ClearValue(Platform.RendererProperty);
-					oldRenderer?.Dispose();
+					var element = oldRenderer.VirtualView;
+					oldRenderer?.DisconnectHandler();
 				}
 
 				_renderers.Clear();
@@ -331,8 +329,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		UIViewPropertyAnimator CreateContentAnimator(
-			IVisualElementRenderer oldRenderer,
-			IVisualElementRenderer newRenderer,
+			INativeViewHandler oldRenderer,
+			INativeViewHandler newRenderer,
 			int oldIndex,
 			int newIndex,
 			UIView containerView)
@@ -358,7 +356,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void RemoveNonVisibleRenderers()
 		{
-			IVisualElementRenderer activeRenderer = null;
+			INativeViewHandler activeRenderer = null;
 			var activeItem = ShellSection?.CurrentItem;
 
 			if (activeItem is IShellContentController scc &&
@@ -384,7 +382,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						if (oldRenderer.NativeView != null)
 						{
 							oldRenderer.ViewController.RemoveFromParentViewController();
-							oldRenderer.Dispose();
+							oldRenderer.DisconnectHandler();
 						}
 					}
 				}
@@ -470,7 +468,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_renderers.Remove(oldItem);
 					oldRenderer.NativeView.RemoveFromSuperview();
 					oldRenderer.ViewController.RemoveFromParentViewController();
-					oldRenderer.Dispose();
+					oldRenderer.DisconnectHandler();
 				}
 			}
 
@@ -489,14 +487,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		IVisualElementRenderer SetPageRenderer(Page page, ShellContent shellContent)
+		INativeViewHandler SetPageRenderer(Page page, ShellContent shellContent)
 		{
 			var oldRenderer = Platform.GetRenderer(page);
 			if (oldRenderer != null)
-				oldRenderer?.Dispose();
+				oldRenderer?.DisconnectHandler();
 
 			var renderer = Platform.CreateRenderer(page);
-			Platform.SetRenderer(page, renderer);
 			_renderers[shellContent] = renderer;
 
 			return renderer;
@@ -511,7 +508,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_header != null)
 			{
 				tabThickness = HeaderHeight;
-				var headerTop = Forms.IsiOS11OrNewer ? View.SafeAreaInsets.Top : TopLayoutGuide.Length;
+				var headerTop = NativeVersion.IsAtLeast(11) ? View.SafeAreaInsets.Top : TopLayoutGuide.Length;
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
@@ -521,7 +518,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			nfloat top;
 			nfloat right;
 			nfloat bottom;
-			if (Forms.IsiOS11OrNewer)
+			if (NativeVersion.IsAtLeast(11))
 			{
 				left = View.SafeAreaInsets.Left;
 				top = View.SafeAreaInsets.Top;

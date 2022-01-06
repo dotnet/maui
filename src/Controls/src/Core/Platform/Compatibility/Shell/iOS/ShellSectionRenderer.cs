@@ -9,9 +9,9 @@ using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellSectionRenderer : UINavigationController, IShellSectionRenderer, IAppearanceObserver, Controls.Platform.Compatibility.IDisconnectable
+	public class ShellSectionRenderer : UINavigationController, IShellSectionRenderer, IAppearanceObserver, IDisconnectable
 	{
 		#region IShellContentRenderer
 
@@ -198,9 +198,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 
 
-		void Controls.Platform.Compatibility.IDisconnectable.Disconnect()
+		void IDisconnectable.Disconnect()
 		{
-			(_renderer as Controls.Platform.Compatibility.IDisconnectable)?.Disconnect();
+			(_renderer as IDisconnectable)?.Disconnect();
 
 			if (_displayedPage != null)
 				_displayedPage.PropertyChanged -= OnDisplayedPagePropertyChanged;
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_disposed = true;
 				_renderer.Dispose();
 				_appearanceTracker.Dispose();
-				(this as Controls.Platform.Compatibility.IDisconnectable).Disconnect();
+				(this as IDisconnectable).Disconnect();
 
 				foreach (var tracker in ShellSection.Stack)
 				{
@@ -315,7 +315,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var beforeRenderer = Platform.GetRenderer(before);
 
 			var renderer = Platform.CreateRenderer(page);
-			Platform.SetRenderer(page, renderer);
 
 			var tracker = _context.CreatePageRendererTracker();
 			tracker.ViewController = renderer.ViewController;
@@ -464,9 +463,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected virtual void UpdateTabBarItem()
 		{
 			Title = ShellSection.Title;
-			_ = _context.ApplyNativeImageAsync(ShellSection, ShellSection.IconProperty, icon =>
+
+			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
-				TabBarItem = new UITabBarItem(ShellSection.Title, icon, null);
+				TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
 			});
 		}
@@ -489,8 +489,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var renderer = Platform.GetRenderer(page);
 			if (renderer != null)
 			{
-				renderer.Dispose();
-				page.ClearValue(Platform.RendererProperty);
+				renderer.DisconnectHandler();
 			}
 		}
 
@@ -586,7 +585,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void PushPage(Page page, bool animated, TaskCompletionSource<bool> completionSource = null)
 		{
 			var renderer = Platform.CreateRenderer(page);
-			Platform.SetRenderer(page, renderer);
 
 			var tracker = _context.CreatePageRendererTracker();
 			tracker.ViewController = renderer.ViewController;
@@ -715,7 +713,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (coordinator != null && coordinator.IsInteractive)
 				{
 					// handle swipe to dismiss gesture 
-					if (Forms.IsiOS10OrNewer)
+					if (NativeVersion.IsAtLeast(10))
 						coordinator.NotifyWhenInteractionChanges(OnInteractionChanged);
 					else
 						coordinator.NotifyWhenInteractionEndsUsingBlock(OnInteractionChanged);

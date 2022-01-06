@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_currentCustomLocalStateData = localStateData;
 
 			// TODO MAUI FIX FOR COMPAT
-			//IVisualElementRenderer dragSourceRenderer = localStateData?.SourceNativeView as IVisualElementRenderer;
+			//INativeViewHandler dragSourceRenderer = localStateData?.SourceNativeView as INativeViewHandler;
 			package = localStateData?.DataPackage;
 			var dragSourceElement = _currentCustomLocalStateData?.SourceElement;// ?? dragSourceRenderer?.Element;
 

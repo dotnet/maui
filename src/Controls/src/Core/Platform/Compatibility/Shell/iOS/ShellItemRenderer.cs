@@ -9,9 +9,9 @@ using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate, Controls.Platform.Compatibility.IDisconnectable
+	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate, IDisconnectable
 	{
 		#region IShellItemRenderer
 
@@ -118,13 +118,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			};
 		}
 
-		void Controls.Platform.Compatibility.IDisconnectable.Disconnect()
+		void IDisconnectable.Disconnect()
 		{
 			if (_sectionRenderers != null)
 			{
 				foreach (var kvp in _sectionRenderers.ToList())
 				{
-					var renderer = kvp.Value as Controls.Platform.Compatibility.IDisconnectable;
+					var renderer = kvp.Value as IDisconnectable;
 					renderer?.Disconnect();
 					kvp.Value.ShellSection.PropertyChanged -= OnShellSectionPropertyChanged;
 				}
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (disposing)
 			{
-				(this as Controls.Platform.Compatibility.IDisconnectable).Disconnect();
+				(this as IDisconnectable).Disconnect();
 
 				foreach (var kvp in _sectionRenderers.ToList())
 				{
