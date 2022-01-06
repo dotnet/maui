@@ -9,6 +9,9 @@ parameters:
     default:
       - Debug
       - Release
+  - name: Provision
+    type: boolean
+    default: true
 
 trigger:
   branches:
@@ -76,6 +79,7 @@ stages:
             - template: /eng/pipelines/common/provision.yml
               parameters:
                 platform: 'windows'
+                provisioningVS: $(Provision)
 
             - task: NuGetToolInstaller@0
               displayName: install new nuget

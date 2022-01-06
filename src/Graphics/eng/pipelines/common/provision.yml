@@ -1,6 +1,7 @@
 parameters:
   platform : ''
   skipXcode: false
+  provisioningVS: false
 
 steps:
 
