@@ -3,6 +3,9 @@ variables:
   IsRunningOnCI: true
   DotNet.Cli.Telemetry.OptOut: true
   provisioningVS: true
+  provisionator.path: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+  provisionator.vs: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
+  provisionator.extraArguments: '--v'
 
 parameters:
   - name: BuildConfigurations
