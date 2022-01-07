@@ -144,11 +144,11 @@ stages:
               displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
 
             - pwsh: |
-                & $env:MSBUILD_EXE /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
+                & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe' /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
               displayName: build classic solutions
 
             - pwsh: |
-                # $VS_ROOT = (& dotnet vs where -version '[17.1,18.0)' --prop=InstallationPath)[0]
+                # $VS_ROOT = (& dotnet vs where --prop=InstallationPath)[0]
                 $VS_ROOT = 'C:\Program Files\Microsoft Visual Studio\2022\Preview'
                 echo "##vso[task.setvariable variable=VS_ROOT]$VS_ROOT"
                 $MSBUILD_EXE = "$VS_ROOT\MSBuild\Current\Bin\MSBuild.exe"
