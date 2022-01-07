@@ -15,5 +15,7 @@ namespace Microsoft.Maui
 		public ISwipeItems TopItems { get; }
 
 		public ISwipeItems BottomItems { get; }
+
+		public bool IsOpen { get; set; }
 	}
 }

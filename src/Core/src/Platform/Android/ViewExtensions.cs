@@ -95,7 +95,10 @@ namespace Microsoft.Maui.Platform
 				nativeView.UpdateMauiDrawable(border);
 		}
 
-		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
+		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null) =>
+			nativeView.UpdateBackground(view.Background, defaultBackground);
+
+		public static void UpdateBackground(this AView nativeView, Paint? background, Drawable? defaultBackground = null)
 		{
 			// Remove previous background gradient if any
 			if (nativeView.Background is MauiDrawable mauiDrawable)
@@ -104,7 +107,7 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.Dispose();
 			}
 
-			var paint = view.Background;
+			var paint = background;
 
 			if (paint.IsNullOrEmpty())
 			{

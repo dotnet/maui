@@ -5,7 +5,7 @@ using System.Windows.Input;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class SwipeItemView : ContentView, ISwipeItem, ISwipeItemView
+	public class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView
 	{
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(SwipeItemView), null,
 			propertyChanging: (bo, o, n) => ((SwipeItemView)bo).OnCommandChanging(),

@@ -14,9 +14,11 @@ namespace Microsoft.Maui.Handlers
 			return new MauiSwipeView(Context);
 		}
 
+
+
 		public override void SetVirtualView(IView view)
 		{
-			NativeView.Element = view;
+			NativeView.Element = (ISwipeView)view;
 			base.SetVirtualView(view);
 		}
 	}

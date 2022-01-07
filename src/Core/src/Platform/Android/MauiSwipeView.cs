@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 
 		readonly Dictionary<ISwipeItem, object> _swipeItems;
 		readonly Context _context;
-		View? _scrollParent;
+		//View? _scrollParent;
 		SwipeViewPager? _viewPagerParent;
 		AView? _contentView;
 		LinearLayoutCompat? _actionView;
@@ -42,13 +42,14 @@ namespace Microsoft.Maui.Platform
 		SwipeDirection? _swipeDirection;
 		float _swipeOffset;
 		float _swipeThreshold;
-		double _previousScrollX;
-		double _previousScrollY;
+		//double _previousScrollX;
+		//double _previousScrollY;
 		bool _isSwipeEnabled;
 		bool _isResettingSwipe;
 		bool _isOpen;
 		OpenSwipeItem _previousOpenSwipeItem;
-		bool _isDisposed;
+		//bool _isDisposed;
+		IMauiContext MauiContext => Element?.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
 		AView Control { get; }
 		internal ISwipeView? Element { get; set; }
@@ -58,9 +59,9 @@ namespace Microsoft.Maui.Platform
 			_context = context;
 
 			_swipeItems = new Dictionary<ISwipeItem, object>();
-
 			this.SetClipToOutline(true);
 
+			_density = context.GetActivity()?.Resources?.DisplayMetrics?.Density ?? 0;
 			Control = new AView(_context);
 			AddView(Control, LayoutParams.MatchParent);
 		}
@@ -217,7 +218,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnTouchEvent(e);
 
-			if (e.Action == MotionEventActions.Move && !ShouldInterceptTouch(e))
+			if (e?.Action == MotionEventActions.Move && !ShouldInterceptTouch(e))
 				return true;
 
 			ProcessSwipingInteractions(e);
@@ -313,17 +314,17 @@ namespace Microsoft.Maui.Platform
 
 		public override bool DispatchTouchEvent(MotionEvent? e)
 		{
-			if (e.Action == MotionEventActions.Down)
+			if (e?.Action == MotionEventActions.Down)
 			{
 				_initialPoint = new APointF(e.GetX() / _density, e.GetY() / _density);
 			}
 
-			if (e.Action == MotionEventActions.Move)
+			if (e?.Action == MotionEventActions.Move)
 			{
 				ResetSwipe(e);
 			}
 
-			if (e.Action == MotionEventActions.Up)
+			if (e?.Action == MotionEventActions.Up)
 			{
 				var touchUpPoint = new APointF(e.GetX() / _density, e.GetY() / _density);
 
@@ -422,8 +423,11 @@ namespace Microsoft.Maui.Platform
 			return swipeItems != null && swipeItems.Where(s => s.IsVisible).Count() > 0;
 		}
 
-		bool ProcessSwipingInteractions(MotionEvent e)
+		bool ProcessSwipingInteractions(MotionEvent? e)
 		{
+			if (e == null)
+				return false;
+
 			bool? handled = true;
 			var point = new APointF(e.GetX() / _density, e.GetY() / _density);
 
@@ -648,9 +652,9 @@ namespace Microsoft.Maui.Platform
 			if (_contentView == null || _actionView != null)
 				return;
 
-			SwipeItems items = GetSwipeItemsByDirection();
+			ISwipeItems? items = GetSwipeItemsByDirection();
 
-			if (items == null || items?.Count == 0)
+			if (items?.Count == 0 || items == null)
 				return;
 
 			_actionView = new LinearLayoutCompat(_context);
@@ -666,17 +670,7 @@ namespace Microsoft.Maui.Platform
 			{
 				AView? swipeItem = null;
 
-				if (item is ISwipeItem formsSwipeItem)
-				{
-					// TODO MAUI wire up invoke from view to here
-					//formsSwipeItem.PropertyChanged += OnSwipeItemPropertyChanged;
-
-					swipeItem = CreateSwipeItem(formsSwipeItem);
-					_actionView.AddView(swipeItem);
-					_swipeItems.Add(formsSwipeItem, swipeItem);
-				}
-
-				if (item is SwipeItemView formsSwipeItemView)
+				if (item is ISwipeItemView formsSwipeItemView)
 				{
 					//formsSwipeItemView.PropertyChanged += OnSwipeItemPropertyChanged;
 
@@ -685,8 +679,14 @@ namespace Microsoft.Maui.Platform
 					UpdateSwipeItemViewLayout(formsSwipeItemView);
 					_swipeItems.Add(formsSwipeItemView, swipeItem);
 				}
+				else if (item is ISwipeItemMenuItem menuItem)
+				{
+					swipeItem = CreateSwipeItem(menuItem);
+					_actionView.AddView(swipeItem);
+					_swipeItems.Add(item, swipeItem);
+				}
 
-				if ()
+				if (swipeItem != null)
 					swipeItems.Add(swipeItem);
 			}
 
@@ -765,13 +765,7 @@ namespace Microsoft.Maui.Platform
 
 			if (view != null && view is AView nativeView)
 			{
-				bool hidden = false;
-
-				if (item is ISwipeItem swipeItem)
-					hidden = !swipeItem.IsVisible;
-
-				if (item is SwipeItemView swipeItemView)
-					hidden = !swipeItemView.IsVisible;
+				bool hidden = item.IsVisible;
 
 				_swipeThreshold = 0;
 				nativeView.Visibility = hidden ? ViewStates.Gone : ViewStates.Visible;
@@ -799,18 +793,22 @@ namespace Microsoft.Maui.Platform
 			return swipeItems;
 		}
 
-		AView CreateSwipeItem(ISwipeItem formsSwipeItem)
+		AView CreateSwipeItem(ISwipeItemMenuItem formsSwipeItem)
 		{
+			if (_contentView == null)
+				throw new InvalidOperationException("ContentView cannot be null when calling CreateSwipeItem");
+
 			var swipeButton = new AButton(_context)
 			{
-				Background = new ColorDrawable(formsSwipeItem.BackgroundColor.ToAndroid()),
 				Text = formsSwipeItem.Text ?? string.Empty
 			};
+
+			swipeButton.UpdateBackground(formsSwipeItem.Background);
 
 			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
 				swipeButton.ContentDescription = formsSwipeItem.AutomationId;
 
-			var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
+			var textColor = GetSwipeItemColor(formsSwipeItem.Background?.ToColor());
 
 			if (textColor != null)
 				swipeButton.SetTextColor(textColor.ToNative());
@@ -819,34 +817,36 @@ namespace Microsoft.Maui.Platform
 
 			int contentHeight = _contentView.Height;
 			int contentWidth = (int)_context.ToPixels(SwipeItemWidth);
-			int iconSize = formsSwipeItem.IconImageSource != null ? Math.Min(contentHeight, contentWidth) / 2 : 0;
 
-			_ = this.ApplyDrawableAsync(formsSwipeItem, MenuItem.IconImageSourceProperty, Context, drawable =>
-			{
-				if (drawable != null)
-				{
-					int drawableWidth = drawable.IntrinsicWidth;
-					int drawableHeight = drawable.IntrinsicHeight;
+			int iconSize = 0;
+			//int iconSize = formsSwipeItem.IconImageSource != null ? Math.Min(contentHeight, contentWidth) / 2 : 0;
 
-					if (drawableWidth > drawableHeight)
-					{
-						var iconWidth = iconSize;
-						var iconHeight = drawableHeight * iconWidth / drawableWidth;
-						drawable.SetBounds(0, 0, iconWidth, iconHeight);
-					}
-					else
-					{
-						var iconHeight = iconSize;
-						var iconWidth = drawableWidth * iconHeight / drawableHeight;
-						drawable.SetBounds(0, 0, iconWidth, iconHeight);
-					}
+			//_ = this.ApplyDrawableAsync(formsSwipeItem, MenuItem.IconImageSourceProperty, Context, drawable =>
+			//{
+			//	if (drawable != null)
+			//	{
+			//		int drawableWidth = drawable.IntrinsicWidth;
+			//		int drawableHeight = drawable.IntrinsicHeight;
 
-					if (textColor != null)
-						drawable.SetColorFilter(textColor.ToNative(), FilterMode.SrcAtop);
-				}
+			//		if (drawableWidth > drawableHeight)
+			//		{
+			//			var iconWidth = iconSize;
+			//			var iconHeight = drawableHeight * iconWidth / drawableWidth;
+			//			drawable.SetBounds(0, 0, iconWidth, iconHeight);
+			//		}
+			//		else
+			//		{
+			//			var iconHeight = iconSize;
+			//			var iconWidth = drawableWidth * iconHeight / drawableHeight;
+			//			drawable.SetBounds(0, 0, iconWidth, iconHeight);
+			//		}
 
-				swipeButton.SetCompoundDrawables(null, drawable, null, null);
-			});
+			//		if (textColor != null)
+			//			drawable.SetColorFilter(textColor.ToNative(), FilterMode.SrcAtop);
+			//	}
+
+			//	swipeButton.SetCompoundDrawables(null, drawable, null, null);
+			//});
 
 			var textSize = !string.IsNullOrEmpty(swipeButton.Text) ? (int)swipeButton.TextSize : 0;
 			var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
@@ -860,38 +860,41 @@ namespace Microsoft.Maui.Platform
 			return swipeButton;
 		}
 
-		AView CreateSwipeItemView(SwipeItemView swipeItemView)
+		AView CreateSwipeItemView(ISwipeItemView swipeItemView)
 		{
-			var renderer = Platform.CreateRenderer(swipeItemView, _context);
-			Platform.SetRenderer(swipeItemView, renderer);
-			var swipeItem = renderer?.View;
+			var swipeItem = swipeItemView.ToNative(MauiContext, true);
 			swipeItem.Visibility = swipeItemView.IsVisible ? ViewStates.Visible : ViewStates.Gone;
 
 			return swipeItem;
 		}
 
-		void UpdateSwipeItemViewLayout(SwipeItemView swipeItemView)
+		void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
 		{
 			var swipeItemSize = GetSwipeItemSize(swipeItemView);
 
-			swipeItemView.Layout(new Rectangle(0, 0, swipeItemSize.Width, swipeItemSize.Height));
+			swipeItemView?.Handler?.GetWrappedNativeView()?.InvalidateMeasure(swipeItemView);
+			//swipeItemView.Layout(new Rectangle(0, 0, swipeItemSize.Width, swipeItemSize.Height));
 		}
 
 		void UpdateIsSwipeEnabled()
 		{
-			_isSwipeEnabled = Element.IsEnabled;
+			_isSwipeEnabled = Element?.IsEnabled ?? false;
 		}
 
 		void UpdateSwipeTransitionMode()
 		{
-			if (Element.IsSet(Specifics.SwipeTransitionModeProperty))
-				_swipeTransitionMode = Element.OnThisPlatform().GetSwipeTransitionMode();
-			else
-				_swipeTransitionMode = SwipeTransitionMode.Reveal;
+			// TODO MAUI
+			//if (Element.IsSet(Specifics.SwipeTransitionModeProperty))
+			//	_swipeTransitionMode = Element.OnThisPlatform().GetSwipeTransitionMode();
+			//else
+			_swipeTransitionMode = SwipeTransitionMode.Reveal;
 		}
 
-		Color GetSwipeItemColor(Color backgroundColor)
+		Color? GetSwipeItemColor(Color? backgroundColor)
 		{
+			if (backgroundColor == null)
+				return null;
+
 			var luminosity = 0.2126f * backgroundColor.Red + 0.7152f * backgroundColor.Green + 0.0722f * backgroundColor.Blue;
 
 			return luminosity < 0.75f ? Colors.White : Colors.Black;
@@ -904,14 +907,15 @@ namespace Microsoft.Maui.Platform
 			if (items == null)
 				return;
 
-			foreach (var item in items)
-			{
-				if (item is SwipeItem formsSwipeItem)
-					formsSwipeItem.PropertyChanged -= OnSwipeItemPropertyChanged;
+			// TODO MAUI
+			//foreach (var item in items)
+			//{
+			//	if (item is SwipeItem formsSwipeItem)
+			//		formsSwipeItem.PropertyChanged -= OnSwipeItemPropertyChanged;
 
-				if (item is SwipeItemView formsSwipeItemView)
-					formsSwipeItemView.PropertyChanged -= OnSwipeItemPropertyChanged;
-			}
+			//	if (item is SwipeItemView formsSwipeItemView)
+			//		formsSwipeItemView.PropertyChanged -= OnSwipeItemPropertyChanged;
+			//}
 		}
 
 		void DisposeSwipeItems()
@@ -932,6 +936,9 @@ namespace Microsoft.Maui.Platform
 
 		void Swipe(bool animated = false)
 		{
+			if (_contentView == null)
+				return;
+
 			var offset = _context.ToPixels(ValidateSwipeOffset(_swipeOffset));
 			_isOpen = offset != 0;
 			var swipeAnimationDuration = animated ? SwipeAnimationDuration : 0;
@@ -942,39 +949,39 @@ namespace Microsoft.Maui.Platform
 				{
 					case SwipeDirection.Left:
 					case SwipeDirection.Right:
-						_contentView.Animate().TranslationX(offset).SetDuration(swipeAnimationDuration);
+						_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
 						break;
 					case SwipeDirection.Up:
 					case SwipeDirection.Down:
-						_contentView.Animate().TranslationY(offset).SetDuration(swipeAnimationDuration);
+						_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
 						break;
 				}
 			}
 
-			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
+			if (_swipeTransitionMode == SwipeTransitionMode.Drag && Element != null && _actionView != null)
 			{
 				int actionSize;
 				switch (_swipeDirection)
 				{
 					case SwipeDirection.Left:
-						_contentView.Animate().TranslationX(offset).SetDuration(swipeAnimationDuration);
+						_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
 						actionSize = (int)_context.ToPixels(Element.RightItems.Count * SwipeItemWidth);
-						_actionView.Animate().TranslationX(actionSize - Math.Abs(offset)).SetDuration(swipeAnimationDuration);
+						_actionView.Animate()?.TranslationX(actionSize - Math.Abs(offset))?.SetDuration(swipeAnimationDuration);
 						break;
 					case SwipeDirection.Right:
-						_contentView.Animate().TranslationX(offset).SetDuration(swipeAnimationDuration);
+						_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
 						actionSize = (int)_context.ToPixels(Element.LeftItems.Count * SwipeItemWidth);
-						_actionView.Animate().TranslationX(-actionSize + offset).SetDuration(swipeAnimationDuration);
+						_actionView.Animate()?.TranslationX(-actionSize + offset)?.SetDuration(swipeAnimationDuration);
 						break;
 					case SwipeDirection.Up:
-						_contentView.Animate().TranslationY(offset).SetDuration(swipeAnimationDuration);
+						_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
 						actionSize = _contentView.Height;
-						_actionView.Animate().TranslationY(actionSize - Math.Abs(offset)).SetDuration(swipeAnimationDuration);
+						_actionView.Animate()?.TranslationY(actionSize - Math.Abs(offset))?.SetDuration(swipeAnimationDuration);
 						break;
 					case SwipeDirection.Down:
-						_contentView.Animate().TranslationY(offset).SetDuration(swipeAnimationDuration);
+						_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
 						actionSize = _contentView.Height;
-						_actionView.Animate().TranslationY(-actionSize + Math.Abs(offset)).SetDuration(swipeAnimationDuration);
+						_actionView.Animate()?.TranslationY(-actionSize + Math.Abs(offset))?.SetDuration(swipeAnimationDuration);
 						break;
 				}
 			}
@@ -1018,7 +1025,7 @@ namespace Microsoft.Maui.Platform
 
 						_swipeDirection = null;
 
-						_contentView.Animate().TranslationX(0).SetDuration(SwipeAnimationDuration).WithEndAction(new Java.Lang.Runnable(() =>
+						_contentView.Animate()?.TranslationX(0)?.SetDuration(SwipeAnimationDuration)?.WithEndAction(new Java.Lang.Runnable(() =>
 						{
 							if (_swipeDirection == null)
 								DisposeSwipeItems();
@@ -1031,7 +1038,7 @@ namespace Microsoft.Maui.Platform
 
 						_swipeDirection = null;
 
-						_contentView.Animate().TranslationY(0).SetDuration(SwipeAnimationDuration).WithEndAction(new Java.Lang.Runnable(() =>
+						_contentView.Animate()?.TranslationY(0)?.SetDuration(SwipeAnimationDuration)?.WithEndAction(new Java.Lang.Runnable(() =>
 						{
 							if (_swipeDirection == null)
 								DisposeSwipeItems();
@@ -1079,7 +1086,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			if (_swipeTransitionMode == SwipeTransitionMode.Drag && _contentView != null && _actionView != null & Element != null)
+			if (_swipeTransitionMode == SwipeTransitionMode.Drag && _contentView != null && _actionView != null && Element != null)
 			{
 				int actionSize;
 				switch (_swipeDirection)
@@ -1097,12 +1104,12 @@ namespace Microsoft.Maui.Platform
 					case SwipeDirection.Up:
 						_contentView.Animate()?.TranslationY(-swipeThreshold)?.SetDuration(completeAnimationDuration)?.WithEndAction(new Java.Lang.Runnable(() => { _isSwiping = false; }));
 						actionSize = _contentView.Height;
-						_actionView.Animate()?.TranslationY(actionSize - Math.Abs(swipeThreshold)).SetDuration(completeAnimationDuration);
+						_actionView.Animate()?.TranslationY(actionSize - Math.Abs(swipeThreshold))?.SetDuration(completeAnimationDuration);
 						break;
 					case SwipeDirection.Down:
-						_contentView.Animate().TranslationY(swipeThreshold)?.SetDuration(completeAnimationDuration)?.WithEndAction(new Java.Lang.Runnable(() => { _isSwiping = false; }));
+						_contentView.Animate()?.TranslationY(swipeThreshold)?.SetDuration(completeAnimationDuration)?.WithEndAction(new Java.Lang.Runnable(() => { _isSwiping = false; }));
 						actionSize = _contentView.Height;
-						_actionView.Animate()?.TranslationY(-actionSize + Math.Abs(swipeThreshold)).SetDuration(completeAnimationDuration);
+						_actionView.Animate()?.TranslationY(-actionSize + Math.Abs(swipeThreshold))?.SetDuration(completeAnimationDuration);
 						break;
 				}
 			}
@@ -1209,7 +1216,7 @@ namespace Microsoft.Maui.Platform
 		float GetSwipeThreshold(ISwipeItems swipeItems)
 		{
 			if (Element == null)
-				return;
+				return 0f;
 
 			double threshold = Element.Threshold;
 
@@ -1493,7 +1500,7 @@ namespace Microsoft.Maui.Platform
 
 			bool isEnabled = true;
 
-			if (item is ISwipeItem swipeItem)
+			if (item is ISwipeItemMenuItem swipeItem)
 				isEnabled = swipeItem.IsEnabled;
 
 			if (item is ISwipeItemView swipeItemView)
@@ -1509,16 +1516,16 @@ namespace Microsoft.Maui.Platform
 				_viewPagerParent.EnableGesture = isGestureEnabled;
 		}
 
-		void OnOpenRequested(object sender, OpenRequestedEventArgs e)
-		{
-			if (_contentView == null)
-				return;
+		//void OnOpenRequested(object sender, OpenRequestedEventArgs e)
+		//{
+		//	if (_contentView == null)
+		//		return;
 
-			var openSwipeItem = e.OpenSwipeItem;
-			var animated = e.Animated;
+		//	var openSwipeItem = e.OpenSwipeItem;
+		//	var animated = e.Animated;
 
-			ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
-		}
+		//	ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
+		//}
 
 		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
 		{
@@ -1582,41 +1589,41 @@ namespace Microsoft.Maui.Platform
 			if (Element == null)
 				return;
 
-			((ISwipeViewController)Element).IsOpen = isOpen;
+			Element.IsOpen = isOpen;
 		}
 
-		void OnCloseRequested(object sender, CloseRequestedEventArgs e)
-		{
-			var animated = e.Animated;
+		//void OnCloseRequested(object sender, CloseRequestedEventArgs e)
+		//{
+		//	var animated = e.Animated;
 
-			ResetSwipe(animated);
-		}
+		//	ResetSwipe(animated);
+		//}
 
-		void OnParentScrolled(object sender, ScrolledEventArgs e)
-		{
-			var horizontalDelta = e.ScrollX - _previousScrollX;
-			var verticalDelta = e.ScrollY - _previousScrollY;
+		//void OnParentScrolled(object sender, ScrolledEventArgs e)
+		//{
+		//	var horizontalDelta = e.ScrollX - _previousScrollX;
+		//	var verticalDelta = e.ScrollY - _previousScrollY;
 
-			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
-				ResetSwipe();
+		//	if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
+		//		ResetSwipe();
 
-			_previousScrollX = e.ScrollX;
-			_previousScrollY = e.ScrollY;
-		}
+		//	_previousScrollX = e.ScrollX;
+		//	_previousScrollY = e.ScrollY;
+		//}
 
-		void OnParentScrolled(object sender, ItemsViewScrolledEventArgs e)
-		{
-			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
-				ResetSwipe();
-		}
+		//void OnParentScrolled(object sender, ItemsViewScrolledEventArgs e)
+		//{
+		//	if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
+		//		ResetSwipe();
+		//}
 
 		void RaiseSwipeStarted()
 		{
 			if (_swipeDirection == null || !ValidateSwipeDirection())
 				return;
 
-			var swipeStartedEventArgs = new SwipeStartedEventArgs(_swipeDirection.Value);
-			((ISwipeViewController)Element).SendSwipeStarted(swipeStartedEventArgs);
+			//var swipeStartedEventArgs = new SwipeStartedEventArgs(_swipeDirection.Value);
+			//((ISwipeViewController)Element).SendSwipeStarted(swipeStartedEventArgs);
 		}
 
 		void RaiseSwipeChanging()
@@ -1624,8 +1631,8 @@ namespace Microsoft.Maui.Platform
 			if (_swipeDirection == null)
 				return;
 
-			var swipeChangingEventArgs = new SwipeChangingEventArgs(_swipeDirection.Value, _swipeOffset);
-			((ISwipeViewController)Element).SendSwipeChanging(swipeChangingEventArgs);
+			//var swipeChangingEventArgs = new SwipeChangingEventArgs(_swipeDirection.Value, _swipeOffset);
+			//((ISwipeViewController)Element).SendSwipeChanging(swipeChangingEventArgs);
 		}
 
 		void RaiseSwipeEnded()
@@ -1633,26 +1640,26 @@ namespace Microsoft.Maui.Platform
 			if (_swipeDirection == null || !ValidateSwipeDirection())
 				return;
 
-			bool isOpen = false;
+			//bool isOpen = false;
 
-			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
+			//var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
 
-			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
-				isOpen = true;
+			//if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
+			//	isOpen = true;
 
-			var swipeEndedEventArgs = new SwipeEndedEventArgs(_swipeDirection.Value, isOpen);
-			((ISwipeViewController)Element).SendSwipeEnded(swipeEndedEventArgs);
+			//var swipeEndedEventArgs = new SwipeEndedEventArgs(_swipeDirection.Value, isOpen);
+			//((ISwipeViewController)Element).SendSwipeEnded(swipeEndedEventArgs);
 		}
 
-		protected override void OnLayout(bool changed, int l, int t, int r, int b)
-		{
-			throw new NotImplementedException();
-		}
+		//protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		//{
+		//	throw new NotImplementedException();
+		//}
 
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-		{
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-			//protected override Size MinimumSize() => new Size(40, 40);
-		}
+		//protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		//{
+		//	base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		//	//protected override Size MinimumSize() => new Size(40, 40);
+		//}
 	}
 }

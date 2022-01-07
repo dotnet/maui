@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class SwipeItem : MenuItem, ISwipeItem
+	public partial class SwipeItem : MenuItem, ISwipeItemMenuItem
 	{
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SwipeItem), null);
 

@@ -1,9 +1,9 @@
 ﻿#if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIButton;
+using NativeView = UIKit.UIView;
 #elif MONOANDROID
-using NativeView = Google.Android.Material.Button.MaterialButton;
+using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Controls.Button;
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using NativeView = System.Object;
 #endif
