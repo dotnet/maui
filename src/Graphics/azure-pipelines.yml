@@ -144,6 +144,10 @@ stages:
               displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
 
             - pwsh: |
+                & $env:MSBUILD_EXE /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
+              displayName: build classic solutions
+
+            - pwsh: |
                 # $VS_ROOT = (& dotnet vs where -version '[17.1,18.0)' --prop=InstallationPath)[0]
                 $VS_ROOT = 'C:\Program Files\Microsoft Visual Studio\2022\Preview'
                 echo "##vso[task.setvariable variable=VS_ROOT]$VS_ROOT"
@@ -152,10 +156,6 @@ stages:
                 echo "Using MSBuild: $MSBUILD_EXE"
               displayName: set up the msbuild envvar
               errorActionPreference: stop
-
-            #- pwsh: |
-            #    & $env:MSBUILD_EXE /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
-            #  displayName: build classic solutions
 
             - pwsh: |
                 & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
