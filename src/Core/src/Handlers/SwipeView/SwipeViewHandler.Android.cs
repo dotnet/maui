@@ -31,5 +31,33 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
 			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
+
+		public static void MapContent(ISwipeViewHandler handler, ISwipeView swipeView)
+		{
+			_ = handler.NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = handler.TypedVirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+
+			handler.TypedNativeView.UpdateContent();
+		}
+
+		public static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
+		{
+			handler.TypedNativeView.UpdateIsSwipeEnabled();
+			ViewHandler.MapIsEnabled(handler, swipeView);
+		}
+
+		public static void MapBackground(ISwipeViewHandler handler, ISwipeView swipeView)
+		{
+			// TODO JAVIER is this right? I wasn't sure exactly how to combine the two
+			// UpdateBackgroundColor and  UpdateBackground methods inside SwipeViewRenderer
+			handler.TypedNativeView.Control?.SetWindowBackground();
+			ViewHandler.MapBackground(handler, swipeView);
+		}
+
+		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
+		{
+			handler.TypedNativeView.UpdateSwipeTransitionMode();
+		}
 	}
 }

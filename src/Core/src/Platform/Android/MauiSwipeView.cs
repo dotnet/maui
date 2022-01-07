@@ -48,10 +48,9 @@ namespace Microsoft.Maui.Platform
 		bool _isResettingSwipe;
 		bool _isOpen;
 		OpenSwipeItem _previousOpenSwipeItem;
-		//bool _isDisposed;
 		IMauiContext MauiContext => Element?.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
-		AView Control { get; }
+		internal AView Control { get; }
 		internal ISwipeView? Element { get; private set; }
 
 		public MauiSwipeView(Context context) : base(context)
@@ -70,9 +69,6 @@ namespace Microsoft.Maui.Platform
 		internal void SetElement(ISwipeView swipeView)
 		{
 			Element = swipeView;
-			UpdateContent();
-			UpdateIsSwipeEnabled();
-			UpdateSwipeTransitionMode();
 		}
 
 		//protected override void OnElementChanged(ElementChangedEventArgs<SwipeView> e)
@@ -101,37 +97,6 @@ namespace Microsoft.Maui.Platform
 		//	}
 
 		//	base.OnElementChanged(e);
-		//}
-
-		//protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		//{
-		//	base.OnElementPropertyChanged(sender, e);
-
-		//	if (e.PropertyName == ContentView.ContentProperty.PropertyName)
-		//		UpdateContent();
-		//	else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
-		//		UpdateIsSwipeEnabled();
-		//	else if (e.PropertyName == Specifics.SwipeTransitionModeProperty.PropertyName)
-		//		UpdateSwipeTransitionMode();
-		//}
-
-		//TODO Move to Mappers
-		//protected override void UpdateBackgroundColor()
-		//{
-		//	if (Element.BackgroundColor != null)
-		//		SetBackgroundColor(Element.BackgroundColor.ToAndroid());
-		//	else
-		//		Control?.SetWindowBackground();
-		//}
-
-		//protected override void UpdateBackground()
-		//{
-		//	Brush background = Element.Background;
-
-		//	if (Brush.IsNullOrEmpty(background))
-		//		return;
-
-		//	this.UpdateBackground(background);
 		//}
 
 		protected override void OnAttachedToWindow()
@@ -170,58 +135,6 @@ namespace Microsoft.Maui.Platform
 			//	}
 			//}
 		}
-
-		// TODO This probably isn't relevant
-		//protected override void Dispose(bool disposing)
-		//{
-		//	if (_isDisposed)
-		//		return;
-
-		//	if (disposing)
-		//	{
-		//		if (Element != null)
-		//		{
-		//			Element.OpenRequested -= OnOpenRequested;
-		//			Element.CloseRequested -= OnCloseRequested;
-		//		}
-
-		//		if (_scrollParent != null)
-		//		{
-		//			if (_scrollParent is ScrollView scrollView)
-		//				scrollView.Scrolled -= OnParentScrolled;
-
-		//			if (_scrollParent is ListView listView)
-		//				listView.Scrolled -= OnParentScrolled;
-
-		//			if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
-		//				collectionView.Scrolled -= OnParentScrolled;
-		//		}
-
-		//		if (_contentView != null)
-		//		{
-		//			_contentView.RemoveFromParent();
-		//			_contentView.Dispose();
-		//			_contentView = null;
-		//		}
-
-		//		if (_actionView != null)
-		//		{
-		//			_actionView.RemoveFromParent();
-		//			_actionView.Dispose();
-		//			_actionView = null;
-		//		}
-
-		//		if (_initialPoint != null)
-		//		{
-		//			_initialPoint.Dispose();
-		//			_initialPoint = null;
-		//		}
-		//	}
-
-		//	_isDisposed = true;
-
-		//	base.Dispose(disposing);
-		//}
 
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
@@ -361,7 +274,7 @@ namespace Microsoft.Maui.Platform
 			//		itemContentView.ClickOn();
 		}
 
-		void UpdateContent()
+		internal void UpdateContent()
 		{
 			if (_contentView != null)
 			{
@@ -370,8 +283,9 @@ namespace Microsoft.Maui.Platform
 				_contentView = null;
 			}
 
-			if (Element?.Content is IElement element)
-				_contentView = element.ToNative(MauiContext, true);
+
+			if (Element?.PresentedContent is IView view)
+				_contentView = view.ToNative(MauiContext);
 			else
 				_contentView = CreateEmptyContent();
 
@@ -880,18 +794,14 @@ namespace Microsoft.Maui.Platform
 			//swipeItemView.Layout(new Rectangle(0, 0, swipeItemSize.Width, swipeItemSize.Height));
 		}
 
-		void UpdateIsSwipeEnabled()
+		internal void UpdateIsSwipeEnabled()
 		{
 			_isSwipeEnabled = Element?.IsEnabled ?? false;
 		}
 
-		void UpdateSwipeTransitionMode()
+		internal void UpdateSwipeTransitionMode()
 		{
-			// TODO MAUI
-			//if (Element.IsSet(Specifics.SwipeTransitionModeProperty))
-			//	_swipeTransitionMode = Element.OnThisPlatform().GetSwipeTransitionMode();
-			//else
-			_swipeTransitionMode = SwipeTransitionMode.Reveal;
+			_swipeTransitionMode = Element?.SwipeTransitionMode ?? SwipeTransitionMode.Reveal;
 		}
 
 		Color? GetSwipeItemColor(Color? backgroundColor)
@@ -1654,16 +1564,5 @@ namespace Microsoft.Maui.Platform
 			//var swipeEndedEventArgs = new SwipeEndedEventArgs(_swipeDirection.Value, isOpen);
 			//((ISwipeViewController)Element).SendSwipeEnded(swipeEndedEventArgs);
 		}
-
-		//protected override void OnLayout(bool changed, int l, int t, int r, int b)
-		//{
-		//	throw new NotImplementedException();
-		//}
-
-		//protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-		//{
-		//	base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-		//	//protected override Size MinimumSize() => new Size(40, 40);
-		//}
 	}
 }

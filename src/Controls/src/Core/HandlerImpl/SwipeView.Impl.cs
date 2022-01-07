@@ -18,6 +18,15 @@ namespace Microsoft.Maui.Controls
 
 		bool ISwipeView.IsOpen { get; set; }
 
+#if IOS
+		SwipeTransitionMode ISwipeView.SwipeTransitionMode =>
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SwipeView.GetSwipeTransitionMode(this);
+#elif ANDROID
+		SwipeTransitionMode ISwipeView.SwipeTransitionMode =>
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.SwipeView.GetSwipeTransitionMode(this);
+#else
+		SwipeTransitionMode ISwipeView.SwipeTransitionMode => SwipeTransitionMode.Reveal;
+#endif
 
 		class HandlerSwipeItems : List<Maui.ISwipeItem>, ISwipeItems
 		{

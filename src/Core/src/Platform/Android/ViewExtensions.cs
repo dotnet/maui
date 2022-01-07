@@ -1,8 +1,10 @@
 using System.Numerics;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.Content;
 using AndroidX.Core.View;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
@@ -11,6 +13,7 @@ using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 using GL = Android.Opengl;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Platform
 {
@@ -85,6 +88,39 @@ namespace Microsoft.Maui.Platform
 				Visibility.Collapsed => ViewStates.Gone,
 				_ => ViewStates.Visible,
 			};
+		}
+
+		public static void SetWindowBackground(this AView view)
+		{
+			var context = view.Context;
+			if (context?.Theme == null)
+				return;
+
+			if (context?.Resources == null)
+				return;
+
+			using (var background = new TypedValue())
+			{
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
+				{
+					string? type = context.Resources.GetResourceTypeName(background.ResourceId)?.ToLower();
+
+					if (type != null)
+					{
+						switch (type)
+						{
+							case "color":
+								var color = new AColor(ContextCompat.GetColor(context, background.ResourceId));
+								view.SetBackgroundColor(color);
+								break;
+							case "drawable":
+								using (Drawable drawable = ContextCompat.GetDrawable(context, background.ResourceId))
+									view.Background = drawable;
+								break;
+						}
+					}
+				}
+			}
 		}
 
 		public static void UpdateBackground(this ContentViewGroup nativeView, IBorder border)

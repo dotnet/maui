@@ -17,5 +17,7 @@ namespace Microsoft.Maui
 		public ISwipeItems BottomItems { get; }
 
 		public bool IsOpen { get; set; }
+
+		public SwipeTransitionMode SwipeTransitionMode { get; }
 	}
 }
