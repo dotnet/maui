@@ -1430,16 +1430,16 @@ namespace Microsoft.Maui.Platform
 				_viewPagerParent.EnableGesture = isGestureEnabled;
 		}
 
-		//void OnOpenRequested(object sender, OpenRequestedEventArgs e)
-		//{
-		//	if (_contentView == null)
-		//		return;
+		internal void OnOpenRequested(SwipeViewOpenRequest e)
+		{
+			if (_contentView == null)
+				return;
 
-		//	var openSwipeItem = e.OpenSwipeItem;
-		//	var animated = e.Animated;
+			var openSwipeItem = e.OpenSwipeItem;
+			var animated = e.Animated;
 
-		//	ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
-		//}
+			ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
+		}
 
 		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
 		{
@@ -1506,12 +1506,12 @@ namespace Microsoft.Maui.Platform
 			Element.IsOpen = isOpen;
 		}
 
-		//void OnCloseRequested(object sender, CloseRequestedEventArgs e)
-		//{
-		//	var animated = e.Animated;
+		internal void OnCloseRequested(SwipeViewCloseRequest e)
+		{
+			var animated = e.Animated;
 
-		//	ResetSwipe(animated);
-		//}
+			ResetSwipe(animated);
+		}
 
 		//void OnParentScrolled(object sender, ScrolledEventArgs e)
 		//{
@@ -1536,8 +1536,7 @@ namespace Microsoft.Maui.Platform
 			if (_swipeDirection == null || !ValidateSwipeDirection())
 				return;
 
-			//var swipeStartedEventArgs = new SwipeStartedEventArgs(_swipeDirection.Value);
-			//((ISwipeViewController)Element).SendSwipeStarted(swipeStartedEventArgs);
+			Element?.SwipeStarted(new SwipeViewSwipeStarted(_swipeDirection.Value));
 		}
 
 		void RaiseSwipeChanging()
@@ -1545,8 +1544,7 @@ namespace Microsoft.Maui.Platform
 			if (_swipeDirection == null)
 				return;
 
-			//var swipeChangingEventArgs = new SwipeChangingEventArgs(_swipeDirection.Value, _swipeOffset);
-			//((ISwipeViewController)Element).SendSwipeChanging(swipeChangingEventArgs);
+			Element?.SwipeChanging(new SwipeViewSwipeChanging(_swipeDirection.Value, _swipeOffset));
 		}
 
 		void RaiseSwipeEnded()
@@ -1554,15 +1552,14 @@ namespace Microsoft.Maui.Platform
 			if (_swipeDirection == null || !ValidateSwipeDirection())
 				return;
 
-			//bool isOpen = false;
+			bool isOpen = false;
 
-			//var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
+			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
 
-			//if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
-			//	isOpen = true;
+			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
+				isOpen = true;
 
-			//var swipeEndedEventArgs = new SwipeEndedEventArgs(_swipeDirection.Value, isOpen);
-			//((ISwipeViewController)Element).SendSwipeEnded(swipeEndedEventArgs);
+			Element?.SwipeEnded(new SwipeViewSwipeEnded(_swipeDirection.Value, isOpen));
 		}
 	}
 }

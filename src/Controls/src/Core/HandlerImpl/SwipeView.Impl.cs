@@ -28,6 +28,36 @@ namespace Microsoft.Maui.Controls
 		SwipeTransitionMode ISwipeView.SwipeTransitionMode => SwipeTransitionMode.Reveal;
 #endif
 
+
+		void ISwipeView.SwipeStarted(SwipeViewSwipeStarted swipeStarted)
+		{
+			var swipeStartedEventArgs = new SwipeStartedEventArgs(swipeStarted.SwipeDirection);
+			((ISwipeViewController)this).SendSwipeStarted(swipeStartedEventArgs);
+		}
+
+		void ISwipeView.SwipeChanging(SwipeViewSwipeChanging swipeChanging)
+		{
+			var swipeChangingEventArgs = new SwipeChangingEventArgs(swipeChanging.SwipeDirection, swipeChanging.Offset);
+			((ISwipeViewController)this).SendSwipeChanging(swipeChangingEventArgs);
+
+		}
+
+		void ISwipeView.SwipeEnded(SwipeViewSwipeEnded swipeEnded)
+		{
+			var swipeEndedEventArgs = new SwipeEndedEventArgs(swipeEnded.SwipeDirection, swipeEnded.IsOpen);
+			((ISwipeViewController)this).SendSwipeEnded(swipeEndedEventArgs);
+		}
+
+		void ISwipeView.RequestOpen(SwipeViewOpenRequest swipeOpenRequest)
+		{
+			Handler?.Invoke(nameof(ISwipeView.RequestOpen), swipeOpenRequest);
+		}
+
+		void ISwipeView.RequestClose(SwipeViewCloseRequest swipeCloseRequest)
+		{
+			Handler?.Invoke(nameof(ISwipeView.RequestClose), swipeCloseRequest);
+		}
+
 		class HandlerSwipeItems : List<Maui.ISwipeItem>, ISwipeItems
 		{
 			readonly SwipeItems _swipeItems;

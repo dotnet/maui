@@ -59,5 +59,25 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView.UpdateSwipeTransitionMode();
 		}
+
+		public static void MapRequestOpen(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
+		{
+			if (args is not SwipeViewOpenRequest request)
+			{
+				return;
+			}
+
+			handler.TypedNativeView.OnOpenRequested(request);
+		}
+
+		public static void MapRequestClose(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
+		{
+			if (args is not SwipeViewCloseRequest request)
+			{
+				return;
+			}
+
+			handler.TypedNativeView.OnCloseRequested(request);
+		}
 	}
 }

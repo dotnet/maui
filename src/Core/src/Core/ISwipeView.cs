@@ -19,5 +19,15 @@ namespace Microsoft.Maui
 		public bool IsOpen { get; set; }
 
 		public SwipeTransitionMode SwipeTransitionMode { get; }
+
+		public void SwipeStarted(SwipeViewSwipeStarted swipeStarted);
+
+		public void SwipeChanging(SwipeViewSwipeChanging swipeChanging);
+
+		public void SwipeEnded(SwipeViewSwipeEnded swipeEnded);
+
+		public void RequestOpen(SwipeViewOpenRequest swipeOpenRequest);
+
+		public void RequestClose(SwipeViewCloseRequest swipeCloseRequest);
 	}
 }

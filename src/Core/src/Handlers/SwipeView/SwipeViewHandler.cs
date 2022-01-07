@@ -24,8 +24,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<ISwipeView, ISwipeViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
+			[nameof(ISwipeView.RequestOpen)] = MapRequestOpen,
+			[nameof(ISwipeView.RequestClose)] = MapRequestClose,
 		};
-
 
 		public SwipeViewHandler() : base(Mapper, CommandMapper)
 		{
