@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	[Flags]
 	public enum SwipeDirection
@@ -12,12 +12,8 @@ namespace Microsoft.Maui.Controls
 		Up = 4,
 		Down = 8
 	}
-}
 
-namespace Microsoft.Maui.Controls.Internals
-{
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class SwipeDirectionHelper
+	internal static class SwipeDirectionHelper
 	{
 		public static SwipeDirection GetSwipeDirection(Point initialPoint, Point endPoint)
 		{

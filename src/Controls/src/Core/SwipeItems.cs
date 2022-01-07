@@ -7,21 +7,13 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	public enum OpenSwipeItem
+	public class SwipeItems : Element, ISwipeItems, IList<Maui.ISwipeItem>, IList<ISwipeItem>, INotifyCollectionChanged
 	{
-		LeftItems,
-		TopItems,
-		RightItems,
-		BottomItems
-	}
-
-	public class SwipeItems : Element, IList<ISwipeItem>, INotifyCollectionChanged
-	{
-		readonly ObservableCollection<ISwipeItem> _swipeItems;
+		readonly ObservableCollection<Maui.ISwipeItem> _swipeItems;
 
 		public SwipeItems(IEnumerable<ISwipeItem> swipeItems)
 		{
-			_swipeItems = new ObservableCollection<ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
+			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
 		}
 
@@ -53,7 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		public ISwipeItem this[int index]
 		{
-			get => _swipeItems.Count > index ? _swipeItems[index] : null;
+			get => _swipeItems.Count > index ? (ISwipeItem)_swipeItems[index] : null;
 			set => _swipeItems[index] = value;
 		}
 
@@ -83,7 +75,8 @@ namespace Microsoft.Maui.Controls
 
 		public IEnumerator<ISwipeItem> GetEnumerator()
 		{
-			return _swipeItems.GetEnumerator();
+			foreach (ISwipeItem item in _swipeItems)
+				yield return item;			
 		}
 
 		public int IndexOf(ISwipeItem item)
@@ -128,6 +121,48 @@ namespace Microsoft.Maui.Controls
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _swipeItems.GetEnumerator();
+		}
+
+
+		Maui.ISwipeItem IList<Maui.ISwipeItem>.this[int index]
+		{
+			get => _swipeItems.Count > index ? _swipeItems[index] : null;
+			set => _swipeItems[index] = value;
+		}
+
+		int IList<Maui.ISwipeItem>.IndexOf(Maui.ISwipeItem item)
+		{
+			return _swipeItems.IndexOf(item);
+		}
+
+		void IList<Maui.ISwipeItem>.Insert(int index, Maui.ISwipeItem item)
+		{
+			_swipeItems.Insert(index, item);
+		}
+
+		void ICollection<Maui.ISwipeItem>.Add(Maui.ISwipeItem item)
+		{
+			_swipeItems.Add(item);
+		}
+
+		bool ICollection<Maui.ISwipeItem>.Contains(Maui.ISwipeItem item)
+		{
+			return _swipeItems.Contains(item);
+		}
+
+		void ICollection<Maui.ISwipeItem>.CopyTo(Maui.ISwipeItem[] array, int arrayIndex)
+		{
+			_swipeItems.CopyTo(array, arrayIndex);
+		}
+
+		bool ICollection<Maui.ISwipeItem>.Remove(Maui.ISwipeItem item)
+		{
+			return _swipeItems.Remove(item);
+		}
+
+		IEnumerator<Maui.ISwipeItem> IEnumerable<Maui.ISwipeItem>.GetEnumerator()
 		{
 			return _swipeItems.GetEnumerator();
 		}
