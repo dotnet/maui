@@ -102,7 +102,6 @@
     <CopyWorkloadFiles
         Files="@(_WorkloadFiles)"
         WorkloadDirectory="$(DotNetSdkManifestsDirectory)"
-        VersionBand="$(DotNetPreviewVersionBand)"
     />
 
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
@@ -126,7 +125,6 @@
       <Name ParameterType="System.String" />
       <Files ParameterType="System.String[]" Required="true" />
       <WorkloadDirectory ParameterType="System.String" Required="true" />
-      <VersionBand ParameterType="System.String" Required="true" />
     </ParameterGroup>
     <Task>
       <Using Namespace="System.IO" />
@@ -136,7 +134,11 @@
           foreach (var file in Files)
           {
               var name = string.IsNullOrEmpty(Name) ? Directory.GetParent (file).Parent.Parent.Name : Name;
-              var directory = Path.Combine(WorkloadDirectory, name.Replace($".manifest-{VersionBand}", ""));
+              var index = name.IndexOf(".manifest-", StringComparison.OrdinalIgnoreCase);
+              if (index != -1) {
+                  name = name.Substring(0, index);
+              }
+              var directory = Path.Combine(WorkloadDirectory, name);
               Directory.CreateDirectory(directory);
               var destination = Path.Combine(directory, Path.GetFileName(file));
               Log.LogMessage($"Copying {file} to {destination}");
