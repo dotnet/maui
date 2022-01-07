@@ -51,6 +51,7 @@ parameters:
 stages:
 
   - template: common/device-tests.yml
+    timeoutInMinutes: 120
     parameters:
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]

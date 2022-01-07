@@ -50,6 +50,7 @@ stages:
               workspace:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+              timeoutInMinutes: 120
               pool:
                 name: ${{ parameters.iosVmPool }}
                 vmImage: ${{ parameters.iosVmImage }}
