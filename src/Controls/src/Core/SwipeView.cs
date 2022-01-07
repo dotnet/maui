@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController
+	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;
 
@@ -63,7 +63,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BottomItemsProperty, value); }
 		}
 
-		bool ISwipeViewController.IsOpen { get; set; }
+		bool ISwipeViewController.IsOpen 
+		{ 
+			get => ((ISwipeView)this).IsOpen;
+			set => ((ISwipeView)this).IsOpen = value;
+		}
 
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
 		{

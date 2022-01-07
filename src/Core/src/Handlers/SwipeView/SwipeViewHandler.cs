@@ -16,12 +16,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public SwipeHandler() : base(Mapper)
+		public SwipeViewHandler() : base(Mapper)
 		{
 
 		}
 
-		public SwipeHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public SwipeViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
 		}
 
