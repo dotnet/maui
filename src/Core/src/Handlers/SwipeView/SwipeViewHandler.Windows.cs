@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeHandler : ViewHandler<ISwipeView, FrameworkElement>
+	public partial class SwipeViewHandler : ViewHandler<ISwipeView, FrameworkElement>
 	{
 		protected override FrameworkElement CreateNativeView()
 		{

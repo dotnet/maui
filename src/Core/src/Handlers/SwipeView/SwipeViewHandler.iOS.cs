@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeHandler : ViewHandler<ISwipeView, UIView>
+	public partial class SwipeViewHandler : ViewHandler<ISwipeView, UIView>
 	{
 		protected override UIView CreateNativeView()
 		{

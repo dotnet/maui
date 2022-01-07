@@ -10,7 +10,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeHandler : ISwipeViewHandler
+	public partial class SwipeViewHandler : ISwipeViewHandler
 	{
 		public static IPropertyMapper<ISwipeView, ISwipeViewHandler> Mapper = new PropertyMapper<ISwipeView, ISwipeViewHandler>(ViewHandler.ViewMapper)
 		{

@@ -66,9 +66,10 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
 			{ typeof(Toolbar), typeof(ToolbarHandler) },
 #endif
-#if __ANDROID__
+#if ANDROID
 			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
 			{ typeof(FlyoutPage), typeof(FlyoutViewHandler) },
+			{ typeof(SwipeView), typeof(SwipeViewHandler) },
 #endif
 		};
 

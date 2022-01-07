@@ -7,7 +7,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeHandler : ViewHandler<ISwipeView, MauiSwipeView>
+	public partial class SwipeViewHandler : ViewHandler<ISwipeView, MauiSwipeView>
 	{
 		protected override MauiSwipeView CreateNativeView()
 		{
