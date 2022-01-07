@@ -41,7 +41,7 @@ variables:
 - name: provisionator.vs
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
 - name: provisionator.extraArguments
-  value: '--v'
+  value: '-vvvv'
 - name: DotNet.Dir
   value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
