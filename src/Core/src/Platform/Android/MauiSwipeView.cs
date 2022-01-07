@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 		IMauiContext MauiContext => Element?.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
 		AView Control { get; }
-		internal ISwipeView? Element { get; set; }
+		internal ISwipeView? Element { get; private set; }
 
 		public MauiSwipeView(Context context) : base(context)
 		{
@@ -64,6 +64,15 @@ namespace Microsoft.Maui.Platform
 			_density = context.GetActivity()?.Resources?.DisplayMetrics?.Density ?? 0;
 			Control = new AView(_context);
 			AddView(Control, LayoutParams.MatchParent);
+		}
+
+		// temporary workaround to make it work		
+		internal void SetElement(ISwipeView swipeView)
+		{
+			Element = swipeView;
+			UpdateContent();
+			UpdateIsSwipeEnabled();
+			UpdateSwipeTransitionMode();
 		}
 
 		//protected override void OnElementChanged(ElementChangedEventArgs<SwipeView> e)
@@ -361,10 +370,10 @@ namespace Microsoft.Maui.Platform
 				_contentView = null;
 			}
 
-			if (Element?.Content == null)
-				_contentView = CreateEmptyContent();
+			if (Element?.Content is IElement element)
+				_contentView = element.ToNative(MauiContext, true);
 			else
-				_contentView = CreateContent();
+				_contentView = CreateEmptyContent();
 
 			AddView(_contentView);
 		}
@@ -375,11 +384,6 @@ namespace Microsoft.Maui.Platform
 			emptyContentView.SetBackgroundColor(Colors.Transparent.ToNative());
 
 			return emptyContentView;
-		}
-
-		AView CreateContent()
-		{
-			return Element!.ToNative(Element!.Handler!.MauiContext!, true);
 		}
 
 		ISwipeItems? GetSwipeItemsByDirection()
