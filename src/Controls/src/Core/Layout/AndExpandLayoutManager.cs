@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls
 		{
 			// We have to rebuild this every time because the StackLayout contents
 			// and values may have changed
-			_gridLayout?.Clear();
 			_gridLayout = Gridify(_stackLayout);
 			_manager = new GridLayoutManager(_gridLayout);
 
