@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui
 {
 	// TODO Rename to IMenuElement? or IMenuView? right now it conflicts with Android
-	public interface IMenuElement
+	public interface IMenuElement : IElement, IImageSourcePart
 	{
 		/// <summary>
 		/// Gets the paint which will fill the background of a View.
