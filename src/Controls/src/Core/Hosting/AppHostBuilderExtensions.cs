@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
 			{ typeof(FlyoutPage), typeof(FlyoutViewHandler) },
 			{ typeof(SwipeView), typeof(SwipeViewHandler) },
+			{ typeof(SwipeItem), typeof(SwipeItemMenuItemHandler) },
+			{ typeof(SwipeItemView), typeof(SwipeItemViewHandler) },
 #endif
 		};
 

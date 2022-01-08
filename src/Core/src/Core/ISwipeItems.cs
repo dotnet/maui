@@ -16,18 +16,15 @@ namespace Microsoft.Maui
 		string? Text { get; }
 
 		bool IsEnabled { get; }
+		bool IsVisible { get; }
 	}
 
 	public interface ISwipeItemMenuItem : IMenuElement, ISwipeItem
 	{
 	}
 
-	public interface ISwipeItem
-	{
-		bool IsVisible { get; }
-
-		//bool IsVisible { get; set; }
-		//ICommand Command { get; set; }
+	public interface ISwipeItem : IElement
+	{	
 		//object CommandParameter { get; set; }
 
 		//event EventHandler<EventArgs> Invoked;

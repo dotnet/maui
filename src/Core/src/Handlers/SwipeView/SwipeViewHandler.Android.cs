@@ -1,9 +1,3 @@
-using System.Threading.Tasks;
-using Android.Content.Res;
-using Android.Graphics.Drawables;
-using Android.Views;
-using Microsoft.Maui.Graphics;
-using AView = Android.Views.View;
 using System;
 
 namespace Microsoft.Maui.Handlers

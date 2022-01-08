@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Android.Content;
-using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
-using static Android.Views.ViewGroup;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using APointF = Android.Graphics.PointF;
 using ARect = Android.Graphics.Rect;
@@ -70,34 +67,6 @@ namespace Microsoft.Maui.Platform
 		{
 			Element = swipeView;
 		}
-
-		//protected override void OnElementChanged(ElementChangedEventArgs<SwipeView> e)
-		//{
-		//	if (e.NewElement != null)
-		//	{
-		//		e.NewElement.OpenRequested += OnOpenRequested;
-		//		e.NewElement.CloseRequested += OnCloseRequested;
-
-		//		if (Control == null)
-		//		{
-		//			_density = Resources.DisplayMetrics.Density;
-
-		//			SetNativeControl(CreateNativeControl());
-		//		}
-
-		//		UpdateContent();
-		//		UpdateIsSwipeEnabled();
-		//		UpdateSwipeTransitionMode();
-		//	}
-
-		//	if (e.OldElement != null)
-		//	{
-		//		e.NewElement.OpenRequested -= OnOpenRequested;
-		//		e.OldElement.CloseRequested -= OnCloseRequested;
-		//	}
-
-		//	base.OnElementChanged(e);
-		//}
 
 		protected override void OnAttachedToWindow()
 		{
@@ -262,16 +231,26 @@ namespace Microsoft.Maui.Platform
 			return base.DispatchTouchEvent(e);
 		}
 
-		//TODO Controls MAUI integration
 		void PropagateParentTouch()
 		{
-			//	var itemContentView = _contentView.Parent.GetParentOfType<ItemContentView>();
+			if (_contentView == null)
+				return;
 
-			//	// If the SwipeView container is ItemContentView we are using SwipeView with a CollectionView or CarouselView.
-			//	// When doing touch up, if the SwipeView is closed, we propagate the Touch to the parent. In this way, the parent
-			//	// element will manage the touch (SelectionChanged, etc.).
-			//	if (itemContentView != null && !((ISwipeViewController)Element).IsOpen)
-			//		itemContentView.ClickOn();
+			AView? itemContentView = null;
+
+			var parentFound = _contentView.Parent.FindParent(parent =>
+			{
+				if (parent is RecyclerView)
+					return true;
+
+				itemContentView = parent as AView;
+				return false;
+			});
+
+			if(parentFound != null)
+			{
+				itemContentView?.CallOnClick();
+			}
 		}
 
 		internal void UpdateContent()
@@ -338,7 +317,7 @@ namespace Microsoft.Maui.Platform
 
 		bool IsValidSwipeItems(ISwipeItems? swipeItems)
 		{
-			return swipeItems != null && swipeItems.Where(s => s.IsVisible).Count() > 0;
+			return swipeItems != null && swipeItems.Where(s => GetIsVisible(s)).Count() > 0;
 		}
 
 		bool ProcessSwipingInteractions(MotionEvent? e)
@@ -586,20 +565,16 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in items)
 			{
-				AView? swipeItem = null;
+				AView swipeItem = item.ToNative(MauiContext, true);
 
 				if (item is ISwipeItemView formsSwipeItemView)
 				{
-					//formsSwipeItemView.PropertyChanged += OnSwipeItemPropertyChanged;
-
-					swipeItem = CreateSwipeItemView(formsSwipeItemView);
 					_actionView.AddView(swipeItem);
 					UpdateSwipeItemViewLayout(formsSwipeItemView);
 					_swipeItems.Add(formsSwipeItemView, swipeItem);
 				}
 				else if (item is ISwipeItemMenuItem menuItem)
 				{
-					swipeItem = CreateSwipeItem(menuItem);
 					_actionView.AddView(swipeItem);
 					_swipeItems.Add(item, swipeItem);
 				}
@@ -664,17 +639,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		//void OnSwipeItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-		//{
-		//	var swipeItem = (ISwipeItem)sender;
-
-		//	if (e.PropertyName == SwipeItem.IsVisibleProperty.PropertyName)
-		//	{
-		//		UpdateIsVisibleSwipeItem(swipeItem);
-		//	}
-		//}
-
-		void UpdateIsVisibleSwipeItem(ISwipeItem item)
+		internal void UpdateIsVisibleSwipeItem(ISwipeItem item)
 		{
 			if (!_isOpen)
 				return;
@@ -683,8 +648,7 @@ namespace Microsoft.Maui.Platform
 
 			if (view != null && view is AView nativeView)
 			{
-				bool hidden = item.IsVisible;
-
+				bool hidden = GetIsVisible(item);
 				_swipeThreshold = 0;
 				nativeView.Visibility = hidden ? ViewStates.Gone : ViewStates.Visible;
 				LayoutSwipeItems(GetNativeSwipeItems());
@@ -711,80 +675,80 @@ namespace Microsoft.Maui.Platform
 			return swipeItems;
 		}
 
-		AView CreateSwipeItem(ISwipeItemMenuItem formsSwipeItem)
-		{
-			if (_contentView == null)
-				throw new InvalidOperationException("ContentView cannot be null when calling CreateSwipeItem");
+		//AView CreateSwipeItem(ISwipeItemMenuItem formsSwipeItem)
+		//{
+		//	if (_contentView == null)
+		//		throw new InvalidOperationException("ContentView cannot be null when calling CreateSwipeItem");
 
-			var swipeButton = new AButton(_context)
-			{
-				Text = formsSwipeItem.Text ?? string.Empty
-			};
+		//	var swipeButton = new AButton(_context)
+		//	{
+		//		Text = formsSwipeItem.Text ?? string.Empty
+		//	};
 
-			swipeButton.UpdateBackground(formsSwipeItem.Background);
+		//	swipeButton.UpdateBackground(formsSwipeItem.Background);
 
-			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
-				swipeButton.ContentDescription = formsSwipeItem.AutomationId;
+		//	if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
+		//		swipeButton.ContentDescription = formsSwipeItem.AutomationId;
 
-			var textColor = GetSwipeItemColor(formsSwipeItem.Background?.ToColor());
+		//	var textColor = GetSwipeItemColor(formsSwipeItem.Background?.ToColor());
 
-			if (textColor != null)
-				swipeButton.SetTextColor(textColor.ToNative());
+		//	if (textColor != null)
+		//		swipeButton.SetTextColor(textColor.ToNative());
 
-			swipeButton.TextAlignment = ATextAlignment.Center;
+		//	swipeButton.TextAlignment = ATextAlignment.Center;
 
-			int contentHeight = _contentView.Height;
-			int contentWidth = (int)_context.ToPixels(SwipeItemWidth);
+		//	int contentHeight = _contentView.Height;
+		//	int contentWidth = (int)_context.ToPixels(SwipeItemWidth);
 
-			int iconSize = 0;
-			//int iconSize = formsSwipeItem.IconImageSource != null ? Math.Min(contentHeight, contentWidth) / 2 : 0;
+		//	int iconSize = 0;
+		//	//int iconSize = formsSwipeItem.IconImageSource != null ? Math.Min(contentHeight, contentWidth) / 2 : 0;
 
-			//_ = this.ApplyDrawableAsync(formsSwipeItem, MenuItem.IconImageSourceProperty, Context, drawable =>
-			//{
-			//	if (drawable != null)
-			//	{
-			//		int drawableWidth = drawable.IntrinsicWidth;
-			//		int drawableHeight = drawable.IntrinsicHeight;
+		//	//_ = this.ApplyDrawableAsync(formsSwipeItem, MenuItem.IconImageSourceProperty, Context, drawable =>
+		//	//{
+		//	//	if (drawable != null)
+		//	//	{
+		//	//		int drawableWidth = drawable.IntrinsicWidth;
+		//	//		int drawableHeight = drawable.IntrinsicHeight;
 
-			//		if (drawableWidth > drawableHeight)
-			//		{
-			//			var iconWidth = iconSize;
-			//			var iconHeight = drawableHeight * iconWidth / drawableWidth;
-			//			drawable.SetBounds(0, 0, iconWidth, iconHeight);
-			//		}
-			//		else
-			//		{
-			//			var iconHeight = iconSize;
-			//			var iconWidth = drawableWidth * iconHeight / drawableHeight;
-			//			drawable.SetBounds(0, 0, iconWidth, iconHeight);
-			//		}
+		//	//		if (drawableWidth > drawableHeight)
+		//	//		{
+		//	//			var iconWidth = iconSize;
+		//	//			var iconHeight = drawableHeight * iconWidth / drawableWidth;
+		//	//			drawable.SetBounds(0, 0, iconWidth, iconHeight);
+		//	//		}
+		//	//		else
+		//	//		{
+		//	//			var iconHeight = iconSize;
+		//	//			var iconWidth = drawableWidth * iconHeight / drawableHeight;
+		//	//			drawable.SetBounds(0, 0, iconWidth, iconHeight);
+		//	//		}
 
-			//		if (textColor != null)
-			//			drawable.SetColorFilter(textColor.ToNative(), FilterMode.SrcAtop);
-			//	}
+		//	//		if (textColor != null)
+		//	//			drawable.SetColorFilter(textColor.ToNative(), FilterMode.SrcAtop);
+		//	//	}
 
-			//	swipeButton.SetCompoundDrawables(null, drawable, null, null);
-			//});
+		//	//	swipeButton.SetCompoundDrawables(null, drawable, null, null);
+		//	//});
 
-			var textSize = !string.IsNullOrEmpty(swipeButton.Text) ? (int)swipeButton.TextSize : 0;
-			var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
-			swipeButton.SetPadding(0, buttonPadding, 0, buttonPadding);
-			swipeButton.SetOnTouchListener(null);
-			swipeButton.Visibility = formsSwipeItem.IsVisible ? ViewStates.Visible : ViewStates.Gone;
+		//	var textSize = !string.IsNullOrEmpty(swipeButton.Text) ? (int)swipeButton.TextSize : 0;
+		//	var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
+		//	swipeButton.SetPadding(0, buttonPadding, 0, buttonPadding);
+		//	swipeButton.SetOnTouchListener(null);
+		//	swipeButton.Visibility = formsSwipeItem.IsVisible ? ViewStates.Visible : ViewStates.Gone;
 
-			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
-				swipeButton.ContentDescription = formsSwipeItem.AutomationId;
+		//	if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
+		//		swipeButton.ContentDescription = formsSwipeItem.AutomationId;
 
-			return swipeButton;
-		}
+		//	return swipeButton;
+		//}
 
-		AView CreateSwipeItemView(ISwipeItemView swipeItemView)
-		{
-			var swipeItem = swipeItemView.ToNative(MauiContext, true);
-			swipeItem.Visibility = swipeItemView.IsVisible ? ViewStates.Visible : ViewStates.Gone;
+		//AView CreateSwipeItemView(ISwipeItemView swipeItemView)
+		//{
+		//	var swipeItem = swipeItemView.ToNative(MauiContext, true);
+		//	swipeItem.Visibility = swipeItemView.IsVisible ? ViewStates.Visible : ViewStates.Gone;
 
-			return swipeItem;
-		}
+		//	return swipeItem;
+		//}
 
 		void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
 		{
@@ -804,38 +768,9 @@ namespace Microsoft.Maui.Platform
 			_swipeTransitionMode = Element?.SwipeTransitionMode ?? SwipeTransitionMode.Reveal;
 		}
 
-		Color? GetSwipeItemColor(Color? backgroundColor)
-		{
-			if (backgroundColor == null)
-				return null;
-
-			var luminosity = 0.2126f * backgroundColor.Red + 0.7152f * backgroundColor.Green + 0.0722f * backgroundColor.Blue;
-
-			return luminosity < 0.75f ? Colors.White : Colors.Black;
-		}
-
-		void UnsubscribeSwipeItemEvents()
-		{
-			var items = GetSwipeItemsByDirection();
-
-			if (items == null)
-				return;
-
-			// TODO MAUI
-			//foreach (var item in items)
-			//{
-			//	if (item is SwipeItem formsSwipeItem)
-			//		formsSwipeItem.PropertyChanged -= OnSwipeItemPropertyChanged;
-
-			//	if (item is SwipeItemView formsSwipeItemView)
-			//		formsSwipeItemView.PropertyChanged -= OnSwipeItemPropertyChanged;
-			//}
-		}
-
 		void DisposeSwipeItems()
 		{
 			_isOpen = false;
-			UnsubscribeSwipeItemEvents();
 			_swipeItems.Clear();
 
 			if (_actionView != null)
@@ -1098,7 +1033,7 @@ namespace Microsoft.Maui.Platform
 				{
 					foreach (var swipeItem in swipeItems)
 					{
-						if (swipeItem.IsVisible)
+						if (GetIsVisible(swipeItem))
 							ExecuteSwipeItem(swipeItem);
 					}
 
@@ -1147,7 +1082,7 @@ namespace Microsoft.Maui.Platform
 				{
 					foreach (var swipeItem in swipeItems)
 					{
-						if (swipeItem.IsVisible)
+						if (GetIsVisible(swipeItem))
 						{
 							var swipeItemSize = GetSwipeItemSize(swipeItem);
 							swipeThreshold += (float)swipeItemSize.Width;
@@ -1161,6 +1096,16 @@ namespace Microsoft.Maui.Platform
 				swipeThreshold = CalculateSwipeThreshold();
 
 			return ValidateSwipeThreshold(swipeThreshold);
+		}
+
+		bool GetIsVisible(ISwipeItem swipeItem)
+		{
+			if (swipeItem is IView view)
+				return view.Visibility == Maui.Visibility.Visible;
+			else if (swipeItem is IMenuItem menuItem)
+				return menuItem.IsVisible;
+
+			return true;
 		}
 
 		float CalculateSwipeThreshold()
@@ -1178,7 +1123,7 @@ namespace Microsoft.Maui.Platform
 				if (swipeItem is ISwipeItemView)
 					useSwipeItemsSize = true;
 
-				if (swipeItem.IsVisible)
+				if (GetIsVisible(swipeItem))
 				{
 					var swipeItemSize = GetSwipeItemSize(swipeItem);
 					swipeItemsHeight += (float)swipeItemSize.Height;
@@ -1224,7 +1169,7 @@ namespace Microsoft.Maui.Platform
 				if (swipeItem is ISwipeItemView)
 					hasSwipeItemView = true;
 
-				if (swipeItem.IsVisible)
+				if (GetIsVisible(swipeItem))
 				{
 					var swipeItemSize = GetSwipeItemSize(swipeItem);
 
