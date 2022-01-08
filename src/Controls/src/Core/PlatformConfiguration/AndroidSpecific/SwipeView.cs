@@ -2,12 +2,6 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using FormsElement = Maui.Controls.SwipeView;
 
-	public enum SwipeTransitionMode
-	{
-		Reveal = 0,
-		Drag = 1
-	}
-
 	public static class SwipeView
 	{
 		public static readonly BindableProperty SwipeTransitionModeProperty = BindableProperty.Create("SwipeTransitionMode", typeof(SwipeTransitionMode), typeof(SwipeView), SwipeTransitionMode.Reveal);
