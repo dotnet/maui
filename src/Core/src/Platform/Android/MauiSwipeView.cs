@@ -995,7 +995,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (swipeItem is IView view)
 				return view.Visibility == Maui.Visibility.Visible;
-			else if (swipeItem is IMenuElement menuItem)
+			else if (swipeItem is ISwipeItemMenuItem menuItem)
 				return menuItem.Visibility == Maui.Visibility.Visible;
 
 			return true;

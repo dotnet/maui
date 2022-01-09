@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IMenuElement.Text)] = MapText,
 			[nameof(IMenuElement.Source)] = MapSource,
+			[nameof(ITextStyle.TextColor)] = MapTextColor,
+			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(ITextStyle.Font)] = MapFont,
 
 		};
 
@@ -71,11 +74,27 @@ namespace Microsoft.Maui.Handlers
 			return handler.SourceLoader.UpdateImageSourceAsync();
 		}
 
+		public static void MapTextColor(SwipeItemMenuItemHandler handler, ITextStyle view)
+		{
+			(handler.NativeView as TextView)?.UpdateTextColor(view);
+		}
+
+		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view)
+		{
+			(handler.NativeView as TextView)?.UpdateCharacterSpacing(view);
+		}
+
+		public static void MapFont(SwipeItemMenuItemHandler handler, ITextStyle view)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			(handler.NativeView as TextView)?.UpdateFont(view, fontManager);
+		}
+
 		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			// TODO ITextStyle
-			if (handler.NativeView is TextView text)
-				text.Text = handler.VirtualView.Text ?? string.Empty;
+
+			(handler.NativeView as TextView)?.UpdateTextPlainText(view);
 
 			handler.UpdateSize();
 		}

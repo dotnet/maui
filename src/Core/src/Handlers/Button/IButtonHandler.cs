@@ -6,7 +6,6 @@ using NativeView = Google.Android.Material.Button.MaterialButton;
 using NativeView = Microsoft.UI.Xaml.Controls.Button;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using NativeView = System.Object;
-using INativeViewHandler = Microsoft.Maui.IViewHandler;
 #endif
 
 namespace Microsoft.Maui.Handlers

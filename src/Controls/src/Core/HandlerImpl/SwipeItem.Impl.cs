@@ -6,13 +6,9 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class SwipeItem : MenuItem, Maui.ISwipeItemMenuItem
 	{
-		Paint IMenuElement.Background => new SolidPaint(BackgroundColor);
+		Paint ISwipeItemMenuItem.Background => new SolidPaint(BackgroundColor);
 
-		IImageSource IImageSourcePart.Source => this.IconImageSource;
-
-		bool IImageSourcePart.IsAnimationPlaying => false;
-
-		Visibility IMenuElement.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+		Visibility ISwipeItemMenuItem.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
 
 		void Maui.ISwipeItem.OnInvoked()
 		{

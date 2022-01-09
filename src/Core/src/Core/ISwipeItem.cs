@@ -6,6 +6,4 @@
 
 		string AutomationId { get; }
 	}
-
-
 }
