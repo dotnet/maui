@@ -615,9 +615,7 @@ namespace Microsoft.Maui.Platform
 
 			if (view != null && view is AView nativeView)
 			{
-				bool hidden = GetIsVisible(item);
 				_swipeThreshold = 0;
-				nativeView.Visibility = hidden ? ViewStates.Gone : ViewStates.Visible;
 				LayoutSwipeItems(GetNativeSwipeItems());
 				SwipeToThreshold(false);
 			}
@@ -997,8 +995,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (swipeItem is IView view)
 				return view.Visibility == Maui.Visibility.Visible;
-			else if (swipeItem is IMenuItem menuItem)
-				return menuItem.IsVisible;
+			else if (swipeItem is IMenuElement menuItem)
+				return menuItem.Visibility == Maui.Visibility.Visible;
 
 			return true;
 		}

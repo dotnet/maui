@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ISwipeItemMenuItem, SwipeItemMenuItemHandler> Mapper = new PropertyMapper<ISwipeItemMenuItem, SwipeItemMenuItemHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(ISwipeItemMenuItem.IsVisible)] = MapVisible,
+			[nameof(ISwipeItemMenuItem.Visibility)] = MapVisibility,
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IMenuElement.Text)] = MapText,
 			[nameof(IMenuElement.Source)] = MapSource,
@@ -95,11 +95,13 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapVisible(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		public static void MapVisibility(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			var swipeView = handler.NativeView?.Parent.GetParentOfType<MauiSwipeView>();
+			var swipeView = handler.NativeView.Parent.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
 				swipeView.UpdateIsVisibleSwipeItem(view);
+
+			handler.NativeView.Visibility = view.Visibility.ToNativeVisibility();
 		}
 
 		static Color? GetSwipeItemColor(Color? backgroundColor)
@@ -118,11 +120,9 @@ namespace Microsoft.Maui.Handlers
 
 			var swipeButton = new AButton(MauiContext.Context);
 			swipeButton.SetOnTouchListener(null);
-			swipeButton.Visibility = VirtualView.IsVisible ? ViewStates.Visible : ViewStates.Gone;
 
-			// TODO Fix AutomationID probably with separate interface
-			//if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
-			//	swipeButton.ContentDescription = formsSwipeItem.AutomationId;
+			if (!string.IsNullOrEmpty(VirtualView.AutomationId))
+				swipeButton.ContentDescription = VirtualView.AutomationId;
 
 			return swipeButton;
 		}

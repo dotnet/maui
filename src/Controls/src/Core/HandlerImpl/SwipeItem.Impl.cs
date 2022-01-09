@@ -12,6 +12,17 @@ namespace Microsoft.Maui.Controls
 
 		bool IImageSourcePart.IsAnimationPlaying => false;
 
+		Visibility IMenuElement.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+
+		void Maui.ISwipeItem.OnInvoked()
+		{
+			if (Command != null && Command.CanExecute(CommandParameter))
+				Command.Execute(CommandParameter);
+
+			OnClicked();
+			Invoked?.Invoke(this, EventArgs.Empty);
+		}
+
 		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
 		}
