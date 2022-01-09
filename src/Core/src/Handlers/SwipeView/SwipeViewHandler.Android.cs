@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.TypedNativeView.UpdateIsSwipeEnabled();
+			handler.TypedNativeView.UpdateIsSwipeEnabled(swipeView.IsEnabled);
 			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.TypedNativeView.UpdateSwipeTransitionMode();
+			handler.TypedNativeView.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
 		}
 
 		public static void MapRequestOpen(ISwipeViewHandler handler, ISwipeView swipeView, object? args)

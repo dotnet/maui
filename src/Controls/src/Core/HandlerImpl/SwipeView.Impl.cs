@@ -8,6 +8,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class SwipeView : ISwipeView
 	{
+		bool _isOpen;
+		double _previousScrollX;
+		double _previousScrollY;
+		View? _scrollParent;
+		const float SwipeMinimumDelta = 10f;
+
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
 
 		ISwipeItems ISwipeView.RightItems => new HandlerSwipeItems(RightItems);
@@ -16,7 +22,15 @@ namespace Microsoft.Maui.Controls
 
 		ISwipeItems ISwipeView.BottomItems => new HandlerSwipeItems(BottomItems);
 
-		bool ISwipeView.IsOpen { get; set; }
+		bool ISwipeView.IsOpen
+		{
+			get => _isOpen;
+			set
+			{
+				_isOpen = value;
+				Handler?.UpdateValue(nameof(ISwipeView.IsOpen));
+			}
+		}
 
 #if IOS
 		SwipeTransitionMode ISwipeView.SwipeTransitionMode =>
@@ -28,6 +42,75 @@ namespace Microsoft.Maui.Controls
 		SwipeTransitionMode ISwipeView.SwipeTransitionMode => SwipeTransitionMode.Reveal;
 #endif
 
+		private protected override void OnParentChangedCore()
+		{
+			if (_scrollParent != null)
+			{
+				if (_scrollParent is ScrollView scrollView)
+				{
+					scrollView.Scrolled -= OnParentScrolled;
+				}
+
+				if (_scrollParent is ListView listView)
+				{
+					listView.Scrolled -= OnParentScrolled;
+					return;
+				}
+
+				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
+				{
+					collectionView.Scrolled -= OnParentScrolled;
+				}
+
+				_scrollParent = null;
+			}
+
+			base.OnParentChangedCore();
+
+			if (_scrollParent == null)
+			{
+				_scrollParent = this.FindParentOfType<ScrollView>();
+
+				if (_scrollParent is ScrollView scrollView)
+				{
+					scrollView.Scrolled += OnParentScrolled;
+					return;
+				}
+
+				_scrollParent = this.FindParentOfType<ListView>();
+
+				if (_scrollParent is ListView listView)
+				{
+					listView.Scrolled += OnParentScrolled;
+					return;
+				}
+
+				_scrollParent = this.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
+
+				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
+				{
+					collectionView.Scrolled += OnParentScrolled;
+				}
+			}
+		}
+
+		void OnParentScrolled(object? sender, ScrolledEventArgs e)
+		{
+			var horizontalDelta = e.ScrollX - _previousScrollX;
+			var verticalDelta = e.ScrollY - _previousScrollY;
+
+			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
+				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
+
+			_previousScrollX = e.ScrollX;
+			_previousScrollY = e.ScrollY;
+		}
+
+		void OnParentScrolled(object? sender, ItemsViewScrolledEventArgs e)
+		{
+			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
+				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
+		}
 
 		void ISwipeView.SwipeStarted(SwipeViewSwipeStarted swipeStarted)
 		{

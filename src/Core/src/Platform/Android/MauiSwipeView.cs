@@ -21,13 +21,11 @@ namespace Microsoft.Maui.Platform
 	{
 		const float OpenSwipeThresholdPercentage = 0.6f; // 60%
 		const int SwipeThreshold = 250;
-		const int SwipeItemWidth = 100;
+		internal const int SwipeItemWidth = 100;
 		const long SwipeAnimationDuration = 200;
-		const float SwipeMinimumDelta = 10f;
 
 		readonly Dictionary<ISwipeItem, object> _swipeItems;
 		readonly Context _context;
-		//View? _scrollParent;
 		SwipeViewPager? _viewPagerParent;
 		AView? _contentView;
 		LinearLayoutCompat? _actionView;
@@ -39,8 +37,6 @@ namespace Microsoft.Maui.Platform
 		SwipeDirection? _swipeDirection;
 		float _swipeOffset;
 		float _swipeThreshold;
-		//double _previousScrollX;
-		//double _previousScrollY;
 		bool _isSwipeEnabled;
 		bool _isResettingSwipe;
 		bool _isOpen;
@@ -74,35 +70,6 @@ namespace Microsoft.Maui.Platform
 
 			if (Control != null && Control.Parent != null && _viewPagerParent == null)
 				_viewPagerParent = Control.Parent.GetParentOfType<SwipeViewPager>();
-
-
-			// TODO replace this with scroll checking inside Maui Controls or 
-			// alternate method for locating scrolling
-			//if (Element != null && _scrollParent == null)
-			//{
-			//	_scrollParent = Element.FindParentOfType<ScrollView>();
-
-			//	if (_scrollParent is ScrollView scrollView)
-			//	{
-			//		scrollView.Scrolled += OnParentScrolled;
-			//		return;
-			//	}
-
-			//	_scrollParent = Element.FindParentOfType<ListView>();
-
-			//	if (_scrollParent is ListView listView)
-			//	{
-			//		listView.Scrolled += OnParentScrolled;
-			//		return;
-			//	}
-
-			//	_scrollParent = Element.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
-
-			//	if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
-			//	{
-			//		collectionView.Scrolled += OnParentScrolled;
-			//	}
-			//}
 		}
 
 		public override bool OnTouchEvent(MotionEvent? e)
@@ -680,14 +647,14 @@ namespace Microsoft.Maui.Platform
 			swipeItemView?.Handler?.GetWrappedNativeView()?.InvalidateMeasure(swipeItemView);
 		}
 
-		internal void UpdateIsSwipeEnabled()
+		internal void UpdateIsSwipeEnabled(bool isEnabled)
 		{
-			_isSwipeEnabled = Element?.IsEnabled ?? false;
+			_isSwipeEnabled = isEnabled;
 		}
 
-		internal void UpdateSwipeTransitionMode()
+		internal void UpdateSwipeTransitionMode(SwipeTransitionMode swipeTransitionMode)
 		{
-			_swipeTransitionMode = Element?.SwipeTransitionMode ?? SwipeTransitionMode.Reveal;
+			_swipeTransitionMode = swipeTransitionMode;
 		}
 
 		void DisposeSwipeItems()
@@ -1385,24 +1352,6 @@ namespace Microsoft.Maui.Platform
 
 			ResetSwipe(animated);
 		}
-
-		//void OnParentScrolled(object sender, ScrolledEventArgs e)
-		//{
-		//	var horizontalDelta = e.ScrollX - _previousScrollX;
-		//	var verticalDelta = e.ScrollY - _previousScrollY;
-
-		//	if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
-		//		ResetSwipe();
-
-		//	_previousScrollX = e.ScrollX;
-		//	_previousScrollY = e.ScrollY;
-		//}
-
-		//void OnParentScrolled(object sender, ItemsViewScrolledEventArgs e)
-		//{
-		//	if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
-		//		ResetSwipe();
-		//}
 
 		void RaiseSwipeStarted()
 		{

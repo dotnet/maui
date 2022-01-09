@@ -12,10 +12,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, AView>
 	{
-		//TODO MOVE ELSEWHERE
-		const int SwipeThreshold = 250;
-		const int SwipeItemWidth = 100;
-
 		public static IPropertyMapper<ISwipeItemMenuItem, SwipeItemMenuItemHandler> Mapper = new PropertyMapper<ISwipeItemMenuItem, SwipeItemMenuItemHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(ISwipeItemMenuItem.IsVisible)] = MapVisible,
@@ -142,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 				return 0;
 
 			int contentHeight = mauiSwipeView.Height;
-			int contentWidth = (int)MauiContext.Context.ToPixels(SwipeItemWidth);
+			int contentWidth = (int)MauiContext.Context.ToPixels(MauiSwipeView.SwipeItemWidth);
 
 			return Math.Min(contentHeight, contentWidth) / 2;
 		}
