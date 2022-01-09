@@ -1132,6 +1132,28 @@ namespace Microsoft.Maui.Graphics
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius, includeLast);
 		}
 
+		public void AppendRoundedRectangle(RectangleF rect, float xRadius, float yRadius)
+		{
+			xRadius = Math.Min(xRadius, rect.Width / 2);
+			yRadius = Math.Min(yRadius, rect.Height / 2);
+
+			float minX = Math.Min(rect.X, rect.X + rect.Width);
+			float minY = Math.Min(rect.Y, rect.Y + rect.Height);
+			float maxX = Math.Max(rect.X, rect.X + rect.Width);
+			float maxY = Math.Max(rect.Y, rect.Y + rect.Height);
+
+			MoveTo(minX, minY + yRadius);
+			CurveTo(minX, minY + yRadius, minX, minY, minX + xRadius, minY);
+			LineTo(maxX - xRadius, minY);
+			CurveTo(maxX - xRadius, minY, maxX, minY, maxX, minY + yRadius);
+			LineTo(maxX, maxY - yRadius);
+			CurveTo(maxX, maxY - yRadius, maxX, maxY, maxX - xRadius, maxY);
+			LineTo(minX + xRadius, maxY);
+			CurveTo(minX + xRadius, maxY, minX, maxY, minX, maxY - yRadius);
+			LineTo(minX, minY + yRadius);
+			Close();
+		}
+
 		public void AppendRoundedRectangle(float x, float y, float w, float h, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
 		{
 			topLeftCornerRadius = ClampCornerRadius(topLeftCornerRadius, w, h);
