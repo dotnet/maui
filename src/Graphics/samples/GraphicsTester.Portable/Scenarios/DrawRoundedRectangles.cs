@@ -20,6 +20,7 @@ namespace GraphicsTester.Scenarios
 			DrawShadowedRect(canvas);
 			DrawRoundedRectanglesWithDifferentStrokeLocations(canvas);
 			DrawRoundedRectWithZeroAndLargeRadius(canvas);
+			DrawRoundedWithDifferentXYRadius(canvas);
 			canvas.RestoreState();
 
 			canvas.DrawRoundedRectangle(50.5f, 30.5f, 150, 15, 5);
@@ -102,6 +103,12 @@ namespace GraphicsTester.Scenarios
 			canvas.StrokeSize = 1;
 			canvas.DrawRoundedRectangle(250.5f, 700.5f, 150, 20, 0);
 			canvas.DrawRoundedRectangle(450.5f, 700.5f, 150, 20, 50);
+		}
+
+		private void DrawRoundedWithDifferentXYRadius(ICanvas canvas)
+		{
+			RectangleF rect = new RectangleF(275, 400, 100, 100);
+			canvas.DrawRoundedRectangle(rect, xRadius: 20, yRadius: 40);
 		}
 	}
 }
