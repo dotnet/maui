@@ -50,8 +50,10 @@ namespace Microsoft.Maui
 
 			_graphicsView.SetValue(Canvas.ZIndexProperty, 99);
 			_graphicsView.IsHitTestVisible = false;
-			_panel?.Children.Add(_graphicsView);
+			_graphicsView.Visibility = UI.Xaml.Visibility.Collapsed;
 
+			_panel?.Children.Add(_graphicsView);
+			
 			IsNativeViewInitialized = true;
 			return IsNativeViewInitialized;
 		}
@@ -59,7 +61,13 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public void Invalidate()
 		{
-			_graphicsView?.Invalidate();
+			if (_graphicsView is null)
+				return;
+
+			// Hide the visibility of the graphics view if there are no drawn elements.
+			// This way, the In-App Toolbar will work as expected.
+			_graphicsView.Visibility = WindowElements.Any() ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
+			_graphicsView.Invalidate();
 		}
 
 		/// <summary>

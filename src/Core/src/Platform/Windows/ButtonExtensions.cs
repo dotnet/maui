@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateTextColor(this Button nativeButton, ITextStyle button)
+		public static void UpdateTextColor(this ButtonBase nativeButton, ITextStyle button)
 		{
 			var brush = button.TextColor?.ToNative();
 
@@ -125,7 +126,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePadding(this Button nativeButton, IPadding padding) =>
 			nativeButton.UpdatePadding(padding, nativeButton.GetResource<UI.Xaml.Thickness>("ButtonPadding"));
 
-		public static void UpdateCharacterSpacing(this Button nativeButton, ITextStyle button)
+		public static void UpdateCharacterSpacing(this ButtonBase nativeButton, ITextStyle button)
 		{
 			var characterSpacing = button.CharacterSpacing.ToEm();
 
@@ -179,7 +180,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static T? GetContent<T>(this Button nativeButton)
+		public static T? GetContent<T>(this ButtonBase nativeButton)
 			where T : FrameworkElement
 		{
 			if (nativeButton.Content is null)
