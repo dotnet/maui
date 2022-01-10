@@ -13,6 +13,9 @@ steps:
         condition: ne(variables['REQUIRED_XCODE'], '')
         inputs:
           provisioning_script: $(provisionator.xcode)
+          provisioning_extra_args: $(provisionator.extraArguments)
+        env:
+          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'
