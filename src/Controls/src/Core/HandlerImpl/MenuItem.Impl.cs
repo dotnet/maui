@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 
 		Font ITextStyle.Font => Font.Default;
 
-		double ITextStyle.CharacterSpacing => throw new NotImplementedException();
+		double ITextStyle.CharacterSpacing => 0;
 
 		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
