@@ -72,10 +72,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		static IList<KeyValuePair<Layout, int>> s_resolutionList = new List<KeyValuePair<Layout, int>>();
-		static bool s_relayoutInProgress;
-		bool _allocatedFlag;
-
 		bool _hasDoneLayout;
 		Size _lastLayoutSize = new Size(-1, -1);
 
@@ -239,7 +235,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		protected override void OnSizeAllocated(double width, double height)
 		{
-			_allocatedFlag = true;
 			base.OnSizeAllocated(width, height);
 			UpdateChildrenLayout();
 		}
@@ -363,7 +358,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			_allocatedFlag = false;
 			if (trigger == InvalidationTrigger.RendererReady)
 			{
 				InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
@@ -371,54 +365,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			else
 			{
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-			}
-
-			QueueLayoutResolution();
-		}
-
-		internal virtual void QueueLayoutResolution()
-		{
-			s_resolutionList.Add(new KeyValuePair<Layout, int>(this, GetElementDepth(this)));
-
-			if (Device.PlatformInvalidator == null && !s_relayoutInProgress)
-			{
-				// Rather than recomputing the layout for each change as it happens, we accumulate them in
-				// s_resolutionList and schedule a single layout update operation to handle them all at once.
-				// This avoids a lot of unnecessary layout operations if something is triggering many property
-				// changes at once (e.g., a BindingContext change)
-
-				s_relayoutInProgress = true;
-
-				Dispatcher.DispatchIfRequired(ResolveLayoutChanges);
-			}
-			else
-			{
-				// If the platform supports PlatformServices2, queueing is unnecessary; the layout changes
-				// will be handled during the Layout's next Measure/Arrange pass
-				Device.Invalidate(this);
-			}
-		}
-
-		public void ResolveLayoutChanges()
-		{
-			s_relayoutInProgress = false;
-
-			if (s_resolutionList.Count == 0)
-			{
-				return;
-			}
-
-			IList<KeyValuePair<Layout, int>> copy = s_resolutionList;
-			s_resolutionList = new List<KeyValuePair<Layout, int>>();
-
-			foreach (KeyValuePair<Layout, int> kvp in copy)
-			{
-				Layout layout = kvp.Key;
-				double width = layout.Width, height = layout.Height;
-				if (!layout._allocatedFlag && width >= 0 && height >= 0)
-				{
-					layout.SizeAllocated(width, height);
-				}
 			}
 		}
 

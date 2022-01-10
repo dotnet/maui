@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextColor(label, DefaultTextColor!);
+			handler.NativeView?.UpdateTextColor(label, DefaultTextColor);
 		}
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
