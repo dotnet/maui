@@ -17,9 +17,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				var ve = bindable as VisualElement;
-				if (ve != null && newvalue == null)
-					ve.IsPlatformEnabled = false;
+				var view = bindable as VisualElement;
+				if (view != null)
+					view.IsPlatformEnabled = newvalue != null;
+
+				if (bindable is IView mauiView)
+				{
+					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
+						mauiView.Handler = new RendererToHandlerShim(ver);
+				}
 			});
 
 		public static IVisualElementRenderer GetRenderer(BindableObject bindable)
