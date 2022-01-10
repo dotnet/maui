@@ -63,6 +63,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(SliderPage), "Slider",
 				"The Slider is a horizontal bar that can be manipulated by the user to select a double value from a continuous range."),
 
+			new SectionModel(typeof(Pages.SwipeViewGalleries.SwipeViewGallery), "SwipeView",
+				"The SwipeView is a container control that wraps around an item of content, and provides context menu items that are revealed by a swipe gesture. "),
+
 			new SectionModel(typeof(StepperPage), "Stepper",
 				"Use a Stepper for selecting a numeric value from a range of values."),
 

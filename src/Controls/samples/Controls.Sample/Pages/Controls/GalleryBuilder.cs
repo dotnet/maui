@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
+namespace Maui.Controls.Sample.Pages
 {
 	public static class GalleryBuilder
 	{

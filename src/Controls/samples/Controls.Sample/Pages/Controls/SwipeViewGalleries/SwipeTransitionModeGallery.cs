@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
+namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class SwipeTransitionModeGallery : ContentPage
@@ -15,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 		{
 			Title = "SwipeTransitionMode Gallery";
 
-			var scroll = new ScrollView();
+			var scroll = new Microsoft.Maui.Controls.ScrollView();
 
 			var swipeLayout = new StackLayout
 			{
@@ -29,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Text = "This Gallery use a Platform Specific only available for Android and iOS."
 			};
 
-			swipeLayout.Children.Add(instructions);
+			swipeLayout.Add(instructions);
 
 			var swipeItemSwipeTransitionModeLabel = new Label
 			{
@@ -37,16 +39,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Text = "SwipeTransitionMode:"
 			};
 
-			swipeLayout.Children.Add(swipeItemSwipeTransitionModeLabel);
+			swipeLayout.Add(swipeItemSwipeTransitionModeLabel);
 
-			var swipeItemSwipeTransitionModePicker = new Picker();
+			var swipeItemSwipeTransitionModePicker = new Microsoft.Maui.Controls.Picker();
 
 			var swipeTransitionModes = Enum.GetNames(typeof(SwipeTransitionMode)).Select(t => t).ToList();
 
 			swipeItemSwipeTransitionModePicker.ItemsSource = swipeTransitionModes;
 			swipeItemSwipeTransitionModePicker.SelectedIndex = 0;   // Reveal
 
-			swipeLayout.Children.Add(swipeItemSwipeTransitionModePicker);
+			swipeLayout.Add(swipeItemSwipeTransitionModePicker);
 
 			var deleteSwipeItem = new SwipeItem
 			{
@@ -73,9 +75,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Text = "Swipe to Right"
 			};
 
-			leftSwipeContent.Children.Add(leftSwipeLabel);
+			leftSwipeContent.Add(leftSwipeLabel);
 
-			var leftSwipeView = new SwipeView
+			var leftSwipeView = new Microsoft.Maui.Controls.SwipeView
 			{
 				HeightRequest = 60,
 				WidthRequest = 300,
@@ -83,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Content = leftSwipeContent
 			};
 
-			swipeLayout.Children.Add(leftSwipeView);
+			swipeLayout.Add(leftSwipeView);
 
 			var rightSwipeContent = new Grid
 			{
@@ -97,9 +99,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Text = "Swipe to Left"
 			};
 
-			rightSwipeContent.Children.Add(rightSwipeLabel);
+			rightSwipeContent.Add(rightSwipeLabel);
 
-			var rightSwipeView = new SwipeView
+			var rightSwipeView = new Microsoft.Maui.Controls.SwipeView
 			{
 				HeightRequest = 60,
 				WidthRequest = 300,
@@ -121,9 +123,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Text = "Swipe to Top"
 			};
 
-			topSwipeContent.Children.Add(topSwipeLabel);
+			topSwipeContent.Add(topSwipeLabel);
 
-			var topSwipeView = new SwipeView
+			var topSwipeView = new Microsoft.Maui.Controls.SwipeView
 			{
 				HeightRequest = 60,
 				WidthRequest = 300,
@@ -131,7 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Content = topSwipeContent
 			};
 
-			swipeLayout.Children.Add(topSwipeView);
+			swipeLayout.Add(topSwipeView);
 
 			var bottomSwipeContent = new Grid
 			{
@@ -145,9 +147,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Text = "Swipe to Bottom"
 			};
 
-			bottomSwipeContent.Children.Add(bottomSwipeLabel);
+			bottomSwipeContent.Add(bottomSwipeLabel);
 
-			var bottomSwipeView = new SwipeView
+			var bottomSwipeView = new Microsoft.Maui.Controls.SwipeView
 			{
 				HeightRequest = 60,
 				WidthRequest = 300,
@@ -155,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				Content = bottomSwipeContent
 			};
 
-			swipeLayout.Children.Add(bottomSwipeView);
+			swipeLayout.Add(bottomSwipeView);
 
 			swipeItemSwipeTransitionModePicker.SelectedIndexChanged += (sender, e) =>
 			{
@@ -164,30 +166,30 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				switch (swipeTransitionMode)
 				{
 					case "Drag":
-						leftSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
-						leftSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						leftSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						leftSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						rightSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
-						rightSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						rightSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						rightSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						topSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
-						topSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						topSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						topSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						bottomSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
-						bottomSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						bottomSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						bottomSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 						break;
 					case "Reveal":
-						leftSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Reveal);
-						leftSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Reveal);
+						leftSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(SwipeTransitionMode.Reveal);
+						leftSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Reveal);
 
-						rightSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
-						rightSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						rightSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						rightSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						topSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
-						topSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						topSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						topSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						bottomSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
-						bottomSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						bottomSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						bottomSwipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 						break;
 				}
 			};
