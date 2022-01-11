@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Essentials
 			Platform.OnActivityStateChanged(activity, ActivityState.Stopped);
 	}
 
-	[Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+	[Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, Exported = true)]
 	class IntermediateActivity : Activity
 	{
 		const string launchedExtra = "launched";
