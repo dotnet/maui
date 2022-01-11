@@ -363,11 +363,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
 					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
-					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
 					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
-					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 			}
 
 			[Theory]
@@ -474,11 +474,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
 					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
-					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
 					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
-					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 			}
 
 			[Theory]
@@ -529,11 +529,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
 					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
-					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
 					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
-					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 			}
 
 			[Theory]
@@ -582,12 +582,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
 
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
-					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
-					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+					$"<foreground android:drawable=\"@mipmap/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
-					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
-					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+					$"<foreground android:drawable=\"@mipmap/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 			}
 		}
 

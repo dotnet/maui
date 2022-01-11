@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Resizetizer
 		const string AdaptiveIconDrawableXml =
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <adaptive-icon xmlns:android=""http://schemas.android.com/apk/res/android"">
-	<background android:drawable=""@drawable/{name}_background""/>
-	<foreground android:drawable=""@drawable/{name}_foreground""/>
+	<background android:drawable=""@{backgroundType}/{name}_background""/>
+	<foreground android:drawable=""@{foregroundType}/{name}_foreground""/>
 </adaptive-icon>";
 
 		const string EmptyVectorDrawable =
@@ -135,7 +135,10 @@ namespace Microsoft.Maui.Resizetizer
 
 			// process adaptive icon xml
 			{
-				var adaptiveIconXmlStr = AdaptiveIconDrawableXml.Replace("{name}", AppIconName);
+				var adaptiveIconXmlStr = AdaptiveIconDrawableXml
+					.Replace("{name}", AppIconName)
+					.Replace("{backgroundType}", backgroundIsVector ? "drawable" : "mipmap")
+					.Replace("{foregroundType}", foregroundIsVector ? "drawable" : "mipmap");
 
 				var adaptiveIconDestination = Path.Combine(fullIntermediateOutputPath.FullName, "mipmap-anydpi-v26", AppIconName + ".xml");
 				var adaptiveIconRoundDestination = Path.Combine(fullIntermediateOutputPath.FullName, "mipmap-anydpi-v26", AppIconName + "_round.xml");
