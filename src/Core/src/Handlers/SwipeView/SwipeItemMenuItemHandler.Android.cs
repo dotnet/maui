@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Handlers
 				return 0;
 
 			int contentHeight = mauiSwipeView.Height;
-			int contentWidth = (int)MauiContext.Context.ToPixels(MauiSwipeView.SwipeItemWidth);
+			int contentWidth = (int)MauiContext.Context.ToPixels(SwipeViewExtensions.SwipeItemWidth);
 
 			return Math.Min(contentHeight, contentWidth) / 2;
 		}
