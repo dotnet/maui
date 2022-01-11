@@ -42,6 +42,25 @@ namespace Microsoft.Maui.Controls
 		SwipeTransitionMode ISwipeView.SwipeTransitionMode => SwipeTransitionMode.Reveal;
 #endif
 
+
+		protected override void OnChildAdded(Element child)
+		{
+			base.OnChildAdded(child);
+			child.PropertyChanged += OnPropertyChanged;
+		}
+
+		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
+		{
+			base.OnChildRemoved(child, oldLogicalIndex);
+			child.PropertyChanged -= OnPropertyChanged;
+		}
+
+		void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IsEnabled));
+		}
+
 		private protected override void OnParentChangedCore()
 		{
 			if (_scrollParent != null)
