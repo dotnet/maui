@@ -40,7 +40,6 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			};
 
 			animatedLayout.Children.Add(animatedCheckBox);
-			animatedLayout.Children.Add(animatedCheckBox);
 
 			var animatedLabel = new Label
 			{

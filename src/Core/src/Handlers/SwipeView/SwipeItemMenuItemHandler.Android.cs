@@ -157,13 +157,21 @@ namespace Microsoft.Maui.Handlers
 			var textSize = 0;
 			var contentHeight = 0;
 
-
 			var mauiSwipeView = NativeView.Parent.GetParentOfType<MauiSwipeView>();
-			if (mauiSwipeView != null)
-				contentHeight = mauiSwipeView.Height;
+			if (mauiSwipeView == null)
+				return;
+
+			contentHeight = mauiSwipeView.Height;
 
 			if (NativeView is TextView textView)
+			{
 				textSize = !string.IsNullOrEmpty(textView.Text) ? (int)textView.TextSize : 0;
+				var icons = textView.GetCompoundDrawables();
+				if(icons.Length > 1 && icons[1] != null)
+				{
+					OnSetImageSource(icons[1]);
+				}
+			}
 
 			var iconSize = GetIconSize();
 			var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
@@ -197,7 +205,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			(NativeView as TextView)?.SetCompoundDrawables(null, drawable, null, null);
-			UpdateSize();
 		}
 	}
 }

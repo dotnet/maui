@@ -87,11 +87,13 @@ namespace Microsoft.Maui.Controls
 		public void Open(OpenSwipeItem openSwipeItem, bool animated = true)
 		{
 			OpenRequested?.Invoke(this, new OpenRequestedEventArgs(openSwipeItem, animated));
+			((ISwipeView)this).RequestOpen(new SwipeViewOpenRequest(openSwipeItem, animated));
 		}
 
 		public void Close(bool animated = true)
 		{
 			CloseRequested?.Invoke(this, new CloseRequestedEventArgs(animated));
+			((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(animated));
 		}
 
 		void ISwipeViewController.SendSwipeStarted(SwipeStartedEventArgs args) => SwipeStarted?.Invoke(this, args);
