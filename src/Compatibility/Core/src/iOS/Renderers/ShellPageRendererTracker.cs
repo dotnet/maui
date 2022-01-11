@@ -7,6 +7,7 @@ using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -64,12 +65,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		BackButtonBehavior BackButtonBehavior { get; set; }
 		UINavigationItem NavigationItem { get; set; }
 
-		public ShellPageRendererTracker(IShellContext context, IFontManager fontManager)
+		public ShellPageRendererTracker(IShellContext context)
 		{
+			_fontManager = context.Shell.GetFontManager();
 			_context = context;
 			_nSCache = new NSCache();
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
-			_fontManager = fontManager;
+			_fontManager = context.Shell.GetFontManager();
 		}
 
 		public async void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
