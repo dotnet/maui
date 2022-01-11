@@ -55,9 +55,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		internal IFontManager FontManager { get; }
 
-		public ShellItemRenderer(IShellContext shellContext, IFontManager fontManager) : base(shellContext)
+		public ShellItemRenderer(IShellContext shellContext) : base(shellContext)
 		{
-			FontManager = fontManager;
+			FontManager = shellContext.Shell.GetFontManager();
 		}
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
