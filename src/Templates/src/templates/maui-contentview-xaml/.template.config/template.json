@@ -3,7 +3,7 @@
     "author": "Microsoft",
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Xaml", "Code" ],
     "identity": "Microsoft.Maui.XamlContentView",
-    "name": ".NET MAUI ContentView (Preview)",
+    "name": ".NET MAUI ContentView (XAML) (Preview)",
     "shortName": "maui-view-xaml",
     "tags": {
         "language": "C#",

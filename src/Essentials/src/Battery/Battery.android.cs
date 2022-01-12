@@ -11,18 +11,12 @@ namespace Microsoft.Maui.Essentials
 
 		static void StartEnergySaverListeners()
 		{
-			if (!Platform.HasApiLevel(BuildVersionCodes.Lollipop))
-				return;
-
 			powerReceiver = new EnergySaverBroadcastReceiver(OnEnergySaverChanged);
 			Platform.AppContext.RegisterReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged));
 		}
 
 		static void StopEnergySaverListeners()
 		{
-			if (!Platform.HasApiLevel(BuildVersionCodes.Lollipop))
-				return;
-
 			try
 			{
 				Platform.AppContext.UnregisterReceiver(powerReceiver);
@@ -39,10 +33,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			get
 			{
-				var status = false;
-				if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
-					status = Platform.PowerManager?.IsPowerSaveMode ?? false;
-
+				var status = Platform.PowerManager?.IsPowerSaveMode ?? false;
 				return status ? EnergySaverStatus.On : EnergySaverStatus.Off;
 			}
 		}

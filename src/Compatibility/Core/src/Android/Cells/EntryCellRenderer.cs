@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateHorizontalTextAlignment()
 		{
 			var entryCell = (EntryCell)Cell;
-			_view.EditText.UpdateHorizontalAlignment(entryCell.HorizontalTextAlignment, _view.Context.HasRtlSupport());
+			_view.EditText.UpdateHorizontalAlignment(entryCell.HorizontalTextAlignment);
 		}
 
 		void UpdateVerticalTextAlignment()

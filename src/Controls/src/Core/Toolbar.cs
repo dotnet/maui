@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls
 		bool _hasAppeared;
 		bool _isVisible = false;
 		bool _backButtonVisible;
+		bool _drawerToggleVisible;
 
 		public Toolbar(Maui.IElement parent)
 		{
@@ -44,6 +45,7 @@ namespace Microsoft.Maui.Controls
 		public VisualElement TitleView { get => GetTitleView(); set => SetProperty(ref _titleView, value); }
 		public bool DynamicOverflowEnabled { get => _dynamicOverflowEnabled; set => SetProperty(ref _dynamicOverflowEnabled, value); }
 		public bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
+		public bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
 		public IElementHandler Handler { get; set; }
 
@@ -139,6 +141,14 @@ namespace Microsoft.Maui.Controls
 			_toolbarTracker.AdditionalTargets = navigationPage.GetParentPages();
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (_parent is FlyoutPage && stack.Count == 1)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
 			BackButtonVisible = NavigationPage.GetHasBackButton(currentPage) && stack.Count > 1;
 
 			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
