@@ -62,6 +62,10 @@
     </MauiXaml>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\Controls\SwipeViewGalleries\" />
+  </ItemGroup>
+
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
 </Project>

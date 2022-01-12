@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS || __IOS__
 			[nameof(ILabel.Background)] = MapBackground,
 #endif
-			[nameof(ILabel.CharacterSpacing)] = MapCharacterSpacing,
-			[nameof(ILabel.Font)] = MapFont,
+			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(ITextStyle.Font)] = MapFont,
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(ILabel.LineBreakMode)] = MapLineBreakMode,
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.MaxLines)] = MapMaxLines,
 			[nameof(ILabel.Padding)] = MapPadding,
 			[nameof(ILabel.Text)] = MapText,
-			[nameof(ILabel.TextColor)] = MapTextColor,
+			[nameof(ITextStyle.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
 		};
 

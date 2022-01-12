@@ -44,6 +44,11 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("WinUI.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Core")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
 
 [assembly: Preserve]
 

@@ -506,7 +506,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var page = new ContentPage();
 			page.LoadFromXaml(xaml);
 			var template = page.Resources["datatemplate"] as Maui.Controls.DataTemplate;
-			Assert.Throws<InvalidOperationException>(() => template.CreateContent());
+
+			Assert.NotNull(template.CreateContent());
 		}
 
 		[Test]

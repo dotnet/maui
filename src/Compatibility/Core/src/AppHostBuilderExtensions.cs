@@ -107,7 +107,9 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
 #if !WINDOWS
 					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
+#if !(MACCATALYST || MACOS)
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
+#endif
 #else
 					handlers.TryAddCompatibilityRenderer(typeof(Layout), typeof(LayoutRenderer));
 #endif
@@ -123,6 +125,10 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
+
+
+					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.RelativeLayout), typeof(DefaultRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.AbsoluteLayout), typeof(DefaultRenderer));
 
 					// This is for Layouts that currently don't work when assigned to LayoutHandler
 

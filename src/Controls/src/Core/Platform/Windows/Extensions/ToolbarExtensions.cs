@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateIsVisible(this WindowHeader nativeToolbar, Toolbar toolbar)
 		{
 			nativeToolbar.Visibility = (toolbar.IsVisible) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
-			if (nativeToolbar.NavigationView?.HeaderContent != null)
-				nativeToolbar.NavigationView.HeaderContent.Visibility = nativeToolbar.Visibility;
 		}
 
 		public static void UpdateTitleIcon(this WindowHeader nativeToolbar, Toolbar toolbar)
@@ -35,14 +33,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this WindowHeader nativeToolbar, Toolbar toolbar)
 		{
-			if (nativeToolbar.NavigationView == null)
-				return;
-
 			nativeToolbar
-				.NavigationView
 				.IsBackButtonVisible = (toolbar.BackButtonVisible) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
 
-			nativeToolbar.NavigationView.IsBackEnabled = toolbar.BackButtonVisible;
 			toolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
 		}
 
@@ -53,15 +46,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBarBackground(this WindowHeader nativeToolbar, Toolbar toolbar)
 		{
-			if (nativeToolbar.NavigationView == null)
-				return;
+			var barBackground = toolbar.BarBackground?.ToBrush() ?? 
+				toolbar.BarBackgroundColor?.ToNative();
 
-
-			var barBackground = toolbar.BarBackground;
-			var barBackgroundColor = toolbar.BarBackgroundColor;
-
-			nativeToolbar.NavigationView.UpdateBarBackgroundBrush(
-				   barBackground?.ToBrush() ?? barBackgroundColor?.ToNative());
+			nativeToolbar.Background = barBackground;
 		}
 
 		public static void UpdateTitleView(this WindowHeader nativeToolbar, Toolbar toolbar)

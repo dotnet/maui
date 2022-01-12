@@ -127,8 +127,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					shadowDx = 0;
 					shadowColor = _backgroundDrawable.PressedBackgroundColor.ToAndroid();
 				}
-				// Otherwise get values from the control (but only for supported APIs)
-				else if ((int)Forms.SdkInt >= 16)
+				// Otherwise get values from the control
+				else
 				{
 					shadowRadius = _renderer.ShadowRadius;
 					shadowDy = _renderer.ShadowDy;
@@ -151,16 +151,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (!backgroundColorIsDefault || _drawOutlineWithBackground)
 				{
-					if (Forms.IsLollipopOrNewer)
-					{
-						var rippleColor = _backgroundDrawable.PressedBackgroundColor.ToAndroid();
-						_rippleDrawable = new RippleDrawable(ColorStateList.ValueOf(rippleColor), _backgroundDrawable, null);
-						Control.SetBackground(_rippleDrawable);
-					}
-					else
-					{
-						Control.SetBackground(_backgroundDrawable);
-					}
+					var rippleColor = _backgroundDrawable.PressedBackgroundColor.ToAndroid();
+					_rippleDrawable = new RippleDrawable(ColorStateList.ValueOf(rippleColor), _backgroundDrawable, null);
+					Control.SetBackground(_rippleDrawable);
 				}
 
 				_drawableEnabled = true;

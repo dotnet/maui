@@ -86,6 +86,7 @@ namespace Microsoft.Maui
 
 			NativeMessage?.Invoke(this, args);
 
+			Essentials.Platform.NewWindowProc(hWnd, msg, wParam, lParam);
 			return CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
 		}
 
