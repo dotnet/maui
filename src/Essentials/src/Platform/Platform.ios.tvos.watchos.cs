@@ -155,8 +155,11 @@ namespace Microsoft.Maui.Essentials
 			internal UIPresentationControllerDelegate(Action dismissHandler)
 				=> this.dismissHandler = dismissHandler;
 
-			public override void DidDismiss(UIPresentationController presentationController) =>
-				dismissHandler?.Invoke();
+			public override void DidDismiss(UIPresentationController presentationController)
+            {
+                DismissHandler?.Invoke();
+                DismissHandler = null;
+            }
 
 			protected override void Dispose(bool disposing)
 			{
