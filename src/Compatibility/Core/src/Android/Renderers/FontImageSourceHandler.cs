@@ -14,9 +14,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	public sealed class FontImageSourceHandler : IImageSourceHandler
 	{
-		IFontManager _fontManager;
-		IFontManager FontManager => _fontManager ??= Application.Current?.FindMauiContext()?.Services?.GetService<IFontManager>();
-
 		public Task<Bitmap> LoadImageAsync(
 			ImageSource imagesource,
 			Context context,
@@ -34,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					AntiAlias = true,
 				};
 
-				paint.SetTypeface(fontsource.FontFamily.ToTypeface(FontManager));
+				paint.SetTypeface(fontsource.FontFamily.ToTypeface(imagesource.RequireFontManager()));
 
 				var width = (int)(paint.MeasureText(fontsource.Glyph) + .5f);
 				var baseline = (int)(-paint.Ascent() + .5f);

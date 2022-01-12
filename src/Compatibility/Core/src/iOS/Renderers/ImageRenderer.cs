@@ -239,9 +239,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 		}
 
-		IFontManager _fontManager;
-		IFontManager FontManager => _fontManager ??= Application.Current?.FindMauiContext()?.Services?.GetService<IFontManager>();
-
 		public Task<UIImage> LoadImageAsync(
 			ImageSource imagesource,
 			CancellationToken cancelationToken = default(CancellationToken),
@@ -252,7 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (fontsource != null)
 			{
 				// This will allow lookup from the Embedded Fonts
-				var font = Font.OfSize(fontsource.FontFamily, fontsource.Size).ToUIFont(FontManager);
+				var font = Font.OfSize(fontsource.FontFamily, fontsource.Size).ToUIFont(imagesource.RequireFontManager());
 				var iconcolor = fontsource.Color ?? _defaultColor;
 				var attString = new NSAttributedString(fontsource.Glyph, font: font, foregroundColor: iconcolor.ToUIColor());
 				var imagesize = ((NSString)fontsource.Glyph).GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _));

@@ -20,12 +20,9 @@ namespace Microsoft.Maui.Controls.Platform
 			=> self.ToFont().ToTypeface(fontManager);
 
 		public static Typeface ToTypeface<TFontElement>(this TFontElement self) where TFontElement : Element, IFontElement
-			=> self.ToTypeface(self.GetFontManager());
+			=> self.ToTypeface(self.RequireFontManager());
 
 		internal static Typeface ToTypeface(this string fontfamily, IFontManager fontManager, FontAttributes attr = FontAttributes.None)
 			=> fontManager.GetTypeface(Font.OfSize(fontfamily, 0.0).WithAttributes(attr)) ?? fontManager.DefaultTypeface;
-
-		internal static IFontManager GetFontManager(this Element element)
-			=> element?.FindMauiContext()?.Services?.GetRequiredService<IFontManager>() ?? MauiApplication.Current.Services.GetRequiredService<IFontManager>();
 	}
 }

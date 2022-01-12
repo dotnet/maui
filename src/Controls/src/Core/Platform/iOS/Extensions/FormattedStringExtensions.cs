@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static NSAttributedString? ToNSAttributedString(this Label label)
 			=> ToNSAttributedString(
 				label.FormattedText,
-				label.GetFontManager(),
+				label.RequireFontManager(),
 				label.LineHeight,
 				label.HorizontalTextAlignment,
 				label.ToFont(),

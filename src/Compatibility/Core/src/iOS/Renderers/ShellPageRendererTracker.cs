@@ -67,11 +67,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public ShellPageRendererTracker(IShellContext context)
 		{
-			_fontManager = context.Shell.GetFontManager();
+			_fontManager = context.Shell.RequireFontManager();
 			_context = context;
 			_nSCache = new NSCache();
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
-			_fontManager = context.Shell.GetFontManager();
+			_fontManager = context.Shell.RequireFontManager();
 		}
 
 		public async void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)

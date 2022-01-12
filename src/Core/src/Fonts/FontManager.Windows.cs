@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 		public FontFamily DefaultFontFamily =>
 			(FontFamily)UI.Xaml.Application.Current.Resources[SystemFontFamily];
 
-		public static double DefaultFontSize =>
+		public double DefaultFontSize =>
 			(double)UI.Xaml.Application.Current.Resources[SystemFontSize];
 
 		public FontFamily GetFontFamily(Font font)

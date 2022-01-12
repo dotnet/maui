@@ -480,9 +480,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateFormattedText()
 		{
 #if __MOBILE__
-			Control.AttributedText = _formatted.ToNSAttributedString(Element.GetFontManager());
+			Control.AttributedText = _formatted.ToNSAttributedString(Element.RequireFontManager());
 #else
-			Control.AttributedStringValue = _formatted.ToNSAttributedString(Element.GetFontManager(), Element.TextColor, Element.HorizontalTextAlignment, Element.LineHeight);
+			Control.AttributedStringValue = _formatted.ToNSAttributedString(Element.RequireFontManager(), Element.TextColor, Element.HorizontalTextAlignment, Element.LineHeight);
 #endif
 			_perfectSizeValid = false;
 

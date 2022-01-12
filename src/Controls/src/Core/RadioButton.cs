@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			FontManager.DefaultFontSize;
+			this.RequireFontManager(true).DefaultFontSize;
 
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);

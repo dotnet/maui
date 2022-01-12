@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 			_logger = logger;
 		}
 
-		public static double DefaultFontSize => 14; // 14sp
+		public double DefaultFontSize => 14; // 14sp
 
 		public Typeface DefaultTypeface => _defaultTypeface ??= Typeface.Default!;
 

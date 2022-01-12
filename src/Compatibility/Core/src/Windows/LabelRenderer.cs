@@ -274,9 +274,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			if (isLabelDefault && _isInitiallyDefault)
-				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)), Element.GetFontManager());
+				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)), Element.RequireFontManager());
 			else
-				textBlock.ApplyFont(label.ToFont(), Element.GetFontManager());
+				textBlock.ApplyFont(label.ToFont(), Element.RequireFontManager());
 
 			_fontApplied = true;
 		}
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				else
 				{
-					var fontManager = label.GetFontManager();
+					var fontManager = label.RequireFontManager();
 					textBlock.Inlines.Clear();
 					// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 					textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));

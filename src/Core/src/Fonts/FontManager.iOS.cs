@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
 
 		static double? defaultFontSize;
-		public static double DefaultFontSize => defaultFontSize ??= UIFont.SystemFontSize;
+		public double DefaultFontSize => defaultFontSize ??= UIFont.SystemFontSize;
 
 		public UIFont GetFont(Font font, double defaultFontSize = 0) =>
 			GetFont(font, defaultFontSize, CreateFont);

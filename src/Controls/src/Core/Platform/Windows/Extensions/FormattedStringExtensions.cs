@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (formattedString != null && formattedString.Spans != null)
 			{
-				var fontManager = formattedString.GetFontManager() ?? MauiWinUIApplication.Current.Services.GetRequiredService<IFontManager>();
+				var fontManager = formattedString.RequireFontManager();
 
 				for (var i = 0; i < formattedString.Spans.Count; i++)
 				{

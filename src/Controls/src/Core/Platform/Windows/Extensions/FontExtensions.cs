@@ -21,13 +21,13 @@ namespace Microsoft.Maui.Controls.Platform
 			fontManager.GetFontFamily(Font.OfSize(fontFamily, 0.0));
 
 		internal static void ApplyFont<TFontElement>(this Control self, TFontElement element) where TFontElement : Element, IFontElement
-			=> self.UpdateFont(element.ToFont(), element.GetFontManager());
+			=> self.UpdateFont(element.ToFont(), element.RequireFontManager());
 
 		internal static void ApplyFont<TFontElement>(this TextBlock self, TFontElement element) where TFontElement: Element, IFontElement
-			=> self.UpdateFont(element.ToFont(), element.GetFontManager());
+			=> self.UpdateFont(element.ToFont(), element.RequireFontManager());
 
 		internal static void ApplyFont<TFontElement>(this UI.Xaml.Documents.TextElement self, TFontElement element) where TFontElement : Element, IFontElement
-			=> self.UpdateFont(element.ToFont(), element.GetFontManager());
+			=> self.UpdateFont(element.ToFont(), element.RequireFontManager());
 
 		internal static double GetFontSize(this NamedSize size) => size switch
 		{
@@ -43,8 +43,5 @@ namespace Microsoft.Maui.Controls.Platform
 			NamedSize.Title => 24,
 			_ => throw new ArgumentOutOfRangeException(nameof(size)),
 		};
-
-		internal static IFontManager GetFontManager(this Element element)
-			=> element?.FindMauiContext()?.Services?.GetRequiredService<IFontManager>() ?? MauiWinUIApplication.Current.Services.GetRequiredService<IFontManager>();
 	}
 }
