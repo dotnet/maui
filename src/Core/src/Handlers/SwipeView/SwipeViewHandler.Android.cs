@@ -43,10 +43,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			// TODO JAVIER is this right? I wasn't sure exactly how to combine the two
-			// UpdateBackgroundColor and  UpdateBackground methods inside SwipeViewRenderer
-			handler.TypedNativeView.Control?.SetWindowBackground();
-			ViewHandler.MapBackground(handler, swipeView);
+			if (swipeView.Background == null)
+				handler.TypedNativeView.Control?.SetWindowBackground();
+			else
+				ViewHandler.MapBackground(handler, swipeView);
 		}
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
