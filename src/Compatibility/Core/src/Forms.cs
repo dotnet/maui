@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			throw new NotImplementedException();
 		}
 
-		public static IMauiContext MauiContext => throw new NotImplementedException();
+		internal static IMauiContext MauiContext => throw new NotImplementedException();
 	}
 }
 #endif
