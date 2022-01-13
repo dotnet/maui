@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.props" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Microsoft.Maui.MauiBlazorWebView.DeviceTests</RootNamespace>
+    <AssemblyName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</AssemblyName>
+
+    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ApplicationTitle>BlazorWebView Tests</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.mauiblazorwebview.devicetests</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiImage Include="Resources\Images\*" />
+    <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
+    <ProjectReference Include="..\..\samples\WebViewAppShared\WebViewAppShared.csproj" />
+    <ProjectReference Include="..\..\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+  </ItemGroup>
+
+  <!-- include/exclude the *.<platform>.cs files -->
+  <ItemGroup>
+    <None Include="@(Compile)" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
+    <Compile Remove="**\*.Android.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-ios')) and !$(TargetFramework.Contains('-maccatalyst'))">
+    <Compile Remove="**\*.iOS.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
+    <Compile Remove="**\*.Windows.cs" />
+  </ItemGroup>
+
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
+
+</Project>

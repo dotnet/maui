@@ -26,6 +26,9 @@
                                 VerticalOptions="Center"
                                 FontSize="Large"
                                 Text="{Binding}"/>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="TapGestureRecognizer_Tapped"></TapGestureRecognizer>
+                            </Grid.GestureRecognizers>
                         </Grid>
                     </DataTemplate>
                 </CarouselView.ItemTemplate>

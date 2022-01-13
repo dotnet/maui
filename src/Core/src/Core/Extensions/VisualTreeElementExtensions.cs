@@ -168,7 +168,7 @@ namespace Microsoft.Maui
 
 			var children = visualElement.GetVisualChildren();
 
-			foreach(var child in children)
+			foreach (var child in children)
 			{
 				GetVisualTreeElementsInternal(child, points, useNativeViewBounds, elements);
 			}

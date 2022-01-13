@@ -13,40 +13,50 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
-		public static IPropertyMapper<IView, IViewHandler> ViewMapper = new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
-		{
-			[nameof(IView.AutomationId)] = MapAutomationId,
-			[nameof(IView.Clip)] = MapClip,
-			[nameof(IView.Shadow)] = MapShadow,
-			[nameof(IView.Visibility)] = MapVisibility,
-			[nameof(IView.Background)] = MapBackground,
-			[nameof(IView.FlowDirection)] = MapFlowDirection,
-			[nameof(IView.Width)] = MapWidth,
-			[nameof(IView.Height)] = MapHeight,
-			[nameof(IView.MinimumHeight)] = MapMinimumHeight,
-			[nameof(IView.MaximumHeight)] = MapMaximumHeight,
-			[nameof(IView.MinimumWidth)] = MapMinimumWidth,
-			[nameof(IView.MaximumWidth)] = MapMaximumWidth,
-			[nameof(IView.IsEnabled)] = MapIsEnabled,
-			[nameof(IView.Opacity)] = MapOpacity,
-			[nameof(IView.Semantics)] = MapSemantics,
-			[nameof(IView.TranslationX)] = MapTranslationX,
-			[nameof(IView.TranslationY)] = MapTranslationY,
-			[nameof(IView.Scale)] = MapScale,
-			[nameof(IView.ScaleX)] = MapScaleX,
-			[nameof(IView.ScaleY)] = MapScaleY,
-			[nameof(IView.Rotation)] = MapRotation,
-			[nameof(IView.RotationX)] = MapRotationX,
-			[nameof(IView.RotationY)] = MapRotationY,
-			[nameof(IView.AnchorX)] = MapAnchorX,
-			[nameof(IView.AnchorY)] = MapAnchorY,
-			[nameof(IViewHandler.ContainerView)] = MapContainerView,
-		};
+		public static IPropertyMapper<IView, IViewHandler> ViewMapper =
+#if ANDROID
+			// Use a custom mapper for Android which knows how to batch the initial property sets
+			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementMapper)
+#else
+			new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
+#endif
+			{
+				[nameof(IView.AutomationId)] = MapAutomationId,
+				[nameof(IView.Clip)] = MapClip,
+				[nameof(IView.Shadow)] = MapShadow,
+				[nameof(IView.Visibility)] = MapVisibility,
+				[nameof(IView.Background)] = MapBackground,
+				[nameof(IView.FlowDirection)] = MapFlowDirection,
+				[nameof(IView.Width)] = MapWidth,
+				[nameof(IView.Height)] = MapHeight,
+				[nameof(IView.MinimumHeight)] = MapMinimumHeight,
+				[nameof(IView.MaximumHeight)] = MapMaximumHeight,
+				[nameof(IView.MinimumWidth)] = MapMinimumWidth,
+				[nameof(IView.MaximumWidth)] = MapMaximumWidth,
+				[nameof(IView.IsEnabled)] = MapIsEnabled,
+				[nameof(IView.Opacity)] = MapOpacity,
+				[nameof(IView.Semantics)] = MapSemantics,
+				[nameof(IView.TranslationX)] = MapTranslationX,
+				[nameof(IView.TranslationY)] = MapTranslationY,
+				[nameof(IView.Scale)] = MapScale,
+				[nameof(IView.ScaleX)] = MapScaleX,
+				[nameof(IView.ScaleY)] = MapScaleY,
+				[nameof(IView.Rotation)] = MapRotation,
+				[nameof(IView.RotationX)] = MapRotationX,
+				[nameof(IView.RotationY)] = MapRotationY,
+				[nameof(IView.AnchorX)] = MapAnchorX,
+				[nameof(IView.AnchorY)] = MapAnchorY,
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+#if ANDROID || WINDOWS
+			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
+#endif
+			};
 
 		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new()
 		{
 			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
 			[nameof(IView.Frame)] = MapFrame,
+			[nameof(IView.ZIndex)] = MapZIndex,
 		};
 
 		bool _hasContainer;
@@ -116,6 +126,19 @@ namespace Microsoft.Maui.Handlers
 
 		private protected sealed override object OnCreateNativeElement() =>
 			OnCreateNativeView();
+
+#if ANDROID
+		// This sets up AndroidBatchPropertyMapper
+		public override void SetVirtualView(IElement element)
+		{
+			base.SetVirtualView(element);
+
+			if (element is IView view)
+			{
+				((NativeView?)NativeView)?.Initialize(view);
+			}
+		}
+#endif
 
 #if !NETSTANDARD
 		private protected abstract void OnConnectHandler(NativeView nativeView);
@@ -257,6 +280,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFrame(IViewHandler handler, IView view, object? args)
 		{
 			MappingFrame(handler, view);
+		}
+
+		public static void MapZIndex(IViewHandler handler, IView view, object? args)
+		{
+			if (view.Parent is ILayout layout)
+			{
+				layout.Handler?.Invoke(nameof(ILayoutHandler.UpdateZIndex), view);
+			}
 		}
 	}
 }

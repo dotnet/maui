@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			// We don't include Application because Application.Dispatcher will call
 			// `FindDispatcher` if it's _dispatcher property isn't initialized so this
 			// could cause a Stack Overflow Exception
-			if (bindableObject is not Application && 
+			if (bindableObject is not Application &&
 				Application.Current?.Dispatcher is IDispatcher appDispatcher)
 				return appDispatcher;
 

@@ -30,6 +30,8 @@ namespace Microsoft.Maui
 			_passthroughView = new PassthroughView(this, nativeWindow.RootViewController.View.Frame);
 
 			_graphicsView = new NativeGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
+			_graphicsView.AutoresizingMask = UIViewAutoresizing.All;
+
 			_passthroughView.AddSubview(_graphicsView);
 
 			if (_graphicsView == null)

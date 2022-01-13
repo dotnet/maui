@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Platform
 		// activity, we'll need to remove this cached value or cache it in a Dictionary<Context, float>
 		static float s_displayDensity = float.MinValue;
 
+		static int? _actionBarHeight;
 		// TODO FromPixels/ToPixels is both not terribly descriptive and also possibly sort of inaccurate?
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
@@ -165,7 +166,7 @@ namespace Microsoft.Maui.Platform
 					{
 						if (context.Resources != null)
 						{
-							if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
+							if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
 								return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
 							else
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -272,6 +273,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		public static int GetActionBarHeight(this Context context)
+		{
+			_actionBarHeight ??= (int)context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
+			return _actionBarHeight.Value;
 		}
 	}
 }

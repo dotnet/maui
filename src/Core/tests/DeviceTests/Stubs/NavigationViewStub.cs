@@ -26,5 +26,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public List<IView> NavigationStack { get; set; }
+
+		public IToolbar Toolbar => null;
 	}
 }

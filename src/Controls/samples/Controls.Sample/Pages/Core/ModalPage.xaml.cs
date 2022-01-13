@@ -62,5 +62,17 @@ namespace Maui.Controls.Sample.Pages
 		{
 			await Navigation.PopModalAsync();
 		}
+
+		async void PushFlyoutPageClicked(object sender, EventArgs e)
+		{
+			var newMainPage = (CustomNavigationPage)Handler.MauiContext.Services.GetService(typeof(CustomNavigationPage));
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = newMainPage,
+				Flyout = CustomFlyoutPage.CreateFlyout()
+			};
+
+			await Navigation.PushModalAsync(flyoutPage);
+		}
 	}
 }

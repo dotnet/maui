@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui.Graphics;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Graphics;
+using NUnit.Framework;
 using static Microsoft.Maui.Controls.Core.UnitTests.WindowsTests;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(window.AddOverlay(windowOverlay));
 
 			var element = new TestWindowElement();
-			
+
 			// Adding element for the first time, should be true.
 			Assert.True(windowOverlay.AddWindowElement(element));
 			Assert.True(windowOverlay.WindowElements.Count > 0);

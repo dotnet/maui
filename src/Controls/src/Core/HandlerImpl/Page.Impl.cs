@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Page : IView, ITitledElement, IToolbarElement
 	{
 		Toolbar _toolbar;
-		Toolbar IToolbarElement.Toolbar
+		IToolbar IToolbarElement.Toolbar
 		{
 			get => _toolbar;
 		}
@@ -18,8 +18,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				_toolbar = value;
-				if (this is NavigationPage np)
-					_toolbar.ApplyNavigationPage(np);
+				if (this is NavigationPage np && value is Toolbar ct)
+					ct.ApplyNavigationPage(np, HasAppeared);
+
+				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 			}
 		}
 

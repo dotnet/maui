@@ -1,4 +1,5 @@
 ﻿using Android.Content.Res;
+using Android.Text;
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -107,6 +108,19 @@ namespace Microsoft.Maui.Platform
 						image.Drawable.ClearColorFilter();
 				}
 			}
+		}
+
+		public static void UpdateIsTextPredictionEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
+		{
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+
+			if (editText == null)
+				return;
+
+			if (searchBar.IsTextPredictionEnabled)
+				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
+			else
+				editText.InputType |= InputTypes.TextFlagNoSuggestions;
 		}
 	}
 }

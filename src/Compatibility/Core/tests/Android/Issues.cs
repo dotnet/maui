@@ -17,12 +17,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		[Issue(IssueTracker.Github, 8137, "[Bug] XF 4.3 Entry HorizontalTextAlignment display wrong position")]
 		public async Task EntryHorizontalAlignmentCenterInRenderer()
 		{
-			bool supportsRTL = Context.HasRtlSupport();
+			bool supportsRTL = IsRTLSupported;
 
 			try
 			{
 				// Test with RTL support off 
-				ToggleRTLSupport(Context, false);
+				SetIsRTLSupported(false);
 
 				await Device.InvokeOnMainThreadAsync(() =>
 				{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 					}
 
 					// Now turn it back on and verify it works
-					ToggleRTLSupport(Context, true);
+					SetIsRTLSupported(true);
 
 					var entry2 = new Entry { Text = "foo", HorizontalTextAlignment = TextAlignment.Center };
 					using (var editText = GetNativeControl(entry2))
@@ -47,8 +47,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			}
 			finally
 			{
-				// If something went wrong, make sure we leave the Context as it was when we started
-				ToggleRTLSupport(Context, supportsRTL);
+				// If something went wrong, make sure we leave the value as it was when we started
+				SetIsRTLSupported(supportsRTL);
 			}
 		}
 

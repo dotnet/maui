@@ -18,5 +18,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>
 			TestDispatcher.Current.DispatchAsync(func);
+
+		protected async Task WaitForGC()
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(10);
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+		}
 	}
 }

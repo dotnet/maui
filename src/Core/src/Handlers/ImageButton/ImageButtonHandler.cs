@@ -22,7 +22,12 @@ namespace Microsoft.Maui.Handlers
 	public partial class ImageButtonHandler : IImageButtonHandler
 	{
 		public static IPropertyMapper<IImage, IImageHandler> ImageMapper = new PropertyMapper<IImage, IImageHandler>(ImageHandler.Mapper);
-		public static IPropertyMapper<IImageButton, IImageButtonHandler> Mapper = new PropertyMapper<IImageButton, IImageButtonHandler>(ImageMapper);
+		public static IPropertyMapper<IImageButton, IImageButtonHandler> Mapper = new PropertyMapper<IImageButton, IImageButtonHandler>(ImageMapper)
+		{
+#if WINDOWS
+			[nameof(IImageButton.Background)] = MapBackground,
+#endif
+		};
 
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader SourceLoader =>

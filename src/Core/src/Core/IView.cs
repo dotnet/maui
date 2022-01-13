@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Adds semantics to every View for accessibility
 		/// </summary>
-		Semantics Semantics { get; }
+		Semantics? Semantics { get; }
 
 		/// <summary>
 		/// Gets the Path used to define the outline of the contents of a View.
@@ -138,5 +138,10 @@ namespace Microsoft.Maui
 		/// Method that is called to invalidate the layout of this View.
 		/// </summary>
 		void InvalidateArrange();
+
+		/// <summary>
+		/// Determines the drawing order of this IView within an ILayout; higher z-indexes will draw over lower z-indexes.
+		/// </summary>
+		int ZIndex { get; }
 	}
 }
