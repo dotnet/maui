@@ -56,10 +56,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				Logger.Log("Converting Background SVG to Android Drawable Vector: " + backgroundFile);
 
-				var destination = Path.Combine(fullIntermediateOutputPath.FullName, "drawable-v24", backgroundDestFilename);
-				var fileInfo = new FileInfo(destination);
-				if (!fileInfo.Directory.Exists)
-					fileInfo.Directory.Create();
+				var dir = Path.Combine(fullIntermediateOutputPath.FullName, "drawable-v24");
+				var destination = Path.Combine(dir, backgroundDestFilename);
+				if (!Directory.Exists(dir))
+					Directory.CreateDirectory(dir);
 
 				Svg2VectorDrawable.Svg2Vector.Convert(backgroundFile, destination);
 
@@ -71,10 +71,10 @@ namespace Microsoft.Maui.Resizetizer
 
 				foreach (var dpi in DpiPath.Android.AppIconParts)
 				{
-					var destination = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path, backgroundDestFilename);
-					var fileInfo = new FileInfo(destination);
-					if (!fileInfo.Directory.Exists)
-						fileInfo.Directory.Create();
+					var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
+					var destination = Path.Combine(dir, backgroundDestFilename);
+					if (!Directory.Exists(dir))
+						Directory.CreateDirectory(dir);
 
 					Logger.Log($"App Icon Background Part: " + destination);
 
@@ -87,16 +87,15 @@ namespace Microsoft.Maui.Resizetizer
 
 			Logger.Log("Looking for Foreground File: " + foregroundFile);
 
-			var foregroundDestination = Path.Combine(fullIntermediateOutputPath.FullName, "drawable", foregroundDestFilename);
+			var foregroundDestinationDir = Path.Combine(fullIntermediateOutputPath.FullName, "drawable");
+			var foregroundDestination = Path.Combine(foregroundDestinationDir, foregroundDestFilename);
+			if (!Directory.Exists(foregroundDestinationDir))
+				Directory.CreateDirectory(foregroundDestinationDir);
 
 			if (foregroundExists)
 			{
 				if (foregroundIsVector)
 				{
-					var fileInfo = new FileInfo(foregroundDestination);
-					if (!fileInfo.Directory.Exists)
-						fileInfo.Directory.Create();
-
 					Logger.Log("Converting Foreground SVG to Android Drawable Vector: " + foregroundFile);
 					Svg2VectorDrawable.Svg2Vector.Convert(foregroundFile, foregroundDestination);
 
@@ -108,10 +107,10 @@ namespace Microsoft.Maui.Resizetizer
 
 					foreach (var dpi in DpiPath.Android.AppIconParts)
 					{
-						var destination = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path, foregroundDestFilename);
-						var fileInfo = new FileInfo(destination);
-						if (!fileInfo.Directory.Exists)
-							fileInfo.Directory.Create();
+						var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
+						var destination = Path.Combine(dir, foregroundDestFilename);
+						if (!Directory.Exists(dir))
+							Directory.CreateDirectory(dir);
 
 						Logger.Log($"App Icon Foreground Part: " + destination);
 
@@ -125,10 +124,6 @@ namespace Microsoft.Maui.Resizetizer
 			else
 			{
 				Logger.Log("Foreground was not found: " + foregroundFile);
-
-				var fileInfo = new FileInfo(foregroundDestination);
-				if (!fileInfo.Directory.Exists)
-					fileInfo.Directory.Create();
 
 				File.WriteAllText(foregroundDestination, EmptyVectorDrawable);
 			}
