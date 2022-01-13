@@ -15,11 +15,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (renderer == null)
 			{
 				var mauiContext = view.FindMauiContext() ?? item.FindMauiContext();
-
-				if (convertView != null)
-					mauiContext = mauiContext.MakeScopededArgs(convertView);
+				item.ConvertView = convertView;
 
 				_ = item.ToNative(mauiContext);
+				item.ConvertView = null;
 
 				renderer = CellRenderer.GetRenderer(item);
 			}

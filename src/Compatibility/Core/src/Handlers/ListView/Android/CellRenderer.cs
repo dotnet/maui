@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override AView CreateNativeElement()
 		{
-			var creationArgs = MauiContext.Services.GetService<AView>();
+			var creationArgs = VirtualView.ConvertView;
+			VirtualView.ConvertView = null;
 			return GetCell(VirtualView, creationArgs, null, (MauiContext.Context));
 		}
 
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (Cell != oldCell)
 					{
-						oldCell.Handler = null;
+						oldCell.Handler.DisconnectHandler();
 					}
 				}
 			}

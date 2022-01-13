@@ -42,9 +42,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (cell.View == null)
 				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
 
-			var view = cell.View.ToNative(cell.FindMauiContext(), true);
+			var view = (INativeViewHandler)cell.View.ToHandler(cell.FindMauiContext());
+
 			cell.View.IsPlatformEnabled = true;
-			var c = new ViewCellContainer(context, cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
+
+			ViewCellContainer c = view.NativeView.GetParentOfType<ViewCellContainer>();
+
+			if (c != null)
+				return c;
+
+			c = new ViewCellContainer(context, (INativeViewHandler)cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
 
 			Performance.Stop(reference, "GetCellCore");
 
@@ -56,7 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			readonly View _parent;
 			readonly BindableProperty _rowHeight;
 			readonly BindableProperty _unevenRows;
-			INativeViewHandler _view;
+			INativeViewHandler _viewHandler;
 			ViewCell _viewCell;
 			GestureDetector _tapGestureDetector;
 			GestureDetector _longPressGestureDetector;
@@ -118,15 +125,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Added default constructor to prevent crash when accessing selected row in ListViewAdapter.Dispose
 			}
 
-			public ViewCellContainer(Context context, IViewHandler view, ViewCell viewCell, View parent,
+			public ViewCellContainer(Context context, INativeViewHandler view, ViewCell viewCell, View parent,
 				BindableProperty unevenRows, BindableProperty rowHeight) : base(context)
 			{
-				_view = (INativeViewHandler)view;
+				_viewHandler = (INativeViewHandler)view;
+
 				_parent = parent;
 				_unevenRows = unevenRows;
 				_rowHeight = rowHeight;
 				_viewCell = viewCell;
-				AddView((AView)view.NativeView);
+				AddView(view.NativeView);
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
 			}
@@ -178,49 +186,39 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public void Update(ViewCell cell)
 			{
-				//TODO MAUI: figure out the reuse code here
 				Performance.Start(out string reference);
-				var renderer = _view;
-				var viewHandlerType = Registrar.Registered.GetHandlerTypeForObject(cell.View);// ?? typeof(Platform.DefaultRenderer);
-				var reflectableType = renderer as System.Reflection.IReflectableType;
-				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
-				if (renderer != null && rendererType == viewHandlerType)
+				var viewHandlerType = _viewHandler.MauiContext.Handlers.GetHandlerType(cell.View.GetType());
+				var reflectableType = _viewHandler as System.Reflection.IReflectableType;
+				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (_viewHandler != null ? _viewHandler.GetType() : typeof(System.Object));
+				if (_viewHandler != null && rendererType == viewHandlerType)
 				{
 					Performance.Start(reference, "Reuse");
 					_viewCell = cell;
 
-					cell.View.DisableLayout = true;
-					foreach (VisualElement c in cell.View.Descendants())
-						c.DisableLayout = true;
-
 					Performance.Start(reference, "Reuse.SetElement");
-					renderer.SetVirtualView(cell.View);
+					_viewHandler.SetVirtualView(cell.View);
 					Performance.Stop(reference, "Reuse.SetElement");
 
-					cell.View.DisableLayout = false;
-					foreach (VisualElement c in cell.View.Descendants())
-						c.DisableLayout = false;
-
-					//var viewAsLayout = cell.View as Layout;
-					//if (viewAsLayout != null)
-					//	viewAsLayout.ForceLayout();
-
 					Invalidate();
+					this.RequestLayout();
+					_viewHandler.NativeView.InvalidateMeasure(_viewHandler.VirtualView);
 
 					Performance.Stop(reference, "Reuse");
 					Performance.Stop(reference);
 					return;
 				}
 
-				RemoveView(_view.NativeView);
-				//Platform.SetRenderer(_viewCell.View, null);
+				RemoveView(_viewHandler.NativeView);
+				_viewCell.View.Handler?.DisconnectHandler();
 				_viewCell.View.IsPlatformEnabled = false;
 
-
-				//_view.Dispose();
+				_viewHandler.DisconnectHandler();
 
 				_viewCell = cell;
-				AddView(_viewCell.View.ToNative(Element.FindMauiContext(), true));
+
+				var platformView = _viewCell.View.ToNative(Element.FindMauiContext(), true);
+				_viewHandler = (INativeViewHandler)_viewCell.View.Handler;
+				AddView(platformView);
 
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
@@ -233,38 +231,50 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Enabled = _viewCell.IsEnabled;
 			}
 
-			//TODO: MAUI Proper way to do the measuring here?
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				Performance.Start(out string reference);
+				if (_viewHandler.NativeView == null || Context == null)
+				{
+					return;
+				}
 
-				double width = Context.FromPixels(r - l);
-				double height = Context.FromPixels(b - t);
-
-				Performance.Start(reference, "Element.Layout");
-				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion((VisualElement)_view.VirtualView, new Rectangle(0, 0, width, height));
-				Performance.Stop(reference, "Element.Layout");
-
-				//TODO: MAUI Proper way to do the measuring here?
-				//_view.UpdateLayout();
-				Performance.Stop(reference);
+				_viewHandler.NativeView.Layout(l, t, r, b);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
 				Performance.Start(out string reference);
 
-				int width = MeasureSpec.GetSize(widthMeasureSpec);
+				int width = MeasureSpec.GetSize(widthMeasureSpec);				
 				int height;
 
 				if (ParentHasUnevenRows)
 				{
-					//TODO: MAUI Proper way to do the measuring here?
-					SizeRequest measure = _view.VirtualView.Measure(Context.FromPixels(width), double.PositiveInfinity);
-					height = (int)Context.ToPixels(_viewCell.Height > 0 ? _viewCell.Height : measure.Request.Height);
+					if (_viewHandler.NativeView == null)
+					{
+						SetMeasuredDimension(0, 0);
+						return;
+					}
+
+					_viewHandler.NativeView.Measure(widthMeasureSpec, heightMeasureSpec);
+					height = (int)Context.ToPixels(_viewHandler.NativeView.MeasuredHeight);
 				}
 				else
+				{
 					height = (int)Context.ToPixels(ParentRowHeight == -1 ? BaseCellView.DefaultMinHeight : ParentRowHeight);
+
+
+					if (_viewHandler.NativeView != null)
+					{
+						_viewHandler.NativeView.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+					}
+				}
+
+				if (_viewHandler.VirtualView != null)
+				{
+					_viewHandler.VirtualView.Frame = new Rectangle(0, 0, Context.FromPixels(width), Context.FromPixels(height));
+
+				}
 
 				SetMeasuredDimension(width, height);
 
@@ -273,7 +283,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			bool WatchForSwipeViewTap()
 			{
-				if (!(_view.VirtualView is SwipeView swipeView))
+				if (!(_viewHandler.VirtualView is SwipeView swipeView))
 				{
 					return false;
 				}
@@ -290,7 +300,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateWatchForLongPress()
 			{
-				var vw = _view.VirtualView as Microsoft.Maui.Controls.View;
+				var vw = _viewHandler.VirtualView as Microsoft.Maui.Controls.View;
 				if (vw == null)
 				{
 					return;

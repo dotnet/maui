@@ -258,6 +258,10 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanging("RenderHeight");
 		}
 
+#if ANDROID
+		// This is used by ListView to pass data to the GetCell call
+		internal Android.Views.View ConvertView { get; set; }
+#endif
 
 		#region Nested IElementConfiguration<Cell> Implementation
 		// This creates a nested class to keep track of IElementConfiguration<Cell> because adding 

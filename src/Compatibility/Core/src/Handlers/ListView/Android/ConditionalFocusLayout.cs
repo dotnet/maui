@@ -52,8 +52,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (v is EditText editText)
 				return editText;
 
-			var viewGroup = v as ViewGroup;
-			return viewGroup.GetFirstChildOfType<EditText>();
+			if (v is ViewGroup vg)
+				return vg.GetFirstChildOfType<EditText>();
+
+			return null;
 		}
 	}
 }
