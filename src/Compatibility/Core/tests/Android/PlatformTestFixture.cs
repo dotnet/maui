@@ -96,7 +96,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 		}
 
-		static readonly Lazy<FieldInfo> isSupported = new Lazy<FieldInfo>(() => {
+		static readonly Lazy<FieldInfo> isSupported = new Lazy<FieldInfo>(() =>
+		{
 			var type = Type.GetType("Microsoft.Maui.Platform.Rtl, Microsoft.Maui", throwOnError: true);
 			var field = type.GetField("IsSupported");
 			Assert.IsNotNull(field, "Microsoft.Maui.Platform.Rtl.IsSupported not found!");

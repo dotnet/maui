@@ -459,7 +459,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Changing the visibility of the label should have triggered a measure invalidation in the layout
 			AssertInvalidated(handler);
-			
+
 			// Fake a native invalidation
 			layout.ForceLayout();
 
@@ -502,7 +502,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				layout.Children.Add(box);
 				FlexLayout.SetGrow(box, 1f);
 			}
-			
+
 			// Verify the changes invalidated the layout
 			AssertInvalidated(handler);
 
@@ -547,7 +547,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rectangle(380, 10, 100, 20)));
 		}
 
-		void AssertInvalidated(IViewHandler handler) 
+		void AssertInvalidated(IViewHandler handler)
 		{
 			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
 			handler.ClearReceivedCalls();

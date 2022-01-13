@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Maui.Controls.Sample.Pages;
+﻿using Maui.Controls.Sample.Pages;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 {
