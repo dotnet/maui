@@ -57,12 +57,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <MauiXaml Update="Pages\Compatibility\AndExpandPage.xaml">
-      <Generator></Generator>
-    </MauiXaml>
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Pages\Controls\SwipeViewGalleries\" />
   </ItemGroup>
 
