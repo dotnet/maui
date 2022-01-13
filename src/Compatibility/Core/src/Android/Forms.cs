@@ -15,6 +15,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen.Android;
@@ -185,12 +186,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				else
 				{
 					// Only need to do this once
-					Registrar.RegisterAll(context, new[] {
+					Registrar.RegisterAll(new[] {
 						typeof(ExportRendererAttribute),
 						typeof(ExportCellAttribute),
 						typeof(ExportImageSourceHandlerAttribute),
 						typeof(ExportFontAttribute)
-					});
+					}, context?.Services?.GetService<IFontRegistrar>());
 				}
 			}
 		}

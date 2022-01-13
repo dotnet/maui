@@ -52,7 +52,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 
 			Internals.Registrar.RegisterAll(
-				Forms.MauiContext,
 				assemblies,
 				null,
 				new[] 
@@ -70,17 +69,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return handlersCollection;
 		}
 
-		public static IFontCollection AddCompatibilityFonts(this IFontCollection fontCollection, params global::System.Reflection.Assembly[] assemblies)
+		public static IFontCollection AddCompatibilityFonts(this IFontCollection fontCollection, IFontRegistrar fontRegistrar, params global::System.Reflection.Assembly[] assemblies)
 		{
 			Internals.Registrar.RegisterAll(
-				Forms.MauiContext,
 				assemblies,
 				null,
 				new[]
 				{
 					typeof(ExportFontAttribute)
 				}, default(InitializationFlags),
-				null);
+				null,
+				fontRegistrar);
 			return fontCollection;
 		}
 
@@ -88,7 +87,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 			Internals.Registrar.RegisterAll(
-				Forms.MauiContext,
 				assemblies,
 				null,
 				new[]

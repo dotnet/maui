@@ -361,29 +361,29 @@ namespace Microsoft.Maui.Controls.Internals
 			Effects[resolutionName + "." + id] = effectType;
 		}
 
-		public static void RegisterAll(IMauiContext context, Type[] attrTypes)
+		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
 		{
-			RegisterAll(context, attrTypes, default(InitializationFlags));
+			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
-		public static void RegisterAll(IMauiContext context, Type[] attrTypes, InitializationFlags flags)
+		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(
-				context,
 				Device.GetAssemblies(),
 				Device.PlatformServices.GetType().GetTypeInfo().Assembly,
 				attrTypes,
 				flags,
-				null);
+				null,
+				fontRegistrar);
 		}
 
 		internal static void RegisterAll(
-			IMauiContext context,
 			Assembly[] assemblies,
 			Assembly defaultRendererAssembly,
 			Type[] attrTypes,
 			InitializationFlags flags,
-			Action<(Type handler, Type target)> viewRegistered)
+			Action<(Type handler, Type target)> viewRegistered,
+			IFontRegistrar fontRegistrar = null)
 		{
 			Profile.FrameBegin();
 
@@ -399,7 +399,8 @@ namespace Microsoft.Maui.Controls.Internals
 				assemblies[0] = defaultRendererAssembly;
 			}
 
-			var fontRegistrar =  context.Services.GetRequiredService<IFontRegistrar>();
+			if (fontRegistrar == null)
+				fontRegistrar = Application.Current?.FindMauiContext()?.Services?.GetService<IFontRegistrar>();
 
 			// Don't use LINQ for performance reasons
 			// Naive implementation can easily take over a second to run
@@ -423,7 +424,8 @@ namespace Microsoft.Maui.Controls.Internals
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							fontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
+							if (fontRegistrar != null)
+								fontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{

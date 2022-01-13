@@ -16,6 +16,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Animations;
+using Microsoft.Extensions.DependencyInjection;
 
 #if __MOBILE__
 using ObjCRuntime;
@@ -241,13 +242,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				IsInitializedRenderers = true;
 
 				// Only need to do this once
-				Controls.Internals.Registrar.RegisterAll(context, new[]
+				Controls.Internals.Registrar.RegisterAll(new[]
 				{
 					typeof(ExportRendererAttribute),
 					typeof(ExportCellAttribute),
 					typeof(ExportImageSourceHandlerAttribute),
 					typeof(ExportFontAttribute)
-				});
+				}, context?.Services?.GetService<IFontRegistrar>());
 			}
 		}
 
