@@ -8,10 +8,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.13.4</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.12.777</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.12.777</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.12.777</MicrosofttvOSSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.12.777</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.2.100-preview.13.35</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.2.100-preview.13.35</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.2.100-preview.13.35</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.1.100-preview.13.35</MicrosoftmacOSSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
     <!-- <DotNetVersionBandMonoToolchain></DotNetVersionBandMonoToolchain> -->
