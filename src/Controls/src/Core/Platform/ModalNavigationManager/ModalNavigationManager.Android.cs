@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Platform
 					.Handler
 					?.MauiContext
 					?.GetNavigationRootManager()
-					.RootView ?? 
+					.RootView ??
 					CurrentPage.GetNative(true) ??
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}

@@ -64,7 +64,7 @@ namespace Maui.Controls.Sample.Controls
 			{
 				foreach (var pair in BordelessEntryServiceBuilder.PendingHandlers)
 				{
-					BordelessEntryServiceBuilder.HandlersCollection.TryAddHandler (pair.Key, pair.Value);
+					BordelessEntryServiceBuilder.HandlersCollection.TryAddHandler(pair.Key, pair.Value);
 				}
 				BordelessEntryServiceBuilder.PendingHandlers.Clear();
 			}

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateText(this MaterialButton nativeButton, Button button) 
+		public static void UpdateText(this MaterialButton nativeButton, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			nativeButton.Text = text;
