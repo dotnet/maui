@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (content is View view)
 			{
-				Control.Content = new WrapperControl(view);
+				Control.Content = new ViewToHandlerConverter.WrapperControl(view);
 				return;
 			}
 
