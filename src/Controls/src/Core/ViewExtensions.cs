@@ -197,6 +197,9 @@ namespace Microsoft.Maui.Controls
 		internal static IFontManager RequireFontManager(this Element element, bool fallbackToAppMauiContext = false)
 			=> element.RequireMauiContext(fallbackToAppMauiContext).Services.GetRequiredService<IFontManager>();
 
+		internal static double GetDefaultFontSize(this Element element)
+			=> element.FindMauiContext()?.Services?.GetService<IFontManager>()?.DefaultFontSize ?? 0d;
+
 		internal static Element? FindParentWith(this Element element, Func<Element, bool> withMatch, bool includeThis = false)
 		{
 			if (includeThis && withMatch(element))
