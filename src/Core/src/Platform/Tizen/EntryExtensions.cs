@@ -31,6 +31,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsPassword(this Entry platformEntry, IEntry entry)
 		{
 			platformEntry.IsPassword = entry.IsPassword;
+
+			// it is workaround, Text does not instantly changed
+			platformEntry.Text = entry.Text;
 		}
 
 		public static void UpdateReturnType(this Entry platformEntry, IEntry entry)
@@ -75,15 +78,29 @@ namespace Microsoft.Maui.Platform
 			platformEntry.IsTextPredictionEnabled = entry.IsTextPredictionEnabled;
 		}
 
-		public static void UpdateKeyboard(this Entry platformEntry, ITextInput entry)
+		public static void UpdateMaxLength(this Entry nativeEntry, ITextInput entry) =>
+			nativeEntry.MaxLength = entry.MaxLength;
+
+		public static void UpdateKeyboard(this Entry nativeEntry, ITextInput entry)
 		{
-			
+			nativeEntry.Keyboard = entry.Keyboard.ToNative();
 		}
 
-		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
-		[PortHandler]
-		public static void UpdateSelectionLength(this Entry platformEntry, ITextInput entry)
+		public static void UpdateCursorPosition(this Entry nativeEntry, IEntry entry)
 		{
+			nativeEntry.PrimaryCursorPosition = entry.CursorPosition;
+		}
+
+		public static void UpdateSelectionLength(this Entry nativeEntry, IEntry entry)
+		{
+			if (entry.SelectionLength == 0)
+			{
+				nativeEntry.SelectNone();
+			}
+			else
+			{
+				nativeEntry.SelectText(entry.CursorPosition, entry.CursorPosition + entry.SelectionLength);
+			}
 		}
 
 		public static TReturnType ToPlatform(this ReturnType returnType)
