@@ -200,8 +200,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					Performance.Stop(reference, "Reuse.SetElement");
 
 					Invalidate();
-					this.RequestLayout();
-					_viewHandler.NativeView.InvalidateMeasure(_viewHandler.VirtualView);
 
 					Performance.Stop(reference, "Reuse");
 					Performance.Stop(reference);

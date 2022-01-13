@@ -10,6 +10,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer instead")]
 	public class TableViewModelRenderer : CellAdapter
 	{
 		readonly TableView _view;

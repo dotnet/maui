@@ -10,8 +10,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class TableViewRenderer : ViewRenderer<TableView, AListView>
 	{
+		public static PropertyMapper<TableView, TableViewRenderer> Mapper =
+				new PropertyMapper<TableView, TableViewRenderer>(VisualElementRendererMapper);
+
+
+		public static CommandMapper<TableView, TableViewRenderer> CommandMapper =
+			new CommandMapper<TableView, TableViewRenderer>(VisualElementRendererCommandMapper);
+
 		TableViewModelRenderer _adapter;
 		bool _disposed;
+
+		public TableViewRenderer(IMauiContext context) : base(context, Mapper, CommandMapper)
+		{
+		}
 
 		protected virtual TableViewModelRenderer GetModelRenderer(AListView listView, TableView view)
 		{
@@ -59,9 +70,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (double.IsInfinity(heightConstraint))
 			{
-				if (VirtualView.RowHeight > -1)
+				if (Element.RowHeight > -1)
 				{
-					heightConstraint = (int)(_adapter.Count * VirtualView.RowHeight);
+					heightConstraint = (int)(_adapter.Count * Element.RowHeight);
 				}
 				else if (_adapter != null)
 				{
@@ -76,7 +87,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							continue;
 						}
 
-						AView listItem = _adapter.GetView(i, null, NativeView);
+						AView listItem = _adapter.GetView(i, null, Control);
 						int widthSpec;
 
 						if (double.IsInfinity(widthConstraint))

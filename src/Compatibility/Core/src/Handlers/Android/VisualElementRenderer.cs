@@ -12,7 +12,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : Element, IView
 	{
 
-		public static IPropertyMapper<TElement, INativeViewHandler> VisualElementRendererMapper = new PropertyMapper<TElement, INativeViewHandler>(ViewHandler.ViewMapper);
+		public static IPropertyMapper<TElement, INativeViewHandler> VisualElementRendererMapper = new PropertyMapper<TElement, INativeViewHandler>(ViewHandler.ViewMapper)
+		{
+			[nameof(IView.AutomationId)] = MapAutomationId,
+			[nameof(IView.Background)] = MapBackground,
+			[nameof(VisualElement.BackgroundColor)] = MapBackgroundColor,
+			[nameof(AutomationProperties.IsInAccessibleTreeProperty)] = MapIsInAccessibleTreeProperty,
+		};
+
 		public static CommandMapper<TElement, INativeViewHandler> VisualElementRendererCommandMapper = new CommandMapper<TElement, INativeViewHandler>(ViewHandler.ViewCommandMapper);
 
 		TElement? _virtualView;
@@ -54,28 +61,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		protected virtual void UpdateBackgroundColor()
-		{
+		{			
 			if (Element != null)
-				_mapper.UpdateProperty(this, Element, VisualElement.BackgroundColorProperty.PropertyName);
+				ViewHandler.MapBackground(this, Element);
 		}
 
 		protected virtual void UpdateBackground()
 		{
 			if (Element != null)
-				_mapper.UpdateProperty(this, Element, VisualElement.BackgroundProperty.PropertyName);
+				ViewHandler.MapBackground(this, Element);
 		}
 
 
 		protected virtual void SetAutomationId(string id)
 		{
 			if (Element != null)
-				_mapper.UpdateProperty(this, Element, VisualElement.AutomationIdProperty.PropertyName);
+				ViewHandler.MapAutomationId(this, Element);
 		}
 
 		protected virtual void SetImportantForAccessibility()
 		{
 			if (Element != null)
-				_mapper.UpdateProperty(this, Element, AutomationProperties.IsInAccessibleTreeProperty.PropertyName);
+				VisualElement.MapIsInAccessibleTree(this, Element);
 		}
 
 		public void UpdateLayout()
@@ -238,6 +245,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		private protected virtual void DisconnectHandlerCore()
 		{
 
+		}
+
+		public static void MapIsInAccessibleTreeProperty(INativeViewHandler handler, TElement view)
+		{
+			if (handler is VisualElementRenderer<TElement> ver)
+				ver.SetImportantForAccessibility();
+		}
+
+		public static void MapAutomationId(INativeViewHandler handler, TElement view)
+		{
+			if (handler is VisualElementRenderer<TElement> ver)
+				ver.SetAutomationId(view.AutomationId);
+		}
+
+		public static void MapBackgroundColor(INativeViewHandler handler, TElement view)
+		{
+			if (handler is VisualElementRenderer<TElement> ver)
+				ver.UpdateBackgroundColor();
+		}
+
+		public static void MapBackground(INativeViewHandler handler, TElement view)
+		{
+			if (handler is VisualElementRenderer<TElement> ver)
+				ver.UpdateBackground();
 		}
 	}
 }
