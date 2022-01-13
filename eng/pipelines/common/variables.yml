@@ -30,6 +30,8 @@ variables:
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
   value: $(Build.ArtifactStagingDirectory)/test-results
+- name: provisioningVS
+  value: true
 - name: provisionator.xcode
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path
@@ -37,7 +39,7 @@ variables:
 - name: provisionator.vs
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
 - name: provisionator.extraArguments
-  value: '--v'
+  value: '-vvvv'
 - name: DotNet.Dir
   value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
@@ -46,3 +48,4 @@ variables:
   value: Maui
 - name: POWERSHELL_VERSION
   value: 7.1.3
+- group: Xamarin-Secrets

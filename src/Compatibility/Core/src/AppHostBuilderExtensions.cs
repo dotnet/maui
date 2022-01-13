@@ -107,7 +107,9 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
 #if !WINDOWS
 					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
+#if !(MACCATALYST || MACOS)
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
+#endif
 #else
 					handlers.TryAddCompatibilityRenderer(typeof(Layout), typeof(LayoutRenderer));
 #endif

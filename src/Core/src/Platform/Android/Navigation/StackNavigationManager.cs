@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 					this);
 
 			MauiContext =
-				mauiContext.MakeScoped(inflater, context: inflater.Context);						
+				mauiContext.MakeScoped(inflater, context: inflater.Context);
 		}
 
 		/*
@@ -430,7 +430,7 @@ namespace Microsoft.Maui.Platform
 
 				if (nativeToolbar != null && toolbar != null && toolbar.Handler?.MauiContext != null)
 				{
-					if(toolbar.Handler is ToolbarHandler th)
+					if (toolbar.Handler is ToolbarHandler th)
 					{
 						th.SetupWithNavController(controller, _stackNavigationManager);
 					}

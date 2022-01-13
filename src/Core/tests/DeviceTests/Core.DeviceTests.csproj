@@ -66,6 +66,7 @@
     <Compile Include="Handlers\Navigation\*.cs" />
     <Compile Include="Handlers\View\*.cs" />
     <Compile Include="Handlers\Layout\*.cs" />
+    <Compile Include="Handlers\RadioButton\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />

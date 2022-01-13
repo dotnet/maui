@@ -10,69 +10,68 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
-		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
+		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
 #if __IOS__ || __ANDROID__
-			{ typeof(CollectionView), typeof(CollectionViewHandler) },
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 #endif
 
 #if WINDOWS
-			{ typeof(CollectionView), typeof(CollectionViewHandler) },
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 #endif
 
 #if WINDOWS || __ANDROID__
-			{ typeof(Shell), typeof(ShellHandler) },
+			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
-			{ typeof(Application), typeof(ApplicationHandler) },
-			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
-			{ typeof(BoxView), typeof(ShapeViewHandler) },
-			{ typeof(Button), typeof(ButtonHandler) },
-			{ typeof(CheckBox), typeof(CheckBoxHandler) },
-			{ typeof(DatePicker), typeof(DatePickerHandler) },
-			{ typeof(Editor), typeof(EditorHandler) },
-			{ typeof(Entry), typeof(EntryHandler) },
-			{ typeof(GraphicsView), typeof(GraphicsViewHandler) },
-			{ typeof(Image), typeof(ImageHandler) },
-			{ typeof(Label), typeof(LabelHandler) },
-			{ typeof(Layout), typeof(LayoutHandler) },
-			{ typeof(Picker), typeof(PickerHandler) },
-			{ typeof(ProgressBar), typeof(ProgressBarHandler) },
-			{ typeof(ScrollView), typeof(ScrollViewHandler) },
-			{ typeof(SearchBar), typeof(SearchBarHandler) },
-			{ typeof(Slider), typeof(SliderHandler) },
-			{ typeof(Stepper), typeof(StepperHandler) },
-			{ typeof(Switch), typeof(SwitchHandler) },
-			{ typeof(TimePicker), typeof(TimePickerHandler) },
-			{ typeof(Page), typeof(PageHandler) },
-			{ typeof(WebView), typeof(WebViewHandler) },
-			{ typeof(Border), typeof(BorderHandler) },
-			{ typeof(IContentView), typeof(ContentViewHandler) },
-			{ typeof(Shapes.Ellipse), typeof(ShapeViewHandler) },
-			{ typeof(Shapes.Line), typeof(ShapeViewHandler) },
-			{ typeof(Shapes.Path), typeof(ShapeViewHandler) },
-			{ typeof(Shapes.Polygon), typeof(ShapeViewHandler) },
-			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
-			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
-			{ typeof(Shapes.RoundRectangle), typeof(ShapeViewHandler) },
-			{ typeof(Window), typeof(WindowHandler) },
-			{ typeof(ImageButton), typeof(ImageButtonHandler) },
-			{ typeof(IndicatorView), typeof(IndicatorViewHandler) },
+			handlersCollection.AddHandler<Application, ApplicationHandler>();
+			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
+			handlersCollection.AddHandler<BoxView, ShapeViewHandler>();
+			handlersCollection.AddHandler<Button, ButtonHandler>();
+			handlersCollection.AddHandler<CheckBox, CheckBoxHandler>();
+			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+			handlersCollection.AddHandler<Editor, EditorHandler>();
+			handlersCollection.AddHandler<Entry, EntryHandler>();
+			handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
+			handlersCollection.AddHandler<Image, ImageHandler>();
+			handlersCollection.AddHandler<Label, LabelHandler>();
+			handlersCollection.AddHandler<Layout, LayoutHandler>();
+			handlersCollection.AddHandler<Picker, PickerHandler>();
+			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
+			handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
+			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
+			handlersCollection.AddHandler<Slider, SliderHandler>();
+			handlersCollection.AddHandler<Stepper, StepperHandler>();
+			handlersCollection.AddHandler<Switch, SwitchHandler>();
+			handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+			handlersCollection.AddHandler<Page, PageHandler>();
+			handlersCollection.AddHandler<WebView, WebViewHandler>();
+			handlersCollection.AddHandler<Border, BorderHandler>();
+			handlersCollection.AddHandler<IContentView, ContentViewHandler>();
+			handlersCollection.AddHandler<Shapes.Ellipse, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.Line, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.Path, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.Polygon, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.Polyline, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.Rectangle, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.RoundRectangle, ShapeViewHandler>();
+			handlersCollection.AddHandler<Window, WindowHandler>();
+			handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
+			handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 #if __ANDROID__ || __IOS__
-			{ typeof(RefreshView), typeof(RefreshViewHandler) },
+			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 			
 #endif
 #if WINDOWS || ANDROID
-			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
-			{ typeof(Toolbar), typeof(ToolbarHandler) },
+			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
+			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 #endif
 #if __ANDROID__
-			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
-			{ typeof(FlyoutPage), typeof(FlyoutViewHandler) },
+			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
+			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 #endif
-		};
-
-		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
-			=> handlersCollection.AddHandlers(DefaultMauiControlHandlers);
+			return handlersCollection;
+		}
 
 		internal static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
 		{
@@ -93,6 +92,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
+			RadioButton.RemapForControls();
 			FlyoutPage.RemapForControls();
 			Toolbar.RemapForControls();
 			Window.RemapForControls();
