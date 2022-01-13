@@ -9,7 +9,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.Maui;
-using Microsoft.AspNetCore.Components.WebView.WebView2.Internal;
 using Microsoft.Extensions.FileProviders;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;

@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebView2\Microsoft.AspNetCore.Components.WebView.WebView2.csproj" />
+    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)"/>
   </ItemGroup>
 
   <ItemGroup>
