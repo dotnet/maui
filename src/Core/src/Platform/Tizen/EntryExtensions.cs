@@ -10,7 +10,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateText(this Entry platformEntry, IText entry)
 		{
-			platformEntry.Text = entry.Text ?? "";
+			if (platformEntry.Text != entry.Text)
+				platformEntry.Text = entry.Text ?? "";
 		}
 
 		public static void UpdateTextColor(this Entry platformEntry, ITextStyle entry)

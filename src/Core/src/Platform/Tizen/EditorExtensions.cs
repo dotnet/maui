@@ -7,7 +7,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateText(this Editor nativeEditor, IText editor)
 		{
-			nativeEditor.Text = editor.Text ?? "";
+			if (nativeEditor.Text != editor.Text)
+				nativeEditor.Text = editor.Text ?? "";
 		}
 
 		public static void UpdateTextColor(this Editor nativeEditor, ITextStyle editor)
