@@ -13,6 +13,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
@@ -20,7 +21,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class _38989CustomViewCellRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.ViewCellRenderer
+	public class _38989CustomViewCellRenderer : ViewCellRenderer
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{

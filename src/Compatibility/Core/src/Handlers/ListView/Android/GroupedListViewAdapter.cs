@@ -5,7 +5,7 @@ using Android.Content;
 using Android.Widget;
 using AListView = Android.Widget.ListView;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 
 	internal class GroupedListViewAdapter : ListViewAdapter, ISectionIndexer

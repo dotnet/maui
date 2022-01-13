@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 

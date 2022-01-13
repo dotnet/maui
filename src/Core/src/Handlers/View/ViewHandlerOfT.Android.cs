@@ -12,12 +12,6 @@ namespace Microsoft.Maui.Handlers
 		View? INativeViewHandler.NativeView => this.GetWrappedNativeView();
 		View? INativeViewHandler.ContainerView => ContainerView;
 
-		public new WrapperView? ContainerView
-		{
-			get => (WrapperView?)base.ContainerView;
-			protected set => base.ContainerView = value;
-		}
-
 		public Context Context => MauiContext?.Context ?? throw new InvalidOperationException($"Context cannot be null here");
 
 		public override void NativeArrange(Rectangle frame)
@@ -103,7 +97,7 @@ namespace Microsoft.Maui.Handlers
 			oldParent?.RemoveView(NativeView);
 
 			ContainerView ??= new WrapperView(Context);
-			ContainerView.AddView(NativeView);
+			((ViewGroup)ContainerView).AddView(NativeView);
 
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.AddView(ContainerView, idx);
@@ -121,7 +115,7 @@ namespace Microsoft.Maui.Handlers
 			var oldIndex = oldParent?.IndexOfChild(ContainerView);
 			oldParent?.RemoveView(ContainerView);
 
-			ContainerView.RemoveAllViews();
+			((ViewGroup)ContainerView).RemoveAllViews();
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)
