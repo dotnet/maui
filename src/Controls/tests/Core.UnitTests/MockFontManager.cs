@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public MockFontManager()
 		{
 		}
+
+		public double DefaultFontSize => 10.0d;
 	}
 
 	internal class MockFontRegistrar : IFontRegistrar
