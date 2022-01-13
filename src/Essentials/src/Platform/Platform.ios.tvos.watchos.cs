@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Essentials
 #if __IOS__
 		internal class UIPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
 		{
-			readonly Action dismissHandler;
+			Action dismissHandler;
 
 			internal UIPresentationControllerDelegate(Action dismissHandler)
 				=> this.dismissHandler = dismissHandler;
