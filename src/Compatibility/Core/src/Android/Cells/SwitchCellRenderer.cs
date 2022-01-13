@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
@@ -10,6 +11,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellRenderer instead")]
 	public class SwitchCellRenderer : CellRenderer
 	{
 		SwitchCellView _view;

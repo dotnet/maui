@@ -6,7 +6,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
