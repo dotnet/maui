@@ -44,7 +44,11 @@ namespace Microsoft.Maui.Graphics.Platform
 				_defaultFontPaint.SetARGB(255, 0, 0, 0);
 				_defaultFontPaint.AntiAlias = true;
 
-				_defaultFontPaint.SetTypeface(Typeface.Default);
+				var defaultFont = Typeface.Default;
+				if (defaultFont != null)
+					_defaultFontPaint.SetTypeface(defaultFont);
+				else
+					Logger.Warn("Unable to set the default font paint to Default");
 			}
 
 			var state = new PlatformCanvasState

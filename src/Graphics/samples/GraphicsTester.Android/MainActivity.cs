@@ -8,6 +8,7 @@ using Microsoft.Maui.Graphics.Platform;
 namespace GraphicsTester.Android
 {
 	[Activity (
+		Name = "Microsoft.Maui.Graphics.tester.Android.MainActivity",
 		Label = "GraphicsTester.Android",
 		MainLauncher = true,
 		Icon = "@drawable/icon")]
