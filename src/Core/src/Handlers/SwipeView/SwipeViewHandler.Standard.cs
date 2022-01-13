@@ -29,5 +29,18 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 		}
+
+		public static void MapLeftItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapTopItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapRightItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapBottomItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
 	}
 }
