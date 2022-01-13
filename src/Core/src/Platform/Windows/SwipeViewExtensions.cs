@@ -33,6 +33,14 @@ namespace Microsoft.Maui.Platform
 			return WSwipeMode.Reveal;
 		}
 
+		public static void UpdateTextColor(this WSwipeItem nativeControl, ISwipeItemMenuItem view)
+		{
+			var textColor = view.TextColor ?? view.GetTextColor();
+
+			if (textColor != null)
+				nativeControl.Foreground = textColor.ToNative();
+		}
+
 		public static WSwipeBehaviorOnInvoked ToNative(this SwipeBehaviorOnInvoked swipeBehaviorOnInvoked)
 		{
 			switch (swipeBehaviorOnInvoked)

@@ -9,13 +9,8 @@ namespace Microsoft.Maui.Handlers
 			return new WSwipeItem();
 		}
 
-		public static void MapTextColor(SwipeItemMenuItemHandler handler, ITextStyle view)
-		{
-			var textColor = handler.VirtualView.GetTextColor();
-
-			if(textColor != null)
-				handler.NativeView.Foreground = textColor.ToNative();
-		}
+		public static void MapTextColor(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
+			handler.NativeView.UpdateTextColor(view);
 
 		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view) { }
 
