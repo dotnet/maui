@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 			};
 
-		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new()
+		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
 		{
 			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
 			[nameof(IView.Frame)] = MapFrame,

@@ -4,6 +4,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using ASwitch = Android.Widget.Switch;
 using AView = Android.Views.View;
 

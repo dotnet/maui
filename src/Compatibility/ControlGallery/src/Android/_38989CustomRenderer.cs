@@ -21,7 +21,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class _38989CustomViewCellRenderer : ViewCellRenderer
+	public class _38989CustomViewCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{

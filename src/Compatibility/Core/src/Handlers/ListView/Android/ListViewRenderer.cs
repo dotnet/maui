@@ -12,14 +12,17 @@ using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
-using LayoutParams = Android.Views.ViewGroup.LayoutParams;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class ListViewRenderer : ViewRenderer<ListView, AListView>
 	{
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
-				new PropertyMapper<ListView, ListViewRenderer>(ViewMapper);
+				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
+
+
+		public static CommandMapper<ListView, ListViewRenderer> CommandMapper = 
+			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
 
 		ListViewAdapter _adapter;
 		INativeViewHandler _headerRenderer;
@@ -36,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
 
-		public ListViewRenderer() : base(Mapper)
+		public ListViewRenderer(IMauiContext mauiContext) : base(mauiContext, Mapper, CommandMapper)
 		{
 		}
 
@@ -68,38 +71,36 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_adapter.IsAttachedToWindow = _isAttached;
 		}
 
-		protected override AListView CreateNativeView()
+		protected override AListView CreateNativeControl()
 		{
 			return new AListView(Context);
 		}
 
-		public override bool NeedsContainer => true;
-
-		protected override void SetupContainer()
-		{
-			if (Context == null || NativeView == null || ContainerView != null)
-				return;
+		//protected override void SetupContainer()
+		//{
+		//	if (Context == null || NativeView == null || ContainerView != null)
+		//		return;
 
 
-			var oldParent = (ViewGroup)NativeView.Parent;
+		//	var oldParent = (ViewGroup)NativeView.Parent;
 
-			var oldIndex = oldParent?.IndexOfChild(NativeView);
-			oldParent?.RemoveView(NativeView);
+		//	var oldIndex = oldParent?.IndexOfChild(NativeView);
+		//	oldParent?.RemoveView(NativeView);
 
-			if (ContainerView == null)
-			{
-				_refresh = CreateNativePullToRefresh(Context);
-				_refresh.SetOnRefreshListener(new ListViewSwipeRefreshLayoutListener(this));
-				ContainerView = _refresh;
-			}
+		//	if (ContainerView == null)
+		//	{
+		//		_refresh = CreateNativePullToRefresh(Context);
+		//		_refresh.SetOnRefreshListener(new ListViewSwipeRefreshLayoutListener(this));
+		//		ContainerView = _refresh;
+		//	}
 
-			_refresh.AddView(NativeView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
+		//	_refresh.AddView(NativeView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
 
-			if (oldIndex is int idx && idx >= 0)
-				oldParent?.AddView(ContainerView, idx);
-			else
-				oldParent?.AddView(ContainerView);
-		}
+		//	if (oldIndex is int idx && idx >= 0)
+		//		oldParent?.AddView(ContainerView, idx);
+		//	else
+		//		oldParent?.AddView(ContainerView);
+		//}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
@@ -113,7 +114,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					// Unhook the adapter from the ListView before disposing of it
 					Control.Adapter = null;
-
 					Control.SetOnScrollListener(null);
 				}
 
@@ -127,11 +127,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.NewElement != null)
 			{
 				AListView nativeListView = Control;
-				var ctx = Context;
-				_headerView = new Container(ctx);
-				nativeListView.AddHeaderView(_headerView, null, false);
-				_footerView = new Container(ctx);
-				nativeListView.AddFooterView(_footerView, null, false);
+				if (nativeListView == null)
+				{
+					nativeListView = CreateNativeControl();
+					_refresh = CreateNativePullToRefresh(MauiContext.Context);
+					_refresh.SetOnRefreshListener(new ListViewSwipeRefreshLayoutListener(this));
+					_refresh.AddView(nativeListView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
+					SetNativeControl(nativeListView, _refresh);
+
+					_headerView = new Container(MauiContext.Context);
+					nativeListView.AddHeaderView(_headerView, null, false);
+					_footerView = new Container(MauiContext.Context);
+					nativeListView.AddFooterView(_footerView, null, false);
+				}
 
 				((IListViewController)e.NewElement).ScrollToRequested += OnScrollToRequested;
 				Control?.SetOnScrollListener(new ListViewScrollDetector(this));
@@ -215,9 +223,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (double.IsInfinity(heightConstraint))
 			{
-				if (VirtualView.RowHeight > -1)
+				if (Element.RowHeight > -1)
 				{
-					heightConstraint = (int)(_adapter.Count * VirtualView.RowHeight);
+					heightConstraint = (int)(_adapter.Count * Element.RowHeight);
 				}
 				else if (_adapter != null)
 				{
@@ -232,7 +240,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							continue;
 						}
 
-						AView listItem = _adapter.GetView(i, null, NativeView);
+						AView listItem = _adapter.GetView(i, null, Control);
 						int widthSpec;
 
 						if (double.IsInfinity(widthConstraint))
@@ -251,9 +259,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-		public override void NativeArrange(Rectangle frame)
+
+		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
-			base.NativeArrange(frame);
+			base.OnLayout(changed, l, t, r, b);
 
 			if (_pendingScrollTo != null)
 			{

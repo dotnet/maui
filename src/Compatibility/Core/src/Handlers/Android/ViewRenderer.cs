@@ -1,122 +1,81 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using AView = Android.Views.View;
-using IViewParent = Android.Views.IViewParent;
 using PlatformView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public partial class ViewRenderer<TElement, TNativeView> : ViewHandler<TElement, TNativeView>
+	public abstract class ViewRenderer : ViewRenderer<View, PlatformView>
+	{
+		protected ViewRenderer(IMauiContext mauiContext) : base(mauiContext)
+		{
+		}
+	}
+
+	public abstract partial class ViewRenderer<TElement, TNativeView> : VisualElementRenderer<TElement>, INativeViewHandler
 		where TElement : Element, IView
 		where TNativeView : PlatformView
 	{
-
 		TNativeView? _nativeView;
-		// The casts here are to get around the fact that if you access VirtualView
-		// before it's been initialized you'll get an exception
-		public TElement? Element => ((IElementHandler)this).VirtualView as TElement;
-		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView;
+		AViewGroup? _container;
 
-		public IViewParent? Parent => Control?.Parent;
+		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView ?? _nativeView;
 
-		public ViewRenderer(IPropertyMapper mapper) : base(ViewHandler.ViewMapper)
+
+
+		public ViewRenderer(IMauiContext mauiContext) : this(mauiContext, VisualElementRendererMapper, VisualElementRendererCommandMapper)
+		{
+
+		}
+
+		internal ViewRenderer(IMauiContext context, IPropertyMapper mapper, CommandMapper? commandMapper = null) 
+			: base(context, mapper, commandMapper)
 		{
 		}
 
-		protected override TNativeView CreateNativeView()
+		protected virtual TNativeView CreateNativeControl()
 		{
-			var nativeView = _nativeView;
-			_nativeView = null;
-			return nativeView ?? throw new NotImplementedException();
+			return default(TNativeView)!;
 		}
-
-		protected virtual TNativeView CreateNativeControl() => CreateNativeView();
 
 		protected void SetNativeControl(TNativeView control)
-		{			
-			if(NativeView != null && control != null)
+		{
+			SetNativeControl(control, this);
+		}
+
+		internal void SetNativeControl(TNativeView control, AViewGroup container)
+		{
+			if (Control != null)
 			{
-				throw new NotImplementedException("Changing the NativeView is currently not supported");
+				RemoveView(Control);
 			}
 
+			_container = container;
 			_nativeView = control;
+
+			var toAdd = container == this ? control : (PlatformView)container;
+			AddView(toAdd, LayoutParams.MatchParent);
 		}
 
-		private protected override void OnConnectHandler(AView nativeView)
+		private protected override void DisconnectHandlerCore()
 		{
-			base.OnConnectHandler(nativeView);
-			nativeView.ViewAttachedToWindow += OnViewAttachedToWindow;
-			nativeView.ViewDetachedFromWindow += OnViewDetatchedFromWindow;
-		}
-		private protected override void OnDisconnectHandler(AView nativeView)
-		{
-			base.OnDisconnectHandler(nativeView);
-			nativeView.ViewAttachedToWindow -= OnViewAttachedToWindow;
-			nativeView.ViewDetachedFromWindow -= OnViewDetatchedFromWindow;
-		}
-
-		public override void SetVirtualView(IView view)
-		{
-			var oldElement = Element;
-			base.SetVirtualView(view);
-			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, Element));
-		}
-
-		void OnViewDetatchedFromWindow(object? sender, AView.ViewDetachedFromWindowEventArgs e) => OnDetachedFromWindow();
-
-		void OnViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e) => OnAttachedToWindow();
-
-
-
-		protected virtual void OnAttachedToWindow()
-		{
-
-		}
-
-		protected virtual void OnDetachedFromWindow()
-		{
-
-		}
-
-		protected virtual Size MinimumSize()
-		{
-			return new Size();
-		}
-
-		protected virtual void OnElementChanged(ElementChangedEventArgs<TElement> e)
-		{
-
-		}
-
-
-		public override void UpdateValue(string property)
-		{
-			base.UpdateValue(property);
-			OnElementPropertyChanged(VirtualView, new PropertyChangedEventArgs(property));
-		}
-
-		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-
-		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			var size =  base.GetDesiredSize(widthConstraint, heightConstraint);
-			var minimumSize = MinimumSize();
-
-			if(size.Height < minimumSize.Height || size.Width < minimumSize.Width)
+			if (_nativeView != null && Element != null)
 			{
-				return new Size(Math.Max(size.Width, minimumSize.Width), Math.Max(size.Height, minimumSize.Height));
+				// We set the NativeView to null so no one outside of this handler tries to access
+				// NativeView. NativeView access should be isolated to the instance passed into
+				// DisconnectHandler
+				var oldNativeView = _nativeView;
+				_nativeView = null;
+				DisconnectHandler(oldNativeView);
 			}
 
-			return size;
+			base.DisconnectHandlerCore();
 		}
+
+		protected virtual void DisconnectHandler(TNativeView oldNativeView)
+		{
+		}
+
+		PlatformView? INativeViewHandler.ContainerView => _container;
 	}
 }
