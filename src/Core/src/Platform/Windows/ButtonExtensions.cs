@@ -61,11 +61,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateText(this Button nativeButton, IText text)
 		{
+			nativeButton.UpdateText(text.Text);
+		}
+
+		public static void UpdateText(this Button nativeButton, string text) 
+		{
 			if (nativeButton.GetContent<TextBlock>() is TextBlock textBlock)
 			{
-				var actualText = text.Text;
-				textBlock.Text = actualText;
-				textBlock.Visibility = string.IsNullOrEmpty(actualText)
+				textBlock.Text = text;
+				textBlock.Visibility = string.IsNullOrEmpty(text)
 					? UI.Xaml.Visibility.Collapsed
 					: UI.Xaml.Visibility.Visible;
 			}

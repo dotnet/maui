@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View nativeView)
 		{
-			if(PlatformRadioButton != null)
+			if (PlatformRadioButton != null)
 				PlatformRadioButton.CheckedChange += OnCheckChanged;
 		}
 

@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 			bool? excludedWithChildren = (bool?)element.GetValue(AutomationProperties.ExcludedWithChildrenProperty);
 			if (excludedWithChildren == true)
 				control.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
-			else if (isInAccessibleTree.HasValue)			
+			else if (isInAccessibleTree.HasValue)
 				control.ImportantForAccessibility = isInAccessibleTree.Value ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
 		}
 

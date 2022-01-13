@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls
 				_ => _viewInfo[view].LayoutFlags,
 			};
 		}
-		
+
 		public Rectangle GetLayoutBounds(IView view)
 		{
 			return view switch

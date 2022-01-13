@@ -14,12 +14,14 @@ namespace Microsoft.Maui.Controls
 		{
 			[nameof(ContentLayout)] = MapContentLayout,
 #if __IOS__
-				[nameof(Padding)] = MapPadding,
+			[nameof(Padding)] = MapPadding,
 #endif
 #if WINDOWS
-				[nameof(IText.Text)] = MapText,
-				[nameof(ImageSource)] = MapImageSource
+			[nameof(IText.Text)] = MapText,
+			[nameof(ImageSource)] = MapImageSource,
 #endif
+			[nameof(TextTransform)] = MapText,
+			[nameof(Text)] = MapText,
 		};
 
 		internal new static void RemapForControls()
