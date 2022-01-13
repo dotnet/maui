@@ -77,10 +77,11 @@ Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "GraphicsTester.WinUI.Deskto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsTester.Skia.Console", "samples\GraphicsTester.Skia.Console\GraphicsTester.Skia.Console.csproj", "{0484771A-56F1-4798-887D-FB2678BA691A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Tests", "tests\Microsoft.Maui.Graphics.Tests\Microsoft.Maui.Graphics.Tests.csproj", "{DA430B07-6B04-432B-9904-6D4540FDD687}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Microsoft.Maui.Graphics.SharpDX.Shared\Microsoft.Maui.Graphics.SharpDX.Shared.projitems*{5163bcb2-4d70-42da-975a-af55d6b6a0b3}*SharedItemsImports = 13
-		src\Microsoft.Maui.Graphics.SharpDX.Shared\Microsoft.Maui.Graphics.SharpDX.Shared.projitems*{694e970d-5c18-483f-bc48-d6d86da8e78f}*SharedItemsImports = 4
 		src\Microsoft.Maui.Graphics.SharpDX.Shared\Microsoft.Maui.Graphics.SharpDX.Shared.projitems*{bc291304-fdc0-4e1d-a673-39f5e446b0e0}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -614,6 +615,22 @@ Global
 		{0484771A-56F1-4798-887D-FB2678BA691A}.Release|x64.Build.0 = Release|Any CPU
 		{0484771A-56F1-4798-887D-FB2678BA691A}.Release|x86.ActiveCfg = Release|Any CPU
 		{0484771A-56F1-4798-887D-FB2678BA691A}.Release|x86.Build.0 = Release|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Debug|arm64.Build.0 = Debug|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Debug|x64.Build.0 = Debug|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Debug|x86.Build.0 = Debug|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Release|arm64.ActiveCfg = Release|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Release|arm64.Build.0 = Release|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Release|x64.ActiveCfg = Release|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Release|x64.Build.0 = Release|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Release|x86.ActiveCfg = Release|Any CPU
+		{DA430B07-6B04-432B-9904-6D4540FDD687}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -652,6 +669,7 @@ Global
 		{6FCBA286-3B0F-4377-8F71-9D7CAD0E91E4} = {CE764F51-0699-4446-BEE2-17FBBDC99C5C}
 		{B172A9D1-79E3-4265-8BE5-E2F7D11BB5F8} = {CE764F51-0699-4446-BEE2-17FBBDC99C5C}
 		{0484771A-56F1-4798-887D-FB2678BA691A} = {CE764F51-0699-4446-BEE2-17FBBDC99C5C}
+		{DA430B07-6B04-432B-9904-6D4540FDD687} = {D6F0522F-3BB5-4A10-953F-CA047F3D881A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}
