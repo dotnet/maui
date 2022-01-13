@@ -58,8 +58,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, "drawable-v24");
 				var destination = Path.Combine(dir, backgroundDestFilename);
-				if (!Directory.Exists(dir))
-					Directory.CreateDirectory(dir);
+				Directory.CreateDirectory(dir);
 
 				Svg2VectorDrawable.Svg2Vector.Convert(backgroundFile, destination);
 
@@ -73,8 +72,7 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 					var destination = Path.Combine(dir, backgroundDestFilename);
-					if (!Directory.Exists(dir))
-						Directory.CreateDirectory(dir);
+					Directory.CreateDirectory(dir);
 
 					Logger.Log($"App Icon Background Part: " + destination);
 
@@ -89,8 +87,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			var foregroundDestinationDir = Path.Combine(fullIntermediateOutputPath.FullName, "drawable");
 			var foregroundDestination = Path.Combine(foregroundDestinationDir, foregroundDestFilename);
-			if (!Directory.Exists(foregroundDestinationDir))
-				Directory.CreateDirectory(foregroundDestinationDir);
+			Directory.CreateDirectory(foregroundDestinationDir);
 
 			if (foregroundExists)
 			{
@@ -109,8 +106,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 						var destination = Path.Combine(dir, foregroundDestFilename);
-						if (!Directory.Exists(dir))
-							Directory.CreateDirectory(dir);
+						Directory.CreateDirectory(dir);
 
 						Logger.Log($"App Icon Foreground Part: " + destination);
 
@@ -135,12 +131,10 @@ namespace Microsoft.Maui.Resizetizer
 					.Replace("{backgroundType}", backgroundIsVector ? "drawable" : "mipmap")
 					.Replace("{foregroundType}", foregroundIsVector ? "drawable" : "mipmap");
 
-				var adaptiveIconDestination = Path.Combine(fullIntermediateOutputPath.FullName, "mipmap-anydpi-v26", AppIconName + ".xml");
-				var adaptiveIconRoundDestination = Path.Combine(fullIntermediateOutputPath.FullName, "mipmap-anydpi-v26", AppIconName + "_round.xml");
-
-				var fileInfo = new FileInfo(adaptiveIconDestination);
-				if (!fileInfo.Directory.Exists)
-					fileInfo.Directory.Create();
+				var dir = Path.Combine(fullIntermediateOutputPath.FullName, "mipmap-anydpi-v26");
+				var adaptiveIconDestination = Path.Combine(dir, AppIconName + ".xml");
+				var adaptiveIconRoundDestination = Path.Combine(dir, AppIconName + "_round.xml");
+				Directory.CreateDirectory(dir);
 
 				// Write out the adaptive icon xml drawables
 				File.WriteAllText(adaptiveIconDestination, adaptiveIconXmlStr);
