@@ -35,6 +35,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public TextAlignment VerticalTextAlignment { get; set; }
 
+		public int CursorPosition { get; set; }
+
+		public int SelectionLength { get; set; }
+
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public bool IsReadOnly { get; set; }

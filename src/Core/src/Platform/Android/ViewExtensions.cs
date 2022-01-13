@@ -1,8 +1,10 @@
 using System.Numerics;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.Content;
 using AndroidX.Core.View;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
@@ -11,13 +13,13 @@ using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 using GL = Android.Opengl;
+using AColor = Android.Graphics.Color;
+using System;
 
 namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		public static int AutomationTagId { get; set; } = Resource.Id.automation_tag_id;
-
 		public static void Initialize(this AView nativeView, IView view)
 		{
 			var context = nativeView.Context;
@@ -39,8 +41,6 @@ namespace Microsoft.Maui.Platform
 
 			// NOTE: use named arguments for clarity
 			ViewHelper.Set(nativeView,
-				automationTagId: AutomationTagId,
-				automationId: view.AutomationId,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
@@ -91,6 +91,39 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
+		public static void SetWindowBackground(this AView view)
+		{
+			var context = view.Context;
+			if (context?.Theme == null)
+				return;
+
+			if (context?.Resources == null)
+				return;
+
+			using (var background = new TypedValue())
+			{
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
+				{
+					string? type = context.Resources.GetResourceTypeName(background.ResourceId)?.ToLower();
+
+					if (type != null)
+					{
+						switch (type)
+						{
+							case "color":
+								var color = new AColor(ContextCompat.GetColor(context, background.ResourceId));
+								view.SetBackgroundColor(color);
+								break;
+							case "drawable":
+								using (Drawable drawable = ContextCompat.GetDrawable(context, background.ResourceId))
+									view.Background = drawable;
+								break;
+						}
+					}
+				}
+			}
+		}
+
 		public static void UpdateBackground(this ContentViewGroup nativeView, IBorder border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
@@ -99,7 +132,10 @@ namespace Microsoft.Maui.Platform
 				nativeView.UpdateMauiDrawable(border);
 		}
 
-		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
+		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null) =>
+			nativeView.UpdateBackground(view.Background, defaultBackground);
+
+		public static void UpdateBackground(this AView nativeView, Paint? background, Drawable? defaultBackground = null)
 		{
 			// Remove previous background gradient if any
 			if (nativeView.Background is MauiDrawable mauiDrawable)
@@ -108,7 +144,7 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.Dispose();
 			}
 
-			var paint = view.Background;
+			var paint = background;
 
 			if (paint.IsNullOrEmpty())
 			{
@@ -185,7 +221,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateAutomationId(this AView nativeView, IView view)
 		{
-			nativeView.SetTag(AutomationTagId, view.AutomationId);
+			if (!string.IsNullOrWhiteSpace(view.AutomationId))
+			{
+				ViewHelper.SetContentDescriptionForAutomationId(nativeView, view.AutomationId);
+			}
 		}
 
 		public static void InvalidateMeasure(this AView nativeView, IView view)
@@ -347,6 +386,23 @@ namespace Microsoft.Maui.Platform
 			var rect = new Android.Graphics.Rect();
 			nativeView.GetGlobalVisibleRect(rect);
 			return new Rectangle(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
+		}
+
+		internal static IViewParent? FindParent(this IViewParent? view, Func<IViewParent?, bool> searchExpression)
+		{
+			if (searchExpression(view))
+				return view;
+
+			while (view != null)
+			{
+				var parent = view?.Parent;
+				if (searchExpression(parent))
+					return parent;
+
+				view = view?.Parent;
+			}
+
+			return default;
 		}
 
 		internal static T? GetParentOfType<T>(this IViewParent? view)

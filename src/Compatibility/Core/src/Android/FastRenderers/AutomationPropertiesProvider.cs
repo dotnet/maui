@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 	internal class AutomationPropertiesProvider : IDisposable
 	{
 		string _defaultContentDescription;
-		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 		bool _disposed;
 
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			=> Controls.Platform.AutomationPropertiesProvider.SetContentDescription(Control, Element, _defaultContentDescription, _defaultHint);
 
 		void SetImportantForAccessibility()
-			=> Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(Control, Element, ref _defaultImportantForAccessibility);
+			=> Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(Control, Element);
 
 		void SetLabeledBy()
 			=> Controls.Platform.AutomationPropertiesProvider.SetLabeledBy(Control, Element);
@@ -88,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 
 			SetupDefaults();
-			Controls.Platform.AutomationPropertiesProvider.AccessibilitySettingsChanged(Control, Element, _defaultHint, _defaultContentDescription, ref _defaultImportantForAccessibility);
+			Controls.Platform.AutomationPropertiesProvider.AccessibilitySettingsChanged(Control, Element, _defaultHint, _defaultContentDescription);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

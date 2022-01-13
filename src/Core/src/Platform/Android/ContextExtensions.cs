@@ -71,14 +71,6 @@ namespace Microsoft.Maui.Platform
 			);
 		}
 
-		public static bool HasRtlSupport(this Context self)
-		{
-			if (self == null)
-				return false;
-
-			return (self.ApplicationInfo?.Flags & AApplicationInfoFlags.SupportsRtl) == AApplicationInfoFlags.SupportsRtl;
-		}
-
 		public static double GetThemeAttributeDp(this Context self, int resource)
 		{
 			using (var value = new TypedValue())

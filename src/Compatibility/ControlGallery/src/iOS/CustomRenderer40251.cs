@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			if (e.NewElement != null)
 			{
 				if (Control != null)
-					Control.TitleShadowOffset = new CoreGraphics.CGSize(2, 2);
+					Control.TitleLabel.ShadowOffset = new CoreGraphics.CGSize(2, 2);
 			}
 		}
 
