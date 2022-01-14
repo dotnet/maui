@@ -10,37 +10,11 @@ namespace Microsoft.Maui.Handlers
 		FrameworkElement? INativeViewHandler.NativeView => this.GetWrappedNativeView();
 		FrameworkElement? INativeViewHandler.ContainerView => ContainerView;
 
-		public override void NativeArrange(Rectangle rect)
-		{
-			var nativeView = this.GetWrappedNativeView();
+		public override void NativeArrange(Rectangle rect) =>
+			this.NativeArrangeHandler(rect);
 
-			if (nativeView == null)
-				return;
-
-			if (rect.Width < 0 || rect.Height < 0)
-				return;
-
-			nativeView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
-
-			Invoke(nameof(IView.Frame), rect);
-		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			var nativeView = this.GetWrappedNativeView();
-
-			if (nativeView == null)
-				return Size.Zero;
-
-			if (widthConstraint < 0 || heightConstraint < 0)
-				return Size.Zero;
-
-			var measureConstraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
-
-			nativeView.Measure(measureConstraint);
-
-			return new Size(nativeView.DesiredSize.Width, nativeView.DesiredSize.Height);
-		}
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
 		protected override void SetupContainer()
 		{

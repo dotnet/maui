@@ -28,10 +28,13 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class ListViewRenderer : ViewRenderer<ListView, WListView>
+	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
-			new PropertyMapper<ListView, ListViewRenderer>(ViewMapper);
+				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
+
+		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
+			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
 
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		bool _collectionIsWrapped;
@@ -47,7 +50,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected WListView List { get; private set; }
 
-		public ListViewRenderer() : base(Mapper)
+		public ListViewRenderer(IMauiContext mauiContext) : base(mauiContext, Mapper, CommandMapper)
 		{
 		}
 
@@ -410,19 +413,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			List.Header = Element.HeaderElement;
 		}
 
-
-		public override bool NeedsContainer 
-			=> ContainerView != null;
-
-		protected override void SetupContainer()
-		{
-		}
-
-		protected override void RemoveContainer()
-		{
-
-		}
-
 		void UpdateGrouping()
 		{
 			bool grouping = Element.IsGroupingEnabled;
@@ -453,7 +443,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_zoom.CanChangeViews = true;
 				}
 
-				ContainerView = _zoom;
+				SetNativeControl(_zoom);
 			}
 			else
 			{
@@ -606,7 +596,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					List.Loaded -= loadedHandler;
 
 					// Here we try to avoid an exception, see explanation at bottom
-					await NativeView.Dispatcher.RunIdleAsync(args => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup); });
+					await Control.Dispatcher.RunIdleAsync(args => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup); });
 				};
 				List.Loaded += loadedHandler;
 				return;
@@ -628,7 +618,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var semanticLocation = new SemanticZoomLocation { Item = c };
 
 			// async scrolling
-			await NativeView.Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+			await Control.Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
 			{
 				switch (toPosition)
 				{
