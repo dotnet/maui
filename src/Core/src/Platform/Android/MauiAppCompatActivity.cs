@@ -31,5 +31,11 @@ namespace Microsoft.Maui
 			Microsoft.Maui.Essentials.Platform.Init(this, savedInstanceState);
 			this.CreateNativeWindow(MauiApplication.Current.Application, savedInstanceState);
 		}
+
+		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Android.Content.PM.Permission[] grantResults)
+		{
+			Microsoft.Maui.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+			base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+		}
 	}
 }
