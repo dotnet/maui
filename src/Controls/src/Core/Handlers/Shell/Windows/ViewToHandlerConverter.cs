@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public class ViewToHandlerConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, string language)
+		public object? Convert(object value, Type targetType, object parameter, string language)
 		{
 			var view = value as View;
 			if (view == null)
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var page = value as Page;
 				if (page != null)
 				{
-					return page.ToNative(page.FindMauiContext());
+					return page.ToNative(page.FindMauiContext()!);
 				}
 			}
 
@@ -34,6 +35,8 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class WrapperControl : Panel
 		{
 			readonly View _view;
+			IView View => _view;
+			INativeViewHandler? Handler => View.Handler as INativeViewHandler;
 
 			FrameworkElement FrameworkElement { get; }
 
@@ -50,26 +53,22 @@ namespace Microsoft.Maui.Controls.Platform
 				_view = view;
 				_view.MeasureInvalidated += OnMeasureInvalidated;
 
-				var renderer = view.ToNative(view.FindMauiContext());
-
-				FrameworkElement = renderer;
-				Children.Add(renderer);
+				FrameworkElement = view.ToNative(view.FindMauiContext()!, true);
+				Children.Add(FrameworkElement);
 
 				// make sure we re-measure once the template is applied
-				if (FrameworkElement != null)
+				
+				FrameworkElement.Loaded += (sender, args) =>
 				{
-					FrameworkElement.Loaded += (sender, args) =>
-					{
-						// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
-						// with all the controls in a consistent native state (i.e., loaded) so they'll actually
-						// have Bounds set
-						(_view as Controls.Compatibility.Layout)?.ForceLayout();
-						InvalidateMeasure();
-					};
-				}
+					// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
+					// with all the controls in a consistent native state (i.e., loaded) so they'll actually
+					// have Bounds set
+					Handler?.NativeView?.InvalidateMeasure(View);
+					InvalidateMeasure();
+				};
 			}
 
-			void OnMeasureInvalidated(object sender, EventArgs e)
+			void OnMeasureInvalidated(object? sender, EventArgs e)
 			{
 				InvalidateMeasure();
 			}
@@ -77,7 +76,8 @@ namespace Microsoft.Maui.Controls.Platform
 			protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 			{
 				_view.IsInNativeLayout = true;
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, finalSize.Width, finalSize.Height));
+				_view.Frame = new Rectangle(0, 0, finalSize.Width, finalSize.Height);
+				FrameworkElement?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 
 				if (_view.Width <= 0 || _view.Height <= 0)
 				{
@@ -88,8 +88,8 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 				{
 					Opacity = 1;
-					FrameworkElement?.Arrange(new WRect(_view.X, _view.Y, _view.Width, _view.Height));
 				}
+
 				_view.IsInNativeLayout = false;
 
 				return finalSize;
@@ -97,7 +97,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 			{
-				Size request = _view.Measure(availableSize.Width, availableSize.Height, MeasureFlags.IncludeMargins).Request;
+				FrameworkElement.Measure(availableSize);
+
+				var request = FrameworkElement.DesiredSize;
 
 				if (request.Height < 0)
 				{
@@ -111,10 +113,8 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					result = new global::Windows.Foundation.Size(request.Width, request.Height);
+					result = request;
 				}
-
-				FrameworkElement?.Measure(availableSize);
 
 				return result;
 			}
