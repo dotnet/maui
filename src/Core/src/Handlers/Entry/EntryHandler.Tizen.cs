@@ -152,9 +152,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateSelectionLength(entry);
 		}
 
-		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		public static void MapKeyboard(EditorHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateKeyboard(editor);
+			handler.NativeView?.UpdateKeyboard(entry);
 		}
 
 		[MissingMapper]

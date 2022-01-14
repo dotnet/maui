@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Platform
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		[PortHandler]
-		public static void UpdateSelectionLength(this Entry nativeEntry, IEntry entry)
+		public static void UpdateSelectionLength(this Entry nativeEntry, ITextInput entry)
 		{
 			if (nativeEntry.IsUpdatingCursorPosition)
 				return;
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static int GetSelectionStart(Entry nativeEntry, IEntry entry)
+		static int GetSelectionStart(Entry nativeEntry, ITextInput entry)
 		{
 			int start = nativeEntry.Text?.Length ?? 0;
 			int cursorPosition = entry.CursorPosition;
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Platform
 			return start;
 		}
 
-		static int GetSelectionEnd(Entry nativeEntry, IEntry entry, int start)
+		static int GetSelectionEnd(Entry nativeEntry, ITextInput entry, int start)
 		{
 			int end = Math.Max(start, Math.Min(nativeEntry.Text?.Length ?? 0, start + entry.SelectionLength));
 			int selectionLength = end - start;
