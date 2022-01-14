@@ -119,8 +119,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (convertView != aview)
 				{
-					if(layout.ChildCount > 0 && layout.GetChildAt(0) is BaseCellView)
+					if (layout.ChildCount == 2)
+					{
 						layout.RemoveViewAt(0);
+					}
 
 					aview.RemoveFromParent();
 					layout.AddView(aview, 0);
