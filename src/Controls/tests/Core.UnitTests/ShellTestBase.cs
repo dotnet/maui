@@ -481,7 +481,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public class TestPage1 : ContentPage { }
 		public class TestPage2 : ContentPage { }
 		public class TestPage3 : ContentPage { }
-		
+
 		public class PageWithDependency : ContentPage
 		{
 			public Dependency TestDependency { get; set; }

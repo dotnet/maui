@@ -28,7 +28,7 @@
             <SwipeItems x:Key="FavouriteSwipeItems">
                 <SwipeItem
                     Text="Favourite"
-                    Icon="calculator.png"
+                    IconImageSource="calculator.png"
                     BackgroundColor="Yellow"
                     Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.FavouriteCommand}"/>
             </SwipeItems>
@@ -38,7 +38,7 @@
                 Mode="Execute">
                 <SwipeItem
                     Text="Delete"
-                    Icon="coffee.png"
+                    IconImageSource="coffee.png"
                     BackgroundColor="Red"
                     Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.DeleteCommand}"/>
             </SwipeItems>

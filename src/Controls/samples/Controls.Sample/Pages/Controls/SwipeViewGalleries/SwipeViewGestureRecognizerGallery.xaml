@@ -37,7 +37,7 @@
                         <SwipeItems>
                             <SwipeItem
                                 Text="Favourite"
-                                Icon="calculator.png"
+                                IconImageSource="calculator.png"
                                 BackgroundColor="Yellow"
                                 Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.FavouriteCommand}"/>
                         </SwipeItems>

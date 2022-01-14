@@ -56,6 +56,16 @@ namespace Microsoft.Maui.Resizetizer
 					new DpiPath("mipmap-xxhdpi", 3.0m, size: new SKSize(48, 48)),
 					new DpiPath("mipmap-xxxhdpi", 4.0m, size: new SKSize(48, 48)),
 				};
+
+			public static DpiPath[] AppIconParts
+				=> new[]
+				{
+					new DpiPath("mipmap-mdpi", 1.0m, size: new SKSize(108, 108)),
+					new DpiPath("mipmap-hdpi", 1.5m, size: new SKSize(108, 108)),
+					new DpiPath("mipmap-xhdpi", 2.0m, size: new SKSize(108, 108)),
+					new DpiPath("mipmap-xxhdpi", 3.0m, size: new SKSize(108, 108)),
+					new DpiPath("mipmap-xxxhdpi", 4.0m, size: new SKSize(108, 108)),
+				};
 		}
 
 		public static class Ios

@@ -93,9 +93,7 @@ namespace Microsoft.Maui.Platform
 			if (!args.Animated)
 				return null;
 
-			if (NavigationStack.Count > args.NavigationStack.Count)
-				return new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft };
-						
+			// GoBack just plays the animation in reverse so we always just return the same animation
 			return new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
 		}
 

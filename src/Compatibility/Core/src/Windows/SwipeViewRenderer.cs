@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnSwipeItemInvoked(WSwipeItem sender, Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs args)
 		{
 			var windowsSwipeItem = sender;
-			var formsSwipeItem = GetFormsSwipeItem(windowsSwipeItem);
+			ISwipeItem formsSwipeItem = GetFormsSwipeItem(windowsSwipeItem);
 			formsSwipeItem?.OnInvoked();
 		}
 

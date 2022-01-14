@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateGroupNames(Element element, string name, string oldName = null)
 		{
-			foreach(Element descendant in element.Descendants())
+			foreach (Element descendant in element.Descendants())
 			{
 				UpdateGroupName(descendant, name, oldName);
 			}

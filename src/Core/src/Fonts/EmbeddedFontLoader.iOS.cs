@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 					var provider = new CGDataProvider(data);
 					cgFont = CGFont.CreateFromProvider(provider);
 				}
-				
+
 				if (cgFont == null)
 					throw new InvalidOperationException("Unable to load font from the stream.");
 
