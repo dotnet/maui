@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new MockMauiContext(), new[] {
+			Internals.Registrar.RegisterAll(new[] {
 				typeof (TestHandlerAttribute),
 				typeof (TestHandlerLowerPriority)
 			});
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new MockMauiContext(), new[] {
+			Internals.Registrar.RegisterAll(new[] {
 				typeof (TestHandlerAttribute)
 			});
 
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new MockMauiContext(), new[] { typeof(TestHandlerAttribute) });
+			Internals.Registrar.RegisterAll(new[] { typeof(TestHandlerAttribute) });
 		}
 
 		[TearDown]
