@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static readonly DependencyProperty IsBackButtonVisibleProperty
 			= DependencyProperty.Register(nameof(IsBackButtonVisible), typeof(NavigationViewBackButtonVisible), typeof(WindowHeader), 
-				null);
+				new PropertyMetadata(NavigationViewBackButtonVisible.Collapsed));
 
 		public WindowHeader()
 		{

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
@@ -51,6 +52,81 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.AreEqual(0, gl.GetColumn(view));
 			Assert.AreEqual(1, gl.GetRowSpan(view));
 			Assert.AreEqual(1, gl.GetColumnSpan(view));
+		}
+
+		[Test]
+		public void ChangingRowSpacingInvalidatesGrid() 
+		{
+			var grid = new GridLayout();
+
+			var handler = ListenForInvalidation(grid);
+			grid.RowSpacing = 100;
+			AssertInvalidated(handler); 
+		}
+
+		[Test]
+		public void ChangingColumnSpacingInvalidatesGrid()
+		{
+			var grid = new GridLayout();
+
+			var handler = ListenForInvalidation(grid);
+			grid.ColumnSpacing = 100;
+			AssertInvalidated(handler);
+		}
+
+		[Test]
+		public void ChangingChildRowInvalidatesGrid()
+		{
+			var grid = new GridLayout() 
+			{ 
+				RowDefinitions = new RowDefinitionCollection 
+				{ 
+					new RowDefinition(), new RowDefinition() 
+				} 
+			};
+
+			var view = Substitute.For<IView>();
+			grid.Add(view);
+
+			var handler = ListenForInvalidation(grid);
+			
+			grid.SetRow(view, 1);
+			
+			AssertInvalidated(handler);
+		}
+
+		[Test]
+		public void ChangingChildColumnInvalidatesGrid()
+		{
+			var grid = new GridLayout()
+			{
+				ColumnDefinitions = new ColumnDefinitionCollection
+				{
+					new ColumnDefinition(), new ColumnDefinition()
+				}
+			};
+
+			var view = Substitute.For<IView>();
+			grid.Add(view);
+
+			var handler = ListenForInvalidation(grid);
+
+			grid.SetColumn(view, 1);
+
+			AssertInvalidated(handler);
+		}
+
+		static IViewHandler ListenForInvalidation(IView view) 
+		{
+			var handler = Substitute.For<IViewHandler>();
+			view.Handler = handler;
+			handler.ClearReceivedCalls();
+			return handler;
+		}
+
+		static void AssertInvalidated(IViewHandler handler)
+		{
+			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
 		}
 	}
 }

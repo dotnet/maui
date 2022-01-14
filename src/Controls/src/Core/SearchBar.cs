@@ -28,6 +28,10 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(SearchBar), true, BindingMode.Default);
 
+		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
+
+		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
+
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
@@ -85,6 +89,18 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
 			set { SetValue(IsTextPredictionEnabledProperty, value); }
+		}
+
+		public int CursorPosition
+		{
+			get { return (int)GetValue(CursorPositionProperty); }
+			set { SetValue(CursorPositionProperty, value); }
+		}
+
+		public int SelectionLength
+		{
+			get { return (int)GetValue(SelectionLengthProperty); }
+			set { SetValue(SelectionLengthProperty, value); }
 		}
 
 		public string FontFamily

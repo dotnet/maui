@@ -26,6 +26,10 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Editor), true, BindingMode.Default);
 
+		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(Editor), 0, validateValue: (b, v) => (int)v >= 0);
+
+		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(Editor), 0, validateValue: (b, v) => (int)v >= 0);
+
 		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
 			=> ((Editor)bindable)?.UpdateAutoSizeOption());
 
@@ -51,6 +55,18 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
 			set { SetValue(IsTextPredictionEnabledProperty, value); }
+		}
+
+		public int CursorPosition
+		{
+			get { return (int)GetValue(CursorPositionProperty); }
+			set { SetValue(CursorPositionProperty, value); }
+		}
+
+		public int SelectionLength
+		{
+			get { return (int)GetValue(SelectionLengthProperty); }
+			set { SetValue(SelectionLengthProperty, value); }
 		}
 
 		public string FontFamily

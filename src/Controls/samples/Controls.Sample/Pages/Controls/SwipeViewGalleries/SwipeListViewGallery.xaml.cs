@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 {

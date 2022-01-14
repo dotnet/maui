@@ -7,12 +7,12 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.DeviceTests
 {
-    public partial class RadioButtonHandlerTests
-    {
-        AppCompatRadioButton GetNativeRadioButton(RadioButtonHandler radioButtonHandler) =>
-            (AppCompatRadioButton)radioButtonHandler.NativeView;
+	public partial class RadioButtonHandlerTests
+	{
+		AppCompatRadioButton GetNativeRadioButton(RadioButtonHandler radioButtonHandler) =>
+			(AppCompatRadioButton)radioButtonHandler.NativeView;
 
-        bool GetNativeIsChecked(RadioButtonHandler radioButtonHandler) =>
-            GetNativeRadioButton(radioButtonHandler).Checked;
-    }
+		bool GetNativeIsChecked(RadioButtonHandler radioButtonHandler) =>
+			GetNativeRadioButton(radioButtonHandler).Checked;
+	}
 }
