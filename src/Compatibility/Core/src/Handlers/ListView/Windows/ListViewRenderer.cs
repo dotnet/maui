@@ -99,8 +99,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (List == null)
 				{
-					var cellTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"];
-
 					List = new ListViewTransparent(this)
 					{
 						IsSynchronizedWithCurrentItem = false,

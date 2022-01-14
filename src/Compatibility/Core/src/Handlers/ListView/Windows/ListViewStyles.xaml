@@ -13,6 +13,10 @@
 
     <platform:ListViewGroupStyleSelector x:Key="ListViewGroupSelector" />
 
+    <DataTemplate x:Key="View">
+        <ContentPresenter Content="{Binding Converter={StaticResource ViewToRenderer}}" />
+    </DataTemplate>
+    
     <DataTemplate x:Key="ListViewGroupTemplate">
         <TextBlock Text="{Binding}" Style="{ThemeResource BaseTextBlockStyle}" />
     </DataTemplate>

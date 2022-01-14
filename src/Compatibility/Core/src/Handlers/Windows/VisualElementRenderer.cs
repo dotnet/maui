@@ -50,5 +50,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void Dispose(bool disposing)
 		{
 		}
+
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		{
+			if (Children.Count > 0)
+			{
+				var platformView = Children[0];
+				if (platformView != null)
+				{
+					platformView.Measure(availableSize);
+					return platformView.DesiredSize;
+				}
+			}
+
+			return base.MeasureOverride(availableSize);
+		}
+
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+		{
+			if (Children.Count > 0)
+			{
+				var platformView = Children[0];
+				if (platformView != null)
+				{
+					platformView.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
+					return finalSize;
+				}
+			}
+
+			return base.ArrangeOverride(finalSize);
+		}
 	}
 }
