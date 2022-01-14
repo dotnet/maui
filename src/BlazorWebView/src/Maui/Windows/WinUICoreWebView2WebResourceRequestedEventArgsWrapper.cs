@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webResourceRequestedEventArgs = webResourceRequestedEventArgs;
 
 			Request = new WinUICoreWebView2WebResourceRequestWrapper(webResourceRequestedEventArgs);
-			ResourceContext = (CoreWebView2WebResourceContextWrapper)webResourceRequestedEventArgs.ResourceContext;
+			ResourceContext = webResourceRequestedEventArgs.ResourceContext;
 		}
 
 		public ICoreWebView2WebResourceRequestWrapper Request { get; }
 
-		public CoreWebView2WebResourceContextWrapper ResourceContext { get; }
+		public CoreWebView2WebResourceContext ResourceContext { get; }
 
 		public IDeferralWrapper GetDeferral()
 		{

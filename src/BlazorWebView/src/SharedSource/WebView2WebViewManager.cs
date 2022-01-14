@@ -8,6 +8,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
+#if WEBVIEW2_WINFORMS
+using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
+#elif WEBVIEW2_WPF
+using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
+#elif WEBVIEW2_MAUI
+using WebView2Control = Microsoft.UI.Xaml.WebView2;
+#else
+#error Must specify which WebView2 is targetted
+#endif
+using Microsoft.Web.WebView2;
+using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
@@ -22,18 +33,18 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		// we intercept all the requests within this origin.
 		private const string AppOrigin = "https://0.0.0.0/";
 
-		private readonly IWebView2Wrapper _webview;
+		private readonly WebView2Control _webview;
 		private readonly Task _webviewReadyTask;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
 		/// </summary>
-		/// <param name="webview">A wrapper to access platform-specific WebView2 APIs.</param>
+		/// <param name="webview">A <see cref="WebView2Control"/> to access platform-specific WebView2 APIs.</param>
 		/// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+		public WebView2WebViewManager(WebView2Control webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
@@ -60,28 +71,29 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private async Task InitializeWebView2()
 		{
-			await _webview.CreateEnvironmentAsync().ConfigureAwait(true);
+			var env = await CoreWebView2Environment.CreateAsync().ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async();
 			ApplyDefaultWebViewSettings();
 
-			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContextWrapper.All);
-			var removeResourceCallback = _webview.CoreWebView2.AddWebResourceRequestedHandler((s, eventArgs) =>
+			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
+			_webview.CoreWebView2.WebResourceRequested += (s, eventArgs) =>
 			{
 				// Unlike server-side code, we get told exactly why the browser is making the request,
 				// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
 				// in fallback, for example.
 				var allowFallbackOnHostPage =
-					eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
-					eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
+					eventArgs.ResourceContext == CoreWebView2WebResourceContext.Document ||
+					eventArgs.ResourceContext == CoreWebView2WebResourceContext.Other; // e.g., dev tools requesting page source
 
 				var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
 				if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
 					var headerString = GetHeaderString(headers);
-					eventArgs.SetResponse(content, statusCode, statusMessage, headerString);
+
+					eventArgs.Response = env.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
 				}
-			});
+			};
 
 			// The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
 			// so the following is an adaptor from blazor.webview.js conventions to WebView2 APIs
@@ -98,8 +110,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			QueueBlazorStart();
 
-			var removeMessageCallback = _webview.CoreWebView2.AddWebMessageReceivedHandler(e
-				=> MessageReceived(new Uri(e.Source), e.WebMessageAsString));
+			_webview.CoreWebView2.WebMessageReceived += (s, e) => MessageReceived(new Uri(e.Source), e.TryGetWebMessageAsString());
 		}
 
 		/// <summary>

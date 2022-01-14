@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
@@ -35,8 +36,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
 			// in fallback, for example.
 			var allowFallbackOnHostPage =
-				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
-				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
+				eventArgs.ResourceContext == CoreWebView2WebResourceContext.Document ||
+				eventArgs.ResourceContext == CoreWebView2WebResourceContext.Other; // e.g., dev tools requesting page source
 
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
 			using var deferral = eventArgs.GetDeferral();

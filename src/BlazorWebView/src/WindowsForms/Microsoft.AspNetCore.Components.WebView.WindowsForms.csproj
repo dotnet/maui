@@ -7,6 +7,7 @@
     <TargetFrameworks>net6.0-windows</TargetFrameworks>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <Description>Build Windows Forms applications with Blazor and WebView2.</Description>
+    <DefineConstants>$(DefineConstants);WEBVIEW2_WINFORMS</DefineConstants>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>disable</Nullable>
   </PropertyGroup>

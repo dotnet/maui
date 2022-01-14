@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				? assetFileProvider
 				: new CompositeFileProvider(customFileProvider, assetFileProvider);
 
-			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
 
 			foreach (var rootComponent in RootComponents)
 			{
