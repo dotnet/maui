@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (lv != null)
 				{
 					_isListViewRealized = true;
-					return lv.ListViewRenderer.VirtualView;
+					return lv.ListViewRenderer.Element;
 				}
 
 				parent = VisualTreeHelper.GetParent(parent);

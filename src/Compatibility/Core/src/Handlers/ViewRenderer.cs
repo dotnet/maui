@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-#if WINDOWS || ANDROID || IOS
+#if WINDOWS || ANDROID
 using System;
 using System.Collections.Generic;
 using System.Text;

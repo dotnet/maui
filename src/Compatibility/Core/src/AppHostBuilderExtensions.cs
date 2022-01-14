@@ -93,9 +93,8 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if ANDROID
 					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-#else
+#elif IOS || WINDOWS
 					handlers.AddHandler(typeof(TableView), typeof(TableViewRenderer));
-
 #endif
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST

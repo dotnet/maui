@@ -99,6 +99,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (List == null)
 				{
+					var cellTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"];
+
 					List = new ListViewTransparent(this)
 					{
 						IsSynchronizedWithCurrentItem = false,
@@ -319,7 +321,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (List != null)
 				{
-					foreach (ViewToRendererConverter.WrapperControl wrapperControl in FindDescendants<ViewToRendererConverter.WrapperControl>(List))
+					foreach (ViewToHandlerConverter.WrapperControl wrapperControl in FindDescendants<ViewToHandlerConverter.WrapperControl>(List))
 					{
 						wrapperControl.CleanUp();
 					}
