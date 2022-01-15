@@ -58,6 +58,9 @@ namespace Microsoft.Maui.Platform
 
 		internal static NativeView? ToNative(this IElement view)
 		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+				return replaceableView.ReplacedView.ToNative();
+
 			if (view.Handler == null)
 			{
 				var mauiContext = view.Parent?.Handler?.MauiContext ??
@@ -65,9 +68,6 @@ namespace Microsoft.Maui.Platform
 
 				return view.ToNative(mauiContext);
 			}
-
-			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
-				return replaceableView.ReplacedView.ToNative();
 
 			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
 				return nativeHandler.NativeView;
