@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_view = view;
 				_view.MeasureInvalidated += OnMeasureInvalidated;
 
-				FrameworkElement = view.ToNative(view.FindMauiContext()!, true);
+				FrameworkElement = view.ToNative(view.FindMauiContext()!);
 				Children.Add(FrameworkElement);
 
 				// make sure we re-measure once the template is applied

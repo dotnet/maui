@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Platform
 		public virtual void Connect(IView view)
 		{
 			_ = view.ToNative(_mauiContext);
-			var nativeView = view.GetNative(true);
+			var nativeView = view.ToNative();
 
 			NavigationView rootNavigationView;
 			if (nativeView is NavigationView nv)

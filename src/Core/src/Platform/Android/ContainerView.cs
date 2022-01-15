@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_ = _context ?? throw new ArgumentNullException(nameof(_context));
 				_ = _view.ToNative(_context);
-				MainView = _view.GetNative(true);
+				MainView = _view.ToNative();
 			}
 		}
 

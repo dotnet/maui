@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView.Detail.ToNative(MauiContext);
 
-			NativeView.Content = VirtualView.Detail.GetNative(true);
+			NativeView.Content = VirtualView.Detail.ToNative();
 		}
 
 		void UpdateFlyout()
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 
 			_flyoutPanel.Children.Clear();
 
-			if (VirtualView.Flyout.GetNative(true) is UIElement element)
+			if (VirtualView.Flyout.ToNative() is UIElement element)
 				_flyoutPanel.Children.Add(element);
 		}
 
