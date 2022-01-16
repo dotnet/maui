@@ -9,23 +9,19 @@ using Microsoft.UI.Xaml.Controls;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public abstract partial class VisualElementRenderer<TElement, TNativeElement>
-		: Panel//, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider 
+		: Panel, IDisposable
 		where TElement : VisualElement
 		where TNativeElement : FrameworkElement
 	{
-		//protected virtual bool PreventGestureBubbling { get; set; } = false;
-
 		TNativeElement? _nativeView;
-		public FrameworkElement ContainerElement
-		{
-			get { return this; }
-		}
+		public FrameworkElement ContainerElement => this;
 
 		public TNativeElement? Control => ((IElementHandler)this).NativeView as TNativeElement ?? _nativeView;
+		public UIElement? GetNativeElement() => Control;
 
+		protected virtual void UpdateNativeControl() { }
 
-
-		internal void SetNativeControl(TNativeElement control)
+		protected void SetNativeControl(TNativeElement control)
 		{
 			TNativeElement? oldControl = Control;
 			_nativeView = control;
@@ -37,7 +33,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (Control == null)
 			{
-				//	_controlChanged?.Invoke(this, EventArgs.Empty);
 				return;
 			}
 
@@ -45,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Control.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
 			Children.Add(control);
+			UpdateNativeControl();
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -79,6 +75,49 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			return base.ArrangeOverride(finalSize);
+		}
+
+		void IDisposable.Dispose()
+		{
+			(this as IElementHandler).DisconnectHandler();
+			Dispose(true);
+		}
+
+		protected virtual void SetAutomationPropertiesLabeledBy()
+		{
+			if (Element != null)
+				VisualElement.MapAutomationPropertiesLabeledBy(this, Element);
+		}
+
+		protected virtual void SetAutomationPropertiesHelpText()
+		{
+			if (Element != null)
+				VisualElement.MapAutomationPropertiesHelpText(this, Element);
+		}
+
+
+		protected virtual void SetAutomationPropertiesName()
+		{
+			if (Element != null)
+				VisualElement.MapAutomationPropertiesName(this, Element);
+		}
+
+		public static void MapAutomationPropertiesLabeledBy(INativeViewHandler handler, TElement view)
+		{
+			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+				ver.SetAutomationPropertiesLabeledBy();
+		}
+
+		public static void MapAutomationPropertiesHelpText(INativeViewHandler handler, TElement view)
+		{
+			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+				ver.SetAutomationPropertiesHelpText();
+		}
+
+		public static void MapAutomationPropertiesName(INativeViewHandler handler, TElement view)
+		{
+			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+				ver.SetAutomationPropertiesName();
 		}
 	}
 }

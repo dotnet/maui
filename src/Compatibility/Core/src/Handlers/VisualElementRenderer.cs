@@ -24,13 +24,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : Element, IView
 #endif
 	{
-
 		public static IPropertyMapper<TElement, INativeViewHandler> VisualElementRendererMapper = new PropertyMapper<TElement, INativeViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(VisualElement.BackgroundColor)] = MapBackgroundColor,
-			[nameof(AutomationProperties.IsInAccessibleTreeProperty)] = MapIsInAccessibleTreeProperty,
+			[AutomationProperties.IsInAccessibleTreeProperty.PropertyName] = MapAutomationPropertiesIsInAccessibleTree,
+#if WINDOWS
+			[AutomationProperties.NameProperty.PropertyName] = MapAutomationPropertiesName,
+			[AutomationProperties.HelpTextProperty.PropertyName] = MapAutomationPropertiesHelpText,
+			[AutomationProperties.LabeledByProperty.PropertyName] = MapAutomationPropertiesLabeledBy,
+#endif
 		};
 
 		public static CommandMapper<TElement, INativeViewHandler> VisualElementRendererCommandMapper = new CommandMapper<TElement, INativeViewHandler>(ViewHandler.ViewCommandMapper);
@@ -120,10 +124,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ViewHandler.MapAutomationId(this, Element);
 		}
 
+#if WINDOWS
+		protected virtual void SetAutomationPropertiesAccessibilityView()
+#else
 		protected virtual void SetImportantForAccessibility()
+#endif
 		{
 			if (Element != null)
-				VisualElement.MapIsInAccessibleTree(this, Element);
+				VisualElement.MapAutomationPropertiesIsInAccessibleTree(this, Element);
 		}
 
 
@@ -213,14 +221,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		}
 
-		public static void MapIsInAccessibleTreeProperty(INativeViewHandler handler, TElement view)
+		public static void MapAutomationPropertiesIsInAccessibleTree(INativeViewHandler handler, TElement view)
 		{
 #if WINDOWS
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+				ver.SetAutomationPropertiesAccessibilityView();
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
-#endif
 				ver.SetImportantForAccessibility();
+#endif
 		}
 
 		public static void MapAutomationId(INativeViewHandler handler, TElement view)
@@ -252,7 +261,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #endif
 				ver.UpdateBackground();
 		}
-
 	}
 }
 #endif

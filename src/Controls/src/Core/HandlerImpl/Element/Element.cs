@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Controls
 	{
 		public static IPropertyMapper<Maui.IElement, IElementHandler> ControlsElementMapper = new PropertyMapper<Element, IElementHandler>(ViewHandler.ViewMapper)
 		{
-			[AutomationProperties.IsInAccessibleTreeProperty.PropertyName] = MapIsInAccessibleTree,
-			[AutomationProperties.ExcludedWithChildrenProperty.PropertyName] = MapExcludedWithChildren,
+			[AutomationProperties.IsInAccessibleTreeProperty.PropertyName] = MapAutomationPropertiesIsInAccessibleTree,
+			[AutomationProperties.ExcludedWithChildrenProperty.PropertyName] = MapAutomationPropertiesExcludedWithChildren,
 		};
 	}
 }
