@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries

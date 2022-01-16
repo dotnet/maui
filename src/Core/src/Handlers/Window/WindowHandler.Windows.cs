@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Handlers
 				};
 			}
 
-			nativeView.ExtendsContentIntoTitleBar = true;
 			nativeView.Content = _rootPanel;
 		}
 

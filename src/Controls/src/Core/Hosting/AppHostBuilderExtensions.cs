@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 #endif
-
 #if WINDOWS || __ANDROID__
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
@@ -65,10 +64,13 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS || ANDROID
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
-#endif
-#if __ANDROID__
-			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
+#endif
+#if ANDROID
+			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
+			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
+			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
+			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 			return handlersCollection;
 		}

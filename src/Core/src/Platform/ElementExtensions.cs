@@ -116,5 +116,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void SetWindowHandler(this PlatformWindow nativeWindow, IWindow window, IMauiContext context) =>
 			SetHandler(nativeWindow, window, context);
+
+#if WINDOWS || IOS || ANDROID
+		internal static IWindow GetWindow(this IElement element) =>
+			element.Handler?.MauiContext?.GetNativeWindow()?.GetWindow() ??
+			throw new InvalidOperationException("IWindow not found");
+#endif
 	}
 }
