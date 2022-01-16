@@ -44,14 +44,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			var expected = new CATransform3D
 			{
-				m11 = -1.4984f,
-				m12 = -3.7087f,
-				m21 = 1.8544f,
-				m22 = -0.7492f,
-				m33 = 2f,
-				m41 = 10f,
-				m42 = 30f,
-				m44 = 1f,
+				M11 = -1.4984f,
+				M12 = -3.7087f,
+				M21 = 1.8544f,
+				M22 = -0.7492f,
+				M33 = 2f,
+				M41 = 10f,
+				M42 = 30f,
+				M44 = 1f,
 			};
 
 			expected.AssertEqual(transform);
