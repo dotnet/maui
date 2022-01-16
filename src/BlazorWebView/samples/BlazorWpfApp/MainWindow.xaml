@@ -16,7 +16,7 @@
 
         <TabControl>
             <TabItem Header="BlazorWebView">
-                <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{StaticResource services1}" x:Name="blazorWebView1">
+                <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{StaticResource services1}" x:Name="blazorWebView1" InitializingWebView="OnInitializingWebView">
                     <blazor:BlazorWebView.RootComponents>
                         <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
                     </blazor:BlazorWebView.RootComponents>

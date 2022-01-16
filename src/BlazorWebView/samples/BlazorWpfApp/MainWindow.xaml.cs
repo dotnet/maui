@@ -44,6 +44,12 @@ namespace BlazorWpfApp
 		{
 			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from native UI')");
 		}
+
+		private void OnInitializingWebView(object sender, Microsoft.AspNetCore.Components.WebView.Wpf.WebViewInitEventArgs e)
+		{
+			// Pressing F12 will make infinite load animation / not found error.
+			e.CoreWebView2EnvironmentOptions.AdditionalBrowserArguments = "--custom-devtools-frontend=http://invalid-url";
+		}
 	}
 
 	// Workaround for compiler error "error MC3050: Cannot find the type 'local:Main'"

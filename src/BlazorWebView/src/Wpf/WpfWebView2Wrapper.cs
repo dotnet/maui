@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public async Task CreateEnvironmentAsync()
 		{
 			CoreWebView2EnvironmentOptions options = new CoreWebView2EnvironmentOptions();
-			var args = new WebViewInitEventArgs(options);
+			var args = new WebViewInitEventArgs(options, BlazorWebView.InitializingWebViewEvent);
 
 			_blazorWebView.RaiseInitializingWebViewEvent(args);
 			Environment = await CoreWebView2Environment.CreateAsync(

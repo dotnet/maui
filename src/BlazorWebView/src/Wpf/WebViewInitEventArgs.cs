@@ -13,10 +13,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 	public sealed class WebViewInitEventArgs : RoutedEventArgs
 	{
 		/// <summary>
-		/// Creates the event args.
+		/// Creates the event args for the <see cref="BlazorWebView.InitializingWebViewEvent"/>
 		/// </summary>
-		/// <param name="coreWebView2EnvironmentOptions"></param>
-		internal WebViewInitEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions)
+		/// <param name="coreWebView2EnvironmentOptions">The options</param>
+		/// <param name="routedEvent">The <see cref="RoutedEvent"/> source. </param>
+		internal WebViewInitEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions, RoutedEvent routedEvent)
+			: base(routedEvent)
 		{
 			CoreWebView2EnvironmentOptions = coreWebView2EnvironmentOptions;
 		}
