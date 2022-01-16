@@ -1163,8 +1163,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var header = (HeaderWrapperView)tableView.DequeueReusableHeaderFooterView(reuseIdentifier) ?? new HeaderWrapperView(reuseIdentifier);
 				header.Cell = cell;
 
-				var renderer = (CellRenderer)Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
-				header.SetTableViewCell(renderer.GetCell(cell, null, tableView));
+				cell.TableView = tableView;
+				cell.ReusableCell = null;
+
+				var handler = cell.ToHandler(cell.FindMauiContext());
+				var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
+				header.SetTableViewCell(renderer.NativeView);
 
 				return header;
 			}

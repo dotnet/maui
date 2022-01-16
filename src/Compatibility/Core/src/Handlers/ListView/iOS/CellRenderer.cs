@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class CellRenderer : IRegisterable
+	public class CellRenderer : ElementHandler<Cell, UITableViewCell>, IRegisterable
 	{
 		static readonly BindableProperty RealCellProperty = BindableProperty.CreateAttached("RealCell", typeof(UITableViewCell), typeof(Cell), null);
 
@@ -15,9 +15,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		PropertyChangedEventHandler _onPropertyChangedEventHandler;
 		readonly UIColor _defaultCellBgColor = NativeVersion.IsAtLeast(13) ? UIColor.Clear : UIColor.White;
 
-		[Preserve(Conditional = true)]
-		public CellRenderer()
+		public static PropertyMapper<Cell, CellRenderer> Mapper =
+				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
+
+		public static CommandMapper<Cell, CellRenderer> CommandMapper =
+			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
+
+		public CellRenderer() : base(Mapper, CommandMapper)
 		{
+		}
+
+		protected override UITableViewCell CreateNativeElement()
+		{
+			var reusableCell = VirtualView.ReusableCell;
+			var tv = VirtualView.TableView;
+			VirtualView.ReusableCell = null;
+			VirtualView.TableView = null;
+			return GetCell(VirtualView, reusableCell, tv);
 		}
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)

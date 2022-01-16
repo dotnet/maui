@@ -48,8 +48,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var id = cell.GetType().FullName;
 
-			var handler = cell.ToHandler(cell.FindMauiContext());
-			var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
 
 			ContextActionsCell contextCell = null;
 			UITableViewCell reusableCell = null;
@@ -73,7 +71,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 				reusableCell = tableView.DequeueReusableCell(id);
 
-			var nativeCell = renderer.GetCell(cell, reusableCell, tableView);
+			cell.ReusableCell = reusableCell;
+			cell.TableView = tableView;
+			var handler = cell.ToHandler(cell.FindMauiContext());
+			var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
+			var nativeCell = renderer.NativeView;
 
 			var cellWithContent = nativeCell;
 

@@ -260,7 +260,13 @@ namespace Microsoft.Maui.Controls
 
 #if ANDROID
 		// This is used by ListView to pass data to the GetCell call
+		// Ideally we can pass these as arguments to ToHandler
+		// But we'll do that in a different smaller more targeted PR
 		internal Android.Views.View ConvertView { get; set; }
+#elif IOS
+		internal UIKit.UITableViewCell ReusableCell { get; set; }
+		internal UIKit.UITableView TableView { get; set; }
+
 #endif
 
 		#region Nested IElementConfiguration<Cell> Implementation
