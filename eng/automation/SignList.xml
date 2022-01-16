@@ -34,7 +34,7 @@
     <ThirdParty Include="Svg2VectorDrawable.Net.dll" />
 
     <!-- Fonts in Templates -->
-    <ThirdParty Include="*.ttf" />
+    <ThirdParty Include="OpenSans-*.ttf" />
   </ItemGroup>
 
   <ItemGroup>
