@@ -12,8 +12,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 	internal class WpfWebView2Wrapper : IWebView2Wrapper
 	{
 		private readonly WpfCoreWebView2Wrapper _coreWebView2Wrapper;
+		private readonly BlazorWebView _blazorWebView;
 
-		public WpfWebView2Wrapper(WebView2Control webView2)
+		public WpfWebView2Wrapper(WebView2Control webView2, BlazorWebView blazorWebView)
 		{
 			if (webView2 is null)
 			{
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 
 			WebView2 = webView2;
+			_blazorWebView = blazorWebView;
 			_coreWebView2Wrapper = new WpfCoreWebView2Wrapper(this);
 		}
 
@@ -38,7 +40,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		public async Task CreateEnvironmentAsync()
 		{
-			Environment = await CoreWebView2Environment.CreateAsync();
+			CoreWebView2EnvironmentOptions options = new CoreWebView2EnvironmentOptions();
+			var args = new WebViewInitEventArgs(options);
+
+			_blazorWebView.RaiseInitializingWebViewEvent(args);
+			Environment = await CoreWebView2Environment.CreateAsync(
+				args.CoreWebView2BrowserExecutableFolder, args.CoreWebView2UserDataFolder, args.CoreWebView2EnvironmentOptions);
 		}
 
 		public Task EnsureCoreWebView2Async()

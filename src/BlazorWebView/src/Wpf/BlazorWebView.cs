@@ -50,6 +50,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
 		#endregion
 
+		#region Routed event definitions
+
+		/// <summary>
+		/// The backing event for the <see cref="InitializingWebViewEvent" /> event.
+		/// </summary>
+		public static readonly RoutedEvent InitializingWebViewEvent = EventManager.RegisterRoutedEvent(
+			name: "InitializingWebView", 
+			routingStrategy: RoutingStrategy.Bubble,
+			handlerType: typeof(InitializingWebViewEventHandler), 
+			ownerType: typeof(BlazorWebView));
+
+		#endregion
+
 		private const string webViewTemplateChildName = "WebView";
 		private WebView2Control _webview;
 		private WebView2WebViewManager _webviewManager;
@@ -175,13 +188,27 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				? assetFileProvider
 				: new CompositeFileProvider(customFileProvider, assetFileProvider);
 
-			_webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview, this), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
 			_webviewManager.Navigate("/");
+		}
+
+		/// <summary>
+		/// Is fired before the enviroment of the WebView is set.
+		/// </summary>
+		public event InitializingWebViewEventHandler InitializingWebView
+		{
+			add { AddHandler(InitializingWebViewEvent, value); }
+			remove { RemoveHandler(InitializingWebViewEvent, value);  }
+		}
+
+		internal void RaiseInitializingWebViewEvent(WebViewInitEventArgs args)
+		{
+			RaiseEvent(args);
 		}
 
 		private WpfDispatcher ComponentsDispatcher { get; }
