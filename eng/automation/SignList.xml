@@ -32,6 +32,9 @@
     <ThirdParty Include="Fizzler.dll" />
     <ThirdParty Include="Newtonsoft.Json.dll;" />
     <ThirdParty Include="Svg2VectorDrawable.Net.dll" />
+
+    <!-- Fonts in Templates -->
+    <ThirdParty Include="*.ttf" />
   </ItemGroup>
 
   <ItemGroup>
