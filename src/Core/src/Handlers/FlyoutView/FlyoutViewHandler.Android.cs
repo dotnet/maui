@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 		void UpdateDetailsFragmentView()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			var newDetailsView = VirtualView.Detail?.ToNative(MauiContext, true);
+			var newDetailsView = VirtualView.Detail?.ToNative(MauiContext);
 
 			if (_detailView == newDetailsView)
 				return;
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView.Flyout.ToNative(MauiContext);
 
-			var newFlyoutView = VirtualView.Flyout.GetNative(true);
+			var newFlyoutView = VirtualView.Flyout.ToNative();
 			if (_flyoutView == newFlyoutView)
 				return;
 

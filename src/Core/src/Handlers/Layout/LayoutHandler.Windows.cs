@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.Children.Insert(targetIndex, child.ToNative(MauiContext, true));
+			NativeView.Children.Insert(targetIndex, child.ToNative(MauiContext));
 		}
 
 		public override void SetVirtualView(IView view)
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
-				NativeView.Children.Add(child.ToNative(MauiContext, true));
+				NativeView.Children.Add(child.ToNative(MauiContext));
 			}
 		}
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.GetNative(true) is UIElement view)
+			if (child?.ToNative() is UIElement view)
 			{
 				NativeView.Children.Remove(view);
 			}
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.Children.Insert(targetIndex, child.ToNative(MauiContext, true));
+			NativeView.Children.Insert(targetIndex, child.ToNative(MauiContext));
 		}
 
 		public void Update(int index, IView child) 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children[index] = child.ToNative(MauiContext, true);
+			NativeView.Children[index] = child.ToNative(MauiContext);
 			EnsureZIndexOrder(child);
 		}
 
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var currentIndex = NativeView.Children.IndexOf(child.ToNative(MauiContext!, true));
+			var currentIndex = NativeView.Children.IndexOf(child.ToNative(MauiContext!));
 
 			if (currentIndex == -1)
 			{
