@@ -3,11 +3,9 @@ using System.Threading.Tasks;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
-using System;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ImageCellRenderer instead")]
 	public class ImageCellRenderer : TextCellRenderer
 	{
 		[Preserve(Conditional = true)]
@@ -39,28 +37,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				SetImage(imageCell, tvc);
 		}
 
-		async void SetImage(ImageCell cell, CellTableViewCell target)
+		void SetImage(ImageCell cell, CellTableViewCell target)
 		{
 			var source = cell.ImageSource;
 
 			target.ImageView.Image = null;
 
-			var uiimage = await source.GetNativeImageAsync().ConfigureAwait(false);
-			if (uiimage != null)
+			source.LoadImage(cell.FindMauiContext(), (result) =>
 			{
-				NSRunLoop.Main.BeginInvokeOnMainThread(() =>
+				var uiimage = result.Value;
+				if (uiimage != null)
 				{
-					if (target.Cell != null)
+					NSRunLoop.Main.BeginInvokeOnMainThread(() =>
 					{
-						target.ImageView.Image = uiimage;
-						target.SetNeedsLayout();
-					}
-					else
-					{
-						uiimage?.Dispose();
-					}
-				});
-			}
+						if (target.Cell != null)
+						{
+							target.ImageView.Image = uiimage;
+							target.SetNeedsLayout();
+						}
+						else
+						{
+							uiimage?.Dispose();
+						}
+					});
+				}
+			});
 		}
 	}
 }

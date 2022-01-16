@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-#if WINDOWS || ANDROID
+#if WINDOWS || ANDROID || IOS
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +9,8 @@ using System.Text;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif ANDROID
 using PlatformView = Android.Views.View;
+#elif IOS
+using PlatformView = UIKit.UIView;
 #endif
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility

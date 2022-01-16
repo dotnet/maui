@@ -6,6 +6,7 @@
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
+    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) == true ">iossimulator-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">

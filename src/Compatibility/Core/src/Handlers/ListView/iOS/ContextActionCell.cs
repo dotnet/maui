@@ -10,9 +10,8 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ContextActionsCell instead")]
 	internal class ContextActionsCell : UITableViewCell, INativeElementView
 	{
 		public const string Key = "ContextActionsCell";
@@ -35,11 +34,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UIGraphics.BeginImageContext(size);
 			var context = UIGraphics.GetCurrentContext();
-			context.SetFillColor(ColorExtensions.Red.CGColor);
+			context.SetFillColor(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ColorExtensions.Red.CGColor);
 			context.FillRect(rect);
 			DestructiveBackground = UIGraphics.GetImageFromCurrentImageContext();
 
-			context.SetFillColor(ColorExtensions.LightGray.CGColor);
+			context.SetFillColor(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ColorExtensions.LightGray.CGColor);
 			context.FillRect(rect);
 
 			NormalBackground = UIGraphics.GetImageFromCurrentImageContext();
@@ -438,7 +437,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Element e = _cell;
 			while (e.RealParent != null)
 			{
-				var renderer = Platform.GetRenderer((VisualElement)e.RealParent);
+				var renderer = (INativeViewHandler)e.RealParent.ToHandler(e.FindMauiContext());
 				if (renderer.ViewController != null)
 					return renderer.ViewController;
 
@@ -532,7 +531,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_cell.RealParent == null)
 				return;
 
-			var path = _cell.GetIndexPath();
+			var path = Microsoft.Maui.Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(_cell);
 
 			var selected = path.Equals(_tableView.IndexPathForSelectedRow);
 

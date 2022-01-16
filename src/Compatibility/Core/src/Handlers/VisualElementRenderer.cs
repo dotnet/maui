@@ -1,5 +1,5 @@
 ﻿#nullable enable
-#if WINDOWS || ANDROID
+#if WINDOWS || ANDROID || IOS
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +11,8 @@ using Microsoft.Maui.Graphics;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif ANDROID
 using PlatformView = Android.Views.View;
+#elif IOS
+using PlatformView = UIKit.UIView;
 #endif
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
@@ -54,6 +56,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		internal VisualElementRenderer(IMauiContext context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
 #if ANDROID
 			: base(context.Context)
+#elif IOS 
+			: base(CoreGraphics.CGRect.Empty)
 #else
 			: base()
 #endif
@@ -105,13 +109,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 
+#if IOS
+		protected virtual void SetBackgroundColor(Color? color)
+#else
 		protected virtual void UpdateBackgroundColor()
+#endif
 		{
 			if (Element != null)
 				ViewHandler.MapBackground(this, Element);
 		}
 
+#if IOS
+		protected virtual void SetBackground(Brush brush)
+#else
 		protected virtual void UpdateBackground()
+#endif
 		{
 			if (Element != null)
 				ViewHandler.MapBackground(this, Element);
@@ -249,7 +261,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif
+#if IOS
+				ver.SetBackgroundColor(view.Background?.ToColor());
+#else
 				ver.UpdateBackgroundColor();
+#endif
 		}
 
 		public static void MapBackground(INativeViewHandler handler, TElement view)
@@ -259,7 +275,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif
+#if IOS
+				ver.SetBackground(view.Background);
+#else
 				ver.UpdateBackground();
+#endif
 		}
 	}
 }

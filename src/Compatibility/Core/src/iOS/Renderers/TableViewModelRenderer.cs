@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var nativeCell = CellTableViewCell.GetNativeCell(tableView, cell);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return nativeCell;
 		}
@@ -58,7 +60,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var reusable = tableView.DequeueReusableCell(result.GetType().FullName);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var cellRenderer = Controls.Internals.Registrar.Registered.GetHandlerForObject<CellRenderer>(result);
+#pragma warning restore CS0618 // Type or member is obsolete
 				return cellRenderer.GetCell(result, reusable, Table);
 			}
 			return null;

@@ -6,9 +6,8 @@ using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ViewCellRenderer instead")]
 	public class ViewCellRenderer : CellRenderer
 	{
 		[Preserve(Conditional = true)]
@@ -42,7 +41,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		internal class ViewTableCell : UITableViewCell, INativeElementView
 		{
-			WeakReference<IVisualElementRenderer> _rendererRef;
+			IMauiContext MauiContext => _viewCell.FindMauiContext();
+			WeakReference <INativeViewHandler> _rendererRef;
 			ViewCell _viewCell;
 
 			Element INativeElementView.Element => ViewCell;
@@ -96,14 +96,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var contentFrame = ContentView.Frame;
 				var view = ViewCell.View;
 
-				Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
+				// TODO MAUI
+				//Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
 
 				if (_rendererRef == null)
 					return;
 
-				IVisualElementRenderer renderer;
+				INativeViewHandler renderer;
 				if (_rendererRef.TryGetTarget(out renderer))
-					renderer.NativeView.Frame = view.Bounds.ToRectangleF();
+					renderer.NativeView.Frame = view.Bounds.ToCGRect();
 
 				Performance.Stop(reference);
 			}
@@ -112,19 +113,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				Performance.Start(out string reference);
 
-				IVisualElementRenderer renderer;
+				INativeViewHandler renderer;
 				if (!_rendererRef.TryGetTarget(out renderer))
 					return base.SizeThatFits(size);
 
-				if (renderer.Element == null)
+				if (renderer.VirtualView == null)
 					return SizeF.Empty;
 
 				double width = size.Width;
 				var height = size.Height > 0 ? size.Height : double.PositiveInfinity;
-				var result = renderer.Element.Measure(width, height, MeasureFlags.IncludeMargins);
+				var result = renderer.VirtualView.Measure(width, height);
 
 				// make sure to add in the separator if needed
-				var finalheight = (float)result.Request.Height + (SupressSeparator ? 0f : 1f) / UIScreen.MainScreen.Scale;
+				var finalheight = (float)result.Height + (SupressSeparator ? 0f : 1f) / UIScreen.MainScreen.Scale;
 
 				Performance.Stop(reference);
 
@@ -138,10 +139,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (disposing)
 				{
-					IVisualElementRenderer renderer;
-					if (_rendererRef != null && _rendererRef.TryGetTarget(out renderer) && renderer.Element != null)
+					INativeViewHandler renderer;
+					if (_rendererRef != null && _rendererRef.TryGetTarget(out renderer) && renderer.VirtualView != null)
 					{
-						renderer.Element.DisposeModalAndChildRenderers();
+						renderer.VirtualView.DisposeModalAndChildHandlers();
 						_rendererRef = null;
 					}
 
@@ -159,15 +160,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				base.Dispose(disposing);
 			}
 
-			IVisualElementRenderer GetNewRenderer()
+			INativeViewHandler GetNewRenderer()
 			{
 				if (_viewCell.View == null)
 					throw new InvalidOperationException($"ViewCell must have a {nameof(_viewCell.View)}");
 
-				var newRenderer = Platform.CreateRenderer(_viewCell.View);
-				_rendererRef = new WeakReference<IVisualElementRenderer>(newRenderer);
+				var newRenderer = _viewCell.View.ToHandler(_viewCell.View.FindMauiContext());
+				_rendererRef = new WeakReference<INativeViewHandler>(newRenderer);
 				ContentView.AddSubview(newRenderer.NativeView);
-				return newRenderer;
+				return (INativeViewHandler)newRenderer;
 			}
 
 			void UpdateCell(ViewCell cell)
@@ -186,30 +187,32 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_viewCell.PropertyChanged += ViewCellPropertyChanged;
 				Device.BeginInvokeOnMainThread(_viewCell.SendAppearing);
 
-				IVisualElementRenderer renderer;
+				INativeViewHandler renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))
-					renderer = GetNewRenderer();
+					renderer = (INativeViewHandler)GetNewRenderer();
 				else
 				{
-					if (renderer.Element != null && renderer == Platform.GetRenderer(renderer.Element))
-						renderer.Element.ClearValue(Platform.RendererProperty);
+					//if (renderer.Element != null && renderer == Platform.GetRenderer(renderer.Element))
+					//	renderer.Element.ClearValue(Platform.RendererProperty);
+
+					renderer.DisconnectHandler();
 
 					var type = Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerTypeForObject(this._viewCell.View);
 					var reflectableType = renderer as System.Reflection.IReflectableType;
 					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : renderer.GetType();
-					if (rendererType == type || (renderer is Platform.DefaultRenderer && type == null))
-						renderer.SetElement(this._viewCell.View);
+					if (rendererType == type/* || (renderer is Platform.DefaultRenderer && type == null)*/)
+						renderer.SetVirtualView(this._viewCell.View);
 					else
 					{
 						//when cells are getting reused the element could be already set to another cell
 						//so we should dispose based on the renderer and not the renderer.Element
-						renderer.DisposeRendererAndChildren();
+						renderer.DisposeHandlersAndChildren();
 
-						renderer = GetNewRenderer();
+						renderer = (INativeViewHandler)GetNewRenderer();
 					}
 				}
 
-				Platform.SetRenderer(_viewCell.View, renderer);
+				_ = _viewCell.View.ToNative(MauiContext);
 				UpdateIsEnabled(_viewCell.IsEnabled);
 				_viewCell.View.MeasureInvalidated += OnMeasureInvalidated;
 				Performance.Stop(reference);

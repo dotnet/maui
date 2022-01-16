@@ -48,7 +48,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				while (viewsToLookAt.Count > 0)
 				{
 					var view = viewsToLookAt.Pop();
+#pragma warning disable CS0618 // Type or member is obsolete
 					var viewCellRenderer = view as ViewCellRenderer.ViewTableCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 					if (viewCellRenderer != null)
 						viewCellRenderer.Dispose();
 					else

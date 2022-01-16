@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
+    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) == true ">iossimulator-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup>
