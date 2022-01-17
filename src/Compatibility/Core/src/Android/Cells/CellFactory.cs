@@ -3,9 +3,11 @@ using Android.Views;
 using Microsoft.Maui.Controls.Internals;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
+using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.CellFactory instead")]
 	public static class CellFactory
 	{
 		public static AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context, View view)

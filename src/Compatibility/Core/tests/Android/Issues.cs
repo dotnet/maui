@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.Views;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
