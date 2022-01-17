@@ -1,14 +1,16 @@
+using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer instead")]
 	public class ImageCellRenderer : TextCellRenderer
 	{
 		protected override global::Android.Views.View GetCellCore(Cell item, global::Android.Views.View convertView, ViewGroup parent, Context context)
 		{
-			var result = (BaseCellView)base.GetCellCore(item, convertView, parent, context);
+			var result = (Handlers.Compatibility.BaseCellView)base.GetCellCore(item, convertView, parent, context);
 
 			UpdateImage();
 			UpdateFlowDirection();

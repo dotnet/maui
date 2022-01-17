@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			}
 		}
 
-		bool TryGetServiceDescriptors(ref Type serviceType, out ServiceDescriptor? single, out IEnumerable<ServiceDescriptor>? enumerable)
+		protected bool TryGetServiceDescriptors(ref Type serviceType, out ServiceDescriptor? single, out IEnumerable<ServiceDescriptor>? enumerable)
 		{
 			// fast path for exact match
 			{
