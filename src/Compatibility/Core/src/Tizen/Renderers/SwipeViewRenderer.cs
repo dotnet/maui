@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				tap.CommandParameter = item.CommandParameter;
 				tap.Tapped += (s, e) =>
 				{
-					if (item is SwipeItem swipeItem)
+					if (item is ISwipeItem swipeItem)
 						swipeItem.OnInvoked();
 
 					if (item is SwipeItemView customSwipeItem)
