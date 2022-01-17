@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
 #elif ANDROID
 					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 					handlers.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
 					handlers.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
 					handlers.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
-
+					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
 #endif
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
@@ -101,7 +102,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(Image), typeof(ImageRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Button), typeof(ButtonRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ImageButton), typeof(ImageButtonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CollectionView), typeof(CollectionViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CarouselView), typeof(CarouselViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Path), typeof(PathRenderer));
