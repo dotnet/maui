@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
 
 			var view = (INativeViewHandler)cell.View.ToHandler(cell.FindMauiContext());
-
 			cell.View.IsPlatformEnabled = true;
 
 			ViewCellContainer c = view.NativeView.GetParentOfType<ViewCellContainer>();
