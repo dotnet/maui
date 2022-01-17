@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var reflectableType = _headerRenderer as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _headerRenderer.GetType();
-				if (header == null || Registrar.Registered.GetHandlerTypeForObject(header) != rendererType)
+				if (header == null || MauiContext.Handlers.GetHandlerType(header.GetType()) != rendererType)
 				{
 					if (_headerView != null)
 						_headerView.Child = null;

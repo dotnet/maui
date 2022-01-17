@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddMauiControlsHandlers();
 					DependencyService.SetToInitialized();
 
-#if IOS || MACCATALYST
+#if IOS
 					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
@@ -79,7 +79,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
 #elif ANDROID || WINDOWS
 					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 					handlers.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
