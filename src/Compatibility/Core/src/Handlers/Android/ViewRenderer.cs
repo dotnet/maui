@@ -5,7 +5,7 @@ using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract class ViewRenderer : ViewRenderer<View, PlatformView>
+	public abstract partial class ViewRenderer : ViewRenderer<View, PlatformView>
 	{
 		protected ViewRenderer(IMauiContext mauiContext) : base(mauiContext)
 		{
@@ -13,25 +13,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	}
 
 	public abstract partial class ViewRenderer<TElement, TNativeView> : VisualElementRenderer<TElement>, INativeViewHandler
-		where TElement : Element, IView
+		where TElement : View, IView
 		where TNativeView : PlatformView
 	{
 		TNativeView? _nativeView;
 		AViewGroup? _container;
 
 		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView ?? _nativeView;
-
-
-
-		public ViewRenderer(IMauiContext mauiContext) : this(mauiContext, VisualElementRendererMapper, VisualElementRendererCommandMapper)
-		{
-
-		}
-
-		internal ViewRenderer(IMauiContext context, IPropertyMapper mapper, CommandMapper? commandMapper = null) 
-			: base(context, mapper, commandMapper)
-		{
-		}
 
 		protected virtual TNativeView CreateNativeControl()
 		{

@@ -24,12 +24,18 @@ using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Platform;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
+using Microsoft.Maui.Controls.Platform.Compatibility;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer instead")]
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
+		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
+				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
+
+		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
+			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
+
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		bool _collectionIsWrapped;
 		IList _collection = null;
@@ -44,14 +50,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected WListView List { get; private set; }
 
-		protected class ListViewTransparent : WListView
+		public ListViewRenderer(IMauiContext mauiContext) : base(mauiContext, Mapper, CommandMapper)
 		{
-			public ListViewTransparent() : base() { }
+		}
+
+		internal class ListViewTransparent : WListView
+		{
+			internal ListViewRenderer ListViewRenderer { get; }
+			public ListViewTransparent(ListViewRenderer listViewRenderer) : base() 
+			{
+				ListViewRenderer = listViewRenderer;
+			}
 
 			// Container is not created when the item is null. 
 			// To prevent this, base container preparationan receives an empty object.
 			protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
 				=> base.PrepareContainerForItemOverride(element, item ?? new object());
+
+			protected override AutomationPeer OnCreateAutomationPeer()
+			{
+				var automationPeer = new ListViewAutomationPeer(this);
+				// skip this renderer from automationPeer tree to avoid infinity loop
+				automationPeer.SetParent(new FrameworkElementAutomationPeer(Parent as FrameworkElement));
+				return automationPeer;
+			}
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
@@ -77,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				if (List == null)
 				{
-					List = new ListViewTransparent
+					List = new ListViewTransparent(this)
 					{
 						IsSynchronizedWithCurrentItem = false,
 						ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
@@ -88,6 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					};
 
 					List.SelectionChanged += OnControlSelectionChanged;
+					SetNativeControl(List);
 				}
 
 				ReloadData();
@@ -296,7 +319,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (List != null)
 				{
-					foreach (ViewToRendererConverter.WrapperControl wrapperControl in FindDescendants<ViewToRendererConverter.WrapperControl>(List))
+					foreach (ViewToHandlerConverter.WrapperControl wrapperControl in FindDescendants<ViewToHandlerConverter.WrapperControl>(List))
 					{
 						wrapperControl.CleanUp();
 					}
@@ -413,21 +436,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					// Since we reuse our ScrollTo, we have to wait until the change completes or ChangeView has odd behavior.
 					_zoom.ViewChangeCompleted += OnViewChangeCompleted;
 
-					// Specific order to let SNC unparent the ListView for us
-					SetNativeControl(_zoom);
 					_zoom.ZoomedInView = List;
 				}
 				else
 				{
 					_zoom.CanChangeViews = true;
 				}
+
+				SetNativeControl(_zoom);
 			}
 			else
 			{
 				if (_zoom != null)
 					_zoom.CanChangeViews = false;
-				else if (List != Control)
-					SetNativeControl(List);
 			}
 		}
 
@@ -575,7 +596,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					List.Loaded -= loadedHandler;
 
 					// Here we try to avoid an exception, see explanation at bottom
-					await Dispatcher.RunIdleAsync(args => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup); });
+					await Control.Dispatcher.RunIdleAsync(args => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup); });
 				};
 				List.Loaded += loadedHandler;
 				return;
@@ -597,7 +618,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var semanticLocation = new SemanticZoomLocation { Item = c };
 
 			// async scrolling
-			await Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+			await Control.Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
 			{
 				switch (toPosition)
 				{
@@ -810,17 +831,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		bool _deferSelection = false;
 		Tuple<object, SelectedItemChangedEventArgs> _deferredSelectedItemChangedEvent;
-
-		protected override AutomationPeer OnCreateAutomationPeer()
-		{
-			if (List == null)
-				return new FrameworkElementAutomationPeer(this);
-
-			var automationPeer = new ListViewAutomationPeer(List);
-			// skip this renderer from automationPeer tree to avoid infinity loop
-			automationPeer.SetParent(new FrameworkElementAutomationPeer(Parent as FrameworkElement));
-			return automationPeer;
-		}
-
 	}
 }

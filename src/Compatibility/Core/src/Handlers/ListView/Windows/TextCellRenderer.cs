@@ -3,15 +3,24 @@ using System.Windows.Input;
 using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WApplication = Microsoft.UI.Xaml.Application;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.TextCellRenderer instead")]
-	public class TextCellRenderer : ICellRenderer
+	public abstract class CellRenderer : ElementHandler<Cell, WDataTemplate>, IRegisterable, ICellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public CellRenderer() : base(ElementHandler.ElementMapper)
+		{
+		}
+
+		protected override WDataTemplate CreateNativeElement() =>
+			GetTemplate(VirtualView);
+
+		public abstract WDataTemplate GetTemplate(Cell cell);
+	}
+
+	public class TextCellRenderer : CellRenderer
+	{
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			if (cell.RealParent is ListView)
 			{
@@ -25,7 +34,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellRendererCompleted instead")]
 	public class EntryCellRendererCompleted : ICommand
 	{
 		public bool CanExecute(object parameter)
@@ -44,37 +52,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellRenderer instead")]
-	public class EntryCellRenderer : ICellRenderer
+	public class EntryCellRenderer : CellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			return (WDataTemplate)WApplication.Current.Resources["EntryCell"];
 		}
 	}
 
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ViewCellRenderer instead")]
-	public class ViewCellRenderer : ICellRenderer
+	public class ViewCellRenderer : CellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			return (WDataTemplate)WApplication.Current.Resources["ViewCell"];
 		}
 	}
 
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.SwitchCellRenderer instead")]
-	public class SwitchCellRenderer : ICellRenderer
+	public class SwitchCellRenderer : CellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			return (WDataTemplate)WApplication.Current.Resources["SwitchCell"];
 		}
 	}
 
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ImageCellRenderer instead")]
-	public class ImageCellRenderer : ICellRenderer
+	public class ImageCellRenderer : CellRenderer
 	{
-		public virtual WDataTemplate GetTemplate(Cell cell)
+		public override WDataTemplate GetTemplate(Cell cell)
 		{
 			//if (cell.Parent is ListView)
 			//	return (WDataTemplate)WApplication.Current.Resources["ListImageCell"];
