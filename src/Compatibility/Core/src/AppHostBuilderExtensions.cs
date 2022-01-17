@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
-#elif ANDROID
+#elif ANDROID || WINDOWS
 					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 					handlers.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
 					handlers.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
