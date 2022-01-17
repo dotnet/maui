@@ -25,11 +25,14 @@ namespace Microsoft.Maui.Platform
 			uiControl.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateVisibility(this UIView nativeView, IView view)
+		public static void UpdateVisibility(this UIView nativeView, IView view) =>
+			ViewExtensions.UpdateVisibility(nativeView, view.Visibility);
+
+		public static void UpdateVisibility(this UIView nativeView, Visibility visibility)
 		{
 			var shouldLayout = false;
 
-			switch (view.Visibility)
+			switch (visibility)
 			{
 				case Visibility.Visible:
 					shouldLayout = nativeView.Inflate();
@@ -66,12 +69,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateBackground(this UIView nativeView, IView view)
+		public static void UpdateBackground(this UIView nativeView, IView view) =>
+			nativeView.UpdateBackground(view.Background);
+
+		public static void UpdateBackground(this UIView nativeView, Paint? paint)
 		{
 			// Remove previous background gradient layer if any
 			nativeView.RemoveBackgroundLayer();
-
-			var paint = view.Background;
 
 			if (paint.IsNullOrEmpty())
 				return;
@@ -407,6 +411,24 @@ namespace Microsoft.Maui.Platform
 			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
 			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
 			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
+		}
+
+		internal static T? GetParentOfType<T>(this UIView view)
+			where T : class
+		{
+			if (view is T t)
+				return t;
+
+			while (view != null)
+			{
+				T? parent = view.Superview as T;
+				if (parent != null)
+					return parent;
+
+				view = view.Superview;
+			}
+
+			return default(T);
 		}
 	}
 }
