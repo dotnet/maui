@@ -83,16 +83,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 		}
 
-		/// <summary>
-		/// Occurs when the <see cref="WebView2WebViewManager"/> is created.
-		/// </summary>
-		public event EventHandler<WebViewManagerCreatedEventArgs> WebViewManagerCreated;
-
-		protected virtual void OnWebViewManagerCreated(WebViewManagerCreatedEventArgs webViewManagerCreatedEventArgs)
-		{
-			WebViewManagerCreated?.Invoke(this, webViewManagerCreatedEventArgs);
-		}
-
 		// Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
 		private void ResetHostPage() => HostPage = null;
 		private bool ShouldSerializeHostPage() => !string.IsNullOrEmpty(HostPage);
