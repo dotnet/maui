@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (cell.View == null)
 				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
 
-			var view = cell.View.ToNative(cell.FindMauiContext(), true);
+			var view = cell.View.ToNative(cell.FindMauiContext());
 			cell.View.IsPlatformEnabled = true;
 			var c = new ViewCellContainer(context, cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
 
@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				//_view.Dispose();
 
 				_viewCell = cell;
-				AddView(_viewCell.View.ToNative(Element.FindMauiContext(), true));
+				AddView(_viewCell.View.ToNative(Element.FindMauiContext()));
 
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
