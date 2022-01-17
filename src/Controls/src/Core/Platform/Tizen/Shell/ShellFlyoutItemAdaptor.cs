@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (template != null)
 			{
 				var content = (View)template.CreateContent();
-				var native = content.ToNative(_context, true);
+				var native = content.ToNative(_context);
 
 				_nativeFormsTable[native] = content;
 				return native;
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_headerCache != null)
 			{
-				var native = _headerCache.ToNative(_context, true);
+				var native = _headerCache.ToNative(_context);
 				return native;
 			}
 

@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls.Platform
 			});
 			layout.Add(entry);
 			layout.Parent = sender;
-			var nativeView = layout.ToNative(MauiContext, true);
+			var nativeView = layout.ToNative(MauiContext);
 
 			var width = sender.Width <= -1 ? double.PositiveInfinity : sender.Width;
 			var height = sender.Height <= -1 ? double.PositiveInfinity : sender.Height;

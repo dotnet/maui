@@ -332,7 +332,7 @@ namespace Microsoft.Maui.Handlers
 
 		EvasObject CreateNavItem(IView page)
 		{
-			return page.ToNative(MauiContext!, true);
+			return page.ToNative(MauiContext!);
 		}
 	}
 }

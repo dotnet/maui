@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (FirstItem != null && Height == 0)
 			{
 				var view = FirstItem.Data as View;
-				var native = view.ToNative(MauiContext, true);
+				var native = view.ToNative(MauiContext);
 				var measured = view.Measure(DPExtensions.ConvertToScaledDP(Geometry.Width), double.PositiveInfinity);
 				Height = DPExtensions.ConvertToScaledPixel(measured.Request.Height);
 			}
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 		EvasObject GetContent(object data, string part)
 		{
 			var view = data as View;
-			var native = view.ToNative(MauiContext, true);
+			var native = view.ToNative(MauiContext);
 
 			if (Height == 0)
 			{

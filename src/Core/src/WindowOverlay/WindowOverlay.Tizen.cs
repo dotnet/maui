@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var nativeWindow = Window.Content?.GetNative(true) as Window;
+			var nativeWindow = Window.Content?.ToNative() as Window;
 			if (nativeWindow == null)
 				return false;
 
@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return;
 
-			var nativeWindow = Window?.Content?.GetNative(true);
+			var nativeWindow = Window?.Content?.ToNative();
 			if (nativeWindow == null)
 				return;
 

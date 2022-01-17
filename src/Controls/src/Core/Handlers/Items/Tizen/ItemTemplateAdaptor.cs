@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (view != null)
 			{
-				var native = view.ToNative(_context, true);
+				var native = view.ToNative(_context);
 				view.Parent = Element;
 				_nativeTable[native] = view;
 				return native;
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_footerCache != null)
 			{
 				_footerCache.Parent = Element;
-				return _footerCache.ToNative(_context, true);
+				return _footerCache.ToNative(_context);
 			}
 			return null;
 		}
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_headerCache != null)
 			{
 				_headerCache.Parent = Element;
-				return _headerCache.ToNative(_context, true);
+				return _headerCache.ToNative(_context);
 			}
 			return null;
 		}
