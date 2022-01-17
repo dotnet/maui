@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Components.WebView.WebView2.Internal
+namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	internal partial class StaticContentProvider
 	{
