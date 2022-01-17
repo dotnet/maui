@@ -532,7 +532,7 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in items)
 			{
-				AView swipeItem = item.ToNative(MauiContext, true);
+				AView swipeItem = item.ToNative(MauiContext);
 
 				if (item is ISwipeItemView formsSwipeItemView)
 				{

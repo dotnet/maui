@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			var fileSwipeItem = new SwipeItem
 			{
 				BackgroundColor = Colors.Red,
-				IconImageSource = "calculator.png",
+				IconImageSource = "coffee.png",
 				Text = "File"
 			};
 

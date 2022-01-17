@@ -10,45 +10,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Handlers
 {
-	public class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, AView>
+	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, AView>
 	{
-		public static IPropertyMapper<ISwipeItemMenuItem, SwipeItemMenuItemHandler> Mapper = new PropertyMapper<ISwipeItemMenuItem, SwipeItemMenuItemHandler>(ViewHandler.ViewMapper)
-		{
-			[nameof(ISwipeItemMenuItem.Visibility)] = MapVisibility,
-			[nameof(IView.Background)] = MapBackground,
-			[nameof(IMenuElement.Text)] = MapText,
-			[nameof(IMenuElement.Source)] = MapSource,
-			[nameof(ITextStyle.TextColor)] = MapTextColor,
-			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
-			[nameof(ITextStyle.Font)] = MapFont,
-
-		};
-
-		public static CommandMapper<ISwipeItemMenuItem, ISwipeViewHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
-		{
-		};
-
-
-		ImageSourcePartLoader? _imageSourcePartLoader;
-		public ImageSourcePartLoader SourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
-
-
-		public SwipeItemMenuItemHandler() : base(Mapper, CommandMapper)
-		{
-
-		}
-
-		protected SwipeItemMenuItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? CommandMapper)
-		{
-		}
-
-		public SwipeItemMenuItemHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
-		{
-
-		}
-
 		protected override void ConnectHandler(AView nativeView)
 		{
 			base.ConnectHandler(nativeView);
@@ -64,14 +27,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(nativeView);
 			nativeView.ViewAttachedToWindow -= OnViewAttachedToWindow;
-		}
-
-		public static void MapSource(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem image) =>
-			MapSourceAsync(handler, image).FireAndForget(handler);
-
-		public static Task MapSourceAsync(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
-		{
-			return handler.SourceLoader.UpdateImageSourceAsync();
 		}
 
 		public static void MapTextColor(SwipeItemMenuItemHandler handler, ITextStyle view)
@@ -103,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView.UpdateBackground(handler.VirtualView.Background);
 
-			var textColor = handler.VirtualView.GetTextColor();
+			var textColor = handler.VirtualView.GetTextColor()?.ToNative();
 
 			if (handler.NativeView is TextView textView)
 			{
@@ -183,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 			if (drawable != null)
 			{
 				var iconSize = GetIconSize();
-				var textColor = VirtualView.GetTextColor();
+				var textColor = VirtualView.GetTextColor()?.ToNative();
 				int drawableWidth = drawable.IntrinsicWidth;
 				int drawableHeight = drawable.IntrinsicHeight;
 

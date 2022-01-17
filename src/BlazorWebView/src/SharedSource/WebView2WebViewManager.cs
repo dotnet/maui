@@ -1,6 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if !WEBVIEW2_WINFORMS && !WEBVIEW2_WPF && !WEBVIEW2_MAUI
+#error Must specify which WebView2 is targeted
+#endif
+
+#if WINDOWS
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,6 +14,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
+#if WEBVIEW2_WINFORMS
+using Microsoft.Web.WebView2;
+using Microsoft.Web.WebView2.Core;
+using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
+#elif WEBVIEW2_WPF
+using Microsoft.Web.WebView2;
+using Microsoft.Web.WebView2.Core;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
+#elif WEBVIEW2_MAUI
+using Microsoft.Web.WebView2.Core;
+using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Storage.Streams;
+#endif
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
@@ -20,20 +40,25 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		// Using an IP address means that WebView2 doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
-		private const string AppOrigin = "https://0.0.0.0/";
+		private protected const string AppOrigin = "https://0.0.0.0/";
 
-		private readonly IWebView2Wrapper _webview;
+		private readonly WebView2Control _webview;
 		private readonly Task _webviewReadyTask;
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+		private protected CoreWebView2Environment _coreWebView2Environment;
+#elif WEBVIEW2_MAUI
+		private protected CoreWebView2Environment? _coreWebView2Environment;
+#endif
 
 		/// <summary>
 		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
 		/// </summary>
-		/// <param name="webview">A wrapper to access platform-specific WebView2 APIs.</param>
+		/// <param name="webview">A <see cref="WebView2Control"/> to access platform-specific WebView2 APIs.</param>
 		/// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+		public WebView2WebViewManager(WebView2Control webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
@@ -60,28 +85,19 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private async Task InitializeWebView2()
 		{
-			await _webview.CreateEnvironmentAsync().ConfigureAwait(true);
+			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync()
+#if WEBVIEW2_MAUI
+				.AsTask()
+#endif
+				.ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async();
 			ApplyDefaultWebViewSettings();
 
-			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContextWrapper.All);
-			var removeResourceCallback = _webview.CoreWebView2.AddWebResourceRequestedHandler((s, eventArgs) =>
+			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
+			_webview.CoreWebView2.WebResourceRequested += async (s, eventArgs) =>
 			{
-				// Unlike server-side code, we get told exactly why the browser is making the request,
-				// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
-				// in fallback, for example.
-				var allowFallbackOnHostPage =
-					eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
-					eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
-
-				var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
-
-				if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
-				{
-					var headerString = GetHeaderString(headers);
-					eventArgs.SetResponse(content, statusCode, statusMessage, headerString);
-				}
-			});
+				await HandleWebResourceRequest(eventArgs);
+			};
 
 			// The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
 			// so the following is an adaptor from blazor.webview.js conventions to WebView2 APIs
@@ -94,12 +110,39 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
                         window.chrome.webview.addEventListener('message', e => callback(e.data));
                     }
                 };
-            ").ConfigureAwait(true);
+            ")
+#if WEBVIEW2_MAUI
+				.AsTask()
+#endif
+				.ConfigureAwait(true);
 
 			QueueBlazorStart();
 
-			var removeMessageCallback = _webview.CoreWebView2.AddWebMessageReceivedHandler(e
-				=> MessageReceived(new Uri(e.Source), e.WebMessageAsString));
+			_webview.CoreWebView2.WebMessageReceived += (s, e) => MessageReceived(new Uri(e.Source), e.TryGetWebMessageAsString());
+		}
+
+		protected virtual Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
+		{
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			// Unlike server-side code, we get told exactly why the browser is making the request,
+			// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
+			// in fallback, for example.
+			var allowFallbackOnHostPage =
+				eventArgs.ResourceContext == CoreWebView2WebResourceContext.Document ||
+				eventArgs.ResourceContext == CoreWebView2WebResourceContext.Other; // e.g., dev tools requesting page source
+
+			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
+
+			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+			{
+				var headerString = GetHeaderString(headers);
+
+				eventArgs.Response = _coreWebView2Environment.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
+			}
+#elif WEBVIEW2_MAUI
+			// No-op here because all the work is done in the derived WinUIWebViewManager
+#endif
+			return Task.CompletedTask;
 		}
 
 		/// <summary>
@@ -109,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 		}
 
-		private static string GetHeaderString(IDictionary<string, string> headers) =>
+		private protected static string GetHeaderString(IDictionary<string, string> headers) =>
 			string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
 		private void ApplyDefaultWebViewSettings()
@@ -122,3 +165,5 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		}
 	}
 }
+
+#endif

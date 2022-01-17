@@ -76,6 +76,14 @@ namespace Microsoft.Maui.Platform
 			return scopedContext;
 		}
 
+		public static IMauiContext MakeScopededArgs<TArgs>(this IMauiContext mauiContext, TArgs args)
+			where TArgs : class
+		{
+			var scopedContext = new MauiContext(mauiContext.Services);
+			scopedContext.AddWeakSpecific(args);
+			return scopedContext;
+		}
+
 		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
 			if (mauiContext.Context?.ApplicationContext is MauiApplication ma)

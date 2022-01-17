@@ -44,8 +44,5 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			SetMeasuredDimension(0, 0);
 		}
-
-
-		
 	}
 }
