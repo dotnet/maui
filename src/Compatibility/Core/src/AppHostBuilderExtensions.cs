@@ -90,7 +90,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
 					handlers.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
 					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-
 #endif
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST

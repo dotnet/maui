@@ -3,7 +3,7 @@ using NativeView = UIKit.UIView;
 #elif MONOANDROID
 using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using NativeView = Microsoft.UI.Xaml.Controls.SwipeControl;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using NativeView = System.Object;
 #endif

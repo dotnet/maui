@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 			if (Window?.Content == null)
 				return false;
 
-			_nativeElement = Window.Content.GetNative(true);
+			_nativeElement = Window.Content.ToNative();
 			if (_nativeElement == null)
 				return false;
 			var handler = Window.Handler as WindowHandler;

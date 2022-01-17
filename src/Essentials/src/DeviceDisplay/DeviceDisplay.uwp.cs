@@ -88,6 +88,9 @@ namespace Microsoft.Maui.Essentials
 		AppWindow? _currentAppWindowListeningTo;
 		public DisplayInfo GetMainDisplayInfo()
 		{
+			if (Platform.CurrentWindow == null)
+				return new DisplayInfo();
+
 			var appWindow = Platform.CurrentAppWindow;
 			var windowHandler = Platform.CurrentWindowHandle;
 			var mi = GetDisplay(windowHandler);
@@ -139,8 +142,12 @@ namespace Microsoft.Maui.Essentials
 			{
 				Platform.CurrentWindowDisplayChanged += OnWindowDisplayChanged;
 				Platform.CurrentWindowChanged += OnCurrentWindowChanged;
-				_currentAppWindowListeningTo = Platform.CurrentAppWindow;
-				_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
+
+				if (Platform.CurrentWindow != null)
+				{
+					_currentAppWindowListeningTo = Platform.CurrentAppWindow;
+					_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
+				}
 			});
 		}
 

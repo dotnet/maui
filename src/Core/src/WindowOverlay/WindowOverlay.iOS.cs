@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 			if (IsNativeViewInitialized)
 				return true;
 
-			var nativeLayer = Window?.GetNative(true);
+			var nativeLayer = Window?.ToNative();
 			if (nativeLayer is not UIWindow nativeWindow)
 				return false;
 

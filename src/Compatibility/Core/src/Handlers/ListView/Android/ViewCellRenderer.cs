@@ -129,7 +129,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				BindableProperty unevenRows, BindableProperty rowHeight) : base(context)
 			{
 				_viewHandler = (INativeViewHandler)view;
-
 				_parent = parent;
 				_unevenRows = unevenRows;
 				_rowHeight = rowHeight;

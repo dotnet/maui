@@ -65,11 +65,22 @@ namespace Maui.Controls.Sample.Pages
 
 		async void PushFlyoutPageClicked(object sender, EventArgs e)
 		{
-			var newMainPage = (CustomNavigationPage)Handler.MauiContext.Services.GetService(typeof(CustomNavigationPage));
+			var modalPage = new ModalPage();
+			Page newMainPage = new NavigationPage(new ModalPage())
+			{
+				BackgroundColor =
+						(BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple,
+				Title = $"Navigation Root: {modalPage.Title}"
+			};
+
 			var flyoutPage = new FlyoutPage()
 			{
 				Detail = newMainPage,
-				Flyout = CustomFlyoutPage.CreateFlyout()
+				Flyout = new ContentPage()
+				{
+					Content = new Label() { Text = "Flyout Text" },
+					Title = "Flyout Title"
+				}
 			};
 
 			await Navigation.PushModalAsync(flyoutPage);
