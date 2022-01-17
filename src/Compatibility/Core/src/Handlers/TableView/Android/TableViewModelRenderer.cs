@@ -8,9 +8,8 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer instead")]
 	public class TableViewModelRenderer : CellAdapter
 	{
 		readonly TableView _view;
@@ -104,28 +103,36 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var makeBline = true;
 			var layout = convertView as ConditionalFocusLayout;
+			AView aview = CellFactory.GetCell(item, convertView, parent, Context, _view);
+
 			if (layout != null)
 			{
 				makeBline = false;
 				convertView = layout.GetChildAt(0);
 			}
 			else
+			{
 				layout = new ConditionalFocusLayout(Context) { Orientation = Orientation.Vertical };
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			AView aview = CellFactory.GetCell(item, convertView, parent, Context, _view);
-#pragma warning restore CS0618 // Type or member is obsolete
+			}
 
 			if (!makeBline)
 			{
 				if (convertView != aview)
 				{
-					layout.RemoveViewAt(0);
+					if (layout.ChildCount == 2)
+					{
+						layout.RemoveViewAt(0);
+					}
+
+					aview.RemoveFromParent();
 					layout.AddView(aview, 0);
 				}
 			}
 			else
+			{
+				aview.RemoveFromParent();
 				layout.AddView(aview, 0);
+			}
 
 			AView bline;
 			if (makeBline)
@@ -138,7 +145,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				bline = layout.GetChildAt(1);
 
 			if (isHeader)
-				bline.SetBackgroundColor(Application.AccentColor.ToAndroid());
+			{
+				if(Application.AccentColor != null)
+					bline.SetBackgroundColor(Application.AccentColor.ToNative());
+			}
 			else if (nextIsHeader)
 				bline.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 			else

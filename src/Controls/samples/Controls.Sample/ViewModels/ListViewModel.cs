@@ -20,6 +20,8 @@ namespace Maui.Controls.Sample.ViewModels
 				"SwitchCell controls are used to present and capture on/off or true/false states."),
 			new SectionModel(typeof(ListViewTextCell), "Text Cell",
 				"TextCell controls are used for displaying text with an optional second line for detail text."),
+			new SectionModel(typeof(ListViewViewCell), "View Cell",
+				"A ViewCell is a cell that can be added to a ListView or TableView, which contains a developer-defined view."),
 		};
 	}
 }
