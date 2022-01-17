@@ -18,19 +18,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	public class WinUIWebViewManager : WebView2WebViewManager
 	{
-		private readonly WebView2Control _nativeWebView2;
+		private readonly WebView2Control _webview;
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
 
-		public WinUIWebViewManager(WebView2Control nativeWebView2, IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath, string contentRootDir)
+		public WinUIWebViewManager(WebView2Control webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath, string contentRootDir)
 			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath)
 		{
-			_nativeWebView2 = nativeWebView2;
+			_webview = webview;
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
 		}
 
-		protected override async Task HandleWebResourceRequest(ICoreWebView2WebResourceRequestedEventArgsWrapper eventArgs)
+		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			// Unlike server-side code, we get told exactly why the browser is making the request,
 			// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				await ms.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 
 				var headerString = GetHeaderString(headers);
-				eventArgs.SetResponse(ms, statusCode, statusMessage, headerString);
+				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
 			}
 			else
 			{
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						var headerString = GetHeaderString(headers);
 						var winUIFile = await Package.Current.InstalledLocation.GetFileAsync(relativePath);
 
-						eventArgs.SetResponse(await winUIFile.OpenReadAsync(), statusCode, statusMessage, headerString);
+						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(await winUIFile.OpenReadAsync(), statusCode, statusMessage, headerString);
 					}
 				}
 			}
@@ -95,9 +95,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void QueueBlazorStart()
 		{
 			// In .NET MAUI we use autostart='false' for the Blazor script reference, so we start it up manually in this event
-			_nativeWebView2.CoreWebView2.DOMContentLoaded += async (_, __) =>
+			_webview.CoreWebView2.DOMContentLoaded += async (_, __) =>
 			{
-				await _nativeWebView2.CoreWebView2!.ExecuteScriptAsync(@"
+				await _webview.CoreWebView2!.ExecuteScriptAsync(@"
 					Blazor.start();
 					");
 			};
