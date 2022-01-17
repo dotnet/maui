@@ -64,12 +64,4 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Update="Handlers\ListView\Windows\ListViewStyles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="Windows\ListViewStyles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-  </ItemGroup>
 </Project>
