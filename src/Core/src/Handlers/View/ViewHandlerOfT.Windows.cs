@@ -54,22 +54,5 @@ namespace Microsoft.Maui.Handlers
 			else
 				oldParent?.Children.Add(NativeView);
 		}
-
-		static double AdjustForExplicitSize(double externalConstraint, double explicitValue)
-		{
-			// Even with an explicit value specified, Windows will limit the size of the control to 
-			// the size of the parent's explicit size. Since we want our controls to get their
-			// explicit sizes regardless (and possibly exceed the size of their layouts), we need
-			// to measure them at _at least_ their explicit size.
-			
-			if (double.IsNaN(explicitValue))
-			{
-				// NaN for an explicit height/width on Windows means "unspecified", so we just use the external value
-				return externalConstraint;
-			}
-
-			// If the control's explicit height/width is larger than the containers, use the control's value
-			return Math.Max(externalConstraint, explicitValue);
-		}
 	}
 }
