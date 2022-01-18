@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155" />
-    <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.155" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.179" />
+    <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.179" />
   </ItemGroup>
 
   <ItemGroup>

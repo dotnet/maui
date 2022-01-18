@@ -11,7 +11,7 @@
         <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155" />
+        <PackageReference Include="SkiaSharp" Version="2.88.0-preview.179" />
     </ItemGroup>
 
 </Project>
