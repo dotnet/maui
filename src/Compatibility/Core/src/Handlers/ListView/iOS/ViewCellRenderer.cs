@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		internal class ViewTableCell : UITableViewCell, INativeElementView
 		{
 			IMauiContext MauiContext => _viewCell.FindMauiContext();
-			WeakReference <INativeViewHandler> _rendererRef;
+			WeakReference<INativeViewHandler> _rendererRef;
 			ViewCell _viewCell;
 
 			Element INativeElementView.Element => ViewCell;
@@ -60,6 +60,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (_viewCell == value)
 						return;
+
+					_viewCell?.Handler?.DisconnectHandler();
 					UpdateCell(value);
 				}
 			}
@@ -96,9 +98,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var contentFrame = ContentView.Frame;
 				var view = ViewCell.View;
 
-				// TODO MAUI
-				//Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
-
+				view.Frame = new Graphics.Rectangle(0, 0, contentFrame.Width, contentFrame.Height);
+				view.Handler.NativeArrangeHandler(contentFrame.ToRectangle());
 				if (_rendererRef == null)
 					return;
 
@@ -189,30 +190,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				INativeViewHandler renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))
-					renderer = (INativeViewHandler)GetNewRenderer();
+					renderer = GetNewRenderer();
 				else
 				{
-					//if (renderer.Element != null && renderer == Platform.GetRenderer(renderer.Element))
-					//	renderer.Element.ClearValue(Platform.RendererProperty);
-
-					renderer.DisconnectHandler();
-
-					var type = Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerTypeForObject(this._viewCell.View);
+					var viewHandlerType = MauiContext.Handlers.GetHandlerType(_viewCell.View.GetType());
 					var reflectableType = renderer as System.Reflection.IReflectableType;
-					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : renderer.GetType();
-					if (rendererType == type/* || (renderer is Platform.DefaultRenderer && type == null)*/)
+					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
+
+					if (rendererType == viewHandlerType/* || (renderer is Platform.DefaultRenderer && type == null)*/)
 						renderer.SetVirtualView(this._viewCell.View);
 					else
 					{
 						//when cells are getting reused the element could be already set to another cell
 						//so we should dispose based on the renderer and not the renderer.Element
 						renderer.DisposeHandlersAndChildren();
-
-						renderer = (INativeViewHandler)GetNewRenderer();
+						renderer = GetNewRenderer();
 					}
 				}
 
-				_ = _viewCell.View.ToNative(MauiContext);
 				UpdateIsEnabled(_viewCell.IsEnabled);
 				_viewCell.View.MeasureInvalidated += OnMeasureInvalidated;
 				Performance.Stop(reference);

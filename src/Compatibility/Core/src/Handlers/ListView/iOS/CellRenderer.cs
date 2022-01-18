@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -11,8 +13,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		static readonly BindableProperty RealCellProperty = BindableProperty.CreateAttached("RealCell", typeof(UITableViewCell), typeof(Cell), null);
 
-		EventHandler _onForceUpdateSizeRequested;
-		PropertyChangedEventHandler _onPropertyChangedEventHandler;
+		EventHandler? _onForceUpdateSizeRequested;
+		PropertyChangedEventHandler? _onPropertyChangedEventHandler;
 		readonly UIColor _defaultCellBgColor = NativeVersion.IsAtLeast(13) ? UIColor.Clear : UIColor.White;
 
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
@@ -20,6 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public static CommandMapper<Cell, CellRenderer> CommandMapper =
 			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
+		UITableView? _tableView;
 
 		public CellRenderer() : base(Mapper, CommandMapper)
 		{
@@ -34,8 +37,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return GetCell(VirtualView, reusableCell, tv);
 		}
 
+		//public override void SetVirtualView(Maui.IElement view)
+		//{
+		//	var oldView = (this as IElementHandler)?.VirtualView;
+		//	base.SetVirtualView(view);
+						
+		//	if(oldView != null && view is Cell cell && _tableView != null && oldView != VirtualView)
+		//	{
+		//		_ = GetCell(cell, NativeView, _tableView);
+		//	}
+		//}
+
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
+			_tableView = tv;
 			Performance.Start(out string reference);
 
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
@@ -133,7 +148,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				if (index != null)
-					tableView.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
+					tableView?.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
 			};
 
 			_onPropertyChangedEventHandler = (sender, e) =>
