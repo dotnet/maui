@@ -1,11 +1,10 @@
 ﻿using Microsoft.Graphics.Canvas.Text;
-using Microsoft.UI.Xaml.Media;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Text;
+#if NETFX_CORE
+using Windows.UI.Xaml.Media;
+#else
+using Microsoft.UI.Xaml.Media;
+#endif
 
 namespace Microsoft.Maui.Graphics.Win2D
 {
@@ -21,11 +20,11 @@ namespace Microsoft.Maui.Graphics.Win2D
 			};
 
 		public static CanvasTextFormat ToCanvasTextFormat(this IFont font, float size)
-			=>new CanvasTextFormat
+			=> new CanvasTextFormat
 			{
 				FontFamily = font?.Name ?? FontFamily.XamlAutoFontFamily.Source,
 				FontSize = size,
-				FontWeight = new FontWeight((ushort)(font?.Weight ?? FontWeights.Regular)),
+				FontWeight = new FontWeight { Weight = (ushort)(font?.Weight ?? FontWeights.Regular) },
 				FontStyle = (font?.StyleType ?? FontStyleType.Normal).ToFontStyle()
 			};
 	}

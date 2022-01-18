@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using Microsoft.Graphics.Canvas;
+using System.Threading;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {

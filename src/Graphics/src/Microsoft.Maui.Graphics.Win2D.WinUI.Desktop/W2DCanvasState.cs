@@ -1,11 +1,14 @@
-﻿using System.Numerics;
-using Windows.Foundation;
-using Windows.UI;
-using Windows.UI.Text;
-using Microsoft.Graphics.Canvas;
+﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Geometry;
 using System;
+using System.Numerics;
+using Windows.Foundation;
+#if NETFX_CORE
+using WColors = global::Windows.UI.Colors;
+#else
+using WColors = global::Microsoft.UI.Colors;
+#endif
 
 namespace Microsoft.Maui.Graphics.Win2D
 {
@@ -108,7 +111,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 			Font = prototype.Font;
 			FontSize = prototype.FontSize;
-			
+
 			_alpha = prototype._alpha;
 			_scale = prototype._scale;
 
@@ -343,7 +346,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 					}
 					else
 					{
-						_fillBrush = new CanvasSolidColorBrush(_owner.Session, global::Microsoft.UI.Colors.White);
+						_fillBrush = new CanvasSolidColorBrush(_owner.Session, WColors.White);
 						_fillBrushValid = true;
 					}
 				}
@@ -421,7 +424,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 		}
 
 		public Matrix3x2 AppendConcatenateTransform(Matrix3x2 transform)
-		{			
+		{
 			return Matrix = Matrix3x2.Multiply(Matrix, transform);
 		}
 
