@@ -19,12 +19,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			var mySize = Controls.Compatibility.Platform.iOS.UIViewExtensions.GetSizeRequest(Control, widthConstraint, heightConstraint, DefaultRowHeight, DefaultRowHeight);
-			return mySize;
-		}
-
 		protected override Size MinimumSize()
 		{
 			return new Size(44, 44);

@@ -61,11 +61,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.GetSizeRequest(Control, widthConstraint, heightConstraint, DefaultRowHeight, DefaultRowHeight);
-		}
-
 		public override void LayoutSubviews()
 		{
 			_insetTracker?.OnLayoutSubviews();

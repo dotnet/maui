@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Primitives.Dimension;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -7,16 +8,15 @@ namespace Microsoft.Maui
 	{
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
-			var VirtualView = viewHandler.VirtualView;
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.GetWrappedNativeView();
 
-			var nativeView = viewHandler.GetWrappedNativeView();
-
-			if (nativeView == null || VirtualView == null)
+			if (platformView == null || virtualView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
 
-			var sizeThatFits = nativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
+			var sizeThatFits = platformView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
 
 			var size = new Size(
 				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
@@ -24,15 +24,14 @@ namespace Microsoft.Maui
 
 			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
 			{
-				nativeView.SizeToFit();
-				size = new Size(nativeView.Frame.Width, nativeView.Frame.Height);
+				platformView.SizeToFit();
+				size = new Size(platformView.Frame.Width, platformView.Frame.Height);
 			}
 
-			var finalWidth = ResolveConstraints(size.Width, VirtualView.Width, VirtualView.MinimumWidth, VirtualView.MaximumWidth);
-			var finalHeight = ResolveConstraints(size.Height, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
+			var finalWidth = ResolveConstraints(size.Width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			var finalHeight = ResolveConstraints(size.Height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
 			return new Size(finalWidth, finalHeight);
-
 		}
 
 		internal static void NativeArrangeHandler(this IViewHandler viewHandler, Rectangle rect)

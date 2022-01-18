@@ -1,5 +1,7 @@
 ﻿#nullable enable
 using System;
+using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using PlatformView = UIKit.UIView;
 
@@ -37,6 +39,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				_nativeView.Frame = new CoreGraphics.CGRect(0, 0, (nfloat)Element.Width, (nfloat)Element.Height);
 			}
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+		}
+
+		public override void SizeToFit()
+		{
+			Control?.SizeToFit();
+			base.SizeToFit();
+		}
+
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			return Control?.SizeThatFits(size) ?? base.SizeThatFits(size);
 		}
 
 		protected virtual TNativeView CreateNativeControl()
