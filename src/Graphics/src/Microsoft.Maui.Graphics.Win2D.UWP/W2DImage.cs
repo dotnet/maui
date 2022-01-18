@@ -106,6 +106,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 			throw new NotImplementedException();
 		}
 
+		public IImage ToPlatformImage()
+		{
+			throw new NotImplementedException();
+		}
 
 		public IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
