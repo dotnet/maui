@@ -26,6 +26,12 @@ namespace Microsoft.Maui.Graphics.Platform
 		static PlatformCanvasStateService CreateStateService(out PlatformCanvasStateService stateService) =>
 			stateService = new PlatformCanvasStateService();
 
+		public override void Dispose()
+		{
+			_stateService.Dispose();
+			base.Dispose();
+		}
+
 		public Canvas Canvas
 		{
 			get => _canvas;

@@ -5,9 +5,9 @@ namespace Microsoft.Maui.Graphics.Skia
 {
 	public class SkiaCanvasStateService : IDisposable, ICanvasStateService<SkiaCanvasState>
 	{
-		private static SKPaint _defaultFillPaint;
-		private static SKPaint _defaultFontPaint;
-		private static SKPaint _defaultStrokePaint;
+		private SKPaint _defaultFillPaint;
+		private SKPaint _defaultFontPaint;
+		private SKPaint _defaultStrokePaint;
 
 		public SkiaCanvasState CreateNew(object context)
 		{

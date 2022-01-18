@@ -24,6 +24,12 @@ namespace Microsoft.Maui.Graphics.Skia
 		static SkiaCanvasStateService CreateStateService(out SkiaCanvasStateService stateService) =>
 			stateService = new SkiaCanvasStateService();
 
+		public override void Dispose()
+		{
+			_stateService.Dispose();
+			base.Dispose();
+		}
+
 		public override float DisplayScale => _displayScale;
 
 		public SKCanvas Canvas
