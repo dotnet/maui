@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using ObjCRuntime;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
@@ -27,6 +28,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		internal ViewRenderer(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 			: base(mapper, commandMapper)
 		{
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+			if(_nativeView !=  null && Element != null)
+			{
+				_nativeView.Frame = new CoreGraphics.CGRect(0, 0, (nfloat)Element.Width, (nfloat)Element.Height);
+			}
 		}
 
 		protected virtual TNativeView CreateNativeControl()

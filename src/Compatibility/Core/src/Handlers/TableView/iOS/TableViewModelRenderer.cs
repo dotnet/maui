@@ -4,9 +4,8 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer instead")]
 	public class TableViewModelRenderer : UITableViewSource
 	{
 		readonly Dictionary<nint, Cell> _headerCells = new Dictionary<nint, Cell>();
@@ -58,8 +57,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var reusable = tableView.DequeueReusableCell(result.GetType().FullName);
 
-				var cellRenderer = Controls.Internals.Registrar.Registered.GetHandlerForObject<CellRenderer>(result);
-				return cellRenderer.GetCell(result, reusable, Table);
+				result.Handler?.DisconnectHandler();
+				result.ReusableCell = reusable;
+				result.TableView = tableView;
+
+				var cellRenderer = result.ToHandler(View.FindMauiContext());
+				return (UIView)cellRenderer.NativeView;
 			}
 			return null;
 		}
@@ -72,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (sectionHeaderTextColor != null)
 				{
-					header.TextLabel.TextColor = sectionHeaderTextColor.ToUIColor();
+					header.TextLabel.TextColor = sectionHeaderTextColor.ToNative();
 				}
 			}
 		}
@@ -139,7 +142,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.UnEvenTableViewModelRenderer instead")]
 	public class UnEvenTableViewModelRenderer : TableViewModelRenderer
 	{
 		public UnEvenTableViewModelRenderer(TableView model) : base(model)

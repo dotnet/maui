@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
-using ObjCRuntime;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer instead")]
 	public class TableViewRenderer : ViewRenderer<TableView, UITableView>
 	{
 		const int DefaultRowHeight = 44;
@@ -16,15 +14,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		UIView _originalBackgroundView;
 		RectangleF _previousFrame;
 
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public TableViewRenderer()
 		{
 
 		}
 
-		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return Control.GetSizeRequest(widthConstraint, heightConstraint, DefaultRowHeight, DefaultRowHeight);
+			var mySize = Controls.Compatibility.Platform.iOS.UIViewExtensions.GetSizeRequest(Control, widthConstraint, heightConstraint, DefaultRowHeight, DefaultRowHeight);
+			return mySize;
+		}
+
+		protected override Size MinimumSize()
+		{
+			return new Size(44, 44);
 		}
 
 		public override void LayoutSubviews()
@@ -92,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);
-					if (Forms.IsiOS9OrNewer)
+					if (NativeVersion.IsAtLeast(9))
 						tv.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
@@ -136,6 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 				Control.Layer.ShouldRasterize = false;
+
 			base.UpdateNativeWidget();
 		}
 
@@ -143,7 +147,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the cells adhere to changes UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (NativeVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Control.ReloadData();
 		}
 

@@ -88,7 +88,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.Frame = new Rectangle(0, 0, request.Width, request.Height);
 				e.Arrange(e.Frame);
 
-
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					if (_headerRenderer != null)

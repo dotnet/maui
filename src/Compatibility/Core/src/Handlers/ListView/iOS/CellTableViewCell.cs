@@ -48,7 +48,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var id = cell.GetType().FullName;
 
-
 			ContextActionsCell contextCell = null;
 			UITableViewCell reusableCell = null;
 			if (cell.HasContextActions || recycleCells)

@@ -37,17 +37,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return GetCell(VirtualView, reusableCell, tv);
 		}
 
-		//public override void SetVirtualView(Maui.IElement view)
-		//{
-		//	var oldView = (this as IElementHandler)?.VirtualView;
-		//	base.SetVirtualView(view);
-						
-		//	if(oldView != null && view is Cell cell && _tableView != null && oldView != VirtualView)
-		//	{
-		//		_ = GetCell(cell, NativeView, _tableView);
-		//	}
-		//}
-
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			_tableView = tv;
