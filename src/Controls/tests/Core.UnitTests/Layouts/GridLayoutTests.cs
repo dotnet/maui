@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void RemovedMauiViewsHaveNoRowColumnInfo()
 		{
-			var gl = new GridLayout();
+			var gl = new Grid();
 			var view = NSubstitute.Substitute.For<IView>();
 
 			gl.Add(view);
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void AddedViewGetsDefaultRowAndColumn()
 		{
-			var gl = new GridLayout();
+			var gl = new Grid();
 			var view = new Label();
 
 			gl.Add(view);
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void AddedMauiViewGetsDefaultRowAndColumn()
 		{
-			var gl = new GridLayout();
+			var gl = new Grid();
 			var view = NSubstitute.Substitute.For<IView>();
 
 			gl.Add(view);
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void ChangingRowSpacingInvalidatesGrid() 
 		{
-			var grid = new GridLayout();
+			var grid = new Grid();
 
 			var handler = ListenForInvalidation(grid);
 			grid.RowSpacing = 100;
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void ChangingColumnSpacingInvalidatesGrid()
 		{
-			var grid = new GridLayout();
+			var grid = new Grid();
 
 			var handler = ListenForInvalidation(grid);
 			grid.ColumnSpacing = 100;
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void ChangingChildRowInvalidatesGrid()
 		{
-			var grid = new GridLayout() 
+			var grid = new Grid() 
 			{ 
 				RowDefinitions = new RowDefinitionCollection 
 				{ 
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void ChangingChildColumnInvalidatesGrid()
 		{
-			var grid = new GridLayout()
+			var grid = new Grid()
 			{
 				ColumnDefinitions = new ColumnDefinitionCollection
 				{
