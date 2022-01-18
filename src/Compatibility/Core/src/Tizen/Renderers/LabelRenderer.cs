@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			Control.FontSize = Element.FontSize;
 			Control.FontAttributes = Element.FontAttributes;
-			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
+			Control.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 
 			Control.BatchCommit();
 		}

@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void FontFamilyPropertyHandler()
 		{
-			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
+			Control.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 		}
 
 		/// <summary>

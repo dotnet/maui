@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is NIButton ib)
 			{
-				ib.FontFamily = Element.FontFamily.ToNativeFontFamily();
+				ib.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 			}
 		}
 

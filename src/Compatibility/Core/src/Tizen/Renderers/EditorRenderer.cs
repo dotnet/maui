@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is NIEntry ie)
 			{
-				ie.FontFamily = Element.FontFamily.ToNativeFontFamily();
+				ie.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 			}
 		}
 
