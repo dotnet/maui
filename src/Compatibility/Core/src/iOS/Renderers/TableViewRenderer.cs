@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	public class TableViewRenderer : ViewRenderer<TableView, UITableView>
 	{
 		const int DefaultRowHeight = 44;
+#pragma warning disable CS0618 // Type or member is obsolete
 		KeyboardInsetTracker _insetTracker;
+#pragma warning restore CS0618 // Type or member is obsolete
 		UIView _originalBackgroundView;
 		RectangleF _previousFrame;
 
@@ -95,12 +97,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (Forms.IsiOS9OrNewer)
 						tv.CellLayoutMarginsFollowReadableWidth = false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
 					{
 						var offset = Control.ContentOffset;
 						offset.Y += point.Y;
 						Control.SetContentOffset(offset, true);
 					}, this);
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 
 				SetSource();

@@ -39,12 +39,12 @@ namespace Microsoft.Maui.Platform
 			if(mauiContext.Context != null)
 			{
 				return (IElementHandler)Extensions.DependencyInjection.
-					ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext, mauiContext.Context);
+					ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
 			}
 #endif
 
 			return (IElementHandler)Extensions.DependencyInjection.
-				ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext);
+				ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
 		}
 
 		public static IElementHandler ToHandler(this IElement view, IMauiContext context)

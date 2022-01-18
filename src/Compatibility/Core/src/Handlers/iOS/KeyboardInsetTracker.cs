@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _disposed;
 		UIEdgeInsets _currentInset;
 		RectangleF _lastKeyboardRect;
-		Controls.Compatibility.Platform.iOS.ShellScrollViewTracker _shellScrollViewTracker;
+		ShellScrollViewTracker _shellScrollViewTracker;
 
 
 		public KeyboardInsetTracker(UIScrollView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction)
@@ -36,8 +36,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_setInsetAction = setInsetAction;
 			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillShow += OnKeyboardShown;
 			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillHide += OnKeyboardHidden;
-			//if (renderer != null)
-			//	_shellScrollViewTracker = new ShellScrollViewTracker(renderer);
+			if (renderer != null)
+				_shellScrollViewTracker = new ShellScrollViewTracker(renderer);
 		}
 
 		public void Dispose()
