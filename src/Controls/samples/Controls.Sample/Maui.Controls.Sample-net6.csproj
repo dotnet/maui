@@ -56,16 +56,6 @@
     <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
   </ItemGroup>
 
-  <ItemGroup>
-    <MauiXaml Update="Pages\Compatibility\AndExpandPage.xaml">
-      <Generator></Generator>
-    </MauiXaml>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Pages\Controls\SwipeViewGalleries\" />
-  </ItemGroup>
-
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
 </Project>

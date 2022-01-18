@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 			// If someone is using a completely different type for IRadioButton			
 			if (radioButton.VirtualView is not RadioButton rb)
 				return null;
-						
+
 			if (rb.ResolveControlTemplate() == null)
 			{
 				return null;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 				CrossPlatformArrange = radioButton.VirtualView.CrossPlatformArrange
 			};
 
-			return viewGroup;			
+			return viewGroup;
 		}
 	}
 }

@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 {
@@ -39,7 +39,6 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				VerticalOptions = LayoutOptions.Center
 			};
 
-			animatedLayout.Children.Add(animatedCheckBox);
 			animatedLayout.Children.Add(animatedCheckBox);
 
 			var animatedLabel = new Label

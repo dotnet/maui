@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Util;
+using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
@@ -12,6 +13,7 @@ using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
 using Size = Microsoft.Maui.Graphics.Size;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
@@ -250,6 +252,34 @@ namespace Microsoft.Maui.Platform
 		{
 			_actionBarHeight ??= (int)context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
 			return _actionBarHeight.Value;
+		}
+
+		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double maximumSize)
+		{
+			var mode = MeasureSpecMode.AtMost;
+
+			if (IsExplicitSet(explicitSize))
+			{
+				// We have a set value (i.e., a Width or Height)
+				mode = MeasureSpecMode.Exactly;
+				constraint = explicitSize;
+			}
+			else if (IsMaximumSet(maximumSize))
+			{
+				mode = MeasureSpecMode.AtMost;
+				constraint = maximumSize;
+			}
+			else if (double.IsInfinity(constraint))
+			{
+				// We've got infinite space; we'll leave the size up to the native control
+				mode = MeasureSpecMode.Unspecified;
+				constraint = 0;
+			}
+
+			// Convert to a native size to create the spec for measuring
+			var deviceConstraint = (int)context.ToPixels(constraint);
+
+			return mode.MakeMeasureSpec(deviceConstraint);
 		}
 	}
 }

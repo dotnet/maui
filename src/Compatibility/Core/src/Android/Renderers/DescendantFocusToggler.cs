@@ -1,5 +1,6 @@
 using System;
 using Android.Views;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

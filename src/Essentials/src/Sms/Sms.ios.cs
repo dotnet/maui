@@ -35,6 +35,13 @@ namespace Microsoft.Maui.Essentials
 				messageController.DismissViewController(true, null);
 				tcs?.TrySetResult(e.Result == MessageComposeResult.Sent);
 			};
+
+			if (controller.PresentationController != null)
+			{
+				controller.PresentationController.Delegate =
+					new Platform.UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
+			}
+
 			controller.PresentViewController(messageController, true, null);
 
 			return tcs.Task;

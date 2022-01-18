@@ -1,7 +1,7 @@
-﻿using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls;
+﻿using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries;
-using Maui.Controls.Sample.Pages;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 {

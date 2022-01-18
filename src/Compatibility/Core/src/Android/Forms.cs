@@ -15,6 +15,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen.Android;
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitializedRenderers = true;
 		}
 
-		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)
+		internal static void RegisterCompatRenderers(IMauiContext context, InitializationOptions? maybeOptions)
 		{
 			if (!IsInitializedRenderers)
 			{
@@ -190,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						typeof(ExportCellAttribute),
 						typeof(ExportImageSourceHandlerAttribute),
 						typeof(ExportFontAttribute)
-					});
+					}, context?.Services?.GetService<IFontRegistrar>());
 				}
 			}
 		}
@@ -234,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FramePartition("RegisterAll");
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers(maybeOptions);
+				RegisterCompatRenderers(context, maybeOptions);
 
 			Profile.FramePartition("Epilog");
 

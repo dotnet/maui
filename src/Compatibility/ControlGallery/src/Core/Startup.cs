@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				})
 				.ConfigureFonts(fonts =>
 				{
-					fonts.AddCompatibilityFonts(Device.GetAssemblies());
+					fonts.AddCompatibilityFonts(new FontRegistrar(new EmbeddedFontLoader()), Device.GetAssemblies());
 				})
 				.ConfigureEffects(effects =>
 				{

@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b96f5608dab85cdf87fb8c0b88c233808538d2d0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.200-preview.13.8">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.200-preview.13.11">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>9c8266294062cce80c2f2f05521d02862ecf0ad2</Sha>
+      <Sha>a533652fa68754c79d80a1e6b62dd62add307c8d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.2.100-preview.13.8">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.2.100-preview.13.54">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b52af4b4f926d80cc8526b558f45ab21c37bf719</Sha>
+      <Sha>946f33cfb36434b04a195bf82dcfa386a098908d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.2.100-preview.13.8">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.2.100-preview.13.54">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b52af4b4f926d80cc8526b558f45ab21c37bf719</Sha>
+      <Sha>946f33cfb36434b04a195bf82dcfa386a098908d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.2.100-preview.13.8">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.2.100-preview.13.54">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b52af4b4f926d80cc8526b558f45ab21c37bf719</Sha>
+      <Sha>946f33cfb36434b04a195bf82dcfa386a098908d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.1.100-preview.13.8">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.1.100-preview.13.54">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b52af4b4f926d80cc8526b558f45ab21c37bf719</Sha>
+      <Sha>946f33cfb36434b04a195bf82dcfa386a098908d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>

@@ -16,7 +16,10 @@ namespace Maui.Controls.Sample.Pages.Base
 			{
 				if (SelectedItem != null)
 				{
-					await Navigation.PushAsync(PreparePage(SelectedItem));
+					if(Application.Current.MainPage is FlyoutPage fp)
+						await fp.Detail.Navigation.PushAsync(PreparePage(SelectedItem));
+					else
+						await Navigation.PushAsync(PreparePage(SelectedItem));
 
 					SelectedItem = null;
 				}

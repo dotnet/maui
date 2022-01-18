@@ -33,7 +33,9 @@
 
                         <Label Text="{Binding Icon}"
                                    FontSize="24"
-                                   Grid.RowSpan="2"
+                                   GridLayout.Row="0"
+                                   GridLayout.Column="0"
+                                   GridLayout.RowSpan="2"
                                    HorizontalOptions="Center" VerticalOptions="Center" />
 
                         <Label Text="{Binding Name}"

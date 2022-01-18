@@ -94,8 +94,8 @@ namespace Microsoft.Maui.Controls.Platform
 					.Handler
 					?.MauiContext
 					?.GetNavigationRootManager()
-					.RootView ?? 
-					CurrentPage.GetNative(true) ??
+					.RootView ??
+					CurrentPage.ToNative() ??
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Controls.Platform
 						.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 
 					_navigationRootManager = modalContext.GetNavigationRootManager();
-					_navigationRootManager.SetRootView(_modal, modalContext);
+					_navigationRootManager.Connect(_modal, modalContext);
 
 					return _navigationRootManager?.RootView ??
 						throw new InvalidOperationException("Root view not initialized");

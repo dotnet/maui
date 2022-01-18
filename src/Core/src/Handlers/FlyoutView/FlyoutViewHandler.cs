@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IFlyoutView, FlyoutViewHandler> Mapper = new PropertyMapper<IFlyoutView, FlyoutViewHandler>(ViewHandler.ViewMapper)
 		{
-#if ANDROID
+#if ANDROID || WINDOWS
 			[nameof(IFlyoutView.Flyout)] = MapFlyout,
 			[nameof(IFlyoutView.Detail)] = MapDetail,
 			[nameof(IFlyoutView.IsPresented)] = MapIsPresented,

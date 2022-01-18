@@ -264,7 +264,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if((!(bool)newValue) && sender is IFlyoutPageController fpc && fpc.ShouldShowSplitMode && sender is FlyoutPage fp)
+				if ((!(bool)newValue) && sender is IFlyoutPageController fpc && fpc.ShouldShowSplitMode && sender is FlyoutPage fp)
 				{
 					throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", fp.FlyoutLayoutBehavior));
 				}

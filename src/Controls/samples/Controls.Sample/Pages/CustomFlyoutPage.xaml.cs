@@ -10,42 +10,17 @@ namespace Maui.Controls.Sample.Pages
 			base()
 		{
 			InitializeComponent();
-			if (Application.Current.MainPage == null)
-				Detail = new CustomNavigationPage(services, viewModel);
-			else
-				Detail = new MainPage(services, viewModel);
-
-			Flyout = CreateFlyout();
+			Detail = new CustomNavigationPage(services, viewModel);
+			Detail.PropertyChanged += Detail_PropertyChanged;
+			Flyout.BindingContext = viewModel;
 		}
 
-		public static ContentPage CreateFlyout()
+		private void Detail_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			return new ContentPage()
+			if(e.PropertyName == nameof(NavigationPage.CurrentPage))
 			{
-				Title = "Menu",
-				Content = new VerticalStackLayout()
-				{
-					Children =
-					{
-						new Label()
-						{
-							Text = "Menu Item 1"
-						},
-						new Label()
-						{
-							Text = "Menu Item 2"
-						},
-						new Label()
-						{
-							Text = "Menu Item 3"
-						},
-						new Label()
-						{
-							Text = "Menu Item 4"
-						},
-					}
-				}
-			};
+				Flyout.BindingContext = (Detail as NavigationPage).CurrentPage.BindingContext;
+			}
 		}
 	}
 }

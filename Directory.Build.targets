@@ -51,6 +51,4 @@
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
   </ItemGroup>
 
-  <Target Name="ComputeXamarinTargetFrameworks" />
-
 </Project>

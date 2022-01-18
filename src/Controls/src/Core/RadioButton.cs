@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, this);
+			this.GetDefaultFontSize();
 
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);

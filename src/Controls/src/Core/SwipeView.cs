@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController
+	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;
 
@@ -63,11 +63,51 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BottomItemsProperty, value); }
 		}
 
-		bool ISwipeViewController.IsOpen { get; set; }
+		bool ISwipeViewController.IsOpen 
+		{ 
+			get => ((ISwipeView)this).IsOpen;
+			set => ((ISwipeView)this).IsOpen = value;
+		}
 
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			((SwipeView)bindable).UpdateSwipeItemsParent((SwipeItems)newValue);
+			if (bindable is not SwipeView swipeView)
+				return;
+
+			swipeView.UpdateSwipeItemsParent((SwipeItems)newValue);
+
+			if(oldValue is SwipeItems oldItems)
+			{
+				oldItems.CollectionChanged -= SwipeItemsCollectionChanged;
+				oldItems.PropertyChanged -= SwipeItemsPropertyChanged;
+			}
+
+			if(newValue is SwipeItems newItems)
+			{
+				newItems.CollectionChanged += SwipeItemsCollectionChanged;
+				newItems.PropertyChanged += SwipeItemsPropertyChanged;
+			}
+
+			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e) =>
+				SendChange((SwipeItems)sender);
+
+			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
+				SendChange((SwipeItems)sender);
+
+			void SendChange(SwipeItems swipeItems)
+			{
+				if (swipeItems == swipeView.LeftItems)
+					swipeView?.Handler?.UpdateValue(nameof(LeftItems));
+
+				if (swipeItems == swipeView.RightItems)
+					swipeView?.Handler?.UpdateValue(nameof(RightItems));
+
+				if (swipeItems == swipeView.TopItems)
+					swipeView?.Handler?.UpdateValue(nameof(TopItems));
+
+				if (swipeItems == swipeView.BottomItems)
+					swipeView?.Handler?.UpdateValue(nameof(BottomItems));
+			}
 		}
 
 		public event EventHandler<SwipeStartedEventArgs> SwipeStarted;
@@ -83,11 +123,13 @@ namespace Microsoft.Maui.Controls
 		public void Open(OpenSwipeItem openSwipeItem, bool animated = true)
 		{
 			OpenRequested?.Invoke(this, new OpenRequestedEventArgs(openSwipeItem, animated));
+			((ISwipeView)this).RequestOpen(new SwipeViewOpenRequest(openSwipeItem, animated));
 		}
 
 		public void Close(bool animated = true)
 		{
 			CloseRequested?.Invoke(this, new CloseRequestedEventArgs(animated));
+			((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(animated));
 		}
 
 		void ISwipeViewController.SendSwipeStarted(SwipeStartedEventArgs args) => SwipeStarted?.Invoke(this, args);

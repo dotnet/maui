@@ -17,6 +17,10 @@ namespace Microsoft.Maui.Handlers
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
 
+			// We only want to use a hardware layer for the entering view because its quite likely
+			// the view will invalidate several times the Drawable (Draw).
+			viewGroup.SetLayerType(Android.Views.LayerType.Hardware, null);
+
 			return viewGroup;
 		}
 
@@ -51,6 +55,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
 			nativeView.RemoveAllViews();
+
 			base.DisconnectHandler(nativeView);
 		}
 	}
