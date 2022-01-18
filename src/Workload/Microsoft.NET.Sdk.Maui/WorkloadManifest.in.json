@@ -123,7 +123,7 @@
     "maui-tizen": {
       "description": ".NET MAUI SDK for Tizen",
       "extends": [
-        "maui-core",
+        "maui-blazor",
         "tizen"
       ],
       "packs": [
