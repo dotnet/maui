@@ -71,9 +71,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			double width = Bounds.Width;
 			if (_headerRenderer != null)
 			{
-				var e = _headerRenderer.VirtualView;
-				var request = e.Measure(width, double.PositiveInfinity);
-
 				// Time for another story with Jason. Gather round children because the following Math.Ceiling will look like it's completely useless.
 				// You will remove it and test and find everything is fiiiiiine, but it is not fine, no it is far from fine. See iOS, or at least iOS 8
 				// has an issue where-by if the TableHeaderView happens to NOT be an integer height, it will add padding to the space between the content
@@ -82,8 +79,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// grow a little each time, which you weren't testing at all were you? So there you have it, the stupid reason we integer align here.
 				//
 				// The same technically applies to the footer, though that could hardly matter less. We just do it for fun.
-				// TODO MAUI
-				//Layout.LayoutChildIntoBoundingRegion(e, new Rectangle(0, 0, width, Math.Ceiling(request.Height)));
+				var e = _headerRenderer.VirtualView;
+				var request = e.Measure(width, double.PositiveInfinity);
+				e.Frame = new Rectangle(0, 0, request.Width, request.Height);
+				e.Arrange(e.Frame);
+
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
@@ -96,9 +96,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var e = _footerRenderer.VirtualView;
 				var request = e.Measure(width, height);
-
-				// TODO MAUI
-				//Layout.LayoutChildIntoBoundingRegion(e, new Rectangle(0, 0, width, Math.Ceiling(request.Height)));
+				e.Frame = new Rectangle(0, 0, request.Width, request.Height);
+				e.Arrange(e.Frame);
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
