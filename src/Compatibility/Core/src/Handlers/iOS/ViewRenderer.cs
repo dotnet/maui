@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public abstract partial class ViewRenderer : ViewRenderer<View, PlatformView>
 	{
-		protected ViewRenderer(IMauiContext mauiContext) : base(mauiContext)
+		protected ViewRenderer() : base()
 		{
 		}
 	}
@@ -18,6 +18,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		TNativeView? _nativeView;
 
 		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView ?? _nativeView;
+
+		public ViewRenderer() : this(VisualElementRendererMapper, VisualElementRendererCommandMapper)
+		{
+
+		}
+
+		internal ViewRenderer(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper)
+		{
+		}
 
 		protected virtual TNativeView CreateNativeControl()
 		{

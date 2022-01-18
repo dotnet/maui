@@ -20,6 +20,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class ListViewRenderer : ViewRenderer<ListView, UITableView>
 	{
+		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
+				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
+
+		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
+			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
+
 		const int DefaultRowHeight = 44;
 
 		UIView _backgroundUIView;
@@ -50,9 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set { _dataSource.ReloadSectionsAnimation = value; }
 		}
 
-
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		public ListViewRenderer(IMauiContext context) : base(context)
+		public ListViewRenderer() : base(Mapper, CommandMapper)
 		{
 
 		}

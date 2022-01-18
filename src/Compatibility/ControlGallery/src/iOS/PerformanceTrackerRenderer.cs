@@ -677,7 +677,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class PerformanceTrackingListView : ListViewRenderer, IDrawnObservable
+	public class PerformanceTrackingListView : Handlers.Compatibility.ListViewRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingListView> _watcher;
 		int _Drawn;

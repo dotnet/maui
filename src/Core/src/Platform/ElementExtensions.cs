@@ -35,7 +35,16 @@ namespace Microsoft.Maui.Platform
 			
 			if(handlerType == null) return null;
 
-			return (IElementHandler)Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext);
+#if ANDROID
+			if(mauiContext.Context != null)
+			{
+				return (IElementHandler)Extensions.DependencyInjection.
+					ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext, mauiContext.Context);
+			}
+#endif
+
+			return (IElementHandler)Extensions.DependencyInjection.
+				ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext);
 		}
 
 		public static IElementHandler ToHandler(this IElement view, IMauiContext context)
@@ -65,7 +74,7 @@ namespace Microsoft.Maui.Platform
 					else
 						handler = context.Handlers.GetHandler(viewType);
 				}
-				catch (System.MissingMethodException)
+				catch (MissingMethodException)
 				{
 					handler = viewType.CreateTypeWithInjection(context);
 					if (handler != null)
