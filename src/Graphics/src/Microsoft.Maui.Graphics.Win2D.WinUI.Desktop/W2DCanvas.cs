@@ -1,14 +1,12 @@
 ﻿using Microsoft.Maui.Graphics.Text;
 using System.Numerics;
 using Windows.Foundation;
-using Windows.UI.Text;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using System;
-using WFontStyle = Windows.UI.Text.FontStyle;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {
@@ -31,11 +29,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 
         private bool _bitmapPatternFills;
 
-        public W2DCanvas() : base(
-            obj => new W2DCanvasState((W2DCanvas)obj), 
-            prototype => new W2DCanvasState(prototype))
-        {
-        }
+		public W2DCanvas()
+			: base(new W2DCanvasStateService(), new W2DStringSizeService())
+		{
+		}
 
         public CanvasDrawingSession Session
         {
@@ -818,38 +815,5 @@ namespace Microsoft.Maui.Graphics.Win2D
             _rect.Width = Math.Abs(width);
             _rect.Height = Math.Abs(height);
         }
-
-		public override SizeF GetStringSize(string value, IFont font, float textSize)
-			=> GetStringSize(value, font, textSize, HorizontalAlignment.Left, VerticalAlignment.Top);
-
-		public override  SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
-		{
-			var format = new CanvasTextFormat {
-				FontFamily = font.Name,
-				FontSize = textSize,
-				FontWeight = new FontWeight { Weight = (ushort)font.Weight },
-				FontStyle = font.StyleType.ToFontStyle(),
-				WordWrapping = CanvasWordWrapping.NoWrap
-			};
-
-			var textLayout = new CanvasTextLayout(_session, value, format, 0.0f, 0.0f);
-			textLayout.VerticalAlignment = verticalAlignment switch
-			{
-				VerticalAlignment.Top => CanvasVerticalAlignment.Top,
-				VerticalAlignment.Center => CanvasVerticalAlignment.Center,
-				VerticalAlignment.Bottom => CanvasVerticalAlignment.Bottom,
-				_ => CanvasVerticalAlignment.Top
-			};
-			textLayout.HorizontalAlignment = horizontalAlignment switch
-			{
-				HorizontalAlignment.Left => CanvasHorizontalAlignment.Left,
-				HorizontalAlignment.Center => CanvasHorizontalAlignment.Center,
-				HorizontalAlignment.Right => CanvasHorizontalAlignment.Right,
-				HorizontalAlignment.Justified => CanvasHorizontalAlignment.Justified,
-				_ => CanvasHorizontalAlignment.Left,
-			};
-
-			return new SizeF((float)textLayout.DrawBounds.Width, (float)textLayout.DrawBounds.Height);
-		}
 	}
 }

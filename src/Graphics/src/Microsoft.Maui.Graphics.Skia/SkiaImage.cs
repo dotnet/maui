@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Graphics.Platform;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
@@ -146,7 +145,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, (float)Math.Round(dirtyRect.Width), (float)Math.Round(dirtyRect.Height));
 		}
 
-		public PlatformImage ToPlatformImage()
+		public IImage ToPlatformImage()
 		{
 			throw new NotSupportedException();
 		}

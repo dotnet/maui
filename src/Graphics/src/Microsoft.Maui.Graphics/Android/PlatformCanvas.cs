@@ -10,71 +10,21 @@ namespace Microsoft.Maui.Graphics.Platform
 {
 	public class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
 	{
-		private static global::Android.Graphics.Paint _defaultFillPaint;
-		private static TextPaint _defaultFontPaint;
-		private static global::Android.Graphics.Paint _defaultStrokePaint;
-
 		private Canvas _canvas;
 		private Shader _shader;
 
 		private readonly Matrix _shaderMatrix = new Matrix();
+		private readonly PlatformCanvasStateService _stateService;
 
-		public PlatformCanvas(Context context = null) : base(CreateNewState, CreateStateCopy)
+		public PlatformCanvas(Context context = null)
+			: base(CreateStateService(out var stateService), new PlatformStringSizeService())
 		{
+			_stateService = stateService;
 			DisplayScale = (context ?? global::Android.App.Application.Context)?.Resources?.DisplayMetrics?.Density ?? 1;
 		}
 
-		private static PlatformCanvasState CreateNewState(object context)
-		{
-			if (_defaultFillPaint == null)
-			{
-				_defaultFillPaint = new global::Android.Graphics.Paint();
-				_defaultFillPaint.SetARGB(255, 255, 255, 255);
-				_defaultFillPaint.SetStyle(global::Android.Graphics.Paint.Style.Fill);
-				_defaultFillPaint.AntiAlias = true;
-
-				_defaultStrokePaint = new global::Android.Graphics.Paint();
-				_defaultStrokePaint.SetARGB(255, 0, 0, 0);
-				_defaultStrokePaint.StrokeWidth = 1;
-				_defaultStrokePaint.StrokeMiter = CanvasDefaults.DefaultMiterLimit;
-				_defaultStrokePaint.SetStyle(global::Android.Graphics.Paint.Style.Stroke);
-				_defaultStrokePaint.AntiAlias = true;
-
-				_defaultFontPaint = new TextPaint();
-				_defaultFontPaint.SetARGB(255, 0, 0, 0);
-				_defaultFontPaint.AntiAlias = true;
-
-				var defaultFont = Typeface.Default;
-				if (defaultFont != null)
-					_defaultFontPaint.SetTypeface(defaultFont);
-				else
-					Logger.Warn("Unable to set the default font paint to Default");
-			}
-
-			var state = new PlatformCanvasState
-			{
-				FillPaint = new global::Android.Graphics.Paint(_defaultFillPaint),
-				StrokePaint = new global::Android.Graphics.Paint(_defaultStrokePaint),
-				FontPaint = new TextPaint(_defaultFontPaint),
-				Font = null
-			};
-
-			return state;
-		}
-
-		private static PlatformCanvasState CreateStateCopy(PlatformCanvasState prototype)
-		{
-			return new PlatformCanvasState(prototype);
-		}
-
-		public override void Dispose()
-		{
-			_defaultFillPaint.Dispose();
-			_defaultStrokePaint.Dispose();
-			_defaultFontPaint.Dispose();
-
-			base.Dispose();
-		}
+		static PlatformCanvasStateService CreateStateService(out PlatformCanvasStateService stateService) =>
+			stateService = new PlatformCanvasStateService();
 
 		public Canvas Canvas
 		{
@@ -712,7 +662,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				_shader = null;
 			}
 
-			CurrentState.Reset(_defaultFontPaint, _defaultFillPaint, _defaultStrokePaint);
+			_stateService.Reset(CurrentState);
 		}
 
 		public override bool RestoreState()
@@ -791,7 +741,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			var mdimage = image.ToPlatformImage();
+			var mdimage = image.ToPlatformImage() as PlatformImage;
 
 			if (mdimage != null)
 			{
@@ -822,46 +772,6 @@ namespace Microsoft.Maui.Graphics.Platform
 					_canvas.Restore();
 				}
 			}
-		}
-
-		public override SizeF GetStringSize(string value, IFont font, float fontSize)
-		{
-			if (value == null) return new SizeF();
-
-			var textPaint = new TextPaint { TextSize = fontSize };
-			textPaint.SetTypeface(font?.ToTypeface() ?? Typeface.Default);
-
-			var staticLayout = TextLayoutUtils.CreateLayout(value, textPaint, null, Layout.Alignment.AlignNormal);
-			var size = staticLayout.GetTextSizeAsSizeF(false);
-			staticLayout.Dispose();
-			return size;
-		}
-
-		public override SizeF GetStringSize(string aString, IFont font, float aFontSize, HorizontalAlignment aHorizontalAlignment, VerticalAlignment aVerticalAlignment)
-		{
-			if (aString == null) return new SizeF();
-
-			var vTextPaint = new TextPaint { TextSize = aFontSize };
-			vTextPaint.SetTypeface(font?.ToTypeface() ?? Typeface.Default);
-
-			Layout.Alignment vAlignment;
-			switch (aHorizontalAlignment)
-			{
-				case HorizontalAlignment.Center:
-					vAlignment = Layout.Alignment.AlignCenter;
-					break;
-				case HorizontalAlignment.Right:
-					vAlignment = Layout.Alignment.AlignOpposite;
-					break;
-				default:
-					vAlignment = Layout.Alignment.AlignNormal;
-					break;
-			}
-
-			StaticLayout vLayout = TextLayoutUtils.CreateLayout(aString, vTextPaint, null, vAlignment);
-			SizeF vSize = vLayout.GetTextSizeAsSizeF(false);
-			vLayout.Dispose();
-			return vSize;
 		}
 	}
 }

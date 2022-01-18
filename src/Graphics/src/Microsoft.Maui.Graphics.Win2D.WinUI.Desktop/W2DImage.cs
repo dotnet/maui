@@ -101,12 +101,17 @@ namespace Microsoft.Maui.Graphics.Win2D
             canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, Math.Abs(dirtyRect.Width), Math.Abs(dirtyRect.Height));
         }
 
+		public IImage ToPlatformImage()
+		{
+			throw new NotImplementedException();
+		}
+
 		public IImage ToImage(int width, int height, float scale = 1f)
 		{
 			throw new NotImplementedException();
 		}
 
-		public IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
+		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
 			var creator = W2DGraphicsService.Creator;
 			if (creator == null)

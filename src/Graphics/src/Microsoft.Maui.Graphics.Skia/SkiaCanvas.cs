@@ -8,19 +8,21 @@ namespace Microsoft.Maui.Graphics.Skia
 {
 	public class SkiaCanvas : AbstractCanvas<SkiaCanvasState>, IBlurrableCanvas
 	{
-		private static SKPaint _defaultFillPaint;
-		private static SKPaint _defaultFontPaint;
-		private static SKPaint _defaultStrokePaint;
-
 		private readonly SKMatrix _shaderMatrix = new SKMatrix();
+		private readonly SkiaCanvasStateService _stateService;
 
 		private SKCanvas _canvas;
 		private float _displayScale = 1;
 		private SKShader _shader;
 
-		public SkiaCanvas(): base(CreateNewState, CreateStateCopy)
+		public SkiaCanvas()
+			: base(CreateStateService(out var stateService), new SkiaStringSizeService())
 		{
+			_stateService = stateService;
 		}
+
+		static SkiaCanvasStateService CreateStateService(out SkiaCanvasStateService stateService) =>
+			stateService = new SkiaCanvasStateService();
 
 		public override float DisplayScale => _displayScale;
 
@@ -201,61 +203,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
-		private static SkiaCanvasState CreateNewState(object context)
-		{
-			if (_defaultFillPaint == null)
-			{
-				_defaultFillPaint = new SKPaint
-				{
-					Color = SKColors.White,
-					IsStroke = false,
-					IsAntialias = true
-				};
-
-				_defaultStrokePaint = new SKPaint
-				{
-					Color = SKColors.Black,
-					StrokeWidth = 1,
-					StrokeMiter = CanvasDefaults.DefaultMiterLimit,
-					IsStroke = true,
-					IsAntialias = true
-				};
-
-				_defaultFontPaint = new SKPaint
-				{
-					Color = SKColors.Black,
-					IsAntialias = true,
-					Typeface = SKTypeface.FromFamilyName("Arial")
-				};
-			}
-
-			var state = new SkiaCanvasState
-			{
-				FillPaint = _defaultFillPaint.CreateCopy(),
-				StrokePaint = _defaultStrokePaint.CreateCopy(),
-				FontPaint = _defaultFontPaint.CreateCopy(),
-			};
-
-			return state;
-		}
-
 		public void SetDisplayScale(float value)
 		{
 			_displayScale = value;
-		}
-
-		private static SkiaCanvasState CreateStateCopy(SkiaCanvasState prototype)
-		{
-			return new SkiaCanvasState(prototype);
-		}
-
-		public override void Dispose()
-		{
-			_defaultFillPaint.Dispose();
-			_defaultStrokePaint.Dispose();
-			_defaultFontPaint.Dispose();
-
-			base.Dispose();
 		}
 
 		protected override void PlatformSetStrokeDashPattern(
@@ -743,7 +693,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				_shader = null;
 			}
 
-			CurrentState.Reset(_defaultFontPaint, _defaultFillPaint, _defaultStrokePaint);
+			_stateService.Reset(CurrentState);
 		}
 
 		public override bool RestoreState()
@@ -886,36 +836,6 @@ namespace Microsoft.Maui.Graphics.Skia
 			float height)
 		{
 			_canvas.ClipRect(new SKRect(x, y, x + width, y + height));
-		}
-
-		public override SizeF GetStringSize(string value, IFont font, float fontSize)
-		{
-			if (string.IsNullOrEmpty(value))
-				return new SizeF();
-
-			var paint = new SKPaint
-			{
-				Typeface = font?.ToSKTypeface() ?? SKTypeface.Default,
-				TextSize = fontSize
-			};
-			var width = paint.MeasureText(value);
-			paint.Dispose();
-			return new SizeF(width, fontSize);
-		}
-
-		public override SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
-		{
-			if (string.IsNullOrEmpty(value))
-				return new SizeF();
-
-			var paint = new SKPaint
-			{
-				TextSize = fontSize,
-				Typeface = font?.ToSKTypeface() ?? SKTypeface.Default
-			};
-			var width = paint.MeasureText(value);
-			paint.Dispose();
-			return new SizeF(width, fontSize);
 		}
 	}
 }

@@ -8,9 +8,10 @@ namespace Microsoft.Maui.Graphics
 {
 	public abstract class AbstractCanvas<TState> : ICanvas, IDisposable where TState : CanvasState
 	{
+		private readonly ICanvasStateService<TState> _stateService;
+		private readonly IStringSizeService _stringSizeService;
+
 		private readonly Stack<TState> _stateStack = new Stack<TState>();
-		private readonly Func<object, TState> _createNew;
-		private readonly Func<TState, TState> _createCopy;
 
 		private TState _currentState;
 		private bool _limitStrokeScaling;
@@ -31,11 +32,11 @@ namespace Microsoft.Maui.Graphics
 		protected abstract void PlatformTranslate(float tx, float ty);
 		protected abstract void PlatformConcatenateTransform(Matrix3x2 transform);
 
-		protected AbstractCanvas(Func<object, TState> createNew, Func<TState, TState> createCopy)
+		protected AbstractCanvas(ICanvasStateService<TState> stateService, IStringSizeService stringSizeService)
 		{
-			_createCopy = createCopy;
-			_createNew = createNew;
-			_currentState = createNew(this);
+			_stateService = stateService;
+			_stringSizeService = stringSizeService;
+			_currentState = stateService.CreateNew(this);
 		}
 
 		protected TState CurrentState => _currentState;
@@ -214,7 +215,7 @@ namespace Microsoft.Maui.Graphics
 				_currentState = null;
 			}
 
-			_currentState = _createNew(this);
+			_currentState = _stateService.CreateNew(this);
 		}
 
 		public abstract void SetShadow(SizeF offset, float blur, Color color);
@@ -239,7 +240,7 @@ namespace Microsoft.Maui.Graphics
 				return true;
 			}
 
-			_currentState = _createNew(this);
+			_currentState = _stateService.CreateNew(this);
 			return false;
 		}
 
@@ -252,7 +253,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			var previousState = _currentState;
 			_stateStack.Push(previousState);
-			_currentState = _createCopy(previousState);
+			_currentState = _stateService.CreateCopy(previousState);
 			_strokeDashPatternDirty = true;
 		}
 
@@ -305,8 +306,10 @@ namespace Microsoft.Maui.Graphics
 			PlatformConcatenateTransform(transform);
 		}
 
-		public abstract SizeF GetStringSize(string value, IFont font, float fontSize);
+		public SizeF GetStringSize(string value, IFont font, float fontSize) =>
+			_stringSizeService.GetStringSize(value, font, fontSize);
 
-		public abstract SizeF GetStringSize(string aString, IFont font, float aFontSize, HorizontalAlignment aHorizontalAlignment, VerticalAlignment aVerticalAlignment);
+		public SizeF GetStringSize(string aString, IFont font, float aFontSize, HorizontalAlignment aHorizontalAlignment, VerticalAlignment aVerticalAlignment) =>
+			_stringSizeService.GetStringSize(aString, font, aFontSize, aHorizontalAlignment, aVerticalAlignment);
 	}
 }

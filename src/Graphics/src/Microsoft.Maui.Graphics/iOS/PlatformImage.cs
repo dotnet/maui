@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, (float)Math.Round(dirtyRect.Width), (float)Math.Round(dirtyRect.Height));
 		}
 
-		public PlatformImage ToPlatformImage()
+		public IImage ToPlatformImage()
 			=> this;
 
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)

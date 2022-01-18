@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		public PlatformImage ToPlatformImage()
+		public IImage ToPlatformImage()
 			=> this;
 	}
 #endif

@@ -40,17 +40,12 @@ namespace Microsoft.Maui.Graphics.Platform
 		// A local instance of a rectangle to avoid lots of object creation.
 		private CGRect _rect = new CGRect(0, 0, 0, 0);
 
-		public PlatformCanvas(Func<CGColorSpace> getColorspace) : base(CreateNewState, CreateStateCopy)
+		public PlatformCanvas(Func<CGColorSpace> getColorspace)
+			: base(new PlatformCanvasStateService(), new PlatformStringSizeService())
 		{
 			_getColorspace = getColorspace;
 			_font = null;
 		}
-
-		private static PlatformCanvasState CreateNewState(object context)
-			=> new PlatformCanvasState();
-
-		private static PlatformCanvasState CreateStateCopy(PlatformCanvasState prototype)
-			=> new PlatformCanvasState(prototype);
 
 		public CGContext Context
 		{
@@ -636,7 +631,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private void DrawImageCallback(CGContext context)
 		{
-			var platformWrapper = _fillImage.ToPlatformImage();
+			var platformWrapper = _fillImage.ToPlatformImage() as PlatformImage;
 			var platformImage = platformWrapper?.PlatformRepresentation;
 			if (platformImage != null)
 			{
@@ -660,7 +655,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			var platformImage = image.ToPlatformImage();
+			var platformImage = image.ToPlatformImage() as PlatformImage;
 			var platformRepresentation = platformImage?.PlatformRepresentation;
 			if (platformRepresentation != null)
 			{
@@ -1144,12 +1139,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				if (verticalAlignment != VerticalAlignment.Top)
 				{
-#if MONOMAC
-					var textFrameSize = GetTextSize(frame);
-#else
-					var textFrameSize = GetTextSize(frame);
-#endif
-
+					var textFrameSize = PlatformStringSizeService.GetTextSize(frame);
 					if (textFrameSize.Height > 0)
 					{
 						if (verticalAlignment == VerticalAlignment.Bottom)
@@ -1235,12 +1225,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				if (verticalAlignment != VerticalAlignment.Top)
 				{
-#if MONOMAC
-					var textSize = GetTextSize(frame);
-#else
-					var textSize = GetTextSize(frame);
-#endif
-
+					var textSize = PlatformStringSizeService.GetTextSize(frame);
 					if (textSize.Height > 0)
 					{
 						if (verticalAlignment == VerticalAlignment.Bottom)

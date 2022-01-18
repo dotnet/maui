@@ -1,44 +1,30 @@
-﻿using AppKit;
-using CoreGraphics;
+﻿using CoreGraphics;
 using CoreText;
 using Foundation;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	partial class PlatformCanvas
+	partial class PlatformStringSizeService : IStringSizeService
 	{
-		public override SizeF GetStringSize(string value, IFont font, float fontSize)
+		public SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
-			var nativeString = new NSString(value);
-			var attributes = new NSMutableDictionary();
-			attributes[NSStringAttributeKey.Font] = font?.ToPlatformFont(fontSize) ?? FontExtensions.GetDefaultPlatformFont(fontSize);
-			var size = nativeString.StringSize(attributes);
-			return size.AsSizeF();
-		}
-
-		public override SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
-		{
-			var actualFontSize = fontSize;
 			float factor = 1;
-			while (actualFontSize > 10)
+			while (fontSize > 10)
 			{
-				actualFontSize /= 10;
+				fontSize /= 10;
 				factor *= 10;
 			}
 
 			var path = new CGPath();
-			path.AddRect(new CGRect(0, 0, 512, 512));
+			path.AddRect(new RectangleF(0, 0, 512, 512));
 			path.CloseSubpath();
 
 			var attributedString = new NSMutableAttributedString(value);
 
 			var attributes = new CTStringAttributes();
 
-			// Load the font
-			attributes.Font = font?.ToCTFont(actualFontSize) ?? FontExtensions.GetDefaultCTFont(actualFontSize);
+			attributes.Font = font?.ToCTFont(fontSize) ?? FontExtensions.GetDefaultCTFont(fontSize);
 
 			// Set the horizontal alignment
 			var paragraphSettings = new CTParagraphStyleSettings();
@@ -80,7 +66,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			return textBounds.Size;
 		}
 
-		static RectangleF GetTextSize(CTFramesetter frameSetter, CGPath path)
+		internal static RectangleF GetTextSize(CTFramesetter frameSetter, CGPath path)
 		{
 			var frame = frameSetter.GetFrame(new NSRange(0, 0), path, null);
 
@@ -94,7 +80,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			return new RectangleF(0, 0, 0, 0);
 		}
 
-		static RectangleF GetTextSize(CTFrame frame)
+		internal static RectangleF GetTextSize(CTFrame frame)
 		{
 			var minY = float.MaxValue;
 			var maxY = float.MinValue;
