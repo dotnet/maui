@@ -281,6 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_scrollViewer.Padding = WinUIHelpers.CreateThickness(0, 0, 0, itemSpacing);
 		}
 
+		[PortHandler]
 		void UpdateSnapPointsType()
 		{
 			if (_scrollViewer == null)
@@ -293,6 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_scrollViewer.VerticalSnapPointsType = GetWindowsSnapPointsType(CarouselItemsLayout.SnapPointsType);
 		}
 
+		[PortHandler]
 		void UpdateSnapPointsAlignment()
 		{
 			if (_scrollViewer == null)
@@ -498,6 +500,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return new Thickness(0);
 		}
 
+		[PortHandler]
 		WSnapPointsType GetWindowsSnapPointsType(SnapPointsType snapPointsType)
 		{
 			switch (snapPointsType)
@@ -513,6 +516,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return WSnapPointsType.None;
 		}
 
+		[PortHandler]
 		WSnapPointsAlignment GetWindowsSnapPointsAlignment(SnapPointsAlignment snapPointsAlignment)
 		{
 			switch (snapPointsAlignment)

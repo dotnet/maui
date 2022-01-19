@@ -9,6 +9,8 @@ using WApp = Microsoft.UI.Xaml.Application;
 using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using WSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
+using WSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -352,8 +354,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
-			if (currentItemPosition != -1)
-				ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			if (currentItemPosition < 0)
+				return;
+
+			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
 		}
 
 		void UpdatePosition()
@@ -367,6 +371,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {ItemCount} items.");
 
 			SetCarouselViewCurrentItem(carouselPosition);
+		}
+
+		WSnapPointsType GetWindowsSnapPointsType(SnapPointsType snapPointsType)
+		{
+			switch (snapPointsType)
+			{
+				case SnapPointsType.Mandatory:
+					return WSnapPointsType.Mandatory;
+				case SnapPointsType.MandatorySingle:
+					return WSnapPointsType.MandatorySingle;
+				case SnapPointsType.None:
+					return WSnapPointsType.None;
+			}
+
+			return WSnapPointsType.None;
+		}
+
+		WSnapPointsAlignment GetWindowsSnapPointsAlignment(SnapPointsAlignment snapPointsAlignment)
+		{
+			switch (snapPointsAlignment)
+			{
+				case SnapPointsAlignment.Center:
+					return WSnapPointsAlignment.Center;
+				case SnapPointsAlignment.End:
+					return WSnapPointsAlignment.Far;
+				case SnapPointsAlignment.Start:
+					return WSnapPointsAlignment.Near;
+			}
+
+			return WSnapPointsAlignment.Center;
+		}
+
+		void UpdateSnapPointsType()
+		{
+			if (_scrollViewer == null)
+				return;
+
+			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+				_scrollViewer.HorizontalSnapPointsType = GetWindowsSnapPointsType(CarouselItemsLayout.SnapPointsType);
+
+			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+				_scrollViewer.VerticalSnapPointsType = GetWindowsSnapPointsType(CarouselItemsLayout.SnapPointsType);
+		}
+
+		void UpdateSnapPointsAlignment()
+		{
+			if (_scrollViewer == null)
+				return;
+
+			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+				_scrollViewer.HorizontalSnapPointsAlignment = GetWindowsSnapPointsAlignment(CarouselItemsLayout.SnapPointsAlignment);
+
+			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+				_scrollViewer.VerticalSnapPointsAlignment = GetWindowsSnapPointsAlignment(CarouselItemsLayout.SnapPointsAlignment);
 		}
 
 		void UpdateScrollBarVisibilityForLoop()
@@ -472,6 +530,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_scrollViewer.SizeChanged -= InitialSetup;
 
 				UpdateItemsSource();
+				UpdateSnapPointsType();
+				UpdateSnapPointsAlignment();
 				UpdateCarouselViewInitialPosition();
 			}
 		}
