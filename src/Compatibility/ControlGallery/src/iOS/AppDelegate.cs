@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			App.IOSVersion = int.Parse(versionPart[0]);
 
 #if ENABLE_TEST_CLOUD
-			Xamarin.Calabash.Start();
+			//Xamarin.Calabash.Start();
 #endif
 
 			//Forms.Init();
@@ -300,9 +300,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			uiView.Add(uilabel);
 			sl?.Children.Add(uiView);
 			sl?.Children.Add(uibuttonColor.ToView());
-			var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
-			colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
-			sl?.Children.Add(colorPicker);
+			// TODO: Replace with a new plugin or API
+			//var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
+			//colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
+			//sl?.Children.Add(colorPicker);
 			page.NativeControlsAdded = true;
 		}
 

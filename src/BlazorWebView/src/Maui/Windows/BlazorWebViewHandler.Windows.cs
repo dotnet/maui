@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// the precedence of which files are loaded from where.
 			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir) ?? new NullFileProvider();
 
-			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, ComponentsDispatcher, customFileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
+			_webviewManager = new WinUIWebViewManager(NativeView, Services!, ComponentsDispatcher, customFileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
 
 			if (RootComponents != null)
 			{

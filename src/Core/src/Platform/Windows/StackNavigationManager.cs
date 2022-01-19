@@ -161,7 +161,15 @@ namespace Microsoft.Maui.Platform
 			if (presenter == null || _currentPage == null)
 				return;
 
-			presenter.Content = _currentPage.ToNative(MauiContext);
+			try
+			{
+				presenter.Content = _currentPage.ToNative(MauiContext);
+			}
+			catch (Exception)
+			{
+				NavigationView?.NavigationFinished(NavigationStack);
+				throw;
+			}
 
 			if (fe.IsLoaded)
 			{

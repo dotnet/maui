@@ -1,9 +1,9 @@
 #if IOS || MACCATALYST
-using NativeView = UIKit.UIView;
+using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif ANDROID
 using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using NativeView = Microsoft.UI.Xaml.Controls.SwipeControl;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using NativeView = System.Object;
 #endif
@@ -16,8 +16,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IContentView.Content)] = MapContent,
 			[nameof(ISwipeView.SwipeTransitionMode)] = MapSwipeTransitionMode,
-#if ANDROID
+			[nameof(ISwipeView.LeftItems)] = MapLeftItems,
+			[nameof(ISwipeView.TopItems)] = MapTopItems,
+			[nameof(ISwipeView.RightItems)] = MapRightItems,
+			[nameof(ISwipeView.BottomItems)] = MapBottomItems,
+#if ANDROID || IOS
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
+#endif
+#if ANDROID
 			[nameof(IView.Background)] = MapBackground,
 #endif
 		};

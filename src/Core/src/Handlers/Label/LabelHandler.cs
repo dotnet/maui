@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS || __IOS__
 			[nameof(ILabel.Background)] = MapBackground,
+			[nameof(ILabel.Opacity)] = MapOpacity,
 #endif
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,

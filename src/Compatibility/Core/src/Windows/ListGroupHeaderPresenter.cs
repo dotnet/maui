@@ -1,3 +1,4 @@
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -5,6 +6,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListGroupHeaderPresenter instead")]
 	public class ListGroupHeaderPresenter : Microsoft.UI.Xaml.Controls.ContentPresenter
 	{
 		void OnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)

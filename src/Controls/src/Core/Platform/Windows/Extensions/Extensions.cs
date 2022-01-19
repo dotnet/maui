@@ -84,20 +84,5 @@ namespace Microsoft.Maui.Controls.Platform
 					return UwpScrollBarVisibility.Auto;
 			}
 		}
-
-		public static T Clamp<T>(this T value, T min, T max) where T : IComparable<T>
-		{
-			if (value.CompareTo(min) < 0)
-				return min;
-			if (value.CompareTo(max) > 0)
-				return max;
-			return value;
-		}
-
-
-		internal static int ToEm(this double pt)
-		{
-			return Convert.ToInt32( pt * 0.0624f * 1000); //Coefficient for converting Pt to Em. The value is uniform spacing between characters, in units of 1/1000 of an em.
-		}
 	}
 }

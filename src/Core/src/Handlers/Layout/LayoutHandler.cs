@@ -1,10 +1,10 @@
 #nullable enable
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIView;
+using NativeView = Microsoft.Maui.Platform.LayoutView;
 #elif __ANDROID__
-using NativeView = Android.Views.View;
+using NativeView = Microsoft.Maui.Platform.LayoutViewGroup;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using NativeView = Microsoft.Maui.Platform.LayoutPanel;
 #elif NETSTANDARD
 using NativeView = System.Object;
 #endif
@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILayout, ILayoutHandler> LayoutMapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
 		{
-			[nameof(ILayout.Background)] = MapBackground
+			[nameof(ILayout.Background)] = MapBackground,
+			[nameof(ILayout.ClipsToBounds)] = MapClipsToBounds,
 		};
 
 		public static CommandMapper<ILayout, ILayoutHandler> LayoutCommandMapper = new(ViewCommandMapper)
@@ -42,6 +43,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
 			((NativeView?)handler.NativeView)?.UpdateBackground(layout);
+		}
+
+		public static void MapClipsToBounds(ILayoutHandler handler, ILayout layout)
+		{
+			 ((NativeView?)handler.NativeView)?.UpdateClipsToBounds(layout);
 		}
 
 		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)
