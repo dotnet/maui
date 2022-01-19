@@ -148,7 +148,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			StackLayoutButtons.Children.Add(clearItemsButton);
 			StackLayoutButtons.Children.Add(lbl);
 
-			GridLayout.SetRow(StackLayoutButtons, 1);
+			Grid.SetRow(StackLayoutButtons, 1);
 			grid.Children.Add(StackLayoutButtons);
 
 			Content = grid;

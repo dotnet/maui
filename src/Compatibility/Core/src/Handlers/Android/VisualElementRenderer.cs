@@ -5,6 +5,7 @@ using AViewGroup = Android.Views.ViewGroup;
 using AView = Android.Views.View;
 using Microsoft.Maui.Controls.Platform;
 using System.ComponentModel;
+using Android.Content;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {

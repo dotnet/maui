@@ -82,7 +82,7 @@ namespace Maui.Controls.Sample.Pages.ListViewGalleries
 
 			lv.SetBinding(ListView.ItemsSourceProperty, "Things");
 			lv.SetBinding(ListView.RefreshCommandProperty, "RefreshThingsCommand");
-			grid.Add(lv, 0, 0);
+			grid.Add(lv, 0, 6);
 
 			Content = grid;
 		}

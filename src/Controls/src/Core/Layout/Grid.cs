@@ -5,50 +5,50 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
-	public class GridLayout : Layout, IGridLayout
+	public class Grid : Layout, IGridLayout
 	{
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
 		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
-			typeof(ColumnDefinitionCollection), typeof(GridLayout), null, validateValue: (bindable, value) => value != null,
+			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var colDef = new ColumnDefinitionCollection();
-				colDef.ItemSizeChanged += ((GridLayout)bindable).DefinitionsChanged;
+				colDef.ItemSizeChanged += ((Grid)bindable).DefinitionsChanged;
 				return colDef;
 			});
 
 		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
-			typeof(RowDefinitionCollection), typeof(GridLayout), null, validateValue: (bindable, value) => value != null,
+			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var rowDef = new RowDefinitionCollection();
-				rowDef.ItemSizeChanged += ((GridLayout)bindable).DefinitionsChanged;
+				rowDef.ItemSizeChanged += ((Grid)bindable).DefinitionsChanged;
 				return rowDef;
 			});
 
 		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double),
-			typeof(GridLayout), 0d, propertyChanged: Invalidate);
+			typeof(Grid), 0d, propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double),
-			typeof(GridLayout), 0d, propertyChanged: Invalidate);
+			typeof(Grid), 0d, propertyChanged: Invalidate);
 
 		#region Row/Column/Span Attached Properties
 
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
-			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0,
+			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
 			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
-			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1,
+			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
-			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0,
+			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
 			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
-			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1,
+			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);
 
 		public static int GetColumn(BindableObject bindable)
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls
 
 		static void UpdateSizeChangedHandlers(BindableObject bindable, object oldValue, object newValue)
 		{
-			var gridLayout = (GridLayout)bindable;
+			var gridLayout = (Grid)bindable;
 
 			if (oldValue is ColumnDefinitionCollection oldColDefs)
 			{
@@ -322,13 +322,13 @@ namespace Microsoft.Maui.Controls
 
 		static void Invalidate(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable is GridLayout grid)
+			if (bindable is Grid grid)
 			{
 				grid.InvalidateMeasure();
 			}
-			else if (bindable is Element element && element.Parent is GridLayout gridLayout)
+			else if (bindable is Element element && element.Parent is Grid parentGrid)
 			{
-				gridLayout.InvalidateMeasure();
+				parentGrid.InvalidateMeasure();
 			}
 		}
 

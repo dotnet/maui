@@ -71,15 +71,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddMauiControlsHandlers();
 					DependencyService.SetToInitialized();
 
-#if IOS
-					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(EntryCell), typeof(EntryCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
-#elif ANDROID || WINDOWS
+#if ANDROID || IOS || WINDOWS
 					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 					handlers.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
 					handlers.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
@@ -87,16 +79,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
 					handlers.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
 					handlers.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
-
-#endif
-
-#if ANDROID
 					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-#elif IOS || WINDOWS
-					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
-#endif
-
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 
 					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));

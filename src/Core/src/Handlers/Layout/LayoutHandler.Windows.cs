@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(LayoutPanel nativeView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its children
-			Clear();
+			nativeView.Children.Clear();
 			base.DisconnectHandler(nativeView);
 		}
 
