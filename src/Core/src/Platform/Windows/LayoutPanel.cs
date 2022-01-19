@@ -2,6 +2,9 @@
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using WSize = global::Windows.Foundation.Size;
+using WRect = global::Windows.Foundation.Rect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -10,7 +13,9 @@ namespace Microsoft.Maui.Platform
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 
-		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		public bool ClipsToBounds { get; set; }
+
+		protected override WSize MeasureOverride(WSize availableSize)
 		{
 			if (CrossPlatformMeasure == null)
 			{
@@ -25,10 +30,10 @@ namespace Microsoft.Maui.Platform
 			width = crossPlatformSize.Width;
 			height = crossPlatformSize.Height;
 
-			return new global::Windows.Foundation.Size(width, height);
+			return new WSize(width, height);
 		}
 
-		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+		protected override WSize ArrangeOverride(WSize finalSize)
 		{
 			if (CrossPlatformArrange == null)
 			{
@@ -38,9 +43,11 @@ namespace Microsoft.Maui.Platform
 			var width = finalSize.Width;
 			var height = finalSize.Height;
 
-			var actual = CrossPlatformArrange(new Rectangle(0, 0, width, height));
+			CrossPlatformArrange(new Rectangle(0, 0, width, height));
 
-			return new global::Windows.Foundation.Size(actual.Width, actual.Height);
+			Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
+
+			return finalSize;
 		}
 	}
 }

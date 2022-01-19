@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty =
-			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
+			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false, 
+				propertyChanged: IsClippedToBoundsPropertyChanged);
 
 		public static readonly BindableProperty CascadeInputTransparentProperty =
 			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
@@ -107,6 +108,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateLayout();
+
+		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue) 
+		{
+			if (bindableObject is IView view)
+			{
+				view.Handler?.UpdateValue(nameof(Maui.ILayout.ClipsToBounds));
+			}
+		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
