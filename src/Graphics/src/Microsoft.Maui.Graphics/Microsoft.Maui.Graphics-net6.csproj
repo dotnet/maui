@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-macos</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-macos;net6.0-tizen6.5</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.18362</TargetFrameworks>
     <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
