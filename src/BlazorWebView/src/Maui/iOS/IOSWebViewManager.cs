@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					.PresentViewController(controller, true, null);
 			}
 
-			static UIViewController? GetTopViewController(UIViewController? viewController)
+			private static UIViewController? GetTopViewController(UIViewController? viewController)
 			{
 				if (viewController is UINavigationController navigationController)
 					return GetTopViewController(navigationController.VisibleViewController);
