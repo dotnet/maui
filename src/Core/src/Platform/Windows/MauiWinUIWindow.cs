@@ -65,6 +65,8 @@ namespace Microsoft.Maui
 			if (_hwnd == IntPtr.Zero)
 				throw new NullReferenceException("The Window Handle is null.");
 
+			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnNativeWindowSubclassed>(del => del(this, _hwnd));
+
 			newWndProc = new WinProc(NewWindowProc);
 			oldWndProc = SetWindowLongPtr(_hwnd, /* GWL_WNDPROC */ -4, newWndProc);
 		}
