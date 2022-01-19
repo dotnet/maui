@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
@@ -56,6 +57,8 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureCrossPlatformLifecycleEvents();
 				this.ConfigureDispatching();
 			}
+
+			this.UseEssentials();
 		}
 
 		/// <summary>

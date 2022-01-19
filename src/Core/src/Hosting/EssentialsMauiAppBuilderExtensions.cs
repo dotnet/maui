@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -9,16 +9,21 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IEssentialsBuilder
+	{
+		IEssentialsBuilder UseMapServiceToken(string token);
+
+		IEssentialsBuilder AddAppAction(AppAction appAction);
+
+		IEssentialsBuilder OnAppAction(Action<AppAction> action);
+
+		IEssentialsBuilder UseVersionTracking();
+	}
+
 	public static class EssentialsExtensions
 	{
-		public static MauiAppBuilder ConfigureEssentials(this MauiAppBuilder builder, Action<IEssentialsBuilder> configureDelegate = null)
+		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
-			if (configureDelegate != null)
-			{
-				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
-			}
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
-
 			builder.ConfigureLifecycleEvents(life =>
 			{
 #if __ANDROID__
@@ -53,6 +58,10 @@ namespace Microsoft.Maui.Essentials
 					}));
 #elif WINDOWS
 				life.AddWindows(windows => windows
+					.OnNativeMessage((window, args) =>
+					{
+						Platform.NewWindowProc(args.Hwnd, args.MessageId, args.WParam, args.LParam);
+					})
 					.OnActivated((window, args) =>
 					{
 						Platform.OnActivated(window, args);
@@ -67,7 +76,18 @@ namespace Microsoft.Maui.Essentials
 			return builder;
 		}
 
-		public static IEssentialsBuilder AddAppAction(this IEssentialsBuilder essentials, string id, string title, string subtitle = null, string icon = null) =>
+		public static MauiAppBuilder ConfigureEssentials(this MauiAppBuilder builder, Action<IEssentialsBuilder>? configureDelegate = null)
+		{
+			if (configureDelegate != null)
+			{
+				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
+			}
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+
+			return builder;
+		}
+
+		public static IEssentialsBuilder AddAppAction(this IEssentialsBuilder essentials, string id, string title, string? subtitle = null, string? icon = null) =>
 			essentials.AddAppAction(new AppAction(id, title, subtitle, icon));
 
 		internal class EssentialsRegistration
@@ -88,7 +108,7 @@ namespace Microsoft.Maui.Essentials
 		class EssentialsInitializer : IMauiInitializeService
 		{
 			private readonly IEnumerable<EssentialsRegistration> _essentialsRegistrations;
-			private EssentialsBuilder _essentialsBuilder;
+			private EssentialsBuilder? _essentialsBuilder;
 
 			public EssentialsInitializer(IEnumerable<EssentialsRegistration> essentialsRegistrations)
 			{
@@ -127,20 +147,20 @@ namespace Microsoft.Maui.Essentials
 					VersionTracking.Track();
 			}
 
-			void HandleOnAppAction(object sender, AppActionEventArgs e)
+			void HandleOnAppAction(object? sender, AppActionEventArgs e)
 			{
-				_essentialsBuilder.AppActionHandlers?.Invoke(e.AppAction);
+				_essentialsBuilder?.AppActionHandlers?.Invoke(e.AppAction);
 			}
 		}
 
 		class EssentialsBuilder : IEssentialsBuilder
 		{
 			internal readonly List<AppAction> AppActions = new List<AppAction>();
-			internal Action<AppAction> AppActionHandlers;
+			internal Action<AppAction>? AppActionHandlers;
 			internal bool TrackVersions;
 
 #pragma warning disable CS0414 // Remove unread private members
-			internal string MapServiceToken;
+			internal string? MapServiceToken;
 #pragma warning restore CS0414 // Remove unread private members
 
 			public IEssentialsBuilder UseMapServiceToken(string token)
