@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(
 			nameof(Color), typeof(Color), typeof(SolidColorBrush), null);
 
-		public Color Color
+		public virtual Color Color
 		{
 			get => (Color)GetValue(ColorProperty);
 			set => SetValue(ColorProperty, value);

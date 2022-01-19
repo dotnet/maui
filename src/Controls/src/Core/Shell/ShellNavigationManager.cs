@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 				modalStackPreBuilt = true;
 
 				bool? isAnimated = (nextActiveSection != currentShellSection) ? false : animate;
-				await nextActiveSection.GoToAsync(navigationRequest, parameters, isAnimated, isRelativePopping);
+				await nextActiveSection.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, isAnimated, isRelativePopping);
 			}
 
 			if (shellItem != null)
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
 					await Device.InvokeOnMainThreadAsync(() =>
 					{
-						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, animate, isRelativePopping);
+						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 					});
 				}
 				else if (navigationRequest.Request.GlobalRoutes.Count == 0 &&
@@ -159,13 +159,13 @@ namespace Microsoft.Maui.Controls
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
 					await Device.InvokeOnMainThreadAsync(() =>
 					{
-						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, animate, isRelativePopping);
+						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 					});
 				}
 			}
 			else
 			{
-				await _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, animate, isRelativePopping);
+				await _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 			}
 
 			(_shell as IShellController).UpdateCurrentState(source);

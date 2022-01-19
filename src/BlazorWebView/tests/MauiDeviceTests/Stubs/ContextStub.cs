@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.MauiBlazorWebView.DeviceTests;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {

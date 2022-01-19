@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 									propertyChanged: OnFontFamilyChanged);
 
 		public static readonly BindableProperty FontSizeProperty =
-			BindableProperty.Create("FontSize", typeof(double), typeof(IFontElement), -1.0,
+			BindableProperty.Create("FontSize", typeof(double), typeof(IFontElement), 0d,
 									propertyChanged: OnFontSizeChanged,
 									defaultValueCreator: FontSizeDefaultValueCreator);
 

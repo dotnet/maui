@@ -33,6 +33,8 @@
 
                         <Label Text="{Binding Icon}"
                                    FontSize="24"
+                                   Grid.Row="0"
+                                   Grid.Column="0"
                                    Grid.RowSpan="2"
                                    HorizontalOptions="Center" VerticalOptions="Center" />
 

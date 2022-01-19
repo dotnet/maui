@@ -367,3 +367,8 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 .DS_Store
+
+# Android Studio
+.gradle/
+.idea/
+local.properties

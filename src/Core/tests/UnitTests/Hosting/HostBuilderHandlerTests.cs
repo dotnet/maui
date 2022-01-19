@@ -70,24 +70,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void CanRegisterAndGetHandlerWithDictionary()
-		{
-			var dic = new Dictionary<Type, Type>
-			{
-				{ typeof(IViewStub), typeof(ViewHandlerStub) }
-			};
-
-			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandlers(dic))
-				.Build();
-
-			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetHandler(typeof(IViewStub));
-
-			Assert.NotNull(handler);
-			Assert.IsType<ViewHandlerStub>(handler);
-		}
-
-		[Fact]
 		public void CanRegisterAndGetHandlerForConcreteType()
 		{
 			var mauiApp = MauiApp.CreateBuilder()

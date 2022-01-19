@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Essentials
 				if (File.Exists(resolved))
 					return resolved;
 			}
-			else if (!requireExtendedAccess || !Platform.HasApiLevel(29))
+			else if (!requireExtendedAccess || !OperatingSystem.IsAndroidVersionAtLeast(29))
 			{
 				// if this is on an older OS version, or we just need it now
 

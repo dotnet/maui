@@ -25,10 +25,10 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-For example, the "preview.10" branch:
+For example, the "preview.12" branch:
 ```
 dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/preview.10.json `
+   --from-rollback-file https://aka.ms/dotnet/maui/preview.12.json `
    --source https://aka.ms/dotnet6/nuget/index.json `
    --source https://api.nuget.org/v3/index.json
 ```
@@ -59,7 +59,6 @@ iOS and MacCatalyst will require Xcode 13.1 Stable. You can get this [here](http
 ### Android
 
 Android API-31 (Android 12) is now the default in .NET 6.
-
 
 
 ## Running
