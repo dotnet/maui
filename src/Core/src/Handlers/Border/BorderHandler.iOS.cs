@@ -4,7 +4,7 @@ using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorder, ContentView>
+	public partial class BorderHandler : ViewHandler<IBorderView, ContentView>
 	{
 		protected override ContentView CreateNativeView()
 		{
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 				NativeView.AddSubview(view.ToNative(MauiContext));
 		}
 
-		public static void MapContent(BorderHandler handler, IBorder border)
+		public static void MapContent(BorderHandler handler, IBorderView border)
 		{
 			handler.UpdateContent();
 		}
