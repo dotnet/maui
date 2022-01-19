@@ -10,7 +10,7 @@
 
             <Label Text="Not clipping" x:Name="Status" Margin="10"/>
 
-            <Button GridLayout.ColumnSpan="2" HorizontalOptions="Center" Margin="5" 
+            <Button Grid.ColumnSpan="2" HorizontalOptions="Center" Margin="5" 
                     Text="Toggle clipping on horizontal stack layouts" x:Name="ToggleClip"/>
             
             <Grid WidthRequest="400" HeightRequest="200">
@@ -29,7 +29,7 @@
                     <Button Text="7" Margin="1" HeightRequest="50"/>
                     <Button Text="8" Margin="1" HeightRequest="50"/>
                 </StackLayout>
-                <BoxView GridLayout.Column="1" Background="Red" Opacity="0.5"/>
+                <BoxView Grid.Column="1" Background="Red" Opacity="0.5"/>
             </Grid>
 
             <HorizontalStackLayout Background="LightBlue" WidthRequest="100" Padding="10" x:Name="Layout2">
