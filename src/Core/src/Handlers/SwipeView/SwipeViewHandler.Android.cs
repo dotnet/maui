@@ -26,6 +26,19 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
+		public static void MapLeftItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapTopItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapRightItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapBottomItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+
 		public static void MapContent(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
 			_ = handler.NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");

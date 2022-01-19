@@ -126,6 +126,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.Dispose(disposing);
 		}
 
+
+		[PortHandler]
 		protected override void UpdateBackgroundColor()
 		{
 			Color backgroundColor = Element.BackgroundColor;
@@ -205,6 +207,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateSwipeItem(formsSwipeItem);
 		}
 
+		[PortHandler]
 		void UpdateContent()
 		{
 			if (Element.Content == null)

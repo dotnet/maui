@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this object nativeView, IView view) { }
 
+		public static void UpdateClipsToBounds(this object nativeView, IView view) { }
+
 		public static void UpdateAutomationId(this object nativeView, IView view) { }
 
 		public static void UpdateClip(this object nativeView, IView view) { }

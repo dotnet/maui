@@ -83,16 +83,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 		}
 
-		/// <summary>
-		/// Occurs when the <see cref="WebView2WebViewManager"/> is created.
-		/// </summary>
-		public event EventHandler<WebViewManagerCreatedEventArgs> WebViewManagerCreated;
-
-		protected virtual void OnWebViewManagerCreated(WebViewManagerCreatedEventArgs webViewManagerCreatedEventArgs)
-		{
-			WebViewManagerCreated?.Invoke(this, webViewManagerCreatedEventArgs);
-		}
-
 		// Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
 		private void ResetHostPage() => HostPage = null;
 		private bool ShouldSerializeHostPage() => !string.IsNullOrEmpty(HostPage);
@@ -168,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				? assetFileProvider
 				: new CompositeFileProvider(customFileProvider, assetFileProvider);
 
-			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
 
 			foreach (var rootComponent in RootComponents)
 			{

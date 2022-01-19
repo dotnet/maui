@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else
 			{
-				Typeface = font.ToTypeface();
+				Typeface = font.ToTypeface(Element.RequireFontManager());
 				if (font.AutoScalingEnabled)
 					SetTextSize(ComplexUnitType.Sp, (float)font.Size);
 				else

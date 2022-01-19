@@ -7,6 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.SwitchCellRenderer instead")]
 	public class SwitchCellRenderer : CellRenderer
 	{
 		const string CellName = "Xamarin.SwitchCell";

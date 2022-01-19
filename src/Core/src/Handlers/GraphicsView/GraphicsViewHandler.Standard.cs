@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Handlers
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
 		public static void MapDrawable(IViewHandler handler, IGraphicsView graphicsView) { }
+		public static void MapFlowDirection(IViewHandler handler, IGraphicsView graphicsView) { }
 
 		public static void MapInvalidate(IViewHandler handler, IGraphicsView graphicsView, object? arg) { }
 	}
