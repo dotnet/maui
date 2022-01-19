@@ -311,7 +311,7 @@ stages:
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/dev/pjc/3partyscripts'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/ttf3partyscript'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
 
         - template: nuget-msi-convert/job/v2.yml@xamarin-templates
           parameters:
