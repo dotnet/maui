@@ -35,6 +35,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ThirdPartyScript Include="OpenSans-Regular.ttf" />
+    <ThirdPartyScript Include="open-iconic.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Skip Include="NuGet.*.dll" />
     <Skip Include="Mono.*.dll" />
     <Skip Include="Microsoft.Build.*.dll" />
