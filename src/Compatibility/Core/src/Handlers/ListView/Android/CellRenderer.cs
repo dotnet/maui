@@ -16,7 +16,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		EventHandler _onForceUpdateSizeRequested;
 
-		public CellRenderer() : base(ElementHandler.ElementMapper)
+		public static PropertyMapper<Cell, CellRenderer> Mapper =
+				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
+
+		public static CommandMapper<Cell, CellRenderer> CommandMapper =
+			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
+
+		public CellRenderer() : base(Mapper, CommandMapper)
 		{
 		}
 

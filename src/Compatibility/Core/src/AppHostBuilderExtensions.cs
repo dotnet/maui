@@ -71,15 +71,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddMauiControlsHandlers();
 					DependencyService.SetToInitialized();
 
-#if IOS
-					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(EntryCell), typeof(EntryCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
-#elif ANDROID || WINDOWS
+#if ANDROID || WINDOWS || IOS
 					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 					handlers.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
 					handlers.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
@@ -90,9 +82,9 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #endif
 
-#if ANDROID
+#if ANDROID || IOS
 					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-#elif IOS || WINDOWS
+#elif WINDOWS
 					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
 #endif
 

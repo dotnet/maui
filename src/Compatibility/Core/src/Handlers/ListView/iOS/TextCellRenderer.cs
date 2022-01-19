@@ -3,15 +3,13 @@ using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
-using System;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.TextCellRenderer instead")]
 	public class TextCellRenderer : CellRenderer
 	{
-		readonly Color DefaultDetailColor = ColorExtensions.SecondaryLabelColor.ToColor();
-		readonly Color DefaultTextColor = ColorExtensions.LabelColor.ToColor();
+		readonly Color DefaultDetailColor = Controls.Compatibility.Platform.iOS.ColorExtensions.SecondaryLabelColor.ToColor();
+		readonly Color DefaultTextColor = Controls.Compatibility.Platform.iOS.ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public TextCellRenderer()
@@ -34,8 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			tvc.TextLabel.Text = textCell.Text;
 			tvc.DetailTextLabel.Text = textCell.Detail;
-			tvc.TextLabel.TextColor = textCell.TextColor.ToUIColor(DefaultTextColor);
-			tvc.DetailTextLabel.TextColor = textCell.DetailColor.ToUIColor(DefaultDetailColor);
+			tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToNative();
+			tvc.DetailTextLabel.TextColor = (textCell.DetailColor ?? DefaultDetailColor).ToNative();
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
@@ -65,9 +63,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				tvc.DetailTextLabel.SizeToFit();
 			}
 			else if (args.PropertyName == TextCell.TextColorProperty.PropertyName)
-				tvc.TextLabel.TextColor = textCell.TextColor.ToUIColor(DefaultTextColor);
+				tvc.TextLabel.TextColor = textCell.TextColor?.ToNative() ?? DefaultTextColor.ToNative();
 			else if (args.PropertyName == TextCell.DetailColorProperty.PropertyName)
-				tvc.DetailTextLabel.TextColor = textCell.DetailColor.ToUIColor(DefaultTextColor);
+				tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToNative() ?? DefaultTextColor.ToNative();
 			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(tvc, textCell);
 			else if (args.PropertyName == TextCell.AutomationIdProperty.PropertyName)

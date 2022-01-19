@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
 
-		public ListViewRenderer(IMauiContext mauiContext) : base(mauiContext, Mapper, CommandMapper)
+		public ListViewRenderer(Context context) : base(context, Mapper, CommandMapper)
 		{
 		}
 

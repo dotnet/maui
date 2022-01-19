@@ -3,9 +3,8 @@ using System.ComponentModel;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.CellTableViewCell instead")]
 	public class CellTableViewCell : UITableViewCell, INativeElementView
 	{
 		Cell _cell;
@@ -49,8 +48,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var id = cell.GetType().FullName;
 
-			var renderer = (CellRenderer)Controls.Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
-
 			ContextActionsCell contextCell = null;
 			UITableViewCell reusableCell = null;
 			if (cell.HasContextActions || recycleCells)
@@ -73,7 +70,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 				reusableCell = tableView.DequeueReusableCell(id);
 
-			var nativeCell = renderer.GetCell(cell, reusableCell, tableView);
+			cell.Handler?.DisconnectHandler();
+			cell.ReusableCell = reusableCell;
+			cell.TableView = tableView;
+			var handler = cell.ToHandler(cell.FindMauiContext());
+			var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
+
+			var nativeCell = renderer.NativeView;
 
 			var cellWithContent = nativeCell;
 

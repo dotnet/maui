@@ -1,5 +1,5 @@
 ﻿#nullable enable
-#if WINDOWS || ANDROID
+#if WINDOWS || ANDROID || IOS
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +11,8 @@ using Microsoft.Maui.Graphics;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif ANDROID
 using PlatformView = Android.Views.View;
+#elif IOS
+using PlatformView = UIKit.UIView;
 #endif
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
@@ -40,26 +42,39 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<TElement, INativeViewHandler> VisualElementRendererCommandMapper = new CommandMapper<TElement, INativeViewHandler>(ViewHandler.ViewCommandMapper);
 
 		TElement? _virtualView;
-		IMauiContext _mauiContext;
+		IMauiContext? _mauiContext;
 		protected IPropertyMapper _mapper;
 		protected CommandMapper? _commandMapper;
 		protected readonly IPropertyMapper _defaultMapper;
-		protected IMauiContext MauiContext => _mauiContext;
+		protected IMauiContext MauiContext => _mauiContext ?? throw new InvalidOperationException("MauiContext not set");
 		public TElement? Element => _virtualView;
 
-		public VisualElementRenderer(IMauiContext context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
+#if ANDROID
+		public VisualElementRenderer(Android.Content.Context context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{
 		}
+#else
+		public VisualElementRenderer() : this(VisualElementRendererMapper, VisualElementRendererCommandMapper)
+		{
+		}
+#endif
 
-		internal VisualElementRenderer(IMauiContext context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
+
 #if ANDROID
-			: base(context.Context)
+		internal VisualElementRenderer(Android.Content.Context context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
+#else
+	internal VisualElementRenderer(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+#endif
+
+#if ANDROID
+			: base(context)
+#elif IOS
+			: base(CoreGraphics.CGRect.Empty)
 #else
 			: base()
 #endif
 		{
 			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
-			_mauiContext = context;
 			_defaultMapper = mapper;
 			_mapper = _defaultMapper;
 			_commandMapper = commandMapper;
@@ -73,14 +88,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			((INativeViewHandler)this).SetVirtualView(view);
 		}
 
+		partial void ElementChangedPartial(ElementChangedEventArgs<TElement> e);
 		protected virtual void OnElementChanged(ElementChangedEventArgs<TElement> e)
 		{
 			ElementChanged?.Invoke(this, e);
+			ElementChangedPartial(e);
 		}
+
+
+		partial void ElementPropertyChangedPartial(object sender, PropertyChangedEventArgs e);
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(sender, e);
+			ElementPropertyChangedPartial(sender, e);
 		}
 
 		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -105,13 +126,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 
+#if IOS
+	protected virtual void SetBackgroundColor(Color? color)
+#else
 		protected virtual void UpdateBackgroundColor()
+#endif
 		{
 			if (Element != null)
 				ViewHandler.MapBackground(this, Element);
 		}
 
+#if IOS
+	protected virtual void SetBackground(Brush brush)
+#else
 		protected virtual void UpdateBackground()
+#endif
 		{
 			if (Element != null)
 				ViewHandler.MapBackground(this, Element);
@@ -249,7 +278,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif
+#if IOS
+			ver.SetBackgroundColor(view.Background?.ToColor());
+#else
 				ver.UpdateBackgroundColor();
+#endif
 		}
 
 		public static void MapBackground(INativeViewHandler handler, TElement view)
@@ -259,7 +292,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif
+#if IOS
+			ver.SetBackground(view.Background);
+#else
 				ver.UpdateBackground();
+#endif
 		}
 	}
 }

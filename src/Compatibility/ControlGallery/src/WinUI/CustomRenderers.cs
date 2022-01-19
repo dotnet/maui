@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 	public class SortableListViewRenderer : Controls.Handlers.Compatibility.ListViewRenderer
 	{
-		public SortableListViewRenderer(IMauiContext mauiContext) : base(mauiContext)
+		public SortableListViewRenderer() : base()
 		{
 		}
 

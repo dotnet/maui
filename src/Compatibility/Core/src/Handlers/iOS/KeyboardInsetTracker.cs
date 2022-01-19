@@ -4,9 +4,8 @@ using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.KeyboardInsetTracker instead")]
 	internal class KeyboardInsetTracker : IDisposable
 	{
 		readonly Func<UIWindow> _fetchWindow;
@@ -29,14 +28,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 		}
 
-		public KeyboardInsetTracker(UIScrollView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction, Action<PointF> setContentOffset, IVisualElementRenderer renderer)
+		public KeyboardInsetTracker(UIScrollView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction, Action<PointF> setContentOffset, INativeViewHandler renderer)
 		{
 			_setContentOffset = setContentOffset;
 			_targetView = targetView;
 			_fetchWindow = fetchWindow;
 			_setInsetAction = setInsetAction;
-			KeyboardObserver.KeyboardWillShow += OnKeyboardShown;
-			KeyboardObserver.KeyboardWillHide += OnKeyboardHidden;
+			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillShow += OnKeyboardShown;
+			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillHide += OnKeyboardHidden;
 			if (renderer != null)
 				_shellScrollViewTracker = new ShellScrollViewTracker(renderer);
 		}
@@ -48,8 +47,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			_disposed = true;
 
-			KeyboardObserver.KeyboardWillShow -= OnKeyboardShown;
-			KeyboardObserver.KeyboardWillHide -= OnKeyboardHidden;
+			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillShow -= OnKeyboardShown;
+			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillHide -= OnKeyboardHidden;
 
 			_shellScrollViewTracker?.Dispose();
 			_shellScrollViewTracker = null;
@@ -71,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 			}
 
-			var field = _targetView.FindFirstResponder();
+			var field = Controls.Compatibility.Platform.iOS.UIViewExtensions.FindFirstResponder(_targetView);
 
 			//the view that is triggering the keyboard is not inside our UITableView?
 			//if (field == null)

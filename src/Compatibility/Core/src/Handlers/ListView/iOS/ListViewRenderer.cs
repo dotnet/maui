@@ -16,17 +16,22 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer instead")]
 	public class ListViewRenderer : ViewRenderer<ListView, UITableView>
 	{
+		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
+				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
+
+		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
+			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
+
 		const int DefaultRowHeight = 44;
 
 		UIView _backgroundUIView;
 		ListViewDataSource _dataSource;
-		IVisualElementRenderer _headerRenderer;
-		IVisualElementRenderer _footerRenderer;
+		INativeViewHandler _headerRenderer;
+		INativeViewHandler _footerRenderer;
 
 		KeyboardInsetTracker _insetTracker;
 		RectangleF _previousFrame;
@@ -36,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		ListView ListView => Element;
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		public override UIViewController ViewController => _tableViewController;
-		bool _disposed;
+		//bool _disposed;
 		bool _usingLargeTitles;
 
 		bool? _defaultHorizontalScrollVisibility;
@@ -51,16 +56,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			set { _dataSource.ReloadSectionsAnimation = value; }
 		}
 
-
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		public ListViewRenderer()
+		public ListViewRenderer() : base(Mapper, CommandMapper)
 		{
 
-		}
-
-		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return Control.GetSizeRequest(widthConstraint, heightConstraint, DefaultRowHeight, DefaultRowHeight);
 		}
 
 		public override void LayoutSubviews()
@@ -72,9 +70,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			double width = Bounds.Width;
 			if (_headerRenderer != null)
 			{
-				var e = _headerRenderer.Element;
-				var request = e.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-
 				// Time for another story with Jason. Gather round children because the following Math.Ceiling will look like it's completely useless.
 				// You will remove it and test and find everything is fiiiiiine, but it is not fine, no it is far from fine. See iOS, or at least iOS 8
 				// has an issue where-by if the TableHeaderView happens to NOT be an integer height, it will add padding to the space between the content
@@ -83,7 +78,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// grow a little each time, which you weren't testing at all were you? So there you have it, the stupid reason we integer align here.
 				//
 				// The same technically applies to the footer, though that could hardly matter less. We just do it for fun.
-				Layout.LayoutChildIntoBoundingRegion(e, new Rectangle(0, 0, width, Math.Ceiling(request.Request.Height)));
+				var e = _headerRenderer.VirtualView;
+				var request = e.Measure(width, double.PositiveInfinity);
+				e.Frame = new Rectangle(0, 0, request.Width, request.Height);
+				e.Arrange(e.Frame);
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
@@ -94,9 +92,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_footerRenderer != null)
 			{
-				var e = _footerRenderer.Element;
-				var request = e.Measure(width, height, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(e, new Rectangle(0, 0, width, Math.Ceiling(request.Request.Height)));
+				var e = _footerRenderer.VirtualView;
+				var request = e.Measure(width, height);
+				e.Frame = new Rectangle(0, 0, request.Width, request.Height);
+				e.Arrange(e.Frame);
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
@@ -141,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (backgroundColor == null)
 						_backgroundUIView.BackgroundColor = UIColor.White;
 					else
-						_backgroundUIView.BackgroundColor = backgroundColor.ToUIColor();
+						_backgroundUIView.BackgroundColor = backgroundColor.ToNative();
 				}
 				else
 				{
@@ -156,91 +155,91 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		void DisposeSubviews(UIView view)
-		{
-			var ver = view as IVisualElementRenderer;
+		//void DisposeSubviews(UIView view)
+		//{
+		//	var ver = view as IVisualElementRenderer;
 
-			if (ver == null)
-			{
-				// VisualElementRenderers should implement their own dispose methods that will appropriately dispose and remove their child views.
-				// Attempting to do this work twice could cause a SIGSEGV (only observed in iOS8), so don't do this work here.
-				// Non-renderer views, such as separator lines, etc., can be removed here.
-				foreach (UIView subView in view.Subviews)
-					DisposeSubviews(subView);
+		//	if (ver == null)
+		//	{
+		//		// VisualElementRenderers should implement their own dispose methods that will appropriately dispose and remove their child views.
+		//		// Attempting to do this work twice could cause a SIGSEGV (only observed in iOS8), so don't do this work here.
+		//		// Non-renderer views, such as separator lines, etc., can be removed here.
+		//		foreach (UIView subView in view.Subviews)
+		//			DisposeSubviews(subView);
 
-				view.RemoveFromSuperview();
-			}
+		//		view.RemoveFromSuperview();
+		//	}
 
-			view.Dispose();
-		}
+		//	view.Dispose();
+		//}
 
-		protected override void Dispose(bool disposing)
-		{
-			if (_disposed)
-				return;
+		//protected override void Dispose(bool disposing)
+		//{
+		//	if (_disposed)
+		//		return;
 
-			if (disposing)
-			{
-				if (_insetTracker != null)
-				{
-					_insetTracker.Dispose();
-					_insetTracker = null;
-				}
+		//	if (disposing)
+		//	{
+		//		if (_insetTracker != null)
+		//		{
+		//			_insetTracker.Dispose();
+		//			_insetTracker = null;
+		//		}
 
-				foreach (UIView subview in Subviews)
-					DisposeSubviews(subview);
+		//		foreach (UIView subview in Subviews)
+		//			DisposeSubviews(subview);
 
-				if (Element != null)
-				{
-					var templatedItems = TemplatedItemsView.TemplatedItems;
-					templatedItems.CollectionChanged -= OnCollectionChanged;
-					templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
-				}
+		//		if (Element != null)
+		//		{
+		//			var templatedItems = TemplatedItemsView.TemplatedItems;
+		//			templatedItems.CollectionChanged -= OnCollectionChanged;
+		//			templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
+		//		}
 
-				if (_dataSource != null)
-				{
-					_dataSource.Dispose();
-					_dataSource = null;
-				}
+		//		if (_dataSource != null)
+		//		{
+		//			_dataSource.Dispose();
+		//			_dataSource = null;
+		//		}
 
-				if (_tableViewController != null)
-				{
-					_tableViewController.Dispose();
-					_tableViewController = null;
-				}
+		//		if (_tableViewController != null)
+		//		{
+		//			_tableViewController.Dispose();
+		//			_tableViewController = null;
+		//		}
 
-				if (_headerRenderer != null)
-				{
-					_headerRenderer.Element?.DisposeModalAndChildRenderers();
-					_headerRenderer = null;
-				}
-				if (_footerRenderer != null)
-				{
-					_footerRenderer.Element?.DisposeModalAndChildRenderers();
-					_footerRenderer = null;
-				}
+		//		if (_headerRenderer != null)
+		//		{
+		//			_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
+		//			_headerRenderer = null;
+		//		}
+		//		if (_footerRenderer != null)
+		//		{
+		//			_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
+		//			_footerRenderer = null;
+		//		}
 
-				if (_backgroundUIView != null)
-				{
-					_backgroundUIView.Dispose();
-					_backgroundUIView = null;
-				}
+		//		if (_backgroundUIView != null)
+		//		{
+		//			_backgroundUIView.Dispose();
+		//			_backgroundUIView = null;
+		//		}
 
-				var headerView = ListView?.HeaderElement as VisualElement;
-				if (headerView != null)
-					headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
-				Control?.TableHeaderView?.Dispose();
+		//		var headerView = ListView?.HeaderElement as VisualElement;
+		//		if (headerView != null)
+		//			headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+		//		Control?.TableHeaderView?.Dispose();
 
-				var footerView = ListView?.FooterElement as VisualElement;
-				if (footerView != null)
-					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
-				Control?.TableFooterView?.Dispose();
-			}
+		//		var footerView = ListView?.FooterElement as VisualElement;
+		//		if (footerView != null)
+		//			footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
+		//		Control?.TableFooterView?.Dispose();
+		//	}
 
-			_disposed = true;
+		//	_disposed = true;
 
-			base.Dispose(disposing);
-		}
+		//	base.Dispose(disposing);
+		//}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
@@ -268,7 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					if (Forms.IsiOS11OrNewer)
+					if (NativeVersion.IsAtLeast(11))
 					{
 						var parentNav = e.NewElement.FindParentOfType<NavigationPage>();
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
@@ -357,7 +356,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the cells adhere to changes UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (NativeVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				ReloadData();
 		}
 
@@ -397,9 +396,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (width == 0)
 				return;
 
-			var footerView = (VisualElement)sender;
-			var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+			var footerView = (IView)sender;
+			var request = footerView.Measure(width, double.PositiveInfinity);
+			// Todo MAUI
+			//Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
 
 			Control.TableFooterView = _footerRenderer.NativeView;
 		}
@@ -419,9 +419,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (width == 0)
 				return;
 
-			var headerView = (VisualElement)sender;
-			var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
+			var headerView = (IView)sender;
+			var request = headerView.Measure(width, double.PositiveInfinity);
+
+			// TODO MAUI
+			//Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
 
 			Control.TableHeaderView = _headerRenderer.NativeView;
 		}
@@ -451,10 +453,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					Control.Layer.RemoveAllAnimations();
 					//iOS11 hack
-					if (Forms.IsiOS11OrNewer)
-						this.QueueForLater(() =>
+					if (NativeVersion.IsAtLeast(11))
+						this.BeginInvokeOnMainThread(() =>
 						{
-							if (Control != null && !_disposed)
+							if (Control != null /*&& !_disposed*/)
 								Control.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
 						});
 					else
@@ -472,27 +474,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (_footerRenderer != null)
 				{
-					_footerRenderer.Element.MeasureInvalidated -= OnFooterMeasureInvalidated;
+					((VisualElement)_footerRenderer.VirtualView).MeasureInvalidated -= OnFooterMeasureInvalidated;
 					var reflectableType = _footerRenderer as System.Reflection.IReflectableType;
 					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _footerRenderer.GetType();
 					if (footer != null && rendererType == Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerTypeForObject(footer))
 					{
-						_footerRenderer.SetElement(footerView);
+						_footerRenderer.SetVirtualView(footerView);
 						return;
 					}
 					Control.TableFooterView = null;
 
-					_footerRenderer.Element?.DisposeModalAndChildRenderers();
-					_footerRenderer.Dispose();
-					_footerRenderer = null;
+					((Element)_footerRenderer.VirtualView)?.DisposeModalAndChildHandlers();
+					_footerRenderer.DisconnectHandler();
 				}
 
-				_footerRenderer = Platform.CreateRenderer(footerView);
-				Platform.SetRenderer(footerView, _footerRenderer);
+				_footerRenderer = footerView.ToHandler(MauiContext);
 
 				double width = Bounds.Width;
-				var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+				// TODO MAUI
+				//var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+				//Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
 
 				Control.TableFooterView = _footerRenderer.NativeView;
 				footerView.MeasureInvalidated += OnFooterMeasureInvalidated;
@@ -500,10 +501,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else if (_footerRenderer != null)
 			{
 				Control.TableFooterView = null;
-				_footerRenderer.Element.MeasureInvalidated -= OnFooterMeasureInvalidated;
+				((VisualElement)_footerRenderer.VirtualView).MeasureInvalidated -= OnFooterMeasureInvalidated;
 
-				_footerRenderer.Element?.DisposeModalAndChildRenderers();
-				_footerRenderer.Dispose();
+				_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
+				_footerRenderer.DisconnectHandler();
 				_footerRenderer = null;
 			}
 		}
@@ -517,28 +518,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (_headerRenderer != null)
 				{
-					_headerRenderer.Element.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+					((VisualElement)_headerRenderer.VirtualView).MeasureInvalidated -= OnHeaderMeasureInvalidated;
 					var reflectableType = _headerRenderer as System.Reflection.IReflectableType;
 					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _headerRenderer.GetType();
 					if (header != null && rendererType == Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerTypeForObject(header))
 					{
-						_headerRenderer.SetElement(headerView);
+						_headerRenderer.SetVirtualView(headerView);
 						return;
 					}
 					Control.TableHeaderView = null;
 
-					_headerRenderer.Element?.DisposeModalAndChildRenderers();
-					_headerRenderer.Dispose();
-					_headerRenderer = null;
+					_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
+					_headerRenderer?.DisconnectHandler();
 				}
 
-				_headerRenderer = Platform.CreateRenderer(headerView);
 				// This will force measure to invalidate, which we haven't hooked up to yet because we are smarter!
-				Platform.SetRenderer(headerView, _headerRenderer);
+				_headerRenderer = headerView.ToHandler(MauiContext);
 
 				double width = Bounds.Width;
-				var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
+
+				// TODO MAUI
+				//var request = headerView.Measure(width, double.PositiveInfinity);
+				//Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
 
 				Control.TableHeaderView = _headerRenderer.NativeView;
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
@@ -546,10 +547,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else if (_headerRenderer != null)
 			{
 				Control.TableHeaderView = null;
-				_headerRenderer.Element.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+				((VisualElement)_headerRenderer.VirtualView).MeasureInvalidated -= OnHeaderMeasureInvalidated;
 
-				_headerRenderer.Element?.DisposeModalAndChildRenderers();
-				_headerRenderer.Dispose();
+				_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
 				_headerRenderer = null;
 			}
 		}
@@ -744,7 +744,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// ...and Steve said to the unbelievers the separator shall be gray, and gray it was. The unbelievers looked on, and saw that it was good, and
 			// they went forth and documented the default color. The holy scripture still reflects this default.
 			// Defined here: https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instp/UITableView/separatorColor
-			Control.SeparatorColor = color.ToUIColor(ColorExtensions.SeparatorColor);
+			Control.SeparatorColor = color?.ToNative() ?? Controls.Compatibility.Platform.iOS.ColorExtensions.SeparatorColor;
 		}
 
 		void UpdateSeparatorVisibility()
@@ -779,7 +779,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var color = Element.RefreshControlColor;
 
 			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToUIColor());
+				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToNative());
 		}
 
 		void UpdateVerticalScrollBarVisibility()
@@ -822,7 +822,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		internal class UnevenListViewDataSource : ListViewDataSource
 		{
-			IVisualElementRenderer _prototype;
+			INativeViewHandler _prototype;
 			bool _disposed;
 			Dictionary<object, Cell> _prototypicalCellByTypeOrDataTemplate = new Dictionary<object, Cell>();
 
@@ -889,7 +889,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var estimatedRowHeight = GetEstimatedRowHeight(tableView);
 				//if we are providing 0 we are disabling EstimatedRowHeight,
 				//this works fine on newer versions, but iOS10 it will cause a crash so we leave the default value
-				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && Forms.IsiOS11OrNewer))
+				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && NativeVersion.IsAtLeast(11)))
 					tableView.EstimatedRowHeight = estimatedRowHeight;
 			}
 
@@ -944,24 +944,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					var target = viewCell.View;
 					if (_prototype == null)
-						_prototype = Platform.CreateRenderer(target);
+						_prototype = target.ToHandler(cell.FindMauiContext());
 					else
-						_prototype.SetElement(target);
+						_prototype.SetVirtualView(target);
 
-					Platform.SetRenderer(target, _prototype);
+					var req = target.Measure(tableView.Frame.Width, double.PositiveInfinity);
+					target.Handler?.DisconnectHandler();
 
-					var req = target.Measure(tableView.Frame.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-
-					target.ClearValue(Platform.RendererProperty);
 					foreach (Element descendant in target.Descendants())
 					{
-						IVisualElementRenderer renderer = Platform.GetRenderer(descendant as VisualElement);
 
 						// Clear renderer from descendent; this will not happen in Dispose as normal because we need to
 						// unhook the Element from the renderer before disposing it.
-						descendant.ClearValue(Platform.RendererProperty);
-						renderer?.Dispose();
-						renderer = null;
+						descendant.Handler?.DisconnectHandler();
 					}
 
 					// Let the EstimatedHeight method know to use this value.
@@ -994,10 +989,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (_prototype != null)
 				{
-					var element = _prototype.Element;
-					element?.ClearValue(Platform.RendererProperty);
-					_prototype?.Dispose();
-					_prototype = null;
+					var element = _prototype.VirtualView;
+					element.Handler?.DisconnectHandler();
+					//_prototype?.Dispose();
+					//_prototype = null;
 				}
 			}
 		}
@@ -1165,8 +1160,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var header = (HeaderWrapperView)tableView.DequeueReusableHeaderFooterView(reuseIdentifier) ?? new HeaderWrapperView(reuseIdentifier);
 				header.Cell = cell;
 
-				var renderer = (CellRenderer)Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
-				header.SetTableViewCell(renderer.GetCell(cell, null, tableView));
+				cell.TableView = tableView;
+				cell.ReusableCell = null;
+
+				var handler = cell.ToHandler(cell.FindMauiContext());
+				var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
+				header.SetTableViewCell(renderer.NativeView);
 
 				return header;
 			}
@@ -1495,8 +1494,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var activityIndicator = element as ActivityIndicator;
 				if (activityIndicator != null)
 				{
-					var renderer = Platform.GetRenderer(activityIndicator) as ActivityIndicatorRenderer;
-					renderer?.PreserveState();
+					// TODO MAUI
+					//var renderer = Platform.GetRenderer(activityIndicator) as ActivityIndicatorRenderer;
+					//renderer?.PreserveState();
 				}
 				else
 				{
@@ -1533,8 +1533,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				item.Frame = Bounds;
 		}
 	}
-	
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer.FormsUITableViewController instead")]
+
 	internal class FormsUITableViewController : UITableViewController
 	{
 		ListView _list;
@@ -1551,7 +1550,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
-			if (Forms.IsiOS9OrNewer)
+			if (NativeVersion.IsAtLeast(9))
 				TableView.CellLayoutMarginsFollowReadableWidth = false;
 
 			_usingLargeTitles = usingLargeTitles;

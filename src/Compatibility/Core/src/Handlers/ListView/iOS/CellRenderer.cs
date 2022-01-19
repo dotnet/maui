@@ -1,28 +1,45 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.CellRenderer instead")]
-	public class CellRenderer : IRegisterable
+	public class CellRenderer : ElementHandler<Cell, UITableViewCell>, IRegisterable
 	{
 		static readonly BindableProperty RealCellProperty = BindableProperty.CreateAttached("RealCell", typeof(UITableViewCell), typeof(Cell), null);
 
-		EventHandler _onForceUpdateSizeRequested;
-		PropertyChangedEventHandler _onPropertyChangedEventHandler;
-		readonly UIColor _defaultCellBgColor = Forms.IsiOS13OrNewer ? UIColor.Clear : UIColor.White;
+		EventHandler? _onForceUpdateSizeRequested;
+		PropertyChangedEventHandler? _onPropertyChangedEventHandler;
+		readonly UIColor _defaultCellBgColor = NativeVersion.IsAtLeast(13) ? UIColor.Clear : UIColor.White;
 
-		[Preserve(Conditional = true)]
-		public CellRenderer()
+		public static PropertyMapper<Cell, CellRenderer> Mapper =
+				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
+
+		public static CommandMapper<Cell, CellRenderer> CommandMapper =
+			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
+		UITableView? _tableView;
+
+		public CellRenderer() : base(Mapper, CommandMapper)
 		{
+		}
+
+		protected override UITableViewCell CreateNativeElement()
+		{
+			var reusableCell = VirtualView.ReusableCell;
+			var tv = VirtualView.TableView;
+			VirtualView.ReusableCell = null;
+			VirtualView.TableView = null;
+			return GetCell(VirtualView, reusableCell, tv);
 		}
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
+			_tableView = tv;
 			Performance.Start(out string reference);
 
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
@@ -82,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #endif
 			if (defaultBgColor != null)
 			{
-				uiBgColor = defaultBgColor.ToUIColor();
+				uiBgColor = defaultBgColor.ToNative();
 			}
 			else
 			{
@@ -91,12 +108,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (!UIDevice.CurrentDevice.CheckSystemVersion(7, 0))
 						return;
 
-					uiBgColor = ColorExtensions.GroupedBackground;
+					uiBgColor = Controls.Compatibility.Platform.iOS.ColorExtensions.GroupedBackground;
 				}
 				else
 				{
 					if (cell.RealParent is VisualElement element && element.BackgroundColor != null)
-						uiBgColor = element.BackgroundColor.ToUIColor();
+						uiBgColor = element.BackgroundColor.ToNative();
 				}
 			}
 
@@ -113,9 +130,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			_onForceUpdateSizeRequested = (sender, e) =>
 			{
-				var index = tableView?.IndexPathForCell(nativeCell) ?? (sender as Cell)?.GetIndexPath();
+				var index = tableView?.IndexPathForCell(nativeCell);
+				if (index == null && sender is Cell c)
+				{
+					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
+				}
+
 				if (index != null)
-					tableView.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
+					tableView?.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
 			};
 
 			_onPropertyChangedEventHandler = (sender, e) =>

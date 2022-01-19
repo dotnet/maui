@@ -6,7 +6,7 @@ using NSAction = System.Action;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	internal class iOS7ButtonContainer : UIView
 	{
@@ -36,7 +36,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
-	[Obsolete]
 	internal class ContextScrollViewDelegate : UIScrollViewDelegate
 	{
 		readonly nfloat _finalButtonSize;
@@ -44,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		List<UIButton> _buttons;
 		UITapGestureRecognizer _closer;
 		UIView _container;
-		GlobalCloseContextGestureRecognizer _globalCloser;
+		Controls.Compatibility.Platform.iOS.GlobalCloseContextGestureRecognizer _globalCloser;
 
 		bool _isDisposed;
 		static WeakReference<UIScrollView> s_scrollViewBeingScrolled;
@@ -176,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 							};
 
 							_table = table;
-							_globalCloser = new GlobalCloseContextGestureRecognizer(scrollView, close);
+							_globalCloser = new Controls.Compatibility.Platform.iOS.GlobalCloseContextGestureRecognizer(scrollView, close);
 							_globalCloser.ShouldRecognizeSimultaneously = (recognizer, r) => r == _table?.PanGestureRecognizer;
 							table.AddGestureRecognizer(_globalCloser);
 

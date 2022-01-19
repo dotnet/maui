@@ -7,12 +7,11 @@ using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellRenderer instead")]
 	public class EntryCellRenderer : CellRenderer
 	{
-		static readonly Color DefaultTextColor = ColorExtensions.LabelColor.ToColor();
+		static readonly Color DefaultTextColor = Controls.Compatibility.Platform.iOS.ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public EntryCellRenderer()
@@ -95,8 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		static void UpdateHorizontalTextAlignment(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
-			IViewController viewController = entryCell.Parent as View;
-			cell.TextField.TextAlignment = entryCell.HorizontalTextAlignment.ToNativeTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
+			cell.TextField.UpdateHorizontalTextAlignment(entryCell);
 		}
 
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)
@@ -119,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		static void UpdateLabelColor(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
-			cell.TextLabel.TextColor = entryCell.LabelColor.ToUIColor(DefaultTextColor);
+			cell.TextLabel.TextColor = entryCell.LabelColor?.ToNative() ?? DefaultTextColor.ToNative();
 		}
 
 		static void UpdatePlaceholder(EntryCellTableViewCell cell, EntryCell entryCell)

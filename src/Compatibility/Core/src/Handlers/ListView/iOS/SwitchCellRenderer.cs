@@ -5,9 +5,8 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.SwitchCellRenderer instead")]
 	public class SwitchCellRenderer : CellRenderer
 	{
 		const string CellName = "Xamarin.SwitchCell";
@@ -99,11 +98,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateFlowDirection(CellTableViewCell cell, SwitchCell switchCell)
 		{
-			IVisualElementController controller = switchCell.Parent as View;
-
 			var uiSwitch = cell.AccessoryView as UISwitch;
 
-			uiSwitch.UpdateFlowDirection(controller);
+			uiSwitch.UpdateFlowDirection((IView)switchCell.Parent);
 		}
 
 		void UpdateIsEnabled(CellTableViewCell cell, SwitchCell switchCell)
@@ -124,7 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (switchCell.OnColor == null)
 					uiSwitch.OnTintColor = _defaultOnColor;
 				else
-					uiSwitch.OnTintColor = switchCell.OnColor.ToUIColor();
+					uiSwitch.OnTintColor = switchCell.OnColor.ToNative();
 			}
 		}
 	}
