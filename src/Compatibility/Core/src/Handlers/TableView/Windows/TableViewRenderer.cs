@@ -6,19 +6,16 @@ using WItemsControl = Microsoft.UI.Xaml.Controls.ItemsControl;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 using Microsoft.Maui.Controls.Platform;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer instead")]
 	public class TableViewRenderer : ViewRenderer<TableView, Microsoft.UI.Xaml.Controls.ListView>
 	{
 		bool _ignoreSelectionEvent;
 		bool _disposed;
 
-		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		protected override Size MinimumSize()
 		{
-			SizeRequest result = base.GetDesiredSize(widthConstraint, heightConstraint);
-			result.Minimum = new Size(40, 40);
-			return result;
+			return new Size(40, 40);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
