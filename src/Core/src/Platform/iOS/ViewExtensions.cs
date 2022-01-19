@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateBackground(this ContentView nativeView, IBorder border)
+		public static void UpdateBackground(this ContentView nativeView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -154,6 +154,12 @@ namespace Microsoft.Maui.Platform
 				if (nativeView is WrapperView wrapperView)
 					wrapperView.Shadow = view.Shadow;
 			}
+		}
+		public static void UpdateBorder(this UIView nativeView, IView view)
+		{
+			var border = (view as IBorder)?.Border;
+			if (nativeView is WrapperView wrapperView)
+				wrapperView.Border = border;
 		}
 
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView

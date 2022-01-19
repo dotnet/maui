@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class EntryCell : Cell, ITextAlignmentElement, IEntryCellController
+	public class EntryCell : Cell, ITextAlignmentElement, IEntryCellController, ITextAlignment
 	{
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(EntryCell), null, BindingMode.TwoWay);
 

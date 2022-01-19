@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Handlers
 {
-    public partial class BorderHandler : ViewHandler<IBorder, ContentPanel>
+    public partial class BorderHandler : ViewHandler<IBorderView, ContentPanel>
     {
         public override void SetVirtualView(IView view)
         {
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
             return view;
         }
 
-        public static void MapContent(BorderHandler handler, IBorder border)
+        public static void MapContent(BorderHandler handler, IBorderView border)
         {
             handler.UpdateContent();
         }

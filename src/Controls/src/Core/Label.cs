@@ -350,6 +350,8 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasure();
 		}
 
+		internal bool HasFormattedTextSpans
+			=> (FormattedText?.Spans?.Count ?? 0) > 0;
 
 		public override IList<GestureElement> GetChildElements(Point point)
 		{
