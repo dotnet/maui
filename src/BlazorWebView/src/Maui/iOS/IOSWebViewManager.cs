@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Encodings.Web;
 using Foundation;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using UIKit;
 using WebKit;
-using System.Linq;
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public class IOSWebViewManager : WebViewManager
@@ -57,9 +57,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webview.UIDelegate = new WebViewUIDelegate(_blazorMauiWebViewHandler);
 		}
 
-		internal class WebViewUIDelegate : WKUIDelegate
+		internal sealed class WebViewUIDelegate : WKUIDelegate
 		{
-
+            private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
+            private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
 			private readonly BlazorWebViewHandler _webView;
 
 			public WebViewUIDelegate(BlazorWebViewHandler webView)
@@ -67,8 +68,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_webView = webView ?? throw new ArgumentNullException(nameof(webView));
 			}
 
-			static string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
-			static string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
 
 			public override void RunJavaScriptAlertPanel(WKWebView webView, string message, WKFrameInfo frame, Action completionHandler)
 			{
@@ -101,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				);
 			}
 
-			static string GetJsAlertTitle(WKWebView webView)
+			private static string GetJsAlertTitle(WKWebView webView)
 			{
 				// Emulate the behavior of UIWebView dialogs.
 				// The scheme and host are used unless local html content is what the webview is displaying,
@@ -112,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return new NSString(NSBundle.MainBundle.BundlePath).LastPathComponent;
 			}
 
-			static UIAlertAction AddOkAction(UIAlertController controller, Action handler)
+			private static UIAlertAction AddOkAction(UIAlertController controller, Action handler)
 			{
 				var action = UIAlertAction.Create(LocalOK, UIAlertActionStyle.Default, (_) => handler());
 				controller.AddAction(action);
@@ -120,21 +119,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return action;
 			}
 
-			static UIAlertAction AddCancelAction(UIAlertController controller, Action handler)
+			private static UIAlertAction AddCancelAction(UIAlertController controller, Action handler)
 			{
 				var action = UIAlertAction.Create(LocalCancel, UIAlertActionStyle.Cancel, (_) => handler());
 				controller.AddAction(action);
 				return action;
 			}
 
-			static void PresentAlertController(
+			private static void PresentAlertController(
 				WKWebView webView,
 				string message,
 				string? defaultText = null,
 				Action<UIAlertController>? okAction = null,
 				Action<UIAlertController>? cancelAction = null)
 			{
-
 				var controller = UIAlertController.Create(GetJsAlertTitle(webView), message, UIAlertControllerStyle.Alert);
 
 				if (defaultText != null)
@@ -146,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (cancelAction != null)
 					AddCancelAction(controller, () => cancelAction(controller));
 
-				GetTopViewController(UIApplication.SharedApplication.Windows.FirstOrDefault(m=>m.IsKeyWindow)?.RootViewController)?
+				GetTopViewController(UIApplication.SharedApplication.Windows.FirstOrDefault(m => m.IsKeyWindow)?.RootViewController)?
 					.PresentViewController(controller, true, null);
 			}
 
