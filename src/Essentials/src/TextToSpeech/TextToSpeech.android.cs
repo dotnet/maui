@@ -109,6 +109,8 @@ namespace Microsoft.Maui.Essentials
 			if (tcsUtterances?.Task != null)
 				await tcsUtterances.Task;
 
+			tcsUtterances = new TaskCompletionSource<bool>();
+
 			if (cancelToken != default)
 			{
 				cancelToken.Register(() =>
@@ -150,7 +152,6 @@ namespace Microsoft.Maui.Essentials
 			var parts = text.SplitSpeak(max);
 
 			numExpectedUtterances = parts.Count;
-			tcsUtterances = new TaskCompletionSource<bool>();
 
 			var guid = Guid.NewGuid().ToString();
 
