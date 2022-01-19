@@ -6,7 +6,7 @@ using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.LayoutPanel;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Microsoft.Maui.Platform.LayoutCanvas;
 #elif NETSTANDARD
 using PlatformView = System.Object;
 #endif

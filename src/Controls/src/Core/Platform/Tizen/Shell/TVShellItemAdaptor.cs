@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			return new DataTemplate(() =>
 			{
-				var grid = new GridLayout
+				var grid = new Grid
 				{
 					HeightRequest = nv.GetTvFlyoutItemHeight(),
 					WidthRequest = nv.GetTvFlyoutItemWidth(),
