@@ -334,6 +334,7 @@ stages:
           **/*.snupkg
           **/additional-assets.zip
         pushToShippingFeed: false
+        topicBranchName: team/xamarin/maui-test-insertion-$(Build.BuildId)
         nupkgArtifactName: nuget
         nupkgArtifactPatterns: |
           **/signed/*.nupkg
