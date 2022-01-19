@@ -84,6 +84,11 @@ namespace Microsoft.Maui.Graphics
 			return new Size(s1._width * value, s1._height * value);
 		}
 
+		public static Size operator /(Size s1, double value)
+		{
+			return new Size(s1._width / value, s1._height / value);
+		}
+
 		public static bool operator ==(Size s1, Size s2)
 		{
 			return s1._width == s2._width && s1._height == s2._height;
