@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class SwipeItem : MenuItem, ISwipeItem
+	public partial class SwipeItem : MenuItem, Controls.ISwipeItem
 	{
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SwipeItem), null);
 
@@ -23,15 +23,5 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public event EventHandler<EventArgs> Invoked;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void OnInvoked()
-		{
-			if (Command != null && Command.CanExecute(CommandParameter))
-				Command.Execute(CommandParameter);
-
-			OnClicked();
-			Invoked?.Invoke(this, EventArgs.Empty);
-		}
 	}
 }

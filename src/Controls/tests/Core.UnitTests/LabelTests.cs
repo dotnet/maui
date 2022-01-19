@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -130,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label = new Label();
 
-			Assert.AreEqual(10.0, label.FontSize);
+			Assert.AreEqual(label.GetDefaultFontSize(), label.FontSize);
 
 			label.SetValue(Label.FontSizeProperty, 1.0, true);
 			Assert.AreEqual(1.0, label.FontSize);
@@ -140,7 +141,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ManuallySetFontSizeNotOverridenByStyle()
 		{
 			var label = new Label();
-			Assume.That(label.FontSize, Is.EqualTo(10.0));
+			Assume.That(label.FontSize, Is.EqualTo(label.GetDefaultFontSize()));
 
 			label.SetValue(Label.FontSizeProperty, 2.0, false);
 			Assert.AreEqual(2.0, label.FontSize);
@@ -153,7 +154,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ManuallySetFontSizeNotOverridenByFontSetInStyle()
 		{
 			var label = new Label();
-			Assume.That(label.FontSize, Is.EqualTo(10.0));
+			Assume.That(label.FontSize, Is.EqualTo(label.GetDefaultFontSize()));
 
 			label.SetValue(Label.FontSizeProperty, 2.0);
 			Assert.AreEqual(2.0, label.FontSize);

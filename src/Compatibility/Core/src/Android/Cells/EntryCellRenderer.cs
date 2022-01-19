@@ -1,11 +1,14 @@
+using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Text;
 using Android.Text.Method;
 using Android.Views;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer instead")]
 	public class EntryCellRenderer : CellRenderer
 	{
 		EntryCellView _view;

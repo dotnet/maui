@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public interface IFontManager
+	public partial interface IFontManager
 	{
 		UIFont DefaultFont { get; }
 

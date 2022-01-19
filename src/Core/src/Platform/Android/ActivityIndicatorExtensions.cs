@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsRunning(this ProgressBar progressBar, IActivityIndicator activityIndicator)
 		{
-			progressBar.Visibility = GetActivityIndicatorVisibility (activityIndicator);
+			progressBar.Visibility = GetActivityIndicatorVisibility(activityIndicator);
 		}
 
 		internal static ViewStates GetActivityIndicatorVisibility(this IActivityIndicator activityIndicator)

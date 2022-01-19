@@ -396,19 +396,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isPinching = true;
 
-			global::Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
-
-			var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
-			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
-			foreach (IPinchGestureController recognizer in pinchGestures)
+			if (e.OriginalSource is UIElement container)
 			{
-				if (!_wasPinchGestureStartedSent)
+				global::Windows.Foundation.Point translationPoint = container.TransformToVisual(Container).TransformPoint(e.Position);
+				var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
+				IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
+				
+				foreach (IPinchGestureController recognizer in pinchGestures)
 				{
-					recognizer.SendPinchStarted(view, scaleOriginPoint);
+					if (!_wasPinchGestureStartedSent)
+					{
+						recognizer.SendPinchStarted(view, scaleOriginPoint);
+					}
+
+					recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
 				}
-				recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
+
+				_wasPinchGestureStartedSent = true;
 			}
-			_wasPinchGestureStartedSent = true;
 		}
 
 		void ModelGestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
