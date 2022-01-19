@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
-			= new PropertyMapper<Frame, FrameRenderer>(ViewHandler.ViewMapper);
+			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper);
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
-			= new CommandMapper<Frame, FrameRenderer>(ViewHandler.ViewCommandMapper);
+			= new CommandMapper<Frame, FrameRenderer>(VisualElementRendererCommandMapper);
 
 		public FrameRenderer() : base(Mapper, CommandMapper)
 		{

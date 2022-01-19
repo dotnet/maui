@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
-			= new PropertyMapper<Frame, FrameRenderer>(ViewHandler.ViewMapper);
+			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper);
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
-			= new CommandMapper<Frame, FrameRenderer>(ViewHandler.ViewCommandMapper);
+			= new CommandMapper<Frame, FrameRenderer>(VisualElementRendererCommandMapper);
 
 		UIView _actualView;
 		CGSize _previousSize;

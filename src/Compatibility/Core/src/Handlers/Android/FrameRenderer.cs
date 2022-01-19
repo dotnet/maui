@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public class FrameRenderer : CardView, INativeViewHandler
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
-			= new PropertyMapper<Frame, FrameRenderer>(ViewHandler.ViewMapper)
+			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper)
 			{
 				[Frame.HasShadowProperty.PropertyName] = (h, _) => h.UpdateShadow(),
 				[VisualElement.BackgroundColorProperty.PropertyName] = (h, _) => h.UpdateBackgroundColor(),
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			};
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
-			= new CommandMapper<Frame, FrameRenderer>(ViewHandler.ViewCommandMapper);
+			= new CommandMapper<Frame, FrameRenderer>(VisualElementRendererCommandMapper);
 
 
 		float _defaultElevation = -1f;
