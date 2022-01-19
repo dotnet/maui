@@ -5,6 +5,7 @@
 		<OutputType>Exe</OutputType>
 		<RootNamespace>GraphicsTester.MacCatalyst</RootNamespace>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>10.0</LangVersion>
 		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.2</SupportedOSPlatformVersion>
 	</PropertyGroup>
 

@@ -5,6 +5,7 @@
 		<OutputType>Exe</OutputType>
 		<RootNamespace>GraphicsTester.Mac</RootNamespace>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>10.0</LangVersion>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-macos'">10.14</SupportedOSPlatformVersion>
 	</PropertyGroup>

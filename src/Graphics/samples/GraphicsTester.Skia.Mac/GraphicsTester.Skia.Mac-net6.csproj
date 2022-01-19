@@ -5,6 +5,7 @@
         <TargetFramework>net6.0-macos</TargetFramework>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <RootNamespace>GraphicsTester.Skia.Mac</RootNamespace>
+        <LangVersion>10.0</LangVersion>
 
         <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-macos'">10.14</SupportedOSPlatformVersion>
 

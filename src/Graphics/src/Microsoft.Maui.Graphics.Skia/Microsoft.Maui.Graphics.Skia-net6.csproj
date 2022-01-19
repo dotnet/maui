@@ -5,6 +5,7 @@
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.18362</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Skia</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Skia</AssemblyName>
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
