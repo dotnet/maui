@@ -65,12 +65,6 @@
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Controls.Build.Tasks" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Resizetizer.Sdk" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
-  </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
