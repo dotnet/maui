@@ -9,7 +9,6 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyName>Microsoft.Maui.Graphics</AssemblyName>
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
-    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Graphics</PackageId>

@@ -6,7 +6,6 @@
       <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <LangVersion>9.0</LangVersion>
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
