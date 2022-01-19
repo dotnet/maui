@@ -172,6 +172,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
+			if (Element != null && e.PropertyName != null)
+				_mapper.UpdateProperty(this, Element, e.PropertyName);
+
 			ElementPropertyChanged?.Invoke(this, e);
 			_motionEventHelper.UpdateElement(Element);
 		}
@@ -316,13 +319,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_mauiContext = mauiContext;
 
 		void IElementHandler.SetVirtualView(Maui.IElement view) =>
-			VisualElementRenderer<Frame>.SetVirtualView(view, this, OnElementChanged, ref _element, ref _mapper, _defaultMapper);
+			VisualElementRenderer<Frame>.SetVirtualView(view, this, OnElementChanged, ref _element, ref _mapper, _defaultMapper, false);
 
 		void IElementHandler.UpdateValue(string property)
 		{
 			if (Element != null)
 			{
-				_mapper.UpdateProperty(this, Element, property);
+				OnElementPropertyChanged(Element, new PropertyChangedEventArgs(property));
 			}
 		}
 

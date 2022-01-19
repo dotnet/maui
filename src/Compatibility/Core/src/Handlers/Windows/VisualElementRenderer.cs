@@ -102,6 +102,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				VisualElement.MapAutomationPropertiesName(this, Element);
 		}
 
+		static partial void ProcessAutoPackage(Maui.IElement element)
+		{
+			if (element.Handler is not INativeViewHandler nvh ||
+				nvh.ContainerView is not Panel panel)
+			{
+				return;
+			}
+
+			panel.Children.Clear();
+
+			if (element is not IVisualTreeElement vte)
+				return;
+
+			var mauiContext = element?.Handler?.MauiContext;
+			if (mauiContext == null)
+				return;
+
+			foreach (var child in vte.GetVisualChildren())
+			{
+				if (child is Maui.IElement childElement)
+					panel.Children.Add(childElement.ToNative(mauiContext));
+			}
+		}
+
 		public static void MapAutomationPropertiesLabeledBy(INativeViewHandler handler, TElement view)
 		{
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)

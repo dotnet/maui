@@ -12,6 +12,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		public virtual UIViewController? ViewController => null;
 
+		static partial void ProcessAutoPackage(Maui.IElement element)
+		{
+			if (element?.Handler?.NativeView is not UIView viewGroup)
+				return;
+
+			viewGroup.ClearSubviews();
+
+			if (element is not IVisualTreeElement vte)
+				return;
+
+			var mauiContext = element?.Handler?.MauiContext;
+			if (mauiContext == null)
+				return;
+
+			foreach (var child in vte.GetVisualChildren())
+			{
+				if (child is Maui.IElement childElement)
+					viewGroup.AddSubview(childElement.ToNative(mauiContext));
+			}
+		}
+
 		protected virtual void UpdateNativeWidget()
 		{
 

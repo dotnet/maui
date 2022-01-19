@@ -12,6 +12,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public abstract partial class VisualElementRenderer<TElement> : AViewGroup, INativeViewHandler
 		where TElement : Element, IView
 	{
+		static partial void ProcessAutoPackage(Maui.IElement element)
+		{
+			if (element?.Handler?.NativeView is not AViewGroup viewGroup)
+				return;
+
+			viewGroup.RemoveAllViews();
+
+			if (element is not IVisualTreeElement vte)
+				return;
+
+			var mauiContext = element?.Handler?.MauiContext;
+			if (mauiContext == null)
+				return;
+
+			foreach (var child in vte.GetVisualChildren())
+			{
+				if (child is Maui.IElement childElement)
+					viewGroup.AddView(childElement.ToNative(mauiContext));
+			}
+		}
+
 		public void UpdateLayout()
 		{
 			if (Element != null)

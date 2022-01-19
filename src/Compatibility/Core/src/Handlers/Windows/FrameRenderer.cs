@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		public FrameRenderer() : base()
 		{
+			AutoPackage = false;
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()

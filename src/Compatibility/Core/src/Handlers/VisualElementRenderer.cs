@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected readonly IPropertyMapper _defaultMapper;
 		protected IMauiContext MauiContext => _mauiContext ?? throw new InvalidOperationException("MauiContext not set");
 		public TElement? Element => _virtualView;
+		protected bool AutoPackage { get; set; } = true;
 
 #if ANDROID
 		public VisualElementRenderer(Android.Content.Context context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
@@ -95,11 +96,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ElementChangedPartial(e);
 		}
 
-
 		partial void ElementPropertyChangedPartial(object sender, PropertyChangedEventArgs e);
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (Element != null && e.PropertyName != null)
+				_mapper.UpdateProperty(this, Element, e.PropertyName);
+
 			ElementPropertyChanged?.Invoke(sender, e);
 			ElementPropertyChangedPartial(sender, e);
 		}
@@ -192,14 +195,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_mauiContext = mauiContext;
 		}
 
-
 		internal static void SetVirtualView(
-			Maui.IElement view, 
+			Maui.IElement view,
 			INativeViewHandler nativeViewHandler,
 			Action<ElementChangedEventArgs<TElement>> onElementChanged,
 			ref TElement? currentVirtualView,
 			ref IPropertyMapper _mapper,
-			IPropertyMapper _defaultMapper)
+			IPropertyMapper _defaultMapper,
+			bool autoPackage)
 		{
 			if (currentVirtualView == view)
 				return;
@@ -230,17 +233,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+			if (autoPackage)
+			{
+				ProcessAutoPackage(view);
+			}
+
 			_mapper.UpdateProperties(nativeViewHandler, currentVirtualView);
 		}
 
+		static partial void ProcessAutoPackage(Maui.IElement element);
+
 		void IElementHandler.SetVirtualView(Maui.IElement view) =>
-			SetVirtualView(view, this, OnElementChanged, ref _virtualView, ref _mapper, _defaultMapper);
+			SetVirtualView(view, this, OnElementChanged, ref _virtualView, ref _mapper, _defaultMapper, AutoPackage);
 
 		void IElementHandler.UpdateValue(string property)
 		{
 			if (Element != null)
 			{
-				_mapper.UpdateProperty(this, Element, property);
+				OnElementPropertyChanged(Element, new PropertyChangedEventArgs(property));
 			}
 		}
 
