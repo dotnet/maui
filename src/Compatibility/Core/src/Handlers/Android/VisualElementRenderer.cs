@@ -43,21 +43,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
-			var platformView = (this as IElementHandler).NativeView as AView;
-			if (platformView != null)
+			if (ChildCount > 0)
 			{
-				platformView.Layout(l, t, r, b);
+				var platformView = GetChildAt(0);
+				if (platformView != null)
+				{
+					platformView.Layout(l, t, r, b);
+				}
 			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			var platformView = (this as IElementHandler).NativeView as AView;
-			if (platformView != null)
+			if (ChildCount > 0)
 			{
-				platformView.Measure(widthMeasureSpec, heightMeasureSpec);
-				SetMeasuredDimension(platformView.MeasuredWidth, platformView.MeasuredHeight);
-				return;
+				var platformView = GetChildAt(0);
+				if (platformView != null)
+				{
+					platformView.Measure(widthMeasureSpec, heightMeasureSpec);
+					SetMeasuredDimension(platformView.MeasuredWidth, platformView.MeasuredHeight);
+					return;
+				}
 			}
 
 			SetMeasuredDimension(0, 0);
