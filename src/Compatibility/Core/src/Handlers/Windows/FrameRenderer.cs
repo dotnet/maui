@@ -5,16 +5,13 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Platform;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
-using System;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer instead")]
 	public class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
-		public FrameRenderer()
+		public FrameRenderer() : base()
 		{
-			AutoPackage = false;
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()
@@ -95,8 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element.Content == null)
 				return;
 
-			IVisualElementRenderer renderer = Element.Content.GetOrCreateRenderer();
-			Control.Child = renderer.ContainerElement;
+			Control.Child = Element.Content.ToNative(MauiContext);
 		}
 
 		void UpdateBorder()

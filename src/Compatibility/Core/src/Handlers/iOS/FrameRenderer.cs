@@ -1,21 +1,17 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Drawing;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer instead")]
-	public class FrameRenderer : VisualElementRenderer<Frame>, ITabStop
+	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
 		UIView _actualView;
 		CGSize _previousSize;
 		bool _isDisposed;
-
-		UIView ITabStop.TabStop => this;
 
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public FrameRenderer()
@@ -60,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the control adheres to changes in UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (NativeVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				SetupLayer();
 		}
 
@@ -78,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_actualView.Layer.MasksToBounds = cornerRadius > 0;
 
 			if (Element.BackgroundColor == null)
-				_actualView.Layer.BackgroundColor = ColorExtensions.BackgroundColor.CGColor;
+				_actualView.Layer.BackgroundColor = Controls.Compatibility.Platform.iOS.ColorExtensions.BackgroundColor.CGColor;
 			else
 			{
 				// BackgroundColor gets set on the base class too which messes with

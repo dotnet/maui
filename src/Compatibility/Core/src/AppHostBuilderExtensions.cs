@@ -88,9 +88,8 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
 #endif
 
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
-
-					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
+#if ANDROID || IOS || WINDOWS
+					handlers.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
