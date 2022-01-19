@@ -6,7 +6,7 @@ using Microsoft.Maui;
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleries
 {
 	[Preserve(AllMembers = true)]
-	public partial class ExampleTemplateCarousel : Microsoft.Maui.Controls.Grid
+	public partial class ExampleTemplateCarousel : Grid
 	{
 		double _initialY = -1;
 		bool _delete;
@@ -58,7 +58,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 					}
 				}
 			};
-			//GestureRecognizers.Add(gesture);
+
+			GestureRecognizers.Add(gesture);
 		}
 	}
 }

@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 
 #if WINDOWS
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 #endif
 #if WINDOWS || __ANDROID__
