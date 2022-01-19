@@ -67,6 +67,11 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
+				if (_internal == null || _internal.Count == 0)
+				{
+					return null;
+				}
+
 				if (!IsLoopingEnabled)
 				{
 					return _internal[index];

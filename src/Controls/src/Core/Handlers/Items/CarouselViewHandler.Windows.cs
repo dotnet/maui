@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
-			if (currentItemPosition < 0)
+			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
 				return;
 
 			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
@@ -367,8 +367,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var carouselPosition = ItemsView.Position;
 
-			if (carouselPosition >= ItemCount || carouselPosition < 0)
-				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {ItemCount} items.");
+			if (carouselPosition < 0 || carouselPosition >= ItemCount)
+				return;
 
 			SetCarouselViewCurrentItem(carouselPosition);
 		}
