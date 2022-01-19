@@ -7,9 +7,11 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract partial class VisualElementRenderer<TElement> : UIView, INativeViewHandler
+	public abstract partial class VisualElementRenderer<TElement> : UIView, INativeViewHandler, IElementHandler
 		where TElement : Element, IView
 	{
+		object? IElementHandler.NativeView => Subviews.Length > 0 ? Subviews[0] : null;
+
 		public virtual UIViewController? ViewController => null;
 
 		static partial void ProcessAutoPackage(Maui.IElement element)

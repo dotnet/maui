@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public FrameworkElement ContainerElement => this;
 
 		public TNativeElement? Control => ((IElementHandler)this).NativeView as TNativeElement ?? _nativeView;
+		object? IElementHandler.NativeView => _nativeView;
+
 		public UIElement? GetNativeElement() => Control;
 
 		protected virtual void UpdateNativeControl() { }

@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public abstract partial class VisualElementRenderer<TElement> : AViewGroup, INativeViewHandler
 		where TElement : Element, IView
 	{
+		object? IElementHandler.NativeView => ChildCount > 0 ? GetChildAt(0) : null;
+
 		static partial void ProcessAutoPackage(Maui.IElement element)
 		{
 			if (element?.Handler?.NativeView is not AViewGroup viewGroup)
@@ -41,27 +43,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
-			if (ChildCount > 0)
+			var platformView = (this as IElementHandler).NativeView as AView;
+			if (platformView != null)
 			{
-				var platformView = GetChildAt(0);
-				if (platformView != null)
-				{
-					platformView.Layout(l, t, r, b);
-				}
+				platformView.Layout(l, t, r, b);
 			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (ChildCount > 0)
+			var platformView = (this as IElementHandler).NativeView as AView;
+			if (platformView != null)
 			{
-				var platformView = GetChildAt(0);
-				if (platformView != null)
-				{
-					platformView.Measure(widthMeasureSpec, heightMeasureSpec);
-					SetMeasuredDimension(platformView.MeasuredWidth, platformView.MeasuredHeight);
-					return;
-				}
+				platformView.Measure(widthMeasureSpec, heightMeasureSpec);
+				SetMeasuredDimension(platformView.MeasuredWidth, platformView.MeasuredHeight);
+				return;
 			}
 
 			SetMeasuredDimension(0, 0);

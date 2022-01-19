@@ -173,17 +173,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		bool IViewHandler.HasContainer { get => true; set { } }
 
-		object? IViewHandler.ContainerView => null;
+		object? IViewHandler.ContainerView => this;
 
 		IView? IViewHandler.VirtualView => Element;
-
-		object IElementHandler.NativeView => this;
 
 		Maui.IElement? IElementHandler.VirtualView => Element;
 
 		IMauiContext? IElementHandler.MauiContext => _mauiContext;
 
-		PlatformView INativeViewHandler.NativeView => this;
+		PlatformView? INativeViewHandler.NativeView => (Element?.Handler as IElementHandler)?.NativeView as PlatformView;
 
 		PlatformView? INativeViewHandler.ContainerView => this;
 

@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		AViewGroup? _container;
 
 		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView ?? _nativeView;
+		object? IElementHandler.NativeView => _nativeView;
 
 		public ViewRenderer(Context context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{
