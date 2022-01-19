@@ -9,12 +9,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
+		public static IPropertyMapper<Frame, FrameRenderer> Mapper
+			= new PropertyMapper<Frame, FrameRenderer>(ViewHandler.ViewMapper);
+
+		public static CommandMapper<Frame, FrameRenderer> CommandMapper
+			= new CommandMapper<Frame, FrameRenderer>(ViewHandler.ViewCommandMapper);
+
 		UIView _actualView;
 		CGSize _previousSize;
 		bool _isDisposed;
 
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		public FrameRenderer()
+		public FrameRenderer() : base(Mapper, CommandMapper)
 		{
 			_actualView = new FrameView();
 			AddSubview(_actualView);

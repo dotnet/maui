@@ -10,7 +10,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
-		public FrameRenderer() : base()
+		public static IPropertyMapper<Frame, FrameRenderer> Mapper
+			= new PropertyMapper<Frame, FrameRenderer>(ViewHandler.ViewMapper);
+
+		public static CommandMapper<Frame, FrameRenderer> CommandMapper
+			= new CommandMapper<Frame, FrameRenderer>(ViewHandler.ViewCommandMapper);
+
+		public FrameRenderer() : base(Mapper, CommandMapper)
 		{
 			AutoPackage = false;
 		}
