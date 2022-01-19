@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				? assetFileProvider
 				: new CompositeFileProvider(customFileProvider, assetFileProvider);
 
-			_webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously

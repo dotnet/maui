@@ -1,5 +1,5 @@
 #if IOS || MACCATALYST
-using NativeView = UIKit.UIView;
+using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif ANDROID
 using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS
@@ -20,8 +20,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISwipeView.TopItems)] = MapTopItems,
 			[nameof(ISwipeView.RightItems)] = MapRightItems,
 			[nameof(ISwipeView.BottomItems)] = MapBottomItems,
-#if ANDROID
+#if ANDROID || IOS
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
+#endif
+#if ANDROID
 			[nameof(IView.Background)] = MapBackground,
 #endif
 		};

@@ -18,6 +18,13 @@ namespace Microsoft.Maui.Handlers
 			handler.GetWrappedNativeView()?.UpdateBackground(label);
 		}
 
+		public static void MapOpacity(LabelHandler handler, ILabel label)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.NativeView.UpdateOpacity(label);
+			handler.GetWrappedNativeView()?.UpdateOpacity(label);
+		}
+
 		public static void MapText(LabelHandler handler, ILabel label) =>
 			handler.NativeView?.UpdateText(label);
 

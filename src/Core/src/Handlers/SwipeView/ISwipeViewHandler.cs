@@ -1,5 +1,5 @@
 ﻿#if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIView;
+using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif MONOANDROID
 using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS

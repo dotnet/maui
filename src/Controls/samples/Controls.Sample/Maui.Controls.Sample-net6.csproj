@@ -58,6 +58,19 @@
 
   <ItemGroup>
     <Folder Include="Pages\Controls\SwipeViewGalleries\" />
+    <MauiXaml Update="Pages\Layouts\ClippingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <Compile Update="Pages\Layouts\ClippingPage.xaml.cs">
+      <DependentUpon>ClippingPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="Pages\Compatibility\AndExpandPage.xaml">
+      <Generator></Generator>
+    </MauiXaml>
+    
   </ItemGroup>
 
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
