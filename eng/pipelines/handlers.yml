@@ -266,7 +266,7 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macOS') }} :
+              ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
             steps:
