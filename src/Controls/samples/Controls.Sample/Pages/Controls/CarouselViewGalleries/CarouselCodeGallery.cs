@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				Margin = new Thickness(0, 10, 0, 10),
 				BackgroundColor = Colors.Red,
 				AutomationId = "TheCarouselView",
-				//Loop = false
+				Loop = false
 			};
 
 			if (orientation == ItemsLayoutOrientation.Horizontal)
