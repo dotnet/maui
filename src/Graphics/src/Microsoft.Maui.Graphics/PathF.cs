@@ -1132,26 +1132,51 @@ namespace Microsoft.Maui.Graphics
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius, includeLast);
 		}
 
-		public void AppendRoundedRectangle(RectangleF rect, float xRadius, float yRadius)
+		public void AppendRoundedRectangle(RectangleF rect, float xCornerRadius, float yCornerRadius)
 		{
-			xRadius = Math.Min(xRadius, rect.Width / 2);
-			yRadius = Math.Min(yRadius, rect.Height / 2);
+			xCornerRadius = Math.Min(xCornerRadius, rect.Width / 2);
+			yCornerRadius = Math.Min(yCornerRadius, rect.Height / 2);
 
 			float minX = Math.Min(rect.X, rect.X + rect.Width);
 			float minY = Math.Min(rect.Y, rect.Y + rect.Height);
 			float maxX = Math.Max(rect.X, rect.X + rect.Width);
 			float maxY = Math.Max(rect.Y, rect.Y + rect.Height);
 
-			MoveTo(minX, minY + yRadius);
-			CurveTo(minX, minY + yRadius, minX, minY, minX + xRadius, minY);
-			LineTo(maxX - xRadius, minY);
-			CurveTo(maxX - xRadius, minY, maxX, minY, maxX, minY + yRadius);
-			LineTo(maxX, maxY - yRadius);
-			CurveTo(maxX, maxY - yRadius, maxX, maxY, maxX - xRadius, maxY);
-			LineTo(minX + xRadius, maxY);
-			CurveTo(minX + xRadius, maxY, minX, maxY, minX, maxY - yRadius);
-			LineTo(minX, minY + yRadius);
-			Close();
+			var xHandleOffset = xCornerRadius * .55f;
+			var xCornerOffset = xCornerRadius - xHandleOffset;
+
+			var yHandleOffset = yCornerRadius * .55f;
+			var yCornerOffset = yCornerRadius - yHandleOffset;
+
+			MoveTo(new PointF(minX, minY + yCornerRadius));
+
+			CurveTo(
+				new PointF(minX, minY + yCornerOffset),
+				new PointF(minX + xCornerOffset, minY),
+				new PointF(minX + xCornerRadius, minY));
+
+			LineTo(new PointF(maxX - xCornerRadius, minY));
+
+			CurveTo(
+				new PointF(maxX - xCornerOffset, minY),
+				new PointF(maxX, minY + yCornerOffset),
+				new PointF(maxX, minY + yCornerRadius));
+
+			LineTo(new PointF(maxX, maxY - yCornerRadius));
+
+			CurveTo(
+				new PointF(maxX, maxY - yCornerOffset),
+				new PointF(maxX - xCornerOffset, maxY),
+				new PointF(maxX - xCornerRadius, maxY));
+
+			LineTo(new PointF(minX + xCornerRadius, maxY));
+
+			CurveTo(
+				new PointF(minX + xCornerOffset, maxY),
+				new PointF(minX, maxY - yCornerOffset),
+				new PointF(minX, maxY - yCornerRadius));
+
+			LineTo(new PointF(minX, minY + yCornerRadius));
 		}
 
 		public void AppendRoundedRectangle(float x, float y, float w, float h, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
