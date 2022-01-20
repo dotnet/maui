@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class StrokeExtensions
 	{
-		public static void UpdateStrokeShape(this AView nativeView, IBorder border)
+		public static void UpdateStrokeShape(this AView nativeView, IBorderStroke border)
 		{
 			var borderShape = border.Shape;
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			nativeView.UpdateMauiDrawable(border);
 		}
 
-		public static void UpdateStroke(this AView nativeView, IBorder border)
+		public static void UpdateStroke(this AView nativeView, IBorderStroke border)
 		{
 			var stroke = border.Stroke;
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable?.SetBorderBrush(border.Stroke);
 		}
 
-		public static void UpdateStrokeThickness(this AView nativeView, IBorder border)
+		public static void UpdateStrokeThickness(this AView nativeView, IBorderStroke border)
 		{
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable?.SetBorderWidth(border.StrokeThickness);
 		}
 
-		public static void UpdateStrokeDashPattern(this AView nativeView, IBorder border)
+		public static void UpdateStrokeDashPattern(this AView nativeView, IBorderStroke border)
 		{
 			var strokeDashPattern = border.StrokeDashPattern;
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable?.SetBorderDash(border.StrokeDashPattern, border.StrokeDashOffset);
 		}
 
-		public static void UpdateStrokeDashOffset(this AView nativeView, IBorder border)
+		public static void UpdateStrokeDashOffset(this AView nativeView, IBorderStroke border)
 		{
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
 
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable?.SetBorderDash(border.StrokeDashPattern, border.StrokeDashOffset);
 		}
 
-		public static void UpdateStrokeMiterLimit(this AView nativeView, IBorder border)
+		public static void UpdateStrokeMiterLimit(this AView nativeView, IBorderStroke border)
 		{
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
 
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable?.SetBorderMiterLimit(border.StrokeMiterLimit);
 		}
 
-		public static void UpdateStrokeLineCap(this AView nativeView, IBorder border)
+		public static void UpdateStrokeLineCap(this AView nativeView, IBorderStroke border)
 		{
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable?.SetBorderLineCap(border.StrokeLineCap);
 		}
 
-		public static void UpdateStrokeLineJoin(this AView nativeView, IBorder border)
+		public static void UpdateStrokeLineJoin(this AView nativeView, IBorderStroke border)
 		{
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
 			bool hasBorder = border.Shape != null && border.Stroke != null;
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable?.SetBorderLineJoin(border.StrokeLineJoin);
 		}
 
-		internal static void UpdateMauiDrawable(this AView nativeView, IBorder border)
+		internal static void UpdateMauiDrawable(this AView nativeView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -114,7 +114,10 @@ namespace Microsoft.Maui.Platform
 				nativeView.Background = mauiDrawable;
 			}
 
-			mauiDrawable.SetBackground(border.Background);
+			if(border is IView v)
+				mauiDrawable.SetBackground(v.Background);
+			else
+				mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));
 			mauiDrawable.SetBorderShape(border.Shape);
 		}
 	}

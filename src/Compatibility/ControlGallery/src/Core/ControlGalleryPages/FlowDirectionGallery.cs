@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		}
 	}
 
-	public class FlowDirectionGalleryCarP : CarouselPage
+	internal class FlowDirectionGalleryCarP : CarouselPage
 	{
 		public FlowDirectionGalleryCarP(FlowDirection direction)
 		{
