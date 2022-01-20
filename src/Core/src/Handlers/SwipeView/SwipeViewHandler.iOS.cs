@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.TypedNativeView.UpdateIsEnabled(swipeView);
+			handler.TypedNativeView.UpdateIsSwipeEnabled(swipeView);
 			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
 		
