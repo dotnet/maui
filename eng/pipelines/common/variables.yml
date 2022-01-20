@@ -34,6 +34,8 @@ variables:
   value: true
 - name: provisionator.xcode
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+- name: provisionator.xcode
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/mono.csx'
 - name: provisionator.path
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
 - name: provisionator.vs
