@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSwipeItems()
 		{
-			if (_contentView == null || _actionView != null || Element?.Handler?.MauiContext == null)
+			if (_contentView == null || Element?.Handler?.MauiContext == null)
 				return;
 
 			ISwipeItems? items = Element.GetSwipeItemsByDirection(_swipeDirection);
