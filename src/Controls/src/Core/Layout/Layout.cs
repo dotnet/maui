@@ -105,10 +105,6 @@ namespace Microsoft.Maui.Controls
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			foreach (var child in Children)
-			{
-				child.InvalidateMeasure();
-			}
 		}
 
 		public void Add(IView child)
