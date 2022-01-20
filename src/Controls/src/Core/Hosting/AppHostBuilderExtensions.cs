@@ -12,16 +12,7 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
-#if __IOS__ || __ANDROID__
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-#endif
-
-#if WINDOWS
-			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-#endif
-#if WINDOWS || __ANDROID__
-			handlersCollection.AddHandler<Shell, ShellHandler>();
-#endif
 			handlersCollection.AddHandler<Application, ApplicationHandler>();
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 			handlersCollection.AddHandler<BoxView, ShapeViewHandler>();
@@ -67,6 +58,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
+			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
 #if ANDROID
 			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
