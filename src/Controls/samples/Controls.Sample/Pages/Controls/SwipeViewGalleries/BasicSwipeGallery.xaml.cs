@@ -13,9 +13,9 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			InitializeComponent();
 		}
 
-		private void OnInvoked(object sender, EventArgs e)
+		async void OnInvoked(object sender, EventArgs e)
 		{
-			DisplayAlert("SwipeView", "Delete Invoked", "OK");
+			await DisplayAlert("SwipeView", "Delete Invoked", "OK");
 		}
 	}
 }
