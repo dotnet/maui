@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Graphics
 {
 	public class PathF : IDisposable
 	{
+		private const float K_RATIO = 0.551784777779014f; // ideal ratio of cubic Bezier points for a quarter circle
+
 		private readonly List<float> _arcAngles;
 		private readonly List<bool> _arcClockwise;
 		private readonly List<PointF> _points;
@@ -1033,8 +1035,8 @@ namespace Microsoft.Maui.Graphics
 			var maxY = minY + h;
 			var midX = minX + w / 2;
 			var midY = minY + h / 2;
-			var offsetY = h / 2 * .55f;
-			var offsetX = w / 2 * .55f;
+			var offsetY = h / 2 * K_RATIO;
+			var offsetX = w / 2 * K_RATIO;
 
 			MoveTo(new PointF(minX, midY));
 			CurveTo(new PointF(minX, midY - offsetY), new PointF(midX - offsetX, minY), new PointF(midX, minY));
@@ -1057,8 +1059,8 @@ namespace Microsoft.Maui.Graphics
 			var maxY = cy + r;
 			var midX = cx;
 			var midY = cy;
-			var offsetY = r * .55f;
-			var offsetX = r * .55f;
+			var offsetY = r * K_RATIO;
+			var offsetX = r * K_RATIO;
 
 			MoveTo(new PointF(minX, midY));
 			CurveTo(new PointF(minX, midY - offsetY), new PointF(midX - offsetX, minY), new PointF(midX, minY));
@@ -1107,7 +1109,7 @@ namespace Microsoft.Maui.Graphics
 			var maxX = minX + w;
 			var maxY = minY + h;
 
-			var handleOffset = cornerRadius * .55f;
+			var handleOffset = cornerRadius * K_RATIO;
 			var cornerOffset = cornerRadius - handleOffset;
 
 			MoveTo(new PointF(minX, minY + cornerRadius));
@@ -1132,6 +1134,53 @@ namespace Microsoft.Maui.Graphics
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius, includeLast);
 		}
 
+		public void AppendRoundedRectangle(RectangleF rect, float xCornerRadius, float yCornerRadius)
+		{
+			xCornerRadius = Math.Min(xCornerRadius, rect.Width / 2);
+			yCornerRadius = Math.Min(yCornerRadius, rect.Height / 2);
+
+			float minX = Math.Min(rect.X, rect.X + rect.Width);
+			float minY = Math.Min(rect.Y, rect.Y + rect.Height);
+			float maxX = Math.Max(rect.X, rect.X + rect.Width);
+			float maxY = Math.Max(rect.Y, rect.Y + rect.Height);
+
+			var xHandleOffset = xCornerRadius * K_RATIO;
+			var xCornerOffset = xCornerRadius - xHandleOffset;
+
+			var yHandleOffset = yCornerRadius * K_RATIO;
+			var yCornerOffset = yCornerRadius - yHandleOffset;
+
+			MoveTo(new PointF(minX, minY + yCornerRadius));
+
+			CurveTo(
+				new PointF(minX, minY + yCornerOffset),
+				new PointF(minX + xCornerOffset, minY),
+				new PointF(minX + xCornerRadius, minY));
+
+			LineTo(new PointF(maxX - xCornerRadius, minY));
+
+			CurveTo(
+				new PointF(maxX - xCornerOffset, minY),
+				new PointF(maxX, minY + yCornerOffset),
+				new PointF(maxX, minY + yCornerRadius));
+
+			LineTo(new PointF(maxX, maxY - yCornerRadius));
+
+			CurveTo(
+				new PointF(maxX, maxY - yCornerOffset),
+				new PointF(maxX - xCornerOffset, maxY),
+				new PointF(maxX - xCornerRadius, maxY));
+
+			LineTo(new PointF(minX + xCornerRadius, maxY));
+
+			CurveTo(
+				new PointF(minX + xCornerOffset, maxY),
+				new PointF(minX, maxY - yCornerOffset),
+				new PointF(minX, maxY - yCornerRadius));
+
+			LineTo(new PointF(minX, minY + yCornerRadius));
+		}
+
 		public void AppendRoundedRectangle(float x, float y, float w, float h, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
 		{
 			topLeftCornerRadius = ClampCornerRadius(topLeftCornerRadius, w, h);
@@ -1144,10 +1193,10 @@ namespace Microsoft.Maui.Graphics
 			var maxX = minX + w;
 			var maxY = minY + h;
 
-			var topLeftCornerOffset = topLeftCornerRadius - (topLeftCornerRadius * .55f);
-			var topRightCornerOffset = topRightCornerRadius - (topRightCornerRadius * .55f);
-			var bottomLeftCornerOffset = bottomLeftCornerRadius - (bottomLeftCornerRadius * .55f);
-			var bottomRightCornerOffset = bottomRightCornerRadius - (bottomRightCornerRadius * .55f);
+			var topLeftCornerOffset = topLeftCornerRadius - (topLeftCornerRadius * K_RATIO);
+			var topRightCornerOffset = topRightCornerRadius - (topRightCornerRadius * K_RATIO);
+			var bottomLeftCornerOffset = bottomLeftCornerRadius - (bottomLeftCornerRadius * K_RATIO);
+			var bottomRightCornerOffset = bottomRightCornerRadius - (bottomRightCornerRadius * K_RATIO);
 
 			MoveTo(new PointF(minX, minY + topLeftCornerRadius));
 			CurveTo(new PointF(minX, minY + topLeftCornerOffset), new PointF(minX + topLeftCornerOffset, minY), new PointF(minX + topLeftCornerRadius, minY));

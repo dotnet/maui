@@ -89,6 +89,11 @@ namespace Microsoft.Maui.Graphics
 			return new SizeF(s1._width * value, s1._height * value);
 		}
 
+		public static SizeF operator /(SizeF s1, float value)
+		{
+			return new SizeF(s1._width / value, s1._height / value);
+		}
+
 		public static bool operator ==(SizeF s1, SizeF s2)
 		{
 			return s1._width == s2._width && s1._height == s2._height;

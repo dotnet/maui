@@ -58,6 +58,13 @@ namespace Microsoft.Maui.Graphics
 			target.DrawPath(path);
 		}
 
+		public static void DrawRoundedRectangle(this ICanvas target, RectangleF rect, float xRadius, float yRadius)
+		{
+			var path = new PathF();
+			path.AppendRoundedRectangle(rect, xRadius, yRadius);
+			target.DrawPath(path);
+		}
+
 		public static void FillRoundedRectangle(this ICanvas target, Rectangle rect, double cornerRadius)
 		{
 			target.FillRoundedRectangle((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height, (float)cornerRadius);
@@ -86,6 +93,13 @@ namespace Microsoft.Maui.Graphics
 		{
 			var path = new PathF();
 			path.AppendRoundedRectangle(rect, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
+			target.FillPath(path);
+		}
+
+		public static void FillRoundedRectangle(this ICanvas target, RectangleF rect, float xRadius, float yRadius)
+		{
+			var path = new PathF();
+			path.AppendRoundedRectangle(rect, xRadius, yRadius);
 			target.FillPath(path);
 		}
 

@@ -15,6 +15,7 @@ namespace GraphicsTester.Scenarios
 			FillRoundedRectanglesWithAlpha(canvas);
 			FillShadowedRect(canvas);
 			FillRoundedRectWithZeroAndLargeRadius(canvas);
+			FillRoundedWithDifferentXYRadius(canvas);
 		}
 
 		private static void FillShadowedRect(ICanvas canvas)
@@ -58,6 +59,12 @@ namespace GraphicsTester.Scenarios
 			canvas.FillColor = Colors.Blue;
 			canvas.FillRoundedRectangle(250.5f, 700.5f, 150, 20, 0);
 			canvas.FillRoundedRectangle(450.5f, 700.5f, 150, 20, 50);
+		}
+
+		private void FillRoundedWithDifferentXYRadius(ICanvas canvas)
+		{
+			RectangleF rect = new RectangleF(275, 400, 100, 100);
+			canvas.FillRoundedRectangle(rect, xRadius: 20, yRadius: 40);
 		}
 	}
 }
