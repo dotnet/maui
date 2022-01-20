@@ -57,20 +57,19 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 			handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
-#if __ANDROID__ || __IOS__
+			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
+			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
+#if ANDROID || IOS
 			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
-			
+			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 #if WINDOWS || ANDROID
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
-			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
-			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 #endif
 #if ANDROID
 			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
-			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 			return handlersCollection;
 		}
