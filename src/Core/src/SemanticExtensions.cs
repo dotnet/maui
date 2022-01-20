@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 				throw new NullReferenceException("Can't access view from a null handler");
 
 #if __ANDROID__
-			nativeView.SendAccessibilityEvent((EventTypes)(int)WindowsChange.AccessibilityFocused);
+			nativeView.SendAccessibilityEvent(EventTypes.ViewHoverEnter);
 #elif __IOS__ || MACCATALYST
 			UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, nativeView);
 #endif
