@@ -1,11 +1,3 @@
-resources:
-  repositories:
-  - repository: templates
-    type: github
-    name: xamarin/yaml-templates
-    ref: refs/heads/main
-    endpoint: xamarin
-
 trigger:
   branches:
     include:
@@ -133,7 +125,7 @@ stages:
                   - Agent.OSArchitecture -equals X64
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@yaml-templates
+                - template: agent-cleanser/v1.yml@xamarin-templates
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -172,7 +164,7 @@ stages:
                 - Agent.OSArchitecture -equals X64
           steps:
             - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-              - template: agent-cleanser/v1.yml@yaml-templates
+              - template: agent-cleanser/v1.yml@xamarin-templates
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
@@ -234,7 +226,7 @@ stages:
                   - Agent.OSArchitecture -equals X64
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@yaml-templates
+                - template: agent-cleanser/v1.yml@xamarin-templates
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -279,7 +271,7 @@ stages:
                   - Agent.OSArchitecture -equals X64
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@yaml-templates
+                - template: agent-cleanser/v1.yml@xamarin-templates
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
