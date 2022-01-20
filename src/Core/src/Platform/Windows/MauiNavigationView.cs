@@ -18,22 +18,6 @@ namespace Microsoft.Maui.Platform
 		internal Size FlyoutPaneSize { get; private set; }
 		internal event EventHandler? OnApplyTemplateFinished;
 
-
-		//internal static readonly DependencyProperty HeaderIsBackButtonVisibleProperty
-		//	= DependencyProperty.Register("HeaderIsBackButtonVisible", typeof(NavigationViewBackButtonVisible), typeof(WindowHeader),
-		//		new PropertyMetadata(NavigationViewBackButtonVisible.Collapsed, OnHeaderIsBackButtonVisibleChanged));
-
-		//private static void OnHeaderIsBackButtonVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		//{
-		//	((NavigationView)d).IsBackButtonVisible = (NavigationViewBackButtonVisible)(e.NewValue);
-		//}
-
-		//public NavigationViewBackButtonVisible HeaderIsBackButtonVisible
-		//{
-		//	get => (NavigationViewBackButtonVisible)GetValue(HeaderIsBackButtonVisibleProperty);
-		//	set => SetValue(HeaderIsBackButtonVisibleProperty, value);
-		//}
-
 		public MauiNavigationView()
 		{
 			IsSettingsVisible = false;
@@ -47,14 +31,14 @@ namespace Microsoft.Maui.Platform
 			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
 		}
 
-		private void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp)
+		void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp)
 		{
-			//Binding isBackButtonVisible = new Binding();
-			//isBackButtonVisible.Source = Header;
-			//isBackButtonVisible.Path = new PropertyPath("IsBackButtonVisible");
-			//isBackButtonVisible.Mode = BindingMode.OneWay;
-			//isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-			//BindingOperations.SetBinding(this, HeaderIsBackButtonVisibleProperty, isBackButtonVisible);
+			Binding isBackButtonVisible = new Binding();
+			isBackButtonVisible.Source = Header;
+			isBackButtonVisible.Path = new PropertyPath("IsBackButtonVisible");
+			isBackButtonVisible.Mode = BindingMode.OneWay;
+			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
 		}
 
 		void PaneLengthPropertyChanged(DependencyObject sender, DependencyProperty dp)
@@ -105,20 +89,16 @@ namespace Microsoft.Maui.Platform
 			backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(HeaderContent, BackgroundProperty, backgroundBinding);
 
-			Binding isBackButtonVisible = new Binding();
-			isBackButtonVisible.Source = Header;
-			isBackButtonVisible.Path = new PropertyPath("Header.IsBackButtonVisible");
-			isBackButtonVisible.Mode = BindingMode.TwoWay;
-			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-			BindingOperations.SetBinding(this, NavigationView.IsBackButtonVisibleProperty, isBackButtonVisible);
-
 			PaneContentGrid = (Grid)GetTemplateChild("PaneContentGrid");
 			PaneContentGrid.SizeChanged += OnPaneContentGridSizeChanged;
+
+			// The TopNavArea has a background set which makes the window action buttons unclickable
+			// So this offsets the TopNavArea by the size of the AppTitleBar
+			((FrameworkElement)GetTemplateChild("TopNavArea")).Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
 
 			// This is the height taken up by the backbutton/pane toggle button
 			// we use this to offset the height of our flyout content
 			((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
-
 			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 		}
 

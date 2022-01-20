@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				_navigationView.Resources["NavigationViewMinimalHeaderMargin"] = new WThickness(-24, 44, 0, 0);
 				_navigationView.Resources["NavigationViewHeaderMargin"] = new WThickness(56, 44, 0, 0);
 				_navigationView.Resources["NavigationViewMinimalContentGridBorderThickness"] = new WThickness(0, 1, 0, 0);
-				_navigationView.Resources["TopNavigationViewTopNavGridMargin"] = new WThickness(0, 4, 0, 4);
 
 				return _navigationView;
 			}
