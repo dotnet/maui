@@ -126,6 +126,7 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -162,6 +163,7 @@ stages:
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
+                poolName: ${{ BuildPlatform.poolName }}
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
             - task: CopyFiles@2
@@ -221,6 +223,7 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -263,6 +266,7 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
