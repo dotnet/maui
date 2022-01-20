@@ -68,9 +68,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
+			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
 #endif
 #if ANDROID
-			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
 #endif
 			return handlersCollection;
 		}
