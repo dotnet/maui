@@ -70,7 +70,7 @@ parameters:
         artifact: net6-windows
       - name: macOS
         poolName: 'Azure Pipelines'
-        vmImage: internal-macOS-11
+        vmImage: internal-macos-11
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
@@ -86,7 +86,7 @@ parameters:
         artifact: nuget
       - name: macOS
         poolName: 'Azure Pipelines'
-        vmImage: internal-macOS-11
+        vmImage: internal-macos-11
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
