@@ -91,6 +91,11 @@ namespace Microsoft.Maui.Graphics
 			return new PointF(pt.X + sz.Width, pt.Y + sz.Height);
 		}
 
+		public static SizeF operator -(PointF ptA, PointF ptB)
+		{
+			return new SizeF(ptA.X - ptB.X, ptA.Y - ptB.Y);
+		}
+
 		public static PointF operator -(PointF pt, SizeF sz)
 		{
 			return new PointF(pt.X - sz.Width, pt.Y - sz.Height);
