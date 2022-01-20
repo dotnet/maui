@@ -1,7 +1,6 @@
 parameters:
   platform : ''
   skipXcode: false
-  provisioning: false
 
 steps:
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
@@ -30,10 +29,11 @@ steps:
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'
-      condition: or(eq(variables['provisioning'], 'true'),eq(${{ parameters.provisioning }}, true))
       inputs:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
+      env:
+          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Setup SDK Paths
     - bash: |
         echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
