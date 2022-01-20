@@ -98,7 +98,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/dev/pjc/3partyscripts # still defaults to master even though main is the main branch
+      ref: refs/heads/main # still defaults to master even though main is the main branch
 
 stages:
 
@@ -305,13 +305,12 @@ stages:
           parameters:
             signType: Real
             teamName: $(TeamName)
-            templateBranch: dev/pjc/3partyscripts
             usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/ttf3partyscript'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
 
         - template: nuget-msi-convert/job/v2.yml@xamarin-templates
           parameters:
@@ -333,8 +332,7 @@ stages:
           **/signed/*.nupkg
           **/*.snupkg
           **/additional-assets.zip
-        pushToShippingFeed: false
-        topicBranchName: team/xamarin/maui-test-insertion-$(Build.BuildId)
+        pushToShippingFeed: true
         nupkgArtifactName: nuget
         nupkgArtifactPatterns: |
           **/signed/*.nupkg
