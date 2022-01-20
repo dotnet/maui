@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var platformView = GetChildAt(0);
 				if (platformView != null)
 				{
-					platformView.Layout(l, t, r, b);
+					platformView.Layout(0, 0, r - l, b - t);
 				}
 			}
 		}

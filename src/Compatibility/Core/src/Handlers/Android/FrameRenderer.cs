@@ -13,6 +13,7 @@ using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
+using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
 
+		readonly ARect _clipRect = new();
 		int _height;
 		int _width;
 		readonly Controls.Compatibility.Platform.Android.MotionEventHelper _motionEventHelper = new Controls.Compatibility.Platform.Android.MotionEventHelper();
@@ -124,7 +126,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (Element == null)
 				return;
@@ -135,8 +137,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var platformView = GetChildAt(0);
 				if (platformView != null)
 				{
-					platformView.Layout(left, top, right, bottom);
+					platformView.Layout(0, 0, r - l, b - t);
 				}
+			}
+
+			if (Element.IsClippedToBounds)
+			{
+				_clipRect.Right = r - l;
+				_clipRect.Bottom = b - t;
+				ClipBounds = _clipRect;
+			}
+			else
+			{
+				ClipBounds = null;
 			}
 		}
 
