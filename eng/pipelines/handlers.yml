@@ -1,3 +1,11 @@
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    name: xamarin/yaml-templates
+    ref: refs/heads/main
+    endpoint: xamarin
+
 trigger:
   branches:
     include:
