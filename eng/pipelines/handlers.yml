@@ -126,6 +126,8 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                    provisioning: true
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -162,6 +164,8 @@ stages:
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
+                ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                  provisioning: true
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
             - task: CopyFiles@2
@@ -221,6 +225,8 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                    provisioning: true
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -263,6 +269,8 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                    provisioning: true
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
