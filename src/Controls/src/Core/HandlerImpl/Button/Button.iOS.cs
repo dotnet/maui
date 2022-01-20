@@ -20,5 +20,10 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(nameof(ContentLayout));
 			return result;
 		}
+
+		public static void MapText(ButtonHandler handler, Button button)
+		{
+			handler.NativeView?.UpdateText(button);
+		}
 	}
 }

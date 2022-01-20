@@ -60,6 +60,26 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public static readonly BindableProperty IsClippedToBoundsProperty =
+			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
+				propertyChanged: IsClippedToBoundsPropertyChanged);
+
+		public bool IsClippedToBounds
+		{
+			get => (bool)GetValue(IsClippedToBoundsProperty);
+			set => SetValue(IsClippedToBoundsProperty, value);
+		}
+
+		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
+		{
+			if (bindableObject is IView view)
+			{
+				view.Handler?.UpdateValue(nameof(Maui.ILayout.ClipsToBounds));
+			}
+		}
+
+		bool Maui.ILayout.ClipsToBounds => IsClippedToBounds;
+
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		public Thickness Padding
@@ -69,7 +89,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public bool IgnoreSafeArea { get; set; }
-
+		
 		protected abstract ILayoutManager CreateLayoutManager();
 
 		public IEnumerator<IView> GetEnumerator() => _children.GetEnumerator();

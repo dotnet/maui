@@ -6,6 +6,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.KeyboardInsetTracker instead")]
 	internal class KeyboardInsetTracker : IDisposable
 	{
 		readonly Func<UIWindow> _fetchWindow;

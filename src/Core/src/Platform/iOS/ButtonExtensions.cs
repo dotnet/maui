@@ -5,6 +5,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
+		public const double AlmostZero = 0.00001;
+
 		public static void UpdateStrokeColor(this UIButton nativeButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.StrokeColor != null)
@@ -59,13 +61,28 @@ namespace Microsoft.Maui.Platform
 			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 		}
 
-		public static void UpdatePadding(this UIButton nativeButton, IButton button)
+		public static void UpdatePadding(this UIButton nativeButton, IButton button, Thickness? defaultPadding = null) =>
+			UpdatePadding(nativeButton, button.Padding, defaultPadding);
+
+		public static void UpdatePadding(this UIButton nativeButton, Thickness padding, Thickness? defaultPadding = null)
 		{
+			if (padding.IsNaN)
+				padding = defaultPadding ?? Thickness.Zero;
+
+			// top and bottom insets reset to a "default" if they are exactly 0
+			// however, internally they are floor-ed, so there is no actual fractions
+			var top = padding.Top;
+			if (top == 0.0)
+				top = AlmostZero;
+			var bottom = padding.Bottom;
+			if (bottom == 0.0)
+				bottom = AlmostZero;
+
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)button.Padding.Top,
-				(float)button.Padding.Left,
-				(float)button.Padding.Bottom,
-				(float)button.Padding.Right);
+				(float)top,
+				(float)padding.Left,
+				(float)bottom,
+				(float)padding.Right);
 		}
 	}
 }

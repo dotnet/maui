@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (toolbarElement.Toolbar != null)
 			{
-				var toolBar = toolbarElement.Toolbar.ToNative(handler.MauiContext, true);
+				var toolBar = toolbarElement.Toolbar.ToNative(handler.MauiContext);
 				handler.MauiContext.GetNavigationRootManager().SetToolbar(toolBar);
 			}
 		}

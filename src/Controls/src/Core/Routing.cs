@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls
 			{
 				_type = type;
 			}
-			
+
 			public override Element GetOrCreate()
 			{
 				return (Element)Activator.CreateInstance(_type);

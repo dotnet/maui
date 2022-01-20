@@ -17,8 +17,9 @@
                             margin on the left when the backbutton appears, but our backbutton is in the
                             AppTitle so we don't need/want the title to offset
                             -->
-                            
+
                             <Thickness x:Key="NavigationViewMinimalHeaderMargin">0,0,0,0</Thickness>
+                            <Thickness x:Key="NavigationViewHeaderMargin">0,0,0,0</Thickness>
 
                             <!-- This removes a one pixel spacing between the AppBarTitle and the NavigationViews top edge -->
                             <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,0,0,0</Thickness>
@@ -43,12 +44,7 @@
                                         Style="{StaticResource CaptionTextBlockStyle}" />
                                 </StackPanel>
                             </Border>
-                            <maui:MauiNavigationView 
-                                    x:Name="NavigationViewControl"
-                                    IsTitleBarAutoPaddingEnabled="False"
-                                    Canvas.ZIndex="0">
-                                <ContentPresenter></ContentPresenter>
-                            </maui:MauiNavigationView>
+                            <ContentPresenter Canvas.ZIndex="0"></ContentPresenter>
                         </Grid>
                     </Page>
                 </ControlTemplate>

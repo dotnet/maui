@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Handlers
 			if (appbarLayout == null)
 				appbarLayout = rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
 
-			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext, true);
+			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext);
 
 			if (appbarLayout == null || nativeToolBar == null)
 			{
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Handlers
 			var appbarLayout = nativeView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar) ??
 				rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
 
-			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext, true);
+			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext);
 
 			if (appbarLayout == null)
 			{

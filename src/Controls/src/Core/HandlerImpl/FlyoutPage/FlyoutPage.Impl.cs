@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls
 			{
 				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 			}
-			else if(args.OldHandler == null)
+			else if (args.OldHandler == null)
 			{
 				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 			}
