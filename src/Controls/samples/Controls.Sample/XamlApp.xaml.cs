@@ -37,6 +37,8 @@ namespace Maui.Controls.Sample
 
 			var window = new Window(new Pages.TabbedPageGallery());
 
+			//var window = new Window(new NavigationPage(new ContentPage()));
+
 
 
 			window.Title = ".NET MAUI Samples Gallery";
