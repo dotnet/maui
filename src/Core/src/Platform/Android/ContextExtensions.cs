@@ -41,6 +41,13 @@ namespace Microsoft.Maui.Platform
 			return new Size(context.FromPixels(width), context.FromPixels(height));
 		}
 
+		public static Thickness FromPixels(this Context context, Thickness thickness) =>
+			new Thickness(
+				context.FromPixels(thickness.Left),
+				context.FromPixels(thickness.Top),
+				context.FromPixels(thickness.Right),
+				context.FromPixels(thickness.Bottom));
+
 		public static void HideKeyboard(this Context self, global::Android.Views.View view)
 		{
 			// Service may be null in the context of the Android Designer
@@ -71,6 +78,28 @@ namespace Microsoft.Maui.Platform
 				(int)context.ToPixels(rectangle.Right),
 				(int)context.ToPixels(rectangle.Bottom)
 			);
+		}
+
+		public static Thickness ToPixels(this Context context, Thickness thickness)
+		{
+			return new Thickness(
+				context.ToPixels(thickness.Left),
+				context.ToPixels(thickness.Top),
+				context.ToPixels(thickness.Right),
+				context.ToPixels(thickness.Bottom));
+		}
+
+		public static bool HasRtlSupport(this Context self)
+		{
+			if (self == null)
+				return false;
+
+			return (self.ApplicationInfo?.Flags & AApplicationInfoFlags.SupportsRtl) == AApplicationInfoFlags.SupportsRtl;
+		}
+
+		public static int? TargetSdkVersion(this Context self)
+		{
+			return (int?)self?.ApplicationInfo?.TargetSdkVersion;
 		}
 
 		public static double GetThemeAttributeDp(this Context self, int resource)
