@@ -21,6 +21,7 @@ namespace GraphicsTester.Scenarios
 			DrawRoundedRectanglesWithDifferentStrokeLocations(canvas);
 			DrawRoundedRectWithZeroAndLargeRadius(canvas);
 			DrawRoundedWithDifferentXYRadius(canvas);
+			DrawRoundedWithCircles(canvas);
 			canvas.RestoreState();
 
 			canvas.DrawRoundedRectangle(50.5f, 30.5f, 150, 15, 5);
@@ -107,8 +108,35 @@ namespace GraphicsTester.Scenarios
 
 		private void DrawRoundedWithDifferentXYRadius(ICanvas canvas)
 		{
+			canvas.StrokeColor = Colors.Blue;
+			canvas.StrokeSize = 1;
 			RectangleF rect = new RectangleF(275, 400, 100, 100);
 			canvas.DrawRoundedRectangle(rect, xRadius: 20, yRadius: 40);
+		}
+
+		private void DrawRoundedWithCircles(ICanvas canvas)
+		{
+			float circleRadius = 64;
+
+			canvas.StrokeSize = .5f;
+			canvas.StrokeColor = Colors.Magenta;
+			RectangleF rect = new RectangleF(50, 740, circleRadius * 4, circleRadius * 4);
+			canvas.DrawRoundedRectangle(rect, xRadius: circleRadius, yRadius: circleRadius);
+
+			PointF[] circleCenters =
+			{
+				new PointF(rect.Left + circleRadius, rect.Top + circleRadius),
+				new PointF(rect.Right - circleRadius, rect.Top + circleRadius),
+				new PointF(rect.Left + circleRadius, rect.Bottom - circleRadius),
+				new PointF(rect.Right - circleRadius, rect.Bottom - circleRadius),
+			};
+
+			canvas.StrokeColor = Colors.Green;
+			foreach (PointF circleCenter in circleCenters)
+			{
+				canvas.DrawCircle(circleCenter, circleRadius);
+				canvas.DrawCircle(circleCenter, 1);
+			}
 		}
 	}
 }
