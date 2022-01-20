@@ -120,11 +120,11 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@yaml-templates
               - template: common/provision.yml
                 parameters:
@@ -159,11 +159,11 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if eq(BuildPlatform.name, 'macos') }} :
+            ${{ if eq(BuildPlatform.name, 'macOS') }}:
               demands:
                 - Agent.OSArchitecture -equals X64
           steps:
-            - ${{ if eq(BuildPlatform.name, 'macos') }}:
+            - ${{ if eq(BuildPlatform.name, 'macOS') }}:
               - template: agent-cleanser/v1.yml@yaml-templates
             - template: common/provision.yml
               parameters:
@@ -221,11 +221,11 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@yaml-templates
               - template: common/provision.yml
                 parameters:
@@ -266,11 +266,11 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if eq(BuildPlatform.name, 'macOS') }} :
                 demands:
                   - Agent.OSArchitecture -equals X64
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@yaml-templates
               - template: common/provision.yml
                 parameters:
