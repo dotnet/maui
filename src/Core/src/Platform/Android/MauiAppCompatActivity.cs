@@ -1,5 +1,6 @@
 using Android.OS;
 using AndroidX.AppCompat.App;
+using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
@@ -27,6 +28,8 @@ namespace Microsoft.Maui
 			}
 
 			base.OnCreate(savedInstanceState);
+
+			MauiApplication.Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnCreate>(del => del(this, savedInstanceState));
 
 			this.CreateNativeWindow(MauiApplication.Current.Application, savedInstanceState);
 		}

@@ -30,6 +30,10 @@ namespace Microsoft.Maui.Essentials
 				Platform.Init(MauiApplication.Current);
 
 				life.AddAndroid(android => android
+					.OnCreate((activity, savedInstanceState) =>
+					{
+						Platform.Init(activity, savedInstanceState);
+					})
 					.OnRequestPermissionsResult((activity, requestCode, permissions, grantResults) =>
 					{
 						Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
