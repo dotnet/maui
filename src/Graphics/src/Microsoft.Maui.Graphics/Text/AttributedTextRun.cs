@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Graphics.Text.Immutable
+namespace Microsoft.Maui.Graphics.Text
 {
 	public class AttributedTextRun : IAttributedTextRun
 	{

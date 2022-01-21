@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Graphics.Text.Mutable
+namespace Microsoft.Maui.Graphics.Text
 {
 	public class MutableAttributedText : AbstractAttributedText
 	{

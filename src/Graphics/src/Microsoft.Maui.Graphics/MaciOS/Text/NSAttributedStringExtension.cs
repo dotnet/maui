@@ -7,7 +7,7 @@ using NSColor = UIKit.UIColor;
 #endif
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics.Text;
-using Microsoft.Maui.Graphics.Text.Immutable;
+using Microsoft.Maui.Graphics.Text;
 using System.IO;
 using Foundation;
 
