@@ -32,14 +32,18 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ScrollChange -= ScrollChange;
 		}
 
+		Size _previousDesiredSize;
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
 
-			if (FindInsetPanel(this) == null)
+			if (result != _previousDesiredSize && FindInsetPanel(this) == null)
 			{
 				VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 			}
+			
+			_previousDesiredSize = result;
 
 			return result;
 		}
