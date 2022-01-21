@@ -12,16 +12,7 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
-#if __IOS__ || __ANDROID__
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-#endif
-
-#if WINDOWS
-			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-#endif
-#if WINDOWS || __ANDROID__
-			handlersCollection.AddHandler<Shell, ShellHandler>();
-#endif
 			handlersCollection.AddHandler<Application, ApplicationHandler>();
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 			handlersCollection.AddHandler<BoxView, ShapeViewHandler>();
@@ -57,20 +48,18 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 			handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
-			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
 			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
-#if __ANDROID__ || __IOS__
+			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
+#if ANDROID || IOS
 			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
-			
 #endif
 #if WINDOWS || ANDROID
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
-#endif
-#if ANDROID
+			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
 			return handlersCollection;
 		}

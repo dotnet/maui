@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public TableViewRenderer()
 		{
-
+			AutoPackage = false;
 		}
 
 		protected override Size MinimumSize()
