@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_carouselViewLoopManager = new CarouselViewLoopManager();
 		}
 
+		[PortHandler]
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (!_isSwipeEnabled)
@@ -43,7 +44,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		protected virtual bool IsHorizontal => (Carousel?.ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
-
+		
+		[PortHandler]
 		protected override int DetermineTargetPosition(ScrollToRequestEventArgs args)
 		{
 			if (args.Mode == ScrollToMode.Element)
@@ -60,7 +62,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			return getGoIndex;
 		}
-
+		
+		[PortHandler]
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (Carousel.Loop)
@@ -68,7 +71,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			return base.OnTouchEvent(e);
 		}
-
+		
+		[PortHandler]
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && !_disposed)
@@ -88,7 +92,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			base.Dispose(disposing);
 		}
-
+	
+		[PortHandler]
 		protected override void SetUpNewElement(ItemsView newElement)
 		{
 			base.SetUpNewElement(newElement);
@@ -103,11 +108,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateInitialPosition();
 		}
 
+		[PortHandler]
 		protected override RecyclerViewScrollListener<ItemsView, IItemsViewSource> CreateScrollListener()
 		{
 			return new CarouselViewOnScrollListener(ItemsView, ItemsViewAdapter, _carouselViewLoopManager);
 		}
 
+		[PortHandler]
 		protected override void TearDownOldElement(ItemsView oldElement)
 		{
 			if (Carousel != null)
@@ -117,6 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.TearDownOldElement(oldElement);
 		}
 
+		[PortHandler]
 		protected override void UpdateAdapter()
 		{
 			// By default the CollectionViewAdapter creates the items at whatever size the template calls for
@@ -145,7 +153,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			oldItemViewAdapter?.Dispose();
 		}
-
+		
+		[PortHandler]
 		protected override void UpdateItemsSource()
 		{
 			UpdateAdapter();
@@ -172,12 +181,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else if (changedProperty.Is(FormsCarouselView.LoopProperty))
 				UpdateAdapter();
 		}
-
+	
+		[PortHandler]
 		protected override ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
 		{
 			return new CarouselSpacingItemDecoration(itemsLayout, Carousel);
 		}
 
+		[PortHandler]
 		protected override void UpdateItemSpacing()
 		{
 			if (ItemsLayout == null)
@@ -196,9 +207,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			base.UpdateItemSpacing();
 		}
-
+		
+		[PortHandler]
 		protected override IItemsLayout GetItemsLayout() => Carousel.ItemsLayout;
-
+		
+		[PortHandler]
 		protected override void ScrollTo(ScrollToRequestEventArgs args)
 		{
 			var position = DetermineTargetPosition(args);
@@ -249,18 +262,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return itemHeight;
 		}
 
+		[PortHandler]
 		void UpdateIsSwipeEnabled() => _isSwipeEnabled = Carousel?.IsSwipeEnabled ?? false;
-
+		
+		[PortHandler]
 		void UpdateIsBounceEnabled() => OverScrollMode = Carousel?.IsBounceEnabled == true ? OverScrollMode.Always : OverScrollMode.Never;
-
+		
+		[PortHandler]
 		void UpdatePeekAreaInsets() => UpdateAdapter();
-
+	
+		[PortHandler]
 		void UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter<ItemsView, IItemsViewSource> oldItemViewAdapter)
 		{
 			if (oldItemViewAdapter?.ItemsSource is ObservableItemsSource oldObservableItemsSource)
 				oldObservableItemsSource.CollectionItemsSourceChanged -= CollectionItemsSourceChanged;
 		}
-
+		
+		[PortHandler]
 		void CollectionItemsSourceChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			if (!(ItemsViewAdapter?.ItemsSource is IItemsViewSource observableItemsSource))
@@ -328,7 +346,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateVisualStates();
 			});
 		}
-
+		
+		[PortHandler]
 		void UpdateItemDecoration()
 		{
 			if (_itemDecoration != null)
@@ -337,6 +356,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AddItemDecoration(_itemDecoration);
 		}
 
+		[PortHandler]
 		void UpdateInitialPosition()
 		{
 			int itemCount = 0;
@@ -368,6 +388,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_gotoPosition = -1;
 		}
 
+		[PortHandler]
 		int LoopedPosition(int itemCount)
 		{
 			if (itemCount == 0)
@@ -378,7 +399,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var loopScale = CarouselViewLoopManager.LoopScale / 2;
 			return loopScale - (loopScale % itemCount);
 		}
-
+	
+		[PortHandler]
 		void UpdatePositionFromVisibilityChanges()
 		{
 			if (_isVisible != Carousel.IsVisible)
@@ -387,6 +409,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_isVisible = Carousel.IsVisible;
 		}
 
+		[PortHandler]
 		void UpdateVisualStates()
 		{
 			if (!(GetLayoutManager() is LinearLayoutManager layoutManager))
@@ -449,7 +472,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			_oldViews = newViews;
 		}
-
+		
+		[PortHandler]
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			if (!_initialized || !_isVisible)
@@ -468,7 +492,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdatePosition(index);
 			UpdateVisualStates();
 		}
-
+		
+		[PortHandler]
 		int GetCarouselViewCurrentIndex(int index)
 		{
 			var centeredView = this.GetCenteredView();
@@ -485,7 +510,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			return index;
 		}
-
+		
+		[PortHandler]
 		void UpdatePosition(int position)
 		{
 			var carouselPosition = Carousel.Position;
@@ -497,7 +523,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_gotoPosition == -1 && carouselPosition != position)
 				Carousel.SetValueFromRenderer(FormsCarouselView.PositionProperty, position);
 		}
-
+		
+		[PortHandler]
 		void SetCurrentItem(int carouselPosition)
 		{
 			if (ItemsViewAdapter?.ItemsSource?.Count == 0)
@@ -507,6 +534,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Carousel.SetValueFromRenderer(FormsCarouselView.CurrentItemProperty, item);
 		}
 
+		[PortHandler]
 		void UpdateFromCurrentItem()
 		{
 			var currentItemPosition = ItemsViewAdapter.ItemsSource.GetPosition(Carousel.CurrentItem);
@@ -518,7 +546,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Carousel.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
 			}
 		}
-
+		
+		[PortHandler]
 		void UpdateFromPosition()
 		{
 			if (!_initialized)
@@ -571,6 +600,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ViewTreeObserver.AddOnGlobalLayoutListener(_carouselViewLayoutListener);
 		}
 
+		[PortHandler]
 		void LayoutReady(object sender, EventArgs e)
 		{
 			if (!_initialized)
@@ -600,6 +630,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_carouselViewLayoutListener = null;
 		}
 
+		[PortHandler]
 		class CarouselViewOnScrollListener : RecyclerViewScrollListener<ItemsView, IItemsViewSource>
 		{
 			readonly FormsCarouselView _carouselView;
@@ -670,7 +701,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return itemIndex;
 			}
 		}
-
+	
+		[PortHandler]
 		class CarouselViewwOnGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
 		{
 			public EventHandler<EventArgs> LayoutReady;
@@ -679,7 +711,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				LayoutReady?.Invoke(this, new EventArgs());
 			}
 		}
-
+		
+		[PortHandler]
 		internal class CarouselViewLoopManager
 		{
 			public const int LoopScale = 16384;
