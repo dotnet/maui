@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Platform
 
 			if (view.Handler is IViewHandler nativeHandler)
 			{
-				if (nativeHandler.HasContainer && nativeHandler.ContainerView is NativeView containerView)
+				if (nativeHandler.ContainerView is NativeView containerView)
 					return containerView;
 
 				if(nativeHandler.NativeView is NativeView nativeView)
