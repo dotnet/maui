@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls
 		public const string Tizen = "Tizen";
 		public const string WPF = "WPF";
 		public const string MacCatalyst = "MacCatalyst";
+		public const string tvOS = "tvOS";
 
 		static IPlatformServices s_platformServices;
 
