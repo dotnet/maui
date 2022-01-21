@@ -118,22 +118,19 @@ To give greater flexibility, you can specify in your `.csproj`:
 ```
 
 Even if you have `6.0.100-rc.2.1000` installed system-wide, placing
-this in your `.csproj` enables it to build with a newer version of
-.NET MAUI. This will mostly continue working until there is a major
-change in `Microsoft.Maui.Sdk`. We have a new
-`$(_MinimumMauiWorkloadVersion)` property to fall back on if there is
-a breaking change that requires a newer .NET MAUI system-wide install.
+this in your `.csproj` enables it to build against newer MAUI
+assemblies at build & runtime. Things might break if the version is
+much different that what MAUI source generators or MSBuild tasks
+expect. We have a `$(_MinimumMauiWorkloadVersion)` property to fall
+back on if there is a breaking change that requires a newer .NET MAUI
+system-wide install.
 
-    error MAUI004: At least version '6.0.100-preview.7' of the .NET MAUI workload is required to use <MauiVersion>6.0.100-preview.8</MauiVersion>.
+    error MAUI004: At least version '6.0.200' of the .NET MAUI workload is required to use <MauiVersion>6.0.200-preview.13</MauiVersion>.
 
-To achieve this, we've moved MSBuild tasks to `library-packs`:
+One issue is that any MSBuild tasks no longer update via `$(MauiVersion)`:
 
-* `Microsoft.Maui.Controls.Build.Tasks`
-* `Microsoft.Maui.Resizetizer.Sdk`
-
-This means these two packs are regular NuGet packages, that are
-restores and used during .NET MAUI builds. `dotnet/library-packs` is
-simply an implicit NuGet feed.
+* `Microsoft.Maui.Sdk`: source generators and XamlC
+* `Microsoft.Maui.Resizetizer.Sdk`: MSBuild tasks
 
 ## Using the .NET MAUI Workload
 

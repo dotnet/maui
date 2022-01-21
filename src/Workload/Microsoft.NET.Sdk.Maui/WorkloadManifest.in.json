@@ -27,7 +27,6 @@
       "description": ".NET MAUI SDK Core Packages",
       "packs": [
           "Microsoft.Maui.Dependencies",
-          "Microsoft.Maui.Controls.Build.Tasks",
           "Microsoft.Maui.Sdk",
           "Microsoft.Maui.Extensions",
           "Microsoft.Maui.Resizetizer.Sdk",
@@ -243,12 +242,8 @@
       "kind": "sdk",
       "version": "@VERSION@"
     },
-    "Microsoft.Maui.Controls.Build.Tasks": {
-      "kind": "library",
-      "version": "@VERSION@"
-    },
     "Microsoft.Maui.Resizetizer.Sdk": {
-      "kind": "library",
+      "kind": "sdk",
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Templates": {

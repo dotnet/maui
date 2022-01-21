@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public class WebViewRenderer : ViewRenderer<WebView, WebView2>, IWebViewDelegate
 	{
+		IWebViewController WebViewController => Element;
 		WebNavigationEvent _eventState;
 		bool _updating;
 		WebView2 _internalWebView;
@@ -142,11 +143,11 @@ if(bases.length == 0){
 				{
 					Control.NavigationStarting -= OnNavigationStarted;
 					Control.NavigationCompleted -= OnNavigationCompleted;
-					Element.EvalRequested -= OnEvalRequested;
-					Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
-					Element.GoBackRequested -= OnGoBackRequested;
-					Element.GoForwardRequested -= OnGoForwardRequested;
-					Element.ReloadRequested -= OnReloadRequested;
+					WebViewController.EvalRequested -= OnEvalRequested;
+					WebViewController.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
+					WebViewController.GoBackRequested -= OnGoBackRequested;
+					WebViewController.GoForwardRequested -= OnGoForwardRequested;
+					WebViewController.ReloadRequested -= OnReloadRequested;
 				}
 			}
 
@@ -186,7 +187,7 @@ if(bases.length == 0){
 
 			if (e.OldElement != null)
 			{
-				var oldElement = e.OldElement;
+				IWebViewController oldElement = e.OldElement;
 				oldElement.EvalRequested -= OnEvalRequested;
 				oldElement.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				oldElement.GoBackRequested -= OnGoBackRequested;
@@ -203,7 +204,7 @@ if(bases.length == 0){
 					SetNativeControl(webView);
 				}
 
-				var newElement = e.NewElement;
+				IWebViewController newElement = e.NewElement;
 				newElement.EvalRequested += OnEvalRequested;
 				newElement.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				newElement.GoForwardRequested += OnGoForwardRequested;
@@ -458,7 +459,7 @@ if(bases.length == 0){
 			{
 				var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = uri.AbsoluteUri }, uri.AbsoluteUri);
 
-				Element.SendNavigating(args);
+				WebViewController.SendNavigating(args);
 				e.Cancel = args.Cancel;
 
 				// reset in this case because this is the last event we will get
@@ -474,7 +475,7 @@ if(bases.length == 0){
 			_updating = false;
 
 			SyncNativeCookiesToElement(source.Url);
-			Element.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
+			WebViewController.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
 
 			UpdateCanGoBackForward();
 			_eventState = WebNavigationEvent.NewPage;
