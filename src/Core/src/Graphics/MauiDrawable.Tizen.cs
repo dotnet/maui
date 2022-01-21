@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 
 		public Paint? Background { get; set; }
 
-		public IBorder? Border { get; set; }
+		public IBorderStroke? Border { get; set; }
 
 		public Thickness ShadowThickness { get; set; }
 

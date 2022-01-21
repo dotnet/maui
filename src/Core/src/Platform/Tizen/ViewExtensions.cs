@@ -58,6 +58,14 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateBorder(this EvasObject nativeView, IView view)
+		{
+			var border = (view as IBorder)?.Border;
+
+			if (nativeView is WrapperView wrapperView)
+				wrapperView.Border = border;
+		}
+
 		public static void UpdateOpacity(this EvasObject nativeView, IView view)
 		{
 			if (nativeView is Widget widget)

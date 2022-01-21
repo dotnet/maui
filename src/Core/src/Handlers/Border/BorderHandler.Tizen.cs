@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorder, BorderView>
+	public partial class BorderHandler : ViewHandler<IBorderView, BorderView>
 	{
 		INativeViewHandler? _contentHandler;
 
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
-		public static void MapContent(BorderHandler handler, IBorder border)
+		public static void MapContent(BorderHandler handler, IBorderView border)
 		{
 			handler.UpdateContent();
 		}

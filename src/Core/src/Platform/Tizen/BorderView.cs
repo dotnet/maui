@@ -5,9 +5,9 @@ namespace Microsoft.Maui.Platform
 	public class BorderView : ContentCanvas
 	{
 		WrapperView? _wrapperView;
-		IBorder _borderView;
+		IBorderView _borderView;
 
-		public BorderView(EvasObject parent, IBorder view) : base(parent, view)
+		public BorderView(EvasObject parent, IBorderView view) : base(parent, view)
 		{
 			_borderView = view;
 		}
