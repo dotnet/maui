@@ -6,6 +6,7 @@ using Foundation;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using WebKit;
+using UIKit;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -74,10 +75,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
-				if (navigationAction.TargetFrame!.MainFrame)
+				// TargetFrame is null for navigation to a new window (`_blank`)
+				if (navigationAction.TargetFrame is null)
+				{
+					// Open in a new browser window
+					UIApplication.SharedApplication.OpenUrl(navigationAction.Request.Url);
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+
+				if (navigationAction.TargetFrame.MainFrame)
 				{
 					_currentUri = navigationAction.Request.Url;
 				}
+
 				decisionHandler(WKNavigationActionPolicy.Allow);
 			}
 
