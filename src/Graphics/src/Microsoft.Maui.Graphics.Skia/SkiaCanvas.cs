@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				}
 				catch (Exception exc)
 				{
-					Logger.Debug(exc);
+					System.Diagnostics.Debug.WriteLine(exc);
 					FillColor = linearGradientPaint.BlendStartAndEndColors();
 				}
 			}
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				}
 				catch (Exception exc)
 				{
-					Logger.Debug(exc);
+					System.Diagnostics.Debug.WriteLine(exc);
 					FillColor = radialGradientPaint.BlendStartAndEndColors();
 				}
 			}
@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Graphics.Skia
 					}
 					catch (Exception exc)
 					{
-						Logger.Debug(exc);
+						System.Diagnostics.Debug.WriteLine(exc);
 						FillColor = paint.BackgroundColor;
 					}
 				}
@@ -363,7 +363,7 @@ namespace Microsoft.Maui.Graphics.Skia
 						}
 						catch (Exception exc)
 						{
-							Logger.Debug(exc);
+							System.Diagnostics.Debug.WriteLine(exc);
 							FillColor = paint.BackgroundColor;
 						}
 					}
@@ -685,7 +685,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public override void DrawText(IAttributedText value, float x, float y, float width, float height)
 		{
-			Logger.Debug("Not yet implemented.");
+			System.Diagnostics.Debug.WriteLine("SkiaCanvas.DrawText not yet implemented.");
 			DrawString(value?.Text, x, y, width, height, HorizontalAlignment.Left, VerticalAlignment.Top);
 		}
 

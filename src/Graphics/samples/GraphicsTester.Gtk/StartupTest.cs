@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 
@@ -9,20 +10,20 @@ namespace Samples {
 
 			var canvas = new PlatformCanvas();
 
-			Logger.Info(FontExtensions.Default);
+			Console.WriteLine(FontExtensions.Default);
 			
 			using var desc = Pango.FontDescription.FromString(FontExtensions.Default.Family);
-			Logger.Info(desc);
+			Console.WriteLine(desc);
 
 			var testStr = "123456";
 			var size = canvas.GetStringSize(testStr, null, -1);
-			Logger.Info($"{testStr} : {size}");
+			Console.WriteLine($"{testStr} : {size}");
 
 			size = canvas.GetStringSize(testStr, null, size.Width / 2);
-			Logger.Info($"{testStr} : {size}");
+			Console.WriteLine($"{testStr} : {size}");
 
-			Logger.Info($"ScreenResulution {HardwareInformations.DefaultScreen.Resolution}");
-			Logger.Info($"{nameof(HardwareInformations.CurrentScaleFaktor)} {HardwareInformations.CurrentScaleFaktor}");
+			Console.WriteLine($"ScreenResulution {HardwareInformations.DefaultScreen.Resolution}");
+			Console.WriteLine($"{nameof(HardwareInformations.CurrentScaleFaktor)} {HardwareInformations.CurrentScaleFaktor}");
 
 		}
 

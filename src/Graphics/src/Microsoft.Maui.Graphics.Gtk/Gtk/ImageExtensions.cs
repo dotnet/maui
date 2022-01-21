@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 				return px;
 			} catch (Exception ex) {
-				Logger.Error(ex);
+				System.Diagnostics.Debug.WriteLine(ex);
 
 				return default;
 			}
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 				stream.Write(puf, 0, puf.Length);
 				puf = null;
 			} catch (Exception ex) {
-				Logger.Error(ex);
+				System.Diagnostics.Debug.WriteLine(ex);
 
 				return false;
 			}

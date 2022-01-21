@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				FillColor = paint.BackgroundColor;
 			}
 
-			//Logger.Debug("Gradient Set To: "+aPaint.PaintType);
+			//System.Diagnostics.Debug.WriteLine("Gradient Set To: "+aPaint.PaintType);
 		}
 
 		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
@@ -606,7 +606,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			_gradient.Dispose();
 			_gradient = null;
 			_paint = null;
-			//Logger.Debug("Gradient Painted and Cleared");
+			//System.Diagnostics.Debug.WriteLine("Gradient Painted and Cleared");
 		}
 
 		private static float GetDistance(CGPoint point1, CGPoint point2)
@@ -1047,7 +1047,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			_context.StrokePath();
 			_context.RestoreState();
 
-			Logger.Debug("[x:{1:0.000},y:{2:0.000}] [w:{3:0.000},h:{4:0.000}] {0}",value,rx,ry,rw,rh);
+			System.Diagnostics.Debug.WriteLine("[x:{1:0.000},y:{2:0.000}] [w:{3:0.000},h:{4:0.000}] {0}",value,rx,ry,rw,rh);
 #endif
 
 			_context.SaveState();

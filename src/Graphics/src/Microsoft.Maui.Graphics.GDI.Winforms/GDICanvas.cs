@@ -130,19 +130,19 @@ namespace Microsoft.Maui.Graphics.GDI
 			{
 				if (value < 1)
 				{
-					Logger.Debug("Not implemented");
+					System.Diagnostics.Debug.WriteLine("Not implemented");
 				}
 			}
 		}
 
 		public override bool Antialias
 		{
-			set => Logger.Debug("Not implemented");
+			set => System.Diagnostics.Debug.WriteLine("Not implemented");
 		}
 
 		public override BlendMode BlendMode
 		{
-			set => Logger.Debug("Not implemented");
+			set => System.Diagnostics.Debug.WriteLine("Not implemented");
 		}
 
 		public override void SubtractFromClip(float x, float y, float width, float height)
@@ -472,7 +472,7 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		public override void SetShadow(SizeF offset, float blur, Color color)
 		{
-			Logger.Debug("Not implemented");
+			System.Diagnostics.Debug.WriteLine("Not implemented");
 		}
 
 		protected override float PlatformStrokeSize

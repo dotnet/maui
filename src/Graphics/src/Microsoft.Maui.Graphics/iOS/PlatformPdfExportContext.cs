@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				}
 				catch (Exception exc)
 				{
-					Logger.Warn(exc);
+					System.Diagnostics.Debug.WriteLine(exc);
 				}
 				finally
 				{
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 			catch (Exception exc)
 			{
-				Logger.Warn(exc);
+				System.Diagnostics.Debug.WriteLine(exc);
 			}
 		}
 	}

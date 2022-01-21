@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Graphics.GDI
 
 			if (image != null)
 			{
-				Logger.Warn(
+				System.Diagnostics.Debug.WriteLine(
 					"GDIImageExtensions.AsBitmap: Unable to get Bitmap from Image. Expected an image of type GDIImage however an image of type {0} was received.",
 					image.GetType());
 			}

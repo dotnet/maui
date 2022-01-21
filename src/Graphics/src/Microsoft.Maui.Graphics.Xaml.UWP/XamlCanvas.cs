@@ -114,9 +114,8 @@ namespace Microsoft.Maui.Graphics.Xaml
 
 			if (_index >= _items.Count)
 			{
-#if DEBUG_
-				Logger.Debug("Creating item of type {0}", type);
-#endif
+				System.Diagnostics.Debug.WriteLine("Creating item of type {0}", type);
+
 				item = CreateItem(type);
 				_items.Add(item);
 				_canvas.Children.Add(item.Element);
@@ -127,9 +126,8 @@ namespace Microsoft.Maui.Graphics.Xaml
 
 				if (item.Type != type)
 				{
-#if DEBUG_
-					Logger.Debug("Item types diverge at index {0}.  Wanted {1}, but found {2}", index, type, items[index].Type);
-#endif
+					System.Diagnostics.Debug.WriteLine("Item types diverge at index {0}.  Wanted {1}, but found {2}", index, type, items[index].Type);
+
 					Trim();
 					item = CreateItem(type);
 					_items.Add(item);
@@ -444,7 +442,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			}
 			catch (Exception exc)
 			{
-				Logger.Debug(exc);
+				System.Diagnostics.Debug.WriteLine(exc);
 			}
 			element.StrokeEndLineCap = CurrentState.XamlLineCap;
 			element.StrokeStartLineCap = CurrentState.XamlLineCap;
@@ -584,7 +582,8 @@ namespace Microsoft.Maui.Graphics.Xaml
 
 		public override void DrawText(IAttributedText value, float x, float y, float width, float height)
 		{
-			Logger.Warn("Not implemented.");
+			System.Diagnostics.Debug.WriteLine("XamlCanvas.DrawText not yet implemented.");
+			DrawString(value?.Text, x, y, width, height, HorizontalAlignment.Left, VerticalAlignment.Top);
 		}
 
 		public override void FillEllipse(float x, float y, float width, float height)

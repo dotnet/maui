@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			Logger.Debug("BlazorCanvas.DrawImage - not yet supported.");
+			System.Diagnostics.Debug.WriteLine("BlazorCanvas.DrawImage - not yet supported.");
 		}
 
 		private SizeF GetTextSize(TextMetrics metrics, string value)
@@ -154,7 +154,8 @@ namespace Microsoft.Maui.Graphics.Blazor
 
 		public override void DrawText(IAttributedText value, float x, float y, float width, float height)
 		{
-			Logger.Debug("BlazorCanvas.DrawText - not yet supported.");
+			System.Diagnostics.Debug.WriteLine("BlazorCanvas.DrawText not yet implemented.");
+			DrawString(value?.Text, x, y, width, height, HorizontalAlignment.Left, VerticalAlignment.Top);
 		}
 
 		public override void FillArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise)
@@ -214,7 +215,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 
 		public override void SetShadow(SizeF offset, float blur, Color color)
 		{
-			Logger.Debug("BlazorCanvas.SetShadow - not yet supported.");
+			System.Diagnostics.Debug.WriteLine("BlazorCanvas.SetShadow - not yet supported.");
 		}
 
 		public override void SubtractFromClip(float x, float y, float width, float height)

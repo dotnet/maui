@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			}
 			catch (Exception exc)
 			{
-				Logger.Warn(exc);
+				System.Diagnostics.Debug.WriteLine(exc);
 			}
 		}
 

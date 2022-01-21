@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 							FillColor = paint.BackgroundColor;
 						}
 					} catch (Exception exc) {
-						Logger.Debug(exc);
+						System.Diagnostics.Debug.WriteLine(exc);
 						FillColor = linearGradientPaint.BlendStartAndEndColors();
 					}
 
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 							FillColor = paint.BackgroundColor;
 						}
 					} catch (Exception exc) {
-						Logger.Debug(exc);
+						System.Diagnostics.Debug.WriteLine(exc);
 						FillColor = radialGradientPaint.BlendStartAndEndColors();
 					}
 
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 #endif
 
 					} catch (Exception exc) {
-						Logger.Debug(exc);
+						System.Diagnostics.Debug.WriteLine(exc);
 						FillColor = paint.BackgroundColor;
 					}
 
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 							pattern.Dispose();
 
 						} catch (Exception exc) {
-							Logger.Debug(exc);
+							System.Diagnostics.Debug.WriteLine(exc);
 							FillColor = paint.BackgroundColor;
 						}
 					} else {

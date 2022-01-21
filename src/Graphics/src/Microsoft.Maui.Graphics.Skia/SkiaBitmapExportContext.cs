@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (_surface == null)
 			{
-				Logger.Warn("Unable to create a Skia surface");
+				System.Diagnostics.Debug.WriteLine("Unable to create a Skia surface");
 				return;
 			}
 

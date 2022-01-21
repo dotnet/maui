@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Graphics
 
 		public static float GetAngleAsDegrees(float x1, float y1, float x2, float y2)
 		{
-			try
-			{
 				var dx = x1 - x2;
 				var dy = y1 - y2;
 
@@ -27,12 +25,6 @@ namespace Microsoft.Maui.Graphics
 				var degrees = radians * 180.0f / (float) Math.PI;
 
 				return 180 - degrees;
-			}
-			catch (Exception exc)
-			{
-				Logger.Warn(exc);
-				throw new Exception("Exception in GetAngleAsDegrees", exc);
-			}
 		}
 
 		public static float DegreesToRadians(float angle)

@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Graphics.Android
 			}
 			catch (Exception e)
 			{
-				Logger.Info(e);
+				System.Diagnostics.Debug.WriteLine(e);
 				// Most likely a corrupted font file
 				return null;
 			}

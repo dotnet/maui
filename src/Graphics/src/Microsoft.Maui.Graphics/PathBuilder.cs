@@ -53,7 +53,6 @@ namespace Microsoft.Maui.Graphics
 				}
 				catch (Exception exc)
 				{
-					Logger.Warn("Error parsing a path value: " + vValueAsString, exc);
 					throw new Exception("Error parsing a path value.", exc);
 				}
 			}
@@ -111,7 +110,7 @@ namespace Microsoft.Maui.Graphics
 				_closeWhenDone = false;
 
 #if DEBUG_PATH
-				Logger.Debug(aPathString);
+				System.Diagnostics.Debug.WriteLine(aPathString);
 #endif
 				pathAsString = pathAsString.Replace("Infinity", "0");
 				pathAsString = Regex.Replace(pathAsString, "([a-zA-Z])", " $1 ");
@@ -119,7 +118,7 @@ namespace Microsoft.Maui.Graphics
 				pathAsString = pathAsString.Replace(" E  -", "E-");
 				pathAsString = pathAsString.Replace(" e  -", "e-");
 #if DEBUG_PATH
-				Logger.Debug(aPathString);
+				System.Diagnostics.Debug.WriteLine(aPathString);
 #endif
 				string[] args = pathAsString.Split(new[] {' ', '\r', '\n', '\t', ','}, StringSplitOptions.RemoveEmptyEntries);
 				for (int i = args.Length - 1; i >= 0; i--)
@@ -137,34 +136,34 @@ namespace Microsoft.Maui.Graphics
 								{
 									_commandStack.Push(entry.Substring(1));
 #if DEBUG_PATH
-										Logger.Debug(vEntry.Substring(1));
+										System.Diagnostics.Debug.WriteLine(vEntry.Substring(1));
 #endif
 								}
 
 								_commandStack.Push(entry[0].ToInvariantString());
 #if DEBUG_PATH
-								 Logger.Debug(vEntry[0].ToString());
+								 System.Diagnostics.Debug.WriteLine(vEntry[0].ToString());
 #endif
 							}
 							else
 							{
 								_commandStack.Push(entry);
 #if DEBUG_PATH
-								Logger.Debug(vEntry);
+								System.Diagnostics.Debug.WriteLine(vEntry);
 #endif
 							}
 						}
 
 						_commandStack.Push(c.ToInvariantString());
 #if DEBUG_PATH
-						Logger.Debug(vChar.ToString());
+						System.Diagnostics.Debug.WriteLine(vChar.ToString());
 #endif
 					}
 					else
 					{
 						_commandStack.Push(entry);
 #if DEBUG_PATH
-						Logger.Debug(vEntry);
+						System.Diagnostics.Debug.WriteLine(vEntry);
 #endif
 					}
 				}
@@ -199,8 +198,8 @@ namespace Microsoft.Maui.Graphics
 			catch (Exception exc)
 			{
 #if DEBUG
-				Logger.Debug("=== An error occured parsing the path. ===", exc);
-				Logger.Debug(pathAsString);
+				System.Diagnostics.Debug.WriteLine("=== An error occured parsing the path. ===", exc);
+				System.Diagnostics.Debug.WriteLine(pathAsString);
 				throw;
 #endif
 			}
@@ -325,7 +324,7 @@ namespace Microsoft.Maui.Graphics
 				}
 				else
 				{
-					Logger.Debug("Don't know how to handle the path command: " + command);
+					System.Diagnostics.Debug.WriteLine("Don't know how to handle the path command: " + command);
 				}
 			}
 			else
@@ -418,7 +417,7 @@ namespace Microsoft.Maui.Graphics
 			}
 			else
 			{
-				Logger.Debug("Don't know how to handle the path command: " + command);
+				System.Diagnostics.Debug.WriteLine("Don't know how to handle the path command: " + command);
 			}
 
 			if (!(command == 'C' || command == 'c' || command == 's' || command == 'S'))
@@ -498,7 +497,7 @@ namespace Microsoft.Maui.Graphics
 				var point3 = NewPoint(NextValue, NextValue, isRelative, true);
 				_path.CurveTo(point1, point2, point3);
 				_lastCurveControlPoint = point2;
-				//Logger.Debug($"CurveTo({point1.X},{point1.Y},{point2.X},{point2.Y},{point3.X},{point3.Y})");
+				//System.Diagnostics.Debug.WriteLine($"CurveTo({point1.X},{point1.Y},{point2.X},{point2.Y},{point3.X},{point3.Y})");
 			}
 		}
 

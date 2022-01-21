@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Graphics.PlatformCG
 			}
 			catch (Exception exc)
 			{
-				Logger.Error("An unexpected error occurred rendering the drawing.", exc);
+				System.Diagnostics.Debug.WriteLine("An unexpected error occurred rendering the drawing: {0}", exc);
 			}
 			finally
 			{

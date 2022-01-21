@@ -572,7 +572,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			}
 			catch (Exception exc)
 			{
-				Logger.Debug(exc);
+				System.Diagnostics.Debug.WriteLine(exc);
 			}
 #endif
 		}
@@ -990,7 +990,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 #if DEBUG
 			else
 			{
-				Logger.Debug("Unable to draw the image because a bitmap could not be created.");
+				System.Diagnostics.Debug.WriteLine("Unable to draw the image because a bitmap could not be created.");
 			}
 #endif
 		}

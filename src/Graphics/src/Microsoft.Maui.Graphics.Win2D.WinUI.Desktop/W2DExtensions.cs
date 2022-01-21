@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 				builder.Dispose();
 
 				var definition = path.ToDefinitionString();
-				Logger.Debug(string.Format("Unable to convert the path to a Win2D Path: {0}", definition), exc);
+				System.Diagnostics.Debug.WriteLine("Unable to convert the path to a Win2D Path: {0}: {1}", definition, exc);
 				return null;
 			}
 #endif

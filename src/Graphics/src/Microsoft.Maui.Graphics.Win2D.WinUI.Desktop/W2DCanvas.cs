@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			}
 			catch (Exception exc)
 			{
-				Logger.Debug(exc);
+				System.Diagnostics.Debug.WriteLine(exc);
 			}
 #endif
 		}
@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public override void DrawText(IAttributedText value, float x, float y, float width, float height)
 		{
-			Logger.Warn("Not implemented");
+			throw new NotImplementedException();
 		}
 
 		public override void SetShadow(SizeF offset, float blur, Color color)

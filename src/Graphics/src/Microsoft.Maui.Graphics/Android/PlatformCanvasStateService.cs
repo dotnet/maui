@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (defaultFont != null)
 				_defaultFontPaint.SetTypeface(defaultFont);
 			else
-				Logger.Warn("Unable to set the default font paint to Default");
+				System.Diagnostics.Debug.WriteLine("Unable to set the default font paint to Default");
 		}
 
 		public void Dispose()

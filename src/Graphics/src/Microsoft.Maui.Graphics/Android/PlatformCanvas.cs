@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				}
 				catch (Exception exc)
 				{
-					Logger.Debug(exc);
+					System.Diagnostics.Debug.WriteLine(exc);
 					FillColor = linearGradientPaint.BlendStartAndEndColors();
 				}
 			}
@@ -280,7 +280,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				}
 				catch (Exception exc)
 				{
-					Logger.Debug(exc);
+					System.Diagnostics.Debug.WriteLine(exc);
 					FillColor = radialGradientPaint.BlendStartAndEndColors();
 				}
 			}
@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					}
 					catch (Exception exc)
 					{
-						Logger.Debug(exc);
+						System.Diagnostics.Debug.WriteLine(exc);
 						FillColor = patternPaint.BackgroundColor;
 					}
 				}
@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Graphics.Platform
 						}
 						catch (Exception exc)
 						{
-							Logger.Debug(exc);
+							System.Diagnostics.Debug.WriteLine(exc);
 							FillColor = paint.BackgroundColor;
 						}
 					}
@@ -350,7 +350,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			else
 				FillColor = paint.BackgroundColor;
 
-			//Logger.Debug("Gradient Set To: "+aPaint.PaintType);
+			//System.Diagnostics.Debug.WriteLine("Gradient Set To: "+aPaint.PaintType);
 		}
 
 		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)

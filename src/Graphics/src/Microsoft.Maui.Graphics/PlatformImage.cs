@@ -31,26 +31,17 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
-#if DEBUG
-			Logger.Debug("Downsizing not supported in virtual image.");
-#endif
-			return this;
+			throw new PlatformNotSupportedException();
 		}
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-#if DEBUG
-			Logger.Debug("Downsizing not supported in virtual image.");
-#endif
-			return this;
+			throw new PlatformNotSupportedException();
 		}
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
 		{
-#if DEBUG
-			Logger.Debug("Resizing not supported in virtual image.");
-#endif
-			return this;
+			throw new PlatformNotSupportedException();
 		}
 
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
@@ -164,7 +155,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
-			throw new Exception("Drawing a virtual image is not supported.");
+			throw new PlatformNotSupportedException();
 		}
 
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
