@@ -7,8 +7,30 @@ using static Microsoft.Maui.Layouts.LayoutManager;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Frame
+	public partial class Frame : IView
 	{
+		IShadow IView.Shadow
+		{
+			get
+			{
+				if (!HasShadow)
+					return null;
+
+				if (base.Shadow != null)
+					return base.Shadow;
+
+#if IOS
+				// The way the shadow is applied in .NET MAUI on iOS is the same way it was applied in Forms
+				// so on iOS we just return the shadow that was hard coded into the renderer
+				// On Android it sets the elevation on the CardView and on WinUI Forms just ignored HasShadow
+				if(HasShadow)
+					return new Shadow() { Radius = 5, Opacity = 0.8f, Offset = new Point(0, 0), Brush = SolidColorBrush.Black };
+#endif
+
+				return null;
+			}
+		}
+
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			Thickness contentMargin = (Content as IView)?.Margin ?? Thickness.Zero;
@@ -29,6 +51,7 @@ namespace Microsoft.Maui.Controls
 			var desiredHeight = ResolveConstraints(heightConstraint, height, contentSize.Height + margin.VerticalThickness);
 
 			DesiredSize = new Size(desiredWidth, desiredHeight);
+
 			return DesiredSize;
 		}
 

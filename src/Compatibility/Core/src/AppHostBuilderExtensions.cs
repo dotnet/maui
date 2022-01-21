@@ -80,8 +80,8 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
 					handlers.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
 					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-
-					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
+					handlers.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
+          
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));

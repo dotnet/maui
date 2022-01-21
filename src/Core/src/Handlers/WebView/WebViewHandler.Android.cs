@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
 		{
 			handler.NativeView.SetWebChromeClient(handler._webChromeClient ??= new WebChromeClient());
-
 		}
 
 		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
@@ -53,6 +52,35 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView.UpdateSettings(webView, true, true);
 		}
 
+		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			var nativeWebView = handler.NativeView;
+
+			if (nativeWebView == null)
+				return;
+
+			if (nativeWebView.CanGoBack())
+				nativeWebView.GoBack();
+		}
+
+		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			var nativeWebView = handler.NativeView;
+
+			if (nativeWebView == null)
+				return;
+
+			if (nativeWebView.CanGoForward())
+				nativeWebView.GoForward();
+		}
+	
+		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			// TODO: Sync Cookies
+
+			handler.NativeView.Reload();
+		}
+	
 		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
 		{
 			//We want to load the source after making sure the mapper for webclients

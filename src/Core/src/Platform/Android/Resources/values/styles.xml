@@ -28,9 +28,20 @@
     <style name="AppTheme" parent="Maui.MainTheme" />
     <style name="AppTheme.NoActionBar" parent="Maui.MainTheme.NoActionBar" />
 
-    <style name="MauiMaterialButton" parent="Widget.MaterialComponents.Button.Icon">
+    <style name="MauiMaterialButton" parent="Widget.MaterialComponents.Button">
+      <!-- remove all the min sizes as MAUI manages it -->
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+      <!-- padding is the space between the edge of the background and the contents  -->
+      <item name="android:paddingLeft">0dp</item>
+      <item name="android:paddingRight">0dp</item>
+      <item name="android:paddingTop">0dp</item>
+      <item name="android:paddingBottom">0dp</item>
+      <!-- insets are the amount of space btween the actual color and the edge of the view frame -->
       <item name="android:insetTop">0dp</item>
       <item name="android:insetBottom">0dp</item>
+      <item name="android:insetLeft">0dp</item>
+      <item name="android:insetRight">0dp</item>
     </style>
   
   <!-- 
