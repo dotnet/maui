@@ -126,7 +126,7 @@ stages:
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
-              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }}:
+              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), ne(BuildPlatform.poolName, 'Azure Pipelines'), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
                   - Agent.OSVersionFamily -equals 11.3
@@ -177,7 +177,7 @@ stages:
                 - macOS.Architecture -equals x64
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
-            ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }}:
+            ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), ne(BuildPlatform.poolName, 'Azure Pipelines'), eq(BuildPlatform.name, 'macos')) }}:
               demands:
                 - Agent.OSArchitecture -equals X64
                 - Agent.OSVersionFamily -equals 11.3
@@ -251,7 +251,7 @@ stages:
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
-              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }}:
+              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), ne(BuildPlatform.poolName, 'Azure Pipelines'), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
                   - Agent.OSVersionFamily -equals 11.3
@@ -308,7 +308,7 @@ stages:
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
-              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }}:
+              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), ne(BuildPlatform.poolName, 'Azure Pipelines'), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
                   - Agent.OSVersionFamily -equals 11.3
