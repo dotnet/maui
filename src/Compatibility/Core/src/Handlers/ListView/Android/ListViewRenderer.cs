@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public ListViewRenderer(Context context) : base(context, Mapper, CommandMapper)
 		{
+			AutoPackage = false;
 		}
 
 		protected override Size MinimumSize()
