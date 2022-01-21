@@ -32,7 +32,7 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>1ec2e17fcfd86bdd6f7e7246b6d527e94e34c15a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.1.0-20220119.0-CI-stable">
+    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.1.0-20220120.0-CI-stable">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
       <Sha>86320843138524e47932d7f06951c2f2b68f2557</Sha>
     </Dependency>
