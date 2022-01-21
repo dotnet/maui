@@ -133,6 +133,10 @@ stages:
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
+                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}
+                    parameters:
+                      UninstallMono: false
+                      UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -180,6 +184,10 @@ stages:
           steps:
             - ${{ if eq(BuildPlatform.name, 'macOS') }}:
               - template: agent-cleanser/v1.yml@xamarin-templates
+                ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
@@ -250,6 +258,10 @@ stages:
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
+                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}
+                    parameters:
+                      UninstallMono: false
+                      UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -303,6 +315,10 @@ stages:
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
+                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}
+                    parameters:
+                      UninstallMono: false
+                      UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
