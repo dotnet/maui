@@ -120,20 +120,20 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if and(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared'), eq(BuildPlatform.name, 'macos')) }} :
+              ${{ if and(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared'), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - macOS.Name -equals BigSur
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
-              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }} :
+              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
                   - Agent.OSVersionFamily -equals 11.3
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
-                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}
+                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}:
                     parameters:
                       UninstallMono: false
                       UninstallXamarinMac: false
@@ -171,20 +171,20 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if and(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared'), eq(BuildPlatform.name, 'macos')) }} :
+            ${{ if and(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared'), eq(BuildPlatform.name, 'macos')) }}:
               demands:
                 - macOS.Name -equals BigSur
                 - macOS.Architecture -equals x64
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
-            ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }} :
+            ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }}:
               demands:
                 - Agent.OSArchitecture -equals X64
                 - Agent.OSVersionFamily -equals 11.3
           steps:
             - ${{ if eq(BuildPlatform.name, 'macOS') }}:
               - template: agent-cleanser/v1.yml@xamarin-templates
-                ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}
+                ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}:
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
@@ -245,20 +245,20 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if and(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared'), eq(BuildPlatform.name, 'macos')) }} :
+              ${{ if and(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared'), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - macOS.Name -equals BigSur
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
-              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }} :
+              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
                   - Agent.OSVersionFamily -equals 11.3
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
-                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}
+                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}:
                     parameters:
                       UninstallMono: false
                       UninstallXamarinMac: false
@@ -302,20 +302,20 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if and(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared'), eq(BuildPlatform.name, 'macos')) }} :
+              ${{ if and(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared'), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - macOS.Name -equals BigSur
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
-              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }} :
+              ${{ if and(not(startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared')), eq(BuildPlatform.name, 'macos')) }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
                   - Agent.OSVersionFamily -equals 11.3
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
-                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}
+                  ${{ if ne(BuildPlatform.poolName, 'Azure Pipelines') }}:
                     parameters:
                       UninstallMono: false
                       UninstallXamarinMac: false
