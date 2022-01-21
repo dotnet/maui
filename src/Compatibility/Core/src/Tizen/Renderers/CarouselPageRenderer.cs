@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	/// <summary>
 	/// Renderer of a CarouselPage widget.
 	/// </summary>
-	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>
+	internal class CarouselPageRenderer : VisualElementRenderer<CarouselPage>
 	{
 		const int ItemMaxCount = 20;
 		const int OddMiddleItem = 10;

@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
 
-#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
+#if WINDOWS || ANDROID || IOS || MACCATALYST
 			handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 			handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
 			handlersCollection.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));

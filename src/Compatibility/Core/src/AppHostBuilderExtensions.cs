@@ -108,6 +108,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 
 #if TIZEN
 					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(LayoutRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(EntryCell), typeof(EntryCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 #endif
 					// Shimmed renderers go directly to the registrar to load Image Handlers
 					Internals.Registrar.Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
