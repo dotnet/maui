@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Graphics
 {
-	public static class InvariantExtensions
+	internal static class InvariantExtensions
 	{
 		public static string ToInvariantString(this char target)
 		{
