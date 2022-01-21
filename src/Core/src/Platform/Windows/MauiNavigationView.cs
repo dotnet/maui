@@ -12,10 +12,23 @@ namespace Microsoft.Maui.Platform
 	public class MauiNavigationView : NavigationView
 	{
 		double _paneHeaderContentHeight;
+		private UIElement? _headerControl;
+
 		internal Grid? ItemsContainerGrid { get; private set; }
+		internal FrameworkElement? TopNavArea { get; private set; }
 		internal Grid? PaneContentGrid { get; private set; }
 		internal event EventHandler? FlyoutPaneSizeChanged;
 		internal Size FlyoutPaneSize { get; private set; }
+		internal event EventHandler? OnApplyTemplateFinished;
+		internal UIElement? HeaderControl 
+		{
+			get => _headerControl; 
+			set
+			{
+				_headerControl = value;
+				UpdateTopNavAreaMargin();
+			} 
+		}
 
 		public MauiNavigationView()
 		{
@@ -24,8 +37,46 @@ namespace Microsoft.Maui.Platform
 			IsPaneToggleButtonVisible = false;
 			PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 			IsTitleBarAutoPaddingEnabled = false;
+			IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
 			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
+			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
+			RegisterPropertyChangedCallback(PaneFooterProperty, HeaderPropertyChanged);
+			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
+		}
+
+		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			UpdateTopNavAreaMargin();
+		}
+
+		void UpdateTopNavAreaMargin()
+		{
+			if (TopNavArea != null)
+			{
+				if (PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+				{
+					TopNavArea.Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
+					Header = null;
+					PaneFooter = HeaderControl;
+				}
+				else
+				{
+					TopNavArea.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
+					PaneFooter = null;
+					Header = HeaderControl;
+				}
+			}
+
+		}
+		void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			Binding isBackButtonVisible = new Binding();
+			isBackButtonVisible.Source = HeaderControl;
+			isBackButtonVisible.Path = new PropertyPath("IsBackButtonVisible");
+			isBackButtonVisible.Mode = BindingMode.OneWay;
+			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
 		}
 
 		void PaneLengthPropertyChanged(DependencyObject sender, DependencyProperty dp)
@@ -35,6 +86,9 @@ namespace Microsoft.Maui.Platform
 
 		void BackButtonVisibleChanged(DependencyObject sender, DependencyProperty dp)
 		{
+			if (IsBackButtonVisible == NavigationViewBackButtonVisible.Auto)
+				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+
 			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible);
 		}
 
@@ -73,19 +127,18 @@ namespace Microsoft.Maui.Platform
 			backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(HeaderContent, BackgroundProperty, backgroundBinding);
 
-			Binding isBackButtonVisible = new Binding();
-			isBackButtonVisible.Source = this;
-			isBackButtonVisible.Path = new PropertyPath("Header.IsBackButtonVisible");
-			isBackButtonVisible.Mode = BindingMode.TwoWay;
-			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
-
 			PaneContentGrid = (Grid)GetTemplateChild("PaneContentGrid");
 			PaneContentGrid.SizeChanged += OnPaneContentGridSizeChanged;
+
+			// The TopNavArea has a background set which makes the window action buttons unclickable
+			// So this offsets the TopNavArea by the size of the AppTitleBar
+			TopNavArea = ((FrameworkElement)GetTemplateChild("TopNavArea"));
 
 			// This is the height taken up by the backbutton/pane toggle button
 			// we use this to offset the height of our flyout content
 			((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
+			UpdateTopNavAreaMargin();
+			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 		}
 
 		void OnPaneHeaderContentBorderSizeChanged(object sender, SizeChangedEventArgs e)

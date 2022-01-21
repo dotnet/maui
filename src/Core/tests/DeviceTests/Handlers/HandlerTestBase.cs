@@ -51,6 +51,37 @@ namespace Microsoft.Maui.DeviceTests
 			_context = new ContextStub(_servicesProvider);
 		}
 
+
+		protected THandler CreateHandler<THandler>(IElement view, IMauiContext mauiContext = null)
+			where THandler : IElementHandler, new()
+			=> CreateHandler<THandler, THandler>(view, mauiContext);
+
+
+		protected void InitializeViewHandler(IElement element, IElementHandler handler, IMauiContext mauiContext = null)
+		{
+			handler.SetMauiContext(mauiContext ?? MauiContext);
+
+			handler.SetVirtualView(element);
+			element.Handler = handler;
+
+			if (element is IView view)
+			{
+				view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+
+				if (handler is IViewHandler ivh)
+					ivh.NativeArrange(view.Frame);
+			}
+		}
+
+		protected TCustomHandler CreateHandler<THandler, TCustomHandler>(IElement view, IMauiContext mauiContext)
+			where THandler : IElementHandler, new()
+			where TCustomHandler : THandler, new()
+		{
+			var handler = new TCustomHandler();
+			InitializeViewHandler(view, handler, mauiContext);
+			return handler;
+		}
+
 		public void Dispose()
 		{
 			((IDisposable)_mauiApp).Dispose();

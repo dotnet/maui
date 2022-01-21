@@ -1,33 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using AndroidX.ViewPager2.Widget;
-using Google.Android.Material.AppBar;
-using Google.Android.Material.BottomNavigation;
-using Google.Android.Material.Tabs;
 using Microsoft.Maui.Handlers;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
+	public partial class TabbedPageHandler : ViewHandler<TabbedPage, UIView>
 	{
-		TabbedPageManager _tabbedPageManager;
-		protected override ViewPager2 CreateNativeView()
+		protected override UIView CreateNativeView()
 		{
-			_tabbedPageManager ??= new TabbedPageManager(MauiContext!);
-			return _tabbedPageManager.ViewPager;
-		}
-
-		public override void SetVirtualView(IView view)
-		{
-			base.SetVirtualView(view);
-			_tabbedPageManager.SetElement((TabbedPage)view);
-		}
-
-		protected override void DisconnectHandler(ViewPager2 nativeView)
-		{
-			base.DisconnectHandler(nativeView);
-			_tabbedPageManager.SetElement(null);
+			throw new NotImplementedException();
 		}
 
 		public static void MapBarBackground(TabbedPageHandler handler, TabbedPage view)
@@ -55,12 +38,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapSelectedItem(TabbedPageHandler handler, TabbedPage view)
 		{
 		}
-		public static void MapIndex(TabbedPageHandler handler, TabbedPage view)
-		{
-		}
 		public static void MapCurrentPage(TabbedPageHandler handler, TabbedPage view)
 		{
-		
+
 		}
 	}
 }
