@@ -156,8 +156,8 @@ namespace Microsoft.Maui
 		public void Add(string key, Action<TViewHandler, TVirtualView> action) =>
 			SetPropertyCore(key, (h, v) =>
 			{
-				if (v is TVirtualView vv && h is TViewHandler vh)
-					action?.Invoke(vh, vv);
+				if (v is TVirtualView vv)
+					action?.Invoke((TViewHandler)h, vv);
 				else if (Chained != null)
 				{
 					foreach (var chain in Chained)
