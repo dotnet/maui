@@ -226,7 +226,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				ScrollHelper.JumpScrollToPosition(position, args.ScrollToPosition);
 			}
 		}
-
+	
+		[PortHandler]
 		int GetItemWidth()
 		{
 			var itemWidth = Width;
@@ -237,6 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return itemWidth;
 		}
 
+		[PortHandler]
 		int GetItemHeight()
 		{
 			var itemHeight = Height;
@@ -557,6 +559,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetCurrentItem(carouselPosition);
 		}
 
+		[PortHandler]
 		void AddLayoutListener()
 		{
 			if (_carouselViewLayoutListener != null)
@@ -586,6 +589,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateVisualStates();
 		}
 
+		[PortHandler]
 		void ClearLayoutListener()
 		{
 			if (_carouselViewLayoutListener == null)

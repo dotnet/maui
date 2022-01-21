@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
+#if __ANDROID__
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
+#endif
 #if __IOS__ || __ANDROID__
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 #endif
