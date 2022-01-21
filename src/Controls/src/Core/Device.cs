@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 		public const string GTK = "GTK";
 		public const string Tizen = "Tizen";
 		public const string WPF = "WPF";
+		public const string MacCatalyst = "MacCatalyst";
 
 		static IPlatformServices s_platformServices;
 
