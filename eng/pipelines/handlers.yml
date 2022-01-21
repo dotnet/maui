@@ -120,6 +120,12 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if and(ne(BuildPlatform.poolName, 'Azure Pipelines'), eq(BuildPlatform.name, 'macos')) }} :
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
@@ -157,6 +163,12 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
+            ${{ if and(ne(BuildPlatform.poolName, 'Azure Pipelines'), eq(BuildPlatform.name, 'macos')) }} :
+              demands:
+                - macOS.Name -equals BigSur
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
           steps:
             - ${{ if eq(BuildPlatform.name, 'macOS') }}:
               - template: agent-cleanser/v1.yml@xamarin-templates
@@ -217,6 +229,12 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if and(ne(BuildPlatform.poolName, 'Azure Pipelines'), eq(BuildPlatform.name, 'macos')) }} :
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
@@ -260,6 +278,12 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if and(ne(BuildPlatform.poolName, 'Azure Pipelines'), eq(BuildPlatform.name, 'macos')) }} :
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
