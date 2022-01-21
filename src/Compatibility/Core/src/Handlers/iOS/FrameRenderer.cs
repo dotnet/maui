@@ -110,18 +110,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_actualView.Layer.BorderWidth = 1;
 			}
 
-			if (Element.HasShadow)
-			{
-				Layer.ShadowRadius = 5;
-				Layer.ShadowColor = UIColor.Black.CGColor;
-				Layer.ShadowOpacity = 0.8f;
-				Layer.ShadowOffset = new SizeF();
-			}
-			else
-			{
-				Layer.ShadowOpacity = 0;
-			}
-
 			Layer.RasterizationScale = UIScreen.MainScreen.Scale;
 			Layer.ShouldRasterize = true;
 			Layer.MasksToBounds = false;
