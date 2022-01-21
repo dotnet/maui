@@ -22,12 +22,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateMenu()
 		{
-			if (NavigationRootManager == null)
-				return;
-
-			if (NavigationRootManager.RootView is not MauiNavigationView)
-				return;
-
 			if (Handler.NativeView is not WindowHeader wh)
 				return;
 

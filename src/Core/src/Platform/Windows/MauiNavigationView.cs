@@ -12,11 +12,23 @@ namespace Microsoft.Maui.Platform
 	public class MauiNavigationView : NavigationView
 	{
 		double _paneHeaderContentHeight;
+		private UIElement? _headerControl;
+
 		internal Grid? ItemsContainerGrid { get; private set; }
+		internal FrameworkElement? TopNavArea { get; private set; }
 		internal Grid? PaneContentGrid { get; private set; }
 		internal event EventHandler? FlyoutPaneSizeChanged;
 		internal Size FlyoutPaneSize { get; private set; }
 		internal event EventHandler? OnApplyTemplateFinished;
+		internal UIElement? HeaderControl 
+		{
+			get => _headerControl; 
+			set
+			{
+				_headerControl = value;
+				UpdateTopNavAreaMargin();
+			} 
+		}
 
 		public MauiNavigationView()
 		{
@@ -29,12 +41,38 @@ namespace Microsoft.Maui.Platform
 			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
 			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
 			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
+			RegisterPropertyChangedCallback(PaneFooterProperty, HeaderPropertyChanged);
+			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
 		}
 
+		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			UpdateTopNavAreaMargin();
+		}
+
+		void UpdateTopNavAreaMargin()
+		{
+			if (TopNavArea != null)
+			{
+				if (PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+				{
+					TopNavArea.Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
+					Header = null;
+					PaneFooter = HeaderControl;
+				}
+				else
+				{
+					TopNavArea.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
+					PaneFooter = null;
+					Header = HeaderControl;
+				}
+			}
+
+		}
 		void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			Binding isBackButtonVisible = new Binding();
-			isBackButtonVisible.Source = Header;
+			isBackButtonVisible.Source = HeaderControl;
 			isBackButtonVisible.Path = new PropertyPath("IsBackButtonVisible");
 			isBackButtonVisible.Mode = BindingMode.OneWay;
 			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
@@ -94,11 +132,12 @@ namespace Microsoft.Maui.Platform
 
 			// The TopNavArea has a background set which makes the window action buttons unclickable
 			// So this offsets the TopNavArea by the size of the AppTitleBar
-			((FrameworkElement)GetTemplateChild("TopNavArea")).Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
+			TopNavArea = ((FrameworkElement)GetTemplateChild("TopNavArea"));
 
 			// This is the height taken up by the backbutton/pane toggle button
 			// we use this to offset the height of our flyout content
 			((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
+			UpdateTopNavAreaMargin();
 			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 		}
 

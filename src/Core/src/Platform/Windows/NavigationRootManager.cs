@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_rootView.NavigationViewControl != null)
 			{
-				_rootView.NavigationViewControl.Header = _windowHeader;
+				_rootView.NavigationViewControl.HeaderControl = _windowHeader;
 			}
 		}
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Platform
 			_windowHeader = toolBar as WindowHeader;
 			if (_rootView.NavigationViewControl != null)
 			{
-				_rootView.NavigationViewControl.Header = _windowHeader;
+				_rootView.NavigationViewControl.HeaderControl = _windowHeader;
 			}
 		}
 
