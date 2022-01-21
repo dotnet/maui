@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
@@ -12,8 +9,7 @@ using AViewCompat = AndroidX.Core.View.ViewCompat;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-
-	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>
+	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>		
 		where TItemsView : ItemsView
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
@@ -21,10 +17,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected TAdapter ItemsViewAdapter;
 
 		protected TItemsView ItemsView;
-		protected IItemsLayout ItemsLayout { get; private set; }
 
-		Func<IItemsLayout> GetItemsLayout;
-		Func<TAdapter> CreateAdapter;
+		public IItemsLayout ItemsLayout { get; private set; }
+
+		public Func<IItemsLayout> GetItemsLayout;
+		public Func<TAdapter> CreateAdapter;
 
 		SnapManager _snapManager;
 		ScrollHelper _scrollHelper;
@@ -51,7 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			HorizontalScrollBarEnabled = false;
 		}
 
-		public void TearDownOldElement(TItemsView oldElement)
+		public virtual void TearDownOldElement(TItemsView oldElement)
 		{
 			// Stop listening for layout property changes
 			if (ItemsLayout != null)
@@ -89,7 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public void SetUpNewElement(TItemsView newElement)
+		public virtual void SetUpNewElement(TItemsView newElement)
 		{
 			if (newElement == null)
 			{
@@ -324,7 +321,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
+		public virtual void ScrollTo(ScrollToRequestEventArgs args)
 		{
 			if (ItemsView == null)
 				return;

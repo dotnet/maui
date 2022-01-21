@@ -2,6 +2,8 @@
 {
 	public interface IMauiRecyclerView<TItemsView> where TItemsView : ItemsView
 	{
+		public IItemsLayout ItemsLayout { get; }
+
 		public void SetUpNewElement(TItemsView newElement);
 
 		public void TearDownOldElement(TItemsView oldElement);
@@ -22,6 +24,8 @@
 
 		public void UpdateLayoutManager();
 
-		public void UpdateAdapter();
+		public void UpdateAdapter(); 
+		
+		public void ScrollTo(ScrollToRequestEventArgs args);
 	}
 }

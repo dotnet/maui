@@ -1,118 +1,77 @@
-﻿using System;
+﻿using Android.Views;
 using AndroidX.RecyclerView.Widget;
-using Android.Views;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
-		CarouselViewwOnGlobalLayoutListener _carouselViewLayoutListener;
-		CarouselViewLoopManager _carouselViewLoopManager;
-
-		CarouselView CarouselView => VirtualView;
-
-		protected override void ConnectHandler(RecyclerView nativeView)
-		{
-			_carouselViewLoopManager = new CarouselViewLoopManager();
-
-			AddLayoutListener();
-
-			base.ConnectHandler(nativeView);
-		}
-
-		protected override void DisconnectHandler(RecyclerView nativeView)
-		{
-			if (_carouselViewLoopManager != null)
-			{
-				_carouselViewLoopManager?.SetItemsSource(null);
-				_carouselViewLoopManager = null;
-			}
-
-			ClearLayoutListener();
-
-			base.DisconnectHandler(nativeView);
-		}
+		double _widthConstraint;
+		double _heightConstraint;
 
 		protected override IItemsLayout GetItemsLayout() => VirtualView.ItemsLayout;
 
-		protected override ItemsViewAdapter<CarouselView, IItemsViewSource> CreateAdapter()
+		protected override ItemsViewAdapter<CarouselView, IItemsViewSource> CreateAdapter() 
+			=> new CarouselViewAdapter<CarouselView, IItemsViewSource>(VirtualView, (view, context) => new SizedItemContentView(Context, GetItemWidth, GetItemHeight));
+
+		protected override RecyclerView CreateNativeView() 
+			=> new MauiCarouselRecyclerView(Context, GetItemsLayout, CreateAdapter);
+
+		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			return new CarouselViewAdapter<CarouselView, IItemsViewSource>(CarouselView,
-				(view, context) => new SizedItemContentView(Context, GetItemWidth, GetItemHeight));
+			(handler.NativeView as IMauiCarouselRecyclerView).UpdateFromCurrentItem();
 		}
 
-		[MissingMapper]
-		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		[MissingMapper]
-		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		[MissingMapper]
-		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		[MissingMapper]
-		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		[MissingMapper]
-		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		[MissingMapper]
-		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		void AddLayoutListener()
+		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			if (_carouselViewLayoutListener != null)
-				return;
-
-			_carouselViewLayoutListener = new CarouselViewwOnGlobalLayoutListener();
-			_carouselViewLayoutListener.LayoutReady += LayoutReady;
-
-			NativeView?.ViewTreeObserver?.AddOnGlobalLayoutListener(_carouselViewLayoutListener);
+			(handler.NativeView as IMauiCarouselRecyclerView).UpdateFromPosition();
 		}
 
-		void ClearLayoutListener()
+		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			if (_carouselViewLayoutListener == null)
-				return;
+			handler.NativeView.OverScrollMode = carouselView?.IsBounceEnabled == true ? OverScrollMode.Always : OverScrollMode.Never;
+		}
 
-			NativeView?.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
-			_carouselViewLayoutListener.LayoutReady -= LayoutReady;
-			_carouselViewLayoutListener = null;
+		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.NativeView as IMauiCarouselRecyclerView).IsSwipeEnabled = carouselView.IsSwipeEnabled;
+		}
+
+		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.NativeView as IMauiRecyclerView<CarouselView>).UpdateAdapter();
+		}
+
+		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.NativeView as IMauiRecyclerView<CarouselView>).UpdateAdapter();
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			_widthConstraint = widthConstraint;
+			_heightConstraint = heightConstraint;
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		int GetItemWidth()
 		{
-			var itemWidth = NativeView.Width;
+			var itemWidth = (int)Context?.ToPixels(_widthConstraint);
 
-			if (CarouselView.ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
-				itemWidth = (int)(NativeView.Width - Context?.ToPixels(CarouselView.PeekAreaInsets.Left) - Context?.ToPixels(CarouselView.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+			if ((NativeView as IMauiRecyclerView<CarouselView>)?.ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+				itemWidth = (int)(NativeView.Width - Context?.ToPixels(VirtualView.PeekAreaInsets.Left) - Context?.ToPixels(VirtualView.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
 
 			return itemWidth;
 		}
 
 		int GetItemHeight()
 		{
-			var itemHeight = NativeView.Height;
+			var itemHeight = (int)Context?.ToPixels(_heightConstraint);
 
-			if (CarouselView.ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-				itemHeight = (int)(NativeView.Height - Context?.ToPixels(CarouselView.PeekAreaInsets.Top) - Context?.ToPixels(CarouselView.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+			if ((NativeView as IMauiRecyclerView<CarouselView>)?.ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+				itemHeight = (int)(NativeView.Height - Context?.ToPixels(VirtualView.PeekAreaInsets.Top) - Context?.ToPixels(VirtualView.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
 
 			return itemHeight;
-		}
-
-		void LayoutReady(object sender, EventArgs e)
-		{
-
-		}
-
-		class CarouselViewwOnGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
-		{
-			public EventHandler<EventArgs> LayoutReady;
-
-			public void OnGlobalLayout()
-			{
-				LayoutReady?.Invoke(this, new EventArgs());
-			}
 		}
 	}
 }

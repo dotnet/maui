@@ -3,7 +3,7 @@ using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public class CarouselViewLoopManager
+	internal class CarouselViewLoopManager
 	{
 		public const int LoopScale = 16384;
 
@@ -30,12 +30,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void CheckPendingScrollToEvents(RecyclerView recyclerView)
 		{
-			//TODO:JAVIER
-			//if (!(recyclerView is CarouselViewHandler carouselViewHandler))
-			//	return;
+			if (recyclerView is not IMauiRecyclerView<ItemsView> mauiRecyclerView)
+				return;
 
-			//if (_pendingScrollTo.TryDequeue(out ScrollToRequestEventArgs scrollToRequestEventArgs))
-			//	carouselViewHandler.ScrollTo(scrollToRequestEventArgs);
+			if (_pendingScrollTo.TryDequeue(out ScrollToRequestEventArgs scrollToRequestEventArgs))
+				mauiRecyclerView.ScrollTo(scrollToRequestEventArgs);
 		}
 
 		public void AddPendingScrollTo(ScrollToRequestEventArgs args) => _pendingScrollTo.Enqueue(args);
