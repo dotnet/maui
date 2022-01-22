@@ -19,7 +19,7 @@
 		/// Navigates to the next page in the list of visited pages.
 		/// </summary>
 		void GoForward();
-		
+
 		/// <summary>
 		/// Reload the current content.
 		/// </summary>

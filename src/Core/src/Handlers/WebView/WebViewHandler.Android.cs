@@ -73,14 +73,14 @@ namespace Microsoft.Maui.Handlers
 			if (nativeWebView.CanGoForward())
 				nativeWebView.GoForward();
 		}
-	
+
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
 			// TODO: Sync Cookies
 
 			handler.NativeView.Reload();
 		}
-	
+
 		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
 		{
 			//We want to load the source after making sure the mapper for webclients

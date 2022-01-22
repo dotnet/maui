@@ -6,4 +6,4 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Material")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.DualScreen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.UAP.UnitTests")] 
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.UAP.UnitTests")]

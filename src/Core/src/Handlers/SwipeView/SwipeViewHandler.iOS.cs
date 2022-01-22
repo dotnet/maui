@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView.UpdateIsSwipeEnabled(swipeView);
 			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
-		
+
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
 			handler.TypedNativeView.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);

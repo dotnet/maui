@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
 
 		public ListViewRenderer(Context context) : base(context)
-		{			
+		{
 			AutoPackage = false;
 		}
 
