@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (services != null)
 					{
-						result = Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, type) as Element;
+						result = (services.GetService(type) ?? Activator.CreateInstance(type)) as Element;
 					}
 					else
 					{
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (services != null)
 				{
-					return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, _type) as Element;
+					return (services.GetService(_type) ?? Activator.CreateInstance(_type)) as Element;
 				}
 				return Activator.CreateInstance(_type) as Element;
 			}
