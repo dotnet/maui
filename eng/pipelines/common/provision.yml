@@ -27,23 +27,6 @@ steps:
           provisioning_extra_args: $(provisionator.extraArguments)
         env:
           AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
-    - ${{ if eq(parameters.poolName, 'Azure Pipelines') }}:                           # agent-cleanser will uninstall mono and Xamarin.Mac when run on a hosted pool and so need to be provisioned here
-      # Provision mono
-      - task: xamops.azdevex.provisionator-task.provisionator@1
-        displayName: 'Provision mono'
-        inputs:
-          provisioning_script: $(provisionator.mono)
-          provisioning_extra_args: $(provisionator.extraArguments)
-        env:
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
-      # Provision Xamarin.Mac (XM)
-      - task: xamops.azdevex.provisionator-task.provisionator@1
-        displayName: 'Provision Xamarin.Mac'
-        inputs:
-          provisioning_script: $(provisionator.xm)
-          provisioning_extra_args: $(provisionator.extraArguments)
-        env:
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'
