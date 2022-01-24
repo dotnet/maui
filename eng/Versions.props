@@ -73,7 +73,7 @@
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.fffae82cf6ec1c4a6f490ddb780709ce9211725e.179</_SkiaSharpNativeAssetsVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Trim all characters after first `-` or `+` is encountered. -->
-    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetPreviewVersionBand>
+    <!-- Match the first three version numbers and append 00 -->
+    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetPreviewVersionBand>
   </PropertyGroup>
 </Project>
