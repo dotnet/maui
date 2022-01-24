@@ -10,18 +10,27 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
 		long? _registerCallbackToken;
+		NavigationRootManager? _navigationRootManager;
 		protected override MauiNavigationView CreateNativeView()
 		{
 			var navigationView = new MauiNavigationView();
+
 			navigationView.PaneFooter = _flyoutPanel;
 			return navigationView;
 		}
 
 		protected override void ConnectHandler(MauiNavigationView nativeView)
 		{
+			_navigationRootManager = MauiContext?.GetNavigationRootManager();
 			nativeView.FlyoutPaneSizeChanged += OnFlyoutPaneSizeChanged;
 			nativeView.PaneOpened += OnPaneOepened;
 			_registerCallbackToken = nativeView.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, BackButtonVisibleChanged);
+
+			nativeView.RegisterPropertyChangedCallback(NavigationView.PaneDisplayModeProperty, PaneDisplayModeChanged);
+		}
+
+		private void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
+		{
 		}
 
 		protected override void DisconnectHandler(MauiNavigationView nativeView)

@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClipsToBounds(ILayoutHandler handler, ILayout layout)
 		{
-			 ((NativeView?)handler.NativeView)?.UpdateClipsToBounds(layout);
+			((NativeView?)handler.NativeView)?.UpdateClipsToBounds(layout);
 		}
 
 		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)

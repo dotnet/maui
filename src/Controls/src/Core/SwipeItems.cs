@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 		public IEnumerator<ISwipeItem> GetEnumerator()
 		{
 			foreach (ISwipeItem item in _swipeItems)
-				yield return item;			
+				yield return item;
 		}
 
 		public int IndexOf(ISwipeItem item)

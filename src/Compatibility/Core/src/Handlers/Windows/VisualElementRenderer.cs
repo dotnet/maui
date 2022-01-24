@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WRect = Windows.Foundation.Rect;
+using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -17,6 +19,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public FrameworkElement ContainerElement => this;
 
 		public TNativeElement? Control => ((IElementHandler)this).NativeView as TNativeElement ?? _nativeView;
+		object? IElementHandler.NativeView => _nativeView;
+
 		public UIElement? GetNativeElement() => Control;
 
 		protected virtual void UpdateNativeControl() { }
@@ -47,34 +51,59 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
-		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		protected override WSize MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
-			if (Children.Count > 0)
+			if (Element == null || availableSize.Width * availableSize.Height == 0)
+				return new WSize(0, 0);
+
+			if (Control != null)
 			{
-				var platformView = Children[0];
-				if (platformView != null)
+				Control.Measure(availableSize);
+			}
+
+			var mauiContext = Element?.Handler?.MauiContext;
+			var minimumSize = MinimumSize();
+			var mauiRect = Control?.DesiredSize ?? minimumSize.ToNative();
+			
+			if (Element is not IVisualTreeElement vte || mauiContext == null)
+				return mauiRect;
+
+			var width = Math.Max(mauiRect.Width, minimumSize.Width);
+			var height = Math.Max(mauiRect.Height, minimumSize.Height);
+
+			foreach (var child in vte.GetVisualChildren())
+			{
+				if (child is Maui.IElement childElement && childElement.Handler is INativeViewHandler nvh)
 				{
-					platformView.Measure(availableSize);
-					return platformView.DesiredSize;
+					var size = nvh.GetDesiredSizeFromHandler(availableSize.Width, availableSize.Height);
+					height = Math.Max(height, size.Height);
+					width = Math.Max(width, size.Width);
 				}
 			}
 
-			return base.MeasureOverride(availableSize);
+			return new WSize(width, height);
 		}
 
-		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+		protected override WSize ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			if (Children.Count > 0)
+			var myRect = new WRect(0, 0, finalSize.Width, finalSize.Height);
+			if (Control != null)
 			{
-				var platformView = Children[0];
-				if (platformView != null)
-				{
-					platformView.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
-					return finalSize;
-				}
+				Control.Arrange(myRect);
 			}
 
-			return base.ArrangeOverride(finalSize);
+			var mauiContext = Element?.Handler?.MauiContext;
+			if (Element is not IVisualTreeElement vte || mauiContext == null)
+				return finalSize;
+
+			var mauiRect = new Graphics.Rectangle(0, 0, finalSize.Width, finalSize.Height);
+			foreach (var child in vte.GetVisualChildren())
+			{
+				if (child is Maui.IElement childElement && childElement.Handler is INativeViewHandler nvh)
+					nvh.NativeArrangeHandler(mauiRect);
+			}
+
+			return finalSize;
 		}
 
 		void IDisposable.Dispose()
@@ -100,6 +129,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Element != null)
 				VisualElement.MapAutomationPropertiesName(this, Element);
+		}
+
+		static partial void ProcessAutoPackage(Maui.IElement element)
+		{
+			if (element.Handler is not INativeViewHandler nvh ||
+				nvh.ContainerView is not Panel panel)
+			{
+				return;
+			}
+
+			panel.Children.Clear();
+
+			if (element is not IVisualTreeElement vte)
+				return;
+
+			var mauiContext = element?.Handler?.MauiContext;
+			if (mauiContext == null)
+				return;
+
+			foreach (var child in vte.GetVisualChildren())
+			{
+				if (child is Maui.IElement childElement)
+					panel.Children.Add(childElement.ToNative(mauiContext));
+			}
 		}
 
 		public static void MapAutomationPropertiesLabeledBy(INativeViewHandler handler, TElement view)
