@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		public static void MapTextColor(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) 
+		public static void MapTextColor(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			var color = view.GetTextColor();
 			if (color != null)
@@ -30,13 +30,13 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(SwipeItemMenuItemHandler handler, ITextStyle view) { }
 
-		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) 
+		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.NativeView.RestorationIdentifier = view.Text;
 			handler.NativeView.SetTitle(view.Text, UIControlState.Normal);
 		}
 
-		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) 
+		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.NativeView.UpdateBackground(view.Background);
 		}

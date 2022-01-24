@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (source == previousSource)
 				return;
 
-			if(source == null)
+			if (source == null)
 			{
 				_imageView.SetImageDrawable(null);
 			}

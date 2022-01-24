@@ -63,8 +63,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BottomItemsProperty, value); }
 		}
 
-		bool ISwipeViewController.IsOpen 
-		{ 
+		bool ISwipeViewController.IsOpen
+		{
 			get => ((ISwipeView)this).IsOpen;
 			set => ((ISwipeView)this).IsOpen = value;
 		}
@@ -76,13 +76,13 @@ namespace Microsoft.Maui.Controls
 
 			swipeView.UpdateSwipeItemsParent((SwipeItems)newValue);
 
-			if(oldValue is SwipeItems oldItems)
+			if (oldValue is SwipeItems oldItems)
 			{
 				oldItems.CollectionChanged -= SwipeItemsCollectionChanged;
 				oldItems.PropertyChanged -= SwipeItemsPropertyChanged;
 			}
 
-			if(newValue is SwipeItems newItems)
+			if (newValue is SwipeItems newItems)
 			{
 				newItems.CollectionChanged += SwipeItemsCollectionChanged;
 				newItems.PropertyChanged += SwipeItemsPropertyChanged;

@@ -1,8 +1,8 @@
 #nullable enable
 using Android.Graphics;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				_services.Add(typeof(IFontManager), new MockFontManager());
 		}
 
-		Dictionary<Type, object> _services = new ();
+		Dictionary<Type, object> _services = new();
 
 		public object GetService(Type serviceType)
 			=> _services?[serviceType];
