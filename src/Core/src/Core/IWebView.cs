@@ -24,5 +24,11 @@
 		/// Reload the current content.
 		/// </summary>
 		void Reload();
+
+		/// <summary>
+		/// Evaluates the script that is specified by script.
+		/// </summary>
+		/// <param name="script">A script to evaluate.</param>
+		void Eval(string script);
 	}
 }

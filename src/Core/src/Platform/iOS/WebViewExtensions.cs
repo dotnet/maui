@@ -14,5 +14,10 @@ namespace Microsoft.Maui.Platform
 			if (webViewDelegate != null)
 				webView.Source?.Load(webViewDelegate);
 		}
+
+		public static void Eval(this WKWebView nativeWebView, IWebView webView, string script)
+		{
+			nativeWebView.EvaluateJavaScriptAsync(script);
+		}
 	}
 }

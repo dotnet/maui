@@ -7,5 +7,6 @@
 		public void GoBack() { }
 		public void GoForward() { }
 		public void Reload() { }
+		public void Eval(string script) { }
 	}
 }

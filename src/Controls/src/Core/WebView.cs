@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Controls
 
 		public void Eval(string script)
 		{
+			Handler?.Invoke(nameof(IWebView.Eval), script);
 			_evalRequested?.Invoke(this, new EvalRequested(script));
 		}
 

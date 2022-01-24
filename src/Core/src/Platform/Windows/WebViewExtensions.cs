@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
@@ -13,6 +14,17 @@ namespace Microsoft.Maui.Platform
 		{
 			if (webViewDelegate != null)
 				webView.Source?.Load(webViewDelegate);
+		}
+
+		public static void Eval(this WebView2 nativeWebView, IWebView webView, string script)
+		{ 
+			if (nativeWebView == null)
+				return;
+
+			nativeWebView.DispatcherQueue.TryEnqueue(async () =>
+			{
+				await nativeWebView.ExecuteScriptAsync(script);
+			});
 		}
 	}
 }

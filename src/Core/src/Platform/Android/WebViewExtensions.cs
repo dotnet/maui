@@ -23,5 +23,12 @@ namespace Microsoft.Maui.Platform
 			nativeWebView.Settings.JavaScriptEnabled = javaScriptEnabled;
 			nativeWebView.Settings.DomStorageEnabled = domStorageEnabled;
 		}
+
+		public static void Eval(this AWebView nativeWebView, IWebView webView, string script)
+		{
+			string source = "javascript:" + script;
+			
+			nativeWebView.LoadUrl(source);
+		}
 	}
 }
