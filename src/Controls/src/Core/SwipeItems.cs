@@ -7,21 +7,13 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	public enum OpenSwipeItem
-	{
-		LeftItems,
-		TopItems,
-		RightItems,
-		BottomItems
-	}
-
 	public class SwipeItems : Element, IList<ISwipeItem>, INotifyCollectionChanged
 	{
-		readonly ObservableCollection<ISwipeItem> _swipeItems;
+		readonly ObservableCollection<Maui.ISwipeItem> _swipeItems;
 
 		public SwipeItems(IEnumerable<ISwipeItem> swipeItems)
 		{
-			_swipeItems = new ObservableCollection<ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
+			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
 		}
 
@@ -53,7 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		public ISwipeItem this[int index]
 		{
-			get => _swipeItems.Count > index ? _swipeItems[index] : null;
+			get => _swipeItems.Count > index ? (ISwipeItem)_swipeItems[index] : null;
 			set => _swipeItems[index] = value;
 		}
 
@@ -83,7 +75,8 @@ namespace Microsoft.Maui.Controls
 
 		public IEnumerator<ISwipeItem> GetEnumerator()
 		{
-			return _swipeItems.GetEnumerator();
+			foreach (ISwipeItem item in _swipeItems)
+				yield return item;			
 		}
 
 		public int IndexOf(ISwipeItem item)

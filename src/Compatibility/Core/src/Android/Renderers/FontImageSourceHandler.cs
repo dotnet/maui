@@ -5,8 +5,10 @@ using Android.Content;
 using Android.Graphics;
 using Android.Util;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Paint = Android.Graphics.Paint;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -29,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					AntiAlias = true,
 				};
 
-				paint.SetTypeface(fontsource.FontFamily.ToTypeface());
+				paint.SetTypeface(fontsource.FontFamily.ToTypeface(imagesource.RequireFontManager()));
 
 				var width = (int)(paint.MeasureText(fontsource.Glyph) + .5f);
 				var baseline = (int)(-paint.Ascent() + .5f);

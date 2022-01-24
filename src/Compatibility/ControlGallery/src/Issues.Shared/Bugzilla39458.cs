@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39458, "[UWP/WinRT] Cannot Set CarouselPage.CurrentPage Inside Constructor", PlatformAffected.WinRT)]
-	public class Bugzilla39458 : TestCarouselPage
+	internal class Bugzilla39458 : TestCarouselPage
 	{
 		public class ChildPage : ContentPage
 		{

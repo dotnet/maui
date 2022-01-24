@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Element
 	{
-		public static void MapIsInAccessibleTree(IElementHandler handler, Element element)
+		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, Element element)
 		{
 			// If the user hasn't set IsInAccessibleTree then just don't do anything
 			if (!element.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			Control.IsAccessibilityElement = (bool)((bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultIsAccessibilityElement);
 		}
 
-		public static void MapExcludedWithChildren(IElementHandler handler, Element view)
+		public static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, Element view)
 		{
 			if (!view.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
 				return;

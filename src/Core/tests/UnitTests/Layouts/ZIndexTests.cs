@@ -14,6 +14,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		// These tests need a real collection to work with; we can't reasonably use a substitute here
 		class FakeLayout : ILayout, IList<IView>
 		{
+			public bool ClipsToBounds { get; set; }
+
 			#region IView stuff
 
 			public string AutomationId { get; }

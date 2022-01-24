@@ -1,4 +1,5 @@
-﻿using Android.Views.Accessibility;
+﻿using Android.OS;
+using Android.Views.Accessibility;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using NativeView = Android.Views.View;
@@ -63,6 +64,16 @@ namespace Microsoft.Maui.Platform
 		public override bool OnRequestSendAccessibilityEvent(Android.Views.ViewGroup host, NativeView child, AccessibilityEvent e)
 		{
 			return _originalDelegate.OnRequestSendAccessibilityEvent(host, child, e);
+		}
+
+		public override bool PerformAccessibilityAction(NativeView host, int action, Bundle args)
+		{
+			return _originalDelegate.PerformAccessibilityAction(host, action, args);
+		}
+
+		public override AccessibilityNodeProviderCompat GetAccessibilityNodeProvider(NativeView host)
+		{
+			return _originalDelegate.GetAccessibilityNodeProvider(host);
 		}
 	}
 }

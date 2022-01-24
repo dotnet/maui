@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Controls
 		internal const string GroupValueChangedMessage = "RadioButtonGroupValueChanged";
 
 		static readonly BindableProperty RadioButtonGroupControllerProperty =
-			BindableProperty.CreateAttached("RadioButtonGroupController", typeof(RadioButtonGroupController), typeof(Compatibility.Layout<View>), default(RadioButtonGroupController),
-			defaultValueCreator: (b) => new RadioButtonGroupController((Compatibility.Layout<View>)b),
+			BindableProperty.CreateAttached("RadioButtonGroupController", typeof(RadioButtonGroupController), typeof(Maui.ILayout), default(RadioButtonGroupController),
+			defaultValueCreator: (b) => new RadioButtonGroupController((Maui.ILayout)b),
 			propertyChanged: (b, o, n) => OnControllerChanged(b, (RadioButtonGroupController)o, (RadioButtonGroupController)n));
 
 		static RadioButtonGroupController GetRadioButtonGroupController(BindableObject b)
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static readonly BindableProperty GroupNameProperty =
-			BindableProperty.Create("GroupName", typeof(string), typeof(Compatibility.Layout<View>), null,
+			BindableProperty.Create("GroupName", typeof(string), typeof(Maui.ILayout), null,
 			propertyChanged: (b, o, n) => { GetRadioButtonGroupController(b).GroupName = (string)n; });
 
 		public static string GetGroupName(BindableObject b)
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static readonly BindableProperty SelectedValueProperty =
-			BindableProperty.Create("SelectedValue", typeof(object), typeof(Compatibility.Layout<View>), null,
+			BindableProperty.Create("SelectedValue", typeof(object), typeof(Maui.ILayout), null,
 			defaultBindingMode: BindingMode.TwoWay,
 			propertyChanged: (b, o, n) => { GetRadioButtonGroupController(b).SelectedValue = n; });
 

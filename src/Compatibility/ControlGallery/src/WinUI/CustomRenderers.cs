@@ -45,8 +45,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 	}
 
-	public class SortableListViewRenderer : ListViewRenderer
+	public class SortableListViewRenderer : Controls.Handlers.Compatibility.ListViewRenderer
 	{
+		public SortableListViewRenderer() : base()
+		{
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
 			base.OnElementChanged(e);

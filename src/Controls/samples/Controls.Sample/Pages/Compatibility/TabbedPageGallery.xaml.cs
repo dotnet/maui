@@ -10,6 +10,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 			this.Children.Add(new NavigationGallery());
+			this.Children.Add(new NavigationPage(new NavigationGallery()) { Title = "With Nav Page" });
 		}
 
 		void OnTabbedPageAsRoot(object sender, EventArgs e)
@@ -45,6 +46,11 @@ namespace Maui.Controls.Sample.Pages
 
 			AndroidSpecific.TabbedPage.SetToolbarPlacement(bottomTabs, AndroidSpecific.ToolbarPlacement.Bottom);
 			Application.Current.MainPage = bottomTabs;
+		}
+
+		void OnChangeTabIndex(object sender, EventArgs e)
+		{
+			CurrentPage = Children[1];
 		}
 	}
 }

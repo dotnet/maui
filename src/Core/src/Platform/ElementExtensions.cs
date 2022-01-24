@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
 using BasePlatformType = Foundation.NSObject;
@@ -26,6 +27,26 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ElementExtensions
 	{
+		static HashSet<Type> handlersWithConstructors = new HashSet<Type>();
+
+		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
+		{
+			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
+			
+			if(handlerType == null) return null;
+
+#if ANDROID
+			if(mauiContext.Context != null)
+			{
+				return (IElementHandler)Extensions.DependencyInjection.
+					ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
+			}
+#endif
+
+			return (IElementHandler)Extensions.DependencyInjection.
+				ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
+		}
+
 		public static IElementHandler ToHandler(this IElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
@@ -40,8 +61,26 @@ namespace Microsoft.Maui.Platform
 			if (handler?.MauiContext != null && handler.MauiContext != context)
 				handler = null;
 
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
 			if (handler == null)
-				handler = context.Handlers.GetHandler(view.GetType());
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+						handler = viewType.CreateTypeWithInjection(context);
+					else
+						handler = context.Handlers.GetHandler(viewType);
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+						handlersWithConstructors.Add(view.GetType());
+				}
+			}
 
 			if (handler == null)
 				throw new Exception($"Handler not found for view {view}.");
@@ -56,23 +95,29 @@ namespace Microsoft.Maui.Platform
 			return handler;
 		}
 
-		internal static NativeView? GetNative(this IElement view, bool returnWrappedIfPresent)
+		internal static NativeView? ToNative(this IElement view)
 		{
-			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
-				return nativeHandler.NativeView;
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+				return replaceableView.ReplacedView.ToNative();
 
-			return view.Handler?.NativeView as NativeView;
+			if (view.Handler == null)
+			{
+				var mauiContext = view.Parent?.Handler?.MauiContext ??
+					throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
 
-		}
+				return view.ToNative(mauiContext);
+			}
 
-		internal static NativeView ToNative(this IElement view, IMauiContext context, bool returnWrappedIfPresent)
-		{
-			var nativeView = view.ToNative(context);
+			if (view.Handler is IViewHandler nativeHandler)
+			{
+				if (nativeHandler.ContainerView is NativeView containerView)
+					return containerView;
 
-			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
-				return nativeHandler.NativeView;
+				if(nativeHandler.NativeView is NativeView nativeView)
+					return nativeView;
+			}
 
-			return nativeView;
+			return (view.Handler?.NativeView as NativeView);
 
 		}
 
@@ -84,7 +129,9 @@ namespace Microsoft.Maui.Platform
 			{
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
 			}
-			return result;
+
+			return view.ToNative() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
+
 		}
 
 		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
@@ -116,5 +163,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void SetWindowHandler(this PlatformWindow nativeWindow, IWindow window, IMauiContext context) =>
 			SetHandler(nativeWindow, window, context);
+
+#if WINDOWS || IOS || ANDROID
+		internal static IWindow GetWindow(this IElement element) =>
+			element.Handler?.MauiContext?.GetNativeWindow()?.GetWindow() ??
+			throw new InvalidOperationException("IWindow not found");
+#endif
 	}
 }
