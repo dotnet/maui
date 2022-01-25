@@ -19,6 +19,7 @@ namespace Microsoft.Maui
 				return;
 			}
 
+			IPlatformApplication.Current = this;
 			var mauiApp = CreateMauiApp();
 
 			var rootContext = new MauiContext(mauiApp.Services);

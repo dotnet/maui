@@ -18,6 +18,7 @@ namespace Microsoft.Maui
 		protected MauiUIApplicationDelegate()
 		{
 			Current = this;
+			IPlatformApplication.Current = this;
 		}
 
 		protected abstract MauiApp CreateMauiApp();

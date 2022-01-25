@@ -15,6 +15,7 @@ namespace Microsoft.Maui
 		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
 			Current = this;
+			IPlatformApplication.Current = this;
 		}
 
 		protected abstract MauiApp CreateMauiApp();

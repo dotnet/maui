@@ -8,10 +8,15 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface IPlatformApplication
 	{
+
+#if !NETSTANDARD2_0
 		/// <summary>
 		/// Gets the current IPlatformApplication.
+		/// This must be set in each implementation manually, as we can't
+		/// have a true static be used in the implementation.
 		/// </summary>
-		public static IPlatformApplication? Current { get; }
+		public static IPlatformApplication? Current { get; set; }
+#endif
 
 		/// <summary>
 		/// Gets the Service Provider.
