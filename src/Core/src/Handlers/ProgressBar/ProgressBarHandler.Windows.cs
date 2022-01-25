@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Microsoft.Maui.Handlers
 {
+	// To avoid an issue rendering the native ProgressBar on Windows, we wrap it into a Container.
 	public partial class ProgressBarHandler : ViewHandler<IProgress, Grid>
 	{
 		object? _foregroundDefault;
