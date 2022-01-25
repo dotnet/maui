@@ -24,7 +24,11 @@
     <_JsonInputFile Include="SdkInstaller.in.json" OutputPath="$(IntermediateOutputPath)SdkInstaller.json" Pack="false" />
   </ItemGroup>
 
-  <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);@(_JsonInputFile)" Outputs="@(_JsonInputFile->'%(OutputPath)')">
+  <Target Name="_GenerateWorkloadManifest"
+      BeforeTargets="Build;AssignTargetPaths"
+      DependsOnTargets="SetVersions"
+      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;@(_JsonInputFile)"
+      Outputs="@(_JsonInputFile->'%(OutputPath)')">
     <ItemGroup>
       <_VersionsToReplace Include="MicrosoftDotnetSdkInternalPackageVersion" />
       <_VersionsToReplace Include="MicrosoftNETCoreAppRefPackageVersion" />
