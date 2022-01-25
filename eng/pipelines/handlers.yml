@@ -69,8 +69,8 @@ parameters:
         bootsiOS: $(iOS.Msi)
         artifact: net6-windows
       - name: macOS
-        poolName: 'Azure Pipelines'   # UNDONE: TEST ONLY: DO NOT MERGE TO MAIN
-        vmImage: internal-macos-11
+        poolName: $(macOSXNet6VmPool)
+        vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
@@ -85,8 +85,8 @@ parameters:
         bootsiOS: $(iOS.Msi)
         artifact: nuget
       - name: macOS
-        poolName: 'Azure Pipelines'   # UNDONE: TEST ONLY: DO NOT MERGE TO MAIN
-        vmImage: internal-macos-11
+        poolName: $(macOSXNet6VmPool)
+        vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
