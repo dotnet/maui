@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public ListViewRenderer() : base(Mapper, CommandMapper)
 		{
-
+			AutoPackage = false;
 		}
 
 		public override void LayoutSubviews()

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					ve.Handler?.DisconnectHandler();
 
-					if(ve.Handler is IDisposable disposable)
+					if (ve.Handler is IDisposable disposable)
 						disposable.Dispose();
 				}
 			}
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				rendererToRemove.NativeView.RemoveFromSuperview();
 			}
 
-			if(rendererToRemove is IDisposable disposable)
+			if (rendererToRemove is IDisposable disposable)
 				disposable.Dispose();
 		}
 	}

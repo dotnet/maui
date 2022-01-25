@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
 using Android.Util;
-using Microsoft.Maui.Graphics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Color = Microsoft.Maui.Graphics.Color;
 using Paint = Android.Graphics.Paint;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

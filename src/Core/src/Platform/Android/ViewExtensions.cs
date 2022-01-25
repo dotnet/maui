@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
@@ -9,12 +10,11 @@ using AndroidX.Core.View;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using AColor = Android.Graphics.Color;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 using GL = Android.Opengl;
-using AColor = Android.Graphics.Color;
-using System;
 
 namespace Microsoft.Maui.Platform
 {
@@ -80,6 +80,11 @@ namespace Microsoft.Maui.Platform
 			if (nativeView is WrapperView wrapper)
 				wrapper.Shadow = view.Shadow;
 		}
+		public static void UpdateBorder(this AView nativeView, IView view)
+		{
+			if (nativeView is WrapperView wrapper)
+				wrapper.Border = (view as IBorder)?.Border;
+		}
 
 		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{
@@ -124,7 +129,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateBackground(this ContentViewGroup nativeView, IBorder border)
+		public static void UpdateBackground(this ContentViewGroup nativeView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 

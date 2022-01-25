@@ -1,9 +1,9 @@
+using System;
 using System.ComponentModel;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
-using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

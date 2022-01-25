@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2598, "Replacing page in CarouselPage does not work the first time", PlatformAffected.All)]
-	public class GitHub2598 : TestCarouselPage
+	internal class GitHub2598 : TestCarouselPage
 	{
 		private ContentPage CreatePage(string labelText, Color bg)
 		{

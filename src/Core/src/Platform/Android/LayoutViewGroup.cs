@@ -3,9 +3,9 @@ using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using ARect = Android.Graphics.Rect;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
-using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {

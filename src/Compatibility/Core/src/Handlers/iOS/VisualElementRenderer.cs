@@ -1,16 +1,39 @@
 ﻿#nullable enable
 using System;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract partial class VisualElementRenderer<TElement> : UIView, INativeViewHandler
+	public abstract partial class VisualElementRenderer<TElement> : UIView, INativeViewHandler, IElementHandler
 		where TElement : Element, IView
 	{
+		object? IElementHandler.NativeView => Subviews.Length > 0 ? Subviews[0] : null;
+
 		public virtual UIViewController? ViewController => null;
+
+		static partial void ProcessAutoPackage(Maui.IElement element)
+		{
+			if (element?.Handler?.NativeView is not UIView viewGroup)
+				return;
+
+			viewGroup.ClearSubviews();
+
+			if (element is not IVisualTreeElement vte)
+				return;
+
+			var mauiContext = element?.Handler?.MauiContext;
+			if (mauiContext == null)
+				return;
+
+			foreach (var child in vte.GetVisualChildren())
+			{
+				if (child is Maui.IElement childElement)
+					viewGroup.AddSubview(childElement.ToNative(mauiContext));
+			}
+		}
 
 		protected virtual void UpdateNativeWidget()
 		{
