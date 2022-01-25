@@ -202,10 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new[] {
-				typeof (TestHandlerAttribute)
-			});
-
+			Internals.Registrar.RegisterAll(new[] { typeof(TestHandlerAttribute) });
 		}
 
 		[TearDown]

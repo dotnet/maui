@@ -1,120 +1,164 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using WGrid = Microsoft.UI.Xaml.Controls.Grid;
-using WThickness = Microsoft.UI.Xaml.Thickness;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using System.ComponentModel;
-using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	// This is needed by WinUI because of 
 	// https://github.com/microsoft/microsoft-ui-xaml/issues/2698#issuecomment-648751713
 	[Microsoft.UI.Xaml.Data.Bindable]
 	public class MauiNavigationView : NavigationView
 	{
-		internal WGrid? ContentTopPadding { get; private set; }
-		internal WGrid? PaneToggleButtonGrid { get; private set; }
-		internal ContentControl? HeaderContent { get; private set; }
-		internal Button? NavigationViewBackButton { get; private set; }
-		WThickness? DefaultHeaderContentMargin { get; set; }
-		internal WThickness? HeaderContentMargin { get; set; }
+		double _paneHeaderContentHeight;
+		private UIElement? _headerControl;
 
-		WindowHeader _windowHeader;
+		internal Grid? ItemsContainerGrid { get; private set; }
+		internal FrameworkElement? TopNavArea { get; private set; }
+		internal Grid? PaneContentGrid { get; private set; }
+		internal event EventHandler? FlyoutPaneSizeChanged;
+		internal Size FlyoutPaneSize { get; private set; }
+		internal event EventHandler? OnApplyTemplateFinished;
+		internal UIElement? HeaderControl 
+		{
+			get => _headerControl; 
+			set
+			{
+				_headerControl = value;
+				UpdateTopNavAreaMargin();
+			} 
+		}
+
 		public MauiNavigationView()
 		{
-			IsPaneVisible = false;
+			IsSettingsVisible = false;
+			MenuItemsSource = null;
 			IsPaneToggleButtonVisible = false;
-			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
-			Header = (_windowHeader = new WindowHeader());
-			IsBackEnabled = false;
-			_windowHeader.Visibility = UI.Xaml.Visibility.Collapsed;
+			PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			IsTitleBarAutoPaddingEnabled = false;
 			IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
+			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
+			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
+			RegisterPropertyChangedCallback(PaneFooterProperty, HeaderPropertyChanged);
+			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
+		}
+
+		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			UpdateTopNavAreaMargin();
+		}
+
+		void UpdateTopNavAreaMargin()
+		{
+			if (TopNavArea != null)
+			{
+				if (PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+				{
+					TopNavArea.Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
+					Header = null;
+					PaneFooter = HeaderControl;
+				}
+				else
+				{
+					TopNavArea.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
+					PaneFooter = null;
+					Header = HeaderControl;
+				}
+			}
+
+		}
+		void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			Binding isBackButtonVisible = new Binding();
+			isBackButtonVisible.Source = HeaderControl;
+			isBackButtonVisible.Path = new PropertyPath("IsBackButtonVisible");
+			isBackButtonVisible.Mode = BindingMode.OneWay;
+			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
+		}
+
+		void PaneLengthPropertyChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			UpdateFlyoutPaneSize();
+		}
+
+		void BackButtonVisibleChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			if (IsBackButtonVisible == NavigationViewBackButtonVisible.Auto)
+				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+
+			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible);
 		}
 
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
-			PaneToggleButtonGrid = (WGrid)GetTemplateChild("PaneToggleButtonGrid");
-			ContentTopPadding = (WGrid)GetTemplateChild("ContentTopPadding");
-			HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
-			NavigationViewBackButton = (Button)GetTemplateChild("NavigationViewBackButton");
 
-			// HeaderContent is set to a MinHeight of 48 so we have to collapse it if we
-			// don't want it to take up any space
-			HeaderContent.Visibility = _windowHeader.Visibility;
+			// We currently use the "PaneFooter" property to set custom content on the flyout
+			// But this content has a top margin of 4 to separate it from the bottom menu items
+			// Because we aren't using bottom menu items we just zero out the margin.
+			// The way we size the flyout content is by retrieving the height/width of the ItemsContainerGrid
+			// Because the FooterContentBorder has a margin the height of the ItemsContainerGrid will increase by four 
+			// everytime you set the PaneFooter Content which will lead to a layout cycle.
+			// TLDR; if you comment this out you'll get a layout cycle crash because of how we're extracting the WxH 
+			// to measure the flyout content
+			((FrameworkElement)GetTemplateChild("FooterContentBorder")).Margin = new UI.Xaml.Thickness(0);
 
-			// Read comment on MarginPropertyChanged
-			var currentMargin = HeaderContent.Margin;
-			HeaderContentMargin = new WThickness(
-				0,
-				0,
-				currentMargin.Right,
-				currentMargin.Bottom);
+			// This is used to left pad the content/header when the backbutton is visible
+			// Because our backbutton is inside the appbar title we don't care about padding 
+			// the content and header by the size of the backbutton.
+			if (GetTemplateChild("ContentLeftPadding") is Grid g)
+				g.Visibility = UI.Xaml.Visibility.Collapsed;
 
-			HeaderContent.Margin = HeaderContentMargin.Value;
-			HeaderContent.RegisterPropertyChangedCallback(ContentControl.MarginProperty, MarginPropertyChanged);
+			var HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
+			Binding visibilityBinding = new Binding();
+			visibilityBinding.Source = this;
+			visibilityBinding.Path = new PropertyPath("Header.Visibility");
+			visibilityBinding.Mode = BindingMode.TwoWay;
+			visibilityBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+			BindingOperations.SetBinding(HeaderContent, VisibilityProperty, visibilityBinding);
+
+			Binding backgroundBinding = new Binding();
+			backgroundBinding.Source = this;
+			backgroundBinding.Path = new PropertyPath("Header.Background");
+			backgroundBinding.Mode = BindingMode.TwoWay;
+			backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+			BindingOperations.SetBinding(HeaderContent, BackgroundProperty, backgroundBinding);
+
+			PaneContentGrid = (Grid)GetTemplateChild("PaneContentGrid");
+			PaneContentGrid.SizeChanged += OnPaneContentGridSizeChanged;
+
+			// The TopNavArea has a background set which makes the window action buttons unclickable
+			// So this offsets the TopNavArea by the size of the AppTitleBar
+			TopNavArea = ((FrameworkElement)GetTemplateChild("TopNavArea"));
+
+			// This is the height taken up by the backbutton/pane toggle button
+			// we use this to offset the height of our flyout content
+			((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
+			UpdateTopNavAreaMargin();
+			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 		}
 
-		// Something inside the NavigationView gets really excited to change the margin on the header content
-		// This causes the header to offset from the top of the screen which makes everything look off when you want to color
-		// the top nav bar. AFAICT this margin isn't bound to any theme resource properties
-		void MarginPropertyChanged(DependencyObject sender, DependencyProperty dp)
+		void OnPaneHeaderContentBorderSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (HeaderContent != null &&
-				HeaderContentMargin != null &&
-				HeaderContent.Margin != HeaderContentMargin.Value)
-			{
-				HeaderContent.Margin = HeaderContentMargin.Value;
-			}
+			_paneHeaderContentHeight = ((FrameworkElement)sender).ActualHeight;
+			UpdateFlyoutPaneSize();
 		}
 
-		internal void UpdateBarBackgroundBrush(WBrush? brush)
+		void OnPaneContentGridSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (PaneToggleButtonGrid != null)
-				PaneToggleButtonGrid.Background = brush;
+			UpdateFlyoutPaneSize();
+		}
 
-			if (Header is WindowHeader windowHeader)
-				windowHeader.CommandBar.Background = brush;
+		void UpdateFlyoutPaneSize()
+		{
+			if (PaneContentGrid == null)
+				return;
 
-			// This is code that I'm excited I got to work but it'd be nice if it didn't exist
-			// The back button on the NavigationView is part of a different view hierarchy than the Header CommandBar
-			// When you click the "more" button on the command bar it expands vertically using a clip geometry
-			// This code applies that same clip geometry (+ animation) to the container of the Back Button
-			// This is mainly relevant when the user wants to color the BarBackground
-			if (PaneToggleButtonGrid != null &&
-				PaneToggleButtonGrid.Clip == null &&
-				_windowHeader?.LayoutRootClip != null &&
-				_windowHeader.LayoutRoot != null &&
-				NavigationViewBackButton != null)
-			{
-				_windowHeader.TextBlockBorder.Height = _windowHeader.ActualHeight;
-				PaneToggleButtonGrid.Height = _windowHeader.LayoutRoot.ActualHeight;
-
-				RectangleGeometry rectangleGeometry = new RectangleGeometry();
-				TranslateTransform translateTransform = new TranslateTransform();
-				rectangleGeometry.Transform = translateTransform;
-
-				Binding rectBinding = new Binding();
-				rectBinding.Source = _windowHeader.LayoutRootClip;
-				rectBinding.Path = new PropertyPath("Rect");
-				rectBinding.Mode = BindingMode.OneWay;
-				BindingOperations.SetBinding(rectangleGeometry, RectangleGeometry.RectProperty, rectBinding);
-
-				Binding translateBinding = new Binding();
-				translateBinding.Source = _windowHeader.LayoutRootClip.Transform;
-				translateBinding.Path = new PropertyPath("Y");
-				translateBinding.Mode = BindingMode.OneWay;
-				BindingOperations.SetBinding(translateTransform, TranslateTransform.YProperty, translateBinding);
-
-				PaneToggleButtonGrid.Clip = rectangleGeometry;
-			}
+			FlyoutPaneSize = new Size(OpenPaneLength, PaneContentGrid.ActualHeight - _paneHeaderContentHeight);
+			FlyoutPaneSizeChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

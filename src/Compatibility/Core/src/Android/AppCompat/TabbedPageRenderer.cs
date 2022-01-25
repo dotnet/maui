@@ -32,8 +32,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 #pragma warning restore CS0618 // Type or member is obsolete
 		ViewPager.IOnPageChangeListener, IManageFragments, NavigationBarView.IOnItemSelectedListener
 	{
-		Drawable _backgroundDrawable;
-		Drawable _wrappedBackgroundDrawable;
 		ColorStateList _originalTabTextColors;
 		ColorStateList _orignalTabIconColors;
 
@@ -416,11 +414,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 				if (tabs.Visibility != ViewStates.Gone)
 				{
-					//MinimumHeight is only available on API 16+
-					if ((int)Forms.SdkInt >= 16)
-						tabsHeight = Math.Min(height, Math.Max(tabs.MeasuredHeight, tabs.MinimumHeight));
-					else
-						tabsHeight = Math.Min(height, tabs.MeasuredHeight);
+					tabsHeight = Math.Min(height, Math.Max(tabs.MeasuredHeight, tabs.MinimumHeight));
 				}
 
 				pager.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.AtMost), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.AtMost));
@@ -728,36 +722,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				Color tintColor = Element.BarBackgroundColor;
 
-				if (Forms.IsLollipopOrNewer)
+				if (tintColor == null)
 				{
-					if (tintColor == null)
-						_tabLayout.BackgroundTintMode = null;
-					else
-					{
-						_tabLayout.BackgroundTintMode = PorterDuff.Mode.Src;
-						_tabLayout.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToAndroid());
-					}
+					_tabLayout.BackgroundTintMode = null;
 				}
 				else
 				{
-					if (tintColor == null && _backgroundDrawable != null)
-						_tabLayout.SetBackground(_backgroundDrawable);
-					else if (tintColor != null)
-					{
-						// if you don't create a new drawable then SetBackgroundColor
-						// just sets the color on the background drawable that's saved
-						// it doesn't create a new one
-						if (_backgroundDrawable == null && _tabLayout.Background != null)
-						{
-							_backgroundDrawable = _tabLayout.Background;
-							_wrappedBackgroundDrawable = ADrawableCompat.Wrap(_tabLayout.Background).Mutate();
-						}
-
-						if (_wrappedBackgroundDrawable != null)
-							_tabLayout.Background = _wrappedBackgroundDrawable;
-
-						_tabLayout.SetBackgroundColor(tintColor.ToAndroid());
-					}
+					_tabLayout.BackgroundTintMode = PorterDuff.Mode.Src;
+					_tabLayout.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToAndroid());
 				}
 			}
 		}

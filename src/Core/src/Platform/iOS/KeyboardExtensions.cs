@@ -1,6 +1,7 @@
-﻿using UIKit;
+﻿using ObjCRuntime;
+using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class KeyboardExtensions
 	{
@@ -12,36 +13,36 @@ namespace Microsoft.Maui
 
 		public static void ApplyKeyboard(this IUITextInputTraits textInput, Keyboard keyboard)
 		{
-			textInput.AutocapitalizationType = UITextAutocapitalizationType.None;
-			textInput.AutocorrectionType = UITextAutocorrectionType.No;
-			textInput.SpellCheckingType = UITextSpellCheckingType.No;
-			textInput.KeyboardType = UIKeyboardType.Default;
+			textInput.SetAutocapitalizationType(UITextAutocapitalizationType.None);
+			textInput.SetAutocorrectionType(UITextAutocorrectionType.No);
+			textInput.SetSpellCheckingType(UITextSpellCheckingType.No);
+			textInput.SetKeyboardType(UIKeyboardType.Default);
 
 			if (keyboard == Keyboard.Default)
 			{
-				textInput.AutocapitalizationType = UITextAutocapitalizationType.Sentences;
-				textInput.AutocorrectionType = UITextAutocorrectionType.Default;
-				textInput.SpellCheckingType = UITextSpellCheckingType.Default;
+				textInput.SetAutocapitalizationType(UITextAutocapitalizationType.Sentences);
+				textInput.SetAutocorrectionType(UITextAutocorrectionType.Default);
+				textInput.SetSpellCheckingType(UITextSpellCheckingType.Default);
 			}
 			else if (keyboard == Keyboard.Chat)
 			{
-				textInput.AutocapitalizationType = UITextAutocapitalizationType.Sentences;
-				textInput.AutocorrectionType = UITextAutocorrectionType.Yes;
+				textInput.SetAutocapitalizationType(UITextAutocapitalizationType.Sentences);
+				textInput.SetAutocorrectionType(UITextAutocorrectionType.Yes);
 			}
 			else if (keyboard == Keyboard.Email)
-				textInput.KeyboardType = UIKeyboardType.EmailAddress;
+				textInput.SetKeyboardType(UIKeyboardType.EmailAddress);
 			else if (keyboard == Keyboard.Numeric)
-				textInput.KeyboardType = UIKeyboardType.DecimalPad;
+				textInput.SetKeyboardType(UIKeyboardType.DecimalPad);
 			else if (keyboard == Keyboard.Telephone)
-				textInput.KeyboardType = UIKeyboardType.PhonePad;
+				textInput.SetKeyboardType(UIKeyboardType.PhonePad);
 			else if (keyboard == Keyboard.Text)
 			{
-				textInput.AutocapitalizationType = UITextAutocapitalizationType.Sentences;
-				textInput.AutocorrectionType = UITextAutocorrectionType.Yes;
-				textInput.SpellCheckingType = UITextSpellCheckingType.Yes;
+				textInput.SetAutocapitalizationType(UITextAutocapitalizationType.Sentences);
+				textInput.SetAutocorrectionType(UITextAutocorrectionType.Yes);
+				textInput.SetSpellCheckingType(UITextSpellCheckingType.Yes);
 			}
 			else if (keyboard == Keyboard.Url)
-				textInput.KeyboardType = UIKeyboardType.Url;
+				textInput.SetKeyboardType(UIKeyboardType.Url);
 			else if (keyboard is CustomKeyboard)
 			{
 				var custom = (CustomKeyboard)keyboard;
@@ -67,9 +68,9 @@ namespace Microsoft.Maui
 				else if (capitalizedNone)
 					capSettings = UITextAutocapitalizationType.None;
 
-				textInput.AutocapitalizationType = capSettings;
-				textInput.AutocorrectionType = suggestionsEnabled ? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
-				textInput.SpellCheckingType = spellcheckEnabled ? UITextSpellCheckingType.Yes : UITextSpellCheckingType.No;
+				textInput.SetAutocapitalizationType(capSettings);
+				textInput.SetAutocorrectionType(suggestionsEnabled ? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No);
+				textInput.SetSpellCheckingType(spellcheckEnabled ? UITextSpellCheckingType.Yes : UITextSpellCheckingType.No);
 			}
 		}
 

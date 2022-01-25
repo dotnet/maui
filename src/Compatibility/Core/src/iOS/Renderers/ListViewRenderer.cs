@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
@@ -17,6 +18,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.List
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer instead")]
 	public class ListViewRenderer : ViewRenderer<ListView, UITableView>
 	{
 		const int DefaultRowHeight = 44;
@@ -122,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 				return;
 
-			_backgroundUIView.RemoveBackgroundLayer();
+			BrushExtensions.RemoveBackgroundLayer(_backgroundUIView);
 
 			if (!Brush.IsNullOrEmpty(brush))
 			{
@@ -148,7 +150,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (backgroundLayer != null)
 					{
 						_backgroundUIView.BackgroundColor = UIColor.Clear;
-						_backgroundUIView.InsertBackgroundLayer(backgroundLayer, 0);
+						BrushExtensions.InsertBackgroundLayer(_backgroundUIView, backgroundLayer, 0);
 					}
 				}
 			}
@@ -1532,6 +1534,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer.FormsUITableViewController instead")]
 	internal class FormsUITableViewController : UITableViewController
 	{
 		ListView _list;

@@ -46,13 +46,6 @@
     <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
-  <!-- HACK: Do not copy the native bootstrap files -->
-  <Target Name="_RemoveWasdkBootstrapDll" BeforeTargets="ResolveReferences">
-    <ItemGroup>
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'Microsoft.WindowsAppRuntime.Bootstrap.dll'" />
-    </ItemGroup>
-  </Target>
-
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
   <ItemGroup>
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />

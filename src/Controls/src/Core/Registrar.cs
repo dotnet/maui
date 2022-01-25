@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
@@ -360,19 +361,20 @@ namespace Microsoft.Maui.Controls.Internals
 			Effects[resolutionName + "." + id] = effectType;
 		}
 
-		public static void RegisterAll(Type[] attrTypes)
+		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
 		{
-			RegisterAll(attrTypes, default(InitializationFlags));
+			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
-		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags)
+		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(
 				Device.GetAssemblies(),
 				Device.PlatformServices.GetType().GetTypeInfo().Assembly,
 				attrTypes,
 				flags,
-				null);
+				null,
+				fontRegistrar);
 		}
 
 		internal static void RegisterAll(
@@ -380,7 +382,8 @@ namespace Microsoft.Maui.Controls.Internals
 			Assembly defaultRendererAssembly,
 			Type[] attrTypes,
 			InitializationFlags flags,
-			Action<(Type handler, Type target)> viewRegistered)
+			Action<(Type handler, Type target)> viewRegistered,
+			IFontRegistrar fontRegistrar = null)
 		{
 			Profile.FrameBegin();
 
@@ -395,6 +398,9 @@ namespace Microsoft.Maui.Controls.Internals
 				assemblies[indexOfExecuting] = assemblies[0];
 				assemblies[0] = defaultRendererAssembly;
 			}
+
+			if (fontRegistrar == null)
+				fontRegistrar = Application.Current?.FindMauiContext()?.Services?.GetService<IFontRegistrar>();
 
 			// Don't use LINQ for performance reasons
 			// Naive implementation can easily take over a second to run
@@ -418,7 +424,8 @@ namespace Microsoft.Maui.Controls.Internals
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							CompatServiceProvider.RegisterFont(fa.FontFileName, fa.Alias, assembly);
+							if (fontRegistrar != null)
+								fontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{

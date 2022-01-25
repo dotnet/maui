@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var selectedBackgroundView = new UIView
 			{
-				BackgroundColor = ColorExtensions.Gray
+				BackgroundColor = Maui.Platform.ColorExtensions.Gray
 			};
 
 			SelectedBackgroundView = selectedBackgroundView;

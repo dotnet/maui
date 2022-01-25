@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1691, "CarouselPage iOS CurrentPage bug")]
-	public class Issue1691 : TestCarouselPage
+	internal class Issue1691 : TestCarouselPage
 	{
 		int _currentIndex;
 		int _page = 9;

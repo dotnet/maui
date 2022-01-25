@@ -21,10 +21,8 @@ namespace Microsoft.Maui.Essentials
 			var intent = CreateIntent(message?.Body, message?.Recipients);
 
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-#if __ANDROID_24__
 			if (Platform.HasApiLevelN)
 				flags |= ActivityFlags.LaunchAdjacent;
-#endif
 			intent.SetFlags(flags);
 
 			Platform.AppContext.StartActivity(intent);
@@ -38,7 +36,7 @@ namespace Microsoft.Maui.Essentials
 
 			body = body ?? string.Empty;
 
-			if (Platform.HasApiLevel(BuildVersionCodes.Kitkat) && recipients.All(x => string.IsNullOrWhiteSpace(x)))
+			if (recipients.All(x => string.IsNullOrWhiteSpace(x)))
 			{
 				var packageName = Telephony.Sms.GetDefaultSmsPackage(Platform.AppContext);
 				if (!string.IsNullOrWhiteSpace(packageName))

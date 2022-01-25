@@ -1,0 +1,105 @@
+name: Bug Report
+description: File a bug report
+labels: ["t/bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please make sure to add as much detail as you can, preferably with a [reproduction](https://github.com/dotnet/maui/blob/main/.github/repro.md). This will help us diagnose the issue faster and thus resolve it quicker.
+        
+        If this is a bug in Xamarin.Forms, please [open the issue in the Xamarin.Forms repo](https://github.com/xamarin/Xamarin.Forms/issues/new?assignees=&labels=s%2Funverified%2C+t%2Fbug+%3Abug%3A&template=bug_report.md&title=[Bug]+).
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots and videos as well. We love [reproduction projects](https://github.com/dotnet/maui/blob/main/.github/repro.md), please provide them through a GitHub repo and link that here.
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: Steps to Reproduce
+      description: Describe all the steps we need to take to show the behavior that you have observed.
+      placeholder: | 
+        1. Create a File > New .NET MAUI App
+        2. Add a `Button` like so: `<Button Text="this is a bug" />`
+        3. Click the added button and observe the bug 🐞
+    validations:
+      required: true
+  - type: dropdown
+    id: version-with-bug
+    attributes:
+      label: Version with bug
+      description: In what version do you see this issue?
+      options:
+        - Preview 7
+        - Preview 8
+        - Preview 9
+        - Preview 10
+        - Preview 11
+        - Preview 12 (current)
+        - Preview 13
+        - Release Candidate 1
+        - Release Candidate 2
+        - Unknown/Other (please specify)
+    validations:
+      required: true
+  - type: dropdown
+    id: version-that-worked
+    attributes:
+      label: Last version that worked well
+      description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.
+      options:
+        - Preview 7
+        - Preview 8
+        - Preview 9
+        - Preview 10
+        - Preview 11
+        - Preview 12 (current)
+        - Preview 13
+        - Release Candidate 1
+        - Release Candidate 2
+        - Unknown/Other
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms-affected
+    attributes:
+      label: Affected platforms
+      description: Select all or any platform that you see this issue on. This helps us determine if it's something platform-specific or in the core. If you were only able to test on 1 platform, please check the last option to inform us about that.
+      multiple: true
+      options:
+        - iOS
+        - Android
+        - Windows
+        - macOS
+        - Other (Tizen, Linux, etc. not supported by Microsoft directly)
+        - I was *not* able test on other platforms
+    validations:
+      required: true
+  - type: input
+    id: platform-versions
+    attributes:
+      label: Affected platform versions
+      description: Please provide the version numbers of the platforms you see this issue on.
+      placeholder: E.g. iOS 15, Android 11 and up, Windows SDK 10.0.17134.0, etc.
+    validations:
+      required: true
+      email: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Did you find any workaround?
+      description: Did you find any workaround for this issue? This can unblock other people while waiting for this issue to be resolved or even give us a hint on how to fix this.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: markdown
+    attributes:
+      value: |
+        By opening the issue you agree to follow this project's [Code of Conduct](https://github.com/dotnet/maui/blob/main/.github/CODE_OF_CONDUCT.md)

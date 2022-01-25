@@ -60,6 +60,26 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public static readonly BindableProperty IsClippedToBoundsProperty =
+			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
+				propertyChanged: IsClippedToBoundsPropertyChanged);
+
+		public bool IsClippedToBounds
+		{
+			get => (bool)GetValue(IsClippedToBoundsProperty);
+			set => SetValue(IsClippedToBoundsProperty, value);
+		}
+
+		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
+		{
+			if (bindableObject is IView view)
+			{
+				view.Handler?.UpdateValue(nameof(Maui.ILayout.ClipsToBounds));
+			}
+		}
+
+		bool Maui.ILayout.ClipsToBounds => IsClippedToBounds;
+
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		public Thickness Padding
@@ -98,12 +118,6 @@ namespace Microsoft.Maui.Controls
 
 			var index = _children.Count;
 			_children.Add(child);
-
-			if (child is Element element)
-			{
-				element.Parent = this;
-				VisualDiagnostics.OnChildAdded(this, element, index);
-			}
 
 			OnAdd(index, child);
 		}
@@ -145,12 +159,6 @@ namespace Microsoft.Maui.Controls
 
 			_children.Insert(index, child);
 
-			if (child is Element element)
-			{
-				element.Parent = this;
-				VisualDiagnostics.OnChildAdded(this, element);
-			}
-
 			OnInsert(index, child);
 		}
 
@@ -182,19 +190,18 @@ namespace Microsoft.Maui.Controls
 
 			_children.RemoveAt(index);
 
-			if (child is Element element)
-			{
-				element.Parent = null;
-				VisualDiagnostics.OnChildRemoved(this, element, index);
-			}
-
 			OnRemove(index, child);
 		}
 
 		protected virtual void OnAdd(int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(nameof(ILayoutHandler.Add), args);
+			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
+
+			// Take care of the Element internal bookkeeping
+			if (view is Element element)
+			{
+				OnChildAdded(element);
+			}
 		}
 
 		protected virtual void OnClear()
@@ -204,20 +211,35 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnRemove(int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(nameof(ILayoutHandler.Remove), args);
+			NotifyHandler(nameof(ILayoutHandler.Remove), index, view);
+
+			// Take care of the Element internal bookkeeping
+			if (view is Element element)
+			{
+				OnChildRemoved(element, index);
+			}
 		}
 
 		protected virtual void OnInsert(int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(nameof(ILayoutHandler.Insert), args);
+			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
+
+			// Take care of the Element internal bookkeeping
+			if (view is Element element)
+			{
+				OnChildAdded(element);
+			}
 		}
 
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
 		{
+			NotifyHandler(nameof(ILayoutHandler.Update), index, view);
+		}
+
+		void NotifyHandler(string action, int index, IView view)
+		{
 			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(nameof(ILayoutHandler.Update), args);
+			Handler?.Invoke(action, args);
 		}
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)

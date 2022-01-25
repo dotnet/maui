@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using PlatformElement = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement;
 

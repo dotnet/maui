@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Foundation;
 using Microsoft.Maui.Controls.Compatibility.iOS.Resources;
+using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
@@ -11,6 +12,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ContextActionsCell instead")]
 	internal class ContextActionsCell : UITableViewCell, INativeElementView
 	{
 		public const string Key = "ContextActionsCell";

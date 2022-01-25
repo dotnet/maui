@@ -3,6 +3,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -129,7 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
 				// First we check whether the cell has the default selected background color; if it does, then we should check
 				// to see if the cell content is the VSM to set a selected color 
-				if (SelectedBackgroundView.BackgroundColor == ColorExtensions.Gray && IsUsingVSMForSelectionColor(view))
+				if (SelectedBackgroundView.BackgroundColor == Maui.Platform.ColorExtensions.Gray && IsUsingVSMForSelectionColor(view))
 				{
 					SelectedBackgroundView = new UIView
 					{

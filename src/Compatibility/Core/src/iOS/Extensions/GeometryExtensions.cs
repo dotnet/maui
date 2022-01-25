@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 
 #if __MOBILE__

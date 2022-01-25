@@ -7,15 +7,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewHandler.ViewMapper)
 		{
-#if __ANDROID__
 			[nameof(IEntry.Background)] = MapBackground,
-#endif
 			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
 			[nameof(IEntry.Font)] = MapFont,
-			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
-			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
+			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.Keyboard)] = MapKeyboard,

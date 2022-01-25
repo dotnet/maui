@@ -146,14 +146,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateBackgroundBrush()
 		{
 			if (Brush.IsNullOrEmpty(Element.Background))
-				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Maui.ColorExtensions.ToNative(Element.BackgroundColor) : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Element.BackgroundColor.ToNative() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
 			else
 				Control.BackgroundColor = Element.Background.ToBrush();
 		}
 
 		void UpdateBorderColor()
 		{
-			Control.BorderBrush = Element.BorderColor.IsNotDefault() ? Maui.ColorExtensions.ToNative(Element.BorderColor) : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+			Control.BorderBrush = Element.BorderColor.IsNotDefault() ? Element.BorderColor.ToNative() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
 		void UpdateBorderRadius()
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (content is View view)
 			{
-				Control.Content = new WrapperControl(view);
+				Control.Content = new ViewToHandlerConverter.WrapperControl(view);
 				return;
 			}
 
@@ -191,13 +191,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			Font fontToApply = font == Font.Default ? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)) : font;
 
-			Control.ApplyFont(fontToApply);
+			Control.ApplyFont(fontToApply, Element.RequireFontManager());
 			_fontApplied = true;
 		}
 
 		void UpdateTextColor()
 		{
-			Control.Foreground = Element.TextColor.IsNotDefault() ? Maui.ColorExtensions.ToNative(Element.TextColor) : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
+			Control.Foreground = Element.TextColor.IsNotDefault() ? Element.TextColor.ToNative() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 		}
 
 		void UpdatePadding()

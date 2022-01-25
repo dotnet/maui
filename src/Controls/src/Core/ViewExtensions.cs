@@ -177,7 +177,10 @@ namespace Microsoft.Maui.Controls
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
 		}
 
-		internal static IMauiContext? FindMauiContext(this Element element)
+		internal static IMauiContext RequireMauiContext(this Element element, bool fallbackToAppMauiContext = false)
+			=> element.FindMauiContext(fallbackToAppMauiContext) ?? throw new InvalidOperationException($"{nameof(IMauiContext)} not found.");
+
+		internal static IMauiContext? FindMauiContext(this Element element, bool fallbackToAppMauiContext = false)
 		{
 			if (element is Maui.IElement fe && fe.Handler?.MauiContext != null)
 				return fe.Handler.MauiContext;
@@ -186,6 +189,26 @@ namespace Microsoft.Maui.Controls
 			{
 				if (parent is Maui.IElement parentView && parentView.Handler?.MauiContext != null)
 					return parentView.Handler.MauiContext;
+			}
+
+			return fallbackToAppMauiContext ? Application.Current?.FindMauiContext() : default;
+		}
+
+		internal static IFontManager RequireFontManager(this Element element, bool fallbackToAppMauiContext = false)
+			=> element.RequireMauiContext(fallbackToAppMauiContext).Services.GetRequiredService<IFontManager>();
+
+		internal static double GetDefaultFontSize(this Element element)
+			=> element.FindMauiContext()?.Services?.GetService<IFontManager>()?.DefaultFontSize ?? 0d;
+
+		internal static Element? FindParentWith(this Element element, Func<Element, bool> withMatch, bool includeThis = false)
+		{
+			if (includeThis && withMatch(element))
+				return element;
+
+			foreach (var parent in element.GetParentsPath())
+			{
+				if (withMatch(parent))
+					return parent;
 			}
 
 			return default;

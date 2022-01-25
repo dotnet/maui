@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -214,7 +215,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, this);
+			this.GetDefaultFontSize();
 
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
@@ -392,7 +393,7 @@ namespace Microsoft.Maui.Controls
 				{
 					MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
 						RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-					MessagingCenter.Subscribe<Compatibility.Layout<View>, RadioButtonGroupValueChanged>(this,
+					MessagingCenter.Subscribe<Maui.ILayout, RadioButtonGroupValueChanged>(this,
 						RadioButtonGroup.GroupValueChangedMessage, HandleRadioButtonGroupValueChanged);
 				}
 
@@ -404,7 +405,7 @@ namespace Microsoft.Maui.Controls
 				if (!string.IsNullOrEmpty(oldGroupName))
 				{
 					MessagingCenter.Unsubscribe<RadioButton, RadioButtonGroupSelectionChanged>(this, RadioButtonGroup.GroupSelectionChangedMessage);
-					MessagingCenter.Unsubscribe<Compatibility.Layout<View>, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
+					MessagingCenter.Unsubscribe<Maui.ILayout, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
 				}
 			}
 		}
@@ -424,7 +425,7 @@ namespace Microsoft.Maui.Controls
 			IsChecked = false;
 		}
 
-		void HandleRadioButtonGroupValueChanged(Compatibility.Layout<View> layout, RadioButtonGroupValueChanged args)
+		void HandleRadioButtonGroupValueChanged(Maui.ILayout layout, RadioButtonGroupValueChanged args)
 		{
 			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || Value != args.Value || !MatchesScope(args))
 			{
@@ -547,7 +548,7 @@ namespace Microsoft.Maui.Controls
 			var content = Content;
 			if (content is View)
 			{
-				Log.Warning("RadioButton", $"Warning - {Device.RuntimePlatform} does not support {nameof(View)} as the {ContentProperty.PropertyName} property of {nameof(RadioButton)}; the return value of the ToString() method will be displayed instead.");
+				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", Device.RuntimePlatform, ContentProperty.PropertyName);
 			}
 
 			return content?.ToString();

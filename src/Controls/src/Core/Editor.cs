@@ -26,10 +26,16 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Editor), true, BindingMode.Default);
 
+		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(Editor), 0, validateValue: (b, v) => (int)v >= 0);
+
+		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(Editor), 0, validateValue: (b, v) => (int)v >= 0);
+
 		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
-			=> ((Editor)bindable)?.InvalidateMeasure());
+			=> ((Editor)bindable)?.UpdateAutoSizeOption());
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
+
+		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
@@ -51,6 +57,18 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsTextPredictionEnabledProperty, value); }
 		}
 
+		public int CursorPosition
+		{
+			get { return (int)GetValue(CursorPositionProperty); }
+			set { SetValue(CursorPositionProperty, value); }
+		}
+
+		public int SelectionLength
+		{
+			get { return (int)GetValue(SelectionLengthProperty); }
+			set { SetValue(SelectionLengthProperty, value); }
+		}
+
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
@@ -70,7 +88,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HorizontalTextAlignmentProperty, value); }
 		}
 
-		public TextAlignment VerticalTextAlignment { get; set; }
+		public TextAlignment VerticalTextAlignment
+		{
+			get { return (TextAlignment)GetValue(VerticalTextAlignmentProperty); }
+			set { SetValue(VerticalTextAlignmentProperty, value); }
+		}
 
 		public bool FontAutoScalingEnabled
 		{
@@ -80,7 +102,7 @@ namespace Microsoft.Maui.Controls
 
 		protected void UpdateAutoSizeOption()
 		{
-			if (AutoSize == EditorAutoSizeOption.TextChanges)
+			if (AutoSize == EditorAutoSizeOption.TextChanges && this.IsShimmed())
 			{
 				InvalidateMeasure();
 			}
@@ -96,7 +118,7 @@ namespace Microsoft.Maui.Controls
 			UpdateAutoSizeOption();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, (Editor)this);
+			this.GetDefaultFontSize();
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			UpdateAutoSizeOption();

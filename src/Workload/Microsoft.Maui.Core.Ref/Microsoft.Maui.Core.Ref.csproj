@@ -11,6 +11,7 @@
   <!-- Android-only files -->
   <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
     <_AndroidFiles Include="$(MauiRootDirectory)src/Core/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.aar" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Core/src/bin/$(Configuration)/net6.0-android/maui.aar" />
     <None Include="@(_AndroidFiles)" FullTfm="net6.0-android30.0" Tfm="net6.0-android" Profile="Android" />
   </ItemGroup>
 

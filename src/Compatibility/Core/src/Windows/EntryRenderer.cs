@@ -5,12 +5,12 @@ using Windows.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.InputView;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -406,7 +406,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				catch (Exception ex)
 				{
-					Log.Warning("Entry", $"Failed to set Control.SelectionLength from SelectionLength: {ex}");
+					Application.Current?.FindMauiContext()?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set Control.SelectionLength from SelectionLength");
 				}
 				finally
 				{
@@ -441,7 +441,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				catch (Exception ex)
 				{
-					Log.Warning("Entry", $"Failed to set Control.SelectionStart from CursorPosition: {ex}");
+					Application.Current?.FindMauiContext()?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set Control.SelectionStart from CursorPosition");
 				}
 				finally
 				{
@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception ex)
 			{
-				Log.Warning("Entry", $"Failed to set CursorPosition from renderer: {ex}");
+				Application.Current?.FindMauiContext()?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set CursorPosition from renderer");
 			}
 			finally
 			{
@@ -478,7 +478,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			catch (Exception ex)
 			{
-				Log.Warning("Entry", $"Failed to set SelectionLength from renderer: {ex}");
+				Application.Current?.FindMauiContext()?.CreateLogger<EntryRenderer>()?.LogWarning(ex, $"Failed to set SelectionLength from renderer");
 			}
 			finally
 			{

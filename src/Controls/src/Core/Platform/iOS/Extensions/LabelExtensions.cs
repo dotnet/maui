@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -16,7 +17,10 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 
 				default:
-					nativeLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					if (label.FormattedText != null)
+						nativeLabel.AttributedText = label.ToNSAttributedString();
+					else
+						nativeLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;
 			}
 		}

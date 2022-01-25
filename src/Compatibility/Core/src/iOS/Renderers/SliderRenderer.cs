@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using ObjCRuntime;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Slider;

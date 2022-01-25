@@ -26,6 +26,12 @@
 			handler.NativeView?.UpdateDrawable(graphicsView);
 		}
 
+		public static void MapFlowDirection(GraphicsViewHandler handler, IGraphicsView graphicsView)
+		{
+			handler.NativeView?.UpdateFlowDirection(graphicsView);
+			handler.NativeView?.InvalidateDrawable();
+		}
+
 		public static void MapInvalidate(GraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
 			handler.NativeView?.InvalidateDrawable();

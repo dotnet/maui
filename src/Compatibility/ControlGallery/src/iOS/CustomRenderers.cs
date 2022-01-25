@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -93,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	}
 
 
-	public class NativeiOSCellRenderer : ViewCellRenderer
+	public class NativeiOSCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		static NSString s_rid = new NSString("NativeCell");
 
@@ -598,7 +599,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class AccessoryViewCellRenderer : ViewCellRenderer
+	public class AccessoryViewCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
@@ -614,7 +615,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class NoSelectionViewCellRenderer : ViewCellRenderer
+	public class NoSelectionViewCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
@@ -713,7 +714,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class ExtendedEntryCellRenderer : EntryCellRenderer
+	public class ExtendedEntryCellRenderer : Handlers.Compatibility.EntryCellRenderer
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{

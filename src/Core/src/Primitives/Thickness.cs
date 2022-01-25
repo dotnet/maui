@@ -17,20 +17,13 @@ namespace Microsoft.Maui
 
 		public double Bottom { get; set; }
 
-		public double HorizontalThickness
-		{
-			get { return Left + Right; }
-		}
+		public double HorizontalThickness => Left + Right;
 
-		public double VerticalThickness
-		{
-			get { return Top + Bottom; }
-		}
+		public double VerticalThickness => Top + Bottom;
 
-		public bool IsEmpty
-		{
-			get { return Left == 0 && Top == 0 && Right == 0 && Bottom == 0; }
-		}
+		public bool IsEmpty => Left == 0 && Top == 0 && Right == 0 && Bottom == 0;
+
+		public bool IsNaN => double.IsNaN(Left) && double.IsNaN(Top) && double.IsNaN(Right) && double.IsNaN(Bottom);
 
 		public Thickness(double uniformSize) : this(uniformSize, uniformSize, uniformSize, uniformSize)
 		{
@@ -102,19 +95,13 @@ namespace Microsoft.Maui
 
 		public static Thickness Zero = new Thickness(0);
 
-		public static Thickness operator +(Thickness left, double addend)
-		{
-			if (addend == 0)
-			{
-				return left;
-			}
+		public static Thickness operator +(Thickness left, double addend) =>
+			new Thickness(left.Left + addend, left.Top + addend, left.Right + addend, left.Bottom + addend);
 
-			return new Thickness(left.Left + addend, left.Top + addend, left.Right + addend, left.Bottom + addend);
-		}
+		public static Thickness operator +(Thickness left, Thickness right) =>
+			new Thickness(left.Left + right.Left, left.Top + right.Top, left.Right + right.Right, left.Bottom + right.Bottom);
 
-		public static Thickness operator -(Thickness left, double addend)
-		{
-			return left + (-addend);
-		}
+		public static Thickness operator -(Thickness left, double addend) =>
+			left + (-addend);
 	}
 }

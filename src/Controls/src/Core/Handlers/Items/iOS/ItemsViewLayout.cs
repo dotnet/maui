@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -120,10 +122,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					return new UIEdgeInsets(0, 0, 0, (nfloat)gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section));
+					return new UIEdgeInsets(0, 0, 0, new ObjCRuntime.nfloat(gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section)));
 				}
 
-				return new UIEdgeInsets(0, 0, (nfloat)gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section), 0);
+				return new UIEdgeInsets(0, 0, new ObjCRuntime.nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
 			}
 
 			return UIEdgeInsets.Zero;
@@ -386,7 +388,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				catch (MonoTouchException ex) when (ex.Name == "NSRangeException")
 				{
-					Controls.Internals.Log.Warning("ItemsViewLayout", ex.ToString());
+					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
 				}
 
 				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();

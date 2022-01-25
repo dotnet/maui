@@ -7,7 +7,7 @@ using Foundation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -226,13 +226,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_useLegacyColorManagement)
 			{
 				var color = targetColor == null || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
-				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
+				UpdateAttributedPlaceholder(formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color));
 			}
 			else
 			{
 				// Using VSM color management; take whatever is in Element.PlaceholderColor
 				var color = targetColor == null ? _defaultPlaceholderColor : targetColor;
-				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
+				UpdateAttributedPlaceholder(formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color));
 			}
 
 			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing));

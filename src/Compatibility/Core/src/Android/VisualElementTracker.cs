@@ -113,13 +113,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Performance.Stop(reference, "Layout");
 			}
 
-			// If we're running sufficiently new Android, we have to make sure to update the ClipBounds to
-			// match the new size of the ViewGroup
-			if ((int)Forms.SdkInt >= 18)
-			{
-				UpdateClipToBounds();
-			}
-
+			// We have to make sure to update the ClipBounds to match the new size of the ViewGroup
+			UpdateClipToBounds();
 			UpdateClip();
 
 			Performance.Stop(reference);
@@ -296,32 +291,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			bool shouldClip = layout.IsClippedToBounds;
 
-			// setClipBounds is only available in API 18 +	
-			if ((int)Forms.SdkInt >= 18)
+			if (!(_renderer.View is ViewGroup viewGroup))
 			{
-				if (!(_renderer.View is ViewGroup viewGroup))
-				{
-					return;
-				}
-
-				// Forms layouts should not impose clipping on their children	
-				viewGroup.SetClipChildren(false);
-
-				// But if IsClippedToBounds is true, they _should_ enforce clipping at their own edges	
-				viewGroup.ClipBounds = shouldClip ? new global::Android.Graphics.Rect(0, 0, viewGroup.Width, viewGroup.Height) : null;
+				return;
 			}
-			else
-			{
-				// For everything in 17 and below, use the setClipChildren method	
-				if (!(_renderer.View.Parent is ViewGroup parent))
-					return;
 
-				if ((int)Forms.SdkInt >= 18 && parent.ClipChildren == shouldClip)
-					return;
+			// Forms layouts should not impose clipping on their children	
+			viewGroup.SetClipChildren(false);
 
-				parent.SetClipChildren(shouldClip);
-				parent.Invalidate();
-			}
+			// But if IsClippedToBounds is true, they _should_ enforce clipping at their own edges	
+			viewGroup.ClipBounds = shouldClip ? new global::Android.Graphics.Rect(0, 0, viewGroup.Width, viewGroup.Height) : null;
 		}
 
 		void UpdateClip()

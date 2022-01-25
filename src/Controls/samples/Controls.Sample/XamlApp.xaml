@@ -3,15 +3,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
+    xmlns:converters="clr-namespace:Controls.Sample.Converters"
     x:Class="Maui.Controls.Sample.XamlApp"
     windows:Application.ImageDirectory="Assets">
     <Application.Resources>
         <ResourceDictionary>
 
+            <converters:ThicknessConverter x:Key="ThicknessConverter" />
+
             <!-- COMMON COLORS -->
             <Color x:Key="BlackColor">#150303</Color>
             <Color x:Key="WhiteColor">#F8F8FF</Color>
-
 
             <!-- LIGHT COLORS -->
             <Color x:Key="LightAccentColor">#5639b0</Color>
@@ -39,11 +41,9 @@
                 <Setter Property="Margin" Value="12, 0" />
             </Style>
 
-            <Style x:Key="GalleryItemContainerStyle" TargetType="Frame">
+            <Style x:Key="GalleryItemContainerStyle" TargetType="Border">
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
-                <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource LightBorderColor}, Dark={StaticResource DarkBorderColor}}" />
-                <Setter Property="CornerRadius" Value="0" />
-                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightBorderColor}, Dark={StaticResource DarkBorderColor}}" />
                 <Setter Property="Padding" Value="12" />
                 <Setter Property="Margin" Value="12, 0, 12, 12" />
             </Style>

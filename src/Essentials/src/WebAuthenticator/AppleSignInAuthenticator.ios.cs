@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AuthenticationServices;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials

@@ -3,6 +3,7 @@ using Foundation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.LifecycleEvents;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Platform
 				? new UIWindow(windowScene)
 				: new UIWindow();
 
-			var mauiContext = applicationContext.MakeScoped(uiWindow);
+			var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);
 
 			applicationContext.Services?.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

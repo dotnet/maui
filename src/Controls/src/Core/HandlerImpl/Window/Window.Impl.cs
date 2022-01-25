@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -12,7 +13,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -21,19 +22,33 @@ namespace Microsoft.Maui.Controls
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanged: OnPageChanged);
 
+		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
+		Toolbar? _toolbar;
 
-		internal Toolbar Toolbar { get; }
+		IToolbar? IToolbarElement.Toolbar => Toolbar;
+		internal Toolbar? Toolbar
+		{
+			get => _toolbar; set
+			{
+				_toolbar = value;
+				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
+			}
+		}
+
+		public IReadOnlyCollection<IWindowOverlay> Overlays => _overlays.ToList().AsReadOnly();
+
+		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
 		public Window()
 		{
-			Toolbar = new Toolbar();
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
 			InternalChildren.CollectionChanged += OnCollectionChanged;
+			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
 		}
 
 		public Window(Page page)
@@ -82,6 +97,38 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == nameof(Page))
 				Handler?.UpdateValue(nameof(IWindow.Content));
+		}
+
+		/// <inheritdoc/>
+		public bool AddOverlay(IWindowOverlay overlay)
+		{
+			if (overlay is IVisualDiagnosticsOverlay)
+				return false;
+
+			// Add the overlay. If it's added, 
+			// Initalize the native layer if it wasn't already,
+			// and call invalidate so it will be drawn.
+			var result = _overlays.Add(overlay);
+			if (result)
+			{
+				overlay.Initialize();
+				overlay.Invalidate();
+			}
+
+			return result;
+		}
+
+		/// <inheritdoc/>
+		public bool RemoveOverlay(IWindowOverlay overlay)
+		{
+			if (overlay is IVisualDiagnosticsOverlay)
+				return false;
+
+			var result = _overlays.Remove(overlay);
+			if (result)
+				overlay.Deinitialize();
+
+			return result;
 		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
@@ -181,6 +228,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Created?.Invoke(this, EventArgs.Empty);
 			OnCreated();
+			Application?.SendStart();
 		}
 
 		void IWindow.Activated()
@@ -206,6 +254,8 @@ namespace Microsoft.Maui.Controls
 		{
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
+
+			Application?.RemoveWindow(this);
 		}
 
 		void IWindow.Resumed()
@@ -272,6 +322,11 @@ namespace Microsoft.Maui.Controls
 
 		bool IWindow.BackButtonClicked()
 		{
+			if (Navigation.ModalStack.Count > 0)
+			{
+				return Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendBackButtonPressed();
+			}
+
 			return this.Page?.SendBackButtonPressed() ?? false;
 		}
 
@@ -298,7 +353,6 @@ namespace Microsoft.Maui.Controls
 					return null;
 				}
 
-				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
 				Page? nextPage;
 				if (modal.NavigationProxy.ModalStack.Count == 1)
 				{
@@ -327,7 +381,6 @@ namespace Microsoft.Maui.Controls
 
 				if (modal.NavigationProxy.ModalStack.Count == 0)
 				{
-					_owner.Page?.SendNavigatingFrom(new NavigatingFromEventArgs());
 					modal.NavigationProxy.Inner = this;
 					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 					_owner.Page?.SendNavigatedFrom(new NavigatedFromEventArgs(modal));
@@ -336,7 +389,6 @@ namespace Microsoft.Maui.Controls
 				else
 				{
 					var previousModalPage = modal.NavigationProxy.ModalStack[modal.NavigationProxy.ModalStack.Count - 1];
-					previousModalPage.SendNavigatingFrom(new NavigatingFromEventArgs());
 					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 					modal.NavigationProxy.Inner = this;
 					previousModalPage.SendNavigatedFrom(new NavigatedFromEventArgs(modal));

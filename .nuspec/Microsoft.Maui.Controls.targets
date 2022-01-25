@@ -3,7 +3,7 @@
 	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
 
 	<PropertyGroup>
-		<_MinimumMauiWorkloadVersion>6.0.100-rc.2</_MinimumMauiWorkloadVersion>
+		<_MinimumMauiWorkloadVersion>6.0.200</_MinimumMauiWorkloadVersion>
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
@@ -13,8 +13,6 @@
 		<AndroidUseDefaultAotProfile Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(AndroidUseDefaultAotProfile)' == ''">false</AndroidUseDefaultAotProfile>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
-
 	<ItemGroup>
 		<ProjectCapability Include="Maui" Condition="'$(_ExcludeMauiProjectCapability)' != 'true'" />
 		<AvailableItemName Include="MauiXaml" />
@@ -22,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
-		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.SourceGen.dll" />
+		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.SourceGen.dll" IsImplicitlyDefined="true" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(MauiUseDefaultAotProfile)' != 'false'">
