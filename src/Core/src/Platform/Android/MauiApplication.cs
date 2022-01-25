@@ -10,7 +10,7 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiApplication : Application
+	public abstract class MauiApplication : Application, IPlatformApplication
 	{
 		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
