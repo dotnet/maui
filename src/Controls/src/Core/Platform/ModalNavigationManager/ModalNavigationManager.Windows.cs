@@ -68,6 +68,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (popping)
 				{
+					previousPage
+						.FindMauiContext()
+						?.GetNavigationRootManager()
+						?.Disconnect(previousPage);
+
 					previousPage.Handler = null;
 					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
 					// page will leak 
@@ -79,19 +84,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (!popping)
 				{
-					
-
 					var modalContext =
 						MauiContext
 							.MakeScoped(registerNewNavigationRoot: true);
-							
 
-					newPage.Toolbar ??= new Toolbar();
+					newPage.Toolbar ??= new Toolbar(newPage);
 					_ = newPage.Toolbar.ToNative(modalContext);
 
 					var windowManager = modalContext.GetNavigationRootManager();
 					windowManager.Connect(newPage);
 					Container.Children.Add(windowManager.RootView);
+
+					previousPage
+						.FindMauiContext()
+						?.GetNavigationRootManager()
+						?.UpdateAppTitleBar(false);
 				}
 				else
 				{
@@ -100,6 +107,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if(!Container.Children.Contains(windowManager.RootView))
 						Container.Children.Add(windowManager.RootView);
+
+					windowManager.UpdateAppTitleBar(true);
 				}
 
 				completedCallback?.Invoke();

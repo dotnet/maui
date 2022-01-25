@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui
 {
-	public interface IFontManager
+	public partial interface IFontManager
 	{
 		Typeface DefaultTypeface { get; }
 

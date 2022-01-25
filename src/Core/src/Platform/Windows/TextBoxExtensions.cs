@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePlaceholderColor(this TextBox textBox, IPlaceholder placeholder)
 		{
 			var brush = placeholder.PlaceholderColor?.ToNative();
+
 			if (brush is null)
 			{
 				// Windows.Foundation.UniversalApiContract < 5
@@ -177,13 +178,13 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateVerticalTextAlignment(this TextBox textBox, ITextAlignment textAlignment) =>
 			MauiTextBox.SetVerticalTextAlignment(textBox, textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment());
 
-		public static void UpdateCursorPosition(this TextBox textBox, IEntry entry)
+		public static void UpdateCursorPosition(this TextBox textBox, ITextInput entry)
 		{
 			if (textBox.SelectionStart != entry.CursorPosition)
 				textBox.SelectionStart = entry.CursorPosition;
 		}
 
-		public static void UpdateSelectionLength(this TextBox textBox, IEntry entry)
+		public static void UpdateSelectionLength(this TextBox textBox, ITextInput entry)
 		{
 			if (textBox.SelectionLength != entry.SelectionLength)
 				textBox.SelectionLength = entry.SelectionLength;

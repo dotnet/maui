@@ -16,7 +16,10 @@ namespace Maui.Controls.Sample.Pages.Base
 			{
 				if (SelectedItem != null)
 				{
-					await Navigation.PushAsync(PreparePage(SelectedItem));
+					if (Application.Current.MainPage is FlyoutPage fp)
+						await fp.Detail.Navigation.PushAsync(PreparePage(SelectedItem));
+					else
+						await Navigation.PushAsync(PreparePage(SelectedItem));
 
 					SelectedItem = null;
 				}
@@ -59,7 +62,7 @@ namespace Maui.Controls.Sample.Pages.Base
 
 		Page PreparePage(SectionModel model)
 		{
-			var page = (Page)Activator.CreateInstance(model.Type);
+			var page = (Handler?.MauiContext?.Services?.GetService(model.Type) as Page) ?? (Page)Activator.CreateInstance(model.Type);
 			page.Title = model.Title;
 
 			return page;

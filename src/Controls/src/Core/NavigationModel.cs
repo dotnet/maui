@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Internals
 			// Shell handles its own page life cycle events
 			// because you can pop multiple pages in a single
 			// request
-			if (_navTree.Count > 0 && 
+			if (_navTree.Count > 0 &&
 				_navTree[0].Count > 0 &&
 				_navTree[0][0] is not Shell)
 			{

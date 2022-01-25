@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Platform
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-
 		public static void UpdateTextColor(this EditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			editText.UpdateTextColor(entry.TextColor, defaultColor);
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this EditText editText, ITextAlignment textAlignment)
 		{
-			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
+			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment);
 		}
 
 		public static void UpdateVerticalTextAlignment(this EditText editText, ITextAlignment entry)
@@ -225,20 +224,20 @@ namespace Microsoft.Maui.Platform
 			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 
-		public static void UpdateCursorPosition(this EditText editText, IEntry entry)
+		public static void UpdateCursorPosition(this EditText editText, ITextInput entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)
 				UpdateCursorSelection(editText, entry);
 		}
 
-		public static void UpdateSelectionLength(this EditText editText, IEntry entry)
+		public static void UpdateSelectionLength(this EditText editText, ITextInput entry)
 		{
 			if ((editText.SelectionEnd - editText.SelectionStart) != entry.SelectionLength)
 				UpdateCursorSelection(editText, entry);
 		}
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
-		static void UpdateCursorSelection(EditText editText, IEntry entry)
+		static void UpdateCursorSelection(EditText editText, ITextInput entry)
 		{
 			if (!entry.IsReadOnly)// && editText.HasFocus)// || editText.RequestFocus()))//&& editText.RequestFocus())
 			{
@@ -252,7 +251,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static int GetSelectionStart(EditText editText, IEntry entry)
+		static int GetSelectionStart(EditText editText, ITextInput entry)
 		{
 			int start = editText.Length();
 			int cursorPosition = entry.CursorPosition;
@@ -272,7 +271,7 @@ namespace Microsoft.Maui.Platform
 			return start;
 		}
 
-		static int GetSelectionEnd(EditText editText, IEntry entry, int start)
+		static int GetSelectionEnd(EditText editText, ITextInput entry, int start)
 		{
 			int end = start;
 			int selectionLength = entry.SelectionLength;

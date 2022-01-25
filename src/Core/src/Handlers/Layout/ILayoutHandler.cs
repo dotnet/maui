@@ -7,5 +7,6 @@ namespace Microsoft.Maui
 		void Clear();
 		void Insert(int index, IView view);
 		void Update(int index, IView view);
+		void UpdateZIndex(IView view);
 	}
 }

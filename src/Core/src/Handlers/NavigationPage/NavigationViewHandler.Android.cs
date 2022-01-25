@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override View CreateNativeView()
 		{
-			LayoutInflater? li = MauiContext?.GetLayoutInflater();
+			LayoutInflater? li = CreateNavigationManager().MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
 			var view = li.Inflate(Resource.Layout.fragment_backstack, null).JavaCast<FragmentContainerView>();
@@ -22,42 +22,22 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		public override void SetMauiContext(IMauiContext mauiContext)
+		StackNavigationManager CreateNavigationManager()
 		{
-			var currentInflater = mauiContext.GetLayoutInflater();
-			var inflater =
-				new StackNavigationManager.StackLayoutInflater(
-					currentInflater,
-					currentInflater.Context,
-					CreateNavigationManager());
-
-			mauiContext =
-				mauiContext.MakeScoped(inflater, context: inflater.Context);
-
-			base.SetMauiContext(mauiContext);
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			return _stackNavigationManager ??= new StackNavigationManager(MauiContext);
 		}
-
-		StackNavigationManager CreateNavigationManager() =>
-			_stackNavigationManager ??= new StackNavigationManager();
 
 		protected override void ConnectHandler(View nativeView)
 		{
-			var rootContainer = MauiContext!.GetNavigationRootManager();
-			var navigationLayout = rootContainer.NavigationLayout;
-
 			base.ConnectHandler(nativeView);
-			_stackNavigationManager?.Connect(VirtualView, navigationLayout);
+			_stackNavigationManager?.Connect(VirtualView);
 		}
 
 		private protected override void OnDisconnectHandler(View nativeView)
 		{
 			_stackNavigationManager?.Disconnect();
 			base.OnDisconnectHandler(nativeView);
-		}
-
-		protected override void DisconnectHandler(View nativeView)
-		{
-			base.DisconnectHandler(nativeView);
 		}
 
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)

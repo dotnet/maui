@@ -62,5 +62,28 @@ namespace Maui.Controls.Sample.Pages
 		{
 			await Navigation.PopModalAsync();
 		}
+
+		async void PushFlyoutPageClicked(object sender, EventArgs e)
+		{
+			var modalPage = new ModalPage();
+			Page newMainPage = new NavigationPage(new ModalPage())
+			{
+				BackgroundColor =
+						(BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple,
+				Title = $"Navigation Root: {modalPage.Title}"
+			};
+
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = newMainPage,
+				Flyout = new ContentPage()
+				{
+					Content = new Label() { Text = "Flyout Text" },
+					Title = "Flyout Title"
+				}
+			};
+
+			await Navigation.PushModalAsync(flyoutPage);
+		}
 	}
 }

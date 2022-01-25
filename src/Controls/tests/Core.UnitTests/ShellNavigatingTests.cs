@@ -4,7 +4,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -618,6 +621,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//cats/catdetails?name=3");
 
 			Assert.AreEqual("//animals/domestic/cats/catdetails", shell.CurrentState.Location.ToString());
+		}
+
+		[TestCase(typeof(PageWithDependency), typeof(PageWithDependency))]
+		[TestCase(typeof(PageWithDependency), typeof(Dependency))]
+		public async Task GlobalRouteWithDependencyResolution(Type typeForRouteName, Type type)
+		{
+			var serviceCollection = new ServiceCollection();
+			serviceCollection.AddTransient<Dependency>();
+			IServiceProvider services = serviceCollection.BuildServiceProvider();
+			var fakeMauiContext = Substitute.For<IMauiContext>();
+			var fakeHandler = Substitute.For<IElementHandler>();
+			fakeMauiContext.Services.Returns(services);
+			fakeHandler.MauiContext.Returns(fakeMauiContext);
+
+			var flyoutItem = CreateShellItem<FlyoutItem>();
+			flyoutItem.Items.Add(CreateShellContent(asImplicit: true, shellContentRoute: "cats"));
+			var shell = new TestShell
+			{
+				Items = { flyoutItem }
+			};
+			shell.Parent.Handler = fakeHandler;
+			var routeName = typeForRouteName.AssemblyQualifiedName;
+			Routing.RegisterRoute(routeName, type);
+			await shell.GoToAsync(routeName);
+
+			Assert.IsNotNull(shell.Navigation);
+			Assert.IsNotNull(shell.Navigation.NavigationStack);
+			var page = shell.Navigation.NavigationStack[1];
+			Assert.That(page, Is.Not.Null);
+			Assert.IsInstanceOf<PageWithDependency>(page);
+			Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
 		}
 
 		[Test]

@@ -22,12 +22,19 @@ namespace Microsoft.Maui.Controls
 
 		IAppIndexingProvider? _appIndexProvider;
 		ReadOnlyCollection<Element>? _logicalChildren;
+		bool _isStarted;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
-		public Application()
+		public Application() : this(true)
 		{
-			SetCurrentApplication(this);
+		}
+
+		internal Application(bool setCurrentApplication)
+		{
+			if (setCurrentApplication)
+				SetCurrentApplication(this);
+
 			_systemResources = new Lazy<IResourceDictionary>(() =>
 			{
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
@@ -337,6 +344,10 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendStart()
 		{
+			if (_isStarted)
+				return;
+
+			_isStarted = true;
 			OnStart();
 		}
 

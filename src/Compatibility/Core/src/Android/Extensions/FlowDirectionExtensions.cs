@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	{
 		internal static void UpdateFlowDirection(this AView view, IVisualElementController controller)
 		{
-			if (view == null || controller == null || (int)Forms.SdkInt < 17)
+			if (view == null || controller == null)
 				return;
 
 			if (controller is IView v)
@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			// if android:targetSdkVersion < 17 setting these has no effect
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
 			{
 				view.LayoutDirection = ALayoutDirection.Rtl;

@@ -73,12 +73,20 @@ namespace Microsoft.Maui.Essentials
 
 #if __IOS__ || __TVOS__
 
+		static Func<UIViewController> getCurrentController;
+
+		public static void Init(Func<UIViewController> getCurrentUIViewController)
+			=> getCurrentController = getCurrentUIViewController;
+
 		public static UIViewController GetCurrentUIViewController() =>
 			GetCurrentViewController(false);
 
 		internal static UIViewController GetCurrentViewController(bool throwIfNull = true)
 		{
-			UIViewController viewController = null;
+			var viewController = getCurrentController?.Invoke();
+
+			if (viewController != null)
+				return viewController;
 
 			var window = UIApplication.SharedApplication.KeyWindow;
 
@@ -138,5 +146,27 @@ namespace Microsoft.Maui.Essentials
 
 		internal static NSOperationQueue GetCurrentQueue() =>
 			NSOperationQueue.CurrentQueue ?? new NSOperationQueue();
+
+#if __IOS__
+		internal class UIPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
+		{
+			Action dismissHandler;
+
+			internal UIPresentationControllerDelegate(Action dismissHandler)
+				=> this.dismissHandler = dismissHandler;
+
+			public override void DidDismiss(UIPresentationController presentationController)
+			{
+				dismissHandler?.Invoke();
+				dismissHandler = null;
+			}
+
+			protected override void Dispose(bool disposing)
+			{
+				dismissHandler?.Invoke();
+				base.Dispose(disposing);
+			}
+		}
+#endif
 	}
 }

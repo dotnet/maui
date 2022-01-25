@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		CGSize _previousSize = CGSize.Empty;
 		CGSize _previousViewDidLayoutSize = CGSize.Empty;
 		UISplitViewControllerDisplayMode _previousDisplayMode = UISplitViewControllerDisplayMode.Automatic;
-
+		IFlyoutPageController FlyoutPageController => FlyoutPage;
 		Page PageController => Element as Page;
 		Element ElementController => Element as Element;
 		bool IsFlyoutVisible => !(_flyoutController?.View as EventedViewController.FlyoutView).IsCollapsed;
@@ -283,14 +283,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_flyoutWidth = (nfloat)Math.Max(_flyoutWidth, flyoutBounds.Width);
 
 				if (!flyoutBounds.IsEmpty)
-					FlyoutPage.FlyoutBounds = new Rectangle(0, 0, _flyoutWidth, flyoutBounds.Height);
+					FlyoutPageController.FlyoutBounds = new Rectangle(0, 0, _flyoutWidth, flyoutBounds.Height);
 			}
 
 			if (layoutDetails)
 			{
 				var detailsBounds = _detailController.View.Frame;
 				if (!detailsBounds.IsEmpty)
-					FlyoutPage.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
+					FlyoutPageController.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
 			}
 
 			if (_previousViewDidLayoutSize == CGSize.Empty)
@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_previousViewDidLayoutSize = View.Bounds.Size;
 
 				// make sure IsPresented matches state of Flyout View
-				if (FlyoutPage.CanChangeIsPresented && FlyoutPage.IsPresented != IsFlyoutVisible)
+				if (FlyoutPageController.CanChangeIsPresented && FlyoutPage.IsPresented != IsFlyoutVisible)
 					ElementController.SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, IsFlyoutVisible);
 			}
 
@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_previousDisplayMode = PreferredDisplayMode;
 
 				// make sure IsPresented matches state of Flyout View
-				if (FlyoutPage.CanChangeIsPresented && FlyoutPage.IsPresented != IsFlyoutVisible)
+				if (FlyoutPageController.CanChangeIsPresented && FlyoutPage.IsPresented != IsFlyoutVisible)
 					ElementController.SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, IsFlyoutVisible);
 			}
 		}
@@ -358,15 +358,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (previous == PreferredDisplayMode)
 				return;
 
-			if (!FlyoutPage.ShouldShowSplitMode)
-				FlyoutPage.CanChangeIsPresented = true;
+			if (!FlyoutPageController.ShouldShowSplitMode)
+				FlyoutPageController.CanChangeIsPresented = true;
 
 			FlyoutPage.UpdateFlyoutLayoutBehavior();
 		}
 
 		public override void ViewWillDisappear(bool animated)
 		{
-			if (IsFlyoutVisible && !FlyoutPage.ShouldShowSplitMode)
+			if (IsFlyoutVisible && !FlyoutPageController.ShouldShowSplitMode)
 				PerformButtonSelector();
 
 			base.ViewWillDisappear(animated);
@@ -383,9 +383,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// I tested this code on iOS9+ and it's never called
 			if (!Forms.IsiOS9OrNewer)
 			{
-				if (!FlyoutPage.ShouldShowSplitMode && IsFlyoutVisible)
+				if (!FlyoutPageController.ShouldShowSplitMode && IsFlyoutVisible)
 				{
-					FlyoutPage.CanChangeIsPresented = true;
+					FlyoutPageController.CanChangeIsPresented = true;
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.Automatic;
 				}
@@ -486,13 +486,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void FlyoutControllerDidAppear(object sender, EventArgs e)
 		{
-			if (FlyoutPage.CanChangeIsPresented && IsFlyoutVisible)
+			if (FlyoutPageController.CanChangeIsPresented && IsFlyoutVisible)
 				ElementController.SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, true);
 		}
 
 		void FlyoutControllerWillDisappear(object sender, EventArgs e)
 		{
-			if (FlyoutPage.CanChangeIsPresented && !IsFlyoutVisible)
+			if (FlyoutPageController.CanChangeIsPresented && !IsFlyoutVisible)
 				ElementController.SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, false);
 		}
 
@@ -503,7 +503,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void ToggleFlyout()
 		{
-			if (IsFlyoutVisible == FlyoutPage.IsPresented || FlyoutPage.ShouldShowSplitMode)
+			if (IsFlyoutVisible == FlyoutPage.IsPresented || FlyoutPageController.ShouldShowSplitMode)
 				return;
 
 			PerformButtonSelector();

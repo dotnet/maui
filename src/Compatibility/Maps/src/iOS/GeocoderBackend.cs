@@ -5,7 +5,7 @@ using Contacts;
 using CoreLocation;
 using Microsoft.Maui.Controls.Maps;
 
-#if __MOBILE__
+#if __MOBILE__ && !(MACCATALYST || MACOS || __MACCATALYST__)
 using AddressBookUI;
 #endif
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				if (placemarks == null)
 					placemarks = new CLPlacemark[0];
 				List<string> addresses = new List<string>();
-#if __MOBILE__
+#if __MOBILE__ && !(MACCATALYST || MACOS || __MACCATALYST__)
 #pragma warning disable BI1234 // Type or member is obsolete
 				addresses = placemarks.Select(p => ABAddressFormatting.ToString(p.AddressDictionary, false)).ToList();
 #pragma warning restore BI1234 // Type or member is obsolete

@@ -15,6 +15,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen.Android;
@@ -54,15 +55,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		const int TabletCrossover = 600;
 
-		static BuildVersionCodes? s_sdkInt;
-		static bool? s_is29OrNewer;
-		static bool? s_isJellyBeanMr1OrNewer;
-		static bool? s_isLollipopOrNewer;
-		static bool? s_isMarshmallowOrNewer;
-		static bool? s_isNougatOrNewer;
-		static bool? s_isOreoOrNewer;
-		static bool? s_isPieOrNewer;
-
 		// One per process; does not change, suitable for loading resources (e.g., ResourceProvider)
 		internal static Context ApplicationContext { get; private set; } = global::Android.App.Application.Context;
 		internal static IMauiContext MauiContext { get; private set; }
@@ -73,91 +65,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static Color _ColorButtonNormal = null;
 		public static Color ColorButtonNormalOverride { get; set; }
 
-		internal static BuildVersionCodes SdkInt
-		{
-			get
-			{
-				if (!s_sdkInt.HasValue)
-					s_sdkInt = Build.VERSION.SdkInt;
-				return (BuildVersionCodes)s_sdkInt;
-			}
-		}
+		internal static readonly bool IsMarshmallowOrNewer = OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
 
-		internal static bool Is29OrNewer
-		{
-			get
-			{
-				if (!s_is29OrNewer.HasValue)
-					s_is29OrNewer = (int)SdkInt >= 29;
-				return s_is29OrNewer.Value;
-			}
-		}
-
-		internal static bool IsJellyBeanMr1OrNewer
-		{
-			get
-			{
-				if (!s_isJellyBeanMr1OrNewer.HasValue)
-					s_isJellyBeanMr1OrNewer = SdkInt >= BuildVersionCodes.JellyBeanMr1;
-				return s_isJellyBeanMr1OrNewer.Value;
-			}
-		}
-
-		internal static bool IsLollipopOrNewer
-		{
-			get
-			{
-				if (!s_isLollipopOrNewer.HasValue)
-					s_isLollipopOrNewer = SdkInt >= BuildVersionCodes.Lollipop;
-				return s_isLollipopOrNewer.Value;
-			}
-		}
-
-		internal static bool IsMarshmallowOrNewer
-		{
-			get
-			{
-				if (!s_isMarshmallowOrNewer.HasValue)
-					s_isMarshmallowOrNewer = SdkInt >= BuildVersionCodes.M;
-				return s_isMarshmallowOrNewer.Value;
-			}
-		}
-
-		internal static bool IsNougatOrNewer
-		{
-			get
-			{
-				if (!s_isNougatOrNewer.HasValue)
-					s_isNougatOrNewer = SdkInt >= BuildVersionCodes.N;
-				return s_isNougatOrNewer.Value;
-			}
-		}
-
-		internal static bool IsOreoOrNewer
-		{
-			get
-			{
-				if (!s_isOreoOrNewer.HasValue)
-					s_isOreoOrNewer = SdkInt >= BuildVersionCodes.O;
-				return s_isOreoOrNewer.Value;
-			}
-		}
-
-		internal static bool IsPieOrNewer
-		{
-			get
-			{
-				if (!s_isPieOrNewer.HasValue)
-					s_isPieOrNewer = SdkInt >= BuildVersionCodes.P;
-				return s_isPieOrNewer.Value;
-			}
-		}
+		internal static readonly bool IsNougatOrNewer = OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.N);
 
 		public static float GetFontSizeNormal(Context context)
 		{
 			float size = 50;
-			if (!IsLollipopOrNewer)
-				return size;
 
 			// Android 5.0+
 			//this doesn't seem to work
@@ -238,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitializedRenderers = true;
 		}
 
-		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)
+		internal static void RegisterCompatRenderers(IMauiContext context, InitializationOptions? maybeOptions)
 		{
 			if (!IsInitializedRenderers)
 			{
@@ -277,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						typeof(ExportCellAttribute),
 						typeof(ExportImageSourceHandlerAttribute),
 						typeof(ExportFontAttribute)
-					});
+					}, context?.Services?.GetService<IFontRegistrar>());
 				}
 			}
 		}
@@ -321,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FramePartition("RegisterAll");
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers(maybeOptions);
+				RegisterCompatRenderers(context, maybeOptions);
 
 			Profile.FramePartition("Epilog");
 
@@ -385,7 +299,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				returnValue = TargetIdiom.TV;
 			else if (uiMode == UiMode.TypeDesk)
 				returnValue = TargetIdiom.Desktop;
-			else if (SdkInt >= BuildVersionCodes.KitkatWatch && uiMode == UiMode.TypeWatch)
+			else if (uiMode == UiMode.TypeWatch)
 				returnValue = TargetIdiom.Watch;
 
 			Device.SetIdiom(returnValue);
@@ -397,7 +311,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Color rc;
 			using (var value = new TypedValue())
 			{
-				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer) // Android 5.0+
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true)) // Android 5.0+
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
@@ -407,19 +321,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				else                    // fallback to old code if nothing works (don't know if that ever happens)
 				{
-					// Detect if legacy device and use appropriate accent color
 					// Hardcoded because could not get color from the theme drawable
-					var sdkVersion = (int)SdkInt;
-					if (sdkVersion <= 10)
-					{
-						// legacy theme button pressed color
-						rc = Color.FromArgb("#fffeaa0c");
-					}
-					else
-					{
-						// Holo dark light blue
-						rc = Color.FromArgb("#ff33b5e5");
-					}
+					// Holo dark light blue
+					rc = Color.FromArgb("#ff33b5e5");
 				}
 			}
 			return rc;
@@ -433,7 +337,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				using (var value = new TypedValue())
 				{
-					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorButtonNormal, value, true) && Forms.IsLollipopOrNewer) // Android 5.0+
+					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorButtonNormal, value, true)) // Android 5.0+
 					{
 						rc = Color.FromUint((uint)value.Data);
 					}

@@ -54,32 +54,32 @@
                 Grid.Row="1"
                 Text="Colors"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView Grid.Row="1" GridLayout.Column="1" Count="5" Position="2"  HorizontalOptions="Center" SelectedIndicatorColor="Red" IndicatorColor="Blue" Background="Yellow" />
+            <IndicatorView Grid.Row="1" Grid.Column="1" Count="5" Position="2"  HorizontalOptions="Center" SelectedIndicatorColor="Red" IndicatorColor="Blue" Background="Yellow" />
             <Label
                 Grid.Row="2"
                 Text="Indicator Shape"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView Grid.Row="2" GridLayout.Column="1" Count="5" Position="2"  HorizontalOptions="Center"  IndicatorsShape="Square"/>
+            <IndicatorView Grid.Row="2" Grid.Column="1" Count="5" Position="2"  HorizontalOptions="Center"  IndicatorsShape="Square"/>
             <Label
                 Grid.Row="3"
                 Text="Indicator Size"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView  Grid.Row="3" GridLayout.Column="1" Count="5" Position="2"  HorizontalOptions="Center"  IndicatorSize="15"/>
+            <IndicatorView  Grid.Row="3" Grid.Column="1" Count="5" Position="2"  HorizontalOptions="Center"  IndicatorSize="15"/>
             <Label
                 Grid.Row="4"
                 Text="Indicator HideSingle"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView Grid.Row="4" GridLayout.Column="1" Count="1" HorizontalOptions="Center" HideSingle="True"/>
+            <IndicatorView Grid.Row="4" Grid.Column="1" Count="1" HorizontalOptions="Center" HideSingle="True"/>
             <Label
                 Grid.Row="5"
                 Text="Indicator MaximumVisible -  7 of 10"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView Grid.Row="5" GridLayout.Column="1" Count="10" Position="3" MaximumVisible="7" HorizontalOptions="Center"/>
+            <IndicatorView Grid.Row="5" Grid.Column="1" Count="10" Position="3" MaximumVisible="7" HorizontalOptions="Center"/>
             <Label
                 Grid.Row="6"
                 Text="Indicator Template"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView Grid.Row="6" GridLayout.Column="1"
+            <IndicatorView Grid.Row="6" Grid.Column="1"
                    Count="5"
                    Position="2"
                    IndicatorColor="Transparent"

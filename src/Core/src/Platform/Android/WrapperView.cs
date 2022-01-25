@@ -5,6 +5,7 @@ using Android.Views;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
 using APath = Android.Graphics.Path;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Platform
 		Canvas _shadowCanvas;
 		Android.Graphics.Paint _shadowPaint;
 		bool _invalidateShadow;
+		AView BorderView;
 
 		public WrapperView(Context context)
 			: base(context)
@@ -44,6 +46,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
+			BorderView?.BringToFront();
 			if (ChildCount == 0 || GetChildAt(0) is not View child)
 				return;
 
@@ -52,6 +55,7 @@ namespace Microsoft.Maui.Platform
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
+			BorderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -111,6 +115,23 @@ namespace Microsoft.Maui.Platform
 		{
 			_invalidateShadow = true;
 			PostInvalidate();
+		}
+
+		partial void BorderChanged()
+		{
+			if (Border == null)
+			{
+				if (BorderView != null)
+					this.RemoveView(BorderView);
+				BorderView = null;
+				return;
+			}
+
+			if (BorderView == null)
+			{
+				this.AddView(BorderView = new AView(Context));
+			}
+			BorderView.UpdateMauiDrawable(Border);
 		}
 
 		void ClipChild(Canvas canvas)
