@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Handlers
 			if (nativeWebView.CanGoForward())
 				nativeWebView.GoForward();
 		}
-	
+
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
 			// TODO: Sync Cookies

@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 			});
 
-			if(parentFound != null)
+			if (parentFound != null)
 			{
 				itemContentView?.CallOnClick();
 			}

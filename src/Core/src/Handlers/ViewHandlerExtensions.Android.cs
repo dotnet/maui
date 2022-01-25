@@ -1,6 +1,6 @@
-﻿using NativeView = Android.Views.View;
-using Android.Views;
+﻿using Android.Views;
 using Microsoft.Maui.Graphics;
+using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui
 {

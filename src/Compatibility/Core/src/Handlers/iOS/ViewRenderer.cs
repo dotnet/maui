@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.LayoutSubviews();
 			var platformView = (this as IElementHandler).NativeView as UIView;
-			if (platformView !=  null && Element != null)
+			if (platformView != null && Element != null)
 			{
 				platformView.Frame = new CoreGraphics.CGRect(0, 0, (nfloat)Element.Width, (nfloat)Element.Height);
 			}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_nativeView = control;
 
-			if(Control != null)
+			if (Control != null)
 				AddSubview(Control);
 		}
 

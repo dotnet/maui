@@ -53,7 +53,7 @@
   <Target Name="_GenerateBundledVersions"
       BeforeTargets="Build;AssignTargetPaths"
       DependsOnTargets="SetVersions"
-      Inputs="$(MSBuildProjectFile);Sdk/BundledVersions.in.targets"
+      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/BundledVersions.in.targets"
       Outputs="$(IntermediateOutputPath)BundledVersions.targets">
     <ReplaceText
         Input="Sdk/BundledVersions.in.targets"

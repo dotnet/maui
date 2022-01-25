@@ -1533,7 +1533,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				item.Frame = Bounds;
 		}
 	}
-	
+
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer.FormsUITableViewController instead")]
 	internal class FormsUITableViewController : UITableViewController
 	{
