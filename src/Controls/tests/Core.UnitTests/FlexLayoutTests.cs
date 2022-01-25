@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -446,17 +447,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
+			var handler = Substitute.For<IViewHandler>();
+			layout.Handler = handler;
+
 			layout.Layout(new Rectangle(0, 0, 300, 300));
 			Assert.That(label0.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 20)));
 			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(0, 20, 300, 20)));
 			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 40, 300, 20)));
 
 			label1.IsVisible = false;
+
+			// Changing the visibility of the label should have triggered a measure invalidation in the layout
+			AssertInvalidated(handler);
+
+			// Fake a native invalidation
+			layout.ForceLayout();
+
 			Assert.That(label0.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 20)));
 			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 20, 300, 20)));
 
 			label0.IsVisible = false;
 			label1.IsVisible = true;
+
+			// Verify the visibility changes invalidated the layout
+			AssertInvalidated(handler);
+
+			// Fake a native invalidation
+			layout.ForceLayout();
+
 			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 20)));
 			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 20, 300, 20)));
 		}
@@ -471,6 +489,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
+			var handler = Substitute.For<IViewHandler>();
+			layout.Handler = handler;
+
 			layout.Layout(new Rectangle(0, 0, 300, 300));
 			for (var i = 0; i < 3; i++)
 			{
@@ -481,6 +502,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				layout.Children.Add(box);
 				FlexLayout.SetGrow(box, 1f);
 			}
+
+			// Verify the changes invalidated the layout
+			AssertInvalidated(handler);
+
+			// Fake a native invalidation
+			layout.ForceLayout();
 
 			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rectangle(0, 200, 300, 100)));
 		}
@@ -518,6 +545,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Layout(new Rectangle(0, 0, 500, 300));
 			Assert.That(layout.Children[0].Frame, Is.EqualTo(new Rectangle(20, 10, 100, 20)));
 			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rectangle(380, 10, 100, 20)));
+		}
+
+		void AssertInvalidated(IViewHandler handler)
+		{
+			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
+			handler.ClearReceivedCalls();
 		}
 	}
 }

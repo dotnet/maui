@@ -49,23 +49,20 @@
 
   <!-- Removals -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
+    <Compile Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
     <!-- Explicitly include the platform code -->
-    <_MauiCompileToAdd
+    <Compile
         Condition=" '$(TargetPlatformIdentifier)' == 'android' and '$(AndroidProjectFolder)' != '' "
         Include="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <_MauiCompileToAdd
+    <Compile
         Condition=" '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' "
         Include="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <_MauiCompileToAdd
+    <Compile
         Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
         Include="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <_MauiCompileToAdd
+    <Compile
         Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' "
         Include="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <None Include="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" Exclude="@(_MauiCompileToAdd)" />
-    <Compile Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <Compile Include="@(_MauiCompileToAdd)" />
-    <_MauiCompileToAdd Remove="@(_MauiCompileToAdd)" />
 
     <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
     <_MauiXamlToRemove

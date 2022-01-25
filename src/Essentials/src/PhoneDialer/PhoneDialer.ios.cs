@@ -1,5 +1,4 @@
 using System;
-using CoreTelephony;
 using Foundation;
 using ObjCRuntime;
 using UIKit;

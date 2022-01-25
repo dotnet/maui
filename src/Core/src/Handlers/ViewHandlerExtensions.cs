@@ -10,7 +10,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui
 {
-	public static class ViewHandlerExtensions
+	public static partial class ViewHandlerExtensions
 	{
 		public static NativeView? GetWrappedNativeView(this IViewHandler viewHandler) =>
 			(NativeView?)(viewHandler.ContainerView ?? viewHandler.NativeView);

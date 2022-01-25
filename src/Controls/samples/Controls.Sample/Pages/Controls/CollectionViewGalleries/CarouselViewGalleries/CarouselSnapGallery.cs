@@ -67,7 +67,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			snapPointsAlignmentsStack.Children.Add(snapPointsAlignmentsLabel);
 			snapPointsAlignmentsStack.Children.Add(snapPointsAlignmentPicker);
 
-			GridLayout.SetRow(snapPointsAlignmentsStack, 1);
+			Grid.SetRow(snapPointsAlignmentsStack, 1);
 			layout.Children.Add(snapPointsAlignmentsStack);
 
 			var itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
@@ -89,7 +89,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				AutomationId = "TheCarouselView"
 			};
 
-			GridLayout.SetRow(carouselView, 2);
+			Grid.SetRow(carouselView, 2);
 			layout.Children.Add(carouselView);
 
 

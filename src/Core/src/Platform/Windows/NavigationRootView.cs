@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Platform
 	{
 		public NavigationRootView()
 		{
-
 		}
 
 		public Image? AppFontIcon { get; private set; }
@@ -26,23 +25,31 @@ namespace Microsoft.Maui.Platform
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();			
-			NavigationViewControl = (MauiNavigationView)GetTemplateChild("NavigationViewControl");
+			
 			AppTitleBar = (FrameworkElement)GetTemplateChild("AppTitleBar");
 			AppFontIcon = (Image)GetTemplateChild("AppFontIcon");
 			AppTitle = (TextBlock)GetTemplateChild("AppTitle");
 
-			NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
-			NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
-
 			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 
 			UpdateAppTitleBarMargins();
-			NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
-			NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
 
 			AppFontIcon.ImageOpened += OnImageOpened;
 			AppFontIcon.ImageFailed += OnImageFailed;
 			SetWindowTitle(_windowTitle);
+		}
+
+		protected override void OnContentChanged(object oldContent, object newContent)
+		{
+			base.OnContentChanged(oldContent, newContent);
+			if(newContent is MauiNavigationView mnv)
+			{
+				NavigationViewControl = mnv;
+				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
+				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
+				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
+				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
+			}
 		}
 
 		void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args) =>
@@ -85,7 +92,7 @@ namespace Microsoft.Maui.Platform
 			if (AppTitleBar == null)
 				return;
 
-			const int topIndent = 16;
+			//const int topIndent = 16;
 			const int expandedIndent = 48;
 			int minimalIndent = 0;
 
@@ -105,7 +112,11 @@ namespace Microsoft.Maui.Platform
 			// Set the TitleBar margin dependent on NavigationView display mode
 			if (NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
 			{
-				AppTitleBar.Margin = new WThickness(topIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
+				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
+			}
+			else if(NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+			{
+				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 			}
 			else if (NavigationViewControl.DisplayMode == NavigationViewDisplayMode.Minimal)
 			{

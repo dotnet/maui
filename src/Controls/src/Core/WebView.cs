@@ -84,14 +84,11 @@ namespace Microsoft.Maui.Controls
 
 		public void Eval(string script)
 		{
-			EventHandler<EvalRequested> handler = EvalRequested;
-			handler?.Invoke(this, new EvalRequested(script));
+			_evalRequested?.Invoke(this, new EvalRequested(script));
 		}
 
 		public async Task<string> EvaluateJavaScriptAsync(string script)
 		{
-			EvaluateJavaScriptDelegate handler = EvaluateJavaScriptRequested;
-
 			if (script == null)
 				return null;
 
@@ -102,7 +99,7 @@ namespace Microsoft.Maui.Controls
 				script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
 			}
 
-			var result = await handler?.Invoke(script);
+			var result = await _evaluateJavaScriptRequested?.Invoke(script);
 
 			//if the js function errored or returned null/undefined treat it as null
 			if (result == "null")
@@ -117,13 +114,22 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public void GoBack()
-			=> GoBackRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.GoBack));
+			_goBackRequested?.Invoke(this, EventArgs.Empty);
+		}
 
 		public void GoForward()
-			=> GoForwardRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.GoForward));
+			_goForwardRequested?.Invoke(this, EventArgs.Empty);
+		}
 
 		public void Reload()
-			=> ReloadRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.Reload));
+			_reloadRequested?.Invoke(this, EventArgs.Empty);
+		}
 
 		public event EventHandler<WebNavigatedEventArgs> Navigated;
 
@@ -157,38 +163,50 @@ namespace Microsoft.Maui.Controls
 			OnPropertyChanged(SourceProperty.PropertyName);
 		}
 
+		event EventHandler<EvalRequested> _evalRequested;
 		event EventHandler<EvalRequested> IWebViewController.EvalRequested
 		{
-			add { EvalRequested += value; }
-			remove { EvalRequested -= value; }
+			add { _evalRequested += value; }
+			remove { _evalRequested -= value; }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler<EvalRequested> EvalRequested;
+		event EvaluateJavaScriptDelegate _evaluateJavaScriptRequested;
+		event EvaluateJavaScriptDelegate IWebViewController.EvaluateJavaScriptRequested
+		{
+			add { _evaluateJavaScriptRequested += value; }
+			remove { _evaluateJavaScriptRequested -= value; }
+		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EvaluateJavaScriptDelegate EvaluateJavaScriptRequested;
+		event EventHandler _goBackRequested;
+		event EventHandler IWebViewController.GoBackRequested
+		{
+			add { _goBackRequested += value; }
+			remove { _goBackRequested -= value; }
+		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler GoBackRequested;
+		event EventHandler _goForwardRequested;
+		event EventHandler IWebViewController.GoForwardRequested
+		{
+			add { _goForwardRequested += value; }
+			remove { _goForwardRequested -= value; }
+		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler GoForwardRequested;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendNavigated(WebNavigatedEventArgs args)
+		void IWebViewController.SendNavigated(WebNavigatedEventArgs args)
 		{
 			Navigated?.Invoke(this, args);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendNavigating(WebNavigatingEventArgs args)
+		void IWebViewController.SendNavigating(WebNavigatingEventArgs args)
 		{
 			Navigating?.Invoke(this, args);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler ReloadRequested;
+		event EventHandler _reloadRequested;
+		event EventHandler IWebViewController.ReloadRequested
+		{
+			add { _reloadRequested += value; }
+			remove { _reloadRequested -= value; }
+		}
 
 		public IPlatformElementConfiguration<T, WebView> On<T>() where T : IConfigPlatform
 		{

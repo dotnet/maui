@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 		Element _parent;
 		bool _canRecycle; // aka IsDeclarative
+		readonly Type _type;
 
 		internal ElementTemplate()
 		{
@@ -20,6 +21,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException("type");
 
 			_canRecycle = true;
+			_type = type;
 
 			LoadTemplate = () => Activator.CreateInstance(type);
 		}
@@ -35,6 +37,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool CanRecycle => _canRecycle;
+		internal Type Type => _type;
+
 		Element IElement.Parent
 		{
 			get { return _parent; }
@@ -64,7 +68,7 @@ namespace Microsoft.Maui.Controls
 				// Returning a Label here instead of throwing an exception because HotReload may temporarily be in state
 				// where the user is creating a template; this keeps everything else (which expects a result from CreateContent)
 				// from crashing during that time. 
-				return new Label(); 
+				return new Label();
 			}
 
 			if (this is DataTemplateSelector)

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty LayoutBoundsProperty = BindableProperty.CreateAttached("LayoutBounds",
 			typeof(Rectangle), typeof(AbsoluteLayout), new Rectangle(0, 0, AutoSize, AutoSize), propertyChanged: LayoutBoundsPropertyChanged);
 
-		private static void LayoutBoundsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		static void LayoutBoundsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is View view && view.Parent is Maui.ILayout layout)
 			{
@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Controls
 			return (AbsoluteLayoutFlags)bindable.GetValue(LayoutFlagsProperty);
 		}
 
+		[System.ComponentModel.TypeConverter(typeof(BoundsTypeConverter))]
 		public static Rectangle GetLayoutBounds(BindableObject bindable)
 		{
 			return (Rectangle)bindable.GetValue(LayoutBoundsProperty);

@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// If the root page is being covered by a Modal Page then we don't worry about hiding the nav bar
 				bool coveredByModal = te.Toolbar.Parent is Window && Navigation.ModalStack.Count > 0;
-				ct.ApplyNavigationPage(this, HasAppeared || coveredByModal);
+				ct.ApplyNavigationPage(this, coveredByModal);
 			}
 		}
 

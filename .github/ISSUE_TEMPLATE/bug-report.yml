@@ -37,8 +37,12 @@ body:
         - Preview 7
         - Preview 8
         - Preview 9
-        - Preview 10 (current)
+        - Preview 10
         - Preview 11
+        - Preview 12 (current)
+        - Preview 13
+        - Release Candidate 1
+        - Release Candidate 2
         - Unknown/Other (please specify)
     validations:
       required: true
@@ -51,8 +55,12 @@ body:
         - Preview 7
         - Preview 8
         - Preview 9
-        - Preview 10 (current)
+        - Preview 10
         - Preview 11
+        - Preview 12 (current)
+        - Preview 13
+        - Release Candidate 1
+        - Release Candidate 2
         - Unknown/Other
     validations:
       required: true
