@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using CoreGraphics;
-using Microsoft.Maui.Graphics.PlatformCG;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform

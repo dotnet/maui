@@ -2,7 +2,6 @@ using System;
 using System.Drawing;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Graphics.PlatformCG;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform

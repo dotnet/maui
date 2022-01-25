@@ -1,10 +1,9 @@
 using System;
 using System.Drawing;
 using CoreGraphics;
-using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 
-namespace Microsoft.Maui.Graphics.PlatformCG
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public class DirectRenderer : IGraphicsRenderer
 	{
