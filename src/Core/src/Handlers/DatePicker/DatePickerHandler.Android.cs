@@ -27,15 +27,20 @@ namespace Microsoft.Maui.Handlers
 			return mauiDatePicker;
 		}
 
+		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
+
+		protected override void ConnectHandler(MauiDatePicker nativeView)
+		{
+			base.ConnectHandler(nativeView);
+
+			SetupDefaults(nativeView);
+		}
+
 		void SetupDefaults(MauiDatePicker nativeView)
 		{
 			_defaultBackground = nativeView.Background;
 			_defaultTextColors = nativeView.TextColors;
-
-
 		}
-
-		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
 
 		protected override void DisconnectHandler(MauiDatePicker nativeView)
 		{
@@ -55,6 +60,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (VirtualView != null)
 					VirtualView.Date = e.Date;
+
+				// TODO: Update IsFocused Property
+
 			}, year, month, day);
 
 			return dialog;
@@ -108,8 +116,11 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
+			if (_dialog != null && _dialog.IsShowing)
+				return;
+
 			var date = VirtualView.Date;
-			ShowPickerDialog(date.Year, date.Month, date.Day);
+			ShowPickerDialog(date.Year, date.Month - 1, date.Day);
 		}
 
 		void ShowPickerDialog(int year, int month, int day)

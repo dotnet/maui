@@ -113,11 +113,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
-			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
-			var mauiAssetFileProvider = new iOSMauiAssetFileProvider(contentRootDir);
-			IFileProvider fileProvider = customFileProvider == null
-				? mauiAssetFileProvider
-				: new CompositeFileProvider(customFileProvider, mauiAssetFileProvider);
+			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
 			_webviewManager = new IOSWebViewManager(this, NativeView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
 
@@ -131,6 +127,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			_webviewManager.Navigate("/");
+		}
+
+		internal IFileProvider CreateFileProvider(string contentRootDir)
+		{
+			return new iOSMauiAssetFileProvider(contentRootDir);
 		}
 
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler

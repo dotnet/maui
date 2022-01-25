@@ -23,6 +23,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
 using AView = Android.Views.View;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 				if (toolBarItem.IconImageSource is FileImageSource fileImageSource)
 				{
 					var name = IOPath.GetFileNameWithoutExtension(fileImageSource.File);
-					var id = context.GetDrawableId(name);
+					var id = ResourceManager.GetDrawableId(context, name);
 					if (id != 0)
 					{
 						if ((int)Build.VERSION.SdkInt >= 21)
@@ -367,7 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 	/// This renderer uses a view defined in /Resources/Layout/NativeAndroidCell.axml
 	/// as the cell layout
 	/// </summary>
-	public class NativeAndroidCellRenderer : ViewCellRenderer
+	public class NativeAndroidCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		public NativeAndroidCellRenderer()
 		{

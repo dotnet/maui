@@ -5,9 +5,11 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Platform;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
+using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer instead")]
 	public class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
 		public FrameRenderer()
@@ -69,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control != null)
 			{
 				Control.Background = backgroundColor.IsDefault() ?
-					new Microsoft.UI.Xaml.Media.SolidColorBrush((global::Windows.UI.Color)Resources["SystemAltHighColor"]) : Maui.ColorExtensions.ToNative(backgroundColor);
+					new Microsoft.UI.Xaml.Media.SolidColorBrush((global::Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToNative();
 			}
 		}
 
@@ -82,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Brush.IsNullOrEmpty(background))
 					Control.Background = backgroundColor.IsDefault() ?
-						new Microsoft.UI.Xaml.Media.SolidColorBrush((global::Windows.UI.Color)Resources["SystemAltHighColor"]) : Maui.ColorExtensions.ToNative(backgroundColor);
+						new Microsoft.UI.Xaml.Media.SolidColorBrush((global::Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToNative();
 				else
 					Control.Background = background.ToBrush();
 			}
@@ -101,12 +103,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (Element.BorderColor.IsNotDefault())
 			{
-				Control.BorderBrush = Maui.ColorExtensions.ToNative(Element.BorderColor);
+				Control.BorderBrush = Element.BorderColor.ToNative();
 				Control.BorderThickness = WinUIHelpers.CreateThickness(1);
 			}
 			else
 			{
-				Control.BorderBrush = Maui.ColorExtensions.ToNative(new Color(0, 0, 0, 0));
+				Control.BorderBrush = new Color(0, 0, 0, 0).ToNative();
 			}
 		}
 

@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Threading.Tasks;
 using CoreAnimation;
+using CoreGraphics;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
@@ -21,11 +25,14 @@ namespace Microsoft.Maui
 			uiControl.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateVisibility(this UIView nativeView, IView view)
+		public static void UpdateVisibility(this UIView nativeView, IView view) =>
+			ViewExtensions.UpdateVisibility(nativeView, view.Visibility);
+
+		public static void UpdateVisibility(this UIView nativeView, Visibility visibility)
 		{
 			var shouldLayout = false;
 
-			switch (view.Visibility)
+			switch (visibility)
 			{
 				case Visibility.Visible:
 					shouldLayout = nativeView.Inflate();
@@ -52,7 +59,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateBackground(this ContentView nativeView, IBorder border)
+		public static void UpdateBackground(this ContentView nativeView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -62,12 +69,13 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateBackground(this UIView nativeView, IView view)
+		public static void UpdateBackground(this UIView nativeView, IView view) =>
+			nativeView.UpdateBackground(view.Background);
+
+		public static void UpdateBackground(this UIView nativeView, Paint? paint)
 		{
 			// Remove previous background gradient layer if any
 			nativeView.RemoveBackgroundLayer();
-
-			var paint = view.Background;
 
 			if (paint.IsNullOrEmpty())
 				return;
@@ -146,6 +154,12 @@ namespace Microsoft.Maui
 				if (nativeView is WrapperView wrapperView)
 					wrapperView.Shadow = view.Shadow;
 			}
+		}
+		public static void UpdateBorder(this UIView nativeView, IView view)
+		{
+			var border = (view as IBorder)?.Border;
+			if (nativeView is WrapperView wrapperView)
+				wrapperView.Border = border;
 		}
 
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView
@@ -317,6 +331,110 @@ namespace Microsoft.Maui
 			{
 				view.Subviews[n].RemoveFromSuperview();
 			}
+		}
+
+		public static Task<byte[]?> RenderAsPNG(this IView view) => view != null ? view.RenderAsImage(true) : Task.FromResult<byte[]?>(null);
+
+		public static Task<byte[]?> RenderAsJPEG(this IView view) => view != null ? view.RenderAsImage(false) : Task.FromResult<byte[]?>(null);
+
+		public static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, true) : Task.FromResult<byte[]?>(null);
+
+		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, false) : Task.FromResult<byte[]?>(null);
+
+		static Task<byte[]?> RenderAsImage(this UIView nativeView, bool skipChildren, bool asPng)
+		{
+			byte[]? result;
+			if (asPng)
+				result = nativeView?.Window?.RenderAsPng(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+			else
+				result = nativeView?.Window?.RenderAsJpeg(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+			return Task.FromResult<byte[]?>(result);
+		}
+
+		static Task<byte[]?> RenderAsImage(this IView view, bool asPng)
+		{
+			var nativeView = view?.ToNative();
+			if (nativeView == null)
+				return Task.FromResult<byte[]?>(null);
+			var skipChildren = !(view is IView && !(view is ILayout));
+			return nativeView.RenderAsImage(skipChildren, asPng);
+		}
+
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view?.ToNative();
+			if (nativeView == null)
+			{
+				return new Rectangle();
+			}
+
+			return nativeView.GetNativeViewBounds();
+		}
+
+		internal static Rectangle GetNativeViewBounds(this UIView nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			var superview = nativeView;
+			while (superview.Superview is not null)
+			{
+				superview = superview.Superview;
+			}
+
+			var convertPoint = nativeView.ConvertRectToView(nativeView.Bounds, superview);
+
+			var X = convertPoint.X;
+			var Y = convertPoint.Y;
+			var Width = convertPoint.Width;
+			var Height = convertPoint.Height;
+
+			return new Rectangle(X, Y, Width, Height);
+		}
+
+
+		internal static Matrix4x4 GetViewTransform(this IView view)
+		{
+			var nativeView = view?.ToNative();
+			if (nativeView == null)
+				return new Matrix4x4();
+			return nativeView.Layer.GetViewTransform();
+		}
+
+		internal static Matrix4x4 GetViewTransform(this UIView view)
+			=> view.Layer.GetViewTransform();
+
+		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+			=> view.ToNative().GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox(this UIView? nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+			var nvb = nativeView.GetNativeViewBounds();
+			var transform = nativeView.GetViewTransform();
+			var radians = transform.ExtractAngleInRadians();
+			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
+			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
+			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
+		}
+
+		internal static T? GetParentOfType<T>(this UIView view)
+			where T : class
+		{
+			if (view is T t)
+				return t;
+
+			while (view != null)
+			{
+				T? parent = view.Superview as T;
+				if (parent != null)
+					return parent;
+
+				view = view.Superview;
+			}
+
+			return default(T);
 		}
 	}
 }

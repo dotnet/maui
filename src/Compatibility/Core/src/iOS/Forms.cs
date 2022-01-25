@@ -16,6 +16,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Animations;
+using Microsoft.Extensions.DependencyInjection;
 
 #if __MOBILE__
 using ObjCRuntime;
@@ -190,12 +191,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-			}
-
 #if __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
@@ -233,14 +228,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.PlatformInvalidator = platformServices;
 #endif
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers();
+				RegisterCompatRenderers(context);
 
 			ExpressionSearch.Default = new iOSExpressionSearch();
 
 			IsInitialized = true;
 		}
 
-		internal static void RegisterCompatRenderers()
+		internal static void RegisterCompatRenderers(IMauiContext context)
 		{
 			if (!IsInitializedRenderers)
 			{
@@ -253,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					typeof(ExportCellAttribute),
 					typeof(ExportImageSourceHandlerAttribute),
 					typeof(ExportFontAttribute)
-				});
+				}, context?.Services?.GetService<IFontRegistrar>());
 			}
 		}
 
@@ -304,11 +299,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				//close approximation to the new Size by multiplying by this scale factor
 				_fontScalingFactor = (double)UIFont.PreferredBody.PointSize / 17f;
 #endif
-			}
-
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
 			}
 
 			public Assembly[] GetAssemblies()
@@ -646,8 +636,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					return result;
 				}
 			}
-
-			public bool IsInvokeRequired => !NSThread.IsMain;
 
 #if __MOBILE__
 			public string RuntimePlatform => Device.iOS;

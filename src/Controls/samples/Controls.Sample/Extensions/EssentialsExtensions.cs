@@ -108,8 +108,6 @@ namespace Microsoft.Maui.Essentials
 
 #if WINDOWS
 				Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
-#elif __ANDROID__
-				SecureStorage.LegacyKeyHashFallback = _essentialsBuilder.UseLegaceSecureStorage;
 #endif
 
 				AppActions.OnAppAction += HandleOnAppAction;
@@ -142,7 +140,6 @@ namespace Microsoft.Maui.Essentials
 			internal bool TrackVersions;
 
 #pragma warning disable CS0414 // Remove unread private members
-			internal bool UseLegaceSecureStorage;
 			internal string MapServiceToken;
 #pragma warning restore CS0414 // Remove unread private members
 
@@ -167,12 +164,6 @@ namespace Microsoft.Maui.Essentials
 			public IEssentialsBuilder UseVersionTracking()
 			{
 				TrackVersions = true;
-				return this;
-			}
-
-			public IEssentialsBuilder UseLegacySecureStorage()
-			{
-				UseLegaceSecureStorage = true;
 				return this;
 			}
 		}

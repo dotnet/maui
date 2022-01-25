@@ -111,76 +111,90 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		static void GenerateXamlCodeBehind(ProjectItem projItem, Compilation compilation, SourceProductionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
 		{
-			using (var reader = File.OpenText(projItem.AdditionalText.Path))
+			var text = projItem.AdditionalText.GetText();
+			if (text == null)
+				return;
+			if (!TryParseXaml(text, compilation, xmlnsDefinitionCache, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
+				return;
+
+			var sb = new StringBuilder();
+			var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
+
+			if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
+				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+
+			if (XamlResourceIdOnly)
 			{
-				if (!TryParseXaml(reader, compilation, xmlnsDefinitionCache, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
-					return;
+				context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+				return;
+			}
 
-				var sb = new StringBuilder();
-				var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
+			if (rootType == null)
+				throw new Exception("Something went wrong");
 
-				if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
-					sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+			sb.AppendLine($"namespace {rootClrNamespace}");
+			sb.AppendLine("{");
+			sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
+			if (addXamlCompilationAttribute)
+				sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
+			if (hideFromIntellisense)
+				sb.AppendLine($"\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 
-				if (XamlResourceIdOnly)
-				{
-					context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
-					return;
-				}
+			sb.AppendLine($"\tpublic partial class {rootType} : {baseType}");
+			sb.AppendLine("\t{");
 
-				if (rootType == null)
-					throw new Exception("Something went wrong");
+			//optional default ctor
+			if (generateDefaultCtor)
+			{
+				sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+				sb.AppendLine($"\t\tpublic {rootType}()");
+				sb.AppendLine("\t\t{");
+				sb.AppendLine("\t\t\tInitializeComponent();");
+				sb.AppendLine("\t\t}");
+				sb.AppendLine();
+			}
 
-				sb.AppendLine($"namespace {rootClrNamespace}");
-				sb.AppendLine("{");
-				sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
-				if (addXamlCompilationAttribute)
-					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
-				if (hideFromIntellisense)
-					sb.AppendLine($"\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
-
-				sb.AppendLine($"\tpublic partial class {rootType} : {baseType}");
-				sb.AppendLine("\t{");
-
-				//optional default ctor
-				if (generateDefaultCtor)
+			//create fields
+			if (namedFields != null)
+				foreach ((var fname, var ftype, var faccess) in namedFields)
 				{
 					sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
-					sb.AppendLine($"\t\tpublic {rootType}()");
-					sb.AppendLine("\t\t{");
-					sb.AppendLine("\t\t\tInitializeComponent();");
-					sb.AppendLine("\t\t}");
+
+					sb.AppendLine($"\t\t{faccess} {ftype} {(CSharpKeywords.Contains(fname) ? "@" + fname : fname)};");
 					sb.AppendLine();
 				}
 
-				//create fields
-				if (namedFields != null)
-					foreach ((var fname, var ftype, var faccess) in namedFields)
-					{
-						sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+			//initializeComponent
+			sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 
-						sb.AppendLine($"\t\t{faccess} {ftype} {(CSharpKeywords.Contains(fname) ? "@" + fname : fname)};");
-						sb.AppendLine();
-					}
+			// add MemberNotNull attributes
+			if (namedFields != null)
+			{
+				sb.AppendLine($"#if NET5_0_OR_GREATER");
+				foreach ((var fname, _, _) in namedFields)
+				{
 
-				//initializeComponent
-				sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
-				sb.AppendLine("\t\tprivate void InitializeComponent()");
-				sb.AppendLine("\t\t{");
-				sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
-				if (namedFields != null)
-					foreach ((var fname, var ftype, var faccess) in namedFields)
-						sb.AppendLine($"\t\t\t{(CSharpKeywords.Contains(fname) ? "@" + fname : fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, \"{fname}\");");
+					sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({(CSharpKeywords.Contains(fname) ? "@" + fname : fname)}))]");
+				}
 
-				sb.AppendLine("\t\t}");
-				sb.AppendLine("\t}");
-				sb.AppendLine("}");
-
-				context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+				sb.AppendLine($"#endif");
 			}
+
+			sb.AppendLine("\t\tprivate void InitializeComponent()");
+			sb.AppendLine("\t\t{");
+			sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
+			if (namedFields != null)
+				foreach ((var fname, var ftype, var faccess) in namedFields)
+					sb.AppendLine($"\t\t\t{(CSharpKeywords.Contains(fname) ? "@" + fname : fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, \"{fname}\");");
+
+			sb.AppendLine("\t\t}");
+			sb.AppendLine("\t}");
+			sb.AppendLine("}");
+
+			context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 		}
 
-		static bool TryParseXaml(TextReader xaml, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
+		static bool TryParseXaml(SourceText text, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
 		{
 			rootType = null;
 			rootClrNamespace = null;
@@ -192,7 +206,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			baseType = null;
 
 			var xmlDoc = new XmlDocument();
-			xmlDoc.Load(xaml);
+			xmlDoc.LoadXml(text.ToString());
 
 			// if the following xml processing instruction is present
 			//

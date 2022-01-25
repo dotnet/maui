@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -96,6 +97,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
+			var handler = Substitute.For<IViewHandler>();
+			parent.Handler = handler;
+
 			var child1 = new Button
 			{
 				Text = "Test",
@@ -122,8 +126,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			child1.Margin = new Thickness(10, 20, 30, 40);
 
+			// Verify that the margin change invalidated the layout, and simulate a native layout change
+			AssertInvalidated(handler);
+			parent.ForceLayout();
+
 			Assert.AreEqual(new Rectangle(10, 20, 100, 50), child1.Bounds);
 			Assert.AreEqual(new Rectangle(5, 120, 980, 50), child2.Bounds);
+		}
+
+		void AssertInvalidated(IViewHandler handler)
+		{
+			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
+			handler.ClearReceivedCalls();
 		}
 	}
 }

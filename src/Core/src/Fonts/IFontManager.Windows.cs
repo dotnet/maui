@@ -2,11 +2,9 @@
 
 namespace Microsoft.Maui
 {
-	public interface IFontManager
+	public partial interface IFontManager
 	{
 		FontFamily DefaultFontFamily { get; }
-
-		double DefaultFontSize { get; }
 
 		FontFamily GetFontFamily(Font font);
 

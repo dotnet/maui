@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,15 +14,16 @@ namespace Microsoft.Maui.Controls
 	public class MarshalingObservableCollection : List<object>, INotifyCollectionChanged
 	{
 		readonly IList _internalCollection;
+		readonly IDispatcher _dispatcher;
 
 		public MarshalingObservableCollection(IList list)
 		{
 			if (!(list is INotifyCollectionChanged incc))
-			{
 				throw new ArgumentException($"{nameof(list)} must implement {nameof(INotifyCollectionChanged)}");
-			}
 
 			_internalCollection = list;
+			_dispatcher = Dispatcher.GetForCurrentThread();
+
 			incc.CollectionChanged += InternalCollectionChanged;
 
 			foreach (var item in _internalCollection)
@@ -57,14 +59,7 @@ namespace Microsoft.Maui.Controls
 				args = new ResetNotifyCollectionChangedEventArgs(items);
 			}
 
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => HandleCollectionChange(args));
-			}
-			else
-			{
-				HandleCollectionChange(args);
-			}
+			_dispatcher.DispatchIfRequired(() => HandleCollectionChange(args));
 		}
 
 		void HandleCollectionChange(NotifyCollectionChangedEventArgs args)

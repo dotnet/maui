@@ -4,7 +4,7 @@ using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static partial class MauiContextExtensions
 	{
@@ -51,9 +51,10 @@ namespace Microsoft.Maui
 		public static IMauiContext MakeScoped(this IMauiContext mauiContext,
 			LayoutInflater? layoutInflater = null,
 			FragmentManager? fragmentManager = null,
-			Android.Content.Context? context = null)
+			Android.Content.Context? context = null,
+			bool registerNewNavigationRoot = false)
 		{
-			var scopedContext = new MauiContext(mauiContext);
+			var scopedContext = new MauiContext(mauiContext.Services);
 
 			if (layoutInflater != null)
 				scopedContext.AddWeakSpecific(layoutInflater);
@@ -64,16 +65,34 @@ namespace Microsoft.Maui
 			if (context != null)
 				scopedContext.AddWeakSpecific(context);
 
+			if (registerNewNavigationRoot)
+			{
+				if (fragmentManager == null)
+					throw new InvalidOperationException("If you're creating a new Navigation Root you need to use a new Fragment Manager");
+
+				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
+			}
+
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow)
+		public static IMauiContext MakeScopededArgs<TArgs>(this IMauiContext mauiContext, TArgs args)
+			where TArgs : class
 		{
-			var scopedContext = new MauiContext(mauiContext.Services, nativeWindow, mauiContext);
-
-			scopedContext.AddWeakSpecific(nativeWindow);
-
+			var scopedContext = new MauiContext(mauiContext.Services);
+			scopedContext.AddWeakSpecific(args);
 			return scopedContext;
 		}
+
+		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
+		{
+			if (mauiContext.Context?.ApplicationContext is MauiApplication ma)
+				return ma.Services;
+
+			throw new InvalidOperationException("Unable to find Application Services");
+		}
+
+		public static Android.App.Activity GetNativeWindow(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<Android.App.Activity>();
 	}
 }

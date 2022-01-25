@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
-using FileAccess = System.IO.FileAccess;
-using FileMode = System.IO.FileMode;
-using FileShare = System.IO.FileShare;
-using Stream = System.IO.Stream;
 
 [assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
@@ -22,19 +15,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
-		Action<Action> invokeOnMainThread;
+		readonly IDispatcher _dispatcher;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
-		readonly bool _isInvokeRequired;
 
-		public MockPlatformServices(Action<Action> invokeOnMainThread = null,
+		public MockPlatformServices(
+			IDispatcher dispatcher = null,
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
-			bool useRealisticLabelMeasure = false, bool isInvokeRequired = false)
+			bool useRealisticLabelMeasure = false)
 		{
-			this.invokeOnMainThread = invokeOnMainThread;
+			_dispatcher = dispatcher ?? new MockDispatcher();
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
-			_isInvokeRequired = isInvokeRequired;
 		}
 
 		public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes)
@@ -42,7 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch (size)
 			{
 				case NamedSize.Default:
-					return 10;
+					return new MockFontManager().DefaultFontSize;
 				case NamedSize.Micro:
 					return 4;
 				case NamedSize.Small:
@@ -72,26 +64,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		public bool IsInvokeRequired
-		{
-			get { return _isInvokeRequired; }
-		}
-
 		public string RuntimePlatform { get; set; }
-
-		public void BeginInvokeOnMainThread(Action action)
-		{
-			if (invokeOnMainThread == null)
-				action();
-			else
-				invokeOnMainThread(action);
-		}
-
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			Timer timer = null;
-			TimerCallback onTimeout = o => BeginInvokeOnMainThread(() =>
+			TimerCallback onTimeout = o => _dispatcher.Dispatch(() =>
 			{
 				if (callback())
 					return;
@@ -176,6 +154,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MockApplication : Application
 	{
+		public static UnitTestLogger MockLogger;
+
 		public MockApplication()
 		{
 		}
@@ -197,6 +177,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Stop()
 		{
 			_enabled = false;
+		}
+	}
+
+	class MockDispatcher : IDispatcher
+	{
+		public bool IsDispatchRequired => false;
+
+		public bool Dispatch(Action action)
+		{
+			action();
+			return true;
 		}
 	}
 }

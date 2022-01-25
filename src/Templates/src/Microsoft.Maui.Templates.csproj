@@ -31,8 +31,8 @@
       <_TemplateJsonFileWithContent
           Include="@(_TemplateJsonFile)"
           Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
-              .Replace('WINDOWSAPPSDK_VERSION_VALUE', '$(_MicrosoftWindowsAppSdkVersion)')
-              .Replace('WIN2D_VERSION_VALUE', '$(MicrosoftGraphicsWin2DVersion)'))" />
+              .Replace('WINDOWSAPPSDK_VERSION_VALUE', '$(MicrosoftWindowsAppSDKPackageVersion)')
+              .Replace('WIN2D_VERSION_VALUE', '$(MicrosoftGraphicsWin2DPackageVersion)'))" />
     </ItemGroup>
     <WriteLinesToFile
         File="@(_TemplateJsonFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"

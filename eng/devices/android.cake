@@ -145,6 +145,9 @@ Task("Build")
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
+			MSBuildSettings = new DotNetCoreMSBuildSettings {
+				MaxCpuCount = 0
+			},
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
 				.Append("/bl:" + binlog),
@@ -155,6 +158,7 @@ Task("Build")
 	{
 		MSBuild(PROJECT.FullPath, c => {
 			c.Configuration = CONFIGURATION;
+			c.MaxCpuCount = 0;
 			c.Restore = true;
 			c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
 			if (!string.IsNullOrEmpty(TARGET_FRAMEWORK))

@@ -202,5 +202,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
 		}
+
+		int GetNativeCursorPosition(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+
+			if (textView != null)
+				return textView.SelectionEnd;
+
+			return -1;
+		}
 	}
 }

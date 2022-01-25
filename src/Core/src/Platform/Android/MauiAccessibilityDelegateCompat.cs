@@ -6,7 +6,7 @@ using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Handlers;
 using NativeView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiAccessibilityDelegateCompat : AccessibilityDelegateCompatWrapper
 	{

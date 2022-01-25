@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		bool ICollection<IView>.IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
 		public IView this[int index] { get => _children[index]; set => _children[index] = (T)value; }
 
+		bool Maui.ILayout.ClipsToBounds => IsClippedToBounds;
+
 		void ICollection<IView>.Add(IView child)
 		{
 			if (child is T view)

@@ -5,7 +5,7 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     x:Name="HomePage"
     BackgroundColor="{DynamicResource BackgroundColor}"
-    NavigationPage.IconColor="Pink"
+    NavigationPage.IconColor="White"
     Title="Gallery">
     <views:BasePage.Resources>
         <ResourceDictionary>

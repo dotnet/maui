@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 
 		public FontSlant Slant { get; }
 
-		public bool IsDefault => Family == null && Size == 0 && Slant == FontSlant.Default && Weight == FontWeight.Regular;
+		public bool IsDefault => Family == null && (Size == 0 || Size == double.NaN) && Slant == FontSlant.Default && Weight == FontWeight.Regular;
 
 		static Font _default = default(Font).WithWeight(FontWeight.Regular);
 		public static Font Default => _default;

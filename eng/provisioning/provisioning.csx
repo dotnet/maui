@@ -7,7 +7,7 @@ if (IsMac)
  			.Source (_ => "https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.107.macos10.xamarin.universal.pkg");
  	}
 	ForceJavaCleanup();
-	OpenJDK ("1.8.0-40");
+	MicrosoftOpenJdk ("11.0.13.8.1");
 
 	string releaseChannel = Environment.GetEnvironmentVariable ("CHANNEL");
 	Console.WriteLine ("ANDROID_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("ANDROID_SDK_MAC"));

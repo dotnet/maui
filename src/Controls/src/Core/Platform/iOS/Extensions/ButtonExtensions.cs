@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Button;
@@ -51,11 +52,13 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)(button.Padding.Top + spacingVertical / 2),
-				(float)(button.Padding.Left + spacingHorizontal / 2),
-				(float)(button.Padding.Bottom + spacingVertical / 2),
-				(float)(button.Padding.Right + spacingHorizontal / 2));
+			var padding = button.Padding;
+			if (padding.IsNaN)
+				padding = ButtonHandler.DefaultPadding;
+
+			padding += new Thickness(spacingHorizontal / 2, spacingVertical / 2);
+
+			nativeButton.UpdatePadding(padding);
 		}
 
 		public static void UpdateContentLayout(this UIButton nativeButton, Button button)
@@ -183,6 +186,16 @@ namespace Microsoft.Maui.Controls.Platform
 				nativeButton.TitleEdgeInsets = titleInsets;
 				nativeButton.Superview?.SetNeedsLayout();
 			}
+		}
+
+		public static void UpdateText(this UIButton nativeButton, Button button)
+		{
+			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
+			nativeButton.SetTitle(text, UIControlState.Normal);
+
+			// Content layout depends on whether or not the text is empty; changing the text means
+			// we may need to update the content layout
+			nativeButton.UpdateContentLayout(button);
 		}
 	}
 }

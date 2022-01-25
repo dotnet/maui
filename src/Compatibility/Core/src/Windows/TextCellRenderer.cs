@@ -3,9 +3,12 @@ using System.Windows.Input;
 using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WApplication = Microsoft.UI.Xaml.Application;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.TextCellRenderer instead")]
 	public class TextCellRenderer : ICellRenderer
 	{
 		public virtual WDataTemplate GetTemplate(Cell cell)
@@ -22,6 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellRendererCompleted instead")]
 	public class EntryCellRendererCompleted : ICommand
 	{
 		public bool CanExecute(object parameter)
@@ -40,6 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellRenderer instead")]
 	public class EntryCellRenderer : ICellRenderer
 	{
 		public virtual WDataTemplate GetTemplate(Cell cell)
@@ -48,6 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ViewCellRenderer instead")]
 	public class ViewCellRenderer : ICellRenderer
 	{
 		public virtual WDataTemplate GetTemplate(Cell cell)
@@ -56,6 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.SwitchCellRenderer instead")]
 	public class SwitchCellRenderer : ICellRenderer
 	{
 		public virtual WDataTemplate GetTemplate(Cell cell)
@@ -64,6 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ImageCellRenderer instead")]
 	public class ImageCellRenderer : ICellRenderer
 	{
 		public virtual WDataTemplate GetTemplate(Cell cell)

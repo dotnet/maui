@@ -64,6 +64,18 @@ namespace Microsoft.Maui
 			return _fontLookupCache[font] = null;
 		}
 
+		string? LoadFileSystemFont(string cacheKey, string filename, string? alias)
+		{
+			var font = new EmbeddedFont { FontName = filename };
+
+			if (_fontLoader == null)
+				throw new InvalidOperationException("Font loader was not set on the font registrar.");
+
+			var result = _fontLoader.LoadFont(font);
+
+			return _fontLookupCache[cacheKey] = result;
+		}
+
 		string? LoadEmbeddedFont(string cacheKey, string filename, string? alias, Stream stream)
 		{
 			var font = new EmbeddedFont { FontName = filename, ResourceStream = stream };

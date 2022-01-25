@@ -30,9 +30,15 @@ namespace Samples
 								Microsoft.Maui.Essentials.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler)));
 #elif WINDOWS
 					lifecycle
-						.AddWindows(windows => windows
-							.OnLaunched((app, e) =>
-								Microsoft.Maui.Essentials.Platform.OnLaunched(e)));
+						.AddWindows(windows =>
+						{
+							windows
+								.OnLaunched((app, e) =>
+									Microsoft.Maui.Essentials.Platform.OnLaunched(e));
+							windows
+								.OnActivated((window, e) =>
+									Microsoft.Maui.Essentials.Platform.OnActivated(window, e));
+						});
 #endif
 				})
 				.UseMauiApp<App>();

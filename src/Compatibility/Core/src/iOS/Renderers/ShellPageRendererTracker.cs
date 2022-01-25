@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -58,15 +60,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		Page _page;
 		NSCache _nSCache;
 		SearchHandlerAppearanceTracker _searchHandlerAppearanceTracker;
+		IFontManager _fontManager;
 
 		BackButtonBehavior BackButtonBehavior { get; set; }
 		UINavigationItem NavigationItem { get; set; }
 
 		public ShellPageRendererTracker(IShellContext context)
 		{
+			_fontManager = context.Shell.RequireFontManager();
 			_context = context;
 			_nSCache = new NSCache();
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
+			_fontManager = context.Shell.RequireFontManager();
 		}
 
 		public async void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -168,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				catch (Exception exc)
 				{
-					Internals.Log.Warning(nameof(ShellPageRendererTracker), $"Failed to update toolbar items: {exc}");
+					Forms.MauiContext?.CreateLogger<ShellPageRendererTracker>()?.LogWarning(exc, "Failed to update toolbar items");
 				}
 			}
 		}
@@ -608,7 +613,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			searchBar.ShowsBookmarkButton = SearchHandler.ClearPlaceholderEnabled;
 
-			_searchHandlerAppearanceTracker = new SearchHandlerAppearanceTracker(searchBar, SearchHandler);
+			_searchHandlerAppearanceTracker = new SearchHandlerAppearanceTracker(searchBar, SearchHandler, _fontManager);
 
 			UpdateFlowDirection();
 			UpdateAutomationId();

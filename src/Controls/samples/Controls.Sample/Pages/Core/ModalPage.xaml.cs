@@ -10,10 +10,12 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class ModalPage
 	{
+		static int s_instanceCount = 0;
 		public ModalPage()
 		{
 			InitializeComponent();
 			BackgroundColor = Colors.Purple;
+			Title = $"Modal Page {s_instanceCount++}";
 		}
 
 		protected override void OnAppearing()
@@ -22,9 +24,34 @@ namespace Maui.Controls.Sample.Pages
 			PushModal.IsVisible = Navigation.ModalStack.Count > 0;
 		}
 
+		async void PushNavigationModalClicked(object sender, EventArgs e)
+		{
+			var modalPage = new ModalPage();
+			Page pushMe = new NavigationPage(modalPage)
+			{
+				BackgroundColor =
+						(BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple,
+				Title = $"Navigation Root: {modalPage.Title}"
+			};
+
+			await Navigation.PushModalAsync(pushMe);
+
+		}
+
 		async void PushModalClicked(object sender, EventArgs e)
 		{
-			await Navigation.PushModalAsync(new ModalPage()
+			Page pushMe = new ModalPage()
+			{
+				BackgroundColor =
+						   (BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple
+			};
+
+			await Navigation.PushModalAsync(pushMe);
+		}
+
+		async void PushClicked(object sender, EventArgs e)
+		{
+			await Navigation.PushAsync(new ModalPage()
 			{
 				BackgroundColor =
 					(BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple
@@ -34,6 +61,29 @@ namespace Maui.Controls.Sample.Pages
 		async void PopModalClicked(object sender, EventArgs e)
 		{
 			await Navigation.PopModalAsync();
+		}
+
+		async void PushFlyoutPageClicked(object sender, EventArgs e)
+		{
+			var modalPage = new ModalPage();
+			Page newMainPage = new NavigationPage(new ModalPage())
+			{
+				BackgroundColor =
+						(BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple,
+				Title = $"Navigation Root: {modalPage.Title}"
+			};
+
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = newMainPage,
+				Flyout = new ContentPage()
+				{
+					Content = new Label() { Text = "Flyout Text" },
+					Title = "Flyout Title"
+				}
+			};
+
+			await Navigation.PushModalAsync(flyoutPage);
 		}
 	}
 }
