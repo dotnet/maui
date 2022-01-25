@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? ButtonTextColorDefaultHighlighted;
 		static UIColor? ButtonTextColorDefaultNormal;
 
+		// This appears to be the padding that Xcode has when "Default" content insets are used
+		public readonly static Thickness DefaultPadding = new Thickness(12, 7);
+
 		void SetupDefaults(UIButton nativeView)
 		{
 			ButtonTextColorDefaultNormal ??= nativeView.TitleColor(UIControlState.Normal);
@@ -80,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button);
+			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
 		public static void MapFont(IButtonHandler handler, ITextStyle button)

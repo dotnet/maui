@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			get
 			{
-				if (Platform.HasApiLevel(BuildVersionCodes.M))
+				if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
 					return Looper.MainLooper.IsCurrentThread;
 
 				return Looper.MyLooper() == Looper.MainLooper;

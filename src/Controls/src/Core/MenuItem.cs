@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	public class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable
+	public partial class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable
 	{
 		public static readonly BindableProperty AcceleratorProperty = BindableProperty.CreateAttached(nameof(Accelerator), typeof(Accelerator), typeof(MenuItem), null);
 

@@ -93,10 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void SetStatusBarColor(AColor color)
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				Window.SetStatusBarColor(color);
-			}
+			Window.SetStatusBarColor(color);
 		}
 
 		static void RegisterHandler(Type target, Type handler, Type filter)
@@ -247,15 +244,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			OnStateChanged();
 
-			Profile.FramePartition("Forms.IsLollipopOrNewer");
-			if (Forms.IsLollipopOrNewer)
+			// Allow for the status bar color to be changed
+			if ((flags & ActivationFlags.DisableSetStatusBarColor) == 0)
 			{
-				// Allow for the status bar color to be changed
-				if ((flags & ActivationFlags.DisableSetStatusBarColor) == 0)
-				{
-					Profile.FramePartition("Set DrawsSysBarBkgrnds");
-					Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				}
+				Profile.FramePartition("Set DrawsSysBarBkgrnds");
+				Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 			}
 
 			Profile.FrameEnd();

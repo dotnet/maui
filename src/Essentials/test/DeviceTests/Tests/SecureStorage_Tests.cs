@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task Fix_Corrupt_Data(string key, string data)
 		{
 			// this operation is only available on API level 23+ devices
-			if (!Platform.HasApiLevel(23))
+			if (!OperatingSystem.IsAndroidVersionAtLeast(23))
 				return;
 
 			// set a valid key

@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
 
+			viewGroup.SetClipChildren(false);
+
 			return viewGroup;
 		}
 

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "Carousel Async Add Page Issue", PlatformAffected.All, NavigationBehavior.PushModalAsync)]
-	public class CarouselAsync : TestCarouselPage
+	internal class CarouselAsync : TestCarouselPage
 	{
 		protected override void Init()
 		{

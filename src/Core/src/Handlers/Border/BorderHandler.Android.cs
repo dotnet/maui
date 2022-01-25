@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorder, ContentViewGroup>
+	public partial class BorderHandler : ViewHandler<IBorderView, ContentViewGroup>
 	{
 		protected override ContentViewGroup CreateNativeView()
 		{
@@ -16,6 +16,10 @@ namespace Microsoft.Maui.Handlers
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
+
+			// We only want to use a hardware layer for the entering view because its quite likely
+			// the view will invalidate several times the Drawable (Draw).
+			viewGroup.SetLayerType(Android.Views.LayerType.Hardware, null);
 
 			return viewGroup;
 		}
@@ -42,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 				NativeView.AddView(view.ToNative(MauiContext));
 		}
 
-		public static void MapContent(BorderHandler handler, IBorder border)
+		public static void MapContent(BorderHandler handler, IBorderView border)
 		{
 			handler.UpdateContent();
 		}
@@ -51,6 +55,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
 			nativeView.RemoveAllViews();
+
 			base.DisconnectHandler(nativeView);
 		}
 	}

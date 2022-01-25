@@ -145,28 +145,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static void SetImportantForAccessibility(AView control, Element element)
 		{
-			ImportantForAccessibility? _defaultImportantForAccessibility = null;
-			SetImportantForAccessibility(control, element, ref _defaultImportantForAccessibility);
-		}
-
-		internal static void SetImportantForAccessibility(AView control, Element element, ref ImportantForAccessibility? defaultImportantForAccessibility)
-		{
 			if (element == null || control == null)
 			{
 				return;
 			}
 
-			if (!defaultImportantForAccessibility.HasValue)
-			{
-				defaultImportantForAccessibility = control.ImportantForAccessibility;
-			}
-
 			bool? isInAccessibleTree = (bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
-			control.ImportantForAccessibility = !isInAccessibleTree.HasValue ? (ImportantForAccessibility)defaultImportantForAccessibility : (bool)isInAccessibleTree ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
-
 			bool? excludedWithChildren = (bool?)element.GetValue(AutomationProperties.ExcludedWithChildrenProperty);
 			if (excludedWithChildren == true)
 				control.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+			else if (isInAccessibleTree.HasValue)
+				control.ImportantForAccessibility = isInAccessibleTree.Value ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
 		}
 
 		// TODO MAUI
@@ -223,12 +212,12 @@ namespace Microsoft.Maui.Controls.Platform
 			return true;
 		}
 
-		internal static void AccessibilitySettingsChanged(AView control, Element element, string _defaultHint, string _defaultContentDescription, ref ImportantForAccessibility? _defaultImportantForAccessibility)
+		internal static void AccessibilitySettingsChanged(AView control, Element element, string _defaultHint, string _defaultContentDescription)
 		{
 			SetHint(control, element, _defaultHint);
 			SetAutomationId(control, element);
 			SetContentDescription(control, element, _defaultContentDescription, _defaultHint);
-			SetImportantForAccessibility(control, element, ref _defaultImportantForAccessibility);
+			SetImportantForAccessibility(control, element);
 			SetLabeledBy(control, element);
 		}
 
@@ -236,8 +225,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			string _defaultHint = String.Empty;
 			string _defaultContentDescription = String.Empty;
-			ImportantForAccessibility? _defaultImportantForAccessibility = null;
-			AccessibilitySettingsChanged(control, element, _defaultHint, _defaultContentDescription, ref _defaultImportantForAccessibility);
+			AccessibilitySettingsChanged(control, element, _defaultHint, _defaultContentDescription);
 		}
 
 

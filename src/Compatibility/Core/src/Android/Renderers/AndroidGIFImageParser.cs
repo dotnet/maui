@@ -49,9 +49,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public FormsAnimationDrawable()
 		{
 			RepeatCount = 1;
-
-			if (!Forms.IsLollipopOrNewer)
-				base.SetVisible(false, true);
 		}
 
 		public int RepeatCount { get; set; }
@@ -79,9 +76,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			base.Start();
 
-			if (!Forms.IsLollipopOrNewer)
-				base.SetVisible(true, true);
-
 			_isRunning = true;
 			AnimationStarted?.Invoke(this, null);
 		}
@@ -89,9 +83,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override void Stop()
 		{
 			base.Stop();
-
-			if (!Forms.IsLollipopOrNewer)
-				base.SetVisible(false, true);
 
 			_isRunning = false;
 			AnimationStopped?.Invoke(this, new FormsAnimationDrawableStateEventArgs(_finished));

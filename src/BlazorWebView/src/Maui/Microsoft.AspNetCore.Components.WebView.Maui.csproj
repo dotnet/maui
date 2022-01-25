@@ -4,6 +4,7 @@
     <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <Description>Build .NET MAUI applications with Blazor web UI in the BlazorWebView control.</Description>
+    <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
   </PropertyGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
@@ -14,8 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedSource\QueryStringHelper.cs" Link="QueryStringHelper.cs" />
-    <Compile Include="..\WebView2\Internal\StaticContentProvider.cs" Link="Windows\SharedSource\StaticContentProvider.cs" />
+    <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)"/>
   </ItemGroup>
 
   <ItemGroup>
