@@ -2,8 +2,8 @@
 using System.Linq;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.CoreGraphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Graphics.PlatformCG;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 	{
 		PassthroughView? _passthroughView;
 		IDisposable? _frameObserver;
-		NativeGraphicsView? _graphicsView;
+		PlatformGraphicsView? _graphicsView;
 
 		public virtual bool Initialize()
 		{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 			// Create a passthrough view for holding the canvas and other diagnostics tools.
 			_passthroughView = new PassthroughView(this, nativeWindow.RootViewController.View.Frame);
 
-			_graphicsView = new NativeGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
+			_graphicsView = new PlatformGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
 			_graphicsView.AutoresizingMask = UIViewAutoresizing.All;
 
 			_passthroughView.AddSubview(_graphicsView);
