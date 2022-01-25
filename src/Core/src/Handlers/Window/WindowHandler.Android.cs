@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
-			rootManager.SetRootView(window.Content);
+			rootManager.Connect(window.Content);
 			handler.NativeView.SetContentView(rootManager.RootView);
 			if (window.VisualDiagnosticsOverlay != null && rootManager.RootView is ViewGroup group)
 				window.VisualDiagnosticsOverlay.Initialize();

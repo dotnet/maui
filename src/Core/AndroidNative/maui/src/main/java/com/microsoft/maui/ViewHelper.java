@@ -3,6 +3,7 @@ package com.microsoft.maui;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import androidx.appcompat.widget.SearchView;
 
 public class ViewHelper {
     public static void requestLayoutIfNeeded(View view)
@@ -31,10 +32,35 @@ public class ViewHelper {
             view.setPivotY(pivotY);
     }
 
+    public static void setContentDescriptionForAutomationId(View view, String description)
+    {
+        view = getSemanticNativeElement(view);
+
+        // Android automatically sets ImportantForAccessibility to "Yes" when you set the ContentDescription.
+		// We are only setting the ContentDescription here for Automation testing purposes so
+		// we don't want Layouts/images/Other controls to automatically toggle to Yes.
+		// Unfortunately Android (AFAICT) doesn't have an obvious way of calculating what "Auto" will be interpreted as
+		// iOS is kind of enough to indicate that anything inheriting from "UIControl" but the Android documentation
+		// just says "Android uses heuristics to figure out what Auto will mean"
+		// It seems like if we just toggle this back to "Auto" that everything just works.
+        int importantForAccessibility = view.getImportantForAccessibility();
+        view.setContentDescription(description);
+        if (importantForAccessibility == View.IMPORTANT_FOR_ACCESSIBILITY_AUTO) {
+            view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+        }
+    }
+
+    public static View getSemanticNativeElement(View view)
+	{
+		if (view instanceof SearchView) {
+            view = view.findViewById(androidx.appcompat.R.id.search_button);
+        }
+
+        return view;
+	}
+
     public static void set(
         View view,
-        int automationTagId,
-        String automationId,
         int visibility,
         int layoutDirection,
         int minimumHeight,
@@ -52,7 +78,6 @@ public class ViewHelper {
         float pivotY)
     {
         requestLayoutIfNeeded(view);
-        view.setTag(automationTagId, automationId);
         view.setVisibility(visibility);
         view.setLayoutDirection(layoutDirection);
         view.setMinimumHeight(minimumHeight);

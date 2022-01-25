@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class PerformanceTrackingFrame : FrameRenderer, IDrawnObservable
+	public class PerformanceTrackingFrame : Handlers.Compatibility.FrameRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingFrame> _watcher;
 		int _Drawn;
@@ -677,7 +677,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class PerformanceTrackingListView : ListViewRenderer, IDrawnObservable
+	public class PerformanceTrackingListView : Handlers.Compatibility.ListViewRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingListView> _watcher;
 		int _Drawn;
@@ -1070,7 +1070,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class PerformanceTrackingTableView : TableViewRenderer, IDrawnObservable
+	public class PerformanceTrackingTableView : Handlers.Compatibility.TableViewRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingTableView> _watcher;
 		int _Drawn;

@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, (Label)this);
+			this.GetDefaultFontSize();
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			HandleFontChanged();
@@ -350,6 +350,8 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasure();
 		}
 
+		internal bool HasFormattedTextSpans
+			=> (FormattedText?.Spans?.Count ?? 0) > 0;
 
 		public override IList<GestureElement> GetChildElements(Point point)
 		{

@@ -11,7 +11,8 @@
                 Text="Default"
                 Style="{StaticResource Headline}"/>
             <Frame      
-                BackgroundColor="LightGray">
+                BackgroundColor="LightGray"
+                HasShadow="False">
                 <Label 
                     Text="Only with BackgroundColor" />
             </Frame>
@@ -20,7 +21,8 @@
                 Style="{StaticResource Headline}"/>
             <Frame      
                 BackgroundColor="LightGray"
-                BorderColor="Red">
+                BorderColor="Red"
+                HasShadow="False">
                 <Label 
                     Text="Using BorderColor" />
             </Frame>

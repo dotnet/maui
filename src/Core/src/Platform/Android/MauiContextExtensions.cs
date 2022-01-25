@@ -76,6 +76,14 @@ namespace Microsoft.Maui.Platform
 			return scopedContext;
 		}
 
+		public static IMauiContext MakeScopededArgs<TArgs>(this IMauiContext mauiContext, TArgs args)
+			where TArgs : class
+		{
+			var scopedContext = new MauiContext(mauiContext.Services);
+			scopedContext.AddWeakSpecific(args);
+			return scopedContext;
+		}
+
 		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
 			if (mauiContext.Context?.ApplicationContext is MauiApplication ma)
@@ -83,5 +91,8 @@ namespace Microsoft.Maui.Platform
 
 			throw new InvalidOperationException("Unable to find Application Services");
 		}
+
+		public static Android.App.Activity GetNativeWindow(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<Android.App.Activity>();
 	}
 }

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public TextViewHolder(TextView itemView, bool isSelectionEnabled = true) : base(itemView, isSelectionEnabled)
 		{
 			TextView = itemView;
-			TextView.Clickable = true;
+			TextView.Clickable = isSelectionEnabled;
 		}
 	}
 }

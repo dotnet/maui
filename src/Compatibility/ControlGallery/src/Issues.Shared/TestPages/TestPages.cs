@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		protected abstract void Init();
 	}
 
-	public abstract class TestCarouselPage : CarouselPage
+	internal abstract class TestCarouselPage : CarouselPage
 	{
 #if UITEST
 		public IApp RunningApp => AppSetup.RunningApp;

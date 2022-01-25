@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Essentials
 	public static partial class Preferences
 	{
 		internal static string GetPrivatePreferencesSharedName(string feature) =>
-			$"{AppInfo.PackageName}.xamarinessentials.{feature}";
+			$"{AppInfo.PackageName}.microsoft.maui.essentials.{feature}";
 
 		// overloads
 

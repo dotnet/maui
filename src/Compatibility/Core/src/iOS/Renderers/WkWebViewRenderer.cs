@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		static int _sharedPoolCount = 0;
 		static bool _firstLoadFinished = false;
 		string _pendingUrl;
+		IWebViewController WebViewController => WebView;
 
 		[Preserve(Conditional = true)]
 		public WkWebViewRenderer() : this(CreateConfiguration())
@@ -96,11 +97,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (_packager == null)
 				{
-					WebView.EvalRequested += OnEvalRequested;
-					WebView.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
-					WebView.GoBackRequested += OnGoBackRequested;
-					WebView.GoForwardRequested += OnGoForwardRequested;
-					WebView.ReloadRequested += OnReloadRequested;
+					WebViewController.EvalRequested += OnEvalRequested;
+					WebViewController.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
+					WebViewController.GoBackRequested += OnGoBackRequested;
+					WebViewController.GoForwardRequested += OnGoForwardRequested;
+					WebViewController.ReloadRequested += OnReloadRequested;
 					NavigationDelegate = new CustomWebViewNavigationDelegate(this);
 					UIDelegate = new CustomWebViewUIDelegate();
 
@@ -273,11 +274,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					StopLoading();
 
 				Element.PropertyChanged -= HandlePropertyChanged;
-				WebView.EvalRequested -= OnEvalRequested;
-				WebView.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
-				WebView.GoBackRequested -= OnGoBackRequested;
-				WebView.GoForwardRequested -= OnGoForwardRequested;
-				WebView.ReloadRequested -= OnReloadRequested;
+				WebViewController.EvalRequested -= OnEvalRequested;
+				WebViewController.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
+				WebViewController.GoBackRequested -= OnGoBackRequested;
+				WebViewController.GoForwardRequested -= OnGoForwardRequested;
+				WebViewController.ReloadRequested -= OnReloadRequested;
 
 				Element?.ClearValue(Platform.RendererProperty);
 				SetElement(null);
@@ -691,11 +692,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			WebView WebView => _renderer.WebView;
+			IWebViewController WebViewController => WebView;
 
 			public override void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 			{
 				var url = GetCurrentUrl();
-				WebView.SendNavigated(
+				WebViewController.SendNavigated(
 					new WebNavigatedEventArgs(_lastEvent, new UrlWebViewSource { Url = url }, url, WebNavigationResult.Failure)
 				);
 
@@ -705,7 +707,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public override void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 			{
 				var url = GetCurrentUrl();
-				WebView.SendNavigated(
+				WebViewController.SendNavigated(
 					new WebNavigatedEventArgs(_lastEvent, new UrlWebViewSource { Url = url }, url, WebNavigationResult.Failure)
 				);
 
@@ -740,7 +742,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 
 				var args = new WebNavigatedEventArgs(_lastEvent, WebView.Source, url, WebNavigationResult.Success);
-				WebView.SendNavigated(args);
+				WebViewController.SendNavigated(args);
 				_renderer.UpdateCanGoBackForward();
 
 			}
@@ -785,7 +787,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var lastUrl = request.Url.ToString();
 				var args = new WebNavigatingEventArgs(navEvent, new UrlWebViewSource { Url = lastUrl }, lastUrl);
 
-				WebView.SendNavigating(args);
+				WebViewController.SendNavigating(args);
 				_renderer.UpdateCanGoBackForward();
 				decisionHandler(args.Cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
 			}

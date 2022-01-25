@@ -11,12 +11,12 @@ namespace Microsoft.Maui.Essentials
 {
 	[ContentProvider(
 		new[] { "${applicationId}.fileProvider" },
-		Name = "xamarin.essentials.fileProvider",
+		Name = "microsoft.maui.essentials.fileProvider",
 		Exported = false,
 		GrantUriPermissions = true)]
 	[MetaData(
 		"android.support.FILE_PROVIDER_PATHS", // IMPORTANT: This string doesn't change with AndroidX
-		Resource = "@xml/xamarin_essentials_fileprovider_file_paths")]
+		Resource = "@xml/microsoft_maui_essentials_fileprovider_file_paths")]
 	public class FileProvider : ContentFileProvider
 	{
 		internal static bool AlwaysFailExternalMediaAccess { get; set; } = false;
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Essentials
 			var file = new Java.IO.File(filename);
 			filename = file.CanonicalPath;
 
-			// the shared paths from the "xamarin_essentials_fileprovider_file_paths.xml" resource
+			// the shared paths from the "microsoft_maui_essentials_fileprovider_file_paths.xml" resource
 			var publicLocations = new List<string>
 			{
 #if __ANDROID_29__

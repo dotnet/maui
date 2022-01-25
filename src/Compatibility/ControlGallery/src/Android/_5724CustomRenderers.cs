@@ -54,12 +54,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 		}
 	}
 
-	public class CustomFrameRenderer5724 :
-#if !LEGACY_RENDERERS
-		Compatibility.Platform.Android.FastRenderers.FrameRenderer
-#else
-		FrameRenderer
-#endif
+	public class CustomFrameRenderer5724 : Handlers.Compatibility.FrameRenderer
 	{
 		public CustomFrameRenderer5724(Context context) : base(context)
 		{

@@ -44,6 +44,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ZIndexPage), "Z-Index",
 				"Demonstrations of the ZIndex property"),
+
+			new SectionModel(typeof(ClippingPage), "Clipping",
+				"Demonstrations of layout clipping"),
 		};
 	}
 }

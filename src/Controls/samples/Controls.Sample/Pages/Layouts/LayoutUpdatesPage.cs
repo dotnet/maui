@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Pages
 	{
 		public LayoutUpdatesPage()
 		{
-			var root = new GridLayout() { Margin = 40, BackgroundColor = Colors.Beige };
+			var root = new Grid() { Margin = 40, BackgroundColor = Colors.Beige };
 
 			root.RowDefinitions = new RowDefinitionCollection()
 			{

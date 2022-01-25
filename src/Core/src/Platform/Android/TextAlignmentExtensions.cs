@@ -5,9 +5,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{
-		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment, bool hasRtlSupport, AGravityFlags orMask = AGravityFlags.NoGravity)
+		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
-			if (!hasRtlSupport)
+			if (!Rtl.IsSupported)
 				view.Gravity = alignment.ToHorizontalGravityFlags() | orMask;
 			else
 				view.TextAlignment = alignment.ToTextAlignment();
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextAlignment(this EditText view, TextAlignment horizontal, TextAlignment vertical)
 		{
-			if (view.Context != null && !view.Context.HasRtlSupport())
+			if (view.Context != null && !Rtl.IsSupported)
 			{
 				view.Gravity = vertical.ToVerticalGravityFlags() | horizontal.ToHorizontalGravityFlags();
 			}
