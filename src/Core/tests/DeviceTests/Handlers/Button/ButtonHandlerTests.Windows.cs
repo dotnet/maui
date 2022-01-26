@@ -38,25 +38,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
 
-		[Fact(DisplayName = "Button Padding Initializing")]
-		public async Task PaddingInitializesCorrectly()
-		{
-			var expected = new Thickness(5, 10, 15, 20);
-
-			var button = new ButtonStub()
-			{
-				Text = "Test",
-				Padding = expected
-			};
-
-			var actual = await GetValueAsync(button, GetNativePadding);
-
-			Assert.Equal(expected.Left, actual.Left);
-			Assert.Equal(expected.Top, actual.Top);
-			Assert.Equal(expected.Right, actual.Right);
-			Assert.Equal(expected.Bottom, actual.Bottom);
-		}
-
 		UI.Xaml.Controls.Button GetNativeButton(ButtonHandler buttonHandler) =>
 			buttonHandler.NativeView;
 

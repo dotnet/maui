@@ -16,6 +16,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Animations;
+using Microsoft.Extensions.DependencyInjection;
 
 #if __MOBILE__
 using ObjCRuntime;
@@ -227,14 +228,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.PlatformInvalidator = platformServices;
 #endif
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers();
+				RegisterCompatRenderers(context);
 
 			ExpressionSearch.Default = new iOSExpressionSearch();
 
 			IsInitialized = true;
 		}
 
-		internal static void RegisterCompatRenderers()
+		internal static void RegisterCompatRenderers(IMauiContext context)
 		{
 			if (!IsInitializedRenderers)
 			{
@@ -247,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					typeof(ExportCellAttribute),
 					typeof(ExportImageSourceHandlerAttribute),
 					typeof(ExportFontAttribute)
-				});
+				}, context?.Services?.GetService<IFontRegistrar>());
 			}
 		}
 

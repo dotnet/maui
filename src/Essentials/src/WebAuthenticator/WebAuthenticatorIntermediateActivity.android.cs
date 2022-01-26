@@ -5,7 +5,7 @@ using Android.OS;
 
 namespace Microsoft.Maui.Essentials
 {
-	[Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+	[Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, Exported = true)]
 	class WebAuthenticatorIntermediateActivity : Activity
 	{
 		const string launchedExtra = "launched";

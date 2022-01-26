@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -259,13 +260,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task CaseIgnoreRouting()
 		{
 			var routes = new[] { "Tab1", "TAB2", "@-_-@", "+:~", "=%", "Super_Simple+-Route.doc", "1/2", @"1\2/3", "app://tab" };
+			var services = Substitute.For<IServiceProvider>();
 
 			foreach (var route in routes)
 			{
 				var formattedRoute = Routing.FormatRoute(route);
 				Routing.RegisterRoute(formattedRoute, typeof(ShellItem));
 
-				var content1 = Routing.GetOrCreateContent(formattedRoute);
+				var content1 = Routing.GetOrCreateContent(formattedRoute, services);
 				Assert.IsNotNull(content1);
 				Assert.AreEqual(Routing.GetRoute(content1), formattedRoute);
 			}

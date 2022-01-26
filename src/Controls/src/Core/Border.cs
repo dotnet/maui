@@ -8,7 +8,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorder, IPaddingElement
+	public class Border : View, IContentView, IBorderView, IPaddingElement
 	{
 		ReadOnlyCollection<Element>? _logicalChildren;
 
@@ -164,17 +164,17 @@ namespace Microsoft.Maui.Controls
 					border.InternalChildren.Add(newElement);
 			}
 
-			((IBorder)bindable).InvalidateMeasure();
+			((IBorderView)bindable).InvalidateMeasure();
 		}
 
 		public static void StrokeThicknessChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			((IBorder)bindable).InvalidateMeasure();
+			((IBorderView)bindable).InvalidateMeasure();
 		}
 
 		public void OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
-			(this as IBorder).InvalidateMeasure();
+			(this as IBorderView).InvalidateMeasure();
 		}
 
 		public Thickness PaddingDefaultValueCreator()
