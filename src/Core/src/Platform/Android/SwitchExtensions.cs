@@ -1,9 +1,5 @@
-using Android.Content.Res;
-using Microsoft.Maui;
-using AAttribute = Android.Resource.Attribute;
-using APorterDuff = Android.Graphics.PorterDuff;
+using Android.Graphics.Drawables;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
-using MauiAttribute = Microsoft.Maui.Resource.Attribute;
 
 namespace Microsoft.Maui.Platform
 {
@@ -12,62 +8,35 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view) =>
 			aSwitch.Checked = view.IsOn;
 
-		public static void UpdateTrackColor(this ASwitch aSwitch, ISwitch view, ColorStateList? defaultTrackColor)
+		public static void UpdateTrackColor(this ASwitch aSwitch, ISwitch view, Drawable? defaultTrackDrawable)
 		{
 			var trackColor = view.TrackColor;
 
-			if (aSwitch.Context == null)
-				return;
-
-			if (trackColor == null)
+			if (aSwitch.Checked)
 			{
-				aSwitch.TrackTintMode = APorterDuff.Mode.SrcAtop;
-				aSwitch.TrackTintList = defaultTrackColor;
+				if (trackColor == null)
+					aSwitch.TrackDrawable = defaultTrackDrawable;
+				else
+					aSwitch.TrackDrawable?.SetColorFilter(trackColor, FilterMode.SrcAtop);
 			}
 			else
-			{
-				aSwitch.TrackTintMode = APorterDuff.Mode.SrcIn;
-				aSwitch.TrackTintList = trackColor.ToDefaultColorStateList();
-			}
+				aSwitch.TrackDrawable?.ClearColorFilter();
 		}
 
-		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view, ColorStateList? defaultColorStateList)
+		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view, Drawable? defaultThumbDrawable)
 		{
 			var thumbColor = view.ThumbColor;
+
 			if (thumbColor != null)
-			{
-				aSwitch.ThumbTintMode = APorterDuff.Mode.SrcAtop;
-				aSwitch.ThumbTintList = thumbColor.ToDefaultColorStateList();
-			}
+				aSwitch.ThumbDrawable?.SetColorFilter(thumbColor, FilterMode.SrcAtop);
 			else
-			{
-				aSwitch.ThumbTintList = defaultColorStateList;
-				aSwitch.ThumbTintMode = APorterDuff.Mode.SrcIn;
-			}
+				aSwitch.ThumbDrawable = defaultThumbDrawable;
 		}
 
-		public static ColorStateList GetDefaultSwitchTrackColorStateList(this ASwitch aSwitch)
-		{
-			var context = aSwitch.Context;
-			if (context == null)
-				return new ColorStateList(null, null);
+		public static Drawable GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>
+			aSwitch.TrackDrawable;
 
-			return ColorStateListExtensions.CreateSwitch(
-				context.GetThemeAttrColor(AAttribute.ColorForeground, 0.1f),
-				context.GetThemeAttrColor(AAttribute.ColorControlActivated, 0.3f),
-				context.GetThemeAttrColor(AAttribute.ColorForeground, 0.3f));
-		}
-
-		public static ColorStateList GetDefaultSwitchThumbColorStateList(this ASwitch aSwitch)
-		{
-			var context = aSwitch.Context;
-			if (context == null)
-				return new ColorStateList(null, null);
-
-			return ColorStateListExtensions.CreateSwitch(
-				context.GetDisabledThemeAttrColor(MauiAttribute.colorSwitchThumbNormal),
-				context.GetThemeAttrColor(AAttribute.ColorControlActivated),
-				context.GetThemeAttrColor(MauiAttribute.colorSwitchThumbNormal));
-		}
+		public static Drawable GetDefaultSwitchThumbDrawable(this ASwitch aSwitch) =>
+			aSwitch.ThumbDrawable;
 	}
 }

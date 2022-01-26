@@ -47,15 +47,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static NSAttributedString ToNSAttributedString(this Span span, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
-			var transform = span.TextTransform != TextTransform.Default	? span.TextTransform : defaultTextTransform;
+			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
 			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 			if (text is null)
 				return new NSAttributedString(string.Empty);
 
 			var style = new NSMutableParagraphStyle();
-			var lineHeight = span.LineHeight >= 0 
-				? span.LineHeight 
+			var lineHeight = span.LineHeight >= 0
+				? span.LineHeight
 				: defaultLineHeight;
 
 			if (lineHeight >= 0)
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Platform
 				TextAlignment.End => UITextAlignment.Right,
 				_ => UITextAlignment.Left
 			};
-			
+
 			var font = span.ToFont();
 			if (font.IsDefault && defaultFont.HasValue)
 				font = defaultFont.Value;

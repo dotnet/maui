@@ -1,5 +1,8 @@
 ﻿namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Represents an adorner around a view.
+	/// </summary>
 	public interface IAdorner : IWindowOverlayElement
 	{
 		/// <summary>

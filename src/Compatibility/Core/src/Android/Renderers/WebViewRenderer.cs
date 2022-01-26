@@ -374,6 +374,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control.Reload();
 		}
 
+		[PortHandler]
 		protected internal void UpdateCanGoBackForward()
 		{
 			if (Element == null || Control == null)
