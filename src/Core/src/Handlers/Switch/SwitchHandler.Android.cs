@@ -1,7 +1,5 @@
-using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Widget;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 
@@ -9,9 +7,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ASwitch>
 	{
+		Drawable? _defaultTrackDrawable;
+		Drawable? _defaultThumbDrawable;
+
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
-		static ColorStateList? DefaultTrackColorStateList { get; set; }
-		static ColorStateList? DefaultThumbColorStateList { get; set; }
 
 		protected override ASwitch CreateNativeView()
 		{
@@ -22,18 +21,29 @@ namespace Microsoft.Maui.Handlers
 		{
 			ChangeListener.Handler = this;
 			nativeView.SetOnCheckedChangeListener(ChangeListener);
+
+			base.ConnectHandler(nativeView);
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(ASwitch nativeView)
 		{
 			ChangeListener.Handler = null;
 			nativeView.SetOnCheckedChangeListener(null);
+
+			_defaultTrackDrawable?.Dispose();
+			_defaultTrackDrawable = null;
+
+			_defaultThumbDrawable?.Dispose();
+			_defaultThumbDrawable = null;
+
+			base.DisconnectHandler(nativeView);
 		}
 
 		void SetupDefaults(ASwitch nativeView)
 		{
-			DefaultTrackColorStateList = nativeView.GetDefaultSwitchTrackColorStateList();
-			DefaultThumbColorStateList = nativeView.GetDefaultSwitchThumbColorStateList();
+			_defaultTrackDrawable = nativeView.GetDefaultSwitchTrackDrawable();
+			_defaultThumbDrawable = nativeView.GetDefaultSwitchThumbDrawable();
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -60,12 +70,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, DefaultTrackColorStateList);
+			handler.NativeView?.UpdateTrackColor(view, handler._defaultTrackDrawable);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateThumbColor(view, DefaultThumbColorStateList);
+			handler.NativeView?.UpdateThumbColor(view, handler._defaultThumbDrawable);
 		}
 
 		void OnCheckedChanged(bool isOn)

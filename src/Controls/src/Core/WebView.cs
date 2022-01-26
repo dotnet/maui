@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -84,6 +83,7 @@ namespace Microsoft.Maui.Controls
 
 		public void Eval(string script)
 		{
+			Handler?.Invoke(nameof(IWebView.Eval), script);
 			_evalRequested?.Invoke(this, new EvalRequested(script));
 		}
 
