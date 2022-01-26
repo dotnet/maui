@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -11,16 +12,22 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnGoBackClicked(object sender, EventArgs args)
 		{
-			// TODO: Implement CanGoBack
+			Debug.WriteLine($"CanGoBack {MauiWebView.CanGoBack}");
 
-			MauiWebView.GoBack();
+			if (MauiWebView.CanGoBack)
+			{
+				MauiWebView.GoBack();
+			}
 		}
 
 		void OnGoForwardClicked(object sender, EventArgs args)
 		{
-			// TODO: Implement CanGoForward
+			Debug.WriteLine($"CanGoForward {MauiWebView.CanGoForward}");
 
-			MauiWebView.GoForward();
+			if (MauiWebView.CanGoForward)
+			{
+				MauiWebView.GoForward();
+			}
 		}
 
 		void OnReloadClicked(object sender, EventArgs args)
