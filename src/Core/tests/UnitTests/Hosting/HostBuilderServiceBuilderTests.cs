@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -36,34 +32,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					foreach (var value in service.Get(key))
 						yield return value;
 			}
-		}
-
-		[Fact]
-		public void AppConfigurationReachesBuilder()
-		{
-			var builder = MauiApp.CreateBuilder();
-			builder.Host
-				.ConfigureAppConfiguration((_, builder) =>
-				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value 1" },
-					});
-				});
-
-			var appConfigValue = builder.Configuration["key 1"];
-			var mauiApp = builder.Build();
-
-			Assert.Equal("value 1", appConfigValue);
-		}
-
-		class MicrosoftExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
-		{
-			public ServiceCollection CreateBuilder(IServiceCollection services) =>
-				new ServiceCollection { services };
-
-			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder) =>
-				containerBuilder.BuildServiceProvider();
 		}
 	}
 }
