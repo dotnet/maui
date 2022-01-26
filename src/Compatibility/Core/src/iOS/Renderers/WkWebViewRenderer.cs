@@ -630,6 +630,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Reload();
 		}
 
+		[PortHandler]
 		void UpdateCanGoBackForward()
 		{
 			((IWebViewController)WebView).CanGoBack = CanGoBack;

@@ -3,13 +3,12 @@ using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
+	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate, IPlatformApplication
 	{
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
 		internal const string GetConfigurationSelectorName = "application:configurationForConnectingSceneSession:options:";
@@ -19,6 +18,7 @@ namespace Microsoft.Maui
 		protected MauiUIApplicationDelegate()
 		{
 			Current = this;
+			IPlatformApplication.Current = this;
 		}
 
 		protected abstract MauiApp CreateMauiApp();

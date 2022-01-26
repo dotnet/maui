@@ -1,17 +1,40 @@
 ﻿#nullable enable
 using System;
-using Microsoft.Maui.Graphics;
-using AViewGroup = Android.Views.ViewGroup;
-using AView = Android.Views.View;
-using Microsoft.Maui.Controls.Platform;
 using System.ComponentModel;
 using Android.Content;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public abstract partial class VisualElementRenderer<TElement> : AViewGroup, INativeViewHandler
 		where TElement : Element, IView
 	{
+		object? IElementHandler.NativeView => ChildCount > 0 ? GetChildAt(0) : null;
+
+		static partial void ProcessAutoPackage(Maui.IElement element)
+		{
+			if (element?.Handler?.NativeView is not AViewGroup viewGroup)
+				return;
+
+			viewGroup.RemoveAllViews();
+
+			if (element is not IVisualTreeElement vte)
+				return;
+
+			var mauiContext = element?.Handler?.MauiContext;
+			if (mauiContext == null)
+				return;
+
+			foreach (var child in vte.GetVisualChildren())
+			{
+				if (child is Maui.IElement childElement)
+					viewGroup.AddView(childElement.ToNative(mauiContext));
+			}
+		}
+
 		public void UpdateLayout()
 		{
 			if (Element != null)
@@ -25,7 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var platformView = GetChildAt(0);
 				if (platformView != null)
 				{
-					platformView.Layout(l, t, r, b);
+					platformView.Layout(0, 0, r - l, b - t);
 				}
 			}
 		}

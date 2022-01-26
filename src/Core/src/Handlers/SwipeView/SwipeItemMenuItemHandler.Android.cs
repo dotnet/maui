@@ -1,12 +1,12 @@
-﻿using Android.Views;
+﻿using System;
+using System.Threading.Tasks;
+using Android.Graphics.Drawables;
+using Android.Views;
+using Android.Widget;
 using Microsoft.Maui.Graphics;
-using AView = Android.Views.View;
-using System;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using ATextAlignment = Android.Views.TextAlignment;
-using Android.Graphics.Drawables;
-using Android.Widget;
-using System.Threading.Tasks;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				textSize = !string.IsNullOrEmpty(textView.Text) ? (int)textView.TextSize : 0;
 				var icons = textView.GetCompoundDrawables();
-				if(icons.Length > 1 && icons[1] != null)
+				if (icons.Length > 1 && icons[1] != null)
 				{
 					OnSetImageSource(icons[1]);
 				}

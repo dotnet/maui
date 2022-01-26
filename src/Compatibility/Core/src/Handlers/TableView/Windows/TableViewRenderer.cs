@@ -13,6 +13,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _ignoreSelectionEvent;
 		bool _disposed;
 
+		public TableViewRenderer()
+		{
+			AutoPackage = false;
+		}
+
 		protected override Size MinimumSize()
 		{
 			return new Size(40, 40);

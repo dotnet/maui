@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #if WINDOWS
 	public abstract partial class VisualElementRenderer<TElement, TNativeElement> : INativeViewHandler
 		where TElement : VisualElement
-		where TNativeElement : UI.Xaml.FrameworkElement
+		where TNativeElement : PlatformView
 #else
 	public abstract partial class VisualElementRenderer<TElement> : INativeViewHandler
 		where TElement : Element, IView
@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected readonly IPropertyMapper _defaultMapper;
 		protected IMauiContext MauiContext => _mauiContext ?? throw new InvalidOperationException("MauiContext not set");
 		public TElement? Element => _virtualView;
+		protected bool AutoPackage { get; set; } = true;
 
 #if ANDROID
 		public VisualElementRenderer(Android.Content.Context context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #if ANDROID
 		internal VisualElementRenderer(Android.Content.Context context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
 #else
-	internal VisualElementRenderer(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+		internal VisualElementRenderer(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 #endif
 
 #if ANDROID
@@ -95,19 +96,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ElementChangedPartial(e);
 		}
 
-
 		partial void ElementPropertyChangedPartial(object sender, PropertyChangedEventArgs e);
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (Element != null && e.PropertyName != null)
+				_mapper.UpdateProperty(this, Element, e.PropertyName);
+
 			ElementPropertyChanged?.Invoke(sender, e);
 			ElementPropertyChangedPartial(sender, e);
 		}
 
-		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
+
+		internal static Size GetDesiredSize(INativeViewHandler handler, double widthConstraint, double heightConstraint, Size minimumSize)
 		{
-			var size = this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
-			var minSize = MinimumSize();
+			var size = handler.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+			var minSize = minimumSize;
 
 			if (size.Height < minSize.Height || size.Width < minSize.Width)
 			{
@@ -120,6 +124,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return size;
 		}
 
+		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			GetDesiredSize(this, widthConstraint, heightConstraint, MinimumSize());
+
 		protected virtual Size MinimumSize()
 		{
 			return new Size();
@@ -127,7 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 
 #if IOS
-	protected virtual void SetBackgroundColor(Color? color)
+		protected virtual void SetBackgroundColor(Color? color)
 #else
 		protected virtual void UpdateBackgroundColor()
 #endif
@@ -137,7 +144,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 #if IOS
-	protected virtual void SetBackground(Brush brush)
+		protected virtual void SetBackground(Brush brush)
 #else
 		protected virtual void UpdateBackground()
 #endif
@@ -166,17 +173,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		bool IViewHandler.HasContainer { get => true; set { } }
 
-		object? IViewHandler.ContainerView => null;
+		object? IViewHandler.ContainerView => this;
 
 		IView? IViewHandler.VirtualView => Element;
-
-		object IElementHandler.NativeView => this;
 
 		Maui.IElement? IElementHandler.VirtualView => Element;
 
 		IMauiContext? IElementHandler.MauiContext => _mauiContext;
 
-		PlatformView INativeViewHandler.NativeView => this;
+		PlatformView? INativeViewHandler.NativeView => (Element?.Handler as IElementHandler)?.NativeView as PlatformView;
 
 		PlatformView? INativeViewHandler.ContainerView => this;
 
@@ -188,29 +193,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_mauiContext = mauiContext;
 		}
 
-		void IElementHandler.SetVirtualView(Maui.IElement view)
+		internal static void SetVirtualView(
+			Maui.IElement view,
+			INativeViewHandler nativeViewHandler,
+			Action<ElementChangedEventArgs<TElement>> onElementChanged,
+			ref TElement? currentVirtualView,
+			ref IPropertyMapper _mapper,
+			IPropertyMapper _defaultMapper,
+			bool autoPackage)
 		{
-			var oldElement = _virtualView;
-			_virtualView = view as TElement;
-			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, _virtualView));
+			if (currentVirtualView == view)
+				return;
+
+			var oldElement = currentVirtualView;
+			currentVirtualView = view as TElement;
+			onElementChanged?.Invoke(new ElementChangedEventArgs<TElement>(oldElement, currentVirtualView));
 
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
-			if (Element == view)
-				return;
+			if (oldElement?.Handler != null)
+				oldElement.Handler = null;
 
-			var oldVirtualView = Element;
-			if (oldVirtualView?.Handler != null)
-				oldVirtualView.Handler = null;
+			currentVirtualView = (TElement)view;
 
-			_virtualView = (TElement)view;
-
-			if (_virtualView.Handler != (INativeViewHandler)this)
-				_virtualView.Handler = this;
+			if (currentVirtualView.Handler != nativeViewHandler)
+				currentVirtualView.Handler = nativeViewHandler;
 
 			_mapper = _defaultMapper;
 
-			if (Element is IPropertyMapperView imv)
+			if (currentVirtualView is IPropertyMapperView imv)
 			{
 				var map = imv.GetPropertyMapperOverrides();
 				if (map is not null)
@@ -220,14 +231,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			_mapper.UpdateProperties(this, _virtualView);
+			if (autoPackage)
+			{
+				ProcessAutoPackage(view);
+			}
+
+			_mapper.UpdateProperties(nativeViewHandler, currentVirtualView);
 		}
+
+		static partial void ProcessAutoPackage(Maui.IElement element);
+
+		void IElementHandler.SetVirtualView(Maui.IElement view) =>
+			SetVirtualView(view, this, OnElementChanged, ref _virtualView, ref _mapper, _defaultMapper, AutoPackage);
 
 		void IElementHandler.UpdateValue(string property)
 		{
 			if (Element != null)
 			{
-				_mapper.UpdateProperty(this, Element, property);
+				OnElementPropertyChanged(Element, new PropertyChangedEventArgs(property));
 			}
 		}
 
@@ -279,7 +300,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif
 #if IOS
-			ver.SetBackgroundColor(view.Background?.ToColor());
+				ver.SetBackgroundColor(view.Background?.ToColor());
 #else
 				ver.UpdateBackgroundColor();
 #endif
@@ -293,7 +314,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif
 #if IOS
-			ver.SetBackground(view.Background);
+				ver.SetBackground(view.Background);
 #else
 				ver.UpdateBackground();
 #endif

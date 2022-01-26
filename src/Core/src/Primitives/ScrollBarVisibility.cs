@@ -1,5 +1,6 @@
 ﻿namespace Microsoft.Maui
 {
+	/// <include file="../../docs/Microsoft.Maui/ScrollBarVisibility.xml" path="Type[@FullName='Microsoft.Maui.ScrollBarVisibility']/Docs" />
 	public enum ScrollBarVisibility
 	{
 		/// <summary>

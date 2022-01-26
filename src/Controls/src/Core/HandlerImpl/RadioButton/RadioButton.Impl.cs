@@ -3,6 +3,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadioButton']/Docs" />
 	public partial class RadioButton : IRadioButton
 	{
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);

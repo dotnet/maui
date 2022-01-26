@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				Performance.Start(out string reference);
 
-				int width = MeasureSpec.GetSize(widthMeasureSpec);				
+				int width = MeasureSpec.GetSize(widthMeasureSpec);
 				int height;
 
 				if (ParentHasUnevenRows)

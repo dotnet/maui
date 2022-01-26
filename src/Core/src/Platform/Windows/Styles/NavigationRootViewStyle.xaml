@@ -2,7 +2,6 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:maui="using:Microsoft.Maui.Platform">
-
     <Style TargetType="maui:NavigationRootView">
         <Setter Property="Template">
             <Setter.Value>
@@ -23,6 +22,7 @@
 
                             <!-- This removes a one pixel spacing between the AppBarTitle and the NavigationViews top edge -->
                             <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,0,0,0</Thickness>
+
                         </Page.Resources>
                         <Grid x:Name="RootGrid" RowSpacing="0" ColumnSpacing="0" Margin="0" Padding="0">
                             <Border x:Name="AppTitleBar"

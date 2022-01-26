@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="Type[@FullName='Microsoft.Maui.Controls.DependencyService']/Docs" />
 	public static class DependencyService
 	{
 		static bool s_initialized;
@@ -17,6 +18,7 @@ namespace Microsoft.Maui.Controls
 		static readonly List<Type> DependencyTypes = new List<Type>();
 		static readonly Dictionary<Type, DependencyData> DependencyImplementations = new Dictionary<Type, DependencyData>();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Resolve']/Docs" />
 		public static T Resolve<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(DependencyFetchTarget fallbackFetchTarget = DependencyFetchTarget.GlobalInstance) where T : class
 		{
 			var result = DependencyResolver.Resolve(typeof(T)) as T;
@@ -24,6 +26,7 @@ namespace Microsoft.Maui.Controls
 			return result ?? Get<T>(fallbackFetchTarget);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Get']/Docs" />
 		public static T Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(DependencyFetchTarget fetchTarget = DependencyFetchTarget.GlobalInstance) where T : class
 		{
 			Initialize();
@@ -59,6 +62,7 @@ namespace Microsoft.Maui.Controls
 			return (T)Activator.CreateInstance(dependencyImplementation.ImplementorType);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register']/Docs" />
 		public static void Register<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>() where T : class
 		{
 			Type type = typeof(T);
@@ -66,6 +70,7 @@ namespace Microsoft.Maui.Controls
 				DependencyTypes.Add(type);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register']/Docs" />
 		public static void Register<T, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImpl>() where T : class where TImpl : class, T
 		{
 			Type targetType = typeof(T);
@@ -77,6 +82,7 @@ namespace Microsoft.Maui.Controls
 				DependencyImplementations[targetType] = new DependencyData { ImplementorType = implementorType };
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='RegisterSingleton']/Docs" />
 		public static void RegisterSingleton<T>(T instance) where T : class
 		{
 			Type targetType = typeof(T);
@@ -119,6 +125,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register']/Docs" />
 		public static void Register(Assembly[] assemblies)
 		{
 			lock (s_initializeLock)
