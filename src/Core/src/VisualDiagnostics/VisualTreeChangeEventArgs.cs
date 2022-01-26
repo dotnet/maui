@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Maui.Controls.Xaml.Diagnostics
+namespace Microsoft.Maui
 {
 	public class VisualTreeChangeEventArgs : EventArgs
 	{
