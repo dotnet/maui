@@ -53,5 +53,10 @@ namespace Microsoft.Maui.Platform
 			webView.CanGoBack = nativeWebView.CanGoBack;
 			webView.CanGoForward = nativeWebView.CanGoForward;
 		}
+
+		public static void Eval(this WKWebView nativeWebView, IWebView webView, string script)
+		{
+			nativeWebView.EvaluateJavaScriptAsync(script);
+		}
 	}
 }
