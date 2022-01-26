@@ -1,26 +1,27 @@
-﻿using System;
-using Microsoft.Maui.Controls.Platform;
+﻿using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
-		
-		protected override Tizen.UIExtensions.NUI.CollectionView CreateNativeView()
+		protected override TCollectionView CreateNativeView()
 		{
-			throw new NotImplementedException();
+			return new MauiSelectableItemsView<TItemsView>();
 		}
 
 		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
+			(handler.NativeView as MauiSelectableItemsView<TItemsView>).UpdateSelection();
 		}
 
 		public static void MapSelectedItems(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
+			(handler.NativeView as MauiSelectableItemsView<TItemsView>).UpdateSelection();
 		}
 
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
+			(handler.NativeView as MauiSelectableItemsView<TItemsView>).UpdateSelection();
 		}
 	}
 }

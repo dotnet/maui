@@ -1,30 +1,41 @@
-﻿using System;
-using Microsoft.Maui.Controls.Platform;
+﻿using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
-		
-		protected override Tizen.UIExtensions.NUI.CollectionView CreateNativeView()
+		protected override TCollectionView CreateNativeView()
 		{
-			throw new NotImplementedException();
+			return new MauiStructuredItemsView<TItemsView>();
 		}
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateAdaptor();
 		}
 
 		public static void MapFooterTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateAdaptor();
 		}
 
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateLayoutManager();
 		}
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateLayoutManager();
+		}
+
+		public static void MapFooter(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		{
+			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateAdaptor();
+		}
+		public static void MapHeader(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		{
+			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateAdaptor();
 		}
 	}
 }

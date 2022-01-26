@@ -1,17 +1,18 @@
+#nullable enable
+
 using System.Collections;
 using System.Collections.Generic;
 using NView = Tizen.NUI.BaseComponents.View;
 using TSize = Tizen.UIExtensions.Common.Size;
 using XLabel = Microsoft.Maui.Controls.Label;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
+namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	[System.Obsolete]
 	public class EmptyItemAdaptor : ItemTemplateAdaptor
 	{
 		static DataTemplate s_defaultEmptyTemplate = new DataTemplate(typeof(EmptyView));
 
-		View _createdEmptyView;
+		View? _createdEmptyView;
 
 		public EmptyItemAdaptor(ItemsView itemsView, IEnumerable items, DataTemplate template) : base(itemsView, items, template)
 		{
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static EmptyItemAdaptor Create(ItemsView itemsView)
 		{
-			DataTemplate template = null;
+			DataTemplate template;
 			if (itemsView.EmptyView is View emptyView)
 			{
 				template = new DataTemplate(() =>
@@ -35,16 +36,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return new EmptyItemAdaptor(itemsView, new List<object>(), template);
 		}
 
-		public override NView GetFooterView()
+		public override NView? GetFooterView()
 		{
 			return null;
 		}
 
-		public override NView GetHeaderView()
+		public override NView? GetHeaderView()
 		{
-			View emptyView = ItemTemplate.CreateContent() as View;
+			View emptyView = (View)ItemTemplate.CreateContent();
 
-			Platform.GetOrCreateRenderer(emptyView)?.Dispose();
+			if (emptyView.Handler is INativeViewHandler nativeHandler)
+				nativeHandler.Dispose();
+
 			emptyView.Handler = null;
 			if (emptyView != (Element as ItemsView)?.EmptyView)
 				emptyView.BindingContext = (Element as ItemsView)?.EmptyView;
@@ -52,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var header = CreateHeaderView();
 			var footer = CreateFooterView();
 
-			var layout = new Controls.StackLayout
+			var layout = new StackLayout
 			{
 				VerticalOptions = LayoutOptions.Fill,
 				HorizontalOptions = LayoutOptions.Fill,
@@ -70,9 +73,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			layout.Parent = Element;
 			_createdEmptyView = layout;
-			var renderer = Platform.GetOrCreateRenderer(layout);
-			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
-			return renderer.NativeView;
+
+			return layout.ToNative(MauiContext, true);
 		}
 
 		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)
@@ -85,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return new TSize(widthConstraint, heightConstraint);
 		}
 
-		class EmptyView : Controls.StackLayout
+		class EmptyView : StackLayout
 		{
 			public EmptyView()
 			{

@@ -1,17 +1,17 @@
-﻿using System;
+﻿using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class GroupableItemsViewHandler<TItemsView> : SelectableItemsViewHandler<TItemsView> where TItemsView : GroupableItemsView
 	{
-		
-		protected override Tizen.UIExtensions.NUI.CollectionView CreateNativeView()
+		protected override TCollectionView CreateNativeView()
 		{
-			throw new NotImplementedException();
+			return new MauiGroupableItemsView<TItemsView>();
 		}
 
 		public static void MapIsGrouped(GroupableItemsViewHandler<TItemsView> handler, GroupableItemsView itemsView)
 		{
+			(handler.NativeView as MauiGroupableItemsView<TItemsView>).UpdateAdaptor();
 		}
 	}
 }
