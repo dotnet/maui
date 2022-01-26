@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			set
 			{
-				if (_font != value && _font != null && !_font.Equals(value))
+				if (_font != value)
 				{
 					_font = value;
 					_typefaceInvalid = true;
