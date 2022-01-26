@@ -7,6 +7,7 @@
 		public const string Editor = "Editor";
 		public const string Gesture = "Gesture";
 		public const string Label = "Label";
+		public const string TabbedPage = "TabbedPage";
 		public const string VisualElement = "VisualElement";
 	}
 }

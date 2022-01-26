@@ -64,9 +64,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private protected override void OnDisconnectHandler(FrameworkElement nativeView)
 		{
-			((WFrame)NativeView).Navigated -= OnNavigated;
+			((WFrame)nativeView).Navigated -= OnNavigated;
 			VirtualView.Appearing -= OnTabbedPageAppearing;
 			VirtualView.Disappearing -= OnTabbedPageDisappearing;
+			if (_navigationView != null)
+				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
+
+			_navigationView = null;
+			_navigationRootManager = null;
+			_previousView = null;
+			_navigationFrame = null;
+
 			base.OnDisconnectHandler(nativeView);
 		}
 
@@ -107,15 +115,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			_navigationRootManager = MauiContext?.GetNavigationRootManager();
 
 			if (_navigationView == null)
+			{
 				_navigationView = (_navigationRootManager?.RootView as NavigationRootView)?.NavigationViewControl;
 
-			if (_navigationView != null)
-			{
-				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
-				_navigationView.MenuItemsSource = VirtualView.Children;
-				_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
-				_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
-				_navigationView.SelectedItem = VirtualView.CurrentPage;
+				if (_navigationView != null)
+				{
+					_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+					_navigationView.MenuItemsSource = VirtualView.Children;
+					_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
+					_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
+					_navigationView.SelectedItem = VirtualView.CurrentPage;
+				}
 			}
 		}
 

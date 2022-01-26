@@ -10,6 +10,8 @@ using Microsoft.UI.Xaml.Media;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Microsoft.Maui.Platform
 {
@@ -188,6 +190,28 @@ namespace Microsoft.Maui.Platform
 						yield return subChild;
 				}
 			}
+		}
+
+		internal static Task LoadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			if (frameworkElement.IsLoaded)
+				taskCompletionSource.SetResult(true);
+
+			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if(routedEventHandler != null)
+					frameworkElement.Loaded -= routedEventHandler;
+
+				taskCompletionSource.SetResult(true);
+			};
+
+			frameworkElement.Loaded += routedEventHandler;
+						
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 	}
 }
