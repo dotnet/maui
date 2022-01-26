@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.Maui.Controls.Xaml.Diagnostics
+namespace Microsoft.Maui
 {
 	public static class VisualDiagnostics
 	{
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static SourceInfo GetSourceInfo(object obj) =>
+		public static SourceInfo? GetSourceInfo(object obj) =>
 			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
 
 		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			OnChildAdded(parent, child, index);
 		}
 
-		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child, int newLogicalIndex)
+		public static void OnChildAdded(IVisualTreeElement? parent, IVisualTreeElement child, int newLogicalIndex)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
 				return;
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, oldLogicalIndex, VisualTreeChangeType.Remove));
 		}
 
-		public static event EventHandler<VisualTreeChangeEventArgs> VisualTreeChanged;
+		public static event EventHandler<VisualTreeChangeEventArgs>? VisualTreeChanged;
 
 		static void OnVisualTreeChanged(VisualTreeChangeEventArgs e)
 		{

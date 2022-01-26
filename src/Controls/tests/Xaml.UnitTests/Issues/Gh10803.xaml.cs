@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				VisualDiagnostics.VisualTreeChanged += VTChanged;
-				debuggerinitialstate = Microsoft.Maui.Controls.Xaml.Diagnostics.DebuggerHelper._mockDebuggerIsAttached;
+				debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
 				DebuggerHelper._mockDebuggerIsAttached = true;
 			}
 

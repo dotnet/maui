@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 {
 	public class VisualTreeChangeEventArgs : EventArgs
 	{
-		public VisualTreeChangeEventArgs(object parent, object child, int childIndex, VisualTreeChangeType changeType)
+		public VisualTreeChangeEventArgs(object? parent, object child, int childIndex, VisualTreeChangeType changeType)
 		{
 			Parent = parent;
 			Child = child;
@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 			ChangeType = changeType;
 		}
 
-		public object Parent { get; }
+		public object? Parent { get; }
 		public object Child { get; }
 		public int ChildIndex { get; }
 		public VisualTreeChangeType ChangeType { get; }
