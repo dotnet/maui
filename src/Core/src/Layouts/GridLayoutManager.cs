@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Layouts
 				{
 					var current = definitions[n].Size;
 
-					if (current <= 0)
+					if (current <= 0 && !definitions[n].IsStar)
 					{
 						continue;
 					}
