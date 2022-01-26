@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppInfo']/Docs" />
 	public static partial class AppInfo
 	{
 		static string PlatformGetPackageName() => throw ExceptionUtils.NotSupportedOrImplementedException;

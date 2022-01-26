@@ -4,15 +4,18 @@ using System.Collections.Generic;
 using BaseAnimation = Microsoft.Maui.Animations.Animation;
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="Type[@FullName='Microsoft.Maui.Controls.Animation']/Docs" />
 	public class Animation : BaseAnimation
 	{
 		bool _finishedTriggered;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
 		public Animation()
 		{
 			Easing = Easing.Linear;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public Animation(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, Action finished = null) : base(callback, start, end - start, easing, finished)
 		{
 
@@ -21,6 +24,7 @@ namespace Microsoft.Maui.Controls
 			Step = f => callback(transform(f));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='Add']/Docs" />
 		public void Add(double beginAt, double finishAt, Animation animation)
 		{
 			if (beginAt < 0 || beginAt > 1)
@@ -37,11 +41,13 @@ namespace Microsoft.Maui.Controls
 			childrenAnimations.Add(animation);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='Commit']/Docs" />
 		public void Commit(IAnimatable owner, string name, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null, Func<bool> repeat = null)
 		{
 			owner.Animate(name, this, rate, length, easing, finished, repeat);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='GetCallback']/Docs" />
 		public Action<double> GetCallback()
 		{
 			Action<double> result = f =>
@@ -72,18 +78,21 @@ namespace Microsoft.Maui.Controls
 
 		internal void ResetChildren() => this.Reset();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='Reset']/Docs" />
 		public override void Reset()
 		{
 			base.Reset();
 			_finishedTriggered = false;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='Insert']/Docs" />
 		public Animation Insert(double beginAt, double finishAt, Animation animation)
 		{
 			Add(beginAt, finishAt, animation);
 			return this;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='WithConcurrent']/Docs" />
 		public Animation WithConcurrent(Animation animation, double beginAt = 0.0f, double finishAt = 1.0f)
 		{
 			animation.StartDelay = beginAt;
@@ -92,6 +101,7 @@ namespace Microsoft.Maui.Controls
 			return this;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='WithConcurrent']/Docs" />
 		public Animation WithConcurrent(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, double beginAt = 0.0f, double finishAt = 1.0f)
 		{
 			var child = new Animation(callback, start, end, easing);
@@ -101,6 +111,7 @@ namespace Microsoft.Maui.Controls
 			return this;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='IsEnabled']/Docs" />
 		public bool IsEnabled
 		{
 			get

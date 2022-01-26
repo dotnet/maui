@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class PerformanceTrackingFrame : FrameRenderer, IDrawnObservable
+	public class PerformanceTrackingFrame : Handlers.Compatibility.FrameRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingFrame> _watcher;
 		int _Drawn;

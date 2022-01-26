@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Platform
 			if (AppTitleBar == null)
 				return;
 
-			const int topIndent = 16;
+			//const int topIndent = 16;
 			const int expandedIndent = 48;
 			int minimalIndent = 0;
 
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Platform
 			// Set the TitleBar margin dependent on NavigationView display mode
 			if (NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
 			{
-				AppTitleBar.Margin = new WThickness(topIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
+				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 			}
 			else if(NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
 			{

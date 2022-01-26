@@ -9,32 +9,44 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs" />
 	public partial class NavigationPage : Page, IPageContainer<Page>, IBarElement, IElementConfiguration<NavigationPage>
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BackButtonTitleProperty']/Docs" />
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='HasNavigationBarProperty']/Docs" />
 		public static readonly BindableProperty HasNavigationBarProperty =
 			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='HasBackButtonProperty']/Docs" />
 		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackgroundColorProperty']/Docs" />
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackgroundProperty']/Docs" />
 		public static readonly BindableProperty BarBackgroundProperty = BarElement.BarBackgroundProperty;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarTextColorProperty']/Docs" />
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='TitleIconImageSourceProperty']/Docs" />
 		public static readonly BindableProperty TitleIconImageSourceProperty = BindableProperty.CreateAttached("TitleIconImageSource", typeof(ImageSource), typeof(NavigationPage), default(ImageSource));
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='IconColorProperty']/Docs" />
 		public static readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(NavigationPage), null);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='TitleViewProperty']/Docs" />
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null, propertyChanging: TitleViewPropertyChanging);
 
 		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='CurrentPageProperty']/Docs" />
 		public static readonly BindableProperty CurrentPageProperty = CurrentPagePropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey RootPagePropertyKey = BindableProperty.CreateReadOnly(nameof(RootPage), typeof(Page), typeof(NavigationPage), null);
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='RootPageProperty']/Docs" />
 		public static readonly BindableProperty RootPageProperty = RootPagePropertyKey.BindableProperty;
 
 		INavigationPageController NavigationPageController => this;
@@ -48,10 +60,12 @@ namespace Microsoft.Maui.Controls
 #endif
 
 		bool _setForMaui;
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
 		public NavigationPage() : this(UseMauiHandler)
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public NavigationPage(Page root) : this(UseMauiHandler, root)
 		{
 		}
@@ -72,18 +86,21 @@ namespace Microsoft.Maui.Controls
 				PushPage(root);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackgroundColor']/Docs" />
 		public Color BarBackgroundColor
 		{
 			get => (Color)GetValue(BarElement.BarBackgroundColorProperty);
 			set => SetValue(BarElement.BarBackgroundColorProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackground']/Docs" />
 		public Brush BarBackground
 		{
 			get => (Brush)GetValue(BarElement.BarBackgroundProperty);
 			set => SetValue(BarElement.BarBackgroundProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarTextColor']/Docs" />
 		public Color BarTextColor
 		{
 			get => (Color)GetValue(BarElement.BarTextColorProperty);
@@ -92,6 +109,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Task CurrentNavigationTask { get; set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='Peek']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Page Peek(int depth)
 		{
@@ -115,12 +133,14 @@ namespace Microsoft.Maui.Controls
 			get { return InternalChildren.Count; }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='CurrentPage']/Docs" />
 		public Page CurrentPage
 		{
 			get { return (Page)GetValue(CurrentPageProperty); }
 			private set { SetValue(CurrentPagePropertyKey, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='RootPage']/Docs" />
 		public Page RootPage
 		{
 			get { return (Page)GetValue(RootPageProperty); }
@@ -143,11 +163,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonTitle']/Docs" />
 		public static string GetBackButtonTitle(BindableObject page)
 		{
 			return (string)page.GetValue(BackButtonTitleProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetHasBackButton']/Docs" />
 		public static bool GetHasBackButton(Page page)
 		{
 			if (page == null)
@@ -155,21 +177,25 @@ namespace Microsoft.Maui.Controls
 			return (bool)page.GetValue(HasBackButtonProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetHasNavigationBar']/Docs" />
 		public static bool GetHasNavigationBar(BindableObject page)
 		{
 			return (bool)page.GetValue(HasNavigationBarProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetTitleIconImageSource']/Docs" />
 		public static ImageSource GetTitleIconImageSource(BindableObject bindable)
 		{
 			return (ImageSource)bindable.GetValue(TitleIconImageSourceProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetTitleView']/Docs" />
 		public static View GetTitleView(BindableObject bindable)
 		{
 			return (View)bindable.GetValue(TitleViewProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetIconColor']/Docs" />
 		public static Color GetIconColor(BindableObject bindable)
 		{
 			if (bindable == null)
@@ -180,11 +206,13 @@ namespace Microsoft.Maui.Controls
 			return (Color)bindable.GetValue(IconColorProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][0]/Docs" />
 		public Task<Page> PopAsync()
 		{
 			return PopAsync(true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][1]/Docs" />
 		public async Task<Page> PopAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -224,11 +252,13 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<NavigationEventArgs> PoppedToRoot;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][0]/Docs" />
 		public Task PopToRootAsync()
 		{
 			return PopToRootAsync(true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs" />
 		public async Task PopToRootAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -256,11 +286,13 @@ namespace Microsoft.Maui.Controls
 			await result;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][0]/Docs" />
 		public Task PushAsync(Page page)
 		{
 			return PushAsync(page, true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][1]/Docs" />
 		public async Task PushAsync(Page page, bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -292,11 +324,13 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<NavigationEventArgs> Pushed;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetBackButtonTitle']/Docs" />
 		public static void SetBackButtonTitle(BindableObject page, string value)
 		{
 			page.SetValue(BackButtonTitleProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetHasBackButton']/Docs" />
 		public static void SetHasBackButton(Page page, bool value)
 		{
 			if (page == null)
@@ -304,21 +338,25 @@ namespace Microsoft.Maui.Controls
 			page.SetValue(HasBackButtonProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetHasNavigationBar']/Docs" />
 		public static void SetHasNavigationBar(BindableObject page, bool value)
 		{
 			page.SetValue(HasNavigationBarProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetTitleIconImageSource']/Docs" />
 		public static void SetTitleIconImageSource(BindableObject bindable, ImageSource value)
 		{
 			bindable.SetValue(TitleIconImageSourceProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetTitleView']/Docs" />
 		public static void SetTitleView(BindableObject bindable, View value)
 		{
 			bindable.SetValue(TitleViewProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetIconColor']/Docs" />
 		public static void SetIconColor(BindableObject bindable, Color value)
 		{
 			bindable.SetValue(IconColorProperty, value);
@@ -387,6 +425,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<NavigationPage>> _platformConfigurationRegistry;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='On']/Docs" />
 		public new IPlatformElementConfiguration<T, NavigationPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -1,9 +1,9 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Microsoft.Maui.Graphics;
-using AView = Android.Views.View;
-using System;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using ATextAlignment = Android.Views.TextAlignment;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {

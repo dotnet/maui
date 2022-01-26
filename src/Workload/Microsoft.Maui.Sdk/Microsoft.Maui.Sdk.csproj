@@ -26,6 +26,7 @@
     <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.pdb" />
     <_Files Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Build.Tasks.dll" />
+    <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Build.Tasks.pdb" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\*\Microsoft.Maui.Controls.Build.Tasks.resources.dll" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.dll" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.pdb" />
@@ -52,7 +53,7 @@
   <Target Name="_GenerateBundledVersions"
       BeforeTargets="Build;AssignTargetPaths"
       DependsOnTargets="SetVersions"
-      Inputs="$(MSBuildProjectFile);Sdk/BundledVersions.in.targets"
+      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/BundledVersions.in.targets"
       Outputs="$(IntermediateOutputPath)BundledVersions.targets">
     <ReplaceText
         Input="Sdk/BundledVersions.in.targets"

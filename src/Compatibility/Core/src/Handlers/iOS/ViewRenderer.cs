@@ -3,6 +3,7 @@ using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
+using UIKit;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		TNativeView? _nativeView;
 
 		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView ?? _nativeView;
+		object? IElementHandler.NativeView => _nativeView;
 
 		public ViewRenderer() : this(VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{
@@ -35,9 +37,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
-			if(_nativeView !=  null && Element != null)
+			var platformView = (this as IElementHandler).NativeView as UIView;
+			if (platformView != null && Element != null)
 			{
-				_nativeView.Frame = new CoreGraphics.CGRect(0, 0, (nfloat)Element.Width, (nfloat)Element.Height);
+				platformView.Frame = new CoreGraphics.CGRect(0, 0, (nfloat)Element.Width, (nfloat)Element.Height);
 			}
 		}
 
@@ -72,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_nativeView = control;
 
-			if(Control != null)
+			if (Control != null)
 				AddSubview(Control);
 		}
 

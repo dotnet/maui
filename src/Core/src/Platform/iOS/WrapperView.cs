@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 	public partial class WrapperView : UIView
 	{
 		CAShapeLayer? _maskLayer;
-		CAShapeLayer? _shadowLayer; 
+		CAShapeLayer? _shadowLayer;
 		UIView? BorderView;
 
 		public WrapperView()

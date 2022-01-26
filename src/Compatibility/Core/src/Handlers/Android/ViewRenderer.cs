@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System;
-using PlatformView = Android.Views.View;
-using AViewGroup = Android.Views.ViewGroup;
 using Android.Content;
+using AViewGroup = Android.Views.ViewGroup;
+using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		AViewGroup? _container;
 
 		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView ?? _nativeView;
+		object? IElementHandler.NativeView => _nativeView;
 
 		public ViewRenderer(Context context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{

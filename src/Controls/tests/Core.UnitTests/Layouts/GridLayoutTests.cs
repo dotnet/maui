@@ -55,13 +55,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Test]
-		public void ChangingRowSpacingInvalidatesGrid() 
+		public void ChangingRowSpacingInvalidatesGrid()
 		{
 			var grid = new Grid();
 
 			var handler = ListenForInvalidation(grid);
 			grid.RowSpacing = 100;
-			AssertInvalidated(handler); 
+			AssertInvalidated(handler);
 		}
 
 		[Test]
@@ -77,21 +77,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void ChangingChildRowInvalidatesGrid()
 		{
-			var grid = new Grid() 
-			{ 
-				RowDefinitions = new RowDefinitionCollection 
-				{ 
-					new RowDefinition(), new RowDefinition() 
-				} 
+			var grid = new Grid()
+			{
+				RowDefinitions = new RowDefinitionCollection
+				{
+					new RowDefinition(), new RowDefinition()
+				}
 			};
 
 			var view = Substitute.For<IView>();
 			grid.Add(view);
 
 			var handler = ListenForInvalidation(grid);
-			
+
 			grid.SetRow(view, 1);
-			
+
 			AssertInvalidated(handler);
 		}
 
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			AssertInvalidated(handler);
 		}
 
-		static IViewHandler ListenForInvalidation(IView view) 
+		static IViewHandler ListenForInvalidation(IView view)
 		{
 			var handler = Substitute.For<IViewHandler>();
 			view.Handler = handler;

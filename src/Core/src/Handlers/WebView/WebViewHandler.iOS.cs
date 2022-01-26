@@ -19,31 +19,25 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			var nativeWebView = handler.NativeView;
-
-			if (nativeWebView == null)
-				return;
-
-			if (nativeWebView.CanGoBack)
-				nativeWebView.GoBack();
+			handler.NativeView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			var nativeWebView = handler.NativeView;
-
-			if (nativeWebView == null)
-				return;
-
-			if (nativeWebView.CanGoForward)
-				nativeWebView.GoForward();
+			handler.NativeView?.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			// TODO: Sync Cookies
+			handler.NativeView?.UpdateReload(webView);
+		}
 
-			handler.NativeView?.Reload();
+		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
+				return;
+
+			handler.NativeView?.Eval(webView, script);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
