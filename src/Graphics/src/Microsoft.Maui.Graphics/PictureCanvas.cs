@@ -81,9 +81,9 @@ namespace Microsoft.Maui.Graphics
 			set { _commands.Add(canvas => canvas.FontColor = value); }
 		}
 
-		public string FontName
+		public IFont Font
 		{
-			set { _commands.Add(canvas => canvas.FontName = value); }
+			set { _commands.Add(canvas => canvas.Font = value); }
 		}
 
 		public float FontSize
@@ -258,14 +258,14 @@ namespace Microsoft.Maui.Graphics
 			_commands.Add(canvas => canvas.SetFillPaint(paint, rectangle));
 		}
 
-		public void SetToSystemFont()
+		public SizeF GetStringSize(string value, IFont font, float fontSize)
 		{
-			_commands.Add(canvas => canvas.SetToSystemFont());
+			throw new NotSupportedException();
 		}
 
-		public void SetToBoldSystemFont()
+		public SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
-			_commands.Add(canvas => canvas.SetToBoldSystemFont());
+			throw new NotSupportedException();
 		}
 
 		public void DrawImage(IImage image, float x, float y, float width, float height)

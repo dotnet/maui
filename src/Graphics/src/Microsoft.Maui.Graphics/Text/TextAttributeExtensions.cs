@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics.Text.Immutable;
+using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Text
 {

@@ -1,7 +1,7 @@
 using UIKit;
 using CoreGraphics;
 
-namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class UIImageExtensions
 	{

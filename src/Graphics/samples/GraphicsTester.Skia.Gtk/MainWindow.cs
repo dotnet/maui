@@ -54,9 +54,7 @@ namespace Samples
 			};
 			hpanned.Pack1(scroll0, true, true);
 
-			Fonts.Register(new SkiaFontService("", ""));
-			GraphicsPlatform.RegisterGlobalService(SkiaGraphicsService.Instance);
-
+			
 			_skiaGraphicsView = new GtkSkiaGraphicsView();
 
 			var skiaGraphicsRenderer = new GtkSkiaDirectRenderer

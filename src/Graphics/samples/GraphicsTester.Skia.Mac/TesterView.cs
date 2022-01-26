@@ -1,9 +1,9 @@
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.CoreGraphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Skia.Views;
 using AppKit;
 using CoreGraphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Skia {
 	public class TesterViewController : NSViewController {
@@ -28,8 +28,6 @@ namespace GraphicsTester.Skia {
 
 		public TesterView () : base ()
 		{
-			GraphicsPlatform.Register (NativeGraphicsService.Instance);
-
 			tableSource = new TesterTableViewSource ();
 			tableSource.ScenarioSelected += (drawable) => {
 				graphicsView.Drawable = drawable;

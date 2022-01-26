@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Graphics.Android
 {
-	public class FontInfo
+	internal class FontInfo
 	{
 		public FontInfo(string path, string family, string style, string fullName)
 		{

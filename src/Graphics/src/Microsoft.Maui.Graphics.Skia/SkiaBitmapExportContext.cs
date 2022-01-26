@@ -34,17 +34,17 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (_surface == null)
 			{
-				Logger.Warn("Unable to create a Skia surface");
+				System.Diagnostics.Debug.WriteLine("Unable to create a Skia surface");
 				return;
 			}
 
 			_skiaCanvas = _surface.Canvas;
-			var nativeCanvas = new SkiaCanvas
+			var platformCanvas = new SkiaCanvas
 			{
 				Canvas = _skiaCanvas,
 				DisplayScale = displayScale
 			};
-			_canvas = new ScalingCanvas(nativeCanvas);
+			_canvas = new ScalingCanvas(platformCanvas);
 			_disposeBitmap = disposeBitmap;
 		}
 

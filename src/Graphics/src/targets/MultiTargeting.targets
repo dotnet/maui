@@ -15,7 +15,7 @@
     <Compile Remove="**\Mac\**\*.cs"/>
     <None Include="**\Mac\**\*.cs"/>
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true And $(TargetFramework.StartsWith('Xamarin.iOS')) != true  And '$(TargetPlatformIdentifier)' != 'ios' And '$(TargetPlatformIdentifier)' != 'maccatalyst'">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true And $(TargetFramework.StartsWith('Xamarin.iOS')) != true  And '$(TargetPlatformIdentifier)' != 'ios' And '$(TargetPlatformIdentifier)' != 'maccatalyst' And '$(TargetPlatformIdentifier)' != 'macos'">
     <Compile Remove="**\*.MaciOS.cs"/>
     <None Include="**\*.MaciOS.cs"/>
     <Compile Remove="**\MaciOS\*.cs"/>

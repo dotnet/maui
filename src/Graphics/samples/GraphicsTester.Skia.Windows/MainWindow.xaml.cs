@@ -19,8 +19,6 @@ namespace GraphicsTester.WPF.Skia
 
 		public void Initialize()
 		{
-			Fonts.Register(new GDIFontService());
-			GraphicsPlatform.RegisterGlobalService(SkiaGraphicsService.Instance);
 			GraphicsView.BackgroundColor = Colors.White;
 
 			foreach (var scenario in ScenarioList.Scenarios)

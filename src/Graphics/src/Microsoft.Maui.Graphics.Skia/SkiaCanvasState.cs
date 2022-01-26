@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Graphics.Skia
 		public float Alpha = 1;
 		private SKPaint _fillPaint;
 		private SKPaint _strokePaint;
-		private string _fontName = "Arial";
+		private IFont _font;
 		private SKPaint _fontPaint;
 		private float _fontSize = 10f;
 		private float _scaleX = 1;
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			_fontPaint = prototype.FontPaint.CreateCopy();
 			_fillPaint = prototype.FillPaint.CreateCopy();
 			_strokePaint = prototype.StrokePaint.CreateCopy();
-			_fontName = prototype._fontName;
+			_font = prototype._font;
 			_fontSize = prototype._fontSize;
 			Alpha = prototype.Alpha;
 			_scaleX = prototype._scaleX;
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
-		public float NativeStrokeSize
+		public float PlatformStrokeSize
 		{
 			set => StrokePaint.StrokeWidth = value * _scaleX;
 		}
@@ -198,18 +198,18 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
-		public string FontName
+		public IFont Font
 		{
 			set
 			{
-				if (_fontName != value && (_fontName != null && !_fontName.Equals(value)))
+				if (_font != value && (_font != null && !_font.Equals(value)))
 				{
-					_fontName = value;
+					_font = value;
 					_typefaceInvalid = true;
 				}
 			}
 
-			get => _fontName;
+			get => _font;
 		}
 
 		public SKPaint FontPaint
@@ -222,13 +222,13 @@ namespace Microsoft.Maui.Graphics.Skia
 					{
 						Color = SKColors.Black,
 						IsAntialias = true,
-						Typeface = SkiaDelegatingFontService.Instance.GetTypeface(SkiaGraphicsService.Instance.SystemFontName)
+						Typeface = SKTypeface.Default,
 					};
 				}
 
 				if (_typefaceInvalid)
 				{
-					_fontPaint.Typeface = SkiaDelegatingFontService.Instance.GetTypeface(_fontName);
+					_fontPaint.Typeface = _font?.ToSKTypeface() ?? SKTypeface.Default;
 					_typefaceInvalid = false;
 				}
 
@@ -437,7 +437,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			_blurFilter?.Dispose();
 			_blurFilter = null;
 
-			_fontName = "Arial";
+			_font = null;
 			_fontSize = 10f;
 			Alpha = 1;
 			_scaleX = 1;

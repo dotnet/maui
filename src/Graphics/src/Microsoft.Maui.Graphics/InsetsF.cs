@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Graphics
 			catch (Exception exc)
 			{
 #if DEBUG
-				Logger.Debug(exc);
+				System.Diagnostics.Debug.WriteLine(exc);
 #endif
 				return new InsetsF(0, 0, 0, 0);
 			}

@@ -1,6 +1,6 @@
 using UIKit;
 
-namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class UIKitExtensions
 	{

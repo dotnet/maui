@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.18362;net6.0-tizen6.5</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-macos;net6.0-tizen6.5</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.18362</TargetFrameworks>
     <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
@@ -8,7 +9,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyName>Microsoft.Maui.Graphics</AssemblyName>
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Graphics</PackageId>
@@ -20,6 +21,24 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" Condition="$(TargetFramework.Contains('-windows'))" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Windows\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="iOS\GraphicsiOS.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>GraphicsiOS.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Microsoft.Maui.Graphics.Platform</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\targets\MultiTargeting.targets" />
+  <ItemGroup>
+    <None Update="iOS\GraphicsiOS.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>GraphicsiOS.resx</DependentUpon>
+    </None>
+  </ItemGroup>
 </Project>

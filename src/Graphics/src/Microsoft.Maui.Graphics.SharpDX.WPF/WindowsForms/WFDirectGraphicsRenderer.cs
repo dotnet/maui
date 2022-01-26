@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Graphics.SharpDX.WindowsForms
 			}
 			catch (Exception exc)
 			{
-				Logger.Warn(exc);
+				System.Diagnostics.Debug.WriteLine(exc);
 			}
 			finally
 			{

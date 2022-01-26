@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics.Text.Immutable;
+using Microsoft.Maui.Graphics.Text;
 using System.IO;
 using Android.Text;
 
-namespace Microsoft.Maui.Graphics.Native.Text
+namespace Microsoft.Maui.Graphics.Platform
 {
-	public static class SpannableExtensions
+	internal static class SpannableExtensions
 	{
 		public static AttributedText AsAttributedText(this ISpannable target)
 		{

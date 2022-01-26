@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Microsoft.Maui.Graphics
 {
-	public abstract class PdfExportContext : IDisposable
+	internal abstract class PdfExportContext : IDisposable
 	{
 		private readonly float _defaultWidth;
 		private readonly float _defaultHeight;

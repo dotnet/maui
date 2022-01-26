@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 		private TransformGroup _transformGroup;
 		private bool _transformUsed;
 		private double _fontSize;
-		private string _font;
+		private IFont _font;
 
 		public XamlCanvasState()
 		{
@@ -223,56 +223,25 @@ namespace Microsoft.Maui.Graphics.Xaml
 			}
 		}
 
-		public string Font
+		public IFont Font
 		{
 			set => _font = value;
 		}
 
 		public global::Windows.UI.Xaml.Media.FontFamily FontFamily
-		{
-			get
-			{
-				var style = Fonts.CurrentService.GetFontStyleById(_font ?? "Arial");
-				return new global::Windows.UI.Xaml.Media.FontFamily(style.FontFamily.Name);
-			}
-		}
+			=> string.IsNullOrEmpty(_font?.Name) ? FontFamily.XamlAutoFontFamily : new FontFamily(_font?.Name);
 
 		public FontWeight FontWeight
-		{
-			get
-			{
-				var style = Fonts.CurrentService.GetFontStyleById(_font ?? "Arial");
-				if (style != null)
-				{
-					var weight = style.Weight;
-					return new FontWeight() {Weight = (ushort)weight};
-				}
-
-				return FontWeights.Normal;
-			}
-		}
+			=> new FontWeight { Weight = (ushort)(_font?.Weight ?? Graphics.Font.Default.Weight) };
 
 		public FontStyle FontStyle
-		{
-			get
+			=> (_font?.StyleType ?? Graphics.Font.Default.StyleType) switch
 			{
-				var style = Fonts.CurrentService.GetFontStyleById(_font ?? "Arial");
-				if (style != null)
-				{
-					var styleType = style.StyleType;
-					switch (styleType)
-					{
-						case FontStyleType.Italic:
-							return FontStyle.Italic;
-						case FontStyleType.Oblique:
-							return FontStyle.Oblique;
-					}
-				}
-
-				return new FontStyle();
-
-			}
-		}
+				FontStyleType.Normal => FontStyle.Normal,
+				FontStyleType.Italic => FontStyle.Italic,
+				FontStyleType.Oblique => FontStyle.Oblique,
+				_ => FontStyle.Normal
+			};
 
 		public void SetShadow(SizeF offset, float blur, Color color)
 		{

@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Graphics
 {
-	public interface IPdfExportService
+	internal interface IPdfExportService
 	{
 		PdfExportContext CreateContext(float width = -1, float height = -1);
 	}

@@ -3,7 +3,7 @@ using Android.Text;
 using System;
 using System.Numerics;
 
-namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class GraphicsExtensions
 	{
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Graphics.Native
 			float scaleX = 1,
 			float scaleY = 1)
 		{
-			var nativePath = new Path();
+			var platformPath = new Path();
 
 			int pointIndex = 0;
 			int arcAngleIndex = 0;
@@ -103,26 +103,26 @@ namespace Microsoft.Maui.Graphics.Native
 				if (vType == PathOperation.Move)
 				{
 					var point = path[pointIndex++];
-					nativePath.MoveTo(offsetX + point.X * scaleX, offsetY + point.Y * scaleY);
+					platformPath.MoveTo(offsetX + point.X * scaleX, offsetY + point.Y * scaleY);
 				}
 				else if (vType == PathOperation.Line)
 				{
 					var point = path[pointIndex++];
-					nativePath.LineTo(offsetX + point.X * scaleX, offsetY + point.Y * scaleY);
+					platformPath.LineTo(offsetX + point.X * scaleX, offsetY + point.Y * scaleY);
 				}
 
 				else if (vType == PathOperation.Quad)
 				{
 					var controlPoint = path[pointIndex++];
 					var point = path[pointIndex++];
-					nativePath.QuadTo(offsetX + controlPoint.X * scaleX, offsetY + controlPoint.Y * scaleY, offsetX + point.X * scaleX, offsetY + point.Y * scaleY);
+					platformPath.QuadTo(offsetX + controlPoint.X * scaleX, offsetY + controlPoint.Y * scaleY, offsetX + point.X * scaleX, offsetY + point.Y * scaleY);
 				}
 				else if (vType == PathOperation.Cubic)
 				{
 					var controlPoint1 = path[pointIndex++];
 					var controlPoint2 = path[pointIndex++];
 					var point = path[pointIndex++];
-					nativePath.CubicTo(offsetX + controlPoint1.X * scaleX, offsetY + controlPoint1.Y * scaleY, offsetX + controlPoint2.X * scaleX, offsetY + controlPoint2.Y * scaleY, offsetX + point.X * scaleX,
+					platformPath.CubicTo(offsetX + controlPoint1.X * scaleX, offsetY + controlPoint1.Y * scaleY, offsetX + controlPoint2.X * scaleX, offsetY + controlPoint2.Y * scaleY, offsetX + point.X * scaleX,
 						offsetY + point.Y * scaleY);
 				}
 				else if (vType == PathOperation.Arc)
@@ -152,15 +152,15 @@ namespace Microsoft.Maui.Graphics.Native
 						sweep *= -1;
 					}
 
-					nativePath.ArcTo(rect, startAngle, sweep);
+					platformPath.ArcTo(rect, startAngle, sweep);
 				}
 				else if (vType == PathOperation.Close)
 				{
-					nativePath.Close();
+					platformPath.Close();
 				}
 			}
 
-			return nativePath;
+			return platformPath;
 		}
 
 		public static Path AsAndroidPath(this PathF path, float ppu, float zoom)
@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Graphics.Native
 			if (pattern == null)
 				return null;
 
-			using (var context = new NativeBitmapExportContext((int) (pattern.Width * scale), (int) (pattern.Height * scale), scale, disposeBitmap: false))
+			using (var context = new PlatformBitmapExportContext((int) (pattern.Width * scale), (int) (pattern.Height * scale), scale, disposeBitmap: false))
 			{
 				var canvas = context.Canvas;
 				canvas.Scale(scale, scale);
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Graphics.Native
 			if (pattern == null)
 				return null;
 
-			using (var context = new NativeBitmapExportContext((int) (pattern.Width * scaleX), (int) (pattern.Height * scaleY), disposeBitmap: false))
+			using (var context = new PlatformBitmapExportContext((int) (pattern.Width * scaleX), (int) (pattern.Height * scaleY), disposeBitmap: false))
 			{
 				var scalingCanvas = new ScalingCanvas(context.Canvas);
 				scalingCanvas.Scale(scaleX, scaleY);

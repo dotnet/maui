@@ -421,7 +421,7 @@ namespace GraphicsTester.Scenarios
 					var vHorizontalAlignment = (HorizontalAlignment)x;
 					var vVerticalAlignment = (VerticalAlignment)y;
 
-					canvas.FontName = "Arial";
+					canvas.Font = Font.Default;
 					canvas.FontSize = 12f;
 					canvas.DrawString(vTextLong, dx, dy, 190, 140, vHorizontalAlignment, vVerticalAlignment);
 				}
@@ -442,7 +442,7 @@ namespace GraphicsTester.Scenarios
 					var vHorizontalAlignment = (HorizontalAlignment)x;
 					var vVerticalAlignment = (VerticalAlignment)y;
 
-					canvas.FontName = "Arial";
+					canvas.Font = Font.Default;
 					canvas.FontSize = 12f;
 					canvas.DrawString(vTextShort, dx, dy, 190, 140, vHorizontalAlignment, vVerticalAlignment);
 				}
@@ -460,7 +460,7 @@ namespace GraphicsTester.Scenarios
 				const HorizontalAlignment vHorizontalAlignment = HorizontalAlignment.Left;
 				var vVerticalAlignment = (VerticalAlignment)y;
 
-				canvas.FontName = "Arial";
+				canvas.Font = Font.Default;
 				canvas.FontSize = 12f;
 				canvas.DrawString(
 					vTextLong,
@@ -497,39 +497,33 @@ namespace GraphicsTester.Scenarios
 			canvas.DrawLine(300, 1275, 300, 1375);
 			canvas.RestoreState();
 
-			var graphicsPlatform = GraphicsPlatform.CurrentService;
-			if (graphicsPlatform != null)
+			//
+			// Test String Measuring
+			//
+
+			canvas.StrokeColor = Colors.Blue;
+			for (int i = 0; i < 4; i++)
 			{
-				//
-				// Test String Measuring
-				//
+				canvas.FontSize = 12 + i * 6;
+				canvas.DrawString("Test String Length", 650, 400 + (100 * i), HorizontalAlignment.Left);
 
-				canvas.StrokeColor = Colors.Blue;
-				for (int i = 0; i < 4; i++)
-				{
-					canvas.FontSize = 12 + i * 6;
-					canvas.DrawString("Test String Length", 650, 400 + (100 * i), HorizontalAlignment.Left);
-
-					var size = graphicsPlatform.GetStringSize("Test String Length", "Arial", 12 + i * 6);
-					canvas.DrawRectangle(650, 400 + (100 * i), size.Width, size.Height);
-				}
-
-				//
-				// Test Path Measuring
-				//
-
-				var vBuilder = new PathBuilder();
-				path =
-					vBuilder.BuildPath(
-						"M0 52.5 C60 -17.5 60 -17.5 100 52.5 C140 122.5 140 122.5 100 152.5 Q60 182.5 0 152.5 Z");
-
-				canvas.SaveState();
-				canvas.Translate(650, 900);
-				canvas.StrokeColor = Colors.Black;
-				canvas.DrawPath(path);
-
-				canvas.RestoreState();
+				var size = canvas.GetStringSize("Test String Length", Font.Default, 12 + i * 6);
+				canvas.DrawRectangle(650, 400 + (100 * i), size.Width, size.Height);
 			}
+
+			//
+			// Test Path Measuring
+			//
+
+			var vBuilder = new PathBuilder();
+			path =
+				vBuilder.BuildPath(
+					"M0 52.5 C60 -17.5 60 -17.5 100 52.5 C140 122.5 140 122.5 100 152.5 Q60 182.5 0 152.5 Z");
+
+			canvas.SaveState();
+			canvas.Translate(650, 900);
+			canvas.StrokeColor = Colors.Black;
+			canvas.DrawPath(path);
 
 			canvas.RestoreState();
 		}

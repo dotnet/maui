@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Graphics.GDI
 {
 	public class GDICanvasState : CanvasState
 	{
-		private const float DpiAdjustment = 72f / 96f;
+		internal const float DpiAdjustment = 72f / 96f;
 
 		private readonly System.Drawing.Graphics _graphics;
 
@@ -24,10 +24,8 @@ namespace Microsoft.Maui.Graphics.GDI
 		private Brush _activeBrush;
 
 		private SolidBrush _textBrush;
-		private Font _font;
+		private IFont _font;
 		private float _fontSize;
-		private FontStyle _fontStyle;
-		private string _fontName;
 
 		private Matrix _originalTransform;
 
@@ -52,8 +50,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			FillColor = prototype.FillColor;
 
 			TextColor = prototype.TextColor;
-			_fontName = prototype._fontName;
-			_fontStyle = prototype._fontStyle;
+			_font = prototype._font;
 			_fontSize = prototype._fontSize;
 
 			/*strokeBrush = prototype.strokeBrush;
@@ -208,51 +205,40 @@ namespace Microsoft.Maui.Graphics.GDI
 			}
 		}
 
-		public Font Font => _font ?? (_font = new Font(_fontName, _fontSize, _fontStyle));
-
 		public bool IsBlurred { get; set; }
 
 		public bool IsShadowed { get; set; }
 
-		public string FontName
+		public IFont Font
 		{
+			get => _font;
 			set
 			{
-				_fontName = value;
+				_font = value;
 				if (_font != null)
 				{
-					_font.Dispose();
+					//_font.Dispose();
 					_font = null;
 				}
 			}
 		}
 
 		public FontStyle FontStyle
-		{
-			set
+			=> (_font?.StyleType ?? Graphics.Font.Default.StyleType) switch
 			{
-				_fontStyle = value;
-				if (_font != null)
-				{
-					_font.Dispose();
-					_font = null;
-				}
-			}
-		}
+				FontStyleType.Normal => FontStyle.Regular,
+				FontStyleType.Italic => FontStyle.Italic,
+				FontStyleType.Oblique => FontStyle.Italic,
+				_ => FontStyle.Regular,
+			};
 
 		public float FontSize
 		{
-			set
-			{
-				// We need to adjust the font size to compensate for 96dpi vs 72dpi
-				_fontSize = value * DpiAdjustment;
-				if (_font != null)
-				{
-					_font.Dispose();
-					_font = null;
-				}
-			}
+			set => _fontSize = value;
 		}
+
+		public float NativeFontSize
+			=> _fontSize * DpiAdjustment;
 
 		public Drawing.Drawing2D.LineJoin StrokeLineJoin { get; set; }
 
@@ -294,7 +280,7 @@ namespace Microsoft.Maui.Graphics.GDI
 
 			if (_font != null)
 			{
-				_font.Dispose();
+				//_font.Dispose();
 				_font = null;
 			}
 
@@ -332,10 +318,9 @@ namespace Microsoft.Maui.Graphics.GDI
 			FillColor = Drawing.Color.White;
 
 			TextColor = Drawing.Color.Black;
-			_fontName = "Arial";
+			_font = Graphics.Font.Default;
 			_fontSize = 12 * DpiAdjustment;
-			_fontStyle = FontStyle.Regular;
-
+			
 			/* sourceStrokeColor = StandardColors.Black;
 			strokeBrushValid = false;
 			needsStrokeStyle = false;

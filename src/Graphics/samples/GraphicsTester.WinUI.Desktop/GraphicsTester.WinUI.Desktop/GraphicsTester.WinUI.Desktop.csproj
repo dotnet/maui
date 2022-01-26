@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSdk" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.29-preview3" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

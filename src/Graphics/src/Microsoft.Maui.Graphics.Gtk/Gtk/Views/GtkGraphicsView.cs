@@ -1,30 +1,36 @@
-namespace Microsoft.Maui.Graphics.Native.Gtk {
-
-	public class GtkGraphicsView : global::Gtk.EventBox {
-
+namespace Microsoft.Maui.Graphics.Platform.Gtk
+{
+	public class GtkGraphicsView : global::Gtk.EventBox
+	{
 		private IDrawable? _drawable;
 		private RectangleF _dirtyRect;
 		private Color? _backgroundColor;
 
-		public GtkGraphicsView() {
+		public GtkGraphicsView()
+		{
 			AppPaintable = true;
 			VisibleWindow = false;
 		}
 
-		protected override bool OnDrawn(Cairo.Context context) {
-			if (_drawable == null) {
+		protected override bool OnDrawn(Cairo.Context context)
+		{
+			if (_drawable == null)
+			{
 				return base.OnDrawn(context);
 			}
 
 			// ensure cr does not get disposed before it is passed back to Gtk
-			var canvas = new NativeCanvas {Context = context};
+			var canvas = new PlatformCanvas { Context = context };
 
 			canvas.SaveState();
 
-			if (_backgroundColor != null) {
+			if (_backgroundColor != null)
+			{
 				canvas.FillColor = _backgroundColor;
 				canvas.FillRectangle(_dirtyRect);
-			} else {
+			}
+			else
+			{
 				canvas.ClipRectangle(_dirtyRect);
 			}
 
@@ -34,23 +40,28 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 			return base.OnDrawn(context);
 		}
 
-		public Color? BackgroundColor {
+		public Color? BackgroundColor
+		{
 			get => _backgroundColor;
-			set {
+			set
+			{
 				_backgroundColor = value;
 				QueueDraw();
 			}
 		}
 
-		public IDrawable? Drawable {
+		public IDrawable? Drawable
+		{
 			get => _drawable;
-			set {
+			set
+			{
 				_drawable = value;
 				QueueDraw();
 			}
 		}
 
-		protected override void OnSizeAllocated(Gdk.Rectangle allocation) {
+		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
+		{
 			_dirtyRect.Width = allocation.Width;
 			_dirtyRect.Height = allocation.Height;
 			base.OnSizeAllocated(allocation);

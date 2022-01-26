@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Graphics.Text
 				span.FontFamily = new System.Windows.Media.FontFamily(fontName);
 
 			if (attributes.GetBold())
-				span.FontWeight = FontWeights.Bold;
+				span.FontWeight = FontWeight.FromOpenTypeWeight(FontWeights.Bold);
 
 			if (attributes.GetItalic())
 				span.FontStyle = FontStyles.Italic;

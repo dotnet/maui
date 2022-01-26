@@ -1,8 +1,8 @@
 using System;
 
-namespace Microsoft.Maui.Graphics.Native.Gtk {
+namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
-	public static class PaintExtensions {
+	internal static class PaintExtensions {
 
 		public static Cairo.Context? PaintToSurface(this PatternPaint? it, Cairo.Surface? surface, float scale) {
 			if (surface == null || it == null)
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 			var context = new Cairo.Context(surface);
 			context.Scale(scale, scale);
 
-			using var canv = new NativeCanvas {
+			using var canv = new PlatformCanvas {
 				Context = context,
 			};
 

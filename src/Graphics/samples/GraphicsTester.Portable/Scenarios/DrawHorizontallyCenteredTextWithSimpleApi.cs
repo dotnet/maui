@@ -14,22 +14,22 @@ namespace GraphicsTester.Scenarios
 			canvas.SaveState();
 
 			canvas.FillColor = Colors.CornflowerBlue;
-			canvas.FontName = "Arial";
+			canvas.Font = Font.Default;
 			canvas.FontSize = 12f;
 
 			canvas.Translate(0, 10);
-			canvas.DrawString("Arial - Left", 100, 10, HorizontalAlignment.Left);
+			canvas.DrawString("Default - Left", 100, 10, HorizontalAlignment.Left);
 			canvas.FillCircle(100, 10, 2);
 
 			canvas.Translate(0, 30);
-			canvas.DrawString("Arial - Center", 100, 10, HorizontalAlignment.Center);
+			canvas.DrawString("Default - Center", 100, 10, HorizontalAlignment.Center);
 			canvas.FillCircle(100, 10, 2);
 
 			canvas.Translate(0, 30);
-			canvas.DrawString("Arial - Right", 100, 10, HorizontalAlignment.Right);
+			canvas.DrawString("Default - Right", 100, 10, HorizontalAlignment.Right);
 			canvas.FillCircle(100, 10, 2);
 
-			canvas.SetToSystemFont();
+			canvas.Font = Font.Default;
 
 			canvas.Translate(0, 30);
 			canvas.DrawString("System - Left", 100, 10, HorizontalAlignment.Left);

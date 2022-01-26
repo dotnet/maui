@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 
 			if (image != null)
 			{
-				Logger.Warn(
+				System.Diagnostics.Debug.WriteLine(
 					"DXImageExtensions.AsBitmap: Unable to get Bitmap from Image. Expected an image of type DXImage however an image of type {0} was received.",
 					image.GetType());
 			}

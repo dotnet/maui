@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>

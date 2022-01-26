@@ -4,7 +4,6 @@
     <RootNamespace>Microsoft.Maui.Graphics.Forms</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
     <PackageId>Microsoft.Maui.Graphics.Skia.Forms</PackageId>
     <Product>Microsoft.Maui.Graphics.Skia.Forms</Product>
   </PropertyGroup>

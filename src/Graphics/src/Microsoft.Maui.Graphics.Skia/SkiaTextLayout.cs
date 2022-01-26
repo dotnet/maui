@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			{
 				_paint = new SKPaint()
 				{
-					Typeface = SkiaDelegatingFontService.Instance.GetTypeface(_textAttributes.FontName),
+					Typeface = _textAttributes?.Font?.ToSKTypeface() ?? SKTypeface.Default,
 					TextSize = _textAttributes.FontSize
 				};
 

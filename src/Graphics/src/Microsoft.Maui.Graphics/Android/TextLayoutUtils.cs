@@ -1,9 +1,9 @@
 using System.Drawing;
 using Android.Text;
 
-namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Platform
 {
-	public static class TextLayoutUtils
+	internal static class TextLayoutUtils
 	{
 		public static StaticLayout CreateLayout(string text, TextPaint textPaint, int? boundedWidth, Layout.Alignment alignment)
 		{

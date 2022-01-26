@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Graphics
 		public  float[] StrokeDashPattern { set; }
 		public  Color FillColor { set; }
 		public  Color FontColor { set; }
-		public  string FontName { set; }
+		public IFont Font { set; }
 		public  float FontSize { set; }
 		public  float Alpha { set; }
 		public  bool Antialias { set; }
@@ -90,10 +90,10 @@ namespace Microsoft.Maui.Graphics
 
 		public  void SetFillPaint(Paint paint, RectangleF rectangle);
 
-		public  void SetToSystemFont();
-
-		public  void SetToBoldSystemFont();
-
 		public  void DrawImage(IImage image, float x, float y, float width, float height);
+
+		public SizeF GetStringSize(string value, IFont font, float fontSize);
+
+		public SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment);
 	}
 }

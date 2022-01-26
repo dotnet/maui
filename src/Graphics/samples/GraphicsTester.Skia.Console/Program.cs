@@ -17,7 +17,7 @@ namespace GraphicsTester.Skia.ConsoleApp
 
 			foreach (AbstractScenario scenario in ScenarioList.Scenarios)
 			{
-				using BitmapExportContext bmp = SkiaGraphicsService.Instance.CreateBitmapExportContext((int)scenario.Width, (int)scenario.Height);
+				using BitmapExportContext bmp = new SkiaBitmapExportContext((int)scenario.Width, (int)scenario.Height, 1f);
 				bmp.Canvas.FillColor = Colors.White;
 				bmp.Canvas.FillRectangle(0, 0, scenario.Width, scenario.Height);
 

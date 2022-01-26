@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics.Text.Immutable;
+using Microsoft.Maui.Graphics.Text;
 using System.IO;
 using System.Windows.Documents;
 
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Graphics.Text
 						}
 						else
 						{
-							Logger.Warn($"Inline of type {inline.GetType().Name} not currently supported: {inline}");
+							System.Diagnostics.Debug.WriteLine($"Inline of type {inline.GetType().Name} not currently supported: {inline}");
 						}
 					}
 
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Graphics.Text
 				}
 				else
 				{
-					Logger.Warn($"Block of type {block.GetType().Name} not currently supported: {block}");
+					System.Diagnostics.Debug.WriteLine($"Block of type {block.GetType().Name} not currently supported: {block}");
 				}
 			}
 

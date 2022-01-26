@@ -14,7 +14,7 @@ namespace GraphicsTester.Scenarios
 		{
 			canvas.StrokeSize = 1;
 			canvas.StrokeColor = Colors.Blue;
-			canvas.FontName = "Arial";
+			canvas.Font = Font.Default;
 			canvas.FontSize = 12f;
 
 			canvas.SaveState();

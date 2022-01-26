@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			}
 			catch (Exception exc)
 			{
-				Logger.Warn(exc);
+				System.Diagnostics.Debug.WriteLine(exc);
 			}
 		}
 
@@ -114,6 +114,21 @@ namespace Microsoft.Maui.Graphics.GDI
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
 		{
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, Math.Abs(dirtyRect.Width), Math.Abs(dirtyRect.Height));
+		}
+
+		public IImage ToImage(int width, int height, float scale = 1f)
+		{
+			using var context = new GDIBitmapExportContext(width, height, scale);
+			context.Canvas.Scale(scale, scale);
+			Draw(context.Canvas, new RectangleF(0, 0, (float)width / scale, (float)height / scale));
+			return context.Image;
+		}
+
+
+		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
+		{
+			var bitmap = new Bitmap(stream);
+			return new GDIImage(bitmap);
 		}
 	}
 }

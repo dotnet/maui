@@ -20,5 +20,6 @@ namespace Microsoft.Maui.Graphics
 		IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false);
 		void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1);
 		Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1);
+		IImage ToPlatformImage();
 	}
 }

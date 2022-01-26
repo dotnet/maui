@@ -13,8 +13,6 @@ namespace GraphicsTester.GDI
 		[STAThread]
 		static void Main()
 		{
-			GraphicsPlatform.RegisterGlobalService(new GDIGraphicsService());
-
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new Form1());

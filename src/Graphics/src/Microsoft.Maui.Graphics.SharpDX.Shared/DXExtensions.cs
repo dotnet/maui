@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 				geometry.Dispose();
 
 				var definition = path.ToDefinitionString();
-				Logger.Debug($"Unable to convert the path to a DXPath: {definition}", exc);
+				System.Diagnostics.Debug.WriteLine($"Unable to convert the path to a DXPath: {definition}", exc);
 				return null;
 			}
 #endif

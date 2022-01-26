@@ -111,7 +111,6 @@
   <PropertyGroup>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle></PropertyGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XamlCanvas.cs" />
     <Compile Include="XamlCanvasSession.cs" />
     <Compile Include="XamlCanvasState.cs" />

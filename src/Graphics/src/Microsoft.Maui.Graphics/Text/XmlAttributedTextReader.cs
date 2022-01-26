@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Maui.Graphics.Text.Immutable;
+using Microsoft.Maui.Graphics.Text;
 using System.IO;
 using System.Text;
 using System.Xml;

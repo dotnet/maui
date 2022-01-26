@@ -11,6 +11,7 @@ namespace GraphicsTester.Scenarios
 
 		public override void Draw(ICanvas canvas)
 		{
+			canvas.Font = Font.Default;
 			canvas.StrokeColor = Colors.Blue;
 			canvas.StrokeSize = 1f;
 			canvas.FontColor = Colors.Red;
@@ -22,6 +23,7 @@ namespace GraphicsTester.Scenarios
 			canvas.DrawLine(50, 100, 250, 100);
 			canvas.DrawString("Red - Align Center", 150, 100, HorizontalAlignment.Center);
 
+			canvas.Font = Font.Default;
 			canvas.DrawLine(50, 150, 250, 150);
 			canvas.DrawString("Red - Align Right", 250, 150, HorizontalAlignment.Right);
 
@@ -39,10 +41,13 @@ namespace GraphicsTester.Scenarios
 				canvas.RestoreState();
 			}
 
+			canvas.Font = new Font("monospace", FontWeights.Bold);
+			canvas.DrawString("monospace bold", 50, 300, HorizontalAlignment.Left);
+
 			canvas.SaveState();
-			canvas.SetToBoldSystemFont();
+			canvas.Font = Font.DefaultBold;
 			canvas.DrawString("Bold System Font", 50, 350, HorizontalAlignment.Left);
-			canvas.SetToSystemFont();
+			canvas.Font = Font.Default;
 			canvas.DrawString("System Font", 50, 400, HorizontalAlignment.Left);
 			canvas.RestoreState();
 		}

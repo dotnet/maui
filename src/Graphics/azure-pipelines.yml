@@ -126,13 +126,7 @@ stages:
               errorActionPreference: stop
 
             - pwsh: |
-                Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile workload-install-orig.ps1
-                # We need this to install into the 6.0.200 band workload folder
-                $oldVer = '$DotnetVersionBand = "6.0.100"'
-                $newVer = '$DotnetVersionBand = "6.0.200"'
-                $wlcontent = Get-Content workload-install-orig.ps1
-                $wlcontent = $wlcontent.Replace($oldVer, $newVer)
-                Set-Content -Path .\workload-install.ps1 -Value $wlcontent
+                Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
                 .\workload-install.ps1
               displayName: install tizen
 

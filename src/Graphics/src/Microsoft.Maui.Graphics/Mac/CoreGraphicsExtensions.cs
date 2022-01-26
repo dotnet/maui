@@ -1,6 +1,6 @@
 using AppKit;
 
-namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class CoreGraphicsExtensions
 	{
@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics.Native
 			if (target == null)
 				return null;
 
-			var image = new NativeImage(target);
+			var image = new PlatformImage(target);
 			var paint = new ImagePaint {Image = image};
 
 			return paint;

@@ -9,7 +9,6 @@
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
     <PackageId>Microsoft.Maui.Graphics</PackageId>
     <Product>Microsoft.Maui.Graphics</Product>
   </PropertyGroup>
@@ -22,9 +21,16 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="ArcFlattener.cs">
-      <SubType></SubType>
-    </Compile>
+    <EmbeddedResource Update="Mac\GraphicsMac.resx">
+      <CustomToolNamespace>Microsoft.Maui.Graphics.Platform</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\targets\MultiTargeting.targets" />
+  <ItemGroup>
+    <None Update="Mac\GraphicsMac.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>GraphicsMac.resx</DependentUpon>
+    </None>
+  </ItemGroup>
 </Project>

@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Graphics.GDI
 				path.Dispose();
 
 				var definition = target.ToDefinitionString();
-				Logger.Debug(string.Format("Unable to convert the path to a GDIPath: {0}", definition), exc);
+				System.Diagnostics.Debug.WriteLine(string.Format("Unable to convert the path to a GDIPath: {0}", definition), exc);
 				return null;
 			}
 #endif
