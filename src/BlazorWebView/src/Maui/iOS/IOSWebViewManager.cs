@@ -59,8 +59,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal sealed class WebViewUIDelegate : WKUIDelegate
 		{
-            private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
-            private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
+			private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
+			private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
 			private readonly BlazorWebViewHandler _webView;
 
 			public WebViewUIDelegate(BlazorWebViewHandler webView)

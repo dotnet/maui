@@ -6,7 +6,7 @@
 		bool _canGoForward;
 
 		IWebViewSource IWebView.Source => Source;
-		
+
 		bool IWebView.CanGoBack
 		{
 			get => _canGoBack;
