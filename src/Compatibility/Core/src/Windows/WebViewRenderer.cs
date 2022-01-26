@@ -481,6 +481,7 @@ if(bases.length == 0){
 			_eventState = WebNavigationEvent.NewPage;
 		}
 
+		[PortHandler]
 		void UpdateCanGoBackForward()
 		{
 			((IWebViewController)Element).CanGoBack = Control.CanGoBack;
