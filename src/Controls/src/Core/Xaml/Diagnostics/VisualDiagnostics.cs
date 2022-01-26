@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static SourceInfo GetXamlSourceInfo(object obj) =>
+		public static SourceInfo GetSourceInfo(object obj) =>
 			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
 
 		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
