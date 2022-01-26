@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PropertyPropagationExtensions']/Docs" />
 	public static class PropertyPropagationExtensions
 	{
 		internal static void PropagatePropertyChanged(string propertyName, Element element, IEnumerable children)
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="//Member[@MemberName='PropagatePropertyChanged']/Docs" />
 		public static void PropagatePropertyChanged(string propertyName, Element target, Element source)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)

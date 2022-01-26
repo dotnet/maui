@@ -34,5 +34,10 @@ namespace Maui.Controls.Sample.Pages
 		{
 			MauiWebView.Reload();
 		}
+
+		void OnEvalClicked(object sender, EventArgs args)
+		{
+			MauiWebView.Eval("alert('text')");
+		}
 	}
 }

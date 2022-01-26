@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/MediaPicker.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MediaPicker']/Docs" />
 	public static partial class MediaPicker
 	{
 		static bool PlatformIsCaptureSupported =>

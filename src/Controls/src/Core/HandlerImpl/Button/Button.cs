@@ -6,10 +6,12 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs" />
 	public partial class Button
 	{
 		// IButton does not include the ContentType property, so we map it here to handle Image Positioning
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='ControlsButtonMapper']/Docs" />
 		public static IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
 		{
 			[nameof(ContentLayout)] = MapContentLayout,
@@ -29,6 +31,7 @@ namespace Microsoft.Maui.Controls
 			ButtonHandler.Mapper = ControlsButtonMapper;
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='MapContentLayout']/Docs" />
 		public static void MapContentLayout(ButtonHandler handler, Button button)
 		{
 			handler.NativeView.UpdateContentLayout(button);

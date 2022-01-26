@@ -8,8 +8,10 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebView']/Docs" />
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='SourceProperty']/Docs" />
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(WebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
@@ -29,16 +31,20 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindablePropertyKey CanGoBackPropertyKey = BindableProperty.CreateReadOnly("CanGoBack", typeof(bool), typeof(WebView), false);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoBackProperty']/Docs" />
 		public static readonly BindableProperty CanGoBackProperty = CanGoBackPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey CanGoForwardPropertyKey = BindableProperty.CreateReadOnly("CanGoForward", typeof(bool), typeof(WebView), false);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoForwardProperty']/Docs" />
 		public static readonly BindableProperty CanGoForwardProperty = CanGoForwardPropertyKey.BindableProperty;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CookiesProperty']/Docs" />
 		public static readonly BindableProperty CookiesProperty = BindableProperty.Create(nameof(Cookies), typeof(CookieContainer), typeof(WebView), null);
 
 		readonly Lazy<PlatformConfigurationRegistry<WebView>> _platformConfigurationRegistry;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public WebView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<WebView>>(() => new PlatformConfigurationRegistry<WebView>(this));
@@ -51,6 +57,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CanGoBackPropertyKey, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoBack']/Docs" />
 		public bool CanGoBack
 		{
 			get { return (bool)GetValue(CanGoBackProperty); }
@@ -63,17 +70,20 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CanGoForwardPropertyKey, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoForward']/Docs" />
 		public bool CanGoForward
 		{
 			get { return (bool)GetValue(CanGoForwardProperty); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Cookies']/Docs" />
 		public CookieContainer Cookies
 		{
 			get { return (CookieContainer)GetValue(CookiesProperty); }
 			set { SetValue(CookiesProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Source']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(WebViewSourceTypeConverter))]
 		public WebViewSource Source
 		{
@@ -81,11 +91,14 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SourceProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Eval']/Docs" />
 		public void Eval(string script)
 		{
+			Handler?.Invoke(nameof(IWebView.Eval), script);
 			_evalRequested?.Invoke(this, new EvalRequested(script));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='EvaluateJavaScriptAsync']/Docs" />
 		public async Task<string> EvaluateJavaScriptAsync(string script)
 		{
 			if (script == null)
@@ -112,18 +125,21 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='GoBack']/Docs" />
 		public void GoBack()
 		{
 			Handler?.Invoke(nameof(IWebView.GoBack));
 			_goBackRequested?.Invoke(this, EventArgs.Empty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='GoForward']/Docs" />
 		public void GoForward()
 		{
 			Handler?.Invoke(nameof(IWebView.GoForward));
 			_goForwardRequested?.Invoke(this, EventArgs.Empty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Reload']/Docs" />
 		public void Reload()
 		{
 			Handler?.Invoke(nameof(IWebView.Reload));
@@ -207,6 +223,7 @@ namespace Microsoft.Maui.Controls
 			remove { _reloadRequested -= value; }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, WebView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

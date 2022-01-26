@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingDiagnostics.xml" path="Type[@FullName='Microsoft.Maui.Controls.Xaml.Diagnostics.BindingDiagnostics']/Docs" />
 	public class BindingDiagnostics
 	{
 		public static event EventHandler<BindingBaseErrorEventArgs> BindingFailed;
