@@ -15,16 +15,20 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static Typeface ToTypeface(this IFont font)
 		{
+
+			TypefaceStyle GetStyle(IFont font)
+			{
+				if (font.Weight >= FontWeights.Bold)
+					return font.StyleType == FontStyleType.Normal ? TypefaceStyle.Bold : TypefaceStyle.BoldItalic;
+				else
+					return font.StyleType == FontStyleType.Normal ? TypefaceStyle.Normal : TypefaceStyle.Italic;
+			}
+
 			if (font == null)
 				return Typeface.Default;
 
 			if (string.IsNullOrEmpty(font.Name))
-			{
-				if (font.Weight >= FontWeights.Bold)
-					return Typeface.DefaultFromStyle(font.StyleType == FontStyleType.Normal ? TypefaceStyle.Bold : TypefaceStyle.BoldItalic);
-				else
-					return Typeface.DefaultFromStyle(font.StyleType == FontStyleType.Normal ? TypefaceStyle.Normal : TypefaceStyle.Italic);
-			}
+				return Typeface.DefaultFromStyle(GetStyle(font));
 
 			var context = AApplication.Context;
 			Typeface typeface = null;
@@ -47,7 +51,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					var sepChar = Java.IO.File.PathSeparatorChar;
 
 					// Also try any *fonts*/ subfolders
-					foreach (var a in context.Assets.List(null))
+					foreach (var a in context.Assets.List(""))
 					{
 						var file = new Java.IO.File(a);
 						if (file.IsDirectory && file.Name.Contains("fonts", StringComparison.InvariantCultureIgnoreCase))
