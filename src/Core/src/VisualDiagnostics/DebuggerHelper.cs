@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 		static DebuggerHelper() => _mockDebuggerIsAttached = true;
 #endif
 
-		internal static bool _mockDebuggerIsAttached;
+		public static bool _mockDebuggerIsAttached;
 		public static bool DebuggerIsAttached => _mockDebuggerIsAttached || Debugger.IsAttached;
 	}
 }
