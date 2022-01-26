@@ -63,6 +63,9 @@ namespace Microsoft.Maui.Graphics.Platform
 				}
 			}
 
+			if (typeface == null)
+				return Typeface.Create(font.Name, GetStyle(font));
+
 			return typeface;
 		}
 
