@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Essentials
 
 		public static DevicePlatform macOS { get; } = new DevicePlatform(nameof(macOS));
 
+		public static DevicePlatform MacCatalyst { get; } = new DevicePlatform(nameof(MacCatalyst));
+
 		public static DevicePlatform tvOS { get; } = new DevicePlatform(nameof(tvOS));
 
 		public static DevicePlatform Tizen { get; } = new DevicePlatform(nameof(Tizen));

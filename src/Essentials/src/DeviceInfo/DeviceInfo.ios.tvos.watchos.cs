@@ -33,8 +33,10 @@ namespace Microsoft.Maui.Essentials
 		static string GetVersionString() => UIDevice.CurrentDevice.SystemVersion;
 
 		static DevicePlatform GetPlatform() =>
-#if __IOS__
+#if __IOS__ || IOS
 			DevicePlatform.iOS;
+#elif __MACCATALYST__ || MACCATALYST
+			DevicePlatform.MacCatalyst;
 #elif __TVOS__
             DevicePlatform.tvOS;
 #elif __WATCHOS__
