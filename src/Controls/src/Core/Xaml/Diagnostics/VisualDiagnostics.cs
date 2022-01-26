@@ -61,10 +61,4 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			VisualTreeChanged?.Invoke(e.Parent, e);
 		}
 	}
-
-	public enum VisualTreeChangeType
-	{
-		Add = 0,
-		Remove = 1
-	}
 }
