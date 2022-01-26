@@ -23,6 +23,7 @@ namespace GraphicsTester.Scenarios
 			canvas.DrawLine(50, 100, 250, 100);
 			canvas.DrawString("Red - Align Center", 150, 100, HorizontalAlignment.Center);
 
+			canvas.Font = Font.Default;
 			canvas.DrawLine(50, 150, 250, 150);
 			canvas.DrawString("Red - Align Right", 250, 150, HorizontalAlignment.Right);
 
@@ -39,6 +40,9 @@ namespace GraphicsTester.Scenarios
 				canvas.DrawString("Red - Shadowed", 50, 250, HorizontalAlignment.Left);
 				canvas.RestoreState();
 			}
+
+			canvas.Font = new Font("monospace", FontWeights.Bold);
+			canvas.DrawString("monospace bold", 50, 300, HorizontalAlignment.Left);
 
 			canvas.SaveState();
 			canvas.Font = Font.DefaultBold;
