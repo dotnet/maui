@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="Type[@FullName='Microsoft.Maui.Essentials.TextToSpeech']/Docs" />
 	public static partial class TextToSpeech
 	{
 		internal const float PitchMax = 2.0f;
@@ -17,12 +18,15 @@ namespace Microsoft.Maui.Essentials
 
 		static SemaphoreSlim semaphore;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='GetLocalesAsync']/Docs" />
 		public static Task<IEnumerable<Locale>> GetLocalesAsync() =>
 			PlatformGetLocalesAsync();
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync']/Docs" />
 		public static Task SpeakAsync(string text, CancellationToken cancelToken = default) =>
 			SpeakAsync(text, default, cancelToken);
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync']/Docs" />
 		public static async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
 		{
 			if (string.IsNullOrEmpty(text))
@@ -63,14 +67,19 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Locale']/Docs" />
 	public class Locale
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Language']/Docs" />
 		public string Language { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Country']/Docs" />
 		public string Country { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Name']/Docs" />
 		public string Name { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Id']/Docs" />
 		public string Id { get; }
 
 		internal Locale(string language, string country, string name, string id)
@@ -82,12 +91,16 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SpeechOptions']/Docs" />
 	public class SpeechOptions
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Locale']/Docs" />
 		public Locale Locale { get; set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Pitch']/Docs" />
 		public float? Pitch { get; set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Volume']/Docs" />
 		public float? Volume { get; set; }
 	}
 }

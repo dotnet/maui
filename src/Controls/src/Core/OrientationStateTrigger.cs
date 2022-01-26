@@ -3,19 +3,23 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.OrientationStateTrigger']/Docs" />
 	public sealed class OrientationStateTrigger : StateTriggerBase
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public OrientationStateTrigger()
 		{
 			UpdateState();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='Orientation']/Docs" />
 		public DisplayOrientation Orientation
 		{
 			get => (DisplayOrientation)GetValue(OrientationProperty);
 			set => SetValue(OrientationProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='OrientationProperty']/Docs" />
 		public static readonly BindableProperty OrientationProperty =
 			BindableProperty.Create(nameof(Orientation), typeof(DisplayOrientation), typeof(OrientationStateTrigger), null,
 				propertyChanged: OnOrientationChanged);

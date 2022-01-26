@@ -2,14 +2,18 @@ using System;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Vibration']/Docs" />
 	public static partial class Vibration
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="//Member[@MemberName='Vibrate'][0]/Docs" />
 		public static void Vibrate()
 			=> Vibrate(TimeSpan.FromMilliseconds(500));
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="//Member[@MemberName='Vibrate'][1]/Docs" />
 		public static void Vibrate(double duration)
 			=> Vibrate(TimeSpan.FromMilliseconds(duration));
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="//Member[@MemberName='Vibrate'][2]/Docs" />
 		public static void Vibrate(TimeSpan duration)
 		{
 			if (!IsSupported)
@@ -23,6 +27,7 @@ namespace Microsoft.Maui.Essentials
 			PlatformVibrate(duration);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="//Member[@MemberName='Cancel']/Docs" />
 		public static void Cancel()
 		{
 			if (!IsSupported)
