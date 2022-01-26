@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs" />
 	public static partial class Barometer
 	{
 		internal static bool IsSupported =>

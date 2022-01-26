@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceInfo']/Docs" />
 	public static partial class DeviceInfo
 	{
 		static string GetModel() => throw ExceptionUtils.NotSupportedOrImplementedException;

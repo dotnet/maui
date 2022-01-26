@@ -10,11 +10,13 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Tab.xml" path="Type[@FullName='Microsoft.Maui.Controls.Tab']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class Tab : ShellSection
 	{
 	}
 
+	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement
@@ -191,10 +193,12 @@ namespace Microsoft.Maui.Controls
 		}
 		#endregion
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='CurrentItemProperty']/Docs" />
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellContent), typeof(ShellSection), null, BindingMode.TwoWay,
 				propertyChanged: OnCurrentItemChanged);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='ItemsProperty']/Docs" />
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 
 		Page _displayedPage;
@@ -206,6 +210,7 @@ namespace Microsoft.Maui.Controls
 		internal bool IsPushingModalStack { get; private set; }
 		internal bool IsPoppingModalStack { get; private set; }
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public ShellSection()
 		{
 			((ShellElementCollection)Items).VisibleItemsChangedInternal += (_, args) =>
@@ -234,15 +239,18 @@ namespace Microsoft.Maui.Controls
 			Navigation = new NavigationImpl(this);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='CurrentItem']/Docs" />
 		public ShellContent CurrentItem
 		{
 			get { return (ShellContent)GetValue(CurrentItemProperty); }
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Items']/Docs" />
 		public IList<ShellContent> Items => (IList<ShellContent>)GetValue(ItemsProperty);
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Stack']/Docs" />
 		public IReadOnlyList<Page> Stack => _navStack;
 
 		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));

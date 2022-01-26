@@ -14,16 +14,20 @@ namespace Microsoft.Maui.Controls
 		public IList Children { get; }
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableLayout']/Docs" />
 	public static class BindableLayout
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='ItemsSourceProperty']/Docs" />
 		public static readonly BindableProperty ItemsSourceProperty =
 			BindableProperty.CreateAttached("ItemsSource", typeof(IEnumerable), typeof(IBindableLayout), default(IEnumerable),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemsSource = (IEnumerable)n; });
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='ItemTemplateProperty']/Docs" />
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.CreateAttached("ItemTemplate", typeof(DataTemplate), typeof(IBindableLayout), default(DataTemplate),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemTemplate = (DataTemplate)n; });
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='ItemTemplateSelectorProperty']/Docs" />
 		public static readonly BindableProperty ItemTemplateSelectorProperty =
 			BindableProperty.CreateAttached("ItemTemplateSelector", typeof(DataTemplateSelector), typeof(IBindableLayout), default(DataTemplateSelector),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemTemplateSelector = (DataTemplateSelector)n; });
@@ -33,57 +37,69 @@ namespace Microsoft.Maui.Controls
 				 defaultValueCreator: (b) => new BindableLayoutController((IBindableLayout)b),
 				 propertyChanged: (b, o, n) => OnControllerChanged(b, (BindableLayoutController)o, (BindableLayoutController)n));
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='EmptyViewProperty']/Docs" />
 		public static readonly BindableProperty EmptyViewProperty =
 			BindableProperty.Create("EmptyView", typeof(object), typeof(IBindableLayout), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyView = n; });
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='EmptyViewTemplateProperty']/Docs" />
 		public static readonly BindableProperty EmptyViewTemplateProperty =
 			BindableProperty.Create("EmptyViewTemplate", typeof(DataTemplate), typeof(IBindableLayout), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyViewTemplate = (DataTemplate)n; });
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetItemsSource']/Docs" />
 		public static void SetItemsSource(BindableObject b, IEnumerable value)
 		{
 			b.SetValue(ItemsSourceProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetItemsSource']/Docs" />
 		public static IEnumerable GetItemsSource(BindableObject b)
 		{
 			return (IEnumerable)b.GetValue(ItemsSourceProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetItemTemplate']/Docs" />
 		public static void SetItemTemplate(BindableObject b, DataTemplate value)
 		{
 			b.SetValue(ItemTemplateProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetItemTemplate']/Docs" />
 		public static DataTemplate GetItemTemplate(BindableObject b)
 		{
 			return (DataTemplate)b.GetValue(ItemTemplateProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetItemTemplateSelector']/Docs" />
 		public static void SetItemTemplateSelector(BindableObject b, DataTemplateSelector value)
 		{
 			b.SetValue(ItemTemplateSelectorProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetItemTemplateSelector']/Docs" />
 		public static DataTemplateSelector GetItemTemplateSelector(BindableObject b)
 		{
 			return (DataTemplateSelector)b.GetValue(ItemTemplateSelectorProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetEmptyView']/Docs" />
 		public static object GetEmptyView(BindableObject b)
 		{
 			return b.GetValue(EmptyViewProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetEmptyView']/Docs" />
 		public static void SetEmptyView(BindableObject b, object value)
 		{
 			b.SetValue(EmptyViewProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetEmptyViewTemplate']/Docs" />
 		public static DataTemplate GetEmptyViewTemplate(BindableObject b)
 		{
 			return (DataTemplate)b.GetValue(EmptyViewTemplateProperty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetEmptyViewTemplate']/Docs" />
 		public static void SetEmptyViewTemplate(BindableObject b, DataTemplate value)
 		{
 			b.SetValue(EmptyViewTemplateProperty, value);

@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="Type[@FullName='Microsoft.Maui.Controls.Region']/Docs" />
 	public struct Region
 	{
 		// While Regions are currently rectangular, they could in the future be transformed into any shape.
@@ -23,6 +24,7 @@ namespace Microsoft.Maui.Controls
 			_inflation = inflation;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='FromLines']/Docs" />
 		public static Region FromLines(double[] lineHeights, double maxWidth, double startX, double endX, double startY)
 		{
 			var positions = new List<Rectangle>();
@@ -49,11 +51,13 @@ namespace Microsoft.Maui.Controls
 			return new Region(positions);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Contains'][0]/Docs" />
 		public bool Contains(Point pt)
 		{
 			return Contains(pt.X, pt.Y);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Contains'][1]/Docs" />
 		public bool Contains(double x, double y)
 		{
 			if (Regions == null)
@@ -66,6 +70,7 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Deflate']/Docs" />
 		public Region Deflate()
 		{
 			if (_inflation == null)
@@ -74,11 +79,13 @@ namespace Microsoft.Maui.Controls
 			return Inflate(_inflation.Value.Left * -1, _inflation.Value.Top * -1, _inflation.Value.Right * -1, _inflation.Value.Bottom * -1);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Inflate'][0]/Docs" />
 		public Region Inflate(double size)
 		{
 			return Inflate(size, size, size, size);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Inflate'][1]/Docs" />
 		public Region Inflate(double left, double top, double right, double bottom)
 		{
 			if (Regions == null)

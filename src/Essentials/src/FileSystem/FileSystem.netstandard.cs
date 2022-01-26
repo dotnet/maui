@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
 	public static partial class FileSystem
 	{
 		static string PlatformCacheDirectory
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Essentials
 			 => throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />
 	public partial class FileBase
 	{
 		static string PlatformGetContentType(string extension) =>

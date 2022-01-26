@@ -4,9 +4,11 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.GeometryGroup']/Docs" />
 	[ContentProperty("Children")]
 	public class GeometryGroup : Geometry
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='ChildrenProperty']/Docs" />
 		public static readonly BindableProperty ChildrenProperty =
 			BindableProperty.Create(nameof(Children), typeof(GeometryCollection), typeof(GeometryGroup), null,
 				propertyChanged: OnChildrenChanged);
@@ -16,20 +18,24 @@ namespace Microsoft.Maui.Controls.Shapes
 			(bindable as GeometryGroup)?.UpdateChildren(oldValue as GeometryCollection, newValue as GeometryCollection);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='FillRuleProperty']/Docs" />
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(GeometryGroup), FillRule.EvenOdd);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public GeometryGroup()
 		{
 			Children = new GeometryCollection();
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='Children']/Docs" />
 		public GeometryCollection Children
 		{
 			set { SetValue(ChildrenProperty, value); }
 			get { return (GeometryCollection)GetValue(ChildrenProperty); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='FillRule']/Docs" />
 		public FillRule FillRule
 		{
 			set { SetValue(FillRuleProperty, value); }
@@ -98,6 +104,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			InvalidateGeometryRequested?.Invoke(this, EventArgs.Empty);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='AppendPath']/Docs" />
 		public override void AppendPath(Graphics.PathF path)
 		{
 			foreach (var c in Children)
