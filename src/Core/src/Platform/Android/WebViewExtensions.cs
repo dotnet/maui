@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Platform
 			if (webViewDelegate != null)
 			{
 				webView.Source?.Load(webViewDelegate);
-			
-				nativeWebView.UpdateCanGoBackForward(webView);	
+
+				nativeWebView.UpdateCanGoBackForward(webView);
 			}
 		}
 
