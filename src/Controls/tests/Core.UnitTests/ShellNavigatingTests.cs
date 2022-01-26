@@ -626,6 +626,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(typeof(PageWithDependency), typeof(PageWithDependency))]
 		[TestCase(typeof(PageWithDependencyAndMultipleConstructors), typeof(PageWithDependencyAndMultipleConstructors))]
 		[TestCase(typeof(PageWithDependency), typeof(Dependency))]
+		[TestCase(typeof(PageWithUnregisteredDependencyAndParameterlessConstructor), typeof(PageWithUnregisteredDependencyAndParameterlessConstructor))]
 		public async Task GlobalRouteWithDependencyResolution(Type typeForRouteName, Type type)
 		{
 			var serviceCollection = new ServiceCollection();
@@ -665,6 +666,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				var testPage = page as PageWithDependencyAndMultipleConstructors;
 				Assert.That(testPage.TestDependency, Is.Not.Null);
 				Assert.That(testPage.OtherTestDependency, Is.Null);
+			}
+
+			if (type == typeof(PageWithUnregisteredDependencyAndParameterlessConstructor))
+			{
+				Assert.IsInstanceOf<PageWithUnregisteredDependencyAndParameterlessConstructor>(page);
 			}
 		}
 

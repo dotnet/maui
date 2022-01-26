@@ -513,6 +513,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		public class PageWithUnregisteredDependencyAndParameterlessConstructor : ContentPage
+        {
+			public PageWithUnregisteredDependencyAndParameterlessConstructor(UnregisteredDependency dependency)
+			{
+
+			}
+
+			public PageWithUnregisteredDependencyAndParameterlessConstructor()
+			{
+
+			}
+        }
+
 		public class Dependency
 		{
 			public int Test { get; set; }
