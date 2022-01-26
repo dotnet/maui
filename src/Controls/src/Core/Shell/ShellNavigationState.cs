@@ -5,6 +5,7 @@ using System.Diagnostics;
 namespace Microsoft.Maui.Controls
 {
 
+	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellNavigationState']/Docs" />
 	[DebuggerDisplay("Location = {Location}")]
 	public class ShellNavigationState
 	{
@@ -19,13 +20,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='Location']/Docs" />
 		public Uri Location
 		{
 			get;
 			private set;
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
 		public ShellNavigationState() { }
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ShellNavigationState(string location) : this(location, true)
 		{
 		}
@@ -45,6 +49,7 @@ namespace Microsoft.Maui.Controls
 				Location = FullLocation;
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ShellNavigationState(Uri location)
 		{
 			FullLocation = location;

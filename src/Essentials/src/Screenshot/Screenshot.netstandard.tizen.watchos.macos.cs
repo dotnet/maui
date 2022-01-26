@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Screenshot']/Docs" />
 	public static partial class Screenshot
 	{
 		static bool PlatformIsCaptureSupported =>
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Essentials
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotResult']/Docs" />
 	public partial class ScreenshotResult
 	{
 		ScreenshotResult()

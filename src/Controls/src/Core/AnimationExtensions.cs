@@ -32,6 +32,7 @@ using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.AnimationExtensions']/Docs" />
 	public static class AnimationExtensions
 	{
 		static readonly Dictionary<int, Animation> s_tweeners;
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Controls
 			s_tweeners = new Dictionary<int, Animation>();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Add']/Docs" />
 		public static int Add(this IAnimationManager animationManager, Action<double> step)
 		{
 			var id = s_currentTweener++;
@@ -59,6 +61,7 @@ namespace Microsoft.Maui.Controls
 			animation.Commit(animationManager);
 			return id;
 		}
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Insert']/Docs" />
 		public static int Insert(this IAnimationManager animationManager, Func<long, bool> step)
 		{
 			var id = s_currentTweener++;
@@ -72,6 +75,7 @@ namespace Microsoft.Maui.Controls
 			animation.Commit(animationManager);
 			return id;
 		}
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Remove']/Docs" />
 		public static void Remove(this IAnimationManager animationManager, int tickerId)
 		{
 			var animation = s_tweeners[tickerId];
@@ -79,6 +83,7 @@ namespace Microsoft.Maui.Controls
 			animationManager.Remove(animation);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AbortAnimation']/Docs" />
 		public static bool AbortAnimation(this IAnimatable self, string handle)
 		{
 			var key = new AnimatableKey(self, handle);
@@ -99,6 +104,7 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Animate']/Docs" />
 		public static void Animate(this IAnimatable self, string name, Animation animation, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null,
 								   Func<bool> repeat = null)
 		{
@@ -117,18 +123,21 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Animate']/Docs" />
 		public static void Animate(this IAnimatable self, string name, Action<double> callback, double start, double end, uint rate = 16, uint length = 250, Easing easing = null,
 								   Action<double, bool> finished = null, Func<bool> repeat = null)
 		{
 			self.Animate(name, Interpolate(start, end), callback, rate, length, easing, finished, repeat);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Animate']/Docs" />
 		public static void Animate(this IAnimatable self, string name, Action<double> callback, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null,
 								   Func<bool> repeat = null)
 		{
 			self.Animate(name, x => x, callback, rate, length, easing, finished, repeat);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Animate']/Docs" />
 		public static void Animate<T>(this IAnimatable self, string name, Func<double, T> transform, Action<T> callback,
 			uint rate = 16, uint length = 250, Easing easing = null,
 			Action<T, bool> finished = null, Func<bool> repeat = null, IAnimationManager animationManager = null)
@@ -147,6 +156,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AnimateKinetic']/Docs" />
 		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null, IAnimationManager animationManager = null)
 		{
 			animationManager ??= self.GetAnimationManager();
@@ -155,18 +165,21 @@ namespace Microsoft.Maui.Controls
 			DoAction(self, animate);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AnimationIsRunning']/Docs" />
 		public static bool AnimationIsRunning(this IAnimatable self, string handle)
 		{
 			var key = new AnimatableKey(self, handle);
 			return s_animations.ContainsKey(key);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Interpolate']/Docs" />
 		public static Func<double, double> Interpolate(double start, double end = 1.0f, double reverseVal = 0.0f, bool reverse = false)
 		{
 			double target = reverse ? reverseVal : end;
 			return x => start + (target - start) * x;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Batch']/Docs" />
 		public static IDisposable Batch(this IAnimatable self) => new BatchObject(self);
 
 		static void AbortAnimation(AnimatableKey key)
