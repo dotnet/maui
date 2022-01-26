@@ -9,17 +9,17 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 {
 	public static class VisualDiagnostics
 	{
-		static ConditionalWeakTable<object, XamlSourceInfo> sourceInfos = new ConditionalWeakTable<object, XamlSourceInfo>();
+		static ConditionalWeakTable<object, SourceInfo> sourceInfos = new ConditionalWeakTable<object, SourceInfo>();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void RegisterSourceInfo(object target, Uri uri, int lineNumber, int linePosition)
 		{
 			if (target != null && DebuggerHelper.DebuggerIsAttached && !sourceInfos.TryGetValue(target, out _))
-				sourceInfos.Add(target, new XamlSourceInfo(uri, lineNumber, linePosition));
+				sourceInfos.Add(target, new SourceInfo(uri, lineNumber, linePosition));
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static XamlSourceInfo GetXamlSourceInfo(object obj) =>
+		public static SourceInfo GetXamlSourceInfo(object obj) =>
 			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
 
 		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)

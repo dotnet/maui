@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 {
 	public class BindingBaseErrorEventArgs : EventArgs
 	{
-		internal BindingBaseErrorEventArgs(XamlSourceInfo xamlSourceInfo, BindingBase binding, string errorCode, string message, object[] messageArgs)
+		internal BindingBaseErrorEventArgs(SourceInfo xamlSourceInfo, BindingBase binding, string errorCode, string message, object[] messageArgs)
 		{
 			XamlSourceInfo = xamlSourceInfo;
 			Binding = binding;
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			MessageArgs = messageArgs;
 		}
 
-		public XamlSourceInfo XamlSourceInfo { get; }
+		public SourceInfo XamlSourceInfo { get; }
 		public BindingBase Binding { get; }
 		public string ErrorCode { get; }
 		public string Message { get; }
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 	public class BindingErrorEventArgs : BindingBaseErrorEventArgs
 	{
 		internal BindingErrorEventArgs(
-			XamlSourceInfo xamlSourceInfo,
+			SourceInfo xamlSourceInfo,
 			BindingBase binding,
 			object bindingsource,
 			BindableObject target,

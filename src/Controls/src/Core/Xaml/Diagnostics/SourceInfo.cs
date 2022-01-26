@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 {
-	public class XamlSourceInfo
+	public class SourceInfo
 	{
-		public XamlSourceInfo(Uri sourceUri, int lineNumber, int linePosition)
+		public SourceInfo(Uri sourceUri, int lineNumber, int linePosition)
 		{
 			SourceUri = sourceUri;
 			LineNumber = lineNumber;

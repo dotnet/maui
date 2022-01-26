@@ -30,4 +30,4 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: TypeForwardedTo(typeof(Microsoft.Maui.Controls.Xaml.Diagnostics.DebuggerHelper))]
 [assembly: TypeForwardedTo(typeof(Microsoft.Maui.Controls.Xaml.Diagnostics.VisualDiagnostics))]
 [assembly: TypeForwardedTo(typeof(Microsoft.Maui.Controls.Xaml.Diagnostics.VisualTreeChangeEventArgs))]
-[assembly: TypeForwardedTo(typeof(Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo))]
+[assembly: TypeForwardedTo(typeof(Microsoft.Maui.Controls.Xaml.Diagnostics.SourceInfo))]
