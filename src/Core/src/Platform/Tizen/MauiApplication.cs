@@ -7,13 +7,14 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiApplication : CoreUIApplication
+	public abstract class MauiApplication : CoreUIApplication, IPlatformApplication
 	{
 		IMauiContext _applicationContext = null!;
 
 		protected MauiApplication()
 		{
 			Current = this;
+			IPlatformApplication.Current = this;
 		}
 
 		protected abstract MauiApp CreateMauiApp();
@@ -49,7 +50,6 @@ namespace Microsoft.Maui
 			this.SetApplicationHandler(Application, _applicationContext);
 
 			this.CreateNativeWindow(Application);
-
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
 		}
