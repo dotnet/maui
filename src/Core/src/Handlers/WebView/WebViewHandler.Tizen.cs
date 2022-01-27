@@ -17,6 +17,29 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateSource(webView, webViewDelegate);
 		}
 
+		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			handler.NativeView?.UpdateGoBack(webView);
+		}
+
+		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			handler.NativeView?.UpdateGoForward(webView);
+		}
+
+		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			handler.NativeView?.UpdateReload(webView);
+		}
+
+		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
+				return;
+
+			handler.NativeView?.Eval(webView, script);
+		}
+
 		protected override MauiWebView CreateNativeView()
 		{
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
