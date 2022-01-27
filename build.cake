@@ -35,14 +35,23 @@ PowerShell:
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
 
+Error("HERE 1");
+
 string agentName = EnvironmentVariable("AGENT_NAME", "");
 bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
+Error("HERE 2");
 DirectoryPath artifactStagingDirectory = MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
+Error("HERE 3");
 DirectoryPath logDirectory = MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs")));
+Error("HERE 4");
 DirectoryPath testResultsDirectory = MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results")));
+Error("HERE 5");
 DirectoryPath diffDirectory = MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{artifactStagingDirectory}/api-diff")));
+Error("HERE 6");
 DirectoryPath tempDirectory = MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", EnvironmentVariable("TMPDIR", "../maui-temp")) + "/" + Guid.NewGuid())));
+Error("HERE 7");
 DirectoryPath envProgramFiles = MakeAbsolute(Directory(EnvironmentVariable("ProgramFiles(x86)")));
+Error("HERE 8");
 var configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 
 var target = Argument("target", "Default");
