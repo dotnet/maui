@@ -43,21 +43,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _subscribedToItemClick;
 		bool _subscribedToTapped;
 		bool _disposed;
-		CollectionViewSource _collectionViewSource;	
+		CollectionViewSource _collectionViewSource;
 
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
 
 		protected WListView List { get; private set; }
 
-		public ListViewRenderer(IMauiContext mauiContext) : base(mauiContext, Mapper, CommandMapper)
+		public ListViewRenderer() : base(Mapper, CommandMapper)
 		{
+			AutoPackage = false;
 		}
 
 		internal class ListViewTransparent : WListView
 		{
 			internal ListViewRenderer ListViewRenderer { get; }
-			public ListViewTransparent(ListViewRenderer listViewRenderer) : base() 
+			public ListViewTransparent(ListViewRenderer listViewRenderer) : base()
 			{
 				ListViewRenderer = listViewRenderer;
 			}
@@ -164,7 +165,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					foreach (var item in Element.ItemsSource)
 						_collection.Add(item);
 				}
-				else if(!object.ReferenceEquals(_collection, Element.ItemsSource))
+				else if (!object.ReferenceEquals(_collection, Element.ItemsSource))
 				{
 					_collection = (IList)Element.ItemsSource;
 				}

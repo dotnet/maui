@@ -20,8 +20,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		TableViewModelRenderer _adapter;
 		bool _disposed;
 
-		public TableViewRenderer(IMauiContext context) : base(context, Mapper, CommandMapper)
+		public TableViewRenderer(Context context) : base(context, Mapper, CommandMapper)
 		{
+			AutoPackage = false;
 		}
 
 		protected virtual TableViewModelRenderer GetModelRenderer(AListView listView, TableView view)

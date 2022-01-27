@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	public class ScrollViewRenderer : UIScrollView, IVisualElementRenderer, IEffectControlProvider
 	{
 		EventTracker _events;
+#pragma warning disable CS0618 // Type or member is obsolete
 		KeyboardInsetTracker _insetTracker;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		VisualElementPackager _packager;
 
@@ -79,6 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_events.LoadEvents(this);
 
 
+#pragma warning disable CS0618 // Type or member is obsolete
 					_insetTracker = new KeyboardInsetTracker(this, () => Window, insets =>
 					{
 						ContentInset = ScrollIndicatorInsets = insets;
@@ -89,6 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						offset.Y += point.Y;
 						SetContentOffset(offset, true);
 					}, this);
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 
 				UpdateDelaysContentTouches();

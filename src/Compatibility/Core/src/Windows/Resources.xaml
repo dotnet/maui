@@ -18,6 +18,7 @@
 		<ResourceDictionary Source="SliderStyle.xaml" />
         <ResourceDictionary Source="PickerStyle.xaml" />
         <ResourceDictionary Source="../Handlers/ListView/Windows/ListViewStyles.xaml" />
+        <ResourceDictionary Source="../Handlers/TableView/Windows/TableViewStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <x:Boolean x:Key="MicrosoftMauiControlsCompatibilityIncluded">true</x:Boolean>
@@ -95,14 +96,6 @@
 		<Setter Property="Width" Value="48" />
 		<Setter Property="Content" Value="" />
 	</Style>
-
-	<DataTemplate x:Key="TableRoot">
-		<TextBlock Margin="0,20,0,0" Text="{Binding Title,Converter={StaticResource LowerConverter}}" Style="{ThemeResource TitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" />
-	</DataTemplate>
-
-	<DataTemplate x:Key="TableSection">
-		<TextBlock Margin="0,20,0,0" Text="{Binding Title,Converter={StaticResource LowerConverter}}" Style="{ThemeResource SubtitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" Foreground="{Binding TextColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
-	</DataTemplate>
     
 	<DataTemplate x:Key="ContainedPageTemplate">
 		<ContentPresenter Content="{Binding Converter={StaticResource PageToRenderer}}">

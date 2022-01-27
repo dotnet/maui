@@ -32,10 +32,20 @@ namespace Microsoft.Maui.Platform
 		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
 		{
 			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
-			
-			if(handlerType == null) return null;
 
-			return (IElementHandler)Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext);
+			if (handlerType == null)
+				return null;
+
+#if ANDROID
+			if(mauiContext.Context != null)
+			{
+				return (IElementHandler)Extensions.DependencyInjection.
+					ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
+			}
+#endif
+
+			return (IElementHandler)Extensions.DependencyInjection.
+				ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
 		}
 
 		public static IElementHandler ToHandler(this IElement view, IMauiContext context)
@@ -65,7 +75,7 @@ namespace Microsoft.Maui.Platform
 					else
 						handler = context.Handlers.GetHandler(viewType);
 				}
-				catch (System.MissingMethodException)
+				catch (MissingMethodException)
 				{
 					handler = viewType.CreateTypeWithInjection(context);
 					if (handler != null)
@@ -99,8 +109,14 @@ namespace Microsoft.Maui.Platform
 				return view.ToNative(mauiContext);
 			}
 
-			if (view.Handler is INativeViewHandler nativeHandler && nativeHandler.NativeView != null)
-				return nativeHandler.NativeView;
+			if (view.Handler is IViewHandler nativeHandler)
+			{
+				if (nativeHandler.ContainerView is NativeView containerView)
+					return containerView;
+
+				if (nativeHandler.NativeView is NativeView nativeView)
+					return nativeView;
+			}
 
 			return (view.Handler?.NativeView as NativeView);
 

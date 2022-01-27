@@ -1,9 +1,9 @@
+using System;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Controls.Internals;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
-using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

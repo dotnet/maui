@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -14,7 +13,6 @@ using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
-using Microsoft.Maui.Graphics.Native;
 using FrameRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.FrameRenderer;
 using LabelRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer;
 using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer;
@@ -22,7 +20,6 @@ using ButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Fa
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.DefaultRenderer;
 #elif WINDOWS
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-using Microsoft.Maui.Graphics.Win2D;
 using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.BoxViewBorderRenderer;
 using CellRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.TextCellRenderer;
 using Deserializer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsSerializer;
@@ -32,7 +29,6 @@ using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.DefaultRenderer;
 #elif __IOS__
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using Microsoft.Maui.Graphics.Native;
 using WebViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.WkWebViewRenderer;
 using NavigationPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.NavigationRenderer;
 using TabbedPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.TabbedRenderer;
@@ -71,15 +67,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddMauiControlsHandlers();
 					DependencyService.SetToInitialized();
 
-#if IOS
-					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(EntryCell), typeof(EntryCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
-#elif ANDROID || WINDOWS
+#if ANDROID || IOS || WINDOWS
 					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 					handlers.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
 					handlers.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
@@ -87,18 +75,9 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
 					handlers.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
 					handlers.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
-
-#endif
-
-#if ANDROID
 					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-#elif IOS || WINDOWS
-					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
-#endif
-
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
-
-					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
+					handlers.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
+          
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
@@ -179,14 +158,6 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		private static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
 		{
-#if __IOS__ || MACCATALYST
-			builder.Services.TryAddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
-#elif __ANDROID__
-			builder.Services.TryAddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
-#elif WINDOWS
-			builder.Services.TryAddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
-#endif
-
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiCompatInitializer>());
 			return builder;
 		}
@@ -195,9 +166,6 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			public void Initialize(IServiceProvider services)
 			{
-				if (services.GetService<IGraphicsService>() is IGraphicsService graphicsService)
-					GraphicsPlatform.RegisterGlobalService(graphicsService);
-
 #if WINDOWS
 				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
 				if (dictionaries != null)

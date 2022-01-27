@@ -9,9 +9,9 @@ This page contains steps to build and run the .NET MAUI repository from source. 
 In most cases, when you have Visual Studio installed with the .NET workloads checked, these steps are not required.
 
 1. Install the latest .NET 6:  
-   - [Win (x64)](https://aka.ms/dotnet/6.0.1xx/daily/dotnet-sdk-win-x64.exe)   
-   - [macOS (x64)](https://aka.ms/dotnet/6.0.1xx/daily/dotnet-sdk-osx-x64.pkg)  
-   - [macOS (arm64)](https://aka.ms/dotnet/6.0.1xx/daily/dotnet-sdk-osx-arm64.pkg)
+   - [Win (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-win-x64.exe)   
+   - [macOS (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-osx-x64.pkg)  
+   - [macOS (arm64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-osx-arm64.pkg)
 2. Clear your nuget cache:  
    ```
    dotnet nuget locals all --clear

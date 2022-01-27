@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class BorderStub : StubBase, IBorder
+	public partial class BorderStub : StubBase, IBorderView
 	{
 		public object Content { get; set; }
 

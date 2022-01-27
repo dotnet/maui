@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.ListViewGalleries
 {
@@ -82,7 +82,7 @@ namespace Maui.Controls.Sample.Pages.ListViewGalleries
 
 			lv.SetBinding(ListView.ItemsSourceProperty, "Things");
 			lv.SetBinding(ListView.RefreshCommandProperty, "RefreshThingsCommand");
-			grid.Add(lv, 0, 0);
+			grid.Add(lv, 0, 6);
 
 			Content = grid;
 		}

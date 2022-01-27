@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Internals
 		NavigationProxy NavigationProxy { get; }
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NavigationProxy']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NavigationProxy : INavigation
 	{
@@ -20,6 +21,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='Inner']/Docs" />
 		public INavigation Inner
 		{
 			get { return _inner; }
@@ -60,56 +62,67 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='InsertPageBefore']/Docs" />
 		public void InsertPageBefore(Page page, Page before)
 		{
 			OnInsertPageBefore(page, before);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='ModalStack']/Docs" />
 		public IReadOnlyList<Page> ModalStack
 		{
 			get { return GetModalStack(); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='NavigationStack']/Docs" />
 		public IReadOnlyList<Page> NavigationStack
 		{
 			get { return GetNavigationStack(); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopAsync'][0]/Docs" />
 		public Task<Page> PopAsync()
 		{
 			return OnPopAsync(true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopAsync'][1]/Docs" />
 		public Task<Page> PopAsync(bool animated)
 		{
 			return OnPopAsync(animated);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopModalAsync'][0]/Docs" />
 		public Task<Page> PopModalAsync()
 		{
 			return OnPopModal(true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopModalAsync'][1]/Docs" />
 		public Task<Page> PopModalAsync(bool animated)
 		{
 			return OnPopModal(animated);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopToRootAsync'][0]/Docs" />
 		public Task PopToRootAsync()
 		{
 			return OnPopToRootAsync(true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs" />
 		public Task PopToRootAsync(bool animated)
 		{
 			return OnPopToRootAsync(animated);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][0]/Docs" />
 		public Task PushAsync(Page root)
 		{
 			return PushAsync(root, true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][1]/Docs" />
 		public Task PushAsync(Page root, bool animated)
 		{
 			if (root.RealParent != null)
@@ -117,11 +130,13 @@ namespace Microsoft.Maui.Controls.Internals
 			return OnPushAsync(root, animated);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][0]/Docs" />
 		public Task PushModalAsync(Page modal)
 		{
 			return PushModalAsync(modal, true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][1]/Docs" />
 		public Task PushModalAsync(Page modal, bool animated)
 		{
 			if (modal.RealParent != null && modal.RealParent is not IWindow)
@@ -129,6 +144,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return OnPushModal(modal, animated);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='RemovePage']/Docs" />
 		public void RemovePage(Page page)
 		{
 			OnRemovePage(page);

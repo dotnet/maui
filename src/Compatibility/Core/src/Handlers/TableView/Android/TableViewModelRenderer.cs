@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (isHeader)
 			{
-				if(Application.AccentColor != null)
+				if (Application.AccentColor != null)
 					bline.SetBackgroundColor(Application.AccentColor.ToNative());
 			}
 			else if (nextIsHeader)
