@@ -392,7 +392,6 @@ namespace Microsoft.Maui.Platform
 			return new Rectangle(X, Y, Width, Height);
 		}
 
-
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
 			var nativeView = view?.ToNative();

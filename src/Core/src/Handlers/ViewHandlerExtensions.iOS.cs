@@ -56,6 +56,8 @@ namespace Microsoft.Maui
 		{
 			var resolved = measured;
 
+			min = ResolveMinimum(min);
+
 			if (IsExplicitSet(exact))
 			{
 				// If an exact value has been specified, try to use that
