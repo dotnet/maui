@@ -100,11 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
-			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
-			var mauiAssetFileProvider = new TizenMauiAssetFileProvider(contentRootDir);
-			IFileProvider fileProvider = customFileProvider == null
-				? mauiAssetFileProvider
-				: new CompositeFileProvider(customFileProvider, mauiAssetFileProvider);
+			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
 			_webviewManager = new TizenWebViewManager(this, NativeWebView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
 			if (RootComponents != null)
@@ -161,5 +157,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (url == AppOrigin)
 				NativeWebView.Eval(BlazorInitScript);
 		}
+
+		internal IFileProvider CreateFileProvider(string contentRootDir)
+		{
+			return new TizenMauiAssetFileProvider(contentRootDir);
+		}
+
 	}
 }
