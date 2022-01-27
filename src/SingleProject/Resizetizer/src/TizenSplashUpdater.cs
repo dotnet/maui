@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Xml;
 using Microsoft.Build.Framework;
@@ -30,7 +31,9 @@ namespace Microsoft.Maui.Resizetizer
 		const string namespaceURI = "http://tizen.org/ns/packages";
 		const string splashDirectoryName = "splash";
 		List<string> orientations = new List<string>() { "portrait", "landscape" };
-		Dictionary<string, string> splashDpiMap = new Dictionary<string, string>();
+		Size hdSize = new Size(720, 1080);
+		Size fhdSize = new Size(1080, 1920);
+		Dictionary<(string Resolution, string Orientation), string> splashDpiMap = new Dictionary<(string, string), string>();
 
 		public bool UpdateSplashImage()
 		{
@@ -45,16 +48,19 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			Directory.CreateDirectory(splashFullPath);
 
-			foreach (var dpi in DpiPath.Tizen)
+			foreach (var dpi in DpiPath.Tizen.SplashScreen)
 			{
 				var imageOutputPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, dpi.Path));
 				var imageFullPath = Path.Combine(imageOutputPath, image);
 				if (File.Exists(imageFullPath))
 				{
 					var resolution = dpi.Path.Split('-')[1].ToLower();
-					var newImage = Path.GetFileNameWithoutExtension(splash.ItemSpec) + "." + resolution + ".png";
-					splashDpiMap.Add(resolution, $"{splashDirectoryName}/{ newImage }");
-					UpdateColorAndMoveFile(imageFullPath, Path.Combine(splashFullPath, newImage));
+					foreach (var orientation in orientations)
+					{
+						var newImage = Path.GetFileNameWithoutExtension(splash.ItemSpec) + "." + resolution + "." + orientation + ".png";
+						splashDpiMap.Add((resolution, orientation), $"{splashDirectoryName}/{ newImage }");
+						UpdateColorAndMoveFile(GetScreenSize(resolution, orientation), imageFullPath, Path.Combine(splashFullPath, newImage));
+					}
 				}
 				else
 				{
@@ -65,7 +71,19 @@ namespace Microsoft.Maui.Resizetizer
 			return true;
 		}
 
-		public void UpdateColorAndMoveFile(string sourceFilePath, string destFilePath)
+		Size GetScreenSize(string resolution, string orientation)
+		{
+			if (resolution == "mdpi")
+			{
+				return orientation == "portrait" ? hdSize : new Size(hdSize.Height, hdSize.Width);
+			}
+			else
+			{
+				return orientation == "portrait" ? fhdSize : new Size(fhdSize.Height, fhdSize.Width);
+			}
+		}
+
+		public void UpdateColorAndMoveFile(Size screenSize, string sourceFilePath, string destFilePath)
 		{
 			var splash = MauiSplashScreen[0];
 			var colorMetadata = splash.GetMetadata("Color");
@@ -80,8 +98,8 @@ namespace Microsoft.Maui.Resizetizer
 			}
 
 			using (SKBitmap bmp = SKBitmap.Decode(sourceFilePath))
-			{ 
-				SKImageInfo info = new SKImageInfo(bmp.Width, bmp.Height);
+			{
+				SKImageInfo info = new SKImageInfo(screenSize.Width, screenSize.Height);
 				using (SKSurface surface = SKSurface.Create(info))
 				{
 					SKCanvas canvas = surface.Canvas;
@@ -91,7 +109,12 @@ namespace Microsoft.Maui.Resizetizer
 						IsAntialias = true,
 						FilterQuality = SKFilterQuality.High
 					};
-					canvas.DrawBitmap(bmp, info.Rect, paint);
+
+					var left = screenSize.Width <= bmp.Width ? 0 : (screenSize.Width - bmp.Width) / 2;
+					var top = screenSize.Height <= bmp.Height ? 0 : (screenSize.Height - bmp.Height) / 2;
+					var right = screenSize.Width <= bmp.Width ? left + screenSize.Width : left + bmp.Width;
+					var bottom = screenSize.Height <= bmp.Height ? top + screenSize.Height : top + bmp.Height;
+					canvas.DrawBitmap(bmp, new SKRect(left, top, right, bottom), paint);
 					canvas.Flush();
 
 					var updatedsplash = surface.Snapshot();
@@ -129,29 +152,39 @@ namespace Microsoft.Maui.Resizetizer
 				return;
 			}
 			var splashScreensNodeList = doc.SelectNodes("//manifest:splash-screens", nsmgr);
-			if (splashScreensNodeList != null)
+			XmlNode splashScreensNode;
+			if (splashScreensNodeList.Count == 0)
 			{
-				foreach (XmlNode node in splashScreensNodeList)
+				splashScreensNode = doc.CreateElement("splash-screens", namespaceURI);
+				uiApplicationNode.AppendChild(splashScreensNode);
+			}
+			else
+			{
+				splashScreensNode = splashScreensNodeList[0];
+				List<XmlNode> nodesToRemove = new List<XmlNode>();
+				foreach (XmlNode splashScreenNode in splashScreensNode.ChildNodes)
 				{
-					uiApplicationNode.RemoveChild(node);
+					var dpiValue = splashScreenNode.Attributes.GetNamedItem("dpi")?.Value;
+					if (dpiValue == "mdpi" || dpiValue == "hdpi")
+					{
+						nodesToRemove.Add(splashScreenNode);
+					}
+				}
+				foreach(XmlNode node in nodesToRemove)
+				{
+					splashScreensNode.RemoveChild(node);
 				}
 			}
 
-			var splashScreensNode = doc.CreateElement("splash-screens", namespaceURI);
-			uiApplicationNode.AppendChild(splashScreensNode);
-
 			foreach(var image in splashDpiMap)
 			{
-				foreach (var orientation in orientations)
-				{
-					var splashScreenNode = doc.CreateElement("splash-screen", namespaceURI);
-					splashScreenNode.SetAttribute("src", image.Value);
-					splashScreenNode.SetAttribute("type", "img");
-					splashScreenNode.SetAttribute("dpi", image.Key);
-					splashScreenNode.SetAttribute("orientation", orientation);
-					splashScreenNode.SetAttribute("indicator-display", "false");
-					splashScreensNode.AppendChild(splashScreenNode);
-				}
+				var splashScreenNode = doc.CreateElement("splash-screen", namespaceURI);
+				splashScreenNode.SetAttribute("src", image.Value);
+				splashScreenNode.SetAttribute("type", "img");
+				splashScreenNode.SetAttribute("dpi", image.Key.Resolution);
+				splashScreenNode.SetAttribute("orientation", image.Key.Orientation);
+				splashScreenNode.SetAttribute("indicator-display", "false");
+				splashScreensNode.AppendChild(splashScreenNode);
 			}
 
 			doc.Save(xmlPath);

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace Microsoft.Maui.Resizetizer
@@ -6,6 +8,9 @@ namespace Microsoft.Maui.Resizetizer
 	internal class TizenIconManifestUpdater
 	{
 		const string namespaceURI = "http://tizen.org/ns/packages";
+		const string tizenManifestFile = "tizen-manifest.xml";
+		const string resourcePath = "shared/res/";
+		const string defaultDpiType = "xhdpi";
 
 		public TizenIconManifestUpdater(string appIconName, DpiPath[] dpis, ILogger logger)
 		{
@@ -23,7 +28,7 @@ namespace Microsoft.Maui.Resizetizer
 		public void Update()
 		{
 			XmlDocument doc = new XmlDocument();
-			var xmlPath = Environment.CurrentDirectory + "\\tizen-manifest.xml";
+			var xmlPath = Path.Combine(Environment.CurrentDirectory, "platforms", "Tizen", tizenManifestFile);
 			try
 			{
 				doc.Load(xmlPath);
@@ -42,13 +47,39 @@ namespace Microsoft.Maui.Resizetizer
 				Logger.Log($"Failed to find <ui-application>");
 				return;
 			}
-			var IconNode = doc.SelectSingleNode("//manifest:icon", nsmgr);
-			if (IconNode == null)
+
+			var iconNodes = doc.SelectNodes("//manifest:icon", nsmgr);
+			foreach (XmlElement node in iconNodes)
 			{
-				IconNode = doc.CreateElement("icon", namespaceURI);
-				uiApplicationNode.AppendChild(IconNode);
+				if (node.HasAttribute("dpi") == false)
+				{
+					uiApplicationNode.RemoveChild(node);
+				}
+				else
+				{
+					foreach (var dpi in Dpis)
+					{
+						var dpiType = dpi.Path.Replace(resourcePath, "");
+						if (node.Attributes["dpi"].Value == dpiType)
+						{
+							uiApplicationNode.RemoveChild(node);
+						}
+					}
+				}
 			}
-			IconNode.InnerText = AppIconName + Dpis[1].FileSuffix + ".png";
+
+			foreach (var dpi in Dpis)
+			{
+				var dpiType = dpi.Path.Replace(resourcePath, "");
+				var iconNode = doc.CreateElement("icon", namespaceURI);
+				iconNode.SetAttribute("dpi", dpiType);
+				iconNode.InnerText = dpiType + "/" + AppIconName + dpi.FileSuffix + ".png";
+				uiApplicationNode.PrependChild(iconNode);
+			}
+			var defaultIconNode = doc.CreateElement("icon", namespaceURI);
+			var defaultDpi = Dpis.Where(n => n.Path.EndsWith(defaultDpiType)).FirstOrDefault();
+			defaultIconNode.InnerText = defaultDpiType + "/" + AppIconName + defaultDpi.FileSuffix + ".png";
+			uiApplicationNode.PrependChild(defaultIconNode);
 
 			doc.Save(xmlPath);
 		}

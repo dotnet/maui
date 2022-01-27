@@ -244,24 +244,36 @@ namespace Microsoft.Maui.Resizetizer
 				};
 		}
 
-		public static DpiPath[] Tizen
-			=> new[]
-			{
+
+		public static class Tizen
+		{
+			public static DpiPath Original => new DpiPath("res", 1.0m);
+
+			public static DpiPath[] Image
+				=> new[]
+				{
 				new DpiPath("res/contents/default_All-LDPI", 0.8m),
 				new DpiPath("res/contents/default_All-MDPI", 1.0m),
 				new DpiPath("res/contents/default_All-HDPI", 1.5m),
 				new DpiPath("res/contents/default_All-XHDPI", 2.0m),
 				new DpiPath("res/contents/default_All-XXHDPI", 3.0m),
-			};
+				};
 
-		public static DpiPath[] TizenAppIcon
-			=> new[]
-			{
-				new DpiPath("shared/res", 1.0m, null, ".high", new SKSize(78, 89)),
-				new DpiPath("shared/res", 1.0m, null, ".xhigh", new SKSize(117, 117)),
-			};
+			public static DpiPath[] AppIcon
+				=> new[]
+				{
+				new DpiPath("shared/res/hdpi", 1.0m, null, ".high", new SKSize(78, 78)),
+				new DpiPath("shared/res/xhdpi", 1.0m, null, ".xhigh", new SKSize(117, 117)),
+				};
 
-		static DpiPath TizenOriginal => new DpiPath("res", 1.0m);
+			public static DpiPath[] SplashScreen
+				=> new[]
+				{
+				new DpiPath("res/contents/default_All-MDPI", 1.0m),
+				new DpiPath("res/contents/default_All-HDPI", 1.5m),
+				};
+
+		}
 
 		public static DpiPath GetOriginal(string platform)
 		{
@@ -276,7 +288,7 @@ namespace Microsoft.Maui.Resizetizer
 				case "wpf":
 					return DpiPath.Wpf.Original;
 				case "tizen":
-					return DpiPath.TizenOriginal;
+					return DpiPath.Tizen.Original;
 			}
 
 			return null;
@@ -295,7 +307,7 @@ namespace Microsoft.Maui.Resizetizer
 				case "wpf":
 					return DpiPath.Wpf.Image;
 				case "tizen":
-					return DpiPath.Tizen;
+					return DpiPath.Tizen.Image;
 			}
 
 			return null;
@@ -320,7 +332,7 @@ namespace Microsoft.Maui.Resizetizer
 					result = DpiPath.Wpf.AppIcon;
 					break;
 				case "tizen":
-					result = DpiPath.TizenAppIcon;
+					result = DpiPath.Tizen.AppIcon;
 					break;
 			}
 
