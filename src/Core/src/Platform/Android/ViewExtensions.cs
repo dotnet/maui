@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void InvalidateMeasure(this AView nativeView, IView view)
 		{
-			nativeView.RequestLayout();
+			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateWidth(this AView nativeView, IView view)
