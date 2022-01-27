@@ -37,8 +37,6 @@ namespace Microsoft.Maui.Controls.Handlers
 					IsPaneToggleButtonVisible = false
 				};
 
-				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
-
 				// Unset styles set by parent NavigationView
 				_navigationView.UpdateResourceToApplicationDefault("NavigationViewContentMargin", null);
 				_navigationView.UpdateResourceToApplicationDefault("NavigationViewMinimalHeaderMargin", null);
@@ -62,6 +60,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_navigationView == null)
 			{
 				SetupNavigationLocals();
+			}
+			else
+			{
+				SetupNavigationView();
 			}
 
 			if(_navigationView == null && _navigationRootManager?.RootView is WindowRootView wrv)
@@ -157,7 +159,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			UpdateValue(nameof(TabbedPage.ItemsSource));
 
 			_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
-			_navigationView.SelectedItem = VirtualView.CurrentPage;
+
+			if (_navigationView.SelectedItem != VirtualView.CurrentPage)
+				_navigationView.SelectedItem = VirtualView.CurrentPage;
+			else
+				NavigateToPage(VirtualView.CurrentPage);
 		}
 
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
