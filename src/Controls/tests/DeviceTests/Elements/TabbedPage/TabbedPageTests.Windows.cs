@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : HandlerTestBase
 	{
-		void SetupTabbedPageHandler()
+		void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Swapping Root Window Content for New Tabbed Page")]
 		public async Task SwapWindowContentForNewTabbedPage()
 		{
-			SetupTabbedPageHandler();
+			SetupBuilder();
 			var window = new Window()
 			{
 				Page = CreateBasicTabbedPage()

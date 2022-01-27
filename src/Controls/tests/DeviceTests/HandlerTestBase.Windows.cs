@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
 		{
-			return (navigationRootManager.RootView as NavigationRootView).NavigationViewControl;
+			return (navigationRootManager.RootView as WindowRootView).NavigationViewControl;
 		}
 
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
@@ -91,6 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 					var handler = CreateHandler<THandler>(view, mauiContext);
 					frameworkElement = (WFrameworkElement)handler.NativeView;
 					content.Children.Add(frameworkElement);
+					await frameworkElement.LoadedAsync();
 					await action(handler);
 				}
 				finally

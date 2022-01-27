@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_navigationView != null)
 				_navigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 
-			((WFrame)NativeView).Navigated -= OnNavigated;
+			((WFrame)nativeView).Navigated -= OnNavigated;
 			VirtualView.Appearing -= OnTabbedPageAppearing;
 			VirtualView.Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)

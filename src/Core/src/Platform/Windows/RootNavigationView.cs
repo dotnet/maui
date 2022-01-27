@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Platform
 					Header = null;
 					PaneFooter = HeaderControl;
 				}
-				else
+				else if(PaneFooter == HeaderControl)
 				{
 					TopNavArea.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
 					PaneFooter = null;

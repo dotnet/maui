@@ -25,12 +25,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.FlyoutPaneSizeChanged += OnFlyoutPaneSizeChanged;
 			nativeView.PaneOpened += OnPaneOepened;
 			_registerCallbackToken = nativeView.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, BackButtonVisibleChanged);
-
-			nativeView.RegisterPropertyChangedCallback(NavigationView.PaneDisplayModeProperty, PaneDisplayModeChanged);
-		}
-
-		private void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
-		{
 		}
 
 		protected override void DisconnectHandler(RootNavigationView nativeView)
