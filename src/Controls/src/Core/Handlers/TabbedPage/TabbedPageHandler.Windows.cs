@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class TabbedPageHandler : ViewHandler<TabbedPage, FrameworkElement>
 	{
-		NavigationView? _navigationView;
+		MauiNavigationView? _navigationView;
 		NavigationRootManager? _navigationRootManager;
 		TabbedPage? _previousView;
 		WFrame? _navigationFrame;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_navigationFrame = new WFrame();
 			if (VirtualView.FindParentOfType<FlyoutPage>() != null)
 			{
-				_navigationView = new NavigationView()
+				_navigationView = new MauiNavigationView()
 				{
 					Content = _navigationFrame,
 					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal,
@@ -37,12 +37,15 @@ namespace Microsoft.Maui.Controls.Handlers
 					IsPaneToggleButtonVisible = false
 				};
 
-				// Unset styles set by parent NavigationView
-				_navigationView.UpdateThemeDictionaries("NavigationViewContentMargin", null);
-				_navigationView.UpdateThemeDictionaries("NavigationViewMinimalHeaderMargin", null);
-				_navigationView.UpdateThemeDictionaries("NavigationViewHeaderMargin", null);
-				_navigationView.UpdateThemeDictionaries("NavigationViewMinimalContentGridBorderThickness", null);
+				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 
+				// Unset styles set by parent NavigationView
+				_navigationView.UpdateResourceToApplicationDefault("NavigationViewContentMargin", null);
+				_navigationView.UpdateResourceToApplicationDefault("NavigationViewMinimalHeaderMargin", null);
+				_navigationView.UpdateResourceToApplicationDefault("NavigationViewHeaderMargin", null);
+				_navigationView.UpdateResourceToApplicationDefault("NavigationViewMinimalContentGridBorderThickness", null);
+
+				SetupNavigationView();
 				return _navigationView;
 			}
 
@@ -53,18 +56,24 @@ namespace Microsoft.Maui.Controls.Handlers
 		private protected override void OnConnectHandler(FrameworkElement nativeView)
 		{
 			base.OnConnectHandler(nativeView);
-			_navigationRootManager = MauiContext?.GetNavigationRootManager();
-
-			if (_navigationRootManager?.RootView is NavigationRootView nrv)
-				nrv.OnApplyTemplateFinished += OnApplyTemplateFinished;
-
 			NavigationFrame.Navigated += OnNavigated;
-			UpdateNavigationView();
+
+			// If CreateNativeView didn't set the NavigationView then that means we are using the
+			// WindowRootView for our tabs
+			if (_navigationView == null)
+			{
+				_navigationRootManager = MauiContext?.GetNavigationRootManager();
+				_navigationView = (_navigationRootManager?.RootView as WindowRootView)?.NavigationViewControl;
+				SetupNavigationView();
+			}
 		}
 
 		private protected override void OnDisconnectHandler(FrameworkElement nativeView)
 		{
-			((WFrame)nativeView).Navigated -= OnNavigated;
+			if (_navigationView != null)
+				_navigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+
+			((WFrame)NativeView).Navigated -= OnNavigated;
 			VirtualView.Appearing -= OnTabbedPageAppearing;
 			VirtualView.Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)
@@ -107,26 +116,20 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
-			UpdateNavigationView();
+			UpdateValue(nameof(TabbedPage.BarBackground));
+			UpdateValue(nameof(TabbedPage.ItemsSource));
 		}
 
-		void UpdateNavigationView()
+		void SetupNavigationView()
 		{
-			_navigationRootManager = MauiContext?.GetNavigationRootManager();
-
 			if (_navigationView == null)
-			{
-				_navigationView = (_navigationRootManager?.RootView as NavigationRootView)?.NavigationViewControl;
+				return;
 
-				if (_navigationView != null)
-				{
-					_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
-					_navigationView.MenuItemsSource = VirtualView.Children;
-					_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
-					_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
-					_navigationView.SelectedItem = VirtualView.CurrentPage;
-				}
-			}
+			_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
+			_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
+			_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+			_navigationView.SelectedItem = VirtualView.CurrentPage;
 		}
 
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -211,7 +214,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapItemsSource(TabbedPageHandler handler, TabbedPage view)
 		{
-			handler.UpdateNavigationView();
+			if (handler._navigationView != null)
+				handler._navigationView.MenuItemsSource = handler.VirtualView.Children;
 		}
 
 		public static void MapItemTemplate(TabbedPageHandler handler, TabbedPage view)

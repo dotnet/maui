@@ -215,67 +215,22 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		internal static void UpdateThemeDictionaries(this FrameworkElement frameworkElement, string propertyKey, object? value)
+		internal static void UpdateResourceToApplicationDefault(this FrameworkElement frameworkElement, string propertyKey, object? value)
 		{
-			bool foundInThemeDict = false;
-			UI.Xaml.Controls.XamlControlsResources? xamlControlDict = null;
-
-			foreach(var dict in Application.Current.Resources.MergedDictionaries)
+			if (value is null)
 			{
-				if (dict is UI.Xaml.Controls.XamlControlsResources xcr)
-					xamlControlDict = xcr;
-			}
-
-			_ = xamlControlDict ?? throw new InvalidOperationException("Unable to find Xaml.Controls.XamlControlsResources");
-
-
-			foreach (var dict in xamlControlDict.ThemeDictionaries)
-			{
-				var appTheme = (ResourceDictionary)dict.Value;
-
-				object? elementDict;
-
-				if (!frameworkElement.Resources.ThemeDictionaries.TryGetValue(dict.Key, out elementDict))
-				{
-					elementDict = new ResourceDictionary();
-					frameworkElement.Resources.ThemeDictionaries.Add(dict.Key, elementDict);
-				}
-
-				if (value != null)
-				{
-					((ResourceDictionary)elementDict)[propertyKey] = value;
-				}
-				else
-				{
-					if (appTheme.TryGetValue(propertyKey, out value))
-					{
-						foundInThemeDict = true;
-						((ResourceDictionary)elementDict)[propertyKey] = value;
-					}
-					else
-					{
-						((ResourceDictionary)elementDict).Remove(propertyKey);
-					}
-				}
-			}
-
-			if(!foundInThemeDict)
-			{
-				if (value is null)
-				{
-					if (Application.Current.Resources.TryGetValue(propertyKey, out value))
-					{
-						frameworkElement.Resources[propertyKey] = value;
-					}
-					else
-					{
-						frameworkElement.Resources.Remove(propertyKey);
-					}
-				}
-				else
+				if (Application.Current.Resources.TryGetValue(propertyKey, out value))
 				{
 					frameworkElement.Resources[propertyKey] = value;
 				}
+				else
+				{
+					frameworkElement.Resources.Remove(propertyKey);
+				}
+			}
+			else
+			{
+				frameworkElement.Resources[propertyKey] = value;
 			}
 		}
 	}

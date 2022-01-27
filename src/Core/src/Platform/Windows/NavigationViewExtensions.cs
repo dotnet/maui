@@ -9,9 +9,12 @@ namespace Microsoft.Maui.Platform
 {
 	public static class NavigationViewExtensions
 	{
-		public static void UpdateTopNavAreaBackground(this NavigationView navigationView, Paint? paint)
+		public static void UpdateTopNavAreaBackground(this MauiNavigationView navigationView, Paint? paint)
 		{
-			navigationView.UpdateThemeDictionaries("NavigationViewTopPaneBackground", paint?.ToNative());
+			// Background property is set via {ThemeResource NavigationViewTopPaneBackground} in the Control Template
+			// AFAICT you can't modify properties set by ThemeResource at runtime so we have to just update this value directly
+			if (paint != null)
+				navigationView.TopNavArea?.UpdateBackground(paint, null);
 		}
 	}
 }

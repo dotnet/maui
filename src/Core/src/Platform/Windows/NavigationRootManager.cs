@@ -11,13 +11,13 @@ namespace Microsoft.Maui.Platform
 	public class NavigationRootManager
 	{
 		IMauiContext _mauiContext;
-		NavigationRootView _rootView;
+		WindowRootView _rootView;
 		WindowHeader? _windowHeader;
 
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
-			_rootView = new NavigationRootView();
+			_rootView = new WindowRootView();
 			_rootView.BackRequested += OnBackRequested;
 			_rootView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 		}
@@ -57,13 +57,13 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				if(_rootView.Content is MauiNavigationView navView)
+				if(_rootView.Content is RootNavigationView navView)
 				{
 					rootNavigationView = navView;
 				}
 				else
 				{
-					rootNavigationView = new MauiNavigationView();
+					rootNavigationView = new RootNavigationView();
 				}
 				
 				rootNavigationView.Content = nativeView;
