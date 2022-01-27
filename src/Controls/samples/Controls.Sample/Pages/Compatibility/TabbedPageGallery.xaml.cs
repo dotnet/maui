@@ -55,8 +55,8 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnToggleTabBar(object sender, EventArgs e)
 		{
-			if(this.BarBackground == SolidColorBrush.Purple)
-				this.BarBackground = null;
+			if ((this.BarBackground as SolidColorBrush)?.Color == SolidColorBrush.Purple.Color)
+				this.BarBackground = SolidColorBrush.Black;
 			else
 				this.BarBackground = SolidColorBrush.Purple;
 		}

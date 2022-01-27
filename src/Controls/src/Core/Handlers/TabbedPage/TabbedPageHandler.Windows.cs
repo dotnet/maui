@@ -116,8 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
-			UpdateValue(nameof(TabbedPage.BarBackground));
-			UpdateValue(nameof(TabbedPage.ItemsSource));
+			UpdateValuesWaitingForNavigationView();
 		}
 
 		void SetupNavigationView()
@@ -127,8 +126,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
 			_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
+
+			if (_navigationView.TopNavArea != null)
+				UpdateValuesWaitingForNavigationView();
+			else
+				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+		}
+
+		void UpdateValuesWaitingForNavigationView()
+		{
+			if (_navigationView == null)
+				return;
+
+			UpdateValue(nameof(TabbedPage.BarBackground));
+			UpdateValue(nameof(TabbedPage.ItemsSource));
+
 			_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
-			_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 			_navigationView.SelectedItem = VirtualView.CurrentPage;
 		}
 
