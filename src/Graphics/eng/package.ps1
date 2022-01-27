@@ -27,6 +27,11 @@ $dotnet = (Get-Item $dotnet).FullName
 
 if ($OnWindows)
 {
+    if (-not (Test-Path $msbuild))
+    {
+        $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -prerelease -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+    }
+
     # Modify global.json, so the IDE can load
     $globaljson = Join-Path $PSScriptRoot ../global.json
     [xml] $xml = Get-Content (Join-Path $PSScriptRoot Versions.props)
