@@ -40,6 +40,7 @@ using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 //TODO driop this
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/TypeConverterAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.TypeConverterAttribute']/Docs" />
 	public sealed class TypeConverterAttribute
 	{
 		//internal static string[] TypeConvertersType = {

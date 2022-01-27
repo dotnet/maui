@@ -13,6 +13,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.Application']/Docs" />
 	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Controls
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public Application() : this(true)
 		{
 		}
@@ -49,11 +51,13 @@ namespace Microsoft.Maui.Controls
 			_lastAppTheme = RequestedTheme;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs" />
 		public void Quit()
 		{
 			Handler?.Invoke(ApplicationHandler.TerminateCommandKey);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AppLinks']/Docs" />
 		public IAppLinks AppLinks
 		{
 			get
@@ -66,13 +70,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetCurrentApplication']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrentApplication(Application value) => Current = value;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Current']/Docs" />
 		public static Application? Current { get; set; }
 
 		Page? _pendingMainPage;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='MainPage']/Docs" />
 		public Page? MainPage
 		{
 			get
@@ -102,6 +109,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Properties']/Docs" />
 		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
 		public IDictionary<string, object> Properties
 		{
@@ -119,6 +127,7 @@ namespace Microsoft.Maui.Controls
 		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='NavigationProxy']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy? NavigationProxy { get; private set; }
 
@@ -126,6 +135,7 @@ namespace Microsoft.Maui.Controls
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetAppIndexingProvider']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetAppIndexingProvider(IAppIndexingProvider provider)
 		{
@@ -135,6 +145,7 @@ namespace Microsoft.Maui.Controls
 		ResourceDictionary? _resources;
 		bool IResourcesProvider.IsResourcesCreated => _resources != null;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Resources']/Docs" />
 		public ResourceDictionary Resources
 		{
 			get
@@ -161,6 +172,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='UserAppTheme']/Docs" />
 		public OSAppTheme UserAppTheme
 		{
 			get => _userAppTheme;
@@ -170,8 +182,10 @@ namespace Microsoft.Maui.Controls
 				TriggerThemeChangedActual(new AppThemeChangedEventArgs(value));
 			}
 		}
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
 		public OSAppTheme RequestedTheme => UserAppTheme == OSAppTheme.Unspecified ? Device.PlatformServices.RequestedTheme : UserAppTheme;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AccentColor']/Docs" />
 		public static Color? AccentColor { get; set; }
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
@@ -185,6 +199,7 @@ namespace Microsoft.Maui.Controls
 		OSAppTheme _userAppTheme = OSAppTheme.Unspecified;
 
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='TriggerThemeChanged']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void TriggerThemeChanged(AppThemeChangedEventArgs args)
 		{
@@ -246,6 +261,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<Page>? PageDisappearing;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SavePropertiesAsync']/Docs" />
 		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
 		public Task SavePropertiesAsync() =>
 			Dispatcher.DispatchIfRequiredAsync(async () =>
@@ -260,6 +276,7 @@ namespace Microsoft.Maui.Controls
 				}
 			});
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, Application> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
@@ -314,6 +331,7 @@ namespace Microsoft.Maui.Controls
 			OnResourcesChanged(changedResources);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SendOnAppLinkRequestReceived']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendOnAppLinkRequestReceived(Uri uri)
 		{

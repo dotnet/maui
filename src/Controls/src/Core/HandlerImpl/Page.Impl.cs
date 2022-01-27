@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs" />
 	public partial class Page : IView, ITitledElement, IToolbarElement
 	{
 		Toolbar _toolbar;
@@ -51,6 +52,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
 		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { }
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='GetParentWindow']/Docs" />
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
 	}

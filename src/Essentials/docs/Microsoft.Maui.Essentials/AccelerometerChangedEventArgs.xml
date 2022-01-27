@@ -1,0 +1,55 @@
+<Type Name="AccelerometerChangedEventArgs" FullName="Microsoft.Maui.Essentials.AccelerometerChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class AccelerometerChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit AccelerometerChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Essentials.AccelerometerChangedEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Event arguments containing the current reading.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public AccelerometerChangedEventArgs (Microsoft.Maui.Essentials.AccelerometerData reading);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Essentials.AccelerometerData reading) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.AccelerometerChangedEventArgs.#ctor(Microsoft.Maui.Essentials.AccelerometerData)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="reading" Type="Microsoft.Maui.Essentials.AccelerometerData" />
+      </Parameters>
+      <Docs>
+        <param name="reading">The accelerometer data reading.</param>
+        <summary>Public constructor that takes in a reading for event arguments.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Reading">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Essentials.AccelerometerData Reading { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Essentials.AccelerometerData Reading" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.AccelerometerChangedEventArgs.Reading" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Essentials.AccelerometerData</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The current values of accelerometer.</summary>
+        <value>The reading.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

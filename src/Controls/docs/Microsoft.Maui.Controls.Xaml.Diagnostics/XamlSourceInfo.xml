@@ -1,0 +1,147 @@
+<Type Name="XamlSourceInfo" FullName="Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo">
+  <TypeSignature Language="C#" Value="public class XamlSourceInfo" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit XamlSourceInfo extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo" />
+  <TypeSignature Language="F#" Value="type XamlSourceInfo = class" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+  </AssemblyInfo>
+  <TypeForwardingChain>
+    <TypeForwarding From="Microsoft.Maui.Controls.Xaml" FromVersion="2.0.0.0" To="Microsoft.Maui.Controls.Core" ToVersion="2.0.0.0" />
+  </TypeForwardingChain>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public XamlSourceInfo (Uri sourceUri, int lineNumber, int linePosition);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Uri sourceUri, int32 lineNumber, int32 linePosition) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo.#ctor(System.Uri,System.Int32,System.Int32)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo : Uri * int * int -&gt; Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo" Usage="new Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo (sourceUri, lineNumber, linePosition)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="sourceUri" Type="System.Uri" />
+        <Parameter Name="lineNumber" Type="System.Int32" />
+        <Parameter Name="linePosition" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="sourceUri">To be added.</param>
+        <param name="lineNumber">To be added.</param>
+        <param name="linePosition">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Deconstruct">
+      <MemberSignature Language="C#" Value="public void Deconstruct (out Uri sourceUri, out int lineNumber, out int linePosition);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Deconstruct([out] class System.Uri&amp; sourceUri, [out] int32&amp; lineNumber, [out] int32&amp; linePosition) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo.Deconstruct(System.Uri@,System.Int32@,System.Int32@)" />
+      <MemberSignature Language="F#" Value="member this.Deconstruct : Uri * int * int -&gt; unit" Usage="xamlSourceInfo.Deconstruct (sourceUri, lineNumber, linePosition)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sourceUri" Type="System.Uri" RefType="out" />
+        <Parameter Name="lineNumber" Type="System.Int32" RefType="out" />
+        <Parameter Name="linePosition" Type="System.Int32" RefType="out" />
+      </Parameters>
+      <Docs>
+        <param name="sourceUri">To be added.</param>
+        <param name="lineNumber">To be added.</param>
+        <param name="linePosition">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LineNumber">
+      <MemberSignature Language="C#" Value="public int LineNumber { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance int32 LineNumber" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo.LineNumber" />
+      <MemberSignature Language="F#" Value="member this.LineNumber : int" Usage="Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo.LineNumber" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LinePosition">
+      <MemberSignature Language="C#" Value="public int LinePosition { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance int32 LinePosition" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo.LinePosition" />
+      <MemberSignature Language="F#" Value="member this.LinePosition : int" Usage="Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo.LinePosition" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SourceUri">
+      <MemberSignature Language="C#" Value="public Uri SourceUri { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Uri SourceUri" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo.SourceUri" />
+      <MemberSignature Language="F#" Value="member this.SourceUri : Uri" Usage="Microsoft.Maui.Controls.Xaml.Diagnostics.XamlSourceInfo.SourceUri" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Uri</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

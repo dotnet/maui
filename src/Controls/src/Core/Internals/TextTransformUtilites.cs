@@ -2,9 +2,11 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/TextTransformUtilites.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TextTransformUtilites']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class TextTransformUtilites
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/TextTransformUtilites.xml" path="//Member[@MemberName='GetTransformedText']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static string GetTransformedText(string source, TextTransform textTransform)
 		{
@@ -24,6 +26,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/TextTransformUtilites.xml" path="//Member[@MemberName='SetPlainText']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetPlainText(InputView inputView, string nativeText)
 		{
