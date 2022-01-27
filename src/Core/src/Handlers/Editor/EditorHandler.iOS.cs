@@ -73,6 +73,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
+		public static void MapCursorPosition(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateCursorPosition(editor);
+
+		public static void MapSelectionLength(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateSelectionLength(editor);
+
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateKeyboard(editor);
 

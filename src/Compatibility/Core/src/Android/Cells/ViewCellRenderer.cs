@@ -10,6 +10,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer instead")]
 	public class ViewCellRenderer : CellRenderer
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
@@ -52,6 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return c;
 		}
 
+		[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer.ViewCellContainer instead")]
 		internal class ViewCellContainer : ViewGroup, INativeElementView
 		{
 			readonly View _parent;
@@ -274,7 +276,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					height = (int)Context.ToPixels(_viewCell.Height > 0 ? _viewCell.Height : measure.Request.Height);
 				}
 				else
-					height = (int)Context.ToPixels(ParentRowHeight == -1 ? BaseCellView.DefaultMinHeight : ParentRowHeight);
+					height = (int)Context.ToPixels(ParentRowHeight == -1 ? Handlers.Compatibility.BaseCellView.DefaultMinHeight : ParentRowHeight);
 
 				SetMeasuredDimension(width, height);
 

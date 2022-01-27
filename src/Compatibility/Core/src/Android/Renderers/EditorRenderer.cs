@@ -122,8 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			EditText.SetSingleLine(false);
 			EditText.Gravity = GravityFlags.Top;
-			if ((int)Forms.SdkInt > 16)
-				EditText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
+			EditText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 			EditText.SetHorizontallyScrolling(false);
 
 			UpdateText();
@@ -251,10 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
+			EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		[PortHandler]

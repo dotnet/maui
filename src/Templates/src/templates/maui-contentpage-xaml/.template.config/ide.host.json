@@ -3,5 +3,11 @@
     "appliesTo": "UseMaui",
     "defaultItemExtension": "xaml",
     "itemHierarchyPaths": [ ".NET MAUI" ],
-    "icon": "ide/MauiPageXamlFile.ico"
+    "icon": "ide/MauiPageXamlFile.ico",
+    "unsupportedHosts": [
+        {
+            "id": "vs",
+            "version": "(,17.1)"
+        }
+    ]
 }

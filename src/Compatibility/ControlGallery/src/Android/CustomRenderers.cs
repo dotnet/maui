@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 	/// This renderer uses a view defined in /Resources/Layout/NativeAndroidCell.axml
 	/// as the cell layout
 	/// </summary>
-	public class NativeAndroidCellRenderer : ViewCellRenderer
+	public class NativeAndroidCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		public NativeAndroidCellRenderer()
 		{

@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Button
 	{
-		public static void MapImageSource(ButtonHandler arg1, Button arg2)
+		public static void MapImageSource(ButtonHandler handler, Button button)
 		{
-			ButtonHandler.MapImageSource(arg1, arg2);
-			arg2.Handler?.UpdateValue(nameof(Button.ContentLayout));
+			ButtonHandler.MapImageSource(handler, button);
+			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
 		}
 
-		public static void MapText(ButtonHandler arg1, Button arg2)
+		public static void MapText(ButtonHandler handler, Button button)
 		{
-			ButtonHandler.MapText(arg1, arg2);
-			arg2.Handler?.UpdateValue(nameof(Button.ContentLayout));
+			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
+			handler.NativeView?.UpdateText(text);
+			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
 		}
 	}
 }

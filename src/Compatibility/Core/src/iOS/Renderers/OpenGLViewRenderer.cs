@@ -1,3 +1,4 @@
+#if !(MACCATALYST || MACOS)
 using System;
 using System.ComponentModel;
 using CoreAnimation;
@@ -115,3 +116,4 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 }
+#endif

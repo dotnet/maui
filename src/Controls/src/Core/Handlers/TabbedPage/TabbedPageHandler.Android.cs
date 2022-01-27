@@ -9,16 +9,9 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public sealed class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
+	public partial class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
 	{
-		public static PropertyMapper<TabbedPage, TabbedPageHandler> Mapper =
-				new PropertyMapper<TabbedPage, TabbedPageHandler>(ViewMapper);
-
 		TabbedPageManager _tabbedPageManager;
-		public TabbedPageHandler() : base(Mapper, null)
-		{
-		}
-
 		protected override ViewPager2 CreateNativeView()
 		{
 			_tabbedPageManager ??= new TabbedPageManager(MauiContext!);
@@ -35,6 +28,39 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			base.DisconnectHandler(nativeView);
 			_tabbedPageManager.SetElement(null);
+		}
+
+		public static void MapBarBackground(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+		public static void MapBarBackgroundColor(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+		public static void MapBarTextColor(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+		public static void MapUnselectedTabColor(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+		public static void MapSelectedTabColor(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+
+		public static void MapItemsSource(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+		public static void MapItemTemplate(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+		public static void MapSelectedItem(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+		public static void MapIndex(TabbedPageHandler handler, TabbedPage view)
+		{
+		}
+		public static void MapCurrentPage(TabbedPageHandler handler, TabbedPage view)
+		{
+
 		}
 	}
 }

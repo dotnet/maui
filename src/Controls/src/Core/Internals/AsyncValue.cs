@@ -89,9 +89,11 @@ namespace Microsoft.Maui.Controls.Internals
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/AsyncValueExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.AsyncValueExtensions']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class AsyncValueExtensions
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/AsyncValueExtensions.xml" path="//Member[@MemberName='AsAsyncValue']/Docs" />
 		public static AsyncValue<T> AsAsyncValue<T>(this Task<T> valueTask, T defaultValue = default(T)) =>
 			new AsyncValue<T>(valueTask, defaultValue);
 	}

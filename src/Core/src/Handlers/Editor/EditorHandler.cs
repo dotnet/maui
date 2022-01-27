@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.TextColor)] = MapTextColor,
 			[nameof(IEditor.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(IEditor.VerticalTextAlignment)] = MapVerticalTextAlignment,
-			[nameof(IEditor.Keyboard)] = MapKeyboard
+			[nameof(IEditor.Keyboard)] = MapKeyboard,
+			[nameof(IEditor.CursorPosition)] = MapCursorPosition,
+			[nameof(IEditor.SelectionLength)] = MapSelectionLength
 		};
 
 		public EditorHandler() : base(EditorMapper)

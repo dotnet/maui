@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls
 
 		IGridLayout ConvertToRows(StackLayout stackLayout)
 		{
-			GridLayout grid = new AndExpandGrid
+			Grid grid = new AndExpandGrid
 			{
 				ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition { Width = GridLength.Star } },
 				RowDefinitions = new RowDefinitionCollection()
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 
 		IGridLayout ConvertToColumns(StackLayout stackLayout)
 		{
-			GridLayout grid = new AndExpandGrid
+			Grid grid = new AndExpandGrid
 			{
 				RowDefinitions = new RowDefinitionCollection { new RowDefinition { Height = GridLength.Star } },
 				ColumnDefinitions = new ColumnDefinitionCollection()
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls
 			return grid;
 		}
 
-		class AndExpandGrid : GridLayout
+		class AndExpandGrid : Grid
 		{
 			protected override void OnChildAdded(Element child)
 			{

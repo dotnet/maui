@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Hosting;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs" />
 	public partial class Element : Maui.IElement, IEffectControlProvider
 	{
 		IElementHandler _handler;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Controls
 		Maui.IElement Maui.IElement.Parent => Parent;
 		EffectsFactory EffectsFactory => _effectsFactory ??= Handler.MauiContext.Services.GetRequiredService<EffectsFactory>();
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Handler']/Docs" />
 		public IElementHandler Handler
 		{
 			get => _handler;

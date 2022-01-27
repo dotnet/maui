@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="Type[@FullName='Microsoft.Maui.Essentials.VersionTracking']/Docs" />
 	public static class VersionTracking
 	{
 		const string versionTrailKey = "VersionTracking.Trail";
@@ -54,36 +55,50 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='Track']/Docs" />
 		[Preserve]
 		public static void Track()
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchEver']/Docs" />
 		public static bool IsFirstLaunchEver { get; private set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForCurrentVersion']/Docs" />
 		public static bool IsFirstLaunchForCurrentVersion { get; private set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForCurrentBuild']/Docs" />
 		public static bool IsFirstLaunchForCurrentBuild { get; private set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='CurrentVersion']/Docs" />
 		public static string CurrentVersion => AppInfo.VersionString;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='CurrentBuild']/Docs" />
 		public static string CurrentBuild => AppInfo.BuildString;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='PreviousVersion']/Docs" />
 		public static string PreviousVersion => GetPrevious(versionsKey);
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='PreviousBuild']/Docs" />
 		public static string PreviousBuild => GetPrevious(buildsKey);
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='FirstInstalledVersion']/Docs" />
 		public static string FirstInstalledVersion => versionTrail[versionsKey].FirstOrDefault();
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='FirstInstalledBuild']/Docs" />
 		public static string FirstInstalledBuild => versionTrail[buildsKey].FirstOrDefault();
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='VersionHistory']/Docs" />
 		public static IEnumerable<string> VersionHistory => versionTrail[versionsKey].ToArray();
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='BuildHistory']/Docs" />
 		public static IEnumerable<string> BuildHistory => versionTrail[buildsKey].ToArray();
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForVersion']/Docs" />
 		public static bool IsFirstLaunchForVersion(string version)
 			=> CurrentVersion == version && IsFirstLaunchForCurrentVersion;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForBuild']/Docs" />
 		public static bool IsFirstLaunchForBuild(string build)
 			=> CurrentBuild == build && IsFirstLaunchForCurrentBuild;
 

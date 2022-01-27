@@ -4,6 +4,12 @@
     <UsingMicrosoftMauiControlsSdk>true</UsingMicrosoftMauiControlsSdk>
   </PropertyGroup>
 
+  <!--
+    We aren't supposed to set properties in AutoImport.props
+    Importing Microsoft.Maui.Controls.props here instead.
+   -->
+  <Import Project="Microsoft.Maui.Controls.props" />
+
   <!-- Imported last -->
   <PropertyGroup>
     <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Sdk.After.targets</AfterMicrosoftNETSdkTargets>

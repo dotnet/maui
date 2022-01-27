@@ -37,6 +37,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsSpellCheckEnabled { get; set; } = true;
 
+		public int CursorPosition { get; set; }
+
+		public int SelectionLength { get; set; }
+
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public bool IsReadOnly { get; set; }

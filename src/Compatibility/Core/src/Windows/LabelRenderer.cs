@@ -8,27 +8,28 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Windows.UI.Text;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.UAP;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label;
 using WRect = Windows.Foundation.Rect;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public static class FormattedStringExtensions
 	{
-		public static Run ToRun(this Span span)
+		public static Run ToRun(this Span span, IFontManager fontManager)
 		{
 			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor.IsNotDefault())
 				run.Foreground = span.TextColor.ToNative();
 
-			if (!span.IsDefault())
-				run.ApplyFont(span);
+			var font = span.ToFont();
+			if (!font.IsDefault)
+				run.ApplyFont(font, fontManager);
 
 			if (span.IsSet(Span.TextDecorationsProperty))
 				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;
@@ -144,7 +145,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					SetNativeControl(new TextBlock());
 				}
 
-				_isInitiallyDefault = Element.IsDefault();
+				_isInitiallyDefault = Element.ToFont().IsDefault;
 
 				UpdateText(Control);
 				UpdateTextDecorations(Control);
@@ -264,13 +265,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			Label label = Element;
-			if (label == null || (label.IsDefault() && !_fontApplied))
+
+			if (label == null)
 				return;
 
-			if (label.IsDefault() && _isInitiallyDefault)
-				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)));
+			var isLabelDefault = label.ToFont().IsDefault;
+			if (isLabelDefault && !_fontApplied)
+				return;
+
+			if (isLabelDefault && _isInitiallyDefault)
+				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)), Element.RequireFontManager());
 			else
-				textBlock.ApplyFont(label);
+				textBlock.ApplyFont(label.ToFont(), Element.RequireFontManager());
 
 			_fontApplied = true;
 		}
@@ -334,6 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				else
 				{
+					var fontManager = label.RequireFontManager();
 					textBlock.Inlines.Clear();
 					// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 					textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
@@ -343,7 +350,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					{
 						var span = formatted.Spans[i];
 
-						var run = span.ToRun();
+						var run = span.ToRun(fontManager);
 						heights.Add(Control.FindDefaultLineHeight(run));
 						textBlock.Inlines.Add(run);
 					}

@@ -27,27 +27,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			return exitCondition.Invoke();
 		}
+
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
-
-		protected TCustomHandler CreateHandler<TCustomHandler>(IView view, IMauiContext mauiContext = null)
-			where TCustomHandler : THandler, new()
-		{
-			var handler = new TCustomHandler();
-			InitializeViewHandler(view, handler, mauiContext);
-			return handler;
-		}
-
-		protected void InitializeViewHandler(IView view, IViewHandler handler, IMauiContext mauiContext = null)
-		{
-			handler.SetMauiContext(mauiContext ?? MauiContext);
-
-			handler.SetVirtualView(view);
-			view.Handler = handler;
-
-			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
-			handler.NativeArrange(view.Frame);
-		}
 
 		protected async Task<THandler> CreateHandlerAsync(IView view)
 		{

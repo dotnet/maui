@@ -5,6 +5,7 @@ using static Microsoft.Maui.Layouts.LayoutManager;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs" />
 	public partial class ScrollView : IScrollView, IContentView
 	{
 		object IContentView.Content => Content;
@@ -103,17 +104,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return bounds.Size;
-		}
-
-		internal override void QueueLayoutResolution()
-		{
-			if (Handler != null)
-			{
-				// No need to queue up layout changes in ScrollView 
-				return;
-			}
-
-			base.QueueLayoutResolution();
 		}
 	}
 }

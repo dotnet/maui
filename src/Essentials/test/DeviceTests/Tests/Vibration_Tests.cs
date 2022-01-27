@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if __ANDROID__
             // API 23+ we need user interaction for camera permission
             // can't really test so easily on device.
-            if (Platform.HasApiLevel(Android.OS.BuildVersionCodes.M))
+            if (OperatingSystem.IsAndroidVersionAtLeast((int)Android.OS.BuildVersionCodes.M))
                 return;
 #elif __IOS__
             // TODO: remove this as soon as the test harness can filter
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if __ANDROID__
             // API 23+ we need user interaction for camera permission
             // can't really test so easily on device.
-            if (Platform.HasApiLevel(Android.OS.BuildVersionCodes.M))
+            if (OperatingSystem.IsAndroidVersionAtLeast((int)Android.OS.BuildVersionCodes.M))
                 return;
 #elif __IOS__
             // TODO: remove this as soon as the test harness can filter

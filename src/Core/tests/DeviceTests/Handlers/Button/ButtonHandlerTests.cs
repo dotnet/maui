@@ -11,6 +11,8 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Button)]
 	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler, ButtonStub>
 	{
+		const int Precision = 4;
+
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{
@@ -86,6 +88,39 @@ namespace Microsoft.Maui.DeviceTests
 				var expectedColor = Color.FromArgb(colorHex);
 				await handler.NativeView.AssertContainsColor(expectedColor);
 			});
+		}
+
+		[Theory(DisplayName = "Padding Initializes Correctly")]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(1, 1, 1, 1)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(5, 10, 15, 20)]
+		public async Task PaddingInitializesCorrectly(double left, double top, double right, double bottom)
+		{
+			var user = new Thickness(left, top, right, bottom);
+
+			var button = new ButtonStub
+			{
+				Text = "Test",
+				Padding = user
+			};
+
+			var (expected, native) = await GetValueAsync(button, handler =>
+			{
+				var native = GetNativePadding(handler);
+				var scaled = user;
+
+#if __ANDROID__
+				scaled = handler.NativeView.Context!.ToPixels(scaled);
+#endif
+
+				return (scaled, native);
+			});
+
+			Assert.Equal(expected.Left, native.Left, Precision);
+			Assert.Equal(expected.Top, native.Top, Precision);
+			Assert.Equal(expected.Right, native.Right, Precision);
+			Assert.Equal(expected.Bottom, native.Bottom, Precision);
 		}
 	}
 }

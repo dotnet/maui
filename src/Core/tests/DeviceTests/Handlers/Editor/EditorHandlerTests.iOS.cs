@@ -224,5 +224,15 @@ namespace Microsoft.Maui.DeviceTests
 				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
 				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
 		}
+
+		int GetNativeCursorPosition(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			if (nativeEditor != null && nativeEditor.SelectedTextRange != null)
+				return (int)nativeEditor.GetOffsetFromPosition(nativeEditor.BeginningOfDocument, nativeEditor.SelectedTextRange.Start);
+
+			return -1;
+		}
 	}
 }
