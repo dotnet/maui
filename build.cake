@@ -37,11 +37,12 @@ PowerShell:
 
 string agentName = EnvironmentVariable("AGENT_NAME", "");
 bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
-string artifactStagingDirectory = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts");
-string logDirectory = EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs");
-string testResultsDirectory = EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results");
-string workingDirectory = EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", ".");
-string envProgramFiles = EnvironmentVariable("ProgramFiles(x86)");
+DirectoryPath artifactStagingDirectory = MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
+DirectoryPath logDirectory = MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs")));
+DirectoryPath testResultsDirectory = MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results")));
+DirectoryPath diffDirectory = MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{artifactStagingDirectory}/api-diff")));
+DirectoryPath workingDirectory = MakeAbsolute(Directory(EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", ".")));
+DirectoryPath envProgramFiles = MakeAbsolute(Directory(EnvironmentVariable("ProgramFiles(x86)")));
 var configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 
 var target = Argument("target", "Default");
