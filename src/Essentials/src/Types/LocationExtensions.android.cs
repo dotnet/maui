@@ -29,24 +29,15 @@ namespace Microsoft.Maui.Essentials
 				Timestamp = location.GetTimestamp().ToUniversalTime(),
 				Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
 				VerticalAccuracy =
-#if __ANDROID_26__
 					Platform.HasApiLevelO && location.HasVerticalAccuracy ? location.VerticalAccuracyMeters : default(float?),
-#else
-					default(float?),
-#endif
 				Course = location.HasBearing ? location.Bearing : default(double?),
 				Speed = location.HasSpeed ? location.Speed : default(double?),
-				IsFromMockProvider = Platform.HasApiLevel(global::Android.OS.BuildVersionCodes.JellyBeanMr2)
-					? (
-#if __ANDROID_31__
-						Platform.HasApiLevelS
-							? location.Mock :
-#endif
+				IsFromMockProvider =
+					Platform.HasApiLevelS
+						? location.Mock :
 #pragma warning disable CS0618 // Type or member is obsolete
-							location.IsFromMockProvider
+						location.IsFromMockProvider,
 #pragma warning restore CS0618 // Type or member is obsolete
-						)
-					: false,
 				AltitudeReferenceSystem = AltitudeReferenceSystem.Ellipsoid
 			};
 

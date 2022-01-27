@@ -69,6 +69,24 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				//File.Copy(DestinationFilename, $"output-{dpi}-{fgScale}-{bg}-{fg}.png", true);
 			}
+
+			[Theory]
+			[InlineData(1, 1, "appicon.svg", "prismicon.svg")]
+			public void ComplexIconTest(double dpi, double fgScale, string bg, string fg)
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/" + bg;
+				info.ForegroundFilename = "images/" + fg;
+				info.ForegroundScale = fgScale;
+				info.IsAppIcon = true;
+
+				var tools = new SkiaSharpAppIconTools(info, Logger);
+				var dpiPath = new DpiPath("", (decimal)dpi);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				//File.Copy(DestinationFilename, $"output-{dpi}-{fgScale}-{bg}-{fg}.png", true);
+			}
 		}
 	}
 }

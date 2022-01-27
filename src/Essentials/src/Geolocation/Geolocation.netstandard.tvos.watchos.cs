@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Geolocation']/Docs" />
 	public static partial class Geolocation
 	{
 		static Task<Location> PlatformLastKnownLocationAsync() =>

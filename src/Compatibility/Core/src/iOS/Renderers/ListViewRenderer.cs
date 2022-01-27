@@ -18,6 +18,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.List
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer instead")]
 	public class ListViewRenderer : ViewRenderer<ListView, UITableView>
 	{
 		const int DefaultRowHeight = 44;
@@ -1533,6 +1534,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer.FormsUITableViewController instead")]
 	internal class FormsUITableViewController : UITableViewController
 	{
 		ListView _list;

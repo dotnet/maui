@@ -353,6 +353,56 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsChatKeyboard, expected);
 		}
 
+		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
+		[InlineData(0)]
+		public async Task CursorPositionInitializesCorrectly(int initialPosition)
+		{
+			var editor = new EditorStub
+			{
+				Text = "This is TEXT!",
+				CursorPosition = initialPosition
+			};
+
+			await ValidatePropertyInitValue(editor, () => editor.CursorPosition, GetNativeCursorPosition, initialPosition);
+		}
+
+		[Theory(DisplayName = "CursorPosition Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
+
+			var editor = new EditorStub
+			{
+				Text = text
+			};
+
+			await ValidatePropertyUpdatesValue(
+				editor,
+				nameof(ITextInput.CursorPosition),
+				GetNativeCursorPosition,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "CursorPosition is Capped to Text's Length")]
+		[InlineData(30)]
+		public async Task CursorPositionIsCapped(int initialPosition)
+		{
+			string text = "This is TEXT!";
+
+			var editor = new EditorStub
+			{
+				Text = text,
+				CursorPosition = initialPosition
+			};
+
+			int actualPosition = await GetValueAsync(editor, GetNativeCursorPosition);
+
+			Assert.Equal(text.Length, actualPosition);
+		}
+
 		[Category(TestCategory.Editor)]
 		public class EditorTextInputTests : TextInputHandlerTests<EditorHandler, EditorStub>
 		{

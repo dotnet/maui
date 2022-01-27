@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
 	public static partial class Clipboard
 	{
 		static Task PlatformSetTextAsync(string text)

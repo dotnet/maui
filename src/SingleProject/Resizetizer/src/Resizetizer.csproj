@@ -1,4 +1,3 @@
-<!-- NOTE: This project is temporarily replacing Microsoft.Maui.Resizetizer.Sdk -->
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
@@ -8,9 +7,7 @@
     <!--<Nullable>enable</Nullable>-->
     <PackageId>Microsoft.Maui.Resizetizer.Sdk</PackageId>
     <Description>.NET MAUI SDK support for images, fonts, etc. Enabled via &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt;.</Description>
-    <IncludeSymbols>false</IncludeSymbols>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <NoWarn>NU5128</NoWarn>
+    <IsPackable>false</IsPackable>
     <_SkiaPackagePath>build\</_SkiaPackagePath>
   </PropertyGroup>
 
@@ -37,7 +34,6 @@
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(MauiNuSpecDirectory)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
 
-  <Import Project="$(MauiRootDirectory)src\Workload\Shared\LibraryPacks.targets" />
   <Import Project="$(MauiRootDirectory)src\Workload\Shared\Svg.Skia.targets" />
 
 </Project>

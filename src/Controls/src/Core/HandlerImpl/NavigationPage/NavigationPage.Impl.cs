@@ -12,6 +12,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs" />
 	public partial class NavigationPage : INavigationView, IToolbarElement
 	{
 		// If the user is making overlapping navigation requests this is used to fire once all navigation 
@@ -150,7 +151,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// If the root page is being covered by a Modal Page then we don't worry about hiding the nav bar
 				bool coveredByModal = te.Toolbar.Parent is Window && Navigation.ModalStack.Count > 0;
-				ct.ApplyNavigationPage(this, HasAppeared || coveredByModal);
+				ct.ApplyNavigationPage(this, coveredByModal);
 			}
 		}
 

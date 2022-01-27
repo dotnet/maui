@@ -48,21 +48,25 @@ namespace Microsoft.Maui.Controls
 			throw new InvalidOperationException($"Cannot convert {self} to {nameof(FlowDirection)}.");
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveFlowDirectionExtensions.xml" path="//Member[@MemberName='IsRightToLeft']/Docs" />
 		public static bool IsRightToLeft(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.RightToLeft) == EffectiveFlowDirection.RightToLeft;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveFlowDirectionExtensions.xml" path="//Member[@MemberName='IsLeftToRight']/Docs" />
 		public static bool IsLeftToRight(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.RightToLeft) != EffectiveFlowDirection.RightToLeft;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveFlowDirectionExtensions.xml" path="//Member[@MemberName='IsImplicit']/Docs" />
 		public static bool IsImplicit(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.Explicit) != EffectiveFlowDirection.Explicit;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveFlowDirectionExtensions.xml" path="//Member[@MemberName='IsExplicit']/Docs" />
 		public static bool IsExplicit(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.Explicit) == EffectiveFlowDirection.Explicit;
