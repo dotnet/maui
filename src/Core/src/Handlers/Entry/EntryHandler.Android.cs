@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// Check whether the touched position inbounds with clear button.
-		void OnTouch(object? sender, TouchEventArgs e) =>
+		void OnTouch(object? sender, Android.Views.View.TouchEventArgs e) =>
 			e.Handled =
 				VirtualView?.ClearButtonVisibility == ClearButtonVisibility.WhileEditing &&
 				NativeView.HandleClearButtonTouched(VirtualView.FlowDirection, e, GetClearButtonDrawable);
