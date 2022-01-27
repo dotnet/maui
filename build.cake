@@ -41,7 +41,7 @@ DirectoryPath artifactStagingDirectory = MakeAbsolute(Directory(EnvironmentVaria
 DirectoryPath logDirectory = MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs")));
 DirectoryPath testResultsDirectory = MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results")));
 DirectoryPath diffDirectory = MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{artifactStagingDirectory}/api-diff")));
-DirectoryPath tempDirectory = MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", "../maui-temp") + "/" + Guid.NewGuid())));
+DirectoryPath tempDirectory = MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", EnvironmentVariable("TMPDIR", "../maui-temp")) + "/" + Guid.NewGuid())));
 DirectoryPath envProgramFiles = MakeAbsolute(Directory(EnvironmentVariable("ProgramFiles(x86)")));
 var configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 
