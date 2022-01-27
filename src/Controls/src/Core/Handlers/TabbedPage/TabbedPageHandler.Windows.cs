@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				};
 
 				// Unset styles set by parent NavigationView
-				_navigationView.Resources["NavigationViewContentMargin"] = new WThickness(0, 0, 0, 0);
-				_navigationView.Resources["NavigationViewMinimalHeaderMargin"] = new WThickness(-24, 44, 0, 0);
-				_navigationView.Resources["NavigationViewHeaderMargin"] = new WThickness(56, 44, 0, 0);
-				_navigationView.Resources["NavigationViewMinimalContentGridBorderThickness"] = new WThickness(0, 1, 0, 0);
+				_navigationView.UpdateThemeDictionaries("NavigationViewContentMargin", null);
+				_navigationView.UpdateThemeDictionaries("NavigationViewMinimalHeaderMargin", null);
+				_navigationView.UpdateThemeDictionaries("NavigationViewHeaderMargin", null);
+				_navigationView.UpdateThemeDictionaries("NavigationViewMinimalContentGridBorderThickness", null);
 
 				return _navigationView;
 			}
@@ -189,10 +189,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapBarBackground(TabbedPageHandler handler, TabbedPage view)
 		{
+			handler._navigationView?.UpdateTopNavAreaBackground(view.BarBackground ?? view.BarBackgroundColor?.AsPaint());
 		}
 
 		public static void MapBarBackgroundColor(TabbedPageHandler handler, TabbedPage view)
 		{
+			MapBarBackground(handler, view);
 		}
 
 		public static void MapBarTextColor(TabbedPageHandler handler, TabbedPage view)
