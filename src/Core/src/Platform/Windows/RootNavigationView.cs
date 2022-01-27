@@ -67,7 +67,10 @@ namespace Microsoft.Maui.Platform
 			}
 
 		}
-		void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp)
+		void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp) =>
+			UpdateHeaderPropertyBinding();
+
+		void UpdateHeaderPropertyBinding()
 		{
 			Binding isBackButtonVisible = new Binding();
 			isBackButtonVisible.Source = HeaderControl;
@@ -123,6 +126,9 @@ namespace Microsoft.Maui.Platform
 			backgroundBinding.Mode = BindingMode.TwoWay;
 			backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(HeaderContent, BackgroundProperty, backgroundBinding);
+
+			if (HeaderControl != null)
+				UpdateHeaderPropertyBinding();
 
 			PaneContentGrid!.SizeChanged += OnPaneContentGridSizeChanged;
 

@@ -41,6 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 					var content = (WPanel)MauiProgram.CurrentWindow.Content;
 					navigationRootManager = mauiContext.GetNavigationRootManager();
 					await content.LoadedAsync();
+					await Task.Delay(10);
 					await action((WindowHandler)newWindowHandler);
 				}
 				finally
@@ -56,6 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						MauiProgram.CurrentWindow.Content = testingRootPanel;
 						await testingRootPanel.LoadedAsync();
+						await Task.Delay(10);
 					}
 				}
 			});
@@ -92,12 +94,17 @@ namespace Microsoft.Maui.DeviceTests
 					frameworkElement = (WFrameworkElement)handler.NativeView;
 					content.Children.Add(frameworkElement);
 					await frameworkElement.LoadedAsync();
+					await Task.Delay(10);
 					await action(handler);
 				}
 				finally
 				{
 					if (frameworkElement != null)
+					{
 						content.Children.Remove(frameworkElement);
+						await frameworkElement.UnloadedAsync();
+						await Task.Delay(10);
+					}
 				}
 			});
 		}

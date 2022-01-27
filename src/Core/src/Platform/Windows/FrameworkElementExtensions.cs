@@ -198,19 +198,47 @@ namespace Microsoft.Maui.Platform
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
 			if (frameworkElement.IsLoaded)
+			{
 				taskCompletionSource.SetResult(true);
+				return taskCompletionSource.Task;
+			}
 
 			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
 			routedEventHandler = (_, __) =>
 			{
-				if(routedEventHandler != null)
+				if (routedEventHandler != null)
 					frameworkElement.Loaded -= routedEventHandler;
 
 				taskCompletionSource.SetResult(true);
 			};
 
 			frameworkElement.Loaded += routedEventHandler;
-						
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+		}
+
+		internal static Task UnloadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			if (!frameworkElement.IsLoaded)
+			{
+				taskCompletionSource.SetResult(true);
+				return taskCompletionSource.Task;
+			}
+
+			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Unloaded -= routedEventHandler;
+
+				taskCompletionSource.SetResult(true);
+			};
+
+			frameworkElement.Unloaded += routedEventHandler;
+
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
