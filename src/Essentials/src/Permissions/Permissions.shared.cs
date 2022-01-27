@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
-	public partial class Battery
+		public partial class Battery
 		{
 		}
 
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
-	public partial class Flashlight
+		public partial class Flashlight
 		{
 		}
 
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
-	public partial class Sms
+		public partial class Sms
 		{
 		}
 

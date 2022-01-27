@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Handlers
 
 			handler.NativeView?.Eval(webView, script);
 		}
-		
+
 		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
 		{
 			//We want to load the source after making sure the mapper for webclients
