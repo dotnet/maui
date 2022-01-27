@@ -19,35 +19,45 @@ namespace Microsoft.Maui
 		void Invalidate();
 
 		/// <summary>
-		/// Occurs when the the surface received a touch event.
+		/// Occurs when a hover interaction starts on the surface.
 		/// </summary>
-		/// <param name="e">Provides data for the Touch event.</param>
-		void OnTouch(TouchEventArgs e);
-	}
+		/// <param name="points">Points for the hover interaction location.</param>
+		void StartHoverInteraction(PointF[] points);
 
-	public enum TouchAction
-	{
-		Pressed,
-		Moved,
-		Released,
-		Cancelled
-	}
+		/// <summary>
+		/// Occurs when a hover interaction moves on the surface.
+		/// </summary>
+		/// <param name="points">Points of the interaction location.</param>
+		void HoverInteraction(PointF[] points);
 
-	public class TouchEventArgs : EventArgs
-	{
-		public TouchEventArgs()
-		{
+		/// <summary>
+		/// Occurs when a hover interaction ends on the surface.
+		/// </summary>
+		/// <param name="points">Points of the interaction location.</param>
+		void EndHoverInteraction();
 
-		}
+		/// <summary>
+		/// Occurs when a touch or click interaction starts on the surface.
+		/// </summary>
+		/// <param name="points">Points of the interaction location.</param>
+		void StartInteraction(PointF[] points);
 
-		public TouchEventArgs(TouchAction actionType, Point location)
-		{
-			ActionType = actionType;
-			Location = location;
-		}
+		/// <summary>
+		/// Occurs when a touch or click interaction moves (drags) on the surface.
+		/// </summary>
+		/// <param name="points">Points of the interaction location.</param>
+		void DragInteraction(PointF[] points);
 
-		public TouchAction ActionType { get; private set; }
+		/// <summary>
+		/// Occurs when a touch or click interaction ends on the surface.
+		/// </summary>
+		/// <param name="points">Points of the interaction location.</param>
+		/// <param name="inside">Specifies whether or not the interaction ended inside the surface.</param>
+		void EndInteraction(PointF[] points, bool inside);
 
-		public Point Location { get; private set; }
+		/// <summary>
+		/// Occurs when a touch or click interaction ends on the surface.
+		/// </summary>
+		void CancelInteraction();
 	}
 }

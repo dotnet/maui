@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System.Collections.Generic;
+using Android.Views;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
 using APointF = Android.Graphics.PointF;
@@ -42,28 +43,50 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.Invalidate();
 		}
 
+		bool pointsContained = false;
+
 		void OnTouch(object? sender, View.TouchEventArgs e)
 		{
 			if (e.Event == null)
 				return;
 
+			// Get all the points
 			float density = Context?.Resources?.DisplayMetrics?.Density ?? 1.0f;
-			APointF aPoint = new APointF(e.Event.GetX() / density, e.Event.GetY() / density);
-			Point point = new Point(aPoint.X, aPoint.Y);
+			var points = new List<PointF>();
+			var pointCount = e.Event.PointerCount;
+			if (pointCount > 0)
+			{
+				var coords = new MotionEvent.PointerCoords();
+
+				for (int i = 0; i < pointCount; i++)
+				{
+					
+					var pointCoords = e.Event.GetPointerCoords(i, coords);
+					var aPoint = new APointF(pointCoords.X / density, pointCoords.Y / density);
+					var point = new Point(aPoint.X, aPoint.Y);
+
+					points.Add(point);
+				}
+			}
+
+			var pointsArr = points.ToArray();
 
 			switch (e.Event.Action)
 			{
 				case MotionEventActions.Down:
-					VirtualView?.OnTouch(new TouchEventArgs(TouchAction.Pressed, point));
+					VirtualView?.StartInteraction(pointsArr);
+					pointsContained = true;
 					break;
 				case MotionEventActions.Move:
-					VirtualView?.OnTouch(new TouchEventArgs(TouchAction.Moved, point));
+					VirtualView?.StartInteraction(pointsArr);
+					pointsContained = true;
+					// TODO: See if points contained;
 					break;
 				case MotionEventActions.Up:
-					VirtualView?.OnTouch(new TouchEventArgs(TouchAction.Released, point));
+					VirtualView?.EndInteraction(pointsArr, pointsContained);
 					break;
 				case MotionEventActions.Cancel:
-					VirtualView?.OnTouch(new TouchEventArgs(TouchAction.Cancelled, point));
+					VirtualView?.CancelInteraction();
 					break;
 				default:
 					break;

@@ -14,16 +14,38 @@ namespace Microsoft.Maui.Controls
 			get { return (IDrawable)GetValue(DrawableProperty); }
 		}
 
-		public event EventHandler<TouchEventArgs> Touch;
-
 		public void Invalidate()
 		{
 			Handler?.Invoke(nameof(IGraphicsView.Invalidate));
 		}
 
-		public virtual void OnTouch(TouchEventArgs e)
+		public virtual void StartHoverInteraction(PointF[] points)
 		{
-			Touch?.Invoke(this, e);
 		}
+
+		public virtual void HoverInteraction(PointF[] points)
+		{
+		}
+
+		public virtual void EndHoverInteraction()
+		{
+		}
+
+		public virtual void StartInteraction(PointF[] points)
+		{
+		}
+
+		public virtual void DragInteraction(PointF[] points)
+		{
+		}
+
+		public virtual void EndInteraction(PointF[] points, bool inside)
+		{
+		}
+
+		public virtual void CancelInteraction()
+		{
+		}
+
 	}
 }

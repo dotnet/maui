@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿using System.Linq;
+
+namespace Microsoft.Maui.Handlers
 {
 	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, CustomNativeGraphicsView>
 	{
@@ -11,14 +13,48 @@
 		{
 			base.ConnectHandler(nativeView);
 
-			nativeView.Touch += OnTouch;
+			nativeView.OnTouchesBegan += NativeView_OnTouchesBegan;
+			nativeView.OnTouchesMoved += NativeView_OnTouchesMoved;
+			nativeView.OnTouchesEnded += NativeView_OnTouchesEnded;
+			nativeView.OnTouchesCancelled += NativeView_OnTouchesCancelled;
+		}
+
+		bool pressContained = false;
+
+		void NativeView_OnTouchesCancelled(object? sender, Graphics.PointF[] e)
+		{
+			pressContained = false;
+			VirtualView?.CancelInteraction();
+		}
+
+		void NativeView_OnTouchesEnded(object? sender, Graphics.PointF[] e)
+		{
+			VirtualView?.EndInteraction(e, pressContained);
+		}
+
+		void NativeView_OnTouchesMoved(object? sender, Graphics.PointF[] e)
+		{
+			VirtualView?.DragInteraction(e);
+
+			// Track if a point is inside the view frame
+			// So that if the end is fired we know if it was clicked 
+			pressContained = e.Any(p => VirtualView?.Frame?.Contains(p) ?? false);
+		}
+
+		void NativeView_OnTouchesBegan(object? sender, Graphics.PointF[] e)
+		{
+			VirtualView?.StartInteraction(e);
+			pressContained = true;
 		}
 
 		protected override void DisconnectHandler(CustomNativeGraphicsView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 
-			nativeView.Touch -= OnTouch;
+			nativeView.OnTouchesBegan -= NativeView_OnTouchesBegan;
+			nativeView.OnTouchesMoved -= NativeView_OnTouchesMoved;
+			nativeView.OnTouchesEnded -= NativeView_OnTouchesEnded;
+			nativeView.OnTouchesCancelled -= NativeView_OnTouchesCancelled;
 		}
 
 		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)
@@ -37,9 +73,5 @@
 			handler.NativeView?.InvalidateDrawable();
 		}
 
-		void OnTouch(object? sender, TouchEventArgs e)
-		{
-			VirtualView?.OnTouch(e);
-		}
 	}
 }

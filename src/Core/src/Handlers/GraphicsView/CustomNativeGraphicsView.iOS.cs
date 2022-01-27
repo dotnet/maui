@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Linq;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
@@ -9,17 +10,18 @@ namespace Microsoft.Maui.Handlers
 {
 	public class CustomNativeGraphicsView : NativeGraphicsView
 	{
-		public event EventHandler<TouchEventArgs> Touch;
+		public event EventHandler<PointF[]> OnTouchesBegan;
+		public event EventHandler<PointF[]> OnTouchesMoved;
+		public event EventHandler<PointF[]> OnTouchesEnded;
+		public event EventHandler<PointF[]> OnTouchesCancelled;
 
 		public override void TouchesBegan(NSSet touches, UIEvent evt)
 		{
 			base.TouchesBegan(touches, evt);
 
 			var viewPoints = this.GetPointsInView(evt);
-			PointF viewPoint = viewPoints.Length > 0 ? viewPoints[0] : PointF.Zero;
-			var point = new Point(viewPoint.X, viewPoint.Y);
-
-			Touch?.Invoke(this, new TouchEventArgs(TouchAction.Pressed, point));
+			if (viewPoints?.Any() ?? false)
+				OnTouchesBegan?.Invoke(this, viewPoints);
 		}
 
 		public override void TouchesMoved(NSSet touches, UIEvent evt)
@@ -27,10 +29,8 @@ namespace Microsoft.Maui.Handlers
 			base.TouchesMoved(touches, evt);
 
 			var viewPoints = this.GetPointsInView(evt);
-			PointF viewPoint = viewPoints.Length > 0 ? viewPoints[0] : PointF.Zero;
-			var point = new Point(viewPoint.X, viewPoint.Y);
-
-			Touch?.Invoke(this, new TouchEventArgs(TouchAction.Moved, point));
+			if (viewPoints?.Any() ?? false)
+				OnTouchesMoved?.Invoke(this, new TouchEventArgs(TouchAction.Moved, point));
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
@@ -38,10 +38,8 @@ namespace Microsoft.Maui.Handlers
 			base.TouchesEnded(touches, evt);
 
 			var viewPoints = this.GetPointsInView(evt);
-			PointF viewPoint = viewPoints.Length > 0 ? viewPoints[0] : PointF.Zero;
-			var point = new Point(viewPoint.X, viewPoint.Y);
-
-			Touch?.Invoke(this, new TouchEventArgs(TouchAction.Released, point));
+			if (viewPoints?.Any() ?? false)
+				OnTouchesEnded?.Invoke(this, new TouchEventArgs(TouchAction.Released, point));
 		}
 
 		public override void TouchesCancelled(NSSet touches, UIEvent evt)
@@ -49,10 +47,8 @@ namespace Microsoft.Maui.Handlers
 			base.TouchesCancelled(touches, evt);
 
 			var viewPoints = this.GetPointsInView(evt);
-			PointF viewPoint = viewPoints.Length > 0 ? viewPoints[0] : PointF.Zero;
-			var point = new Point(viewPoint.X, viewPoint.Y);
-
-			Touch?.Invoke(this, new TouchEventArgs(TouchAction.Cancelled, point));
+			if (viewPoints?.Any() ?? false)
+				OnTouchesCancelled?.Invoke(this, new TouchEventArgs(TouchAction.Cancelled, point));
 		}
 	}
 }
