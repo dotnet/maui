@@ -41,7 +41,7 @@ DirectoryPath artifactStagingDirectory = MakeAbsolute(Directory(EnvironmentVaria
 DirectoryPath logDirectory = MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs")));
 DirectoryPath testResultsDirectory = MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results")));
 DirectoryPath diffDirectory = MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{artifactStagingDirectory}/api-diff")));
-DirectoryPath workingDirectory = MakeAbsolute(Directory(EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", ".")));
+DirectoryPath tempDirectory = MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", "../maui-temp") + "/" + Guid.NewGuid())));
 DirectoryPath envProgramFiles = MakeAbsolute(Directory(EnvironmentVariable("ProgramFiles(x86)")));
 var configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 
@@ -170,7 +170,7 @@ Information ("Team Project: {0}", teamProject);
 Information ("Agent.Name: {0}", agentName);
 Information ("isCIBuild: {0}", isCIBuild);
 Information ("artifactStagingDirectory: {0}", artifactStagingDirectory);
-Information("workingDirectory: {0}", workingDirectory);
+Information("tempDirectory: {0}", tempDirectory);
 Information("NUNIT_TEST_WHERE: {0}", NUNIT_TEST_WHERE);
 Information("TARGET: {0}", target);
 Information("MSBUILD: {0}", MSBuildExe);

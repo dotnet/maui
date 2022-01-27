@@ -79,15 +79,15 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        var templatesTest = $"../templatesTest/{Guid.NewGuid()}/";
+        var templatesTest = tempDirectory.Combine("templatesTest");
 
-        CleanDirectories("../templatesTest");
+        EnsureDirectoryExists(templatesTest);
+        CleanDirectories(templatesTest.FullPath);
 
         // Create empty Directory.Build.props/targets
-        EnsureDirectoryExists(Directory(templatesTest));
-        FileWriteText(File(templatesTest + "Directory.Build.props"), "<Project/>");
-        FileWriteText(File(templatesTest + "Directory.Build.targets"), "<Project/>");
-        CopyFileToDirectory(File("./NuGet.config"), Directory(templatesTest));
+        FileWriteText(templatesTest.CombineWithFilePath("Directory.Build.props"), "<Project/>");
+        FileWriteText(templatesTest.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+        CopyFileToDirectory(File("./NuGet.config"), templatesTest);
 
         // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
         var designTime = new Dictionary<string, string> {
@@ -102,8 +102,8 @@ Task("dotnet-templates")
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
-            { "RestorePackagesPath", MakeAbsolute(File(templatesTest + "packages")).FullPath },
-            { "RestoreConfigFile", MakeAbsolute(File(templatesTest + "nuget.config")).FullPath },
+            { "RestorePackagesPath", MakeAbsolute(templatesTest.CombineWithFilePath("packages")).FullPath },
+            { "RestoreConfigFile", MakeAbsolute(templatesTest.CombineWithFilePath("nuget.config")).FullPath },
 
             // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
@@ -129,9 +129,10 @@ Task("dotnet-templates")
             // Build
             RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
         }
+
         try
         {
-            CleanDirectories(templatesTest);
+            CleanDirectories(templatesTest.FullPath);
         }
         catch
         {
@@ -219,115 +220,40 @@ Task("dotnet-diff")
         }
         else
         {
-            var diffCache = $"../diffCache/{Guid.NewGuid()}/";
-            var diffCacheDir = MakeAbsolute(Directory(diffCache));
+            var diffCacheDir = tempDirectory.Combine("diffCache");
             EnsureDirectoryExists(diffCacheDir);
-            CleanDirectories(diffCache);
+            CleanDirectories(diffCacheDir.FullPath);
+
+            EnsureDirectoryExists(diffDirectory);
+            CleanDirectories(diffDirectory.FullPath);
+
+            foreach (var nupkg in nupkgs)
+            {
+                DotNetCoreTool("api-tools", new DotNetCoreToolSettings
+                {
+                    DiagnosticOutput = true,
+                    ArgumentCustomization = builder => builder
+                        .Append("nuget-diff")
+                        .AppendQuoted(nupkg.FullPath)
+                        .Append("--latest")
+                        // .Append("--verbose")
+                        .Append("--prerelease")
+                        .Append("--group-ids")
+                        .Append("--ignore-unchanged")
+                        .AppendSwitchQuoted("--output", diffDirectory.FullPath)
+                        .AppendSwitchQuoted("--cache", diffCacheDir.FullPath)
+                });
+            }
 
             try
             {
-                foreach (var nupkg in nupkgs)
-                {
-                    DotNetCoreTool("api-tools", new DotNetCoreToolSettings
-                    {
-                        DiagnosticOutput = true,
-                        ArgumentCustomization = builder => builder
-                            .Append("nuget-diff")
-                            .AppendQuoted(nupkg.FullPath)
-                            .Append("--latest")
-                            .Append("--prerelease")
-                            .Append("--group-ids")
-                            .Append("--ignore-unchanged")
-                            .AppendSwitchQuoted("--output", diffDirectory.FullPath)
-                            .AppendSwitchQuoted("--cache", diffCacheDir.FullPath)
-                    });
-                }
+                CleanDirectories(diffCacheDir.FullPath);
             }
-            finally
+            catch
             {
-                CleanDirectories(diffCache);
+                Information("Unable to clean up diff cache directory.");
             }
         }
-
-
-        // // SECTION: Arguments and Settings
-
-        // var ROOT_DIR = MakeAbsolute((DirectoryPath)Argument("root", "."));
-        // var ARTIFACTS_DIR = MakeAbsolute((DirectoryPath)Argument("artifacts", ROOT_DIR.Combine("output").FullPath));
-        // var CACHE_DIR = MakeAbsolute((DirectoryPath)Argument("cache", ROOT_DIR.Combine("externals/api-diff").FullPath));
-        // var OUTPUT_DIR = MakeAbsolute((DirectoryPath)Argument("output", ROOT_DIR.Combine("output/api-diff").FullPath));
-
-
-        // // SECTION: Main Script
-
-        // Information("");
-        // Information("Script Arguments:");
-        // Information("  Root directory: {0}", ROOT_DIR);
-        // Information("  Artifacts directory: {0}", ARTIFACTS_DIR);
-        // Information("  Cache directory: {0}", CACHE_DIR);
-        // Information("  Output directory: {0}", OUTPUT_DIR);
-        // Information("");
-
-
-        // // SECTION: Diff NuGets
-
-        // var nupkgs = GetFiles($"{ARTIFACTS_DIR}/**/*.nupkg");
-        // if (!nupkgs.Any()) {
-        //     Warning($"##vso[task.logissue type=warning]No NuGet packages were found.");
-        // } else {
-        //     foreach (var nupkg in nupkgs) {
-        //         var version = "--latest";
-        //         var versionFile = nupkg.FullPath + ".baseversion";
-        //         if (FileExists(versionFile)) {
-        //             version = "--version=" + System.IO.File.ReadAllText(versionFile).Trim();
-        //         }
-        //         var exitCode = StartProcess("api-tools", new ProcessSettings {
-        //             Arguments = new ProcessArgumentBuilder()
-        //                 .Append("nuget-diff")
-        //                 .AppendQuoted(nupkg.FullPath)
-        //                 .Append(version)
-        //                 .Append("--prerelease")
-        //                 .Append("--group-ids")
-        //                 .Append("--ignore-unchanged")
-        //                 .AppendSwitchQuoted("--output", OUTPUT_DIR.FullPath)
-        //                 .AppendSwitchQuoted("--cache", CACHE_DIR.Combine("package-cache").FullPath)
-        //         });
-        //         if (exitCode != 0)
-        //             throw new Exception ($"api-tools exited with error code {exitCode}.");
-        //     }
-        // }
-
-
-        // // SECTION: Upload Diffs
-
-        // var diffs = GetFiles($"{OUTPUT_DIR}/**/*.md");
-        // if (!diffs.Any()) {
-        //     Warning($"##vso[task.logissue type=warning]No NuGet diffs were found.");
-        // } else {
-        //     var temp = CACHE_DIR.Combine("md-files");
-        //     EnsureDirectoryExists(temp);
-
-        //     foreach (var diff in diffs) {
-        //         var segments = diff.Segments.Reverse().ToArray();
-        //         var nugetId = segments[2];
-        //         var platform = segments[1];
-        //         var assembly = ((FilePath)segments[0]).GetFilenameWithoutExtension().GetFilenameWithoutExtension();
-        //         var breaking = segments[0].EndsWith(".breaking.md");
-
-        //         // using non-breaking spaces
-        //         var newName = breaking ? "[BREAKING]   " : "";
-        //         newName += $"{nugetId}    {assembly} ({platform}).md";
-        //         var newPath = temp.CombineWithFilePath(newName);
-
-        //         CopyFile(diff, newPath);
-        //     }
-
-        //     var temps = GetFiles($"{temp}/**/*.md");
-        //     foreach (var t in temps.OrderBy(x => x.FullPath)) {
-        //         Information($"##vso[task.uploadsummary]{t}");
-        //     }
-        // }
-
     });
 
 // Tasks for Local Development
