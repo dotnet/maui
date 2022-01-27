@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+using System.Collections.Specialized;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
@@ -21,12 +23,17 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiComboBox nativeView)
 		{
 			nativeView.SelectionChanged += OnControlSelectionChanged;
+
+			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged += OnRowsCollectionChanged;
+
 			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiComboBox nativeView)
 		{
 			nativeView.SelectionChanged -= OnControlSelectionChanged;
+
+			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged -= OnRowsCollectionChanged;
 		}
 
 		void SetupDefaults(MauiComboBox nativeView)
@@ -89,6 +96,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null && NativeView != null)
 				VirtualView.SelectedIndex = NativeView.SelectedIndex;
+		}
+
+		void OnRowsCollectionChanged(object? sender, EventArgs e)
+		{
+			Reload();
 		}
 	}
 }

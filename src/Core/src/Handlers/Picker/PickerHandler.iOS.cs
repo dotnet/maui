@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using Microsoft.Extensions.DependencyInjection;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -60,15 +58,22 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiPicker nativeView)
 		{
+			nativeView.EditingDidBegin += OnStarted;
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
+
+			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged += OnRowsCollectionChanged;
+
 			base.ConnectHandler(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiPicker nativeView)
 		{
+			nativeView.EditingDidBegin -= OnStarted;
 			nativeView.EditingDidEnd -= OnEnded;
 			nativeView.EditingChanged -= OnEditing;
+
+			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged -= OnRowsCollectionChanged;
 
 			if (_pickerView != null)
 			{
@@ -137,6 +142,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateVerticalTextAlignment(picker);
 		}
 
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			// TODO: Update IsFocused property
+		}
+
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
 			if (_pickerView == null)
@@ -147,7 +157,9 @@ namespace Microsoft.Maui.Handlers
 			if (model.SelectedIndex != -1 && model.SelectedIndex != _pickerView.SelectedRowInComponent(0))
 			{
 				_pickerView.Select(model.SelectedIndex, 0, false);
-			}
+			}   
+			
+			// TODO: Update IsFocused property
 		}
 
 		void OnEditing(object? sender, EventArgs eventArgs)
@@ -162,6 +174,11 @@ namespace Microsoft.Maui.Handlers
 
 			// Also clears the undo stack (undo/redo possible on iPads)
 			NativeView.UndoManager.RemoveAllActions();
+		}
+
+		void OnRowsCollectionChanged(object? sender, EventArgs e)
+		{
+			Reload();
 		}
 
 		void UpdatePickerFromPickerSource(PickerSource pickerSource)

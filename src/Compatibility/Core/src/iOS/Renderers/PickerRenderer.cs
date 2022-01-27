@@ -160,6 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateHorizontalTextAlignment();
 		}
 
+		[PortHandler]
 		void OnEditing(object sender, EventArgs eventArgs)
 		{
 			// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
@@ -170,6 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.UndoManager.RemoveAllActions();
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			var s = (PickerSource)_picker.Model;
@@ -180,11 +182,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
+		[PortHandler]
 		void RowsCollectionChanged(object sender, EventArgs e)
 		{
 			UpdatePicker();
