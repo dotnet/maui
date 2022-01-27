@@ -78,13 +78,14 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
 			where THandler : class, IElementHandler
 		{
-			if(view is IWindow window)
-			{
-				return RunWindowTest(window, (handler) => action(handler as THandler));
-			}
-
 			return InvokeOnMainThreadAsync(async () =>
 			{
+				if (view is IWindow window)
+				{
+					await RunWindowTest(window, (handler) => action(handler as THandler));
+					return;
+				}
+
 				WFrameworkElement frameworkElement = null;
 				var content = (WPanel)MauiContext.Services.GetService<WWindow>().Content;
 				try

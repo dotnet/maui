@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Platform
 		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
 		bool _hasTitleBarImage = false;
 		internal event EventHandler? OnApplyTemplateFinished;
+		internal event EventHandler? ContentChanged;
 		string? _windowTitle;
 
 		protected override void OnApplyTemplate()
@@ -49,6 +50,8 @@ namespace Microsoft.Maui.Platform
 				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
 				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
 				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
+
+				ContentChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
 

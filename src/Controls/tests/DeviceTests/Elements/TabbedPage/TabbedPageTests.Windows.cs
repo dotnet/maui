@@ -12,8 +12,10 @@ using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WWindow = Microsoft.UI.Xaml.Window;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -42,6 +44,22 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// Validate that no exceptions are thrown
 				((IElementHandler)handler).DisconnectHandler();
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "BarBackground Color")]
+		public async Task BarBackgroundColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = SolidColorBrush.Purple;
+
+			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(tabbedPage), (handler) =>
+			{
+				var navView = GetMauiNavigationView(tabbedPage.Handler.MauiContext);
+				var platformBrush = (WSolidColorBrush)((Paint)tabbedPage.BarBackground).ToNative();
+				Assert.Equal(platformBrush.Color, ((WSolidColorBrush)navView.TopNavArea.Background).Color);
 				return Task.CompletedTask;
 			});
 		}

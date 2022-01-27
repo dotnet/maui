@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				_navigationView.UpdateResourceToApplicationDefault("NavigationViewHeaderMargin", null);
 				_navigationView.UpdateResourceToApplicationDefault("NavigationViewMinimalContentGridBorderThickness", null);
 
-				SetupNavigationView();
 				return _navigationView;
 			}
 
@@ -61,6 +60,22 @@ namespace Microsoft.Maui.Controls.Handlers
 			// If CreateNativeView didn't set the NavigationView then that means we are using the
 			// WindowRootView for our tabs
 			if (_navigationView == null)
+			{
+				SetupNavigationLocals();
+			}
+
+			if(_navigationView == null && _navigationRootManager?.RootView is WindowRootView wrv)
+			{
+				wrv.ContentChanged += OnContentChanged;
+
+				void OnContentChanged(object? sender, EventArgs e)
+				{
+					wrv.ContentChanged -= OnContentChanged;
+					SetupNavigationLocals();
+				}
+			}
+
+			void SetupNavigationLocals()
 			{
 				_navigationRootManager = MauiContext?.GetNavigationRootManager();
 				_navigationView = (_navigationRootManager?.RootView as WindowRootView)?.NavigationViewControl;

@@ -26,6 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandler));
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
@@ -35,15 +36,18 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "FlyoutPage Initializes with PaneFooter Set")]
-		public async Task TabbedPageHandlerDisconnects()
+		public async Task FlyoutPageInitializesWithPaneFooterSet()
 		{
 			SetupBuilder();
 			var flyoutPage = CreateBasicFlyoutPage();
 
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				Assert.NotNull(handler.NativeView.PaneFooter);
-				return Task.CompletedTask;
+				await CreateHandlerAndAddToWindow<WindowHandler>(new Window(flyoutPage), (handler) =>
+				{
+					Assert.NotNull(((FlyoutViewHandler)flyoutPage.Handler).NativeView.PaneFooter);
+					return Task.CompletedTask;
+				});
 			});
 		}
 
