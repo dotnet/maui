@@ -236,14 +236,18 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapBarTextColor(TabbedPageHandler handler, TabbedPage view)
 		{
+			handler._navigationView?.UpdateTopNavigationViewItemTextColor(view.BarTextColor?.AsPaint());
+			handler._navigationView?.UpdateTopNavigationViewItemTextSelectedColor(view.BarTextColor?.AsPaint());
 		}
 
 		public static void MapUnselectedTabColor(TabbedPageHandler handler, TabbedPage view)
 		{
+			handler._navigationView?.UpdateTopNavigationViewItemBackgroundColor(view.UnselectedTabColor?.AsPaint());
 		}
 
 		public static void MapSelectedTabColor(TabbedPageHandler handler, TabbedPage view)
 		{
+			handler._navigationView?.UpdateTopNavigationViewItemBackgroundSelectedColor(view.SelectedTabColor?.AsPaint());
 		}
 
 		public static void MapItemsSource(TabbedPageHandler handler, TabbedPage view)
