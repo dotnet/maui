@@ -37,12 +37,13 @@ PowerShell:
 
 string agentName = EnvironmentVariable("AGENT_NAME", "");
 bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
-string artifactStagingDirectory = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts");
-string logDirectory = EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs");
-string testResultsDirectory = EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results");
-string workingDirectory = EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", ".");
-string envProgramFiles = EnvironmentVariable("ProgramFiles(x86)");
-var configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
+string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
+
+DirectoryPath artifactStagingDirectory = MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
+DirectoryPath logDirectory = MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs")));
+DirectoryPath testResultsDirectory = MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results")));
+DirectoryPath diffDirectory = MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{artifactStagingDirectory}/api-diff")));
+DirectoryPath tempDirectory = MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", EnvironmentVariable("TMPDIR", "../maui-temp")) + "/" + Guid.NewGuid())));
 
 var target = Argument("target", "Default");
 if(String.IsNullOrWhiteSpace(target))
@@ -169,7 +170,7 @@ Information ("Team Project: {0}", teamProject);
 Information ("Agent.Name: {0}", agentName);
 Information ("isCIBuild: {0}", isCIBuild);
 Information ("artifactStagingDirectory: {0}", artifactStagingDirectory);
-Information("workingDirectory: {0}", workingDirectory);
+Information("tempDirectory: {0}", tempDirectory);
 Information("NUNIT_TEST_WHERE: {0}", NUNIT_TEST_WHERE);
 Information("TARGET: {0}", target);
 Information("MSBUILD: {0}", MSBuildExe);

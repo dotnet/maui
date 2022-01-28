@@ -2,7 +2,7 @@
 using Android.App;
 using Android.Views;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui
 {
@@ -54,7 +54,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Generates the Adorner Offset.
 		/// </summary>
-		/// <param name="graphicsView"><see cref="NativeGraphicsView"/>.</param>
+		/// <param name="graphicsView"><see cref="PlatformGraphicsView"/>.</param>
 		/// <returns>Offset Rectangle.</returns>
 		Point GenerateAdornerOffset(View graphicsView)
 		{
