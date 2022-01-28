@@ -291,16 +291,6 @@ Task("dotnet-diff")
                 {
                     Information($"##vso[task.uploadsummary]{t}");
                 }
-
-                // clean working folders
-                try
-                {
-                    CleanDirectories(diffCacheDir.FullPath);
-                }
-                catch
-                {
-                    Information("Unable to clean up diff cache directory.");
-                }
             }
         }
     });
