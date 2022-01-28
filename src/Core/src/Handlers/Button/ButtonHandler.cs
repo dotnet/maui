@@ -47,8 +47,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		IButton IButtonHandler.TypedVirtualView => VirtualView;
+		IButton IButtonHandler.VirtualView => VirtualView;
 
-		NativeView IButtonHandler.TypedNativeView => NativeView;
+		NativeView IButtonHandler.NativeView => NativeView;
 	}
 }
