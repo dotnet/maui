@@ -42,5 +42,5 @@
 /Xamarin.Forms.Core/ @StephaneDelcroix
 
 # Blazor Desktop
-/src/BlazorWebView/                                     @Eilon @dotnet/dotnet-maui-blazor-eng
-/src/Templates/src/templates/maui-blazor/               @Eilon @dotnet/dotnet-maui-blazor-eng
+/src/BlazorWebView/                                     @dotnet/dotnet-maui-blazor-eng
+/src/Templates/src/templates/maui-blazor/               @dotnet/dotnet-maui-blazor-eng
