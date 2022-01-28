@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
-		public static void RequestNewWindow(this UIApplicationDelegate nativeApplication, IApplication application, OpenWindowRequest? args)
+		public static void RequestNewWindow(this IUIApplicationDelegate nativeApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext || args is null)
 				return;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 				err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
 		}
 
-		public static void CreateNativeWindow(this UIApplicationDelegate nativeApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
+		public static void CreateNativeWindow(this IUIApplicationDelegate nativeApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
@@ -35,14 +35,14 @@ namespace Microsoft.Maui.Platform
 				dicts.Add(launchOptions);
 
 			var window = CreateNativeWindow(application, null, dicts.ToArray());
-			if (window is not null)
+			if (window is not null && nativeApplication is UIApplicationDelegate nativeAppDelegate)
 			{
-				nativeApplication.Window = window;
-				nativeApplication.Window.MakeKeyAndVisible();
+				nativeAppDelegate.Window = window;
+				nativeAppDelegate.Window?.MakeKeyAndVisible();
 			}
 		}
 
-		public static void CreateNativeWindow(this UIWindowSceneDelegate sceneDelegate, IApplication application, UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
+		public static void CreateNativeWindow(this IUIWindowSceneDelegate sceneDelegate, IApplication application, UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
@@ -62,10 +62,10 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var window = CreateNativeWindow(application, scene as UIWindowScene, dicts.ToArray());
-			if (window is not null)
+			if (window is not null && sceneDelegate is UIWindowSceneDelegate windowSceneDelegate)
 			{
-				sceneDelegate.Window = window;
-				sceneDelegate.Window.MakeKeyAndVisible();
+				windowSceneDelegate.Window = window;
+				windowSceneDelegate.Window?.MakeKeyAndVisible();
 			}
 		}
 

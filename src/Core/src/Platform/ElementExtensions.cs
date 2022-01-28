@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-using BasePlatformType = Foundation.NSObject;
+using BasePlatformType = ObjCRuntime.INativeObject;
 using PlatformWindow = UIKit.UIWindow;
-using PlatformApplication = UIKit.UIApplicationDelegate;
+using PlatformApplication = UIKit.IUIApplicationDelegate;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
 using BasePlatformType = Android.Content.Context;
