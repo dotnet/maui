@@ -1,0 +1,14 @@
+﻿Any raw assets you want to be deployed with your application can be placed in
+this directory (and child directories) and given a Build Action of "MauiAsset":
+
+	<MauiAsset Include="AboutAssets.txt" />
+
+These files will be deployed with you package and will be accessible using Essentials:
+
+	async Task LoadMauiAsset()
+	{
+		using var stream = await FileSystem.OpenAppPackageFileAsync("AboutAssets.txt");
+		using var reader = new StreamReader(stream);
+
+		var contents = reader.ReadToEnd();
+	}

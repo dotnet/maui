@@ -279,12 +279,14 @@
 
     <Target Name="ProcessMauiAssets">
         <PropertyGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
-            <_MauiAssetFolderName>Assets</_MauiAssetFolderName>
             <_MauiAssetItemMetadata>TargetPath</_MauiAssetItemMetadata>
         </PropertyGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <!-- Windows does not recognize %(LogicalName), so we must copy it to %(Link) -->
+            <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+        </ItemGroup>
         <GetMauiAssetPath
             ProjectDirectory="$(MSBuildProjectDirectory)"
-            FolderName="$(_MauiAssetFolderName)"
             ItemMetadata="$(_MauiAssetItemMetadata)"
             Input="@(MauiAsset)">
             <Output ItemName="AndroidAsset"          TaskParameter="Output" Condition="'$(_ResizetizerIsAndroidApp)' == 'True'" />
@@ -341,7 +343,7 @@
         <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <ContentWithTargetPath Include="@(_MauiSplashAssets)">
-                <TargetPath>Assets\%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
+                <TargetPath>%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
             </ContentWithTargetPath>
             <FileWrites Include="@(_MauiSplashAssets)" />
         </ItemGroup>
@@ -410,7 +412,7 @@
         <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
 
             <ContentWithTargetPath Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
-                <TargetPath>Assets\$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
+                <TargetPath>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
             </ContentWithTargetPath>
 
         </ItemGroup>
@@ -521,7 +523,7 @@
         <!-- UWP / WinUI -->
         <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <ContentWithTargetPath Include="@(_ResizetizerCollectedImages)">
-                <TargetPath>Assets\%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
+                <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
             </ContentWithTargetPath>
 
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
