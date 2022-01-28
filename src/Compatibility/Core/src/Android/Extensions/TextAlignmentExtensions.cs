@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	{
 		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment, bool hasRtlSupport, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
-			if ((int)Build.VERSION.SdkInt < 17 || !hasRtlSupport)
+			if (!hasRtlSupport)
 				view.Gravity = alignment.ToHorizontalGravityFlags() | orMask;
 			else
 				view.TextAlignment = alignment.ToTextAlignment();
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		internal static void UpdateTextAlignment(this EditText view, TextAlignment horizontal, TextAlignment vertical)
 		{
-			if ((int)Build.VERSION.SdkInt < 17 || !view.Context.HasRtlSupport())
+			if (!Rtl.IsSupported)
 			{
 				view.Gravity = vertical.ToVerticalGravityFlags() | horizontal.ToHorizontalGravityFlags();
 			}

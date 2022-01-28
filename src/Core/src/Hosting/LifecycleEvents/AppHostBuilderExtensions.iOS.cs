@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using UIKit;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
@@ -35,7 +36,15 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.WillTerminate(app =>
 				{
+					// By this point if we were a multi window app, the GetWindow would be null anyway
 					app.GetWindow()?.Destroying();
+				})
+				.SceneDidDisconnect(scene =>
+				{
+					if (scene is UIWindowScene windowScene)
+					{
+						windowScene.GetWindow()?.Destroying();
+					}
 				});
 		}
 	}

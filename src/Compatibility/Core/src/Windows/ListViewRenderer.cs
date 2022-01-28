@@ -27,6 +27,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer instead")]
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
@@ -233,10 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				ReloadData();
 			}
 
-			if (Element.Dispatcher == null)
-				Device.BeginInvokeOnMainThread(() => List?.UpdateLayout());
-			else
-				Element.Dispatcher.BeginInvokeOnMainThread(() => List?.UpdateLayout());
+			Element.Dispatcher.DispatchIfRequired(() => List?.UpdateLayout());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -556,7 +554,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var selectorItem = List.ContainerFromItem(item) as Microsoft.UI.Xaml.Controls.Primitives.SelectorItem;
 			var transform = selectorItem?.TransformToVisual(viewer.Content as UIElement);
-			var position = transform?.TransformPoint(new Windows.Foundation.Point(0, 0));
+			var position = transform?.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 			if (!position.HasValue)
 				return false;
 			// scroll with animation
@@ -599,7 +597,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var semanticLocation = new SemanticZoomLocation { Item = c };
 
 			// async scrolling
-			await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+			await Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
 			{
 				switch (toPosition)
 				{
@@ -621,7 +619,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						{
 							var content = (FrameworkElement)List.ItemTemplate.LoadContent();
 							content.DataContext = c;
-							content.Measure(new Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
+							content.Measure(new global::Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
 
 							double tHeight = content.DesiredSize.Height;
 

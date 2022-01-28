@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (bitmap == null)
 			{
-				Log.Warning(nameof(ImageLoaderSourceHandler), "Image data was invalid: {0}", streamsource);
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageLoaderSourceHandler>()?.LogWarning("Image data was invalid: {streamsource}", streamsource);
 			}
 
 			return bitmap;

@@ -2,7 +2,7 @@
 using Microsoft.Maui.Graphics;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{

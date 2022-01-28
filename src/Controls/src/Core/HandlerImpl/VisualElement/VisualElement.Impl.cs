@@ -1,14 +1,17 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
 	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
 		public Rectangle Frame
 		{
 			get => Bounds;
@@ -21,9 +24,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		new public IViewHandler Handler
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Handler']/Docs" />
+		new public IViewHandler? Handler
 		{
-			get => base.Handler as IViewHandler;
+			get => (IViewHandler?)base.Handler;
 			set => base.Handler = value;
 		}
 
@@ -34,7 +38,7 @@ namespace Microsoft.Maui.Controls
 			IsPlatformEnabled = Handler != null;
 		}
 
-		Paint IView.Background
+		Paint? IView.Background
 		{
 			get
 			{
@@ -42,6 +46,7 @@ namespace Microsoft.Maui.Controls
 					return Background;
 				if (BackgroundColor.IsNotDefault())
 					return new SolidColorBrush(BackgroundColor);
+
 				return null;
 			}
 		}
@@ -50,6 +55,7 @@ namespace Microsoft.Maui.Controls
 
 		IShadow IView.Shadow => Shadow;
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ShadowProperty']/Docs" />
 		public static readonly BindableProperty ShadowProperty =
  			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -63,14 +69,36 @@ namespace Microsoft.Maui.Controls
 						(bindable as VisualElement)?.NotifyShadowChanges();
 				});
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Shadow']/Docs" />
 		public Shadow Shadow
 		{
 			get { return (Shadow)GetValue(ShadowProperty); }
 			set { SetValue(ShadowProperty, value); }
 		}
 
+		internal static readonly BindableProperty ZIndexProperty =
+			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(View), default(int),
+				propertyChanged: ZIndexPropertyChanged);
+
+		static void ZIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is IView view)
+			{
+				view.Handler?.Invoke(nameof(IView.ZIndex));
+			}
+		}
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ZIndex']/Docs" />
+		public int ZIndex
+		{
+			get { return (int)GetValue(ZIndexProperty); }
+			set { SetValue(ZIndexProperty, value); }
+		}
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='DesiredSize']/Docs" />
 		public Size DesiredSize { get; protected set; }
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Arrange']/Docs" />
 		public void Arrange(Rectangle bounds)
 		{
 			Layout(bounds);
@@ -90,6 +118,7 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Layout']/Docs" />
 		public void Layout(Rectangle bounds)
 		{
 			Bounds = bounds;
@@ -235,6 +264,18 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IView.Margin => Thickness.Zero;
 
+		IElementHandler? Maui.IElement.Handler
+		{
+			get => base.Handler;
+			set
+			{
+				if (value != null && value is not IViewHandler)
+					throw new InvalidOperationException("Handler must be of type IViewHandler");
+
+				base.Handler = value;
+			}
+		}
+
 		void NotifyShadowChanges()
 		{
 			if (Shadow != null)
@@ -254,7 +295,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnShadowChanged(object sender, PropertyChangedEventArgs e)
+		void OnShadowChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(Shadow));
 		}

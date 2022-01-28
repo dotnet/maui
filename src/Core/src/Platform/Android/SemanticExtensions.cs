@@ -1,38 +1,24 @@
-﻿using System;
-using Android.Text;
-using Android.Views;
-using Android.Views.Accessibility;
+﻿using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
-using Microsoft.Maui.Platform;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class SemanticExtensions
 	{
-		public static void SetSemanticFocus(this IView element)
-		{
-			if (element?.Handler?.NativeView is not View view)
-				throw new NullReferenceException("Can't access view from a null handler");
-
-			view.SendAccessibilityEvent(EventTypes.ViewFocused);
-		}
-
 		public static void UpdateSemanticNodeInfo(this View nativeView, IView virtualView, AccessibilityNodeInfoCompat? info)
 		{
-			if (info == null)
+			if (info == null || virtualView == null)
 				return;
 
-			var semantics = virtualView?.Semantics;
-
-			if (semantics == null)
-				return;
+			var semantics = virtualView.Semantics;
+			var desc = semantics?.Description;
+			var hint = semantics?.Hint;
 
 			string? newText = null;
 			string? newContentDescription = null;
 
-			var desc = semantics.Description;
 			if (!string.IsNullOrEmpty(desc))
 			{
 				// Edit Text fields won't read anything for the content description
@@ -47,7 +33,6 @@ namespace Microsoft.Maui
 					newContentDescription = desc;
 			}
 
-			var hint = semantics.Hint;
 			if (!string.IsNullOrEmpty(hint))
 			{
 				// info HintText won't read anything back when using TalkBack pre API 26
@@ -98,6 +83,8 @@ namespace Microsoft.Maui
 
 			if (!string.IsNullOrWhiteSpace(newContentDescription))
 				info.ContentDescription = newContentDescription;
+			else if (info.ContentDescription == virtualView.AutomationId)
+				info.ContentDescription = null;
 
 			if (!string.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
@@ -111,6 +98,11 @@ namespace Microsoft.Maui
 				return;
 
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
+		}
+
+		internal static View GetSemanticNativeElement(this View nativeView)
+		{
+			return ViewHelper.GetSemanticNativeElement(nativeView)!;
 		}
 	}
 }

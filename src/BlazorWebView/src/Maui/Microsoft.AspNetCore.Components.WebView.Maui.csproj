@@ -4,28 +4,18 @@
     <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <Description>Build .NET MAUI applications with Blazor web UI in the BlazorWebView control.</Description>
+    <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
   </PropertyGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup>
-    <None Remove="build/**/*" />
+    <Content Remove="build\**\*" />
+    <None Include="build\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="build/**/*">
-      <Pack>true</Pack>
-      <PackagePath>build</PackagePath>
-      <IncludeInPackage>true</IncludeInPackage>
-      <CopyToOutput>true</CopyToOutput>
-      <BuildAction>Content</BuildAction>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\WebView2\Internal\StaticContentProvider.cs" Link="Windows\SharedSource\StaticContentProvider.cs" />
+    <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)"/>
   </ItemGroup>
 
   <ItemGroup>

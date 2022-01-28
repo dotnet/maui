@@ -4,27 +4,26 @@ namespace Microsoft.Maui.Controls
 {
 	internal class RadioButtonGroupController
 	{
-		readonly Compatibility.Layout<View> _layout;
-
+		readonly Element _layout;
 		string _groupName;
 		private object _selectedValue;
 
 		public string GroupName { get => _groupName; set => SetGroupName(value); }
 		public object SelectedValue { get => _selectedValue; set => SetSelectedValue(value); }
 
-		public RadioButtonGroupController(Compatibility.Layout<View> layout)
+		public RadioButtonGroupController(Maui.ILayout layout)
 		{
 			if (layout is null)
 			{
 				throw new ArgumentNullException(nameof(layout));
 			}
 
-			_layout = layout;
-			layout.ChildAdded += ChildAdded;
+			_layout = (Element)layout;
+			_layout.ChildAdded += ChildAdded;
 
 			if (!string.IsNullOrEmpty(_groupName))
 			{
-				UpdateGroupNames(layout, _groupName);
+				UpdateGroupNames(_layout, _groupName);
 			}
 
 			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
@@ -118,9 +117,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void UpdateGroupNames(Compatibility.Layout<View> layout, string name, string oldName = null)
+		void UpdateGroupNames(Element element, string name, string oldName = null)
 		{
-			foreach (var descendant in layout.Descendants())
+			foreach (Element descendant in element.Descendants())
 			{
 				UpdateGroupName(descendant, name, oldName);
 			}

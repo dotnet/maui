@@ -2,9 +2,10 @@
 using System.Drawing;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Platform
 {
 	public class MauiSearchBar : UISearchBar
 	{
@@ -24,9 +25,14 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		protected internal MauiSearchBar(IntPtr handle) : base(handle)
+		protected internal MauiSearchBar(NativeHandle handle) : base(handle)
 		{
 		}
+
+		// Native Changed doesn't fire when the Text Property is set in code
+		// We use this event as a way to fire changes whenever the Text changes
+		// via code or user interaction.
+		public event EventHandler<UISearchBarTextChangedEventArgs>? TextSetOrChanged;
 
 		public override string? Text
 		{
@@ -38,10 +44,10 @@ namespace Microsoft.Maui.Handlers
 				base.Text = value;
 
 				if (old != value)
-					TextPropertySet?.Invoke(this, EventArgs.Empty);
+				{
+					TextSetOrChanged?.Invoke(this, new UISearchBarTextChangedEventArgs(value ?? String.Empty));
+				}
 			}
 		}
-
-		public event EventHandler? TextPropertySet;
 	}
 }

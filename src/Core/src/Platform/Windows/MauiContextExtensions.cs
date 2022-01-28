@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel.Resources.Core;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static partial class MauiContextExtensions
 	{
@@ -16,8 +17,8 @@ namespace Microsoft.Maui
 			return FlowDirection.MatchParent;
 		}
 
-		public static WindowManager GetWindowManager(this IMauiContext mauiContext) =>
-			mauiContext.Services.GetRequiredService<WindowManager>();
+		public static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<NavigationRootManager>();
 
 		public static UI.Xaml.Window GetNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<UI.Xaml.Window>();
@@ -25,11 +26,22 @@ namespace Microsoft.Maui
 		public static UI.Xaml.Window? GetOptionalNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<UI.Xaml.Window>();
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UI.Xaml.Window nativeWindow)
+		public static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
-			var scopedContext = new MauiContext(mauiContext);
-			scopedContext.AddSpecific(nativeWindow);
-			scopedContext.AddSpecific(new WindowManager(scopedContext));
+			return MauiWinUIApplication.Current.Services
+				?? throw new InvalidOperationException("Unable to find Application Services");
+		}
+
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, bool registerNewNavigationRoot)
+		{
+			var scopedContext = new MauiContext(mauiContext.Services);
+
+			if (registerNewNavigationRoot)
+			{
+				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
+			}
+
 			return scopedContext;
 		}
 	}

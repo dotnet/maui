@@ -3,7 +3,7 @@ using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class GraphicsExtensions
 	{
@@ -110,14 +110,14 @@ namespace Microsoft.Maui
 			return geometry;
 		}
 
-		public static Windows.Foundation.Point AsPoint(this PointF target)
+		public static global::Windows.Foundation.Point AsPoint(this PointF target)
 		{
-			return new Windows.Foundation.Point(target.X, target.Y);
+			return new global::Windows.Foundation.Point(target.X, target.Y);
 		}
 
-		public static Windows.Foundation.Point AsPoint(this PointF target, float ppu)
+		public static global::Windows.Foundation.Point AsPoint(this PointF target, float ppu)
 		{
-			return new Windows.Foundation.Point(target.X * ppu, target.Y * ppu);
+			return new global::Windows.Foundation.Point(target.X * ppu, target.Y * ppu);
 		}
 	}
 }

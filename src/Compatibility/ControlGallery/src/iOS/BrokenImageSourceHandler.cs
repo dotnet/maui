@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportRenderer(typeof(_51173Image), typeof(_51173CustomImageRenderer))]

@@ -2,7 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
+using ObjCRuntime;
 using UIKit;
+using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
@@ -68,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				TextType = TextType.Html
 			};
 			var expectedFontFamily = label.FontFamily;
-			var expectedFontSize = (System.nfloat)label.FontSize;
+			var expectedFontSize = (nfloat)label.FontSize;
 
 			var actualFont = await GetControlProperty(label, uiLabel => uiLabel.Font);
 

@@ -19,15 +19,16 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 #if NET6_0_OR_GREATER
-			var grid = new Grid() { VerticalOptions = LayoutOptions.FillAndExpand, BackgroundColor = Colors.Purple, };
+			var grid = new Grid() { VerticalOptions = LayoutOptions.Fill, BackgroundColor = Colors.Purple, };
 			grid.AddRowDefinition(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
 			grid.AddRowDefinition(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 			grid.AddRowDefinition(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
 
 			var headerLabel = new Label { Text = "The content below is brought to you by Blazor!", FontSize = 24, TextColor = Colors.BlanchedAlmond, HorizontalOptions = LayoutOptions.Center, };
 			grid.Add(headerLabel);
-			GridLayout.SetRow(headerLabel, 0);
+			Grid.SetRow(headerLabel, 0);
 
+			// You can replace this BlazorWebView with CustomBlazorWebView to see loading custom static assets
 			var bwv = new BlazorWebView
 			{
 				// General properties
@@ -40,12 +41,12 @@ namespace Maui.Controls.Sample.Pages
 			bwv.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
 
 			grid.Add(bwv);
-			GridLayout.SetRow(bwv, 1);
+			Grid.SetRow(bwv, 1);
 
 
 			var footerLabel = new Label { Text = "Thank you for using Blazor and .NET MAUI!", FontSize = 24, TextColor = Colors.BlanchedAlmond, HorizontalOptions = LayoutOptions.Center, };
 			grid.Add(footerLabel);
-			GridLayout.SetRow(footerLabel, 2);
+			Grid.SetRow(footerLabel, 2);
 
 			Content = grid;
 #endif

@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -37,45 +38,6 @@ namespace Microsoft.Maui.Controls.Platform
 					return UISearchBarStyle.Minimal;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(style));
-			}
-		}
-
-		[PortHandler]
-		internal static UIReturnKeyType ToUIReturnKeyType(this ReturnType returnType)
-		{
-			switch (returnType)
-			{
-				case ReturnType.Go:
-					return UIReturnKeyType.Go;
-				case ReturnType.Next:
-					return UIReturnKeyType.Next;
-				case ReturnType.Send:
-					return UIReturnKeyType.Send;
-				case ReturnType.Search:
-					return UIReturnKeyType.Search;
-				case ReturnType.Done:
-					return UIReturnKeyType.Done;
-				case ReturnType.Default:
-					return UIReturnKeyType.Default;
-				default:
-					throw new System.NotImplementedException($"ReturnType {returnType} not supported");
-			}
-		}
-
-		internal static DeviceOrientation ToDeviceOrientation(this UIDeviceOrientation orientation)
-		{
-			switch (orientation)
-			{
-				case UIDeviceOrientation.Portrait:
-					return DeviceOrientation.Portrait;
-				case UIDeviceOrientation.PortraitUpsideDown:
-					return DeviceOrientation.PortraitDown;
-				case UIDeviceOrientation.LandscapeLeft:
-					return DeviceOrientation.LandscapeLeft;
-				case UIDeviceOrientation.LandscapeRight:
-					return DeviceOrientation.LandscapeRight;
-				default:
-					return DeviceOrientation.Other;
 			}
 		}
 

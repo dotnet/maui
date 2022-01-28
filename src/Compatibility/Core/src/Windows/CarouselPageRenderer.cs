@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class CarouselPageRenderer : FlipView, IVisualElementRenderer
+	internal class CarouselPageRenderer : FlipView, IVisualElementRenderer
 	{
 		bool _fromUpdate;
 		bool _disposed;
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			double oldWidth = Width;
 			double oldHeight = Height;

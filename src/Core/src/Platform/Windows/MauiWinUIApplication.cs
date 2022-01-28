@@ -5,19 +5,28 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiWinUIApplication : UI.Xaml.Application
+	public abstract class MauiWinUIApplication : UI.Xaml.Application, IPlatformApplication
 	{
 		protected abstract MauiApp CreateMauiApp();
 
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
-			LaunchActivatedEventArgs = args;
+			// Windows running on a different thread will "launch" the app again
+			if (Application != null)
+			{
+				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+				return;
+			}
 
+			IPlatformApplication.Current = this;
 			var mauiApp = CreateMauiApp();
 
-			var applicationContext = new MauiContext(mauiApp.Services, this);
+			var rootContext = new MauiContext(mauiApp.Services);
 
-			Services = mauiApp.Services;
+			var applicationContext = rootContext.MakeApplicationScope(this);
+
+			Services = applicationContext.Services;
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
@@ -25,38 +34,14 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, applicationContext);
 
-			var winuiWndow = CreateNativeWindow(args, applicationContext);
-
-			MainWindow = winuiWndow;
-
-			MainWindow.Activate();
+			this.CreateNativeWindow(Application, args);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
-		}
-
-		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs args, IMauiContext applicationContext)
-		{
-			var winuiWndow = new MauiWinUIWindow();
-
-			var mauiContext = applicationContext.MakeScoped(winuiWndow);
-
-			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
-
-			var activationState = new ActivationState(mauiContext, args);
-			var window = Application.CreateWindow(activationState);
-
-			winuiWndow.SetWindowHandler(window, mauiContext);
-
-			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
-
-			return winuiWndow;
 		}
 
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
-
-		public UI.Xaml.Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

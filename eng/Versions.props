@@ -1,66 +1,79 @@
 <Project>
   <PropertyGroup>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-rtm.21476.2</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.200-preview.22063.5</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-rtm.21472.13</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftNETCoreAppRefPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.101-preview.10.30</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.13.35</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.10.136</MicrosoftiOSSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.10.136</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.10.136</MicrosoftmacOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.10.136</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.2.300-preview.13.1</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.2.300-preview.13.1</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.1.300-preview.13.1</MicrosoftmacOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.2.300-preview.13.1</MicrosofttvOSSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0-rtm.21505.3</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
+    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
+    <!-- wasdk -->
+    <MicrosoftWindowsAppSDKPackageVersion>1.0.0</MicrosoftWindowsAppSDKPackageVersion>
+    <MicrosoftGraphicsWin2DPackageVersion>1.0.0.30</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0-rtm.21475.9</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreComponentsFormsPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsFormsPackageVersion>
-    <MicrosoftAspNetCoreComponentsPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
-    <MicrosoftAspNetCoreMetadataPackageVersion>6.0.0-rtm.21475.9</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersCompositePackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsFileProvidersCompositePackageVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.0-rtm.21475.9</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsHostingPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingEventLogPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingEventLogPackageVersion>
-    <MicrosoftExtensionsLoggingEventSourcePackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingEventSourcePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>6.0.0-rtm.21472.13</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftJSInteropPackageVersion>6.0.0-rtm.21475.9</MicrosoftJSInteropPackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.0-rtm.21474.23</MicrosoftWindowsDesktopAppRuntimewinx64Version>
-    <SystemCodeDomPackageVersion>6.0.0-rtm.21472.13</SystemCodeDomPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0-rtm.21472.13</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>6.0.0-rtm.21472.13</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>6.0.0-rtm.21472.13</SystemIOPipelinesPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0-rtm.21472.13</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>6.0.0-rtm.21472.13</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>6.0.0-rtm.21472.13</SystemTextJsonPackageVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.1</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.1</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsFormsPackageVersion>
+    <MicrosoftAspNetCoreComponentsPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreMetadataPackageVersion>6.0.1</MicrosoftAspNetCoreMetadataPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersCompositePackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsFileProvidersCompositePackageVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.1</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingEventLogPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsLoggingEventLogPackageVersion>
+    <MicrosoftExtensionsLoggingEventSourcePackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>6.0.2-mauipre.1.22069.5</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftJSInteropPackageVersion>6.0.1</MicrosoftJSInteropPackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.1</MicrosoftWindowsDesktopAppRuntimewinx64Version>
+    <SystemCodeDomPackageVersion>6.0.2-mauipre.1.22069.5</SystemCodeDomPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.2-mauipre.1.22069.5</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>6.0.2-mauipre.1.22069.5</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>6.0.2-mauipre.1.22069.5</SystemIOPipelinesPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.2-mauipre.1.22069.5</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>6.0.2-mauipre.1.22069.5</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>6.0.2-mauipre.1.22069.5</SystemTextJsonPackageVersion>
+    <!-- Other packages -->
+    <MicrosoftMauiGraphicsVersion>6.0.200-preview.13.921</MicrosoftMauiGraphicsVersion>
+    <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
+    <_MicrosoftWebWebView2Version>1.0.1020.30</_MicrosoftWebWebView2Version>
+    <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
+    <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.2</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_SkiaSharpVersion>2.88.0-preview.179</_SkiaSharpVersion>
+    <_HarfBuzzSharpVersion>2.8.2-preview.179</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.fffae82cf6ec1c4a6f490ddb780709ce9211725e.179</_SkiaSharpNativeAssetsVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Trim all characters after first `-` or `+` is encountered. -->
-    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetPreviewVersionBand>
+    <!-- Match the first three version numbers and append 00 -->
+    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetPreviewVersionBand>
   </PropertyGroup>
 </Project>

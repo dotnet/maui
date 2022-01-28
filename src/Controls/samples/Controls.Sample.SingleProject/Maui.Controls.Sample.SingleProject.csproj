@@ -20,8 +20,9 @@
 
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows')) ">
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
 
@@ -43,7 +44,7 @@
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <OutputType>WinExe</OutputType>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>

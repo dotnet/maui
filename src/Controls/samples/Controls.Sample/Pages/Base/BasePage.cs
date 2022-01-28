@@ -16,7 +16,10 @@ namespace Maui.Controls.Sample.Pages.Base
 			{
 				if (SelectedItem != null)
 				{
-					await Navigation.PushAsync(PreparePage(SelectedItem));
+					if (Application.Current.MainPage is FlyoutPage fp)
+						await fp.Detail.Navigation.PushAsync(PreparePage(SelectedItem));
+					else
+						await Navigation.PushAsync(PreparePage(SelectedItem));
 
 					SelectedItem = null;
 				}
@@ -24,17 +27,15 @@ namespace Maui.Controls.Sample.Pages.Base
 
 			ToolbarItems.Add(new ToolbarItem()
 			{
-				Text = "RTL",
+				Text = "Settings",
+				IconImageSource = ImageSource.FromFile("settings.png"),
 				Command = new Command(OnToolbarItemClicked)
 			});
 		}
 
-		private void OnToolbarItemClicked()
+		void OnToolbarItemClicked()
 		{
-			if (FlowDirection != Microsoft.Maui.FlowDirection.RightToLeft)
-				FlowDirection = Microsoft.Maui.FlowDirection.RightToLeft;
-			else
-				FlowDirection = Microsoft.Maui.FlowDirection.LeftToRight;
+			Navigation.PushModalAsync(new SettingsPage());
 		}
 
 		protected override void OnAppearing()
@@ -61,7 +62,7 @@ namespace Maui.Controls.Sample.Pages.Base
 
 		Page PreparePage(SectionModel model)
 		{
-			var page = (Page)Activator.CreateInstance(model.Type);
+			var page = (Handler?.MauiContext?.Services?.GetService(model.Type) as Page) ?? (Page)Activator.CreateInstance(model.Type);
 			page.Title = model.Title;
 
 			return page;

@@ -4,7 +4,9 @@
 	{
 		public const string MauiContext = "MauiContext";
 
+		public const string Application = "Application";
 		public const string ActivityIndicator = "ActivityIndicator";
+		public const string Border = "Border";
 		public const string BoxView = "BoxView";
 		public const string Button = "Button";
 		public const string CheckBox = "CheckBox";
@@ -17,6 +19,7 @@
 		public const string ImageSource = "ImageSource";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
+		public const string NavigationView = "NavigationView";
 		public const string Page = "Page";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";
@@ -30,5 +33,6 @@
 		public const string TimePicker = "TimePicker";
 		public const string View = "View";
 		public const string WebView = "WebView";
+		public const string WindowOverlay = "WindowOverlay";
 	}
 }

@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsView']/Docs" />
 	public abstract class ItemsView<TVisual> : View, ITemplatedItemsView<TVisual> where TVisual : BindableObject
 	{
 		/*
@@ -18,10 +19,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue (InfiniteScrollingProperty, value); }
 		}*/
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemsSourceProperty']/Docs" />
 		public static readonly BindableProperty ItemsSourceProperty =
 			BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(ItemsView<TVisual>), null,
 									propertyChanged: OnItemsSourceChanged);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemTemplateProperty']/Docs" />
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(ItemsView<TVisual>), null,
 									validateValue: (b, v) => ((ItemsView<TVisual>)b).ValidateItemTemplate((DataTemplate)v));
@@ -29,12 +32,14 @@ namespace Microsoft.Maui.Controls
 		internal ItemsView()
 			=> TemplatedItems = new TemplatedItemsList<ItemsView<TVisual>, TVisual>(this, ItemsSourceProperty, ItemTemplateProperty);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemsSource']/Docs" />
 		public IEnumerable ItemsSource
 		{
 			get => (IEnumerable)GetValue(ItemsSourceProperty);
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemTemplate']/Docs" />
 		public DataTemplate ItemTemplate
 		{
 			get => (DataTemplate)GetValue(ItemTemplateProperty);
@@ -50,6 +55,7 @@ namespace Microsoft.Maui.Controls
 
 		ITemplatedItemsList<TVisual> ITemplatedItemsView<TVisual>.TemplatedItems => TemplatedItems;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='TemplatedItems']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TemplatedItemsList<ItemsView<TVisual>, TVisual> TemplatedItems { get; }
 

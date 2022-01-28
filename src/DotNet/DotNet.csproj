@@ -9,7 +9,7 @@
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetInstallCommand>powershell -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
+    <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.sh</DotNetInstallScriptUrl>
@@ -27,6 +27,12 @@
     </_ProvisionDependsOn>
   </PropertyGroup>
 
+  <Target Name="_ReadAllNuGetSources">
+    <XmlPeek XmlInputPath="../../NuGet.config" Query="configuration/packageSources/add[@key!='wasdk-internal']/@value">
+      <Output TaskParameter="Result" ItemName="_AllNuGetSources" />
+    </XmlPeek>
+  </Target>
+
   <!-- Build target provisions ./bin/dotnet/ -->
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
 
@@ -35,7 +41,7 @@
     Running this with ./bin/dotnet/dotnet will work without elevation.
     For a system install, you will need to run this in an admin command-prompt on Windows, or use 'sudo' on Mac.
   -->
-  <Target Name="Install" DependsOnTargets="SetVersions">
+  <Target Name="Install" DependsOnTargets="_ReadAllNuGetSources;SetVersions">
 
     <Error
         Condition=" '$(MSBuildRuntimeType)' != 'Core' "
@@ -60,14 +66,13 @@
         Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
         WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetPreviewVersionBand)"
-        VersionBand="$(DotNetPreviewVersionBand)"
     />
     <RemoveDir Directories="$(_InstallTempDirectory)" />
 
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
       <_WorkloadSource Include="$(PackageOutputPath)" />
-      <_WorkloadSource Include="$(DotNet6Feed)" />
+      <_WorkloadSource Include="@(_AllNuGetSources)" />
     </ItemGroup>
     <Exec
         Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_WorkloadSource->'--source &quot;%(Identity)&quot;', ' ')"
@@ -140,7 +145,6 @@
     <CopyWorkloadFiles
         Files="@(_WorkloadFiles)"
         WorkloadDirectory="$(DotNetSdkManifestsDirectory)"
-        VersionBand="$(DotNetPreviewVersionBand)"
     />
 
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
@@ -149,9 +153,10 @@
   <Target Name="_InstallWorkloadPacks"
       Condition=" '$(InstallWorkloadPacks)' == 'true' "
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetPacksDirectory).stamp">
+      Outputs="$(DotNetPacksDirectory).stamp"
+      DependsOnTargets="_ReadAllNuGetSources">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --source &quot;$(DotNet6Feed)&quot;"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_AllNuGetSources->'--source &quot;%(Identity)&quot;', ' ')"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
@@ -164,7 +169,6 @@
       <Name ParameterType="System.String" />
       <Files ParameterType="System.String[]" Required="true" />
       <WorkloadDirectory ParameterType="System.String" Required="true" />
-      <VersionBand ParameterType="System.String" Required="true" />
     </ParameterGroup>
     <Task>
       <Using Namespace="System.IO" />
@@ -174,7 +178,11 @@
           foreach (var file in Files)
           {
               var name = string.IsNullOrEmpty(Name) ? Directory.GetParent (file).Parent.Parent.Name : Name;
-              var directory = Path.Combine(WorkloadDirectory, name.Replace($".manifest-{VersionBand}", ""));
+              var index = name.IndexOf(".manifest-", StringComparison.OrdinalIgnoreCase);
+              if (index != -1) {
+                  name = name.Substring(0, index);
+              }
+              var directory = Path.Combine(WorkloadDirectory, name);
               Directory.CreateDirectory(directory);
               var destination = Path.Combine(directory, Path.GetFileName(file));
               Log.LogMessage($"Copying {file} to {destination}");

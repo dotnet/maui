@@ -14,7 +14,12 @@
     </views:BasePage.Resources>
     <views:BasePage.Content>
         <StackLayout>
+            <Button 
+                Margin="12"
+                Text="Invalidate"
+                Clicked="OnButtonClicked"/>
             <GraphicsView
+                x:Name="GraphicsView"
                 HeightRequest="500"
                 WidthRequest="500"
                 Drawable="{StaticResource GraphicsDrawable}"/>

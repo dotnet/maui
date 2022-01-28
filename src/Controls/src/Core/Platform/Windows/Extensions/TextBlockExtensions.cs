@@ -1,6 +1,10 @@
+#nullable enable
 using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
+using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -56,9 +60,25 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 
 				default:
-					nativeControl.UpdateTextPlainText(label);
+					if (label.FormattedText != null)
+						nativeControl.UpdateInlines(label);
+					else
+						nativeControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;
 			}
+		}
+
+		public static double FindDefaultLineHeight(this TextBlock control, Inline inline)
+		{
+			control.Inlines.Add(inline);
+
+			control.Measure(new WSize(double.PositiveInfinity, double.PositiveInfinity));
+
+			var height = control.DesiredSize.Height;
+
+			control.Inlines.Remove(inline);
+
+			return height;
 		}
 	}
 }

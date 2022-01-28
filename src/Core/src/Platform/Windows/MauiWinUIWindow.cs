@@ -10,20 +10,11 @@ namespace Microsoft.Maui
 		bool _enableResumeEvent;
 		public MauiWinUIWindow()
 		{
-			NativeMessage += OnNativeMessage;
 			Activated += OnActivated;
 			Closed += OnClosed;
 			VisibilityChanged += OnVisibilityChanged;
 
 			SubClassingWin32();
-		}
-
-		protected virtual void OnNativeMessage(object? sender, WindowsNativeMessageEventArgs args)
-		{
-			if (args.MessageId == WindowsNativeMessageIds.WM_SETTINGCHANGE || args.MessageId == WindowsNativeMessageIds.WM_THEMECHANGE)
-				MauiWinUIApplication.Current.Application?.ThemeChanged();
-
-			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnNativeMessage>(m => m(this, args));
 		}
 
 		protected virtual void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)
@@ -49,11 +40,15 @@ namespace Microsoft.Maui
 			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnVisibilityChanged>(del => del(this, args));
 		}
 
-		public event EventHandler<WindowsNativeMessageEventArgs> NativeMessage;
-
 		#region Native Window
 
 		IntPtr _hwnd = IntPtr.Zero;
+		
+		/// <summary>
+		/// Returns a pointer to the underlying platform window handle (hWnd).
+		/// </summary>
+		public IntPtr WindowHandle => _hwnd;
+		
 		delegate IntPtr WinProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 		WinProc? newWndProc = null;
 		IntPtr oldWndProc = IntPtr.Zero;
@@ -70,15 +65,21 @@ namespace Microsoft.Maui
 			if (_hwnd == IntPtr.Zero)
 				throw new NullReferenceException("The Window Handle is null.");
 
+			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnNativeWindowSubclassed>(
+				del => del(this, new WindowsNativeWindowSubclassedEventArgs(_hwnd)));
+
 			newWndProc = new WinProc(NewWindowProc);
 			oldWndProc = SetWindowLongPtr(_hwnd, /* GWL_WNDPROC */ -4, newWndProc);
 		}
 
 		IntPtr NewWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
 		{
+			if (msg == WindowsNativeMessageIds.WM_SETTINGCHANGE || msg == WindowsNativeMessageIds.WM_THEMECHANGE)
+				MauiWinUIApplication.Current.Application?.ThemeChanged();
+
 			var args = new WindowsNativeMessageEventArgs(hWnd, msg, wParam, lParam);
 
-			NativeMessage?.Invoke(this, args);
+			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnNativeMessage>(m => m(this, args));
 
 			return CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
 		}

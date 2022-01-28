@@ -4,7 +4,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Widget;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{

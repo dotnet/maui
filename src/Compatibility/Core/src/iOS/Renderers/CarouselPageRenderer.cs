@@ -5,6 +5,7 @@ using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
@@ -12,7 +13,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	public class CarouselPageRenderer : UIViewController, IVisualElementRenderer
+	internal class CarouselPageRenderer : UIViewController, IVisualElementRenderer
 	{
 		bool _appeared;
 		Dictionary<Page, UIView> _containerMap;

@@ -4,11 +4,13 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="Type[@FullName='Microsoft.Maui.Controls.ElementTemplate']/Docs" />
 	public class ElementTemplate : IElement
 	{
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 		Element _parent;
 		bool _canRecycle; // aka IsDeclarative
+		readonly Type _type;
 
 		internal ElementTemplate()
 		{
@@ -20,12 +22,14 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException("type");
 
 			_canRecycle = true;
+			_type = type;
 
 			LoadTemplate = () => Activator.CreateInstance(type);
 		}
 
 		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException("loadTemplate");
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='LoadTemplate']/Docs" />
 		public Func<object> LoadTemplate { get; set; }
 
 		void IElement.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
@@ -35,6 +39,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool CanRecycle => _canRecycle;
+		internal Type Type => _type;
+
 		Element IElement.Parent
 		{
 			get { return _parent; }
@@ -57,10 +63,17 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='CreateContent']/Docs" />
 		public object CreateContent()
 		{
 			if (LoadTemplate == null)
-				throw new InvalidOperationException("LoadTemplate should not be null");
+			{
+				// Returning a Label here instead of throwing an exception because HotReload may temporarily be in state
+				// where the user is creating a template; this keeps everything else (which expects a result from CreateContent)
+				// from crashing during that time. 
+				return new Label();
+			}
+
 			if (this is DataTemplateSelector)
 				throw new InvalidOperationException("Cannot call CreateContent directly on a DataTemplateSelector");
 

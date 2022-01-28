@@ -1,76 +1,53 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
-using IOPath = System.IO.Path;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
+	// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
+	/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.UriImageSource']/Docs" />
 	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
 	{
-		internal const string CacheName = "ImageLoaderCache";
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='UriProperty']/Docs" />
+		public static readonly BindableProperty UriProperty = BindableProperty.Create(
+			nameof(Uri), typeof(Uri), typeof(UriImageSource), default(Uri),
+			propertyChanged: (bindable, oldvalue, newvalue) => ((UriImageSource)bindable).OnUriChanged(),
+			validateValue: (bindable, value) => value == null || ((Uri)value).IsAbsoluteUri);
 
-		public static readonly BindableProperty UriProperty = BindableProperty.Create("Uri", typeof(Uri), typeof(UriImageSource), default(Uri),
-			propertyChanged: (bindable, oldvalue, newvalue) => ((UriImageSource)bindable).OnUriChanged(), validateValue: (bindable, value) => value == null || ((Uri)value).IsAbsoluteUri);
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='CacheValidityProperty']/Docs" />
+		public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(
+			nameof(CacheValidity), typeof(TimeSpan), typeof(UriImageSource), TimeSpan.FromDays(1));
 
-		// https://github.com/dotnet/runtime/issues/52332
-		// static readonly Microsoft.Maui.Controls.Internals.IIsolatedStorageFile Store = Device.PlatformServices.GetUserStoreForApplication();
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='CachingEnabledProperty']/Docs" />
+		public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(
+			nameof(CachingEnabled), typeof(bool), typeof(UriImageSource), true);
 
-		static readonly object s_syncHandle = new object();
-		static readonly Dictionary<string, LockingSemaphore> s_semaphores = new Dictionary<string, LockingSemaphore>();
-
-		TimeSpan _cacheValidity = TimeSpan.FromDays(1);
-
-		bool _cachingEnabled = true;
-
-		static UriImageSource()
-		{
-			/*if (!Store.GetDirectoryExistsAsync(CacheName).Result)
-				Store.CreateDirectoryAsync(CacheName).Wait();*/
-		}
-
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs" />
 		public override bool IsEmpty => Uri == null;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='CacheValidity']/Docs" />
 		public TimeSpan CacheValidity
 		{
-			get { return _cacheValidity; }
-			set
-			{
-				if (_cacheValidity == value)
-					return;
-
-				OnPropertyChanging();
-				_cacheValidity = value;
-				OnPropertyChanged();
-			}
+			get => (TimeSpan)GetValue(CacheValidityProperty);
+			set => SetValue(CacheValidityProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='CachingEnabled']/Docs" />
 		public bool CachingEnabled
 		{
-			get
-			{
-				return false;
-				//return _cachingEnabled; 
-			}
-			set
-			{
-				if (_cachingEnabled == value)
-					return;
-
-				OnPropertyChanging();
-				_cachingEnabled = value;
-				OnPropertyChanged();
-			}
+			get => (bool)GetValue(CachingEnabledProperty);
+			set => SetValue(CachingEnabledProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='Uri']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 		public Uri Uri
 		{
-			get { return (Uri)GetValue(UriProperty); }
-			set { SetValue(UriProperty, value); }
+			get => (Uri)GetValue(UriProperty);
+			set => SetValue(UriProperty, value);
 		}
 
 		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)
@@ -94,39 +71,18 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception ex)
 			{
-				Microsoft.Maui.Controls.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+				Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
 				throw;
 			}
 
 			return stream;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString()
 		{
 			return $"Uri: {Uri}";
 		}
-
-		static string GetCacheKey(Uri uri)
-		{
-			return Device.PlatformServices.GetHash(uri.AbsoluteUri);
-		}
-
-		Task<bool> GetHasLocallyCachedCopyAsync(string key, bool checkValidity = true)
-		{
-			return Task.FromResult(false);
-			//DateTime now = DateTime.UtcNow;
-			//DateTime? lastWriteTime = await GetLastWriteTimeUtcAsync(key).ConfigureAwait(false);
-			//return lastWriteTime.HasValue && now - lastWriteTime.Value < CacheValidity;
-		}
-
-		//static async Task<DateTime?> GetLastWriteTimeUtcAsync(string key)
-		//{
-		//	string path = IOPath.Combine(CacheName, key);
-		//	if (!await Store.GetFileExistsAsync(path).ConfigureAwait(false))
-		//		return null;
-
-		//	return (await Store.GetLastWriteTimeAsync(path).ConfigureAwait(false)).UtcDateTime;
-		//}
 
 		async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
 		{
@@ -135,127 +91,46 @@ namespace Microsoft.Maui.Controls
 			Stream stream = null;
 
 			if (CachingEnabled)
-				stream = await GetStreamFromCacheAsync(uri, cancellationToken).ConfigureAwait(false);
-
-			if (stream == null)
 			{
-				try
-				{
-					stream = await Device.GetStreamAsync(uri, cancellationToken).ConfigureAwait(false);
-				}
-				catch (Exception ex)
-				{
-					Microsoft.Maui.Controls.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
-					stream = null;
-				}
+				// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
+
+				// var key = GetKey();
+				// var cached = TryGetFromCache(key, out stream)
+				if (stream is null)
+					stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
+				// if (!cached)
+				//    Cache(key, stream)
+			}
+			else
+			{
+				stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
 			}
 
 			return stream;
 		}
 
-		async Task<Stream> GetStreamAsyncUnchecked(string key, Uri uri, CancellationToken cancellationToken)
+		async Task<Stream> DownloadStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
-			//if (await GetHasLocallyCachedCopyAsync(key).ConfigureAwait(false))
-			//{
-			//	var retry = 5;
-			//	while (retry >= 0)
-			//	{
-			//		int backoff;
-			//		try
-			//		{
-			//			Stream result = await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
-			//			return result;
-			//		}
-			//		catch (IOException)
-			//		{
-			//			// iOS seems to not like 2 readers opening the file at the exact same time, back off for random amount of time
-			//			backoff = new Random().Next(1, 5);
-			//			retry--;
-			//		}
-
-			//		if (backoff > 0)
-			//		{
-			//			await Task.Delay(backoff);
-			//		}
-			//	}
-			//	return null;
-			//}
-
-			Stream stream;
 			try
 			{
-				stream = await Device.GetStreamAsync(uri, cancellationToken).ConfigureAwait(false);
-				if (stream == null)
-					return null;
+				using var client = new HttpClient();
+
+				// Do not remove this await otherwise the client will dispose before
+				// the stream even starts
+				return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
-				Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+
+				Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
 				return null;
-			}
-
-			if (stream == null || !stream.CanRead)
-			{
-				stream?.Dispose();
-				return null;
-			}
-
-			return stream;
-
-			//try
-			//{
-			//	Stream writeStream = await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Create, FileAccess.Write).ConfigureAwait(false);
-			//	await stream.CopyToAsync(writeStream, 16384, cancellationToken).ConfigureAwait(false);
-			//	if (writeStream != null)
-			//		writeStream.Dispose();
-
-			//	stream.Dispose();
-
-			//	return await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
-			//}
-			//catch (Exception ex)
-			//{
-			//	Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
-			//	return null;
-			//}
-		}
-
-		async Task<Stream> GetStreamFromCacheAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			string key = GetCacheKey(uri);
-			LockingSemaphore sem;
-			lock (s_syncHandle)
-			{
-				if (s_semaphores.ContainsKey(key))
-					sem = s_semaphores[key];
-				else
-					s_semaphores.Add(key, sem = new LockingSemaphore(1));
-			}
-
-			try
-			{
-				await sem.WaitAsync(cancellationToken);
-				Stream stream = await GetStreamAsyncUnchecked(key, uri, cancellationToken);
-				if (stream == null || stream.Length == 0 || !stream.CanRead)
-				{
-					sem.Release();
-					return null;
-				}
-				var wrapped = new StreamWrapper(stream);
-				wrapped.Disposed += (o, e) => sem.Release();
-				return wrapped;
-			}
-			catch (OperationCanceledException)
-			{
-				sem.Release();
-				throw;
 			}
 		}
 
 		void OnUriChanged()
 		{
-			if (CancellationTokenSource != null)
-				CancellationTokenSource.Cancel();
+			CancellationTokenSource?.Cancel();
+
 			OnSourceChanged();
 		}
 	}

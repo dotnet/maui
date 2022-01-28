@@ -10,11 +10,12 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiApplication : Application
+	public abstract class MauiApplication : Application, IPlatformApplication
 	{
 		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
 			Current = this;
+			IPlatformApplication.Current = this;
 		}
 
 		protected abstract MauiApp CreateMauiApp();
@@ -25,17 +26,17 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			var applicationContext = new MauiContext(mauiApp.Services, this);
+			var rootContext = new MauiContext(mauiApp.Services, this);
 
-			MauiApplicationContext = applicationContext;
+			var applicationContext = rootContext.MakeApplicationScope(this);
 
-			Services = mauiApp.Services;
+			Services = applicationContext.Services;
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(Application, MauiApplicationContext);
+			this.SetApplicationHandler(Application, applicationContext);
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
 
@@ -64,8 +65,6 @@ namespace Microsoft.Maui
 		}
 
 		public static MauiApplication Current { get; private set; } = null!;
-
-		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

@@ -1,10 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class ImageButtonStub : StubBase, IImageButton, IImageSourcePartEvents, IImageStub
 	{
+		public Color StrokeColor { get; set; }
+
+		public double StrokeThickness { get; set; }
+
+		public int CornerRadius { get; set; }
+
 		public Aspect Aspect { get; set; }
 
 		public bool IsOpaque { get; set; }
@@ -47,10 +54,5 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void IButton.Pressed() => Pressed?.Invoke(this, EventArgs.Empty);
 		void IButton.Released() => Released?.Invoke(this, EventArgs.Empty);
 		void IButton.Clicked() => Clicked?.Invoke(this, EventArgs.Empty);
-
-		void IButton.ImageSourceLoaded()
-		{
-			throw new NotImplementedException();
-		}
 	}
 }

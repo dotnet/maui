@@ -26,7 +26,9 @@ namespace Maui.Controls.Sample
 
 	public static class MauiProgram
 	{
-		enum PageType { Main, Blazor, Shell, Template }
+		static bool UseMauiGraphicsSkia = false;
+
+		enum PageType { Main, Blazor, Shell, Template, FlyoutPage }
 		readonly static PageType _pageType = PageType.Main;
 
 		public static MauiApp CreateMauiApp()
@@ -35,6 +37,24 @@ namespace Maui.Controls.Sample
 
 			appBuilder.UseMauiApp<XamlApp>();
 			var services = appBuilder.Services;
+
+			if (UseMauiGraphicsSkia)
+			{
+				/*
+				appBuilder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<GraphicsView, SkiaGraphicsViewHandler>();
+					handlers.AddHandler<BoxView, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
+				});
+				*/
+			}
 
 			appBuilder
 				.ConfigureMauiHandlers(handlers =>
@@ -86,6 +106,8 @@ namespace Maui.Controls.Sample
 			services.AddTransient<MainViewModel>();
 
 			services.AddTransient<IWindow, Window>();
+			services.AddTransient<CustomFlyoutPage, CustomFlyoutPage>();
+			services.AddTransient<CustomNavigationPage, CustomNavigationPage>();
 
 			services.AddTransient(
 				serviceType: typeof(Page),
@@ -94,11 +116,12 @@ namespace Maui.Controls.Sample
 					PageType.Template => typeof(TemplatePage),
 					PageType.Shell => typeof(AppShell),
 					PageType.Main => typeof(CustomNavigationPage),
+					PageType.FlyoutPage => typeof(CustomFlyoutPage),
 					PageType.Blazor =>
 #if NET6_0_OR_GREATER
-								typeof(BlazorPage),
+						typeof(BlazorPage),
 #else
-								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
+						throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
 					_ => throw new Exception(),
 				});
@@ -137,7 +160,7 @@ namespace Maui.Controls.Sample
 					// Log everything in this one
 					events.AddAndroid(android => android
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
-						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)))
+						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
 						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
@@ -145,7 +168,6 @@ namespace Maui.Controls.Sample
 						.OnPause((a) => LogEvent(nameof(AndroidLifecycle.OnPause)))
 						.OnPostCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnPostCreate)))
 						.OnPostResume((a) => LogEvent(nameof(AndroidLifecycle.OnPostResume)))
-						.OnPressingBack((a) => LogEvent(nameof(AndroidLifecycle.OnPressingBack)) && false)
 						.OnRequestPermissionsResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnRequestPermissionsResult)))
 						.OnRestart((a) => LogEvent(nameof(AndroidLifecycle.OnRestart)))
 						.OnRestoreInstanceState((a, b) => LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState)))
@@ -161,13 +183,7 @@ namespace Maui.Controls.Sample
 						{
 							LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
 						})
-						.OnPressingBack(a =>
-						{
-							LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
-
-							return shouldPreventBack-- > 0;
-						})
-						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
+						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut") && (shouldPreventBack-- > 0))
 						.OnRestoreInstanceState((a, b) =>
 						{
 							LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");
@@ -196,7 +212,7 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
-						.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
+						//.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
@@ -208,16 +224,6 @@ namespace Maui.Controls.Sample
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
 						return true;
 					}
-
-#if __ANDROID__
-					Microsoft.Maui.Handlers.ButtonHandler.NativeViewFactory = (handler) => 
-					{
-						return new Google.Android.Material.Button.MaterialButton(handler.Context) 
-						{ 
-							CornerRadius = 50, SoundEffectsEnabled = true 
-						};
-					};
-#endif
 				});
 
 			return appBuilder.Build();

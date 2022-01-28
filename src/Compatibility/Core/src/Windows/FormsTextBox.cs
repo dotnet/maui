@@ -482,8 +482,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		 * the size of the text as it would fit into the TextBox unconstrained and then just return that Size from the GetDesiredSize call.
 		 * */
 		static FormsTextBox _copyOfTextBox;
-		static readonly Windows.Foundation.Size _zeroSize = new Windows.Foundation.Size(0, 0);
-		public static Size GetCopyOfSize(FormsTextBox control, Windows.Foundation.Size constraint)
+		static readonly global::Windows.Foundation.Size _zeroSize = new global::Windows.Foundation.Size(0, 0);
+		public static Size GetCopyOfSize(FormsTextBox control, global::Windows.Foundation.Size constraint)
 		{
 			if (_copyOfTextBox == null)
 			{

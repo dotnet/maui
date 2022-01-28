@@ -62,8 +62,8 @@ namespace Maui.Controls.Sample.Pages
 					double targetX = xOffset - (originX * Content.Width) * (_currentScale - startScale);
 					double targetY = yOffset - (originY * Content.Height) * (_currentScale - startScale);
 
-					Content.TranslationX = targetX.Clamp(-Content.Width * (_currentScale - 1), 0);
-					Content.TranslationY = targetY.Clamp(-Content.Height * (_currentScale - 1), 0);
+					Content.TranslationX = Math.Clamp(targetX, -Content.Width * (_currentScale - 1), 0);
+					Content.TranslationY = Math.Clamp(targetY, -Content.Height * (_currentScale - 1), 0);
 
 					Content.Scale = _currentScale;
 				}

@@ -9,45 +9,71 @@
         <viewmodels:SearchBarViewModel />
     </views:BasePage.BindingContext>
     <views:BasePage.Content>
-        <VerticalStackLayout
+        <ScrollView>
+            <VerticalStackLayout
             Margin="12">
-            <Label
+                <Label
                 Text="Default"
                 Style="{StaticResource Headline}"/>
-            <SearchBar/>
-            <Label
+                <SearchBar/>
+                <Label
                 Text="Disabled"
                 Style="{StaticResource Headline}"/>
-            <SearchBar
+                <SearchBar
                 IsEnabled="False"/>
-            <Label
+                <Label
                 Text="TextColor"
                 Style="{StaticResource Headline}"/>
-            <SearchBar
+                <SearchBar
                 TextColor="Green"/>
-            <Label
+                <Label
                 Text="With Placeholder"
                 Style="{StaticResource Headline}" />
-            <SearchBar 
+                <SearchBar 
                 Placeholder="Placeholder"/>
-            <Label
+                <Label
                 Text="Using PlaceholderColor"
                 Style="{StaticResource Headline}" />
-            <SearchBar 
+                <SearchBar 
                 PlaceholderColor="Pink"
                 Placeholder="Placeholder"/>
-            <Label
+                <Label
                 Text="Fonts"
                 Style="{StaticResource Headline}"/>
-            <SearchBar
+                <SearchBar
                 FontSize="24"
                 FontAttributes="Italic"/>
-            <Label
+                <Label
                 Text="SearchCommand"
                 Style="{StaticResource Headline}"/>
-            <SearchBar
+                <SearchBar
                 SearchCommand="{Binding SearchCommand}"
                 SearchCommandParameter="SearchCommandParameter"/>
-        </VerticalStackLayout>
+                <Label
+                Text="HorizontalTextAlignment"
+                Style="{StaticResource Headline}" />
+                <SearchBar 
+                HorizontalTextAlignment="End"
+                Text="end of the line"
+                />
+                <Label
+                Text="VerticalTextAlignment"
+                Style="{StaticResource Headline}" />
+                <SearchBar 
+                VerticalTextAlignment="Start"
+                Text="at the bottom"
+                HeightRequest="100"/>
+                <Label
+                Text="IsTextPredictionEnabled=True"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                IsTextPredictionEnabled="True"/>
+                <Label
+                Text="IsTextPredictionEnabled=False"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                IsTextPredictionEnabled="False"/>
+            </VerticalStackLayout>
+        </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>

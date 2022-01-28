@@ -7,7 +7,7 @@ using static Android.Widget.TextView;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class TextViewExtensions
 	{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color? defaultColor)
 		{
 			var textColor = textStyle.TextColor?.ToNative() ?? defaultColor?.ToNative();
 
@@ -69,7 +69,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateHorizontalTextAlignment(this TextView textView, ITextAlignment text)
 		{
-			if (textView.Context!.HasRtlSupport())
+			if (Rtl.IsSupported)
 			{
 				// We want to use TextAlignment where possible because it doesn't conflict with the
 				// overall gravity of the underlying control
@@ -81,6 +81,11 @@ namespace Microsoft.Maui
 				// to gravity, because Android will simply ignore text alignment
 				textView.Gravity = Android.Views.GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
 			}
+		}
+
+		public static void UpdateVerticalTextAlignment(this TextView textView, ITextAlignment textAlignment)
+		{
+			textView.UpdateVerticalAlignment(textAlignment.VerticalTextAlignment);
 		}
 
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)

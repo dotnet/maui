@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 			else
 			{
-				NativeButton.Typeface = font.ToTypeface();
+				NativeButton.Typeface = font.ToTypeface(Element.RequireFontManager());
 				NativeButton.SetTextSize(ComplexUnitType.Sp, (float)font.Size);
 			}
 		}
@@ -187,11 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				NativeButton.LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
-
+			NativeButton.LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		void IOnClickListener.OnClick(AView v) => ButtonElementManager.OnClick(Element, Element, v);

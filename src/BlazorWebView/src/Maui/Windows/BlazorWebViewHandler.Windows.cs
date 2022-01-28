@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_webviewManager?
 					.DisposeAsync()
 					.AsTask()
-					.ConfigureAwait(false)
 					.GetAwaiter()
 					.GetResult();
 
@@ -57,12 +56,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
-			// On Windows we don't use IFileProvider because it is sync-only, whereas in WinUI all the
-			// file storage APIs are async-only. So instead we override HandleWebResourceRequest in
-			// WinUIWebViewManager so that loading static assets is done entirely there.
-			var mauiAssetFileProvider = new NullFileProvider();
+			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, MauiDispatcher.Instance, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
+			_webviewManager = new WinUIWebViewManager(NativeView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
 
 			if (RootComponents != null)
 			{
@@ -73,6 +69,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 			_webviewManager.Navigate("/");
+		}
+
+		internal IFileProvider CreateFileProvider(string contentRootDir)
+		{
+			// On WinUI we override HandleWebResourceRequest in WinUIWebViewManager so that loading static assets is done entirely there in an async manner.
+			// This allows the code to be async because in WinUI all the file storage APIs are async-only, but IFileProvider is sync-only and we need to control
+			// the precedence of which files are loaded from where.
+			return new NullFileProvider();
 		}
 	}
 }

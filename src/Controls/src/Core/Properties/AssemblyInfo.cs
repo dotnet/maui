@@ -14,6 +14,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.UAP.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS")]
@@ -30,6 +31,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.macOS.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.iOS.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Loader")] // Microsoft.Maui.Controls.Loader.dll, Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider, kzu@microsoft.com
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.Forms")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.UITest.Validator")]
@@ -41,7 +43,13 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen.UnitTests")]
 [assembly: InternalsVisibleTo("WinUI.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Core")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
 
 [assembly: Preserve]
 
@@ -80,7 +88,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("color", typeof(ProgressBar), nameof(ProgressBar.ProgressColorProperty))]
 [assembly: StyleProperty("color", typeof(Switch), nameof(Switch.OnColorProperty))]
 [assembly: StyleProperty("column-gap", typeof(Compatibility.Grid), nameof(Compatibility.Grid.ColumnSpacingProperty))]
-[assembly: StyleProperty("column-gap", typeof(GridLayout), nameof(GridLayout.ColumnSpacingProperty))]
+[assembly: StyleProperty("column-gap", typeof(Grid), nameof(Grid.ColumnSpacingProperty))]
 [assembly: StyleProperty("direction", typeof(VisualElement), nameof(VisualElement.FlowDirectionProperty), Inherited = true)]
 [assembly: StyleProperty("font-family", typeof(IFontElement), nameof(FontElement.FontFamilyProperty), Inherited = true)]
 [assembly: StyleProperty("font-size", typeof(IFontElement), nameof(FontElement.FontSizeProperty), Inherited = true)]
@@ -101,7 +109,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("padding-right", typeof(IPaddingElement), nameof(PaddingElement.PaddingRightProperty), PropertyOwnerType = typeof(PaddingElement))]
 [assembly: StyleProperty("padding-bottom", typeof(IPaddingElement), nameof(PaddingElement.PaddingBottomProperty), PropertyOwnerType = typeof(PaddingElement))]
 [assembly: StyleProperty("row-gap", typeof(Compatibility.Grid), nameof(Compatibility.Grid.RowSpacingProperty))]
-[assembly: StyleProperty("row-gap", typeof(GridLayout), nameof(GridLayout.RowSpacingProperty))]
+[assembly: StyleProperty("row-gap", typeof(Grid), nameof(Grid.RowSpacingProperty))]
 [assembly: StyleProperty("text-align", typeof(ITextAlignmentElement), nameof(TextAlignmentElement.HorizontalTextAlignmentProperty), Inherited = true)]
 [assembly: StyleProperty("text-decoration", typeof(IDecorableTextElement), nameof(DecorableTextElement.TextDecorationsProperty))]
 [assembly: StyleProperty("transform", typeof(VisualElement), nameof(VisualElement.TransformProperty))]

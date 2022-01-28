@@ -19,8 +19,11 @@
 
 ## Current News
 
+* January 19, 2022 - [Announcing .NET MAUI Preview 12](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-12/)
+* December 14, 2021 - [Announcing .NET MAUI Preview 11](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-preview-11/)
+* November 8, 2021 - [Announcing .NET MAUI Preview 10](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-10/)
+* October 12, 2021 - [Announcing .NET MAUI Preview 9](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-9/)
 * September 14, 2021 - [Update on .NET Multi-platform App UI (.NET MAUI)](https://aka.ms/maui-update/)
-* August 10, 2021 - [Announcing .NET MAUI Preview 7](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-7/)
 
 Follow the [.NET MAUI Blog](https://devblogs.microsoft.com/dotnet/category/net-maui/) and visit the [News](https://github.com/dotnet/maui/wiki/News) wiki page for more news and updates.
 
@@ -39,3 +42,5 @@ See [CONTRIBUTING](./.github/CONTRIBUTING.md)
 
 See [CODE-OF-CONDUCT](./.github/CODE_OF_CONDUCT.md)
 
+## Stats
+<img src="https://repobeats.axiom.co/api/embed/f917a77cbbdeee19b87fa1f2f932895d1df18b71.svg" />

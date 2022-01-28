@@ -39,9 +39,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var success = task.Execute();
 			Assert.True(success, $"{task.GetType()}.Execute() failed.");
 
-			AssertFile($"Assets/{image}SplashScreen.scale-100.png", 620, 300);
-			AssertFile($"Assets/{image}SplashScreen.scale-125.png", 775, 375);
-			AssertFile($"Assets/{image}SplashScreen.scale-200.png", 1240, 600);
+			AssertFile($"{image}SplashScreen.scale-100.png", 620, 300);
+			AssertFile($"{image}SplashScreen.scale-125.png", 775, 375);
+			AssertFile($"{image}SplashScreen.scale-200.png", 1240, 600);
 		}
 	}
 }

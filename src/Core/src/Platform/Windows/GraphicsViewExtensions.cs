@@ -1,12 +1,12 @@
 ﻿using Microsoft.Maui.Graphics.Win2D;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class GraphicsViewExtensions
 	{
-		public static void UpdateDrawable(this W2DGraphicsView nativeGraphicsView, IGraphicsView graphicsView)
+		public static void UpdateDrawable(this W2DGraphicsView PlatformGraphicsView, IGraphicsView graphicsView)
 		{
-			nativeGraphicsView.Drawable = graphicsView.Drawable;
+			PlatformGraphicsView.Drawable = graphicsView.Drawable;
 		}
 	}
 }

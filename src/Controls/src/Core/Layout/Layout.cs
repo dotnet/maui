@@ -6,6 +6,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="Type[@FullName='Microsoft.Maui.Controls.Layout']/Docs" />
 	[ContentProperty(nameof(Children))]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
 	{
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Controls
 		readonly List<IView> _children = new();
 
 		// This provides a Children property for XAML 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Children']/Docs" />
 		public IList<IView> Children => this;
 
 		IList IBindableLayout.Children => _children;
@@ -26,8 +28,10 @@ namespace Microsoft.Maui.Controls
 		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCastingList<Element, IView>(_children);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Count']/Docs" />
 		public int Count => _children.Count;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='IsReadOnly']/Docs" />
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
 
 		public IView this[int index]
@@ -60,22 +64,49 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='IsClippedToBoundsProperty']/Docs" />
+		public static readonly BindableProperty IsClippedToBoundsProperty =
+			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
+				propertyChanged: IsClippedToBoundsPropertyChanged);
+
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='IsClippedToBounds']/Docs" />
+		public bool IsClippedToBounds
+		{
+			get => (bool)GetValue(IsClippedToBoundsProperty);
+			set => SetValue(IsClippedToBoundsProperty, value);
+		}
+
+		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
+		{
+			if (bindableObject is IView view)
+			{
+				view.Handler?.UpdateValue(nameof(Maui.ILayout.ClipsToBounds));
+			}
+		}
+
+		bool Maui.ILayout.ClipsToBounds => IsClippedToBounds;
+
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='PaddingProperty']/Docs" />
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Padding']/Docs" />
 		public Thickness Padding
 		{
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='IgnoreSafeArea']/Docs" />
 		public bool IgnoreSafeArea { get; set; }
 
 		protected abstract ILayoutManager CreateLayoutManager();
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='GetEnumerator']/Docs" />
 		public IEnumerator<IView> GetEnumerator() => _children.GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator() => _children.GetEnumerator();
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Measure']/Docs" />
 		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			var size = (this as IView).Measure(widthConstraint, heightConstraint);
@@ -85,12 +116,9 @@ namespace Microsoft.Maui.Controls
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			foreach (var child in Children)
-			{
-				child.InvalidateMeasure();
-			}
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Add']/Docs" />
 		public void Add(IView child)
 		{
 			if (child == null)
@@ -99,15 +127,10 @@ namespace Microsoft.Maui.Controls
 			var index = _children.Count;
 			_children.Add(child);
 
-			if (child is Element element)
-			{
-				element.Parent = this;
-				VisualDiagnostics.OnChildAdded(this, element, index);
-			}
-
 			OnAdd(index, child);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Clear']/Docs" />
 		public void Clear()
 		{
 			for (var index = Count - 1; index >= 0; index--)
@@ -123,21 +146,25 @@ namespace Microsoft.Maui.Controls
 			OnClear();
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Contains']/Docs" />
 		public bool Contains(IView item)
 		{
 			return _children.Contains(item);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='CopyTo']/Docs" />
 		public void CopyTo(IView[] array, int arrayIndex)
 		{
 			_children.CopyTo(array, arrayIndex);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='IndexOf']/Docs" />
 		public int IndexOf(IView item)
 		{
 			return _children.IndexOf(item);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Insert']/Docs" />
 		public void Insert(int index, IView child)
 		{
 			if (child == null)
@@ -145,15 +172,10 @@ namespace Microsoft.Maui.Controls
 
 			_children.Insert(index, child);
 
-			if (child is Element element)
-			{
-				element.Parent = this;
-				VisualDiagnostics.OnChildAdded(this, element);
-			}
-
 			OnInsert(index, child);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Remove']/Docs" />
 		public bool Remove(IView child)
 		{
 			if (child == null)
@@ -171,6 +193,7 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='RemoveAt']/Docs" />
 		public void RemoveAt(int index)
 		{
 			if (index >= Count)
@@ -182,19 +205,18 @@ namespace Microsoft.Maui.Controls
 
 			_children.RemoveAt(index);
 
-			if (child is Element element)
-			{
-				element.Parent = null;
-				VisualDiagnostics.OnChildRemoved(this, element, index);
-			}
-
 			OnRemove(index, child);
 		}
 
 		protected virtual void OnAdd(int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(nameof(ILayoutHandler.Add), args);
+			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
+
+			// Take care of the Element internal bookkeeping
+			if (view is Element element)
+			{
+				OnChildAdded(element);
+			}
 		}
 
 		protected virtual void OnClear()
@@ -204,20 +226,35 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnRemove(int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(nameof(ILayoutHandler.Remove), args);
+			NotifyHandler(nameof(ILayoutHandler.Remove), index, view);
+
+			// Take care of the Element internal bookkeeping
+			if (view is Element element)
+			{
+				OnChildRemoved(element, index);
+			}
 		}
 
 		protected virtual void OnInsert(int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(nameof(ILayoutHandler.Insert), args);
+			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
+
+			// Take care of the Element internal bookkeeping
+			if (view is Element element)
+			{
+				OnChildAdded(element);
+			}
 		}
 
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
 		{
+			NotifyHandler(nameof(ILayoutHandler.Update), index, view);
+		}
+
+		void NotifyHandler(string action, int index, IView view)
+		{
 			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(nameof(ILayoutHandler.Update), args);
+			Handler?.Invoke(action, args);
 		}
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
@@ -232,11 +269,13 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='CrossPlatformMeasure']/Docs" />
 		public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return LayoutManager.Measure(widthConstraint, heightConstraint);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='CrossPlatformArrange']/Docs" />
 		public Graphics.Size CrossPlatformArrange(Graphics.Rectangle bounds)
 		{
 			return LayoutManager.ArrangeChildren(bounds);

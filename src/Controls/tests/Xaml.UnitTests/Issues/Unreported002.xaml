@@ -3,6 +3,10 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Unreported002">
-	<Label x:Name="label"
+    <StackLayout>
+        <Label x:Name="label"
 		   cmp:AbsoluteLayout.LayoutBounds="0.5,0.5,1,AutoSize" />
+        <Label x:Name="label2"
+		   AbsoluteLayout.LayoutBounds="0.7,0.7,0.9,AutoSize" />
+    </StackLayout>
 </ContentPage>

@@ -11,9 +11,11 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	using global::Android.Graphics.Drawables;
+	using Microsoft.Extensions.Logging;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 	using Microsoft.Maui.Controls.Platform;
+	using Microsoft.Maui.Essentials;
 	using Microsoft.Maui.Graphics;
 
 	public class FlyoutPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
@@ -117,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (oldElement != null)
 			{
-				Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
+				DeviceDisplay.MainDisplayInfoChanged -= DeviceInfoPropertyChanged;
 
 				((IFlyoutPageController)oldElement).BackButtonPressed -= OnBackButtonPressed;
 
@@ -161,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					AddView(_detailLayout);
 					AddView(_flyoutLayout);
 
-					Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
+					DeviceDisplay.MainDisplayInfoChanged += DeviceInfoPropertyChanged;
 
 					AddDrawerListener(this);
 				}
@@ -241,7 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (disposing)
 			{
-				Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
+				DeviceDisplay.MainDisplayInfoChanged -= DeviceInfoPropertyChanged;
 
 				if (Element != null)
 				{
@@ -312,29 +314,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_flyoutLayout.Right = r;
 		}
 
-		async void DeviceInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
+		async void DeviceInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
-			if (nameof(Device.Info.CurrentOrientation) == e.PropertyName)
+			if (!FlyoutPageController.ShouldShowSplitMode && Presented)
 			{
-				if (!FlyoutPageController.ShouldShowSplitMode && Presented)
+				FlyoutPageController.CanChangeIsPresented = true;
+				//hack : when the orientation changes and we try to close the Flyout on Android		
+				//sometimes Android picks the width of the screen previous to the rotation 		
+				//this leaves a little of the flyout visible, the hack is to delay for 100ms closing the drawer
+				await Task.Delay(100);
+
+				//Renderer may have been disposed during the delay
+				if (_disposed)
 				{
-					FlyoutPageController.CanChangeIsPresented = true;
-					//hack : when the orientation changes and we try to close the Flyout on Android		
-					//sometimes Android picks the width of the screen previous to the rotation 		
-					//this leaves a little of the flyout visible, the hack is to delay for 100ms closing the drawer
-					await Task.Delay(100);
-
-					//Renderer may have been disposed during the delay
-					if (_disposed)
-					{
-						return;
-					}
-
-					CloseDrawer(_flyoutLayout);
+					return;
 				}
 
-				UpdateSplitViewLayout();
+				CloseDrawer(_flyoutLayout);
 			}
+
+			UpdateSplitViewLayout();
 		}
 
 		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
@@ -426,7 +425,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (drawable != null)
 					this.SetBackground(drawable);
-			}).FireAndForget(e => Internals.Log.Warning(nameof(FlyoutPageRenderer), $"{e}"));
+			}).FireAndForget(e => Application.Current?.FindMauiContext()?.CreateLogger<FlyoutPageRenderer>()?
+						.LogWarning(e, "Error updating the background image"));
 		}
 
 		void UpdateDetail()

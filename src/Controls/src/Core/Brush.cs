@@ -2,161 +2,449 @@
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="Type[@FullName='Microsoft.Maui.Controls.Brush']/Docs" />
 	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public abstract partial class Brush : Element
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Default']/Docs" />
 		public static Brush Default
 		{
 			get { return new SolidColorBrush(null); }
 		}
 
+		public static implicit operator Brush(Color color) => new SolidColorBrush(color);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='IsEmpty']/Docs" />
 		public abstract bool IsEmpty { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='IsNullOrEmpty']/Docs" />
 		public static bool IsNullOrEmpty(Brush brush)
 		{
 			return brush == null || brush.IsEmpty;
 		}
 
-		public static readonly SolidColorBrush AliceBlue = new SolidColorBrush(Colors.AliceBlue);
-		public static readonly SolidColorBrush AntiqueWhite = new SolidColorBrush(Colors.AntiqueWhite);
-		public static readonly SolidColorBrush Aqua = new SolidColorBrush(Colors.Aqua);
-		public static readonly SolidColorBrush Aquamarine = new SolidColorBrush(Colors.Aquamarine);
-		public static readonly SolidColorBrush Azure = new SolidColorBrush(Colors.Azure);
-		public static readonly SolidColorBrush Beige = new SolidColorBrush(Colors.Beige);
-		public static readonly SolidColorBrush Bisque = new SolidColorBrush(Colors.Bisque);
-		public static readonly SolidColorBrush Black = new SolidColorBrush(Colors.Black);
-		public static readonly SolidColorBrush BlanchedAlmond = new SolidColorBrush(Colors.BlanchedAlmond);
-		public static readonly SolidColorBrush Blue = new SolidColorBrush(Colors.Blue);
-		public static readonly SolidColorBrush BlueViolet = new SolidColorBrush(Colors.BlueViolet);
-		public static readonly SolidColorBrush Brown = new SolidColorBrush(Colors.Brown);
-		public static readonly SolidColorBrush BurlyWood = new SolidColorBrush(Colors.BurlyWood);
-		public static readonly SolidColorBrush CadetBlue = new SolidColorBrush(Colors.CadetBlue);
-		public static readonly SolidColorBrush Chartreuse = new SolidColorBrush(Colors.Chartreuse);
-		public static readonly SolidColorBrush Chocolate = new SolidColorBrush(Colors.Chocolate);
-		public static readonly SolidColorBrush Coral = new SolidColorBrush(Colors.Coral);
-		public static readonly SolidColorBrush CornflowerBlue = new SolidColorBrush(Colors.CornflowerBlue);
-		public static readonly SolidColorBrush Cornsilk = new SolidColorBrush(Colors.Cornsilk);
-		public static readonly SolidColorBrush Crimson = new SolidColorBrush(Colors.Crimson);
-		public static readonly SolidColorBrush Cyan = new SolidColorBrush(Colors.Cyan);
-		public static readonly SolidColorBrush DarkBlue = new SolidColorBrush(Colors.DarkBlue);
-		public static readonly SolidColorBrush DarkCyan = new SolidColorBrush(Colors.DarkCyan);
-		public static readonly SolidColorBrush DarkGoldenrod = new SolidColorBrush(Colors.DarkGoldenrod);
-		public static readonly SolidColorBrush DarkGray = new SolidColorBrush(Colors.DarkGray);
-		public static readonly SolidColorBrush DarkGreen = new SolidColorBrush(Colors.DarkGreen);
-		public static readonly SolidColorBrush DarkKhaki = new SolidColorBrush(Colors.DarkKhaki);
-		public static readonly SolidColorBrush DarkMagenta = new SolidColorBrush(Colors.DarkMagenta);
-		public static readonly SolidColorBrush DarkOliveGreen = new SolidColorBrush(Colors.DarkOliveGreen);
-		public static readonly SolidColorBrush DarkOrange = new SolidColorBrush(Colors.DarkOrange);
-		public static readonly SolidColorBrush DarkOrchid = new SolidColorBrush(Colors.DarkOrchid);
-		public static readonly SolidColorBrush DarkRed = new SolidColorBrush(Colors.DarkRed);
-		public static readonly SolidColorBrush DarkSalmon = new SolidColorBrush(Colors.DarkSalmon);
-		public static readonly SolidColorBrush DarkSeaGreen = new SolidColorBrush(Colors.DarkSeaGreen);
-		public static readonly SolidColorBrush DarkSlateBlue = new SolidColorBrush(Colors.DarkSlateBlue);
-		public static readonly SolidColorBrush DarkSlateGray = new SolidColorBrush(Colors.DarkSlateGray);
-		public static readonly SolidColorBrush DarkTurquoise = new SolidColorBrush(Colors.DarkTurquoise);
-		public static readonly SolidColorBrush DarkViolet = new SolidColorBrush(Colors.DarkViolet);
-		public static readonly SolidColorBrush DeepPink = new SolidColorBrush(Colors.DeepPink);
-		public static readonly SolidColorBrush DeepSkyBlue = new SolidColorBrush(Colors.DeepSkyBlue);
-		public static readonly SolidColorBrush DimGray = new SolidColorBrush(Colors.DimGray);
-		public static readonly SolidColorBrush DodgerBlue = new SolidColorBrush(Colors.DodgerBlue);
-		public static readonly SolidColorBrush Firebrick = new SolidColorBrush(Colors.Firebrick);
-		public static readonly SolidColorBrush FloralWhite = new SolidColorBrush(Colors.FloralWhite);
-		public static readonly SolidColorBrush ForestGreen = new SolidColorBrush(Colors.ForestGreen);
-		public static readonly SolidColorBrush Fuchsia = new SolidColorBrush(Colors.Fuchsia);
-		public static readonly SolidColorBrush Gainsboro = new SolidColorBrush(Colors.Gainsboro);
-		public static readonly SolidColorBrush GhostWhite = new SolidColorBrush(Colors.GhostWhite);
-		public static readonly SolidColorBrush Gold = new SolidColorBrush(Colors.Gold);
-		public static readonly SolidColorBrush Goldenrod = new SolidColorBrush(Colors.Goldenrod);
-		public static readonly SolidColorBrush Gray = new SolidColorBrush(Colors.Gray);
-		public static readonly SolidColorBrush Green = new SolidColorBrush(Colors.Green);
-		public static readonly SolidColorBrush GreenYellow = new SolidColorBrush(Colors.GreenYellow);
-		public static readonly SolidColorBrush Honeydew = new SolidColorBrush(Colors.Honeydew);
-		public static readonly SolidColorBrush HotPink = new SolidColorBrush(Colors.HotPink);
-		public static readonly SolidColorBrush IndianRed = new SolidColorBrush(Colors.IndianRed);
-		public static readonly SolidColorBrush Indigo = new SolidColorBrush(Colors.Indigo);
-		public static readonly SolidColorBrush Ivory = new SolidColorBrush(Colors.Ivory);
-		public static readonly SolidColorBrush Khaki = new SolidColorBrush(Colors.Ivory);
-		public static readonly SolidColorBrush Lavender = new SolidColorBrush(Colors.Lavender);
-		public static readonly SolidColorBrush LavenderBlush = new SolidColorBrush(Colors.LavenderBlush);
-		public static readonly SolidColorBrush LawnGreen = new SolidColorBrush(Colors.LawnGreen);
-		public static readonly SolidColorBrush LemonChiffon = new SolidColorBrush(Colors.LemonChiffon);
-		public static readonly SolidColorBrush LightBlue = new SolidColorBrush(Colors.LightBlue);
-		public static readonly SolidColorBrush LightCoral = new SolidColorBrush(Colors.LightCoral);
-		public static readonly SolidColorBrush LightCyan = new SolidColorBrush(Colors.LightCyan);
-		public static readonly SolidColorBrush LightGoldenrodYellow = new SolidColorBrush(Colors.LightGoldenrodYellow);
-		public static readonly SolidColorBrush LightGray = new SolidColorBrush(Colors.LightGray);
-		public static readonly SolidColorBrush LightGreen = new SolidColorBrush(Colors.LightGreen);
-		public static readonly SolidColorBrush LightPink = new SolidColorBrush(Colors.LightPink);
-		public static readonly SolidColorBrush LightSalmon = new SolidColorBrush(Colors.LightSalmon);
-		public static readonly SolidColorBrush LightSeaGreen = new SolidColorBrush(Colors.LightSeaGreen);
-		public static readonly SolidColorBrush LightSkyBlue = new SolidColorBrush(Colors.LightSkyBlue);
-		public static readonly SolidColorBrush LightSlateGray = new SolidColorBrush(Colors.LightSlateGray);
-		public static readonly SolidColorBrush LightSteelBlue = new SolidColorBrush(Colors.LightSteelBlue);
-		public static readonly SolidColorBrush LightYellow = new SolidColorBrush(Colors.LightYellow);
-		public static readonly SolidColorBrush Lime = new SolidColorBrush(Colors.Lime);
-		public static readonly SolidColorBrush LimeGreen = new SolidColorBrush(Colors.LimeGreen);
-		public static readonly SolidColorBrush Linen = new SolidColorBrush(Colors.Linen);
-		public static readonly SolidColorBrush Magenta = new SolidColorBrush(Colors.Magenta);
-		public static readonly SolidColorBrush Maroon = new SolidColorBrush(Colors.Maroon);
-		public static readonly SolidColorBrush MediumAquamarine = new SolidColorBrush(Colors.MediumAquamarine);
-		public static readonly SolidColorBrush MediumBlue = new SolidColorBrush(Colors.MediumBlue);
-		public static readonly SolidColorBrush MediumOrchid = new SolidColorBrush(Colors.MediumOrchid);
-		public static readonly SolidColorBrush MediumPurple = new SolidColorBrush(Colors.MediumPurple);
-		public static readonly SolidColorBrush MediumSeaGreen = new SolidColorBrush(Colors.MediumSeaGreen);
-		public static readonly SolidColorBrush MediumSlateBlue = new SolidColorBrush(Colors.MediumSlateBlue);
-		public static readonly SolidColorBrush MediumSpringGreen = new SolidColorBrush(Colors.MediumSpringGreen);
-		public static readonly SolidColorBrush MediumTurquoise = new SolidColorBrush(Colors.MediumTurquoise);
-		public static readonly SolidColorBrush MediumVioletRed = new SolidColorBrush(Colors.MediumVioletRed);
-		public static readonly SolidColorBrush MidnightBlue = new SolidColorBrush(Colors.MidnightBlue);
-		public static readonly SolidColorBrush MintCream = new SolidColorBrush(Colors.MintCream);
-		public static readonly SolidColorBrush MistyRose = new SolidColorBrush(Colors.MistyRose);
-		public static readonly SolidColorBrush Moccasin = new SolidColorBrush(Colors.Moccasin);
-		public static readonly SolidColorBrush NavajoWhite = new SolidColorBrush(Colors.NavajoWhite);
-		public static readonly SolidColorBrush Navy = new SolidColorBrush(Colors.Navy);
-		public static readonly SolidColorBrush OldLace = new SolidColorBrush(Colors.DarkBlue);
-		public static readonly SolidColorBrush Olive = new SolidColorBrush(Colors.Olive);
-		public static readonly SolidColorBrush OliveDrab = new SolidColorBrush(Colors.OliveDrab);
-		public static readonly SolidColorBrush Orange = new SolidColorBrush(Colors.Orange);
-		public static readonly SolidColorBrush OrangeRed = new SolidColorBrush(Colors.OrangeRed);
-		public static readonly SolidColorBrush Orchid = new SolidColorBrush(Colors.Orchid);
-		public static readonly SolidColorBrush PaleGoldenrod = new SolidColorBrush(Colors.PaleGoldenrod);
-		public static readonly SolidColorBrush PaleGreen = new SolidColorBrush(Colors.MistyRose);
-		public static readonly SolidColorBrush PaleTurquoise = new SolidColorBrush(Colors.PaleTurquoise);
-		public static readonly SolidColorBrush PaleVioletRed = new SolidColorBrush(Colors.PaleVioletRed);
-		public static readonly SolidColorBrush PapayaWhip = new SolidColorBrush(Colors.PapayaWhip);
-		public static readonly SolidColorBrush PeachPuff = new SolidColorBrush(Colors.PeachPuff);
-		public static readonly SolidColorBrush Peru = new SolidColorBrush(Colors.Peru);
-		public static readonly SolidColorBrush Pink = new SolidColorBrush(Colors.Pink);
-		public static readonly SolidColorBrush Plum = new SolidColorBrush(Colors.Plum);
-		public static readonly SolidColorBrush PowderBlue = new SolidColorBrush(Colors.PowderBlue);
-		public static readonly SolidColorBrush Purple = new SolidColorBrush(Colors.Purple);
-		public static readonly SolidColorBrush Red = new SolidColorBrush(Colors.Red);
-		public static readonly SolidColorBrush RosyBrown = new SolidColorBrush(Colors.RosyBrown);
-		public static readonly SolidColorBrush RoyalBlue = new SolidColorBrush(Colors.RoyalBlue);
-		public static readonly SolidColorBrush SaddleBrown = new SolidColorBrush(Colors.SaddleBrown);
-		public static readonly SolidColorBrush Salmon = new SolidColorBrush(Colors.Salmon);
-		public static readonly SolidColorBrush SandyBrown = new SolidColorBrush(Colors.SandyBrown);
-		public static readonly SolidColorBrush SeaGreen = new SolidColorBrush(Colors.SeaGreen);
-		public static readonly SolidColorBrush SeaShell = new SolidColorBrush(Colors.SeaShell);
-		public static readonly SolidColorBrush Sienna = new SolidColorBrush(Colors.Sienna);
-		public static readonly SolidColorBrush Silver = new SolidColorBrush(Colors.Silver);
-		public static readonly SolidColorBrush SkyBlue = new SolidColorBrush(Colors.SkyBlue);
-		public static readonly SolidColorBrush SlateBlue = new SolidColorBrush(Colors.SlateBlue);
-		public static readonly SolidColorBrush SlateGray = new SolidColorBrush(Colors.SlateGray);
-		public static readonly SolidColorBrush Snow = new SolidColorBrush(Colors.Snow);
-		public static readonly SolidColorBrush SpringGreen = new SolidColorBrush(Colors.SpringGreen);
-		public static readonly SolidColorBrush SteelBlue = new SolidColorBrush(Colors.SteelBlue);
-		public static readonly SolidColorBrush Tan = new SolidColorBrush(Colors.Tan);
-		public static readonly SolidColorBrush Teal = new SolidColorBrush(Colors.Teal);
-		public static readonly SolidColorBrush Thistle = new SolidColorBrush(Colors.Thistle);
-		public static readonly SolidColorBrush Tomato = new SolidColorBrush(Colors.Tomato);
-		public static readonly SolidColorBrush Transparent = new SolidColorBrush(Colors.Transparent);
-		public static readonly SolidColorBrush Turquoise = new SolidColorBrush(Colors.Turquoise);
-		public static readonly SolidColorBrush Violet = new SolidColorBrush(Colors.Violet);
-		public static readonly SolidColorBrush Wheat = new SolidColorBrush(Colors.Wheat);
-		public static readonly SolidColorBrush White = new SolidColorBrush(Colors.White);
-		public static readonly SolidColorBrush WhiteSmoke = new SolidColorBrush(Colors.WhiteSmoke);
-		public static readonly SolidColorBrush Yellow = new SolidColorBrush(Colors.Yellow);
-		public static readonly SolidColorBrush YellowGreen = new SolidColorBrush(Colors.YellowGreen);
+		static ImmutableBrush aliceBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='AliceBlue']/Docs" />
+		public static SolidColorBrush AliceBlue => aliceBlue ??= new(Colors.AliceBlue);
+		static ImmutableBrush antiqueWhite;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='AntiqueWhite']/Docs" />
+		public static SolidColorBrush AntiqueWhite => antiqueWhite ??= new(Colors.AntiqueWhite);
+		static ImmutableBrush aqua;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Aqua']/Docs" />
+		public static SolidColorBrush Aqua => aqua ??= new(Colors.Aqua);
+		static ImmutableBrush aquamarine;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Aquamarine']/Docs" />
+		public static SolidColorBrush Aquamarine => aquamarine ??= new(Colors.Aquamarine);
+		static ImmutableBrush azure;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Azure']/Docs" />
+		public static SolidColorBrush Azure => azure ??= new(Colors.Azure);
+		static ImmutableBrush beige;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Beige']/Docs" />
+		public static SolidColorBrush Beige => beige ??= new(Colors.Beige);
+		static ImmutableBrush bisque;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Bisque']/Docs" />
+		public static SolidColorBrush Bisque => bisque ??= new(Colors.Bisque);
+		static ImmutableBrush black;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Black']/Docs" />
+		public static SolidColorBrush Black => black ??= new(Colors.Black);
+		static ImmutableBrush blanchedAlmond;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='BlanchedAlmond']/Docs" />
+		public static SolidColorBrush BlanchedAlmond => blanchedAlmond ??= new(Colors.BlanchedAlmond);
+		static ImmutableBrush blue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Blue']/Docs" />
+		public static SolidColorBrush Blue => blue ??= new(Colors.Blue);
+		static ImmutableBrush blueViolet;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='BlueViolet']/Docs" />
+		public static SolidColorBrush BlueViolet => blueViolet ??= new(Colors.BlueViolet);
+		static ImmutableBrush brown;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Brown']/Docs" />
+		public static SolidColorBrush Brown => brown ??= new(Colors.Brown);
+		static ImmutableBrush burlyWood;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='BurlyWood']/Docs" />
+		public static SolidColorBrush BurlyWood => burlyWood ??= new(Colors.BurlyWood);
+		static ImmutableBrush cadetBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='CadetBlue']/Docs" />
+		public static SolidColorBrush CadetBlue => cadetBlue ??= new(Colors.CadetBlue);
+		static ImmutableBrush chartreuse;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Chartreuse']/Docs" />
+		public static SolidColorBrush Chartreuse => chartreuse ??= new(Colors.Chartreuse);
+		static ImmutableBrush chocolate;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Chocolate']/Docs" />
+		public static SolidColorBrush Chocolate => chocolate ??= new(Colors.Chocolate);
+		static ImmutableBrush coral;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Coral']/Docs" />
+		public static SolidColorBrush Coral => coral ??= new(Colors.Coral);
+		static ImmutableBrush cornflowerBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='CornflowerBlue']/Docs" />
+		public static SolidColorBrush CornflowerBlue => cornflowerBlue ??= new(Colors.CornflowerBlue);
+		static ImmutableBrush cornsilk;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Cornsilk']/Docs" />
+		public static SolidColorBrush Cornsilk => cornsilk ??= new(Colors.Cornsilk);
+		static ImmutableBrush crimson;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Crimson']/Docs" />
+		public static SolidColorBrush Crimson => crimson ??= new(Colors.Crimson);
+		static ImmutableBrush cyan;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Cyan']/Docs" />
+		public static SolidColorBrush Cyan => cyan ??= new(Colors.Cyan);
+		static ImmutableBrush darkBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkBlue']/Docs" />
+		public static SolidColorBrush DarkBlue => darkBlue ??= new(Colors.DarkBlue);
+		static ImmutableBrush darkCyan;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkCyan']/Docs" />
+		public static SolidColorBrush DarkCyan => darkCyan ??= new(Colors.DarkCyan);
+		static ImmutableBrush darkGoldenrod;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkGoldenrod']/Docs" />
+		public static SolidColorBrush DarkGoldenrod => darkGoldenrod ??= new(Colors.DarkGoldenrod);
+		static ImmutableBrush darkGray;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkGray']/Docs" />
+		public static SolidColorBrush DarkGray => darkGray ??= new(Colors.DarkGray);
+		static ImmutableBrush darkGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkGreen']/Docs" />
+		public static SolidColorBrush DarkGreen => darkGreen ??= new(Colors.DarkGreen);
+		static ImmutableBrush darkKhaki;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkKhaki']/Docs" />
+		public static SolidColorBrush DarkKhaki => darkKhaki ??= new(Colors.DarkKhaki);
+		static ImmutableBrush darkMagenta;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkMagenta']/Docs" />
+		public static SolidColorBrush DarkMagenta => darkMagenta ??= new(Colors.DarkMagenta);
+		static ImmutableBrush darkOliveGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkOliveGreen']/Docs" />
+		public static SolidColorBrush DarkOliveGreen => darkOliveGreen ??= new(Colors.DarkOliveGreen);
+		static ImmutableBrush darkOrange;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkOrange']/Docs" />
+		public static SolidColorBrush DarkOrange => darkOrange ??= new(Colors.DarkOrange);
+		static ImmutableBrush darkOrchid;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkOrchid']/Docs" />
+		public static SolidColorBrush DarkOrchid => darkOrchid ??= new(Colors.DarkOrchid);
+		static ImmutableBrush darkRed;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkRed']/Docs" />
+		public static SolidColorBrush DarkRed => darkRed ??= new(Colors.DarkRed);
+		static ImmutableBrush darkSalmon;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkSalmon']/Docs" />
+		public static SolidColorBrush DarkSalmon => darkSalmon ??= new(Colors.DarkSalmon);
+		static ImmutableBrush darkSeaGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkSeaGreen']/Docs" />
+		public static SolidColorBrush DarkSeaGreen => darkSeaGreen ??= new(Colors.DarkSeaGreen);
+		static ImmutableBrush darkSlateBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkSlateBlue']/Docs" />
+		public static SolidColorBrush DarkSlateBlue => darkSlateBlue ??= new(Colors.DarkSlateBlue);
+		static ImmutableBrush darkSlateGray;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkSlateGray']/Docs" />
+		public static SolidColorBrush DarkSlateGray => darkSlateGray ??= new(Colors.DarkSlateGray);
+		static ImmutableBrush darkTurquoise;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkTurquoise']/Docs" />
+		public static SolidColorBrush DarkTurquoise => darkTurquoise ??= new(Colors.DarkTurquoise);
+		static ImmutableBrush darkViolet;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkViolet']/Docs" />
+		public static SolidColorBrush DarkViolet => darkViolet ??= new(Colors.DarkViolet);
+		static ImmutableBrush deepPink;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DeepPink']/Docs" />
+		public static SolidColorBrush DeepPink => deepPink ??= new(Colors.DeepPink);
+		static ImmutableBrush deepSkyBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DeepSkyBlue']/Docs" />
+		public static SolidColorBrush DeepSkyBlue => deepSkyBlue ??= new(Colors.DeepSkyBlue);
+		static ImmutableBrush dimGray;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DimGray']/Docs" />
+		public static SolidColorBrush DimGray => dimGray ??= new(Colors.DimGray);
+		static ImmutableBrush dodgerBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DodgerBlue']/Docs" />
+		public static SolidColorBrush DodgerBlue => dodgerBlue ??= new(Colors.DodgerBlue);
+		static ImmutableBrush firebrick;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Firebrick']/Docs" />
+		public static SolidColorBrush Firebrick => firebrick ??= new(Colors.Firebrick);
+		static ImmutableBrush floralWhite;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='FloralWhite']/Docs" />
+		public static SolidColorBrush FloralWhite => floralWhite ??= new(Colors.FloralWhite);
+		static ImmutableBrush forestGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='ForestGreen']/Docs" />
+		public static SolidColorBrush ForestGreen => forestGreen ??= new(Colors.ForestGreen);
+		static ImmutableBrush fuschia;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Fuchsia']/Docs" />
+		public static SolidColorBrush Fuchsia => fuschia ??= new(Colors.Fuchsia);
+		static ImmutableBrush gainsboro;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Gainsboro']/Docs" />
+		public static SolidColorBrush Gainsboro => gainsboro ??= new(Colors.Gainsboro);
+		static ImmutableBrush ghostWhite;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='GhostWhite']/Docs" />
+		public static SolidColorBrush GhostWhite => ghostWhite ??= new(Colors.GhostWhite);
+		static ImmutableBrush gold;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Gold']/Docs" />
+		public static SolidColorBrush Gold => gold ??= new(Colors.Gold);
+		static ImmutableBrush goldenrod;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Goldenrod']/Docs" />
+		public static SolidColorBrush Goldenrod => goldenrod ??= new(Colors.Goldenrod);
+		static ImmutableBrush gray;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Gray']/Docs" />
+		public static SolidColorBrush Gray => gray ??= new(Colors.Gray);
+		static ImmutableBrush green;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Green']/Docs" />
+		public static SolidColorBrush Green => green ??= new(Colors.Green);
+		static ImmutableBrush greenYellow;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='GreenYellow']/Docs" />
+		public static SolidColorBrush GreenYellow => greenYellow ??= new(Colors.GreenYellow);
+		static ImmutableBrush honeydew;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Honeydew']/Docs" />
+		public static SolidColorBrush Honeydew => honeydew ??= new(Colors.Honeydew);
+		static ImmutableBrush hotPink;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='HotPink']/Docs" />
+		public static SolidColorBrush HotPink => hotPink ??= new(Colors.HotPink);
+		static ImmutableBrush indianRed;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='IndianRed']/Docs" />
+		public static SolidColorBrush IndianRed => indianRed ??= new(Colors.IndianRed);
+		static ImmutableBrush indigo;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Indigo']/Docs" />
+		public static SolidColorBrush Indigo => indigo ??= new(Colors.Indigo);
+		static ImmutableBrush ivory;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Ivory']/Docs" />
+		public static SolidColorBrush Ivory => ivory ??= new(Colors.Ivory);
+		static ImmutableBrush khaki;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Khaki']/Docs" />
+		public static SolidColorBrush Khaki => khaki ??= new(Colors.Khaki);
+		static ImmutableBrush lavender;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Lavender']/Docs" />
+		public static SolidColorBrush Lavender => lavender ??= new(Colors.Lavender);
+		static ImmutableBrush lavenderBlush;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LavenderBlush']/Docs" />
+		public static SolidColorBrush LavenderBlush => lavenderBlush ??= new(Colors.LavenderBlush);
+		static ImmutableBrush lawnGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LawnGreen']/Docs" />
+		public static SolidColorBrush LawnGreen => lawnGreen ??= new(Colors.LawnGreen);
+		static ImmutableBrush lemonChiffon;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LemonChiffon']/Docs" />
+		public static SolidColorBrush LemonChiffon => lemonChiffon ??= new(Colors.LemonChiffon);
+		static ImmutableBrush lightBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightBlue']/Docs" />
+		public static SolidColorBrush LightBlue => lightBlue ??= new(Colors.LightBlue);
+		static ImmutableBrush lightCoral;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightCoral']/Docs" />
+		public static SolidColorBrush LightCoral => lightCoral ??= new(Colors.LightCoral);
+		static ImmutableBrush lightCyan;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightCyan']/Docs" />
+		public static SolidColorBrush LightCyan => lightCyan ??= new(Colors.LightCyan);
+		static ImmutableBrush lightGoldenrodYellow;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightGoldenrodYellow']/Docs" />
+		public static SolidColorBrush LightGoldenrodYellow => lightGoldenrodYellow ??= new(Colors.LightGoldenrodYellow);
+		static ImmutableBrush lightGray;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightGray']/Docs" />
+		public static SolidColorBrush LightGray => lightGray ??= new(Colors.LightGray);
+		static ImmutableBrush lightGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightGreen']/Docs" />
+		public static SolidColorBrush LightGreen => lightGreen ??= new(Colors.LightGreen);
+		static ImmutableBrush lightPink;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightPink']/Docs" />
+		public static SolidColorBrush LightPink => lightPink ??= new(Colors.LightPink);
+		static ImmutableBrush lightSalmon;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSalmon']/Docs" />
+		public static SolidColorBrush LightSalmon => lightSalmon ??= new(Colors.LightSalmon);
+		static ImmutableBrush lightSeaGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSeaGreen']/Docs" />
+		public static SolidColorBrush LightSeaGreen => lightSeaGreen ??= new(Colors.LightSeaGreen);
+		static ImmutableBrush lightSkyBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSkyBlue']/Docs" />
+		public static SolidColorBrush LightSkyBlue => lightSkyBlue ??= new(Colors.LightSkyBlue);
+		static ImmutableBrush lightSlateGray;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSlateGray']/Docs" />
+		public static SolidColorBrush LightSlateGray => lightSlateGray ??= new(Colors.LightSlateGray);
+		static ImmutableBrush lightSteelBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSteelBlue']/Docs" />
+		public static SolidColorBrush LightSteelBlue => lightSteelBlue ??= new(Colors.LightSteelBlue);
+		static ImmutableBrush lightYellow;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightYellow']/Docs" />
+		public static SolidColorBrush LightYellow => lightYellow ??= new(Colors.LightYellow);
+		static ImmutableBrush lime;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Lime']/Docs" />
+		public static SolidColorBrush Lime => lime ??= new(Colors.Lime);
+		static ImmutableBrush limeGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LimeGreen']/Docs" />
+		public static SolidColorBrush LimeGreen => limeGreen ??= new(Colors.LimeGreen);
+		static ImmutableBrush linen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Linen']/Docs" />
+		public static SolidColorBrush Linen => linen ??= new(Colors.Linen);
+		static ImmutableBrush magenta;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Magenta']/Docs" />
+		public static SolidColorBrush Magenta => magenta ??= new(Colors.Magenta);
+		static ImmutableBrush maroon;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Maroon']/Docs" />
+		public static SolidColorBrush Maroon => maroon ??= new(Colors.Maroon);
+		static ImmutableBrush mediumAquararine;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumAquamarine']/Docs" />
+		public static SolidColorBrush MediumAquamarine => mediumAquararine ??= new(Colors.MediumAquamarine);
+		static ImmutableBrush mediumBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumBlue']/Docs" />
+		public static SolidColorBrush MediumBlue => mediumBlue ??= new(Colors.MediumBlue);
+		static ImmutableBrush mediumOrchid;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumOrchid']/Docs" />
+		public static SolidColorBrush MediumOrchid => mediumOrchid ??= new(Colors.MediumOrchid);
+		static ImmutableBrush mediumPurple;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumPurple']/Docs" />
+		public static SolidColorBrush MediumPurple => mediumPurple ??= new(Colors.MediumPurple);
+		static ImmutableBrush mediumSeaGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumSeaGreen']/Docs" />
+		public static SolidColorBrush MediumSeaGreen => mediumSeaGreen ??= new(Colors.MediumSeaGreen);
+		static ImmutableBrush mediumSlateBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumSlateBlue']/Docs" />
+		public static SolidColorBrush MediumSlateBlue => mediumSlateBlue ??= new(Colors.MediumSlateBlue);
+		static ImmutableBrush mediumSpringGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumSpringGreen']/Docs" />
+		public static SolidColorBrush MediumSpringGreen => mediumSpringGreen ??= new(Colors.MediumSpringGreen);
+		static ImmutableBrush mediumTurquoise;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumTurquoise']/Docs" />
+		public static SolidColorBrush MediumTurquoise => mediumTurquoise ??= new(Colors.MediumTurquoise);
+		static ImmutableBrush mediumVioletRed;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumVioletRed']/Docs" />
+		public static SolidColorBrush MediumVioletRed => mediumVioletRed ??= new(Colors.MediumVioletRed);
+		static ImmutableBrush midnightBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MidnightBlue']/Docs" />
+		public static SolidColorBrush MidnightBlue => midnightBlue ??= new(Colors.MidnightBlue);
+		static ImmutableBrush mintCream;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MintCream']/Docs" />
+		public static SolidColorBrush MintCream => mintCream ??= new(Colors.MintCream);
+		static ImmutableBrush mistyRose;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MistyRose']/Docs" />
+		public static SolidColorBrush MistyRose => mistyRose ??= new(Colors.MistyRose);
+		static ImmutableBrush moccasin;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Moccasin']/Docs" />
+		public static SolidColorBrush Moccasin => moccasin ??= new(Colors.Moccasin);
+		static ImmutableBrush navajoWhite;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='NavajoWhite']/Docs" />
+		public static SolidColorBrush NavajoWhite => navajoWhite ??= new(Colors.NavajoWhite);
+		static ImmutableBrush navy;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Navy']/Docs" />
+		public static SolidColorBrush Navy => navy ??= new(Colors.Navy);
+		static ImmutableBrush oldLace;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='OldLace']/Docs" />
+		public static SolidColorBrush OldLace => oldLace ??= new(Colors.OldLace);
+		static ImmutableBrush olive;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Olive']/Docs" />
+		public static SolidColorBrush Olive => olive ??= new(Colors.Olive);
+		static ImmutableBrush oliveDrab;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='OliveDrab']/Docs" />
+		public static SolidColorBrush OliveDrab => oliveDrab ??= new(Colors.OliveDrab);
+		static ImmutableBrush orange;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Orange']/Docs" />
+		public static SolidColorBrush Orange => orange ??= new(Colors.Orange);
+		static ImmutableBrush orangeRed;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='OrangeRed']/Docs" />
+		public static SolidColorBrush OrangeRed => orangeRed ??= new(Colors.OrangeRed);
+		static ImmutableBrush orchid;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Orchid']/Docs" />
+		public static SolidColorBrush Orchid => orchid ??= new(Colors.Orchid);
+		static ImmutableBrush paleGoldenrod;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PaleGoldenrod']/Docs" />
+		public static SolidColorBrush PaleGoldenrod => paleGoldenrod ??= new(Colors.PaleGoldenrod);
+		static ImmutableBrush paleGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PaleGreen']/Docs" />
+		public static SolidColorBrush PaleGreen => paleGreen ??= new(Colors.PaleGreen);
+		static ImmutableBrush paleTurquoise;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PaleTurquoise']/Docs" />
+		public static SolidColorBrush PaleTurquoise => paleTurquoise ??= new(Colors.PaleTurquoise);
+		static ImmutableBrush paleVioletRed;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PaleVioletRed']/Docs" />
+		public static SolidColorBrush PaleVioletRed => paleVioletRed ??= new(Colors.PaleVioletRed);
+		static ImmutableBrush papayaWhip;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PapayaWhip']/Docs" />
+		public static SolidColorBrush PapayaWhip => papayaWhip ??= new(Colors.PapayaWhip);
+		static ImmutableBrush peachPuff;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PeachPuff']/Docs" />
+		public static SolidColorBrush PeachPuff => peachPuff ??= new(Colors.PeachPuff);
+		static ImmutableBrush peru;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Peru']/Docs" />
+		public static SolidColorBrush Peru => peru ??= new(Colors.Peru);
+		static ImmutableBrush pink;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Pink']/Docs" />
+		public static SolidColorBrush Pink => pink ??= new(Colors.Pink);
+		static ImmutableBrush plum;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Plum']/Docs" />
+		public static SolidColorBrush Plum => plum ??= new(Colors.Plum);
+		static ImmutableBrush powderBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PowderBlue']/Docs" />
+		public static SolidColorBrush PowderBlue => powderBlue ??= new(Colors.PowderBlue);
+		static ImmutableBrush purple;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Purple']/Docs" />
+		public static SolidColorBrush Purple => purple ??= new(Colors.Purple);
+		static ImmutableBrush red;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Red']/Docs" />
+		public static SolidColorBrush Red => red ??= new(Colors.Red);
+		static ImmutableBrush rosyBrown;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='RosyBrown']/Docs" />
+		public static SolidColorBrush RosyBrown => rosyBrown ??= new(Colors.RosyBrown);
+		static ImmutableBrush royalBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='RoyalBlue']/Docs" />
+		public static SolidColorBrush RoyalBlue => royalBlue ??= new(Colors.RoyalBlue);
+		static ImmutableBrush saddleBrown;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SaddleBrown']/Docs" />
+		public static SolidColorBrush SaddleBrown => saddleBrown ??= new(Colors.SaddleBrown);
+		static ImmutableBrush salmon;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Salmon']/Docs" />
+		public static SolidColorBrush Salmon => salmon ??= new(Colors.Salmon);
+		static ImmutableBrush sandyBrown;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SandyBrown']/Docs" />
+		public static SolidColorBrush SandyBrown => sandyBrown ??= new(Colors.SandyBrown);
+		static ImmutableBrush seaGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SeaGreen']/Docs" />
+		public static SolidColorBrush SeaGreen => seaGreen ??= new(Colors.SeaGreen);
+		static ImmutableBrush seaShell;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SeaShell']/Docs" />
+		public static SolidColorBrush SeaShell => seaShell ??= new(Colors.SeaShell);
+		static ImmutableBrush sienna;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Sienna']/Docs" />
+		public static SolidColorBrush Sienna => sienna ??= new(Colors.Sienna);
+		static ImmutableBrush silver;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Silver']/Docs" />
+		public static SolidColorBrush Silver => silver ??= new(Colors.Silver);
+		static ImmutableBrush skyBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SkyBlue']/Docs" />
+		public static SolidColorBrush SkyBlue => skyBlue ??= new(Colors.SkyBlue);
+		static ImmutableBrush slateBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SlateBlue']/Docs" />
+		public static SolidColorBrush SlateBlue => slateBlue ??= new(Colors.SlateBlue);
+		static ImmutableBrush slateGray;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SlateGray']/Docs" />
+		public static SolidColorBrush SlateGray => slateGray ??= new(Colors.SlateGray);
+		static ImmutableBrush snow;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Snow']/Docs" />
+		public static SolidColorBrush Snow => snow ??= new(Colors.Snow);
+		static ImmutableBrush springGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SpringGreen']/Docs" />
+		public static SolidColorBrush SpringGreen => springGreen ??= new(Colors.SpringGreen);
+		static ImmutableBrush steelBlue;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SteelBlue']/Docs" />
+		public static SolidColorBrush SteelBlue => steelBlue ??= new(Colors.SteelBlue);
+		static ImmutableBrush tan;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Tan']/Docs" />
+		public static SolidColorBrush Tan => tan ??= new(Colors.Tan);
+		static ImmutableBrush teal;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Teal']/Docs" />
+		public static SolidColorBrush Teal => teal ??= new(Colors.Teal);
+		static ImmutableBrush thistle;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Thistle']/Docs" />
+		public static SolidColorBrush Thistle => thistle ??= new(Colors.Thistle);
+		static ImmutableBrush tomato;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Tomato']/Docs" />
+		public static SolidColorBrush Tomato => tomato ??= new(Colors.Tomato);
+		static ImmutableBrush transparent;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Transparent']/Docs" />
+		public static SolidColorBrush Transparent => transparent ??= new(Colors.Transparent);
+		static ImmutableBrush turquoise;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Turquoise']/Docs" />
+		public static SolidColorBrush Turquoise => turquoise ??= new(Colors.Turquoise);
+		static ImmutableBrush violet;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Violet']/Docs" />
+		public static SolidColorBrush Violet => violet ??= new(Colors.Violet);
+		static ImmutableBrush wheat;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Wheat']/Docs" />
+		public static SolidColorBrush Wheat => wheat ??= new(Colors.Wheat);
+		static ImmutableBrush white;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='White']/Docs" />
+		public static SolidColorBrush White => white ??= new(Colors.White);
+		static ImmutableBrush whiteSmoke;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='WhiteSmoke']/Docs" />
+		public static SolidColorBrush WhiteSmoke => whiteSmoke ??= new(Colors.WhiteSmoke);
+		static ImmutableBrush yellow;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Yellow']/Docs" />
+		public static SolidColorBrush Yellow => yellow ??= new(Colors.Yellow);
+		static ImmutableBrush yellowGreen;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='YellowGreen']/Docs" />
+		public static SolidColorBrush YellowGreen => yellowGreen ??= new(Colors.YellowGreen);
 	}
 }

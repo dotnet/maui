@@ -4,6 +4,7 @@ using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
 using MaterialComponents;
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Platform.iOS;
 using MCard = MaterialComponents.Card;

@@ -37,12 +37,32 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.OnStop(activity =>
 				{
+					var window = activity.GetWindow();
+
 					// Activity is no longer visible
-					activity.GetWindow()?.Stopped();
+					window?.Stopped();
+
+					// As of Ice Cream Sandwich, Stopped is guaranteed to be called
+					// even when the activity is finishing or being destroyed
+					// We check for finishing and call destroying here if so
+					if (activity.IsFinishing)
+						window?.Destroying();
 				})
 				.OnDestroy(activity =>
 				{
-					activity.GetWindow()?.Destroying();
+					// If the activity is being recreated from a configuration change
+					// or something like the inspector getting attached then
+					// IsFinishing will be set to false so we still need to call
+					// Destroying to remove the xplat Window from Application
+					if (!activity.IsFinishing)
+					{
+						var window = activity.GetWindow();
+						window?.Destroying();
+					}
+				})
+				.OnBackPressed(activity =>
+				{
+					return activity.GetWindow()?.BackButtonClicked() ?? false;
 				});
 		}
 	}

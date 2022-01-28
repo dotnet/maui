@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			WBrush defaultBrush = defaultColorKey != null ? (WBrush)Microsoft.UI.Xaml.Application.Current.Resources[defaultColorKey] : new WSolidColorBrush(Colors.Transparent);
 
-			return color.IsDefault() ? defaultBrush : Maui.ColorExtensions.ToNative(color);
+			return color.IsDefault() ? defaultBrush : color.ToNative();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

@@ -1,25 +1,28 @@
-using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
-using FormsDevice = Microsoft.Maui.Controls.Device;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.OrientationStateTrigger']/Docs" />
 	public sealed class OrientationStateTrigger : StateTriggerBase
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public OrientationStateTrigger()
 		{
 			UpdateState();
 		}
 
-		public DeviceOrientation Orientation
+		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='Orientation']/Docs" />
+		public DisplayOrientation Orientation
 		{
-			get => (DeviceOrientation)GetValue(OrientationProperty);
+			get => (DisplayOrientation)GetValue(OrientationProperty);
 			set => SetValue(OrientationProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='OrientationProperty']/Docs" />
 		public static readonly BindableProperty OrientationProperty =
-		BindableProperty.Create(nameof(Orientation), typeof(DeviceOrientation), typeof(OrientationStateTrigger), null,
-			propertyChanged: OnOrientationChanged);
+			BindableProperty.Create(nameof(Orientation), typeof(DisplayOrientation), typeof(OrientationStateTrigger), null,
+				propertyChanged: OnOrientationChanged);
 
 		static void OnOrientationChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
@@ -33,7 +36,7 @@ namespace Microsoft.Maui.Controls
 			if (!DesignMode.IsDesignModeEnabled)
 			{
 				UpdateState();
-				FormsDevice.Info.PropertyChanged += OnInfoPropertyChanged;
+				DeviceDisplay.MainDisplayInfoChanged += OnInfoPropertyChanged;
 			}
 		}
 
@@ -41,38 +44,19 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnDetached();
 
-			FormsDevice.Info.PropertyChanged -= OnInfoPropertyChanged;
+			DeviceDisplay.MainDisplayInfoChanged -= OnInfoPropertyChanged;
 		}
 
-		void OnInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == "CurrentOrientation")
-				UpdateState();
-		}
+		void OnInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e) =>
+			UpdateState();
 
 		void UpdateState()
 		{
-			var currentOrientation = FormsDevice.Info.CurrentOrientation;
-
-			switch (Orientation)
-			{
-				case DeviceOrientation.Landscape:
-				case DeviceOrientation.LandscapeLeft:
-				case DeviceOrientation.LandscapeRight:
-					SetActive(
-						currentOrientation == DeviceOrientation.Landscape ||
-						currentOrientation == DeviceOrientation.LandscapeLeft ||
-						currentOrientation == DeviceOrientation.LandscapeRight);
-					break;
-				case DeviceOrientation.Portrait:
-				case DeviceOrientation.PortraitDown:
-				case DeviceOrientation.PortraitUp:
-					SetActive(
-						currentOrientation == DeviceOrientation.Portrait ||
-						currentOrientation == DeviceOrientation.PortraitDown ||
-						currentOrientation == DeviceOrientation.PortraitUp);
-					break;
-			}
+			var currentOrientation = DeviceDisplay.MainDisplayInfo.Orientation;
+			if (Orientation.IsLandscape())
+				SetActive(currentOrientation.IsLandscape());
+			else
+				SetActive(currentOrientation.IsPortrait());
 		}
 	}
 }

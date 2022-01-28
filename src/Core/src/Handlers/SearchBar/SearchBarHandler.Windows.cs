@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 		Brush? _defaultDeleteButtonForegroundColorBrush;
 		Brush? _defaultDeleteButtonBackgroundColorBrush;
 
-		MauiTextBox? _queryTextBox;
+		MauiSearchTextBox? _queryTextBox;
 		MauiCancelButton? _cancelButton;
 
 		protected override AutoSuggestBox CreateNativeView() => new AutoSuggestBox
@@ -49,11 +49,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
 			
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
-		
-		[MissingMapper]
-		public static void MapVerticalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler._queryTextBox);
+		}
 
 		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
@@ -82,8 +81,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(searchBar, handler._defaultTextColorBrush, handler._defaultTextColorFocusBrush, handler._queryTextBox);
 		}
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) 
+		{
+			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar, handler._queryTextBox);
+		}
 
 		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
 		{
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			_queryTextBox = NativeView?.GetFirstDescendant<MauiTextBox>();
+			_queryTextBox = NativeView?.GetFirstDescendant<MauiSearchTextBox>();
 
 			if(_queryTextBox != null)
 			{

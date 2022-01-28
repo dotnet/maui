@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner

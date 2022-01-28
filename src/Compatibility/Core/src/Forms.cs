@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			throw new NotImplementedException();
 		}
+
+		internal static IMauiContext MauiContext => throw new NotImplementedException();
 	}
 }
 #endif

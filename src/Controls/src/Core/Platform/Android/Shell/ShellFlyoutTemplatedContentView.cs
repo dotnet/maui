@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_bgImage.Clear();
 			imageSource.LoadImage(MauiContext, result =>
 			{
-				_bgImage.SetImageDrawable(result.Value);
+				_bgImage.SetImageDrawable(result?.Value);
 
 				if (!_rootView.IsAlive())
 					return;
