@@ -3,7 +3,6 @@ using NativeImage = UIKit.UIImage;
 using NativeImageView = UIKit.UIImageView;
 using NativeView = UIKit.UIButton;
 #elif MONOANDROID
-using Microsoft.Maui.Graphics.Native;
 using NativeImage = Android.Graphics.Drawables.Drawable;
 using NativeImageView = Android.Widget.ImageView;
 using NativeView = Google.Android.Material.ImageView.ShapeableImageView;

@@ -6,8 +6,10 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static class MauiProgram
 	{
-#if __ANDROID__
+#if ANDROID
 		public static Android.Content.Context CurrentContext { get; private set; }
+#elif WINDOWS
+		public static Microsoft.UI.Xaml.Window CurrentWindow { get; private set; }
 #endif
 
 		public static MauiApp CreateMauiApp() =>
@@ -15,10 +17,15 @@ namespace Microsoft.Maui.DeviceTests
 				.CreateBuilder()
 				.ConfigureLifecycleEvents(life =>
 				{
-#if __ANDROID__
+#if ANDROID
 					life.AddAndroid(android =>
 					{
 						android.OnCreate((a, b) => CurrentContext = a);
+					});
+#elif WINDOWS
+					life.AddWindows(windows =>
+					{
+						windows.OnWindowCreated(win => CurrentWindow = win);
 					});
 #endif
 				})
@@ -26,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Assemblies =
 					{
-						typeof(MauiProgram).Assembly
+						typeof(MauiProgram).Assembly,
 					},
 				})
 				.UseHeadlessRunner(new HeadlessRunnerOptions
