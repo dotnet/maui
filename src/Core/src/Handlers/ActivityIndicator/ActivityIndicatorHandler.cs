@@ -12,12 +12,14 @@
 #endif
 		};
 
-		public ActivityIndicatorHandler() : base(Mapper)
+		public static CommandMapper<IActivityIndicator, IActivityIndicatorHandler> CommandMapper = new(ViewCommandMapper);
+
+		public ActivityIndicatorHandler() : base(Mapper, CommandMapper)
 		{
 
 		}
 
-		public ActivityIndicatorHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		public ActivityIndicatorHandler(IPropertyMapper mapper) : base(mapper ?? Mapper, CommandMapper)
 		{
 
 		}
