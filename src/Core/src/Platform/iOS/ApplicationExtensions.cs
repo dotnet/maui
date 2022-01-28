@@ -35,10 +35,10 @@ namespace Microsoft.Maui.Platform
 				dicts.Add(launchOptions);
 
 			var window = CreateNativeWindow(application, null, dicts.ToArray());
-			if (window is not null && nativeApplication is UIApplicationDelegate nativeAppDelegate)
+			if (window is not null)
 			{
-				nativeAppDelegate.Window = window;
-				nativeAppDelegate.Window?.MakeKeyAndVisible();
+				nativeApplication.SetWindow(window);
+				nativeApplication.GetWindow()?.MakeKeyAndVisible();
 			}
 		}
 
@@ -62,10 +62,10 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var window = CreateNativeWindow(application, scene as UIWindowScene, dicts.ToArray());
-			if (window is not null && sceneDelegate is UIWindowSceneDelegate windowSceneDelegate)
+			if (window is not null)
 			{
-				windowSceneDelegate.Window = window;
-				windowSceneDelegate.Window?.MakeKeyAndVisible();
+				sceneDelegate.SetWindow(window);
+				sceneDelegate.GetWindow()?.MakeKeyAndVisible();
 			}
 		}
 
