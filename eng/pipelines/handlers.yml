@@ -184,8 +184,9 @@ stages:
                 poolName: ${{ BuildPlatform.poolName }}
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
-            - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
-              displayName: 'Diff .NET Maui artifacts with NuGet'
+            - ${{ if eq(BuildPlatform.name, 'Windows') }}:
+              - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
+                displayName: 'Diff .NET Maui artifacts with NuGet'
             - task: CopyFiles@2
               condition: always()
               displayName: 'Copy files to staging'
