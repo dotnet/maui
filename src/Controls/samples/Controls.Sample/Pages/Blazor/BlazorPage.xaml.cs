@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages
 				// BlazorWebView properties
 				HostPage = @"wwwroot/index.html",
 			};
-			bwv.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Main) });
+			bwv.RootComponents.Add(new RootComponent("#app",typeof(Main), null));
 			bwv.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
 
 			grid.Add(bwv);
