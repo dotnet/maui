@@ -6,34 +6,28 @@ using Windows.Foundation;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, MauiNavigationView>
+	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, RootNavigationView>
 	{
 		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
 		long? _registerCallbackToken;
 		NavigationRootManager? _navigationRootManager;
-		protected override MauiNavigationView CreateNativeView()
+		protected override RootNavigationView CreateNativeView()
 		{
-			var navigationView = new MauiNavigationView();
+			var navigationView = new RootNavigationView();
 
 			navigationView.PaneFooter = _flyoutPanel;
 			return navigationView;
 		}
 
-		protected override void ConnectHandler(MauiNavigationView nativeView)
+		protected override void ConnectHandler(RootNavigationView nativeView)
 		{
 			_navigationRootManager = MauiContext?.GetNavigationRootManager();
 			nativeView.FlyoutPaneSizeChanged += OnFlyoutPaneSizeChanged;
 			nativeView.PaneOpened += OnPaneOepened;
 			_registerCallbackToken = nativeView.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, BackButtonVisibleChanged);
-
-			nativeView.RegisterPropertyChangedCallback(NavigationView.PaneDisplayModeProperty, PaneDisplayModeChanged);
 		}
 
-		private void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
-		{
-		}
-
-		protected override void DisconnectHandler(MauiNavigationView nativeView)
+		protected override void DisconnectHandler(RootNavigationView nativeView)
 		{
 			nativeView.FlyoutPaneSizeChanged += OnFlyoutPaneSizeChanged;
 			nativeView.PaneOpened -= OnPaneOepened;

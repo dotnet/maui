@@ -34,7 +34,6 @@ namespace Microsoft.Maui
 
 			var Context = viewHandler.MauiContext?.Context;
 			var MauiContext = viewHandler.MauiContext;
-			var VirtualView = viewHandler.VirtualView;
 
 			if (nativeView == null || MauiContext == null || Context == null)
 			{
