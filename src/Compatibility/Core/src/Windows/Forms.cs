@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.UI.Xaml;
-using Windows.ApplicationModel.Activation;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -50,29 +47,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			KnownColor.SetAccent(accent.ToColor());
 
-			Device.SetIdiom(TargetIdiom.Tablet);
-			Device.SetFlowDirection(mauiContext.GetFlowDirection());
+			switch (UserInteractionMode)
+			{
+				case UserInteractionModeEnum.Mouse:
+					Device.SetIdiom(TargetIdiom.Desktop);
+					break;
+				case UserInteractionModeEnum.Touch:
+					Device.SetIdiom(TargetIdiom.Tablet);
+					break;
+				default:
+					Device.SetIdiom(TargetIdiom.Unsupported);
+					break;
+			}
 
-			//TODO WINUI3
-			//switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
-			//{
-			//	case "Windows.Desktop":
-			//		if (Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
-			//			Windows.UI.ViewManagement.UserInteractionMode.Touch)
-			//			Device.SetIdiom(TargetIdiom.Tablet);
-			//		else
-			//			Device.SetIdiom(TargetIdiom.Desktop);
-			//		break;
-			//	case "Windows.Mobile":
-			//		Device.SetIdiom(TargetIdiom.Phone);
-			//		break;
-			//	case "Windows.Xbox":
-			//		Device.SetIdiom(TargetIdiom.TV);
-			//		break;
-			//	default:
-			//		Device.SetIdiom(TargetIdiom.Unsupported);
-			//		break;
-			//}
+			Device.SetFlowDirection(mauiContext.GetFlowDirection());
 
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
@@ -86,15 +74,35 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (mainWindow != null)
 			{
 				MainWindow = mainWindow;
-
-				//if (mainWindow is WindowsBasePage windowsPage)
-				//{
-				//	windowsPage.LoadApplication(windowsPage.CreateApplication());
-				//	windowsPage.Activate();
-				//}
 			}
 
 			IsInitialized = true;
 		}
+
+		public enum UserInteractionModeEnum { Touch, Mouse };
+
+		public static UserInteractionModeEnum UserInteractionMode
+		{
+			get
+			{
+				UserInteractionModeEnum userInteractionMode = UserInteractionModeEnum.Mouse;
+
+				int SM_CONVERTIBLESLATEMODE = 0x2003;
+				int SM_TABLETPC = 0x56;
+
+				bool isTouchMode = GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0; // Tablet Mode
+				bool isTabletPC = GetSystemMetrics(SM_TABLETPC) != 0;// Tablet PC
+
+				if (isTouchMode && isTabletPC)
+				{
+					userInteractionMode = UserInteractionModeEnum.Touch;
+				}
+
+				return userInteractionMode;
+			}
+		}
+
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto, EntryPoint = "GetSystemMetrics")]
+		private static extern int GetSystemMetrics(int nIndex);
 	}
 }
