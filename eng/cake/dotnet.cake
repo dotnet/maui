@@ -117,7 +117,7 @@ Task("dotnet-templates")
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
-            var name = template.Replace("-", "") + " Space-Dash";
+            var name = template.Replace("-", "_").Replace(" ", "_");
             StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
 
             // Design-time build without restore
@@ -190,7 +190,7 @@ Task("dotnet-pack")
         //  - _NativeAssets.windows
         //     - libSkiaSharp.pdb
         //     - libHarfBuzzSharp.pdb
-        var assetsDir = $"./{artifactStagingDirectory}/additional-assets";
+        var assetsDir = $"./artifacts/additional-assets";
         var nativeAssetsVersion = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
         NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
         {
@@ -213,7 +213,7 @@ Task("dotnet-build-test")
 Task("dotnet-diff")
     .Does(() =>
     {
-        var nupkgs = GetFiles($"{artifactStagingDirectory}/**/*.nupkg");
+        var nupkgs = GetFiles($"./artifacts/**/*.nupkg");
         if (!nupkgs.Any())
         {
             Warning($"##vso[task.logissue type=warning]No NuGet packages were found.");
