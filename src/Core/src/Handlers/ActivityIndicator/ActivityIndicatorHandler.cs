@@ -1,6 +1,16 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿#if __IOS__ || MACCATALYST
+using NativeView = Microsoft.Maui.Platform.MauiActivityIndicator;
+#elif MONOANDROID
+using NativeView = Android.Widget.ProgressBar;
+#elif WINDOWS
+using NativeView = Microsoft.Maui.Platform.MauiActivityIndicator;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using NativeView = System.Object;
+#endif
+
+namespace Microsoft.Maui.Handlers
 {
-	public partial class ActivityIndicatorHandler
+	public partial class ActivityIndicatorHandler : IActivityIndicatorHandler
 	{
 		public static IPropertyMapper<IActivityIndicator, IActivityIndicatorHandler> Mapper = new PropertyMapper<IActivityIndicator, IActivityIndicatorHandler>(ViewHandler.ViewMapper)
 		{
@@ -23,5 +33,9 @@
 		{
 
 		}
+
+		IActivityIndicator IActivityIndicatorHandler.VirtualView => VirtualView;
+
+		NativeView IActivityIndicatorHandler.NativeView => NativeView;
 	}
 }
