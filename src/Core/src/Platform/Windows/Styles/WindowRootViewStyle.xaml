@@ -35,7 +35,7 @@
                                         x:Name="AppFontIcon"
                                         HorizontalAlignment="Left" 
                                         VerticalAlignment="Center"
-                                        Source="Assets/Square44x44Logo.png" 
+                                        Source="Square44x44Logo.png" 
                                         Width="16" 
                                         Height="16"/>
                                     <TextBlock 

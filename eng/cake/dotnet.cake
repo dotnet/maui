@@ -220,13 +220,14 @@ Task("dotnet-diff")
         }
         else
         {
+            // clean all working folders
             var diffCacheDir = tempDirectory.Combine("diffCache");
             EnsureDirectoryExists(diffCacheDir);
             CleanDirectories(diffCacheDir.FullPath);
-
             EnsureDirectoryExists(diffDirectory);
             CleanDirectories(diffDirectory.FullPath);
 
+            // run the diff
             foreach (var nupkg in nupkgs)
             {
                 DotNetCoreTool("api-tools", new DotNetCoreToolSettings
@@ -245,6 +246,7 @@ Task("dotnet-diff")
                 });
             }
 
+            // clean working folders
             try
             {
                 CleanDirectories(diffCacheDir.FullPath);
@@ -252,6 +254,43 @@ Task("dotnet-diff")
             catch
             {
                 Information("Unable to clean up diff cache directory.");
+            }
+
+            var diffs = GetFiles($"{diffDirectory}/**/*.md");
+            if (!diffs.Any())
+            {
+                Warning($"##vso[task.logissue type=warning]No NuGet diffs were found.");
+            }
+            else
+            {
+                // clean working folders
+                var temp = diffCacheDir.Combine("md-files");
+                EnsureDirectoryExists(diffCacheDir);
+                CleanDirectories(diffCacheDir.FullPath);
+
+                // copy and rename files for UI
+                foreach (var diff in diffs)
+                {
+                    var segments = diff.Segments.Reverse().ToArray();
+                    var nugetId = segments[2];
+                    var platform = segments[1];
+                    var assembly = ((FilePath)segments[0]).GetFilenameWithoutExtension().GetFilenameWithoutExtension();
+                    var breaking = segments[0].EndsWith(".breaking.md");
+
+                    // using non-breaking spaces
+                    var newName = breaking ? "[BREAKING]   " : "";
+                    newName += $"{nugetId}    {assembly} ({platform}).md";
+                    var newPath = diffCacheDir.CombineWithFilePath(newName);
+
+                    CopyFile(diff, newPath);
+                }
+
+                // push changes to UI
+                var temps = GetFiles($"{diffCacheDir}/**/*.md");
+                foreach (var t in temps.OrderBy(x => x.FullPath))
+                {
+                    Information($"##vso[task.uploadsummary]{t}");
+                }
             }
         }
     });

@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
-		public static void MapIsRunning(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator) { }
-		public static void MapColor(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator) { }
+		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator) { }
+		public static void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator) { }
 	}
 }
