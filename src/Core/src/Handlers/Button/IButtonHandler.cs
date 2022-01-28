@@ -12,8 +12,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial interface IButtonHandler : IViewHandler
 	{
-		IButton TypedVirtualView { get; }
-		NativeView TypedNativeView { get; }
+		new IButton VirtualView { get; }
+		new NativeView NativeView { get; }
 		ImageSourcePartLoader ImageSourceLoader { get; }
 	}
 }
