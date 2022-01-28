@@ -4,12 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.TabbedPageGallery"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
-    Title="Tabbed Page">
+    Title="Tabbed Page"
+    BarBackground="Purple">
     <ContentPage Title="Tab 1">
         <VerticalStackLayout>
             <Button Text="Set Tabbed Page as Root" Clicked="OnTabbedPageAsRoot"></Button>
             <Button Text="Toggle Bottom Tabs (Android)" Clicked="OnSetToBottomTabs"></Button>
             <Button Text="Change Tab Index" Clicked="OnChangeTabIndex"></Button>
+            <Button Text="Toggle TabBar Background Color" Clicked="OnToggleTabBar"></Button>
         </VerticalStackLayout>
     </ContentPage>
 </TabbedPage>

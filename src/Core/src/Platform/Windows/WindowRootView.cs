@@ -7,19 +7,20 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 namespace Microsoft.Maui.Platform
 {
 
-	public partial class NavigationRootView : ContentControl
+	public partial class WindowRootView : ContentControl
 	{
-		public NavigationRootView()
+		public WindowRootView()
 		{
 		}
 
 		public Image? AppFontIcon { get; private set; }
 		public TextBlock? AppTitle { get; private set; }
-		public MauiNavigationView? NavigationViewControl { get; private set; }
+		public RootNavigationView? NavigationViewControl { get; private set; }
 		public FrameworkElement? AppTitleBar { get; private set; } 
 		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
 		bool _hasTitleBarImage = false;
 		internal event EventHandler? OnApplyTemplateFinished;
+		internal event EventHandler? ContentChanged;
 		string? _windowTitle;
 
 		protected override void OnApplyTemplate()
@@ -42,13 +43,15 @@ namespace Microsoft.Maui.Platform
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
-			if(newContent is MauiNavigationView mnv)
+			if(newContent is RootNavigationView mnv)
 			{
 				NavigationViewControl = mnv;
 				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
 				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
 				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
 				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
+
+				ContentChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
 

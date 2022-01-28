@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 					previousPage
 						.FindMauiContext()
 						?.GetNavigationRootManager()
-						?.Disconnect(previousPage);
+						?.Disconnect();
 
 					previousPage.Handler = null;
 					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
