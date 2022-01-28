@@ -120,6 +120,8 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if startsWith(BuildPlatform.poolName, 'NetCore1ESPool-Internal') }}:
+                demands: ImageOverride -equals build.windows.10.amd64.vs2022
               ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
                   - macOS.Name -equals BigSur
@@ -166,6 +168,8 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
+            ${{ if startsWith(BuildPlatform.poolName, 'NetCore1ESPool-Internal') }}:
+              demands: ImageOverride -equals build.windows.10.amd64.vs2022
             ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
               demands:
                 - macOS.Name -equals BigSur
