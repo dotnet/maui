@@ -79,15 +79,15 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        var templatesTest = $"../templatesTest/{Guid.NewGuid()}/";
+        var templatesTest = tempDirectory.Combine("templatesTest");
 
-        CleanDirectories("../templatesTest");
+        EnsureDirectoryExists(templatesTest);
+        CleanDirectories(templatesTest.FullPath);
 
         // Create empty Directory.Build.props/targets
-        EnsureDirectoryExists(Directory(templatesTest));
-        FileWriteText(File(templatesTest + "Directory.Build.props"), "<Project/>");
-        FileWriteText(File(templatesTest + "Directory.Build.targets"), "<Project/>");
-        CopyFileToDirectory(File("./NuGet.config"), Directory(templatesTest));
+        FileWriteText(templatesTest.CombineWithFilePath("Directory.Build.props"), "<Project/>");
+        FileWriteText(templatesTest.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+        CopyFileToDirectory(File("./NuGet.config"), templatesTest);
 
         // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
         var designTime = new Dictionary<string, string> {
@@ -102,8 +102,8 @@ Task("dotnet-templates")
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
-            { "RestorePackagesPath", MakeAbsolute(File(templatesTest + "packages")).FullPath },
-            { "RestoreConfigFile", MakeAbsolute(File(templatesTest + "nuget.config")).FullPath },
+            { "RestorePackagesPath", MakeAbsolute(templatesTest.CombineWithFilePath("packages")).FullPath },
+            { "RestoreConfigFile", MakeAbsolute(templatesTest.CombineWithFilePath("nuget.config")).FullPath },
 
             // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
@@ -117,7 +117,7 @@ Task("dotnet-templates")
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
-            var name = template.Replace("-", "") + " Space-Dash";
+            var name = template.Replace("-", "_").Replace(" ", "_");
             StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
 
             // Design-time build without restore
@@ -129,9 +129,10 @@ Task("dotnet-templates")
             // Build
             RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
         }
+
         try
         {
-            CleanDirectories(templatesTest);
+            CleanDirectories(templatesTest.FullPath);
         }
         catch
         {
@@ -189,7 +190,7 @@ Task("dotnet-pack")
         //  - _NativeAssets.windows
         //     - libSkiaSharp.pdb
         //     - libHarfBuzzSharp.pdb
-        var assetsDir = "./artifacts/additional-assets";
+        var assetsDir = $"./artifacts/additional-assets";
         var nativeAssetsVersion = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
         NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
         {
@@ -208,6 +209,52 @@ Task("dotnet-build-test")
     .IsDependentOn("dotnet-buildtasks")
     .IsDependentOn("dotnet-build")
     .IsDependentOn("dotnet-test");
+
+Task("dotnet-diff")
+    .Does(() =>
+    {
+        var nupkgs = GetFiles($"./artifacts/**/*.nupkg");
+        if (!nupkgs.Any())
+        {
+            Warning($"##vso[task.logissue type=warning]No NuGet packages were found.");
+        }
+        else
+        {
+            var diffCacheDir = tempDirectory.Combine("diffCache");
+            EnsureDirectoryExists(diffCacheDir);
+            CleanDirectories(diffCacheDir.FullPath);
+
+            EnsureDirectoryExists(diffDirectory);
+            CleanDirectories(diffDirectory.FullPath);
+
+            foreach (var nupkg in nupkgs)
+            {
+                DotNetCoreTool("api-tools", new DotNetCoreToolSettings
+                {
+                    DiagnosticOutput = true,
+                    ArgumentCustomization = builder => builder
+                        .Append("nuget-diff")
+                        .AppendQuoted(nupkg.FullPath)
+                        .Append("--latest")
+                        // .Append("--verbose")
+                        .Append("--prerelease")
+                        .Append("--group-ids")
+                        .Append("--ignore-unchanged")
+                        .AppendSwitchQuoted("--output", diffDirectory.FullPath)
+                        .AppendSwitchQuoted("--cache", diffCacheDir.FullPath)
+                });
+            }
+
+            try
+            {
+                CleanDirectories(diffCacheDir.FullPath);
+            }
+            catch
+            {
+                Information("Unable to clean up diff cache directory.");
+            }
+        }
+    });
 
 // Tasks for Local Development
 
