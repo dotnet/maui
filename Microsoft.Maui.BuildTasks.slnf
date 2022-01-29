@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "Microsoft.Maui-net6.sln",
+    "path": "Microsoft.Maui.sln",
     "projects": [
       "src\\Compatibility\\Android.FormsViewGroup\\src\\Compatibility.Android.FormsViewGroup.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",

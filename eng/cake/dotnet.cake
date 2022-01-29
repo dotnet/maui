@@ -48,7 +48,7 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
     });
 
 Task("dotnet-build")
@@ -56,9 +56,9 @@ Task("dotnet-build")
     .Description("Build the solutions")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
-            RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
         else
             RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
     });
@@ -66,7 +66,7 @@ Task("dotnet-build")
 Task("dotnet-samples")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples-net6.slnf", new Dictionary<string, string> {
+        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = bool.TrueString,
         });
     });
@@ -333,7 +333,7 @@ Task("VS-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        DotNetCoreRestore("./Microsoft.Maui-net6.sln", new DotNetCoreRestoreSettings
+        DotNetCoreRestore("./Microsoft.Maui.sln", new DotNetCoreRestoreSettings
         {
             ToolPath = dotnetPath
         });
@@ -412,7 +412,7 @@ void StartVisualStudioForDotNet6(string sln = null)
     {
         if (IsRunningOnWindows())
         {
-            sln = "./Microsoft.Maui-net6.sln";
+            sln = "./Microsoft.Maui.sln";
         }
         else
         {

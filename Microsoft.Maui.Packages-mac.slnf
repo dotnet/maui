@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "Microsoft.Maui-net6.sln",
+    "path": "Microsoft.Maui.sln",
     "projects": [
       "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
       "src\\Compatibility\\Android.FormsViewGroup\\src\\Compatibility.Android.FormsViewGroup.csproj",
