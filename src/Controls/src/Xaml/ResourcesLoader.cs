@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls;
 
+[assembly: Dependency(typeof(Microsoft.Maui.Controls.Xaml.ResourcesLoader))]
 namespace Microsoft.Maui.Controls.Xaml
 {
 	class ResourcesLoader : IResourcesLoader

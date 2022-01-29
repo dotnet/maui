@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
+[assembly: Dependency(typeof(ValueConverterProvider))]
 namespace Microsoft.Maui.Controls.Xaml
 {
 	class ValueConverterProvider : IValueConverterProvider
