@@ -27,10 +27,10 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(MauiPlatformName)' == '' ">
-    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Core/Controls.Core-net6.csproj" />
-    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Xaml/Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="$(MauiRootDirectory)src/Compatibility/Core/src/Compatibility-net6.csproj" />
-    <ProjectReference Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Core/Controls.Core.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Xaml/Controls.Xaml.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/Compatibility/Core/src/Compatibility.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
 
 </Project>

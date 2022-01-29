@@ -1,0 +1,18 @@
+{
+  "fileOptions": {
+    "systemExcludeSearchPatterns": [
+      "**/node_modules/**/*",
+      "**/bin/**/*",
+      "**/obj/**/*"
+    ],
+    "excludeSearchPatterns": [
+      "**/src/Compatibility/ControlGallery/**/*.csproj",
+      "**/src/Compatibility/Maps/**/*.csproj",
+      "**/src/Compatibility/Material/**/*.csproj",
+      "**/src/Controls/Maps/**/*.csproj",
+      "**/src/Controls/DualScreen/**/*.csproj",
+      "**/src/Templates/**/*.csproj",
+      "**/src/Workload/**/*.csproj"
+    ]
+  }
+}

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
   </ItemGroup>
 
 </Project>

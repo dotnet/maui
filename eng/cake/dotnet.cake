@@ -147,11 +147,11 @@ Task("dotnet-test")
     {
         var tests = new []
         {
-            "**/Controls.Core.UnitTests-net6.csproj",
-            "**/Controls.Xaml.UnitTests-net6.csproj",
-            "**/Core.UnitTests-net6.csproj",
-            "**/Essentials.UnitTests-net6.csproj",
-            "**/Resizetizer.UnitTests-net6.csproj",
+            "**/Controls.Core.UnitTests.csproj",
+            "**/Controls.Xaml.UnitTests.csproj",
+            "**/Core.UnitTests.csproj",
+            "**/Essentials.UnitTests.csproj",
+            "**/Resizetizer.UnitTests.csproj",
             "**/Controls.Sample.Tests.csproj"
         };
 
@@ -315,8 +315,8 @@ Task("VS-NET6")
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
         
-        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj");
-        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility-net6.csproj");
+        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj");
+        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility.csproj");
         StartVisualStudioForDotNet6();
     });
 
@@ -340,7 +340,7 @@ Task("VS-ANDROID")
 
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj");
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
@@ -350,7 +350,7 @@ Task("SAMPLE-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", target: "Run");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid.csproj", target: "Run");
     });
 
 Task("SAMPLE-IOS")
@@ -359,7 +359,7 @@ Task("SAMPLE-IOS")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", target: "Run");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS.csproj", target: "Run");
     });
 
 Task("SAMPLE-MAC")
@@ -368,7 +368,7 @@ Task("SAMPLE-MAC")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj",  target: "Run");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst.csproj",  target: "Run");
     });
 
 

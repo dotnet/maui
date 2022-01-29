@@ -28,12 +28,12 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(MauiPlatformName)' == '' ">
-    <ProjectReference Include="../../../src/Controls/src/Core/Controls.Core-net6.csproj" />
-    <ProjectReference Include="../../../src/Controls/src/Xaml/Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="../../../src/Controls/src/Core.Design/Controls.Core.Design-net6.csproj" />
-    <ProjectReference Include="../../../src/Controls/src/Xaml.Design/Controls.Xaml.Design-net6.csproj" />
-    <ProjectReference Include="../../../src/Compatibility/Core/src/Compatibility-net6.csproj" />
-    <ProjectReference Include="../../../src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj" />
+    <ProjectReference Include="../../../src/Controls/src/Core/Controls.Core.csproj" />
+    <ProjectReference Include="../../../src/Controls/src/Xaml/Controls.Xaml.csproj" />
+    <ProjectReference Include="../../../src/Controls/src/Core.Design/Controls.Core.Design.csproj" />
+    <ProjectReference Include="../../../src/Controls/src/Xaml.Design/Controls.Xaml.Design.csproj" />
+    <ProjectReference Include="../../../src/Compatibility/Core/src/Compatibility.csproj" />
+    <ProjectReference Include="../../../src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
 
 </Project>
