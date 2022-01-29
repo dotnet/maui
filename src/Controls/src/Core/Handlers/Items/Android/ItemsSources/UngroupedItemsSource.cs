@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return null;
 		}
 
-		public (int, int) GetGroupAndIndex(int position)
+		public (int group, int index) GetGroupAndIndex(int position)
 		{
 			return (-1, -1);
 		}

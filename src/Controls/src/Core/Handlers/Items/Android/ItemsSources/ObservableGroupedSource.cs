@@ -410,7 +410,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return AdjustPositionForHeader(runningIndex + indexInGroup);
 		}
 
-		public (int, int) GetGroupAndIndex(int absolutePosition)
+		public (int group, int index) GetGroupAndIndex(int absolutePosition)
 		{
 			absolutePosition = AdjustIndexForHeader(absolutePosition);
 
