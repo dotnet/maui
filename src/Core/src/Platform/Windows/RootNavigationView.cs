@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -12,18 +13,18 @@ namespace Microsoft.Maui.Platform
 	public class RootNavigationView : MauiNavigationView
 	{
 		double _paneHeaderContentHeight;
-		UIElement? _headerControl;
+		WindowHeader? _headerControl;
 
 		internal event EventHandler? FlyoutPaneSizeChanged;
 		internal Size FlyoutPaneSize { get; private set; }
-		internal UIElement? HeaderControl 
+		internal WindowHeader? HeaderControl
 		{
-			get => _headerControl; 
+			get => _headerControl;
 			set
 			{
 				_headerControl = value;
 				UpdateTopNavAreaMargin();
-			} 
+			}
 		}
 
 		public RootNavigationView()
@@ -57,12 +58,24 @@ namespace Microsoft.Maui.Platform
 					TopNavArea.Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
 					Header = null;
 					PaneFooter = HeaderControl;
+
+					if (HeaderControl != null)
+					{
+						HeaderControl.ContentGrid.Margin = new UI.Xaml.Thickness(0, 0, 4, 0);
+						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Center;
+					}
 				}
-				else if(PaneFooter == HeaderControl)
+				else if (PaneFooter == HeaderControl || (Header == null && PaneFooter == null))
 				{
 					TopNavArea.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
 					PaneFooter = null;
 					Header = HeaderControl;
+
+					if (HeaderControl != null)
+					{
+						HeaderControl.ContentGrid.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
+						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Top;
+					}
 				}
 			}
 
@@ -78,6 +91,25 @@ namespace Microsoft.Maui.Platform
 			isBackButtonVisible.Mode = BindingMode.OneWay;
 			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
+
+			var HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
+
+			if (HeaderContent != null)
+			{
+				Binding visibilityBinding = new Binding();
+				visibilityBinding.Source = HeaderControl;
+				visibilityBinding.Path = new PropertyPath("Visibility");
+				visibilityBinding.Mode = BindingMode.OneWay;
+				visibilityBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+				BindingOperations.SetBinding(HeaderContent, ContentControl.VisibilityProperty, visibilityBinding);
+
+				Binding backgroundBinding = new Binding();
+				backgroundBinding.Source = HeaderControl;
+				backgroundBinding.Path = new PropertyPath("Background");
+				backgroundBinding.Mode = BindingMode.OneWay;
+				backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+				BindingOperations.SetBinding(HeaderContent, ContentControl.BackgroundProperty, backgroundBinding);
+			}
 		}
 
 		void PaneLengthPropertyChanged(DependencyObject sender, DependencyProperty dp)
@@ -112,20 +144,6 @@ namespace Microsoft.Maui.Platform
 			if (GetTemplateChild("ContentLeftPadding") is Grid g)
 				g.Visibility = UI.Xaml.Visibility.Collapsed;
 
-			var HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
-			Binding visibilityBinding = new Binding();
-			visibilityBinding.Source = this;
-			visibilityBinding.Path = new PropertyPath("Header.Visibility");
-			visibilityBinding.Mode = BindingMode.TwoWay;
-			visibilityBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-			BindingOperations.SetBinding(HeaderContent, VisibilityProperty, visibilityBinding);
-
-			Binding backgroundBinding = new Binding();
-			backgroundBinding.Source = this;
-			backgroundBinding.Path = new PropertyPath("Header.Background");
-			backgroundBinding.Mode = BindingMode.TwoWay;
-			backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-			BindingOperations.SetBinding(HeaderContent, BackgroundProperty, backgroundBinding);
 
 			if (HeaderControl != null)
 				UpdateHeaderPropertyBinding();

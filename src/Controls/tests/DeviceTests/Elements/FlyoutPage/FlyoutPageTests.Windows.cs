@@ -43,9 +43,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await CreateHandlerAndAddToWindow<WindowHandler>(new Window(flyoutPage), (handler) =>
+				await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
 				{
-					Assert.NotNull(((FlyoutViewHandler)flyoutPage.Handler).NativeView.PaneFooter);
+					Assert.NotNull(handler.NativeView.PaneFooter);
 					return Task.CompletedTask;
 				});
 			});
