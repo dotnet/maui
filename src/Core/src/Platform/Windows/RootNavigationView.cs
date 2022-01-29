@@ -65,10 +65,18 @@ namespace Microsoft.Maui.Platform
 						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Center;
 					}
 				}
-				else if (PaneFooter == HeaderControl || (Header == null && PaneFooter == null))
+				else if (PaneFooter == HeaderControl || Header == null)
 				{
 					TopNavArea.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
-					PaneFooter = null;
+
+					// We only null out the PaneFooter if we're moving the HeaderControl from the
+					// Footer to the Header. Which means we're popping off a TabbedPage and
+					// moving to a ContentPage
+					// If the RootView is a FlyoutPage then the Header will be part of the FlyoutPage
+					// And the PaneFooter will be the Flyout Content
+					if (PaneFooter == HeaderControl)
+						PaneFooter = null;
+
 					Header = HeaderControl;
 
 					if (HeaderControl != null)
