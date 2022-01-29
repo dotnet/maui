@@ -6,6 +6,7 @@
       "**/obj/**/*"
     ],
     "excludeSearchPatterns": [
+      "**/*.csx",
       "src/BlazorWebView/src/WindowsForms/Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
       "src/BlazorWebView/samples/BlazorWpfApp/BlazorWpfApp.csproj",
       "src/BlazorWebView/src/WindowsForms/Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
