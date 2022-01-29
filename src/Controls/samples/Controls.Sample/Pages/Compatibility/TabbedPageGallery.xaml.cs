@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample.Pages
 		void OnToggleTabBar(object sender, EventArgs e)
 		{
 			if ((this.BarBackground as SolidColorBrush)?.Color == SolidColorBrush.Purple.Color)
-				this.BarBackground = SolidColorBrush.Black;
+				this.BarBackground = null;
 			else
 				this.BarBackground = SolidColorBrush.Purple;
 		}
@@ -71,7 +71,7 @@ namespace Maui.Controls.Sample.Pages
 				this.BarTextColor = Colors.Green;
 		}
 
-		void OnToggleTabItemSelectedColor(object sender, EventArgs e)
+		void OnToggleTabItemUnSelectedColor(object sender, EventArgs e)
 		{
 			if (this.UnselectedTabColor == Colors.Blue)
 				this.UnselectedTabColor = null;
@@ -79,7 +79,7 @@ namespace Maui.Controls.Sample.Pages
 				this.UnselectedTabColor = Colors.Blue;
 		}
 
-		void OnToggleTabItemUnSelectedColor(object sender, EventArgs e)
+		void OnToggleTabItemSelectedColor(object sender, EventArgs e)
 		{
 			if (this.SelectedTabColor == Colors.Pink)
 				this.SelectedTabColor = null;

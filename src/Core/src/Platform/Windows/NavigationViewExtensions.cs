@@ -10,6 +10,30 @@ namespace Microsoft.Maui.Platform
 {
 	public static class NavigationViewExtensions
 	{
+		static IEnumerable<NavigationViewItem> GetNavigationViewItems(this MauiNavigationView navigationView)
+		{
+			if (navigationView.MenuItems?.Count > 0)
+			{
+				foreach (var menuItem in navigationView.MenuItems)
+				{
+					if (menuItem is NavigationViewItem item)
+						yield return item;
+				}
+			}
+			else if (navigationView.MenuItemsSource != null && navigationView.TopNavMenuItemsHost != null)
+			{
+				var itemCount = navigationView.TopNavMenuItemsHost.ItemsSourceView.Count;
+				for (int i = 0; i < itemCount; i++)
+				{
+					UI.Xaml.UIElement uIElement = navigationView.TopNavMenuItemsHost.TryGetElement(i);
+
+					if (uIElement is NavigationViewItem item)
+						yield return item;
+				}
+
+			}
+		}
+
 		public static void UpdateTopNavAreaBackground(this MauiNavigationView navigationView, Paint? paint)
 		{
 			// Background property is set via {ThemeResource NavigationViewTopPaneBackground} in the Control Template
@@ -28,49 +52,55 @@ namespace Microsoft.Maui.Platform
 				navigationView.Resources.Remove("TopNavigationViewItemForegroundPointerOver");
 				navigationView.Resources.Remove("TopNavigationViewItemForegroundPressed");
 				navigationView.Resources.Remove("TopNavigationViewItemForegroundDisabled");
+
+				foreach (var menuItem in navigationView.GetNavigationViewItems())
+				{
+					menuItem.ClearValue(NavigationViewItem.ForegroundProperty);
+				}
 			}
 			else
 			{
-				navigationView.Resources["TopNavigationViewItemForeground"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemForegroundPointerOver"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemForegroundPressed"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemForegroundDisabled"] = paint.ToNative();
-			}
+				var brush = paint.ToNative();
+				navigationView.Resources["TopNavigationViewItemForeground"] = brush;
+				navigationView.Resources["TopNavigationViewItemForegroundPointerOver"] = brush;
+				navigationView.Resources["TopNavigationViewItemForegroundPressed"] = brush;
+				navigationView.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
 
-			navigationView.TopNavArea?.UpdateLayout();
+				foreach (var menuItem in navigationView.GetNavigationViewItems())
+				{
+					menuItem.Foreground = brush;
+				}
+			}
 		}
 
-		public static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint)
+		public static void UpdateTopNavigationViewItemBackgroundUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			if (paint is null)
 			{
-				navigationView.Resources.Remove("TopNavigationViewItemForegroundSelected");
-				navigationView.Resources.Remove("TopNavigationViewItemForegroundSelectedPointerOver");
-				navigationView.Resources.Remove("TopNavigationViewItemForegroundSelectedPressed");
+				//navigationView.Resources.Remove("NavigationViewItemBackground");
+				//navigationView.Resources.Remove("TopNavigationViewItemBackgroundPointerOver");
+				//navigationView.Resources.Remove("TopNavigationViewItemBackgroundPressed");
+				foreach (var item in navigationView.GetNavigationViewItems())
+				{
+					if (item.IsSelected)
+						continue;
+
+					item.ClearValue(NavigationViewItem.BackgroundProperty);
+				}
 			}
 			else
 			{
-				navigationView.Resources["TopNavigationViewItemForegroundSelected"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemForegroundSelectedPointerOver"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemForegroundSelectedPressed"] = paint.ToNative();
-			}
+				var brush = paint.ToNative();
+				navigationView.Resources["NavigationViewItemBackground"] = brush;
+				navigationView.Resources["TopNavigationViewItemBackgroundPointerOver"] = brush;
+				navigationView.Resources["TopNavigationViewItemBackgroundPressed"] = brush;
+				foreach (var item in navigationView.GetNavigationViewItems())
+				{
+					if (item.IsSelected)
+						continue;
 
-			navigationView.TopNavArea?.UpdateLayout();
-		}
-
-		public static void UpdateTopNavigationViewItemBackgroundColor(this MauiNavigationView navigationView, Paint? paint)
-		{
-			if (paint is null)
-			{
-				navigationView.Resources.Remove("NavigationViewItemBackground");
-				navigationView.Resources.Remove("TopNavigationViewItemBackgroundPointerOver");
-				navigationView.Resources.Remove("TopNavigationViewItemBackgroundPressed");
-			}
-			else
-			{
-				navigationView.Resources["NavigationViewItemBackground"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemBackgroundPointerOver"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemBackgroundPressed"] = paint.ToNative();
+					item.Background = brush;
+				}
 			}
 		}
 
@@ -78,15 +108,39 @@ namespace Microsoft.Maui.Platform
 		{
 			if (paint is null)
 			{
-				navigationView.Resources.Remove("TopNavigationViewItemBackgroundSelected");
-				navigationView.Resources.Remove("TopNavigationViewItemBackgroundSelectedPointerOver");
-				navigationView.Resources.Remove("TopNavigationViewItemBackgroundSelectedPressed");
+				//navigationView.Resources.Remove("TopNavigationViewItemBackgroundSelected");
+				//navigationView.Resources.Remove("TopNavigationViewItemBackgroundSelectedPointerOver");
+				//navigationView.Resources.Remove("TopNavigationViewItemBackgroundSelectedPressed");
+
+				foreach (var item in navigationView.GetNavigationViewItems())
+				{
+					if (!item.IsSelected)
+						continue;
+
+					// We can't just clear the value because that will set the SelectedColor to what we set the 
+					// unselectedcolor to. NavigationViewItem doesn't have a property for UnselectedItem so there's just
+					// default and selected
+					item.SetApplicationResource("NavigationViewItemBackground", null);
+					item.SetApplicationResource("TopNavigationViewItemBackgroundPointerOver", null);
+					item.SetApplicationResource("TopNavigationViewItemBackgroundPressed", null);
+					item.ClearValue(NavigationViewItem.BackgroundProperty);
+					break;
+				}
 			}
 			else
 			{
-				navigationView.Resources["TopNavigationViewItemBackgroundSelected"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemBackgroundSelectedPointerOver"] = paint.ToNative();
-				navigationView.Resources["TopNavigationViewItemBackgroundSelectedPressed"] = paint.ToNative();
+				var brush = paint.ToNative();
+				navigationView.Resources["TopNavigationViewItemBackgroundSelected"] = brush;
+				navigationView.Resources["TopNavigationViewItemBackgroundSelectedPointerOver"] = brush;
+				navigationView.Resources["TopNavigationViewItemBackgroundSelectedPressed"] = brush;
+				foreach (var item in navigationView.GetNavigationViewItems())
+				{
+					if (!item.IsSelected)
+						continue;
+
+					item.Background = brush;
+					break;
+				}
 			}
 		}
 	}

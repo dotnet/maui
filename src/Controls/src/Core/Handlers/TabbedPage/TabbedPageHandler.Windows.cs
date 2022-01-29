@@ -159,6 +159,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			UpdateValue(nameof(TabbedPage.BarBackground));
 			UpdateValue(nameof(TabbedPage.ItemsSource));
+			UpdateValue(nameof(TabbedPage.BarTextColor));
+			UpdateValue(nameof(TabbedPage.SelectedTabColor));
+			UpdateValue(nameof(TabbedPage.UnselectedTabColor));
 
 			_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
 
@@ -239,12 +242,11 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapBarTextColor(TabbedPageHandler handler, TabbedPage view)
 		{
 			handler._navigationView?.UpdateTopNavigationViewItemTextColor(view.BarTextColor?.AsPaint());
-			handler._navigationView?.UpdateTopNavigationViewItemTextSelectedColor(view.BarTextColor?.AsPaint());
 		}
 
 		public static void MapUnselectedTabColor(TabbedPageHandler handler, TabbedPage view)
 		{
-			handler._navigationView?.UpdateTopNavigationViewItemBackgroundColor(view.UnselectedTabColor?.AsPaint());
+			handler._navigationView?.UpdateTopNavigationViewItemBackgroundUnselectedColor(view.UnselectedTabColor?.AsPaint());
 		}
 
 		public static void MapSelectedTabColor(TabbedPageHandler handler, TabbedPage view)
@@ -255,7 +257,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapItemsSource(TabbedPageHandler handler, TabbedPage view)
 		{
 			if (handler._navigationView != null)
+			{
 				handler._navigationView.MenuItemsSource = handler.VirtualView.Children;
+			}
 		}
 
 		public static void MapItemTemplate(TabbedPageHandler handler, TabbedPage view)
