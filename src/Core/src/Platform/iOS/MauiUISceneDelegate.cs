@@ -9,10 +9,10 @@ namespace Microsoft.Maui
 	public class MauiUISceneDelegate : UIResponder, IUIWindowSceneDelegate
 	{
 		[Export("window")]
-		public UIWindow? Window { get; set; }
+		public virtual UIWindow? Window { get; set; }
 
 		[Export("scene:willConnectToSession:options:")]
-		public void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
+		public virtual void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
 
@@ -23,13 +23,13 @@ namespace Microsoft.Maui
 		}
 
 		[Export("sceneDidDisconnect:")]
-		public void DidDisconnect(UIScene scene)
+		public virtual void DidDisconnect(UIScene scene)
 		{
 			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
 		}
 
 		[Export("stateRestorationActivityForScene:")]
-		public NSUserActivity? GetStateRestorationActivity(UIScene scene)
+		public virtual NSUserActivity? GetStateRestorationActivity(UIScene scene)
 		{
 			var window = Window.GetWindow();
 			if (window is null)

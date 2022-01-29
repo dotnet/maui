@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 		protected abstract MauiApp CreateMauiApp();
 
 		[Export("application:willFinishLaunchingWithOptions:")]
-		public bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
+		public virtual bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var mauiApp = CreateMauiApp();
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 		}
 
 		[Export("application:didFinishLaunchingWithOptions:")]
-		public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+		public virtual bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			Application = Services.GetRequiredService<IApplication>();
 
@@ -65,17 +65,17 @@ namespace Microsoft.Maui
 		}
 
 		[Export("application:configurationForConnectingSceneSession:options:")]
-		public UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
+		public virtual UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
 			=> new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
 
 		[Export("application:performActionForShortcutItem:completionHandler:")]
-		public void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+		public virtual void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
 		{
 			Services?.InvokeLifecycleEvents<iOSLifecycle.PerformActionForShortcutItem>(del => del(application, shortcutItem, completionHandler));
 		}
 
 		[Export("application:openURL:options:")]
-		public bool OpenUrl(UIApplication application, NSUrl url, NSDictionary options)
+		public virtual bool OpenUrl(UIApplication application, NSUrl url, NSDictionary options)
 		{
 			var wasHandled = false;
 
@@ -88,7 +88,7 @@ namespace Microsoft.Maui
 		}
 
 		[Export("application:continueUserActivity:restorationHandler:")]
-		public bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+		public virtual bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
 		{
 			var wasHandled = false;
 
@@ -101,31 +101,31 @@ namespace Microsoft.Maui
 		}
 
 		[Export("applicationDidBecomeActive:")]
-		public void OnActivated(UIApplication application)
+		public virtual void OnActivated(UIApplication application)
 		{
 			Services?.InvokeLifecycleEvents<iOSLifecycle.OnActivated>(del => del(application));
 		}
 
 		[Export("applicationWillResignActive:")]
-		public void OnResignActivation(UIApplication application)
+		public virtual void OnResignActivation(UIApplication application)
 		{
 			Services?.InvokeLifecycleEvents<iOSLifecycle.OnResignActivation>(del => del(application));
 		}
 
 		[Export("applicationWillTerminate:")]
-		public void WillTerminate(UIApplication application)
+		public virtual void WillTerminate(UIApplication application)
 		{
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
 		}
 
 		[Export("applicationDidEnterBackground:")]
-		public void DidEnterBackground(UIApplication application)
+		public virtual void DidEnterBackground(UIApplication application)
 		{
 			Services?.InvokeLifecycleEvents<iOSLifecycle.DidEnterBackground>(del => del(application));
 		}
 
 		[Export("applicationWillEnterForeground:")]
-		public void WillEnterForeground(UIApplication application)
+		public virtual void WillEnterForeground(UIApplication application)
 		{
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
 		}
@@ -133,7 +133,7 @@ namespace Microsoft.Maui
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
 
 		[Export("window")]
-		public UIWindow? Window { get; set; }
+		public virtual UIWindow? Window { get; set; }
 
 		public IServiceProvider Services { get; protected set; } = null!;
 
