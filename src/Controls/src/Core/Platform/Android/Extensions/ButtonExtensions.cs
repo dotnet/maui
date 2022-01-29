@@ -2,6 +2,7 @@ using System;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
 using static Microsoft.Maui.Controls.Button;
 
@@ -9,6 +10,16 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
+		public static void UpdateText(this MaterialButton nativeButton, Button button)
+		{
+			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
+			nativeButton.Text = text;
+
+			// Content layout depends on whether or not the text is empty; changing the text means
+			// we may need to update the content layout
+			nativeButton.UpdateContentLayout(button);
+		}
+
 		public static void UpdateContentLayout(this MaterialButton materialButton, Button button)
 		{
 			var context = materialButton.Context;

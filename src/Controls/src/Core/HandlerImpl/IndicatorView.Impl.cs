@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="Type[@FullName='Microsoft.Maui.Controls.IndicatorView']/Docs" />
 	public partial class IndicatorView : ITemplatedIndicatorView
 	{
 		Paint IIndicatorView.IndicatorColor => IndicatorColor?.AsPaint();

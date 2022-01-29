@@ -97,5 +97,18 @@ namespace Microsoft.Maui.Platform
 				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToNative(), UIControlState.Disabled);
 			}
 		}
+
+		public static void UpdateIsTextPredictionEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
+		{
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return;
+
+			if (searchBar.IsTextPredictionEnabled)
+				textField.AutocorrectionType = UITextAutocorrectionType.Yes;
+			else
+				textField.AutocorrectionType = UITextAutocorrectionType.No;
+		}
 	}
 }

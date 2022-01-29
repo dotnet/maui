@@ -33,4 +33,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-4.final" PrivateAssets="All" />
   </ItemGroup>
 
+  <Target Name="_CopyToNuspecDir" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MauiNuSpecDirectory)" ContinueOnError="true" Retries="0" />
+  </Target>
+
 </Project>

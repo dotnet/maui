@@ -1,5 +1,6 @@
 using Android.OS;
 using AndroidX.AppCompat.App;
+using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui

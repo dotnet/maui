@@ -23,12 +23,11 @@ namespace Microsoft.Maui.Graphics
 
 		bool _disposed;
 
+		ARect? _bounds;
 		int _width;
 		int _height;
 
 		Path? _clipPath;
-		Path? _maskPath;
-		APaint? _maskPaint;
 		APaint? _borderPaint;
 
 		IShape? _shape;
@@ -60,6 +59,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBackgroundColor(AColor? backgroundColor)
 		{
+			if (_backgroundColor == backgroundColor)
+				return;
+
 			_backgroundColor = backgroundColor;
 
 			InvalidateSelf();
@@ -98,6 +100,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBackground(LinearGradientPaint linearGradientPaint)
 		{
+			if (_background == linearGradientPaint)
+				return;
+
 			_invalidatePath = true;
 
 			_backgroundColor = null;
@@ -109,6 +114,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBackground(RadialGradientPaint radialGradientPaint)
 		{
+			if (_background == radialGradientPaint)
+				return;
+
 			_invalidatePath = true;
 
 			_backgroundColor = null;
@@ -130,6 +138,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderShape(IShape? shape)
 		{
+			if (_shape == shape)
+				return;
+
 			_invalidatePath = true;
 
 			_shape = shape;
@@ -140,6 +151,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderColor(AColor? borderColor)
 		{
+			if (_borderColor == borderColor)
+				return;
+
 			_borderColor = borderColor;
 
 			InvalidateSelf();
@@ -178,6 +192,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderBrush(LinearGradientPaint linearGradientPaint)
 		{
+			if (_stroke == linearGradientPaint)
+				return;
+
 			_invalidatePath = true;
 
 			_borderColor = null;
@@ -189,6 +206,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderBrush(RadialGradientPaint radialGradientPaint)
 		{
+			if (_stroke == radialGradientPaint)
+				return;
+
 			_invalidatePath = true;
 
 			_borderColor = null;
@@ -210,9 +230,14 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderWidth(double strokeWidth)
 		{
+			float strokeThickness = (float)(strokeWidth * _density);
+
+			if (_strokeThickness == strokeThickness)
+				return;
+
 			_invalidatePath = true;
 
-			_strokeThickness = (float)(strokeWidth * _density);
+			_strokeThickness = strokeThickness;
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -238,6 +263,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderMiterLimit(float strokeMiterLimit)
 		{
+			if (_strokeMiterLimit == strokeMiterLimit)
+				return;
+
 			_strokeMiterLimit = strokeMiterLimit;
 
 			InvalidateSelf();
@@ -259,6 +287,9 @@ namespace Microsoft.Maui.Graphics
 					aLineJoin = Join.Round;
 					break;
 			}
+
+			if (_strokeLineJoin == aLineJoin)
+				return;
 
 			_strokeLineJoin = aLineJoin;
 
@@ -282,6 +313,9 @@ namespace Microsoft.Maui.Graphics
 					break;
 			}
 
+			if (_strokeLineCap == aLineCap)
+				return;
+
 			_strokeLineCap = aLineCap;
 
 			InvalidateSelf();
@@ -289,18 +323,23 @@ namespace Microsoft.Maui.Graphics
 
 		protected override void OnBoundsChange(ARect? bounds)
 		{
-			if (bounds != null)
+			if (_bounds != bounds)
 			{
-				var width = bounds.Width();
-				var height = bounds.Height();
+				_bounds = bounds;
 
-				if (_width == width && _height == height)
-					return;
+				if (_bounds != null)
+				{
+					var width = _bounds.Width();
+					var height = _bounds.Height();
 
-				_invalidatePath = true;
+					if (_width == width && _height == height)
+						return;
 
-				_width = width;
-				_height = height;
+					_invalidatePath = true;
+
+					_width = width;
+					_height = height;
+				}
 			}
 
 			base.OnBoundsChange(bounds);
@@ -352,13 +391,6 @@ namespace Microsoft.Maui.Graphics
 						{
 							_clipPath.Reset();
 							_clipPath.Set(clipPath);
-
-							if (_maskPath != null && HasBorder())
-							{
-								_maskPath.Reset();
-								_maskPath.AddRect(0, 0, _width, _height, Path.Direction.Cw!);
-								_maskPath.InvokeOp(_clipPath, Path.Op.Difference!);
-							}
 						}
 					}
 				}
@@ -373,9 +405,6 @@ namespace Microsoft.Maui.Graphics
 
 				if (_clipPath != null && _borderPaint != null)
 					canvas.DrawPath(_clipPath, _borderPaint);
-
-				if (_maskPath != null && _maskPaint != null)
-					canvas.DrawPath(_maskPath, _maskPaint);
 
 				canvas.RestoreToCount(saveCount);
 			}
@@ -419,19 +448,6 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (disposing)
 			{
-				if (_maskPath != null)
-				{
-					_maskPath.Dispose();
-					_maskPath = null;
-				}
-
-				if (_maskPaint != null)
-				{
-					_maskPaint.SetXfermode(null);
-					_maskPaint.Dispose();
-					_maskPaint = null;
-				}
-
 				if (_borderPaint != null)
 				{
 					_borderPaint.Dispose();
@@ -453,18 +469,6 @@ namespace Microsoft.Maui.Graphics
 			{
 				DisposeBorder(true);
 				return;
-			}
-
-			if (_maskPath == null)
-				_maskPath = new Path();
-
-			if (_maskPaint == null)
-			{
-				_maskPaint = new APaint(PaintFlags.AntiAlias);
-				_maskPaint.SetStyle(APaint.Style.FillAndStroke);
-
-				PorterDuffXfermode porterDuffClearMode = new PorterDuffXfermode(PorterDuff.Mode.Clear);
-				_maskPaint.SetXfermode(porterDuffClearMode);
 			}
 
 			if (_borderPaint == null)

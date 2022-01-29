@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Permissions']/Docs" />
 	public static partial class Permissions
 	{
 		public partial class BasePlatformPermission : BasePermission
@@ -19,7 +20,8 @@ namespace Microsoft.Maui.Essentials
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
 
-		public partial class Battery : BasePlatformPermission
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
+	public partial class Battery : BasePlatformPermission
 		{
 		}
 
@@ -43,7 +45,8 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
-		public partial class Flashlight : BasePlatformPermission
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
+	public partial class Flashlight : BasePlatformPermission
 		{
 		}
 
@@ -91,7 +94,8 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
-		public partial class Sms : BasePlatformPermission
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
+	public partial class Sms : BasePlatformPermission
 		{
 		}
 

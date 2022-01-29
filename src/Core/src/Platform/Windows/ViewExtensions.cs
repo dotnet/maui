@@ -74,13 +74,20 @@ namespace Microsoft.Maui.Platform
 				wrapper.Shadow = view.Shadow;
 			}
 		}
-		
+
+		public static void UpdateBorder(this FrameworkElement nativeView, IView view)
+		{
+			var border = (view as IBorder)?.Border;
+			if (nativeView is WrapperView wrapperView)
+				wrapperView.Border = border;
+		}
+
 		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 		}
 
-		public static void UpdateBackground(this ContentPanel nativeView, IBorder border) 
+		public static void UpdateBackground(this ContentPanel nativeView, IBorderStroke border) 
 		{
 			var hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -88,9 +95,9 @@ namespace Microsoft.Maui.Platform
 			{
 				nativeView?.UpdateBorderBackground(border);
 			}
-			else
+			else if(border is IView v)
 			{
-				nativeView?.UpdateNativeViewBackground(border);
+				nativeView?.UpdateNativeViewBackground(v);
 			}
 		}
 
@@ -197,14 +204,16 @@ namespace Microsoft.Maui.Platform
 			nativeView.MaxWidth = view.MaximumWidth;
 		}
 
-		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IView view)
+		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IBorderStroke border)
 		{
-			(nativeView as ContentPanel)?.UpdateBackground(view.Background);
+
+			if(border is IView v)
+			(nativeView as ContentPanel)?.UpdateBackground(v.Background);
 
 			if (nativeView is Control control)
 				control.UpdateBackground((Paint?)null);
-			else if (nativeView is Border border)
-				border.UpdateBackground(null);
+			else if (nativeView is Border b)
+				b.UpdateBackground(null);
 			else if (nativeView is Panel panel)
 				panel.UpdateBackground(null);
 		}
@@ -223,7 +232,7 @@ namespace Microsoft.Maui.Platform
 
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
-			var nativeView = view?.GetNative(true);
+			var nativeView = view?.ToNative();
 			if (nativeView == null)
 				return null;
 
@@ -232,7 +241,7 @@ namespace Microsoft.Maui.Platform
 
 		public static async Task<byte[]?> RenderAsJPEG(this IView view)
 		{
-			var nativeView = view?.GetNative(true);
+			var nativeView = view?.ToNative();
 			if (nativeView == null)
 				return null;
 
@@ -245,7 +254,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.GetNative(true);
+			var nativeView = view?.ToNative();
 			if (nativeView == null)
 				return new Matrix4x4();
 			return GetViewTransform(nativeView);
@@ -272,7 +281,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Rectangle GetNativeViewBounds(this IView view)
 		{
-			var nativeView = view?.GetNative(true);
+			var nativeView = view?.ToNative();
 			if (nativeView != null)
 				return nativeView.GetNativeViewBounds();
 			return new Rectangle();
@@ -292,7 +301,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
-			=> view.GetNative(true).GetBoundingBox();
+			=> view.ToNative().GetBoundingBox();
 
 		internal static Graphics.Rectangle GetBoundingBox(this FrameworkElement? nativeView)
 		{

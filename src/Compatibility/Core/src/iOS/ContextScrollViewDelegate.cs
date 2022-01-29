@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[Obsolete]
 	internal class ContextScrollViewDelegate : UIScrollViewDelegate
 	{
 		readonly nfloat _finalButtonSize;

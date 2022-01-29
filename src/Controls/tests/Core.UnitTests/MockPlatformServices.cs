@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch (size)
 			{
 				case NamedSize.Default:
-					return 10;
+					return new MockFontManager().DefaultFontSize;
 				case NamedSize.Micro:
 					return 4;
 				case NamedSize.Small:

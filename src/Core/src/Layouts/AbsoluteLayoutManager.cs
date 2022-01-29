@@ -93,7 +93,10 @@ namespace Microsoft.Maui.Layouts
 					destination.Y = (availableHeight - destination.Height) * destination.Y;
 				}
 
-				child.Arrange(destination.Offset(left, top));
+				destination.X += left;
+				destination.Y += top;
+
+				child.Arrange(destination);
 			}
 
 			return new Size(availableWidth, availableHeight);

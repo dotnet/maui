@@ -6,6 +6,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="Type[@FullName='Microsoft.Maui.Controls.RefreshView']/Docs" />
 	public partial class RefreshView : IRefreshView
 	{
 		Paint IRefreshView.RefreshColor => RefreshColor.AsPaint();

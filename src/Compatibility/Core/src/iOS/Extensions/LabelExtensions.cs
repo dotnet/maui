@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			layoutManager.CharacterRangeForGlyphRange(characterRange, out glyphRange);
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
-			return layoutManager.BoundingRectForGlyphRange(glyphRange, textContainer);
+			return layoutManager.GetBoundingRect(glyphRange, textContainer);
 		}
 
 		static double FindDefaultLineHeight(this NativeLabel control, int start, int length)

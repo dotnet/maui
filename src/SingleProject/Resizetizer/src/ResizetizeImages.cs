@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	public class ResizetizeImages : MauiAsyncTask, ILogger
 	{
+		internal bool AllowVectorAdaptiveIcons = false;
+
 		[Required]
 		public string PlatformType { get; set; } = "android";
 
@@ -128,7 +130,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				appIconName = appIconName.ToLowerInvariant();
 
-				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, this);
+				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, this, AllowVectorAdaptiveIcons);
 				var iconsGenerated = adaptiveIconGen.Generate();
 
 				foreach (var iconGenerated in iconsGenerated)

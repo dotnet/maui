@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 			if (scrollBar == null)
 				return;
 
-			var nativeScroll = scrollBar.GetNative(true);
+			var nativeScroll = scrollBar.ToNative();
 
 			if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
 			{

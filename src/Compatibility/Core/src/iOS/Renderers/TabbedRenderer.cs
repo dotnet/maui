@@ -412,9 +412,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 				tabBarTextColor = barTextColor.ToUIColor();
 
-
-			var attributes = new UITextAttributes();
-			attributes.TextColor = tabBarTextColor;
+			var attributes = new UIStringAttributes();
+			attributes.ForegroundColor = tabBarTextColor;
 
 			foreach (UITabBarItem item in TabBar.Items)
 			{

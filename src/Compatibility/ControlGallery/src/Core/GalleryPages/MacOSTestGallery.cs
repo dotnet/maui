@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			return mdp;
 		}
 
-		public static CarouselPage MacDemoCarouselPage()
+		internal static CarouselPage MacDemoCarouselPage()
 		{
 
 			var carouselPage = new CarouselPage { BackgroundColor = Colors.Yellow };

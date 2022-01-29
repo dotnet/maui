@@ -4,11 +4,14 @@ using System.Collections.Generic;
 namespace Microsoft.Maui.Controls
 {
 
+	/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplatedPage']/Docs" />
 	public class TemplatedPage : Page, IControlTemplated
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedPage.xml" path="//Member[@MemberName='ControlTemplateProperty']/Docs" />
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedPage), null,
 			propertyChanged: TemplateUtilities.OnControlTemplateChanged);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedPage.xml" path="//Member[@MemberName='ControlTemplate']/Docs" />
 		public ControlTemplate ControlTemplate
 		{
 			get { return (ControlTemplate)GetValue(ControlTemplateProperty); }

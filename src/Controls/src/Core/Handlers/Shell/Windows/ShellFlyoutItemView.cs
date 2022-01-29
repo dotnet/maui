@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (this.ActualWidth > request.Width)
 				request.Width = this.ActualWidth;
 
-			Compatibility.Layout.LayoutChildIntoBoundingRegion(_content, new Rectangle(0, 0, request.Width, request.Height));
+			Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_content, new Rectangle(0, 0, request.Width, request.Height));
 			Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
 		}
 
