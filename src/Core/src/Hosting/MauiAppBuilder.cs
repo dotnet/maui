@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureAnimations();
 				this.ConfigureCrossPlatformLifecycleEvents();
 				this.ConfigureDispatching();
-				
+
 				this.UseEssentials();
 			}
 		}

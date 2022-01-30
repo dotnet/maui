@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public static class Windows
 		{
-			public const string OutputPath = "Assets";
+			public const string OutputPath = "";
 
 			public static DpiPath Original =>
 				new DpiPath(OutputPath, 1.0m, null, ".scale-100");

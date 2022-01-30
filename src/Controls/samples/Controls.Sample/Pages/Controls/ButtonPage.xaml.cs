@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			Debug.WriteLine("Clicked");
 		}
-		
+
 		void OnPositionChange(object sender, System.EventArgs e)
 		{
 			var newPosition = ((int)positionChange.ContentLayout.Position) + 1;

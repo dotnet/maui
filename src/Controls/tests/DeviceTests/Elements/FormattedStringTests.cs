@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				result = spannable.ToString();
 #elif WINDOWS
-				var runs = formattedString.ToRuns();
+				var runs = formattedString.ToRuns(fontManager: fontManager);
 
 				foreach (var r in runs)
 					result += r.Text;

@@ -142,16 +142,16 @@ namespace Microsoft.Maui.Controls
 		struct Subscription
 		{
 			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public Subscription(WeakReference? subscriber, MethodInfo handler)
+			public Subscription(WeakReference? subscriber, MethodInfo handler)
 			{
 				Subscriber = subscriber;
 				Handler = handler ?? throw new ArgumentNullException(nameof(handler));
 			}
 
 			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='Subscriber']/Docs" />
-		public readonly WeakReference? Subscriber;
+			public readonly WeakReference? Subscriber;
 			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='Handler']/Docs" />
-		public readonly MethodInfo Handler;
+			public readonly MethodInfo Handler;
 		}
 	}
 }

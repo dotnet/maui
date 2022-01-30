@@ -8,13 +8,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public enum RefreshPullDirection
 		{
 			/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='LeftToRight']/Docs" />
-		LeftToRight,
+			LeftToRight,
 			/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='TopToBottom']/Docs" />
-		TopToBottom,
+			TopToBottom,
 			/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='RightToLeft']/Docs" />
-		RightToLeft,
+			RightToLeft,
 			/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='BottomToTop']/Docs" />
-		BottomToTop
+			BottomToTop
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='RefreshPullDirectionProperty']/Docs" />

@@ -1,14 +1,4 @@
 <Project>
-  <PropertyGroup>
-    <_UseNet6Packages Condition=" '$(TargetFramework.Contains(net6.0))' == 'true' or '$(PackageType)' == 'DotnetPlatform' ">true</_UseNet6Packages>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
-    <SystemCodeDomPackageVersion>4.7.0</SystemCodeDomPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
-    <!-- Debugger workaround -->
-    <MtouchExtraArgs>$(MtouchExtraArgs) --setenv:MONO_THREADS_SUSPEND=preemptive</MtouchExtraArgs>
-  </PropertyGroup>
   <ItemGroup>
     <PackageReference
         Update="Microsoft.Maui.Graphics"

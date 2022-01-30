@@ -7,7 +7,7 @@ using Microsoft.Maui.Hosting;
 using NativeApplication = Microsoft.UI.Xaml.Application;
 using NativeWindow = Microsoft.UI.Xaml.Window;
 #elif __IOS__ || __MACCATALYST__
-using NativeApplication = UIKit.UIApplicationDelegate;
+using NativeApplication = UIKit.IUIApplicationDelegate;
 using NativeWindow = UIKit.UIWindow;
 #elif __ANDROID__
 using NativeApplication = Android.App.Application;
