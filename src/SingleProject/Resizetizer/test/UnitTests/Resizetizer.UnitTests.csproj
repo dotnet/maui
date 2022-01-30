@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Microsoft.Maui.Resizetizer.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
     <DefineConstants Condition="'$(OS)' == 'Windows_NT'">$(DefineConstants);WINDOWS</DefineConstants>

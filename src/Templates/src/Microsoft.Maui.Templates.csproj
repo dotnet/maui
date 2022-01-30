@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
     <Title>.NET MAUI Templates</Title>

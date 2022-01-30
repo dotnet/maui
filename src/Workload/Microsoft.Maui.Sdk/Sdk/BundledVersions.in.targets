@@ -17,7 +17,7 @@
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
-        TargetFramework="net6.0"
+        TargetFramework="net$(_MauiDotNetVersion)"
         RuntimeFrameworkName="Microsoft.Maui.Core"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
@@ -31,7 +31,7 @@
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' "
         Include="Microsoft.Maui.Controls"
-        TargetFramework="net6.0"
+        TargetFramework="net$(_MauiDotNetVersion)"
         RuntimeFrameworkName="Microsoft.Maui.Controls"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
@@ -45,7 +45,7 @@
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
         Include="Microsoft.Maui.Essentials"
-        TargetFramework="net6.0"
+        TargetFramework="net$(_MauiDotNetVersion)"
         RuntimeFrameworkName="Microsoft.Maui.Essentials"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm)-ios;$(_MauiDotNetTfm)-maccatalyst</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.Maps.iOS</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.iOS</RootNamespace>
     <IsPackable>false</IsPackable>
