@@ -5,7 +5,7 @@
     <Compile Remove="**\iOS\**\*.cs" />
     <None Include="**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsmacOS)' == 'True' ">
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsmacOS)' != 'True' ">
     <Compile Remove="**\*.Mac.cs" />
     <None Include="**\*.Mac.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Remove="**\Mac\**\*.cs" />
@@ -17,7 +17,7 @@
     <Compile Remove="**\MaciOS\**\*.cs" />
     <None Include="**\MaciOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' != 'True' ">
     <Compile Remove="**\**\*.Android.cs" />
     <None Include="**\**\*.Android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Remove="**\Android\**\*.cs" />
