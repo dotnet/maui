@@ -49,6 +49,7 @@
 
   <!-- Removals -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
+    <_MauiCompileBeforeRemove Include="@(Compile)" />
     <Compile Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
     <!-- Explicitly include the platform code -->
     <Compile
@@ -63,6 +64,7 @@
     <Compile
         Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' "
         Include="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <None Include="@(_MauiCompileBeforeRemove)" Exclude="@(Compile)" />
 
     <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
     <_MauiXamlToRemove
@@ -72,6 +74,7 @@
     <MauiXaml Remove="@(_MauiXamlToRemove)" />
     <None Include="@(_MauiXamlToRemove)" />
     <_MauiXamlToRemove Remove="@(_MauiXamlToRemove)" />
+    <_MauiCompileBeforeRemove Remove="@(_MauiCompileBeforeRemove)" />
   </ItemGroup>
 
   <!-- IDE capabilities -->
