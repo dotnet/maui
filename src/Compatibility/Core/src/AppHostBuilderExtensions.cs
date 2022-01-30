@@ -59,13 +59,23 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
+#if ANDROID || IOS || WINDOWS
+			// initialize compatibility DependencyService
+			DependencyService.SetToInitialized();
+			DependencyService.Register<Xaml.ResourcesLoader>();
+			DependencyService.Register<NativeBindingService>();
+			DependencyService.Register<NativeValueConverterService>();
+			DependencyService.Register<Deserializer>();
+			DependencyService.Register<ResourcesProvider>();
+			DependencyService.Register<Xaml.ValueConverterProvider>();
+#endif
+
 			builder.ConfigureCompatibilityLifecycleEvents();
 			builder.ConfigureImageSourceHandlers();
 			builder
 				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddMauiControlsHandlers();
-					DependencyService.SetToInitialized();
 
 #if ANDROID || IOS || WINDOWS
 					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
@@ -77,7 +87,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
 					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
 					handlers.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
-          
+
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
@@ -123,18 +133,8 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(RefreshView), typeof(RefreshViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
 
-
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.RelativeLayout), typeof(DefaultRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.AbsoluteLayout), typeof(DefaultRenderer));
-
-					// This is for Layouts that currently don't work when assigned to LayoutHandler
-
-					DependencyService.Register<Xaml.ResourcesLoader>();
-					DependencyService.Register<NativeBindingService>();
-					DependencyService.Register<NativeValueConverterService>();
-					DependencyService.Register<Deserializer>();
-					DependencyService.Register<ResourcesProvider>();
-					DependencyService.Register<Xaml.ValueConverterProvider>();
 
 					// Shimmed renderers go directly to the registrar to load Image Handlers
 					Internals.Registrar.Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
@@ -142,7 +142,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					Internals.Registrar.Registered.Register(typeof(UriImageSource), typeof(ImageLoaderSourceHandler));
 					Internals.Registrar.Registered.Register(typeof(FontImageSource), typeof(FontImageSourceHandler));
 					Internals.Registrar.Registered.Register(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader));
-
 #endif
 
 #if __IOS__ || MACCATALYST
