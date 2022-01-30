@@ -88,21 +88,31 @@ namespace Microsoft.Maui.DeviceTests
 
 				WFrameworkElement frameworkElement = null;
 				var content = (WPanel)MauiContext.Services.GetService<WWindow>().Content;
+				THandler handler = null;
+				NavigationRootManager navigationRootManager = null;
 				try
 				{
 					var mauiContext = MauiContext.MakeScoped(true);
-					var handler = CreateHandler<THandler>(view, mauiContext);
+					navigationRootManager = mauiContext
+						.GetNavigationRootManager();
+
+					navigationRootManager.Connect((IView)view);
+
+					handler = (THandler)view.Handler;
 					frameworkElement = (WFrameworkElement)handler.NativeView;
-					content.Children.Add(frameworkElement);
+					content.Children.Add(navigationRootManager.RootView);
 					await frameworkElement.LoadedAsync();
 					await Task.Delay(10);
 					await action(handler);
 				}
 				finally
 				{
+					handler?.DisconnectHandler();
+					navigationRootManager?.Disconnect();
+
 					if (frameworkElement != null)
 					{
-						content.Children.Remove(frameworkElement);
+						content.Children.Remove(navigationRootManager.RootView);
 						await frameworkElement.UnloadedAsync();
 						await Task.Delay(10);
 					}

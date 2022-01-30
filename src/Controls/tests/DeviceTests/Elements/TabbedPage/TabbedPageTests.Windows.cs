@@ -28,16 +28,46 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedPageHandler));
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandler));
 					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
+			});
+		}
+
+		[Fact(DisplayName = "Header Visible When Pushing To TabbedPage")]
+		public async Task HeaderVisibleWhenPushingToTabbedPage()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+
+			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), async (handler) =>
+			{
+				await navPage.PushAsync(CreateBasicTabbedPage());
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var header = (WFrameworkElement)navView.PaneFooter;
+				Assert.NotNull(header);
+				Assert.True(header.ActualHeight > 0);
+				Assert.True(header.ActualWidth > 0);
+				await navPage.PopAsync();
+				header = (WFrameworkElement)navView.Header;
+				Assert.NotNull(header);
+				Assert.True(header.ActualHeight > 0);
+				Assert.True(header.ActualWidth > 0);
+				await navPage.PushAsync(CreateBasicTabbedPage());
+				header = (WFrameworkElement)navView.PaneFooter;
+				Assert.NotNull(header);
+				Assert.True(header.ActualHeight > 0);
+				Assert.True(header.ActualWidth > 0);
 			});
 		}
 
 		[Fact(DisplayName = "TabbedPage Disconnects")]
 		public async Task TabbedPageHandlerDisconnects()
 		{
+			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage();
 
 			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, (handler) =>
@@ -93,6 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return new TabbedPage()
 			{
+				Title = "Tabbed Page",
 				Children =
 					{
 						new ContentPage()
