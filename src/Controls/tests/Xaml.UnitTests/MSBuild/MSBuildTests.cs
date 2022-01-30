@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				}";
 		}
 
-		string GetTfm()
+		static string GetTfm()
 		{
 			// Returns something like `.NET 6.0.1`
 			var fd = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
@@ -63,8 +63,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				return $"net{version.Major}.{version.Minor}";
 			return "net6.0";
 		}
-
-		string TargetFramework = GetTfm();
 
 		string testDirectory;
 		string tempDirectory;
@@ -75,7 +73,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			testDirectory = TestContext.CurrentContext.TestDirectory;
 			tempDirectory = IOPath.Combine(testDirectory, "temp", TestContext.CurrentContext.Test.Name);
-			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", TargetFramework);
+			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", GetTfm());
 			Directory.CreateDirectory(tempDirectory);
 
 			//copy _Directory.Build.[props|targets] in test/
@@ -144,7 +142,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			var propertyGroup = NewElement("PropertyGroup");
 			project.WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			propertyGroup.Add(NewElement("TargetFramework").WithValue(TargetFramework));
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
 			//NOTE: we don't want SDK-style projects to auto-add files, tests should be able to control this
 			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("False"));
 			propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("False"));
