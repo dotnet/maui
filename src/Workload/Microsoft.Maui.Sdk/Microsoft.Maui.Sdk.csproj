@@ -62,7 +62,7 @@
         NewValue="$(PackageReferenceVersion)"
     />
     <ReplaceText
-        Input="Sdk/BundledVersions.in.targets"
+        Input="Sdk/BundledVersions.targets"
         Output="$(IntermediateOutputPath)BundledVersions.targets"
         OldValue="@TFM@"
         NewValue="$(_MauiDotNetTfm)"
