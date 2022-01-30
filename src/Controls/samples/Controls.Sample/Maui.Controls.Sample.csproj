@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <SingleProject>true</SingleProject>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
@@ -13,7 +13,7 @@
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' == '$(_MauiDotNetTfm)'">
     <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
   </PropertyGroup>
 
@@ -39,11 +39,11 @@
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
-    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
