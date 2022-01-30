@@ -3,6 +3,6 @@
 
 ### New Rules
 
-Rule ID    | Category | Severity | Notes
------------|----------|----------|--------------------
-MAUIG1001  | XamlParsing |  Error   | XamlParsingFailed
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+MAUIG1001 | XamlParsing | Error | XamlParsingFailed
