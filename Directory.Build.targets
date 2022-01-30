@@ -32,7 +32,13 @@
     <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>21.0</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
+
+  <!-- 
+    NOTE: The Contains('-windows10') is a bit of a hack 
+    because we don't want to set these properties for WPF projects...
+    There's probably a better way we should find to infer this
+  -->
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True' AND $(TargetFramework.Contains('-windows10'))">
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
