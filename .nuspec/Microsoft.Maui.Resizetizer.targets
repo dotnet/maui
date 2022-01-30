@@ -62,6 +62,15 @@
         <_MauiIntermediateDrawable>$(_MauiIntermediateSplashScreen)maui_splash_image.xml</_MauiIntermediateDrawable>
         <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
 
+        <_ResizetizerPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_ResizetizerTargetPlatformIdentifier>
+        <_ResizetizerNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_ResizetizerNoTargetPlatform>
+        <_ResizetizerPlatformIsAndroid Condition="'$(_MauiTargetPlatformIdentifier)' == 'android'">True</_ResizetizerTargetPlatformIsAndroid>
+        <_ResizetizerPlatformIsiOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'ios'">True</_ResizetizerTargetPlatformIsiOS>
+        <_ResizetizerPlatformIsMacCatalyst Condition="'$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">True</_ResizetizerTargetPlatformIsMacCatalyst>
+        <_ResizetizerPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_ResizetizerTargetPlatformIsmacOS>
+        <_ResizetizerPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_ResizetizerTargetPlatformIstvOS>
+        <_ResizetizerPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerTargetPlatformIsWindows>
+
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
         <_ResizetizerDefaultInvalidFilenamesErrorMessage>
@@ -69,25 +78,15 @@
         </_ResizetizerDefaultInvalidFilenamesErrorMessage>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
-        <_ResizetizerIsNetCore>False</_ResizetizerIsNetCore>
-        <_ResizetizerIsAndroidApp Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid' And '$(AndroidApplication)' == 'True'">True</_ResizetizerIsAndroidApp>
-        <_ResizetizerIsiOSApp Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
-        <_ResizetizerIsUWPApp Condition="'$(TargetPlatformIdentifier)' == 'UAP' And '$(OutputType)' == 'AppContainerExe'">True</_ResizetizerIsUWPApp>
-        <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(TargetPlatformIdentifier)' == 'Windows'">True</_ResizetizerIsWPFApp>
-        <_ResizetizerIsWindowsAppSdk>False</_ResizetizerIsWindowsAppSdk>
-    </PropertyGroup>
-
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
         <_ResizetizerIsNetCore>True</_ResizetizerIsNetCore>
-        <_ResizetizerIsAndroidApp Condition="'$(TargetPlatformIdentifier)' == 'android' And '$(AndroidApplication)' == 'True'">True</_ResizetizerIsAndroidApp>
-        <_ResizetizerIsiOSApp Condition="('$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst') And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
-        <_ResizetizerIsUWPApp Condition="'$(TargetPlatformIdentifier)'=='UAP' And '$(OutputType)' == 'AppContainerExe'">True</_ResizetizerIsUWPApp>
-        <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(TargetPlatformIdentifier)'=='Windows'">True</_ResizetizerIsWPFApp>
-        <_ResizetizerIsWindowsAppSdk Condition="('$(ProjectReunionWinUI)'=='True' Or '$(WindowsAppSDKWinUI)'=='True') And '$(TargetPlatformIdentifier)'=='Windows' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
+        <_ResizetizerIsAndroidApp Condition=" '$(_ResizetizerPlatformIsiOS)' == 'True' And '$(AndroidApplication)' == 'True'">True</_ResizetizerIsAndroidApp>
+        <_ResizetizerIsiOSApp Condition="( '$(_ResizetizerPlatformIsiOS)' == 'True' OR '$(_ResizetizerPlatformIsMacCatalyst)' == 'True' ) And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
+        <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(_ResizetizerPlatformIsWindows)' == 'True'">True</_ResizetizerIsWPFApp>
+        <_ResizetizerIsWindowsAppSdk Condition="('$(ProjectReunionWinUI)'=='True' Or '$(WindowsAppSDKWinUI)'=='True') And '$(_ResizetizerPlatformIsWindows)' == 'True' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
         <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
 
         <ResizetizeDependsOnTargets>
