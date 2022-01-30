@@ -55,7 +55,17 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				}";
 		}
 
-		const string TargetFramework = "net6.0";
+		string GetTfm()
+		{
+			// Returns something like `.NET 6.0.1`
+			var fd = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
+			if (Version.TryParse(Regex.Match(fd, @"\d+\.\d+\.\d+")?.Value, out var version))
+				return $"net{version.Major}.{version.Minor}";
+			return "net6.0";
+		}
+
+		string TargetFramework = GetTfm();
+
 		string testDirectory;
 		string tempDirectory;
 		string intermediateDirectory;
