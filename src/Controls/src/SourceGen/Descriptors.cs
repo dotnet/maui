@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			id: "MAUIG1001",
 			title: new LocalizableResourceString(nameof(MauiGResources.XamlParsingFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.XamlParsingErrorMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "Xaml.Syntax",
+			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 	}
