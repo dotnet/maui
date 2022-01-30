@@ -1,7 +1,7 @@
-using AWebView = Android.Webkit.WebView;
 using Android.Content;
 using Android.Views;
 using Android.Webkit;
+using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
