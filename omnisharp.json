@@ -23,6 +23,7 @@
       "src/Controls/src/Xaml.Design/Controls.Xaml.Design.csproj",
       "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj",
       "src/Controls/Maps/**",
+      "src/Controls/Maps/src/Controls.Maps.csproj"
       "src/Controls/DualScreen/**",
       "src/Core/tests/Benchmarks/Core.Benchmarks.csproj",
       "src/Templates/**",
