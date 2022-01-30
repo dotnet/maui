@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 					continue;
 				if (!onPlat.Platform.Contains(Device.RuntimePlatform))
 					continue;
-				if (!onPlat.Platform.Contains(Essentials.DeviceInfo.Platform))
+				if (!onPlat.Platform.Contains(Essentials.DeviceInfo.Platform.ToString()))
 					continue;
 				if (s_valueConverter == null)
 					continue;
