@@ -3,6 +3,7 @@
     <_MauiRuntimePackVersion>$(MauiVersion)</_MauiRuntimePackVersion>
     <_MauiRuntimePackVersion Condition=" '$(_MauiRuntimePackVersion)' == '' ">**FromWorkload**</_MauiRuntimePackVersion>
     <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
+    <MauiWorkloadTargetFramework>@TFM@</MauiWorkloadTargetFramework>
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
     <!-- $(_MauiPlatformName) is used as RIDs as well as a suffix to targeting pack names -->
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
@@ -17,7 +18,7 @@
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
-        TargetFramework="net6.0"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Core"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
@@ -31,7 +32,7 @@
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' "
         Include="Microsoft.Maui.Controls"
-        TargetFramework="net6.0"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Controls"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
@@ -45,7 +46,7 @@
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
         Include="Microsoft.Maui.Essentials"
-        TargetFramework="net6.0"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Essentials"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"

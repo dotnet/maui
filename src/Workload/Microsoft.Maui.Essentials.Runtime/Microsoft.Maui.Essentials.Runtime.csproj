@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(MauiPlatformName)' == '' ">
-    <ProjectReference Include="$(MauiRootDirectory)src/Essentials/src/Essentials-net6.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/Essentials/src/Essentials.csproj" />
   </ItemGroup>
 
 </Project>

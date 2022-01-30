@@ -1,16 +1,25 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
     <Nullable>disable</Nullable>
     <AndroidRoot>Android\</AndroidRoot>
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <PropertyGroup>
-    <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
+  </ItemGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
@@ -27,17 +36,17 @@
     <None Remove="MacOS\**" />
     <None Remove="Tizen\**" />
     <None Remove="WPF\**" />
+    <Content Remove="GTK\**" />
+    <Content Remove="MacOS\**" />
+    <Content Remove="Tizen\**" />
+    <Content Remove="WPF\**" />
     <Page Remove="**\WPF\**\*.xaml" />
     <MauiXaml Remove="**\WPF\**\*.xaml" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+  </ItemGroup>
 
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) == true ">
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" />
@@ -46,32 +55,13 @@
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
-    <Reference Include="System" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
-  </ItemGroup>
-
-  <ItemGroup>    
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="iOS\Resources\StringResources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>StringResources.resx</DependentUpon>
-    </None>
   </ItemGroup>
 </Project>
