@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Magnetometer']/Docs" />
 	public static partial class Magnetometer
 	{
 		internal static bool IsSupported =>

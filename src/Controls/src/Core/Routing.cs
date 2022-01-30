@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="Type[@FullName='Microsoft.Maui.Controls.Routing']/Docs" />
 	public static class Routing
 	{
 		static int s_routeCount = 0;
@@ -109,6 +110,7 @@ namespace Microsoft.Maui.Controls
 			s_routes.Clear();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RouteProperty']/Docs" />
 		public static readonly BindableProperty RouteProperty =
 			BindableProperty.CreateAttached("Route", typeof(string), typeof(Routing), null,
 				defaultValueCreator: CreateDefaultRoute);
@@ -126,6 +128,7 @@ namespace Microsoft.Maui.Controls
 			return keys;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='GetOrCreateContent']/Docs" />
 		public static Element GetOrCreateContent(string route, IServiceProvider services = null)
 		{
 			Element result = null;
@@ -161,6 +164,7 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='GetRoute']/Docs" />
 		public static string GetRoute(BindableObject obj)
 		{
 			return (string)obj.GetValue(RouteProperty);
@@ -175,17 +179,20 @@ namespace Microsoft.Maui.Controls
 			return $"{source}/";
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute']/Docs" />
 		public static string FormatRoute(List<string> segments)
 		{
 			var route = FormatRoute(String.Join(PathSeparator, segments));
 			return route;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][1]/Docs" />
 		public static string FormatRoute(string route)
 		{
 			return route;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs" />
 		public static void RegisterRoute(string route, RouteFactory factory)
 		{
 			if (!String.IsNullOrWhiteSpace(route))
@@ -195,17 +202,20 @@ namespace Microsoft.Maui.Controls
 			s_routes[route] = factory;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='UnRegisterRoute']/Docs" />
 		public static void UnRegisterRoute(string route)
 		{
 			if (s_routes.TryGetValue(route, out _))
 				s_routes.Remove(route);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][0]/Docs" />
 		public static void RegisterRoute(string route, Type type)
 		{
 			RegisterRoute(route, new TypeRouteFactory(type));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='SetRoute']/Docs" />
 		public static void SetRoute(Element obj, string value)
 		{
 			obj.SetValue(RouteProperty, value);

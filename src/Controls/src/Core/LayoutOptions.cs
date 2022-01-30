@@ -2,28 +2,38 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="Type[@FullName='Microsoft.Maui.Controls.LayoutOptions']/Docs" />
 	[System.ComponentModel.TypeConverter(typeof(LayoutOptionsConverter))]
 	public struct LayoutOptions
 	{
 		int _flags;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static readonly LayoutOptions Start = new LayoutOptions(LayoutAlignment.Start, false);
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Center']/Docs" />
 		public static readonly LayoutOptions Center = new LayoutOptions(LayoutAlignment.Center, false);
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='End']/Docs" />
 		public static readonly LayoutOptions End = new LayoutOptions(LayoutAlignment.End, false);
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Fill']/Docs" />
 		public static readonly LayoutOptions Fill = new LayoutOptions(LayoutAlignment.Fill, false);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='StartAndExpand']/Docs" />
 		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions StartAndExpand = new LayoutOptions(LayoutAlignment.Start, true);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='CenterAndExpand']/Docs" />
 		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions CenterAndExpand = new LayoutOptions(LayoutAlignment.Center, true);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='EndAndExpand']/Docs" />
 		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions EndAndExpand = new LayoutOptions(LayoutAlignment.End, true);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='FillAndExpand']/Docs" />
 		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions FillAndExpand = new LayoutOptions(LayoutAlignment.Fill, true);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public LayoutOptions(LayoutAlignment alignment, bool expands)
 		{
 			var a = (int)alignment;
@@ -32,12 +42,14 @@ namespace Microsoft.Maui.Controls
 			_flags = (int)alignment | (expands ? (int)LayoutExpandFlag.Expand : 0);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Alignment']/Docs" />
 		public LayoutAlignment Alignment
 		{
 			get { return (LayoutAlignment)(_flags & 3); }
 			set { _flags = (_flags & ~3) | (int)value; }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Expands']/Docs" />
 		public bool Expands
 		{
 			get { return (_flags & (int)LayoutExpandFlag.Expand) != 0; }

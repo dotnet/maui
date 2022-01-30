@@ -35,6 +35,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 #elif WINDOWS
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager(this);
+
+			if (serviceType == typeof(UI.Xaml.Window))
+				return Platform.DefaultWindow;
 #endif
 
 			return _services.GetService(serviceType);

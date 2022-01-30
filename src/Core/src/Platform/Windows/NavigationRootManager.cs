@@ -11,13 +11,13 @@ namespace Microsoft.Maui.Platform
 	public class NavigationRootManager
 	{
 		IMauiContext _mauiContext;
-		NavigationRootView _rootView;
+		WindowRootView _rootView;
 		WindowHeader? _windowHeader;
 
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
-			_rootView = new NavigationRootView();
+			_rootView = new WindowRootView();
 			_rootView.BackRequested += OnBackRequested;
 			_rootView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 		}
@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Connect(IView view)
 		{
+			bool firstConnect = _rootView.Content == null;
 			var nativeView = view.ToNative(_mauiContext);
 
 			NavigationView rootNavigationView;
@@ -56,21 +57,33 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				rootNavigationView = new MauiNavigationView();
+				if(_rootView.Content is RootNavigationView navView)
+				{
+					rootNavigationView = navView;
+				}
+				else
+				{
+					rootNavigationView = new RootNavigationView();
+				}
+				
 				rootNavigationView.Content = nativeView;
 				_rootView.Content = rootNavigationView;
 			}
 
-			var nativeWindow = _mauiContext.GetNativeWindow();
-			nativeWindow.Activated += OnWindowActivated;
+			if (firstConnect)
+			{
+				var nativeWindow = _mauiContext.GetNativeWindow();
+				nativeWindow.Activated += OnWindowActivated;
 
-			UpdateAppTitleBar(true);
-			SetWindowTitle(_mauiContext.GetNativeWindow().GetWindow()?.Title);
+				UpdateAppTitleBar(true);
+				SetWindowTitle(_mauiContext.GetNativeWindow().GetWindow()?.Title);
+			}
 		}
 
-		public virtual void Disconnect(IView view)
+		public virtual void Disconnect()
 		{
 			_mauiContext.GetNativeWindow().Activated -= OnWindowActivated;
+			_rootView.Content = null;
 		}
 
 		internal void UpdateAppTitleBar(bool isActive)

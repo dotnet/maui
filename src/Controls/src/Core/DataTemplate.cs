@@ -5,44 +5,52 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataTemplate']/Docs" />
 	public class DataTemplate : ElementTemplate, IDataTemplateController
 	{
 		static int idCounter = 1;
 
 		int _id;
 		string _idString;
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
 		public DataTemplate()
 		{
 			_id = Interlocked.Increment(ref idCounter);
 			_idString = GetType().FullName + _id;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public DataTemplate(Type type) : base(type)
 		{
 			_id = Interlocked.Increment(ref idCounter);
 			_idString = type.FullName;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public DataTemplate(Func<object> loadTemplate) : base(loadTemplate)
 		{
 			_id = Interlocked.Increment(ref idCounter);
 			_idString = GetType().FullName + _id;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='Bindings']/Docs" />
 		public IDictionary<BindableProperty, BindingBase> Bindings { get; } = new Dictionary<BindableProperty, BindingBase>();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='Values']/Docs" />
 		public IDictionary<BindableProperty, object> Values { get; } = new Dictionary<BindableProperty, object>();
 
 		string IDataTemplateController.IdString => _idString;
 
 		int IDataTemplateController.Id => _id;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='SetBinding']/Docs" />
 		public void SetBinding(BindableProperty property, BindingBase binding)
 		{
 			Values.Remove(property ?? throw new ArgumentNullException(nameof(property)));
 			Bindings[property] = binding ?? throw new ArgumentNullException(nameof(binding));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='SetValue']/Docs" />
 		public void SetValue(BindableProperty property, object value)
 		{
 			Bindings.Remove(property ?? throw new ArgumentNullException(nameof(property)));

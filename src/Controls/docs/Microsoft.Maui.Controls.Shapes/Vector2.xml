@@ -1,0 +1,470 @@
+<Type Name="Vector2" FullName="Microsoft.Maui.Controls.Shapes.Vector2">
+  <TypeSignature Language="C#" Value="public struct Vector2" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit Vector2 extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.Shapes.Vector2" />
+  <TypeSignature Language="F#" Value="type Vector2 = struct" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Vector2 (double angle);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 angle) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.#ctor(System.Double)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Shapes.Vector2 : double -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="new Microsoft.Maui.Controls.Shapes.Vector2 angle" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="angle" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="angle">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Vector2 (Microsoft.Maui.Controls.Point p);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Controls.Point p) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.#ctor(Microsoft.Maui.Controls.Point)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Shapes.Vector2 : Microsoft.Maui.Controls.Point -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="new Microsoft.Maui.Controls.Shapes.Vector2 p" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="p" Type="Microsoft.Maui.Controls.Point" />
+      </Parameters>
+      <Docs>
+        <param name="p">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Vector2 (double x, double y);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 x, float64 y) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.#ctor(System.Double,System.Double)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Shapes.Vector2 : double * double -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="new Microsoft.Maui.Controls.Shapes.Vector2 (x, y)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="x" Type="System.Double" />
+        <Parameter Name="y" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="x">To be added.</param>
+        <param name="y">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AngleBetween">
+      <MemberSignature Language="C#" Value="public static double AngleBetween (Microsoft.Maui.Controls.Shapes.Vector2 v1, Microsoft.Maui.Controls.Shapes.Vector2 v2);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 AngleBetween(valuetype Microsoft.Maui.Controls.Shapes.Vector2 v1, valuetype Microsoft.Maui.Controls.Shapes.Vector2 v2) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.AngleBetween(Microsoft.Maui.Controls.Shapes.Vector2,Microsoft.Maui.Controls.Shapes.Vector2)" />
+      <MemberSignature Language="F#" Value="static member AngleBetween : Microsoft.Maui.Controls.Shapes.Vector2 * Microsoft.Maui.Controls.Shapes.Vector2 -&gt; double" Usage="Microsoft.Maui.Controls.Shapes.Vector2.AngleBetween (v1, v2)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="v1" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+        <Parameter Name="v2" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+      </Parameters>
+      <Docs>
+        <param name="v1">To be added.</param>
+        <param name="v2">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Length">
+      <MemberSignature Language="C#" Value="public double Length { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Length" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shapes.Vector2.Length" />
+      <MemberSignature Language="F#" Value="member this.Length : double" Usage="Microsoft.Maui.Controls.Shapes.Vector2.Length" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LengthSquared">
+      <MemberSignature Language="C#" Value="public double LengthSquared { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 LengthSquared" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shapes.Vector2.LengthSquared" />
+      <MemberSignature Language="F#" Value="member this.LengthSquared : double" Usage="Microsoft.Maui.Controls.Shapes.Vector2.LengthSquared" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Normalized">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Shapes.Vector2 Normalized { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Shapes.Vector2 Normalized" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shapes.Vector2.Normalized" />
+      <MemberSignature Language="F#" Value="member this.Normalized : Microsoft.Maui.Controls.Shapes.Vector2" Usage="Microsoft.Maui.Controls.Shapes.Vector2.Normalized" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Vector2</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Addition">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Point operator + (Microsoft.Maui.Controls.Point p, Microsoft.Maui.Controls.Shapes.Vector2 v);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Point op_Addition(valuetype Microsoft.Maui.Controls.Point p, valuetype Microsoft.Maui.Controls.Shapes.Vector2 v) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Addition(Microsoft.Maui.Controls.Point,Microsoft.Maui.Controls.Shapes.Vector2)" />
+      <MemberSignature Language="F#" Value="static member ( + ) : Microsoft.Maui.Controls.Point * Microsoft.Maui.Controls.Shapes.Vector2 -&gt; Microsoft.Maui.Controls.Point" Usage="p + v" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="p" Type="Microsoft.Maui.Controls.Point" />
+        <Parameter Name="v" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+      </Parameters>
+      <Docs>
+        <param name="p">To be added.</param>
+        <param name="v">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Addition">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Point operator + (Microsoft.Maui.Controls.Shapes.Vector2 v, Microsoft.Maui.Controls.Point p);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Point op_Addition(valuetype Microsoft.Maui.Controls.Shapes.Vector2 v, valuetype Microsoft.Maui.Controls.Point p) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Addition(Microsoft.Maui.Controls.Shapes.Vector2,Microsoft.Maui.Controls.Point)" />
+      <MemberSignature Language="F#" Value="static member ( + ) : Microsoft.Maui.Controls.Shapes.Vector2 * Microsoft.Maui.Controls.Point -&gt; Microsoft.Maui.Controls.Point" Usage="v + p" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="v" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+        <Parameter Name="p" Type="Microsoft.Maui.Controls.Point" />
+      </Parameters>
+      <Docs>
+        <param name="v">To be added.</param>
+        <param name="p">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Addition">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Shapes.Vector2 operator + (Microsoft.Maui.Controls.Shapes.Vector2 v1, Microsoft.Maui.Controls.Shapes.Vector2 v2);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Shapes.Vector2 op_Addition(valuetype Microsoft.Maui.Controls.Shapes.Vector2 v1, valuetype Microsoft.Maui.Controls.Shapes.Vector2 v2) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Addition(Microsoft.Maui.Controls.Shapes.Vector2,Microsoft.Maui.Controls.Shapes.Vector2)" />
+      <MemberSignature Language="F#" Value="static member ( + ) : Microsoft.Maui.Controls.Shapes.Vector2 * Microsoft.Maui.Controls.Shapes.Vector2 -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="v1 + v2" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Vector2</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="v1" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+        <Parameter Name="v2" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+      </Parameters>
+      <Docs>
+        <param name="v1">To be added.</param>
+        <param name="v2">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Division">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Shapes.Vector2 operator / (Microsoft.Maui.Controls.Shapes.Vector2 v, double d);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Shapes.Vector2 op_Division(valuetype Microsoft.Maui.Controls.Shapes.Vector2 v, float64 d) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Division(Microsoft.Maui.Controls.Shapes.Vector2,System.Double)" />
+      <MemberSignature Language="F#" Value="static member ( / ) : Microsoft.Maui.Controls.Shapes.Vector2 * double -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="v / d" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Vector2</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="v" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+        <Parameter Name="d" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="v">To be added.</param>
+        <param name="d">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Explicit">
+      <MemberSignature Language="C#" Value="public static explicit operator Microsoft.Maui.Controls.Point (Microsoft.Maui.Controls.Shapes.Vector2 v);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Point op_Explicit(valuetype Microsoft.Maui.Controls.Shapes.Vector2 v) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Explicit(Microsoft.Maui.Controls.Shapes.Vector2)~Microsoft.Maui.Controls.Point" />
+      <MemberSignature Language="F#" Value="static member op_Explicit : Microsoft.Maui.Controls.Shapes.Vector2 -&gt; Microsoft.Maui.Controls.Point" Usage="Microsoft.Maui.Controls.Shapes.Vector2.op_Explicit v" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="v" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+      </Parameters>
+      <Docs>
+        <param name="v">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Multiply">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Shapes.Vector2 operator * (double d, Microsoft.Maui.Controls.Shapes.Vector2 v);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Shapes.Vector2 op_Multiply(float64 d, valuetype Microsoft.Maui.Controls.Shapes.Vector2 v) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Multiply(System.Double,Microsoft.Maui.Controls.Shapes.Vector2)" />
+      <MemberSignature Language="F#" Value="static member ( * ) : double * Microsoft.Maui.Controls.Shapes.Vector2 -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="d * v" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Vector2</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="d" Type="System.Double" />
+        <Parameter Name="v" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+      </Parameters>
+      <Docs>
+        <param name="d">To be added.</param>
+        <param name="v">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Multiply">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Shapes.Vector2 operator * (Microsoft.Maui.Controls.Shapes.Vector2 v, double d);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Shapes.Vector2 op_Multiply(valuetype Microsoft.Maui.Controls.Shapes.Vector2 v, float64 d) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Multiply(Microsoft.Maui.Controls.Shapes.Vector2,System.Double)" />
+      <MemberSignature Language="F#" Value="static member ( * ) : Microsoft.Maui.Controls.Shapes.Vector2 * double -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="v * d" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Vector2</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="v" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+        <Parameter Name="d" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="v">To be added.</param>
+        <param name="d">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Subtraction">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Point operator - (Microsoft.Maui.Controls.Point p, Microsoft.Maui.Controls.Shapes.Vector2 v);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Point op_Subtraction(valuetype Microsoft.Maui.Controls.Point p, valuetype Microsoft.Maui.Controls.Shapes.Vector2 v) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Subtraction(Microsoft.Maui.Controls.Point,Microsoft.Maui.Controls.Shapes.Vector2)" />
+      <MemberSignature Language="F#" Value="static member ( - ) : Microsoft.Maui.Controls.Point * Microsoft.Maui.Controls.Shapes.Vector2 -&gt; Microsoft.Maui.Controls.Point" Usage="p - v" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="p" Type="Microsoft.Maui.Controls.Point" />
+        <Parameter Name="v" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+      </Parameters>
+      <Docs>
+        <param name="p">To be added.</param>
+        <param name="v">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Subtraction">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Shapes.Vector2 operator - (Microsoft.Maui.Controls.Shapes.Vector2 v1, Microsoft.Maui.Controls.Shapes.Vector2 v2);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Shapes.Vector2 op_Subtraction(valuetype Microsoft.Maui.Controls.Shapes.Vector2 v1, valuetype Microsoft.Maui.Controls.Shapes.Vector2 v2) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_Subtraction(Microsoft.Maui.Controls.Shapes.Vector2,Microsoft.Maui.Controls.Shapes.Vector2)" />
+      <MemberSignature Language="F#" Value="static member ( - ) : Microsoft.Maui.Controls.Shapes.Vector2 * Microsoft.Maui.Controls.Shapes.Vector2 -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="v1 - v2" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Vector2</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="v1" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+        <Parameter Name="v2" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+      </Parameters>
+      <Docs>
+        <param name="v1">To be added.</param>
+        <param name="v2">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_UnaryNegation">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Shapes.Vector2 operator - (Microsoft.Maui.Controls.Shapes.Vector2 v);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Controls.Shapes.Vector2 op_UnaryNegation(valuetype Microsoft.Maui.Controls.Shapes.Vector2 v) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.op_UnaryNegation(Microsoft.Maui.Controls.Shapes.Vector2)" />
+      <MemberSignature Language="F#" Value="static member ( ~- ) : Microsoft.Maui.Controls.Shapes.Vector2 -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="- v" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Vector2</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="v" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
+      </Parameters>
+      <Docs>
+        <param name="v">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Vector2.ToString" />
+      <MemberSignature Language="F#" Value="override this.ToString : unit -&gt; string" Usage="vector2.ToString " />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="X">
+      <MemberSignature Language="C#" Value="public double X { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 X" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shapes.Vector2.X" />
+      <MemberSignature Language="F#" Value="member this.X : double" Usage="Microsoft.Maui.Controls.Shapes.Vector2.X" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Y">
+      <MemberSignature Language="C#" Value="public double Y { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Y" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shapes.Vector2.Y" />
+      <MemberSignature Language="F#" Value="member this.Y : double" Usage="Microsoft.Maui.Controls.Shapes.Vector2.Y" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

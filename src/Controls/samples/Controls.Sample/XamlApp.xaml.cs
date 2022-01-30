@@ -1,9 +1,11 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 
 namespace Maui.Controls.Sample
 {
@@ -22,6 +24,23 @@ namespace Maui.Controls.Sample
 				// Respond to the theme change
 				Debug.WriteLine($"Requested theme changed: {args.RequestedTheme}");
 			};
+
+			LoadAsset();
+		}
+
+		async void LoadAsset()
+		{
+			try
+			{
+				using var stream = await FileSystem.OpenAppPackageFileAsync("RawAsset.txt");
+				using var reader = new StreamReader(stream);
+
+				Debug.WriteLine($"The raw Maui asset contents: '{reader.ReadToEnd().Trim()}'");
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Error loading the raw Maui asset contents: {ex}");
+			}
 		}
 
 		// Must not use MainPage for multi-window

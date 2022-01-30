@@ -50,5 +50,13 @@ namespace Microsoft.Maui.Handlers
 
 			sender.UpdateCanGoBackForward(VirtualView);
 		}
+
+		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
+				return;
+
+			handler.NativeView?.Eval(webView, script);
+		}
 	}
 }

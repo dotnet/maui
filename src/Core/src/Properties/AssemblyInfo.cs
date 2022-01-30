@@ -15,6 +15,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.DualScreen.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Core.DeviceTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Comet")]
 [assembly: InternalsVisibleTo("Comet.Tests")]

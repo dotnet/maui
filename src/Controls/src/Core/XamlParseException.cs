@@ -5,21 +5,25 @@ using System.Xml;
 namespace Microsoft.Maui.Controls.Xaml
 {
 #if !NETSTANDARD1_0
+	/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="Type[@FullName='Microsoft.Maui.Controls.Xaml.XamlParseException']/Docs" />
 	[Serializable]
 #endif
 	public class XamlParseException : Exception
 	{
 		readonly string _unformattedMessage;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
 		public XamlParseException()
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public XamlParseException(string message)
 		   : base(message)
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public XamlParseException(string message, Exception innerException)
 		   : base(message, innerException)
 		{
@@ -35,6 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public XamlParseException(string message, IXmlLineInfo xmlInfo, Exception innerException = null)
 			: base(FormatMessage(message, xmlInfo), innerException)
 		{
@@ -42,6 +47,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			XmlInfo = xmlInfo;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='XmlInfo']/Docs" />
 		public IXmlLineInfo XmlInfo { get; private set; }
 		internal string UnformattedMessage => _unformattedMessage ?? Message;
 

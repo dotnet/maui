@@ -7,16 +7,20 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Setter']/Docs" />
 	[ContentProperty(nameof(Value))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.SetterValueProvider")]
 	public sealed class Setter : IValueProvider
 	{
 		readonly ConditionalWeakTable<BindableObject, object> _originalValues = new ConditionalWeakTable<BindableObject, object>();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='TargetName']/Docs" />
 		public string TargetName { get; set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='Property']/Docs" />
 		public BindableProperty Property { get; set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='Value']/Docs" />
 		public object Value { get; set; }
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)

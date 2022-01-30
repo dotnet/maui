@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm)-ios;$(_MauiDotNetTfm)-maccatalyst</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.iOS.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.iOS.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
@@ -13,9 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
