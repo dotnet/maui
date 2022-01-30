@@ -93,17 +93,12 @@ namespace Microsoft.Maui.Resizetizer
 				// Version=""
 				if (!string.IsNullOrEmpty(ApplicationDisplayVersion) || !string.IsNullOrEmpty(ApplicationVersion))
 				{
-					var parts = ApplicationDisplayVersion?.Split('.') ?? Array.Empty<string>();
-					var v = new int[4];
-					for (var i = 0; i < 4 && i < parts.Length; i++)
-						v[i] = int.Parse(parts[i]);
-					if (!string.IsNullOrEmpty(ApplicationVersion))
-						v[3] = int.Parse(ApplicationVersion);
+					var finalVersion = MergeVersionNumbers(ApplicationDisplayVersion, ApplicationVersion);
 
 					var xname = "Version";
 					var attr = identity.Attribute(xname);
 					if (attr == null || string.IsNullOrEmpty(attr.Value))
-						identity.SetAttributeValue(xname, $"{v[0]:0}.{v[1]:0}.{v[2]:0}.{v[3]:0}");
+						identity.SetAttributeValue(xname, finalVersion);
 				}
 			}
 
@@ -338,6 +333,19 @@ namespace Microsoft.Maui.Resizetizer
 					}
 				}
 			}
+		}
+
+		public static string MergeVersionNumbers(string? displayVersion, string? version)
+		{
+			var parts = displayVersion?.Split('.') ?? Array.Empty<string>();
+
+			var v = new int[4];
+			for (var i = 0; i < 4 && i < parts.Length; i++)
+				v[i] = int.Parse(parts[i]);
+			if (!string.IsNullOrEmpty(version))
+				v[3] = int.Parse(version);
+
+			return $"{v[0]:0}.{v[1]:0}.{v[2]:0}.{v[3]:0}";
 		}
 	}
 }

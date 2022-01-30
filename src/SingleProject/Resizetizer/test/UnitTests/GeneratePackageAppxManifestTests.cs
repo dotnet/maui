@@ -110,5 +110,28 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			if (!XNode.DeepEquals(outputDoc, expectedDoc))
 				Assert.Equal(expectedDoc.ToString(), outputDoc.ToString());
 		}
+
+		[Theory]
+		[InlineData("2", "42", "2.0.0.42")]
+		[InlineData("2.1", "42", "2.1.0.42")]
+		[InlineData("3.2.1", "42", "3.2.1.42")]
+		[InlineData("4.3.2.1", "", "4.3.2.1")]
+		public void ValidMergeVersionNumbers(string displayVersion, string appVersion, string expectedResult)
+		{
+			var merged = GeneratePackageAppxManifest.MergeVersionNumbers(displayVersion, appVersion);
+			Assert.Equal(expectedResult, merged);
+		}
+
+		[Theory]
+		[InlineData("2.1", "42.31", "")]
+		[InlineData("4.3.2.1", "42", "")]
+		[InlineData("1.0.0", "1.0.0", "")]
+		[InlineData("3.1.3a1", "42", "")]
+		[InlineData("6.0-preview.7", "42", "")]
+		public void InvalidMergeVersionNumbers(string displayVersion, string appVersion, string errorMessage)
+		{
+			var merged = GeneratePackageAppxManifest.MergeVersionNumbers(displayVersion, appVersion);
+			Assert.Equal(errorMessage, merged);
+		}
 	}
 }
