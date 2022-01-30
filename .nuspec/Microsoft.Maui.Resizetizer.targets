@@ -63,13 +63,13 @@
         <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
 
         <_ResizetizerPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_ResizetizerTargetPlatformIdentifier>
-        <_ResizetizerNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_ResizetizerNoTargetPlatform>
-        <_ResizetizerPlatformIsAndroid Condition="'$(_MauiTargetPlatformIdentifier)' == 'android'">True</_ResizetizerTargetPlatformIsAndroid>
-        <_ResizetizerPlatformIsiOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'ios'">True</_ResizetizerTargetPlatformIsiOS>
-        <_ResizetizerPlatformIsMacCatalyst Condition="'$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">True</_ResizetizerTargetPlatformIsMacCatalyst>
-        <_ResizetizerPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_ResizetizerTargetPlatformIsmacOS>
-        <_ResizetizerPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_ResizetizerTargetPlatformIstvOS>
-        <_ResizetizerPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerTargetPlatformIsWindows>
+        <_ResizetizerNoTargetPlatform Condition="'$(_ResizetizerPlatformIdentifier)' == ''">True</_ResizetizerNoTargetPlatform>
+        <_ResizetizerPlatformIsAndroid Condition="'$(_ResizetizerPlatformIdentifier)' == 'android'">True</_ResizetizerTargetPlatformIsAndroid>
+        <_ResizetizerPlatformIsiOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'ios'">True</_ResizetizerTargetPlatformIsiOS>
+        <_ResizetizerPlatformIsMacCatalyst Condition="'$(_ResizetizerPlatformIdentifier)' == 'maccatalyst'">True</_ResizetizerTargetPlatformIsMacCatalyst>
+        <_ResizetizerPlatformIsmacOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'macos'">True</_ResizetizerTargetPlatformIsmacOS>
+        <_ResizetizerPlatformIstvOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'tvos'">True</_ResizetizerTargetPlatformIstvOS>
+        <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerTargetPlatformIsWindows>
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
