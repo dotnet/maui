@@ -64,12 +64,12 @@
 
         <_ResizetizerPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_ResizetizerPlatformIdentifier>
         <_ResizetizerNoTargetPlatform Condition="'$(_ResizetizerPlatformIdentifier)' == ''">True</_ResizetizerNoTargetPlatform>
-        <_ResizetizerPlatformIsAndroid Condition="'$(_ResizetizerPlatformIdentifier)' == 'android'">True</_ResizetizerTargetPlatformIsAndroid>
-        <_ResizetizerPlatformIsiOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'ios'">True</_ResizetizerTargetPlatformIsiOS>
-        <_ResizetizerPlatformIsMacCatalyst Condition="'$(_ResizetizerPlatformIdentifier)' == 'maccatalyst'">True</_ResizetizerTargetPlatformIsMacCatalyst>
-        <_ResizetizerPlatformIsmacOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'macos'">True</_ResizetizerTargetPlatformIsmacOS>
-        <_ResizetizerPlatformIstvOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'tvos'">True</_ResizetizerTargetPlatformIstvOS>
-        <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerTargetPlatformIsWindows>
+        <_ResizetizerPlatformIsAndroid Condition="'$(_ResizetizerPlatformIdentifier)' == 'android'">True</_ResizetizerPlatformIsAndroid>
+        <_ResizetizerPlatformIsiOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'ios'">True</_ResizetizerPlatformIsiOS>
+        <_ResizetizerPlatformIsMacCatalyst Condition="'$(_ResizetizerPlatformIdentifier)' == 'maccatalyst'">True</_ResizetizerPlatformIsMacCatalyst>
+        <_ResizetizerPlatformIsmacOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'macos'">True</_ResizetizerPlatformIsmacOS>
+        <_ResizetizerPlatformIstvOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'tvos'">True</_ResizetizerPlatformIstvOS>
+        <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerPlatformIsWindows>
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
