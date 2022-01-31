@@ -10,31 +10,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static class NavigationViewExtensions
 	{
-		// This is mainly used by UnitTest to grab the elements and test values.
-		// At one point I was using this inside the application but it started to cause erratic behavior
-		internal static IEnumerable<NavigationViewItem> GetNavigationViewItems(this MauiNavigationView navigationView)
-		{
-			if (navigationView.MenuItems?.Count > 0)
-			{
-				foreach (var menuItem in navigationView.MenuItems)
-				{
-					if (menuItem is NavigationViewItem item)
-						yield return item;
-				}
-			}
-			else if (navigationView.MenuItemsSource != null && navigationView.TopNavMenuItemsHost != null)
-			{
-				var itemCount = navigationView.TopNavMenuItemsHost.ItemsSourceView.Count;
-				for (int i = 0; i < itemCount; i++)
-				{
-					UI.Xaml.UIElement uIElement = navigationView.TopNavMenuItemsHost.TryGetElement(i);
-
-					if (uIElement is NavigationViewItem item)
-						yield return item;
-				}
-			}
-		}
-
 		public static void UpdateTopNavAreaBackground(this MauiNavigationView navigationView, Paint? paint)
 		{
 			// Background property is set via {ThemeResource NavigationViewTopPaneBackground} in the Control Template

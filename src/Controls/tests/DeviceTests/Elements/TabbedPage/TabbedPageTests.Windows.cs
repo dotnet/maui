@@ -126,7 +126,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
-				var navItem = navView.GetNavigationViewItems().ToList()[0];
+				var navItem = GetNavigationViewItems(navView).ToList()[0];
 
 				Assert.Equal(Colors.Red, ((WSolidColorBrush)navItem.Foreground).ToColor());
 				tabbedPage.BarTextColor = Colors.Blue;
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<TabbedPageHandler>(CreateBasicTabbedPage(), handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
-				var navItem = navView.GetNavigationViewItems().ToList()[0];
+				var navItem = GetNavigationViewItems(navView).ToList()[0];
 				Assert.Equal("Page 1", navItem.Content);
 				handler.VirtualView.Children[0].Title = "New Page Name";
 				Assert.Equal("New Page Name", navItem.Content);
@@ -164,8 +164,8 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
-				var navItem1 = navView.GetNavigationViewItems().ToList()[0];
-				var navItem2 = navView.GetNavigationViewItems().ToList()[1];
+				var navItem1 = GetNavigationViewItems(navView).ToList()[0];
+				var navItem2 = GetNavigationViewItems(navView).ToList()[1];
 
 				Assert.Equal(Colors.Red, ((WSolidColorBrush)navItem1.Background).ToColor());
 				Assert.Equal(Colors.Purple, ((WSolidColorBrush)navItem2.Background).ToColor());
@@ -186,19 +186,19 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<TabbedPageHandler>(CreateBasicTabbedPage(), async handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
-				var items = navView.GetNavigationViewItems().ToList();
+				var items = GetNavigationViewItems(navView).ToList();
 				Assert.Single(items);
 				handler.VirtualView.Children.Add(new ContentPage());
 
 				// Wait for the navitem to propagate
 				await Task.Delay(100);
-				items = navView.GetNavigationViewItems().ToList();
+				items = GetNavigationViewItems(navView).ToList();
 				Assert.Equal(2, items.Count);
 				handler.VirtualView.Children.RemoveAt(1);
 
 				// Wait for the navitem to propagate
 				await Task.Delay(100);
-				items = navView.GetNavigationViewItems().ToList();
+				items = GetNavigationViewItems(navView).ToList();
 				Assert.Single(items);
 			});
 		}

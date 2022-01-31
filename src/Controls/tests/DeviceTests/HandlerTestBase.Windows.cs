@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Automation.Peers;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
+using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WWindow = Microsoft.UI.Xaml.Window;
 using Microsoft.Maui.Hosting;
@@ -13,6 +14,7 @@ using Microsoft.Maui.Platform;
 using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -67,6 +69,30 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
+
+		protected IEnumerable<WNavigationViewItem> GetNavigationViewItems(MauiNavigationView navigationView)
+		{
+			if (navigationView.MenuItems?.Count > 0)
+			{
+				foreach (var menuItem in navigationView.MenuItems)
+				{
+					if (menuItem is WNavigationViewItem item)
+						yield return item;
+				}
+			}
+			else if (navigationView.MenuItemsSource != null && navigationView.TopNavMenuItemsHost != null)
+			{
+				var itemCount = navigationView.TopNavMenuItemsHost.ItemsSourceView.Count;
+				for (int i = 0; i < itemCount; i++)
+				{
+					UI.Xaml.UIElement uIElement = navigationView.TopNavMenuItemsHost.TryGetElement(i);
+
+					if (uIElement is WNavigationViewItem item)
+						yield return item;
+				}
+			}
+		}
+
 
 		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
 		{
