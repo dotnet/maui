@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(_MauiDotNetTfm)-android;$(_MauiDotNetTfm)-maccatalyst;$(_MauiDotNetTfm)-ios</TargetFrameworks>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <SingleProject>true</SingleProject>
     <ApplicationTitle>Profiling</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.profiling</ApplicationId>

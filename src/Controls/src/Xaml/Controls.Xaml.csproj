@@ -17,7 +17,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>

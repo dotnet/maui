@@ -14,7 +14,7 @@
     <PackageReference Remove="*" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Graphics" />
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="$(MicrosoftMauiGraphicsVersion)" />
     <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
     <None Include="..\..\..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />
     <None Include="nugetreadme.txt" PackagePath="readme.txt" Pack="true" />
@@ -22,7 +22,7 @@
     <Compile Include="**\*.shared.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
-    <PackageReference Include="System.Numerics.Vectors" />
+    <PackageReference Include="System.Numerics.Vectors" Version="$(SystemNumericsVectorsVersion)" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == '$(_MauiDotNetTfm)' OR $(TargetFramework.StartsWith('netstandard'))">
     <Compile Include="**\*.netstandard.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />

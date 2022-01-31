@@ -15,13 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)"/>
+    <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
-    <PackageReference Include="Microsoft.JSInterop" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)" />
+    <PackageReference Include="Microsoft.JSInterop" Version="$(MicrosoftJSInteropPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

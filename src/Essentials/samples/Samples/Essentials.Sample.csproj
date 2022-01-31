@@ -8,7 +8,7 @@
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
 
-    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+    <OutputType Condition="$(TargetFramework.Contains('-windows'))">Exe</OutputType>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
