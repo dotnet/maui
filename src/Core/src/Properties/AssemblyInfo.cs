@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.Forms")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Core.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Xaml.UnitTests")]
