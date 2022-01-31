@@ -118,20 +118,21 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[InlineData("4.3.2.1", "", "4.3.2.1")]
 		public void ValidMergeVersionNumbers(string displayVersion, string appVersion, string expectedResult)
 		{
-			var merged = GeneratePackageAppxManifest.MergeVersionNumbers(displayVersion, appVersion);
+			var result = GeneratePackageAppxManifest.TryMergeVersionNumbers(displayVersion, appVersion, out var merged);
+			Assert.True(result);
 			Assert.Equal(expectedResult, merged);
 		}
 
 		[Theory]
-		[InlineData("2.1", "42.31", "")]
-		[InlineData("4.3.2.1", "42", "")]
-		[InlineData("1.0.0", "1.0.0", "")]
-		[InlineData("3.1.3a1", "42", "")]
-		[InlineData("6.0-preview.7", "42", "")]
-		public void InvalidMergeVersionNumbers(string displayVersion, string appVersion, string errorMessage)
+		[InlineData("2.1", "42.31")]
+		[InlineData("4.3.2.1", "42")]
+		[InlineData("1.0.0", "1.0.0")]
+		[InlineData("3.1.3a1", "42")]
+		[InlineData("6.0-preview.7", "42")]
+		public void InvalidMergeVersionNumbers(string displayVersion, string appVersion)
 		{
-			var merged = GeneratePackageAppxManifest.MergeVersionNumbers(displayVersion, appVersion);
-			Assert.Equal(errorMessage, merged);
+			var result = GeneratePackageAppxManifest.TryMergeVersionNumbers(displayVersion, appVersion, out var merged);
+			Assert.False(result);
 		}
 	}
 }

@@ -10,7 +10,10 @@ namespace Microsoft.Maui.Resizetizer
 {
 	public class GeneratePackageAppxManifest : Task
 	{
-		private static readonly XNamespace xmlnsUap = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
+		const string ErrorInvalidApplicationId = "ApplicationId '{0}' was not a valid GUID. Windows apps use a GUID for an application ID instead of the reverse domain used by Android and/or iOS apps.";
+		const string ErrorVersionNumberCombination = "ApplicationDisplayVersion '{0}' was not a valid 3 part semver version number and/or ApplicationVersion '{1}' was not a valid integer.";
+
+		static readonly XNamespace xmlnsUap = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
 
 		[Required]
 		public string IntermediateOutputPath { get; set; } = null!;
@@ -82,23 +85,35 @@ namespace Microsoft.Maui.Resizetizer
 				// Name=""
 				if (!string.IsNullOrEmpty(ApplicationId))
 				{
-					Guid.Parse(ApplicationId);
-
 					var xname = "Name";
 					var attr = identity.Attribute(xname);
 					if (attr == null || string.IsNullOrEmpty(attr.Value))
+					{
+						if (!Guid.TryParse(ApplicationId, out _))
+						{
+							Log.LogError(ErrorInvalidApplicationId, ApplicationId);
+							return;
+						}
+
 						identity.SetAttributeValue(xname, ApplicationId);
+					}
 				}
 
 				// Version=""
 				if (!string.IsNullOrEmpty(ApplicationDisplayVersion) || !string.IsNullOrEmpty(ApplicationVersion))
 				{
-					var finalVersion = MergeVersionNumbers(ApplicationDisplayVersion, ApplicationVersion);
-
 					var xname = "Version";
 					var attr = identity.Attribute(xname);
 					if (attr == null || string.IsNullOrEmpty(attr.Value))
+					{
+						if (!TryMergeVersionNumbers(ApplicationDisplayVersion, ApplicationVersion, out var finalVersion))
+						{
+							Log.LogError(ErrorVersionNumberCombination, ApplicationDisplayVersion, ApplicationVersion);
+							return;
+						}
+
 						identity.SetAttributeValue(xname, finalVersion);
+					}
 				}
 			}
 
@@ -335,17 +350,38 @@ namespace Microsoft.Maui.Resizetizer
 			}
 		}
 
-		public static string MergeVersionNumbers(string? displayVersion, string? version)
+		public static bool TryMergeVersionNumbers(string? displayVersion, string? version, out string? finalVersion)
 		{
+			displayVersion = displayVersion?.Trim();
+			version = version?.Trim();
+			finalVersion = null;
+
+			// either a 4 part display version and no version or a 3 part display and an int version
 			var parts = displayVersion?.Split('.') ?? Array.Empty<string>();
+			if (parts.Length > 3 && !string.IsNullOrEmpty(version))
+				return false;
+			else if (parts.Length > 4)
+				return false;
 
 			var v = new int[4];
 			for (var i = 0; i < 4 && i < parts.Length; i++)
-				v[i] = int.Parse(parts[i]);
-			if (!string.IsNullOrEmpty(version))
-				v[3] = int.Parse(version);
+			{
+				if (!int.TryParse(parts[i], out var parsed))
+					return false;
 
-			return $"{v[0]:0}.{v[1]:0}.{v[2]:0}.{v[3]:0}";
+				v[i] = parsed;
+			}
+
+			if (!string.IsNullOrEmpty(version))
+			{
+				if (!int.TryParse(version, out var parsed))
+					return false;
+
+				v[3] = parsed;
+			}
+
+			finalVersion = $"{v[0]:0}.{v[1]:0}.{v[2]:0}.{v[3]:0}";
+			return true;
 		}
 	}
 }
