@@ -18,9 +18,9 @@
 
 		public Thickness Padding { get; set; }
 
-		public Color BorderColor { get; set; }
+		public Color StrokeColor { get; set; }
 
-		public double BorderWidth { get; set; }
+		public double StrokeThickness { get; set; }
 
 		public int CornerRadius { get; set; }
 
