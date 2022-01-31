@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Essentials
 		{
 #if __WATCHOS__
             return DeviceIdiom.Watch;
+#elif MACCATALYST || __MACCATALYST
+			return DeviceIdiom.Desktop;
 #else
 			switch (UIDevice.CurrentDevice.UserInterfaceIdiom)
 			{
