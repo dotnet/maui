@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility

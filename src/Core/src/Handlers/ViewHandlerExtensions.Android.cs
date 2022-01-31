@@ -1,6 +1,6 @@
-﻿using NativeView = Android.Views.View;
-using Android.Views;
+﻿using Android.Views;
 using Microsoft.Maui.Graphics;
+using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
@@ -34,7 +34,6 @@ namespace Microsoft.Maui
 
 			var Context = viewHandler.MauiContext?.Context;
 			var MauiContext = viewHandler.MauiContext;
-			var VirtualView = viewHandler.VirtualView;
 
 			if (nativeView == null || MauiContext == null || Context == null)
 			{

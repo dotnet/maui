@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Platform
 				nativeView.Background = mauiDrawable;
 			}
 
-			if(border is IView v)
+			if (border is IView v)
 				mauiDrawable.SetBackground(v.Background);
 			else
 				mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));

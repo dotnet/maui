@@ -11,11 +11,13 @@ namespace Microsoft.Maui.Controls
 	// collection which are made off of the main thread remain invisible to consumers on the main thread
 	// until they have been processed by the main thread.
 
+	/// <include file="../../../docs/Microsoft.Maui.Controls/MarshalingObservableCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.MarshalingObservableCollection']/Docs" />
 	public class MarshalingObservableCollection : List<object>, INotifyCollectionChanged
 	{
 		readonly IList _internalCollection;
 		readonly IDispatcher _dispatcher;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/MarshalingObservableCollection.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public MarshalingObservableCollection(IList list)
 		{
 			if (!(list is INotifyCollectionChanged incc))

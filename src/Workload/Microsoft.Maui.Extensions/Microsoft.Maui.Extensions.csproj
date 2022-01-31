@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <Description>Microsoft.Extensions dependencies for .NET MAUI</Description>
-    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeSymbols>false</IncludeSymbols>

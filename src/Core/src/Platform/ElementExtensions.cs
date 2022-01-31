@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-using BasePlatformType = Foundation.NSObject;
+using BasePlatformType = ObjCRuntime.INativeObject;
 using PlatformWindow = UIKit.UIWindow;
-using PlatformApplication = UIKit.UIApplicationDelegate;
+using PlatformApplication = UIKit.IUIApplicationDelegate;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
 using BasePlatformType = Android.Content.Context;
@@ -32,8 +32,9 @@ namespace Microsoft.Maui.Platform
 		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
 		{
 			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
-			
-			if(handlerType == null) return null;
+
+			if (handlerType == null)
+				return null;
 
 #if ANDROID
 			if(mauiContext.Context != null)
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Platform
 				if (nativeHandler.ContainerView is NativeView containerView)
 					return containerView;
 
-				if(nativeHandler.NativeView is NativeView nativeView)
+				if (nativeHandler.NativeView is NativeView nativeView)
 					return nativeView;
 			}
 

@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/RoutingEffect.xml" path="Type[@FullName='Microsoft.Maui.Controls.RoutingEffect']/Docs" />
 	public class RoutingEffect : Effect
 	{
 		internal readonly Effect Inner;

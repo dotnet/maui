@@ -10,8 +10,8 @@
 
   <!-- Android-only files -->
   <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Essentials/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Essentials.aar" />
-    <None Include="@(_AndroidFiles)" FullTfm="net6.0-android30.0" Tfm="net6.0-android" Profile="Android" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Essentials/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Essentials.aar" />
+    <None Include="@(_AndroidFiles)" FullTfm="$(_MauiDotNetTfm)-android30.0" Tfm="$(_MauiDotNetTfm)-android" Profile="Android" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(MauiPlatformName)' == '' ">
-    <ProjectReference Include="$(MauiRootDirectory)src/Essentials/src/Essentials-net6.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/Essentials/src/Essentials.csproj" />
   </ItemGroup>
 
 </Project>

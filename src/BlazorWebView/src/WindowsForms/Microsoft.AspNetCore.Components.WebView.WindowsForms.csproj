@@ -4,7 +4,7 @@
     <!-- Use TargetFrameworks (plural) instead of TargetFramework (singular) here even though there is only one target
       framework. This is to work around an issue with the Microsoft.Web.WebView2 package:
       https://github.com/MicrosoftEdge/WebView2Feedback/issues/710 -->
-    <TargetFrameworks>net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm)-windows</TargetFrameworks>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <Description>Build Windows Forms applications with Blazor and WebView2.</Description>
     <DefineConstants>$(DefineConstants);WEBVIEW2_WINFORMS</DefineConstants>

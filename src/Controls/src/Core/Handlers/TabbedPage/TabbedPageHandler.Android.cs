@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		}
 		public static void MapCurrentPage(TabbedPageHandler handler, TabbedPage view)
 		{
-		
+
 		}
 	}
 }

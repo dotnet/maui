@@ -3,7 +3,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using APath = Android.Graphics.Path;
 using AView = Android.Views.View;
 
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
-			BorderView?.Layout(0,0,child.MeasuredWidth, child.MeasuredHeight);
+			BorderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -119,15 +119,15 @@ namespace Microsoft.Maui.Platform
 
 		partial void BorderChanged()
 		{
-			if(Border == null)
+			if (Border == null)
 			{
-				if(BorderView != null)
+				if (BorderView != null)
 					this.RemoveView(BorderView);
 				BorderView = null;
 				return;
 			}
 
-			if(BorderView == null)
+			if (BorderView == null)
 			{
 				this.AddView(BorderView = new AView(Context));
 			}

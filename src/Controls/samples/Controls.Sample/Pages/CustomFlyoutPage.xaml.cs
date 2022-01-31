@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void Detail_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if(e.PropertyName == nameof(NavigationPage.CurrentPage))
+			if (e.PropertyName == nameof(NavigationPage.CurrentPage))
 			{
 				Flyout.BindingContext = (Detail as NavigationPage).CurrentPage.BindingContext;
 			}

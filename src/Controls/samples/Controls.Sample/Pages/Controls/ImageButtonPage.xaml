@@ -5,25 +5,86 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="ImageButton">
     <views:BasePage.Content>
-        <VerticalStackLayout Margin="12" Spacing="6">
-            <Label
+        <ScrollView>
+            <VerticalStackLayout 
+                Margin="12" 
+                Spacing="6">
+                <Label       
                     Text="AspectFit"
                     Style="{StaticResource Headline}"/>
-            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="AspectFit" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
-            <Label
-                    Text="AspectFill"
+                <ImageButton 
+                    HorizontalOptions="Center" 
+                    WidthRequest="200"
+                    HeightRequest="100" 
+                    Clicked="OnImageButtonClicked"
+                    Aspect="AspectFit" 
+                    Background="Green"
+                    Source="settings.png"
+                    Padding="16, 9, 16, 9" />
+                <Label       
+                    Text="AspectFill"     
                     Style="{StaticResource Headline}"/>
-            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="AspectFill" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
-            <Label
+                <ImageButton
+                    HorizontalOptions="Center" 
+                    WidthRequest="200"
+                    HeightRequest="100" 
+                    Clicked="OnImageButtonClicked" 
+                    Aspect="AspectFill" 
+                    Background="Green" 
+                    Source="settings.png" 
+                    Padding="16, 9, 16, 9" />
+                <Label         
                     Text="Fill"
                     Style="{StaticResource Headline}"/>
-            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="Fill" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
-            <Label 
+                <ImageButton
+                    HorizontalOptions="Center" 
+                    WidthRequest="200" 
+                    HeightRequest="100"
+                    Clicked="OnImageButtonClicked" 
+                    Aspect="Fill" 
+                    Background="Green" 
+                    Source="settings.png" 
+                    Padding="16, 9, 16, 9" />
+                <Label         
                     x:Name="InfoLabel"
                     Text="0 ImageButton clicks"
                     FontSize="16"
                     HorizontalOptions="Center"
                     VerticalOptions="CenterAndExpand" />
-        </VerticalStackLayout>
+                <Label
+                    Text="BorderColor"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton
+                    Aspect="AspectFit" 
+                    Source="settings.png"
+                    BorderColor="Red"
+                    BackgroundColor="Green"/>
+                <Label
+                    Text="BorderWidth"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton
+                    Aspect="AspectFit" 
+                    Source="settings.png"
+                    BorderColor="Red"
+                    BorderWidth="4"
+                    BackgroundColor="Green"/>
+                <Label
+                    Text="CornerRadius = 0"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton
+                    Aspect="AspectFit" 
+                    Source="settings.png"
+                    CornerRadius="0"
+                    BackgroundColor="Purple"/>
+                <Label
+                    Text="CornerRadius = 10"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton  
+                    Aspect="AspectFit" 
+                    Source="settings.png"
+                    CornerRadius="10"
+                    BackgroundColor="Purple"/>
+            </VerticalStackLayout>
+        </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>

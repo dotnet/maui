@@ -23,6 +23,9 @@ namespace Microsoft.Maui.Controls
 				panel.Children.Clear();
 				panel.Children.Add(nativeContent);
 
+				if (view.VisualDiagnosticsOverlay != null)
+					view.VisualDiagnosticsOverlay.Initialize();
+
 			}
 
 		}

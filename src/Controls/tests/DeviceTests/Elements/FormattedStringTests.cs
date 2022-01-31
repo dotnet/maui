@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Controls.Platform;
 using Xunit;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				result = spannable.ToString();
 #elif WINDOWS
-				var runs = formattedString.ToRuns();
+				var runs = formattedString.ToRuns(fontManager: fontManager);
 
 				foreach (var r in runs)
 					result += r.Text;

@@ -1,11 +1,11 @@
 ﻿#nullable enable
 using System;
-using Microsoft.Maui.Graphics;
-using AViewGroup = Android.Views.ViewGroup;
-using AView = Android.Views.View;
-using Microsoft.Maui.Controls.Platform;
 using System.ComponentModel;
 using Android.Content;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {

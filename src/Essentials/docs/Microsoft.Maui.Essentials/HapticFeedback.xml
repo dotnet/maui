@@ -1,0 +1,40 @@
+<Type Name="HapticFeedback" FullName="Microsoft.Maui.Essentials.HapticFeedback">
+  <TypeSignature Language="C#" Value="public static class HapticFeedback" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit HapticFeedback extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Essentials.HapticFeedback" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Provides methods to control HapticFeedback responses</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Perform">
+      <MemberSignature Language="C#" Value="public static void Perform (Microsoft.Maui.Essentials.HapticFeedbackType type = Microsoft.Maui.Essentials.HapticFeedbackType.Click);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Perform(valuetype Microsoft.Maui.Essentials.HapticFeedbackType type) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.HapticFeedback.Perform(Microsoft.Maui.Essentials.HapticFeedbackType)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="type" Type="Microsoft.Maui.Essentials.HapticFeedbackType" />
+      </Parameters>
+      <Docs>
+        <param name="type">The type of a HapticFeedback response that will be called</param>
+        <summary>Calls the platform-oriented method to cause a HapticFeedback response of the specified type</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
