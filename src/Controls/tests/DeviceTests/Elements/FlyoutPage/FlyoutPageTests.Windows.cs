@@ -40,12 +40,29 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 			var flyoutPage = CreateBasicFlyoutPage();
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
+				{
+					Assert.NotNull(handler.NativeView.PaneFooter);
+					return Task.CompletedTask;
+				});
+			});
+		}
+
+
+		[Fact(DisplayName = "FlyoutPage Initializes with Header Set")]
+		public async Task FlyoutPageInitializesWithHeaderSet()
+		{
+			SetupBuilder();
+			var flyoutPage = CreateBasicFlyoutPage();
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				await CreateHandlerAndAddToWindow<WindowHandler>(new Window(flyoutPage), (handler) =>
 				{
-					Assert.NotNull(((FlyoutViewHandler)flyoutPage.Handler).NativeView.PaneFooter);
+					var navView = GetMauiNavigationView(handler.MauiContext);
+					Assert.NotNull(navView.Header);
 					return Task.CompletedTask;
 				});
 			});
