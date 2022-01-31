@@ -27,7 +27,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 					{ "index.html", TestStaticFilesContents.DefaultMauiIndexHtmlContent },
 				},
 			};
-			bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(TestComponent1), Selector = "#app", });
+			bwv.RootComponents.Add(new RootComponent(typeof(TestComponent1), "#app", null));
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
