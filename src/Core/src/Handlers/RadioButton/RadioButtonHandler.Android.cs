@@ -56,22 +56,13 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton)
-		{
-	
-		}
+		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) { }
 
 		[MissingMapper]
-		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton)
-		{
-
-		}
+		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) { }
 
 		[MissingMapper]
-		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton)
-		{
-
-		}
+		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
 
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)
 		{

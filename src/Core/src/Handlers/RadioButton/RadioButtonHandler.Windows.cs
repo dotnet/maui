@@ -42,20 +42,14 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(button, fontManager);
 		}
 
-		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton)
-		{
+		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) =>
 			handler.NativeView?.UpdateStrokeColor(radioButton);
-		}
 
-		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton)
-		{
+		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) =>
 			handler.NativeView?.UpdateStrokeThickness(radioButton);
-		}
 
-		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton)
-		{
+		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) =>
 			handler.NativeView?.UpdateCornerRadius(radioButton);
-		}
 
 		void OnCheckedOrUnchecked(object? sender, RoutedEventArgs e)
 		{
