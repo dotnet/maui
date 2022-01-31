@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var nativeWindow = Window?.Content?.ToNative();
+			var nativeWindow = Window?.Content?.GetWrappedNativeView();
 			if (nativeWindow == null)
 				return false;
 

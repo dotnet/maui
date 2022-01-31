@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
-			var nativeScroll = scrollBar.ToNative();
+			var nativeScroll = scrollBar.GetWrappedNativeView();
 			if (nativeScroll != null)
 			{
 				nativeScroll.ScrollChange += OnScrollChange;

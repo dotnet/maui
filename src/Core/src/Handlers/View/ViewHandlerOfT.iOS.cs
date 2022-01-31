@@ -5,9 +5,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		UIView? INativeViewHandler.NativeView => this.GetWrappedNativeView();
-		UIView? INativeViewHandler.ContainerView => ContainerView;
-
 		public new WrapperView? ContainerView
 		{
 			get => (WrapperView?)base.ContainerView;

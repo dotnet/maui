@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.ToNative() is UIElement view)
+			if (child?.GetWrappedNativeView() is UIElement view)
 			{
 				NativeView.Children.Remove(view);
 			}

@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView.Flyout.ToNative(MauiContext);
 
-			var newFlyoutView = VirtualView.Flyout.ToNative();
+			var newFlyoutView = VirtualView.Flyout.GetWrappedNativeView();
 			if (_flyoutView == newFlyoutView)
 				return;
 

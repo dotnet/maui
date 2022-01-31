@@ -96,10 +96,10 @@ namespace Microsoft.Maui.Platform
 			return handler;
 		}
 
-		internal static NativeView? ToNative(this IElement view)
+		internal static NativeView? GetWrappedNativeView(this IElement view)
 		{
 			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
-				return replaceableView.ReplacedView.ToNative();
+				return replaceableView.ReplacedView.GetWrappedNativeView();
 
 			if (view.Handler == null)
 			{
@@ -109,12 +109,12 @@ namespace Microsoft.Maui.Platform
 				return view.ToNative(mauiContext);
 			}
 
-			if (view.Handler is IViewHandler nativeHandler)
+			if (view.Handler is IViewHandler viewHandler)
 			{
-				if (nativeHandler.ContainerView is NativeView containerView)
+				if (viewHandler.ContainerView is NativeView containerView)
 					return containerView;
 
-				if (nativeHandler.NativeView is NativeView nativeView)
+				if (viewHandler.NativeView is NativeView nativeView)
 					return nativeView;
 			}
 
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Platform
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
 			}
 
-			return view.ToNative() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
+			return view.GetWrappedNativeView() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
 
 		}
 
