@@ -52,6 +52,42 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Set Has Back Button")]
+		public async Task SetHasBackButton()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), async (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				await navPage.PushAsync(new ContentPage());
+				NavigationPage.SetHasBackButton(navPage.CurrentPage, false);
+				Assert.Equal(UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed, navView.IsBackButtonVisible);
+				NavigationPage.SetHasBackButton(navPage.CurrentPage, true);
+				Assert.Equal(UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible, navView.IsBackButtonVisible);
+			});
+		}
+
+		[Fact(DisplayName = "Set Has Navigation Bar")]
+		public async Task SettHasNavigationBar()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var header = navView.Header as WFrameworkElement;
+				Assert.True(header.Visibility == UI.Xaml.Visibility.Visible);
+				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, false);
+				Assert.True(header.Visibility == UI.Xaml.Visibility.Collapsed);
+				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, true);
+				Assert.True(header.Visibility == UI.Xaml.Visibility.Visible);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "Toolbar Items Map Correctly")]
 		public async Task ToolbarItemsMapCorrectly()
 		{
@@ -68,7 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), (handler) =>
 			{
 				var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
-				WindowHeader windowHeader = (WindowHeader)navView.HeaderControl;
+				WindowHeader windowHeader = (WindowHeader)navView.Header;
 				var primaryCommand = ((WAppBarButton)windowHeader.CommandBar.PrimaryCommands[0]);
 
 				Assert.Equal(toolbarItem, primaryCommand.DataContext);
