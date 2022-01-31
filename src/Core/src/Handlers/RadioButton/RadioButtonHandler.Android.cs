@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
-		AppCompatRadioButton? PlatformRadioButton => (NativeView as AppCompatRadioButton);
+		AppCompatRadioButton? PlatformRadioButton => NativeView as AppCompatRadioButton;
 
 		protected override AppCompatRadioButton CreateNativeView()
 		{
@@ -53,6 +53,24 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformRadioButton?.UpdateFont(textStyle, fontManager);
+		}
+
+		[MissingMapper]
+		public static void MapBorderColor(RadioButtonHandler handler, IRadioButton radioButton)
+		{
+	
+		}
+
+		[MissingMapper]
+		public static void MapBorderWidth(RadioButtonHandler handler, IRadioButton radioButton)
+		{
+
+		}
+
+		[MissingMapper]
+		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton)
+		{
+
 		}
 
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)

@@ -1,5 +1,4 @@
 ﻿using System;
-using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -46,20 +45,25 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateContent();
 		}
 
-		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
-		{
-		}
+		[MissingMapper]
+		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton) { }
 
-		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle)
-		{
-		}
+		[MissingMapper]
+		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle) { }
 
-		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle)
-		{
-		}
+		[MissingMapper]
+		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle) { }
 
-		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle)
-		{
-		}
+		[MissingMapper]
+		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle) { }
+
+		[MissingMapper]
+		public static void MapBorderColor(RadioButtonHandler handler, IRadioButton radioButton) { }
+		
+		[MissingMapper]
+		public static void MapBorderWidth(RadioButtonHandler handler, IRadioButton radioButton) { }
+		
+		[MissingMapper]
+		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
 	}
 }

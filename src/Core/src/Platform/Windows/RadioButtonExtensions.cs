@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui
 {
@@ -47,6 +48,21 @@ namespace Microsoft.Maui
 			else
 				nativeRadioButton.Content = $"{radioButton.Content}";
 		}
-			
+
+		public static void UpdateBorderColor(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			nativeRadioButton.BorderBrush = radioButton.BorderColor != null ? radioButton.BorderColor.ToNative() : (WBrush)UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+		}
+
+		public static void UpdateBorderWidth(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			nativeRadioButton.BorderThickness = radioButton.BorderWidth == -1 ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(radioButton.BorderWidth);
+		}
+
+		public static void UpdateCornerRadius(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			if (nativeRadioButton is MauiRadioButton mauiRadioButton)
+				mauiRadioButton.BorderRadius = radioButton.CornerRadius;
+		}
 	}
 }

@@ -151,16 +151,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.BackgroundColor = Element.Background.ToBrush();
 		}
 
+		[PortHandler]
 		void UpdateBorderColor()
 		{
 			Control.BorderBrush = Element.BorderColor.IsNotDefault() ? Element.BorderColor.ToNative() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
+		[PortHandler]
 		void UpdateBorderRadius()
 		{
 			Control.BorderRadius = Element.CornerRadius;
 		}
 
+		[PortHandler]
 		void UpdateBorderWidth()
 		{
 			Control.BorderThickness = Element.BorderWidth == (double)RadioButton.BorderWidthProperty.DefaultValue ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(Element.BorderWidth);

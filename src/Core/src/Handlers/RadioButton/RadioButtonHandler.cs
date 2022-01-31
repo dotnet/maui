@@ -9,6 +9,9 @@
 			[nameof(ITextStyle.Font)] = MapFont,
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
 			[nameof(IRadioButton.Content)] = MapContent,
+			[nameof(IRadioButton.BorderColor)] = MapBorderColor,
+			[nameof(IRadioButton.BorderWidth)] = MapBorderWidth,
+			[nameof(IRadioButton.CornerRadius)] = MapCornerRadius,
 		};
 
 		public RadioButtonHandler() : base(Mapper)
