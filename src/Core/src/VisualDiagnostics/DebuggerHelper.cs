@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui
 {
-	public static class DebuggerHelper
+	internal static class DebuggerHelper
 	{
 #if DEBUG
 		static DebuggerHelper() => _mockDebuggerIsAttached = true;
