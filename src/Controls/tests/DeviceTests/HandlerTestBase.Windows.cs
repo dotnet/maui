@@ -19,11 +19,11 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class HandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((DependencyObject)viewHandler.NativeView).GetValue(NativeAutomationProperties.AccessibilityViewProperty)) 
+			((AccessibilityView)((DependencyObject)viewHandler.NativeView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
 			== AccessibilityView.Content;
 
-
-		Task RunWindowTest(IWindow window, Func<WindowHandler, Task> action)
+		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
+			where THandler : class, IElementHandler
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -36,13 +36,17 @@ namespace Microsoft.Maui.DeviceTests
 					scopedContext.AddWeakSpecific(MauiProgram.CurrentWindow);
 					var mauiContext = scopedContext.MakeScoped(true);
 
-					// This will swap out the root windows panel with the panel we are going to be testing with
 					newWindowHandler = window.ToHandler(mauiContext);
-					var content = (WPanel)MauiProgram.CurrentWindow.Content;
+					var content = window.Content.Handler.GetWrappedNativeView();
 					navigationRootManager = mauiContext.GetNavigationRootManager();
 					await content.LoadedAsync();
 					await Task.Delay(10);
-					await action((WindowHandler)newWindowHandler);
+
+					if (typeof(THandler).IsAssignableFrom(newWindowHandler.GetType()))
+						await action((THandler)newWindowHandler);
+					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+						await action((THandler)window.Content.Handler);
+
 				}
 				finally
 				{
@@ -53,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 						newWindowHandler.DisconnectHandler();
 
 					// Set the root window panel back to the testing panel
-					if (testingRootPanel != null)
+					if (testingRootPanel != null && MauiProgram.CurrentWindow.Content != testingRootPanel)
 					{
 						MauiProgram.CurrentWindow.Content = testingRootPanel;
 						await testingRootPanel.LoadedAsync();
@@ -63,8 +67,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-
 		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
 		{
 			return (navigationRootManager.RootView as WindowRootView).NavigationViewControl;
@@ -72,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
 		{
-			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());			
+			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());
 		}
 
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
@@ -80,43 +82,54 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				if (view is IWindow window)
+				IWindow window = null;
+
+				if (view is IWindow w)
 				{
-					await RunWindowTest(window, (handler) => action(handler as THandler));
-					return;
+					window = w;
+				}
+				else if (view is Page page)
+				{
+					window = new Controls.Window(page);
+				}
+				else
+				{
+					window = new Controls.Window(new ContentPage() { Content = (View)view });
 				}
 
-				WFrameworkElement frameworkElement = null;
-				var content = (WPanel)MauiContext.Services.GetService<WWindow>().Content;
-				THandler handler = null;
-				NavigationRootManager navigationRootManager = null;
-				try
-				{
-					var mauiContext = MauiContext.MakeScoped(true);
-					navigationRootManager = mauiContext
-						.GetNavigationRootManager();
+				await RunWindowTest<THandler>(window, (handler) => action(handler as THandler));
 
-					navigationRootManager.Connect((IView)view);
+				//WFrameworkElement frameworkElement = null;
+				//var content = (WPanel)MauiContext.Services.GetService<WWindow>().Content;
+				//THandler handler = null;
+				//NavigationRootManager navigationRootManager = null;
+				//try
+				//{
+				//	var mauiContext = MauiContext.MakeScoped(true);
+				//	navigationRootManager = mauiContext
+				//		.GetNavigationRootManager();
 
-					handler = (THandler)view.Handler;
-					frameworkElement = (WFrameworkElement)handler.NativeView;
-					content.Children.Add(navigationRootManager.RootView);
-					await frameworkElement.LoadedAsync();
-					await Task.Delay(10);
-					await action(handler);
-				}
-				finally
-				{
-					handler?.DisconnectHandler();
-					navigationRootManager?.Disconnect();
+				//	navigationRootManager.Connect((IView)view);
 
-					if (frameworkElement != null)
-					{
-						content.Children.Remove(navigationRootManager.RootView);
-						await frameworkElement.UnloadedAsync();
-						await Task.Delay(10);
-					}
-				}
+				//	handler = (THandler)view.Handler;
+				//	frameworkElement = (WFrameworkElement)handler.NativeView;
+				//	content.Children.Add(navigationRootManager.RootView);
+				//	await frameworkElement.LoadedAsync();
+				//	await Task.Delay(10);
+				//	await action(handler);
+				//}
+				//finally
+				//{
+				//	handler?.DisconnectHandler();
+				//	navigationRootManager?.Disconnect();
+
+				//	if (frameworkElement != null)
+				//	{
+				//		content.Children.Remove(navigationRootManager.RootView);
+				//		await frameworkElement.UnloadedAsync();
+				//		await Task.Delay(10);
+				//	}
+				//}
 			});
 		}
 	}

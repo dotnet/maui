@@ -10,11 +10,11 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<TabbedPage, TabbedPageHandler> Mapper =
 				new PropertyMapper<TabbedPage, TabbedPageHandler>(ViewMapper)
 				{
-					//[TabbedPage.BarBackgroundProperty.PropertyName] = MapBarBackground,
-					//[TabbedPage.BarBackgroundColorProperty.PropertyName] = MapBarBackgroundColor,
+					[TabbedPage.BarBackgroundProperty.PropertyName] = MapBarBackground,
+					[TabbedPage.BarBackgroundColorProperty.PropertyName] = MapBarBackgroundColor,
 					[TabbedPage.BarTextColorProperty.PropertyName] = MapBarTextColor,
-					//[TabbedPage.UnselectedTabColorProperty.PropertyName] = MapUnselectedTabColor,
-					//[TabbedPage.SelectedTabColorProperty.PropertyName] = MapSelectedTabColor,
+					[TabbedPage.UnselectedTabColorProperty.PropertyName] = MapUnselectedTabColor,
+					[TabbedPage.SelectedTabColorProperty.PropertyName] = MapSelectedTabColor,
 					[MultiPage<TabbedPage>.ItemsSourceProperty.PropertyName] = MapItemsSource,
 					[MultiPage<TabbedPage>.ItemTemplateProperty.PropertyName] = MapItemTemplate,
 					[MultiPage<TabbedPage>.SelectedItemProperty.PropertyName] = MapSelectedItem,
