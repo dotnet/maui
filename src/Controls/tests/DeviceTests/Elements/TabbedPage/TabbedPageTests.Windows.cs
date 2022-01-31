@@ -191,15 +191,36 @@ namespace Microsoft.Maui.DeviceTests
 				handler.VirtualView.Children.Add(new ContentPage());
 
 				// Wait for the navitem to propagate
-				await Task.Delay(10);
+				await Task.Delay(100);
 				items = navView.GetNavigationViewItems().ToList();
 				Assert.Equal(2, items.Count);
 				handler.VirtualView.Children.RemoveAt(1);
 
 				// Wait for the navitem to propagate
-				await Task.Delay(10);
+				await Task.Delay(100);
 				items = navView.GetNavigationViewItems().ToList();
 				Assert.Single(items);
+			});
+		}
+
+		[Fact(DisplayName = "Selected Item Changed Propagates to CurrentPage")]
+		public async Task SelectedItemChangedPropagatesToCurrentPage()
+		{
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.Children.Add(new ContentPage());
+
+
+
+			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var secondItem = (navView.MenuItemsSource as IEnumerable<NavigationViewItemViewModel>).Skip(1).FirstOrDefault();
+				navView.SelectedItem = secondItem;
+
+				Assert.Equal(tabbedPage.CurrentPage, tabbedPage.Children[1]);
+				return Task.CompletedTask;
 			});
 		}
 
