@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Essentials
 		static string GetVersionString() => UIDevice.CurrentDevice.SystemVersion;
 
 		static DevicePlatform GetPlatform() =>
-#if __IOS__
+#if __MACCATALYST__ || MACCATALYST
+			DevicePlatform.MacCatalyst;
+#elif __IOS__ || IOS
 			DevicePlatform.iOS;
 #elif __TVOS__
             DevicePlatform.tvOS;
@@ -45,6 +47,8 @@ namespace Microsoft.Maui.Essentials
 		{
 #if __WATCHOS__
             return DeviceIdiom.Watch;
+#elif MACCATALYST || __MACCATALYST
+			return DeviceIdiom.Desktop;
 #else
 			switch (UIDevice.CurrentDevice.UserInterfaceIdiom)
 			{
