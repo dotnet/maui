@@ -19,6 +19,13 @@
     <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">$(PlatformsProjectFolder)\Windows\</WindowsProjectFolder>
   </PropertyGroup>
 
+  <ItemGroup>
+    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" />
+    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
+    <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" />
+    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
+  </ItemGroup>
+
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
     <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
