@@ -230,8 +230,10 @@ if(bases.length == 0){
 			}
 		}
 
+		[PortHandler]
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
+		[PortHandler]
 		Uri CreateUriForCookies(string url)
 		{
 			if (url == null)
@@ -253,6 +255,7 @@ if(bases.length == 0){
 			return null;
 		}
 
+		[PortHandler]
 		HttpCookieCollection GetCookiesFromNativeStore(string url)
 		{
 			var uri = CreateUriForCookies(url);
@@ -262,6 +265,7 @@ if(bases.length == 0){
 			return nativeCookies;
 		}
 
+		[PortHandler]
 		void InitialCookiePreloadIfNecessary(string url)
 		{
 			var myCookieJar = Element.Cookies;
@@ -286,6 +290,7 @@ if(bases.length == 0){
 			}
 		}
 
+		[PortHandler]
 		void SyncNativeCookiesToElement(string url)
 		{
 			var myCookieJar = Element.Cookies;
@@ -317,6 +322,7 @@ if(bases.length == 0){
 			SyncNativeCookies(url);
 		}
 
+		[PortHandler]
 		void SyncNativeCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);

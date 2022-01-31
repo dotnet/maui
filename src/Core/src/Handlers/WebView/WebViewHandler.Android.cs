@@ -1,4 +1,7 @@
-﻿using Android.Webkit;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using Android.Webkit;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
 
@@ -6,9 +9,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, AWebView>
 	{
+		public const string AssetBaseUrl = "file:///android_asset/";
+
 		WebViewClient? _webViewClient;
 		WebChromeClient? _webChromeClient;
+
 		bool _firstRun = true;
+		readonly HashSet<string> _loadedCookies = new HashSet<string>();
 
 		protected override AWebView CreateNativeView()
 		{
@@ -38,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			ProcessSourceWhenReady(handler, webView);
 		}
-
+	
 		public static void MapWebViewClient(WebViewHandler handler, IWebView webView)
 		{
 			handler.NativeView.SetWebViewClient(handler._webViewClient ??= new MauiWebViewClient(handler));
@@ -67,6 +74,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
 			handler.NativeView.UpdateReload(webView);
+
+			string? url = handler.NativeView.Url?.ToString();
+
+			if (url == null)
+				return;
+
+			handler.SyncNativeCookies(url);
 		}
 
 		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
@@ -86,6 +100,160 @@ namespace Microsoft.Maui.Handlers
 
 			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
 			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+		}
+
+		internal void SyncNativeCookiesToVirtualView(string url)
+		{
+			var myCookieJar = VirtualView.Cookies;
+
+			if (myCookieJar == null)
+				return;
+
+			var uri = CreateUriForCookies(url);
+
+			if (uri == null)
+				return;
+
+			var cookies = myCookieJar.GetCookies(uri);
+			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
+			
+			if (retrieveCurrentWebCookies == null)
+				return;
+
+			foreach (Cookie cookie in cookies)
+			{
+				var nativeCookie = retrieveCurrentWebCookies[cookie.Name];
+
+				if (nativeCookie == null)
+					cookie.Expired = true;
+				else
+					cookie.Value = nativeCookie.Value;
+			}
+
+			SyncNativeCookies(url);
+		}
+
+		void SyncNativeCookies(string url)
+		{
+			var uri = CreateUriForCookies(url);
+
+			if (uri == null)
+				return;
+
+			var myCookieJar = VirtualView.Cookies;
+
+			if (myCookieJar == null)
+				return;
+
+			InitialCookiePreloadIfNecessary(url);
+			var cookies = myCookieJar.GetCookies(uri);
+
+			if (cookies == null)
+				return;
+
+			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
+			
+			if (retrieveCurrentWebCookies == null)
+				return;
+
+			var cookieManager = CookieManager.Instance;
+
+			if (cookieManager == null)
+				return;
+
+			cookieManager.SetAcceptCookie(true);
+			for (var i = 0; i < cookies.Count; i++)
+			{
+				var cookie = cookies[i];
+				var cookieString = cookie.ToString();
+				cookieManager.SetCookie(cookie.Domain, cookieString);
+			}
+
+			foreach (Cookie cookie in retrieveCurrentWebCookies)
+			{
+				if (cookies[cookie.Name] != null)
+					continue;
+
+				var cookieString = $"{cookie.Name}=; max-age=0;expires=Sun, 31 Dec 2017 00:00:00 UTC";
+				cookieManager.SetCookie(cookie.Domain, cookieString);
+			}
+		}
+
+		void InitialCookiePreloadIfNecessary(string url)
+		{
+			var myCookieJar = VirtualView.Cookies;
+
+			if (myCookieJar == null)
+				return;
+
+			var uri = CreateUriForCookies(url);
+
+			if (uri == null)
+				return;
+
+			if (!_loadedCookies.Add(uri.Host))
+				return;
+
+			var cookies = myCookieJar.GetCookies(uri);
+
+			if (cookies != null)
+			{
+				var existingCookies = GetCookiesFromNativeStore(url);
+
+				if (existingCookies != null)
+				{
+					foreach (Cookie cookie in existingCookies)
+					{
+						if (cookies[cookie.Name] == null)
+							myCookieJar.Add(cookie);
+					}
+				}
+			}
+		}
+
+		CookieCollection? GetCookiesFromNativeStore(string url)
+		{
+			CookieContainer existingCookies = new CookieContainer();
+			var cookieManager = CookieManager.Instance;
+			
+			if (cookieManager == null)
+				return null;
+
+			var currentCookies = cookieManager.GetCookie(url);
+
+			var uri = CreateUriForCookies(url);
+
+			if (uri == null)
+				return null;
+
+			if (currentCookies != null)
+			{
+				foreach (var cookie in currentCookies.Split(';'))
+					existingCookies.SetCookies(uri, cookie);
+			}
+
+			return existingCookies.GetCookies(uri);
+		}
+
+		static Uri? CreateUriForCookies(string url)
+		{
+			if (url == null)
+				return null;
+
+			Uri? uri;
+
+			if (url.Length > 2000)
+				url = url.Substring(0, 2000);
+
+			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
+			{
+				if (string.IsNullOrWhiteSpace(uri.Host))
+					return null;
+
+				return uri;
+			}
+
+			return null;
 		}
 	}
 }
