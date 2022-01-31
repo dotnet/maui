@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				};
 
 				// Unset styles set by parent NavigationView
-				_navigationView.UpdateResourceToApplicationDefault("NavigationViewContentMargin", null);
-				_navigationView.UpdateResourceToApplicationDefault("NavigationViewMinimalHeaderMargin", null);
-				_navigationView.UpdateResourceToApplicationDefault("NavigationViewHeaderMargin", null);
-				_navigationView.UpdateResourceToApplicationDefault("NavigationViewMinimalContentGridBorderThickness", null);
+				_navigationView.SetApplicationResource("NavigationViewContentMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewHeaderMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewMinimalContentGridBorderThickness", null);
 
 				return _navigationView;
 			}
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				SetupNavigationView();
 			}
 
-			if(_navigationView == null && _navigationRootManager?.RootView is WindowRootView wrv)
+			if (_navigationView == null && _navigationRootManager?.RootView is WindowRootView wrv)
 			{
 				wrv.ContentChanged += OnContentChanged;
 
@@ -141,7 +141,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_navigationView == null)
 				return;
 
-			_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			if(_navigationView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top)
+				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+
 			_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
 
 			if (_navigationView.TopNavArea != null)
