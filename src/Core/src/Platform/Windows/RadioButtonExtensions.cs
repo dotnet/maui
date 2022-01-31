@@ -49,14 +49,14 @@ namespace Microsoft.Maui
 				nativeRadioButton.Content = $"{radioButton.Content}";
 		}
 
-		public static void UpdateBorderColor(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateStrokeColor(this RadioButton nativeRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.BorderBrush = radioButton.BorderColor != null ? radioButton.BorderColor.ToNative() : (WBrush)UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+			nativeRadioButton.BorderBrush = radioButton.StrokeColor != null ? radioButton.StrokeColor.ToNative() : (WBrush)UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
-		public static void UpdateBorderWidth(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.BorderThickness = radioButton.BorderWidth == -1 ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(radioButton.BorderWidth);
+			nativeRadioButton.BorderThickness = radioButton.StrokeThickness == -1 ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(radioButton.StrokeThickness);
 		}
 
 		public static void UpdateCornerRadius(this RadioButton nativeRadioButton, IRadioButton radioButton)

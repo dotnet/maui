@@ -58,10 +58,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle) { }
 
 		[MissingMapper]
-		public static void MapBorderColor(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) { }
 		
 		[MissingMapper]
-		public static void MapBorderWidth(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) { }
 		
 		[MissingMapper]
 		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }

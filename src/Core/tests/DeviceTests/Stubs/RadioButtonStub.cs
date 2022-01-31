@@ -18,6 +18,12 @@
 
 		public Thickness Padding { get; set; }
 
+		public Color BorderColor { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public int CornerRadius { get; set; }
+
 		public Size CrossPlatformArrange(Rectangle bounds)
 		{
 			return bounds.Size;
