@@ -64,7 +64,7 @@
     />
   </Target>
 
-  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">>
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="$(MicrosoftTemplateEngineTasksVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
   </ItemGroup>
 </Project>
