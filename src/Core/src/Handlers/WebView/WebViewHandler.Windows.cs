@@ -1,14 +1,18 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, WebView2>
 	{
+		WebNavigationEvent _eventState;
+
 		protected override WebView2 CreateNativeView() => new MauiWebView();
 
 		protected override void ConnectHandler(WebView2 nativeView)
 		{
+			nativeView.NavigationStarting += OnNavigationStarted;
 			nativeView.NavigationCompleted += OnNavigationCompleted;
 
 			base.ConnectHandler(nativeView);
@@ -16,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(WebView2 nativeView)
 		{
+			nativeView.NavigationStarting -= OnNavigationStarted;
 			nativeView.NavigationCompleted -= OnNavigationCompleted;
 
 			base.DisconnectHandler(nativeView);
@@ -30,11 +35,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.NativeView.CanGoBack)
+				handler._eventState = WebNavigationEvent.Back;
+
 			handler.NativeView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.NativeView.CanGoBack)
+				handler._eventState = WebNavigationEvent.Forward;
+
 			handler.NativeView?.UpdateGoForward(webView);
 		}
 
@@ -43,8 +54,21 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateReload(webView);
 		}
 
+		void OnNavigationStarted(WebView2 sender, CoreWebView2NavigationStartingEventArgs e)
+		{
+			if (Uri.TryCreate(e.Uri, UriKind.Absolute, out Uri? uri) && uri != null)
+			{
+				VirtualView.Navigating(_eventState, uri.AbsoluteUri);
+			}
+		}
+
 		void OnNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
 		{
+			if (args.IsSuccess)
+				NavigationSucceeded(sender, args);
+			else
+				NavigationFailed(sender, args);
+
 			if (VirtualView == null)
 				return;
 
@@ -57,6 +81,39 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			handler.NativeView?.Eval(webView, script);
+		}
+
+		void NavigationSucceeded(WebView2 sender, CoreWebView2NavigationCompletedEventArgs e)
+		{
+			Uri uri = sender.Source;
+
+			if (uri != null)
+				SendNavigated(uri.AbsoluteUri, _eventState, WebNavigationResult.Success);
+
+			if (VirtualView == null)
+				return;
+
+			sender.UpdateCanGoBackForward(VirtualView);
+		}
+
+		void NavigationFailed(WebView2 sender, CoreWebView2NavigationCompletedEventArgs e)
+		{
+			Uri uri = sender.Source;
+
+			if (uri != null)
+				SendNavigated(uri.AbsoluteUri, _eventState, WebNavigationResult.Failure);
+		}
+
+		void SendNavigated(string url, WebNavigationEvent evnt, WebNavigationResult result)
+		{
+			if (VirtualView != null)
+			{
+				VirtualView.Navigated(evnt, url, result);
+
+				NativeView?.UpdateGoForward(VirtualView);
+			}
+
+			_eventState = WebNavigationEvent.NewPage;
 		}
 	}
 }

@@ -30,13 +30,15 @@
 			}
 		}
 
-		void IWebView.Navigating(WebNavigatingEventArgs args)
+		void IWebView.Navigating(WebNavigationEvent evnt, string url)
 		{
+			var args = new WebNavigatingEventArgs(evnt, new UrlWebViewSource { Url = url }, url);
 			(this as IWebViewController)?.SendNavigating(args);
 		}
 
-		void IWebView.Navigated(WebNavigatedEventArgs args)
+		void IWebView.Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result)
 		{
+			var args = new WebNavigatedEventArgs(evnt, new UrlWebViewSource { Url = url }, url, result);
 			(this as IWebViewController)?.SendNavigated(args);
 		}
 	}

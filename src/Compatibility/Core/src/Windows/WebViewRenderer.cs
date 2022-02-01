@@ -408,6 +408,7 @@ if(bases.length == 0){
 			Control.Reload();
 		}
 
+		[PortHandler("Partially ported")]
 		async void NavigationSucceeded(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
 		{
 			// TODO WINUI3
@@ -424,6 +425,7 @@ if(bases.length == 0){
 
 		}
 
+		[PortHandler]
 		void NavigationFailed(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
 		{
 			Uri uri = sender.Source;
@@ -446,6 +448,7 @@ if(bases.length == 0){
 				await new global::Windows.UI.Popups.MessageDialog(e.TryGetWebMessageAsString()).ShowAsync();
 		}
 
+		[PortHandler]
 		void OnNavigationStarted(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs e)
 		{
 			// TODO WINUI3
@@ -468,6 +471,7 @@ if(bases.length == 0){
 			}
 		}
 
+		[PortHandler]
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)
 		{
 			_updating = true;
