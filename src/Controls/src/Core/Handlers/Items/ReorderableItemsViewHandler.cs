@@ -5,18 +5,18 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class CollectionViewHandler
+	public partial class ReorderableItemsViewHandler<TItemsView> where TItemsView : ReorderableItemsView
 	{
-		public CollectionViewHandler() : base(CollectionViewMapper)
+		public ReorderableItemsViewHandler() : base(ReorderableItemsViewMapper)
 		{
 
 		}
-		public CollectionViewHandler(PropertyMapper mapper = null) : base(mapper ?? CollectionViewMapper)
+		public ReorderableItemsViewHandler(PropertyMapper mapper = null) : base(mapper ?? ReorderableItemsViewMapper)
 		{
 
 		}
 
-		public static PropertyMapper<CollectionView, CollectionViewHandler> CollectionViewMapper = new PropertyMapper<CollectionView, CollectionViewHandler>(ViewMapper)
+		public static PropertyMapper<TItemsView, ReorderableItemsViewHandler<TItemsView>> ReorderableItemsViewMapper = new PropertyMapper<TItemsView, ReorderableItemsViewHandler<TItemsView>>(GroupableItemsViewHandler<GroupableItemsView>.GroupableItemsViewMapper)
 		{
 			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
 			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
@@ -31,11 +31,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
-			//[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
-			//[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
-			//[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
-			//[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped
-			[ReorderableItemsView.IsGroupedProperty.PropertyName] = MapCanReorderItems
+			[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
+			[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
+			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+			[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
+#if WINDOWS || __ANDROID__
+			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapIsGrouped,
+			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapIsGrouped,
+#endif
+			[ReorderableItemsView.CanReorderItemsProperty.PropertyName] = MapCanReorderItems,
 		};
 	}
 }
