@@ -639,7 +639,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-#if MACCATALYST
+#if MACCATALYST || __MACCATALYST__
 			public string RuntimePlatform => Device.MacCatalyst;
 #elif IOS || __IOS__
 			public string RuntimePlatform => Device.iOS;

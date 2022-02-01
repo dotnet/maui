@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Essentials
 		{
 #if __WATCHOS__
             return DeviceIdiom.Watch;
-#elif MACCATALYST || __MACCATALYST
+#elif MACCATALYST || __MACCATALYST__
 			return DeviceIdiom.Desktop;
 #else
 			switch (UIDevice.CurrentDevice.UserInterfaceIdiom)
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		static DeviceType GetDeviceType() =>
-#if !(MACCATALYST || MACOS)
+#if !(__MACCATALYST__ || MACCATALYST || MACOS)
 			Runtime.Arch == Arch.DEVICE ? DeviceType.Physical : DeviceType.Virtual;
 #else
 			DeviceType.Physical;
