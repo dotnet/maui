@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,9 +8,7 @@ using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
-using WWindow = Microsoft.UI.Xaml.Window;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
@@ -19,6 +16,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests
 {
+
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : HandlerTestBase
 	{
@@ -30,7 +28,6 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedPageHandler));
-					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
@@ -43,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), async (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
 				await navPage.PushAsync(CreateBasicTabbedPage());
 				var navView = GetMauiNavigationView(handler.MauiContext);
@@ -85,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 			var tabbedPage = CreateBasicTabbedPage();
 			tabbedPage.BarBackground = SolidColorBrush.Purple;
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(tabbedPage), (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), (handler) =>
 			{
 				var navView = GetMauiNavigationView(tabbedPage.Handler.MauiContext);
 				var platformBrush = (WSolidColorBrush)((Paint)tabbedPage.BarBackground).ToNative();
@@ -103,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 				Page = CreateBasicTabbedPage()
 			};
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(window, async windowHandler =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async windowHandler =>
 			{
 				window.Page.Handler.DisconnectHandler();
 
@@ -119,15 +116,124 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+
+		[Fact(DisplayName = "Bar Text Color")]
+		public async Task BarTextColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarTextColor = Colors.Red;
+			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var navItem = GetNavigationViewItems(navView).ToList()[0];
+
+				Assert.Equal(Colors.Red, ((WSolidColorBrush)navItem.Foreground).ToColor());
+				tabbedPage.BarTextColor = Colors.Blue;
+				Assert.Equal(Colors.Blue, ((WSolidColorBrush)navItem.Foreground).ToColor());
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Tab Title")]
+		public async Task TabTitle()
+		{
+			SetupBuilder();
+			await CreateHandlerAndAddToWindow<TabbedPageHandler>(CreateBasicTabbedPage(), handler =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var navItem = GetNavigationViewItems(navView).ToList()[0];
+				Assert.Equal("Page 1", navItem.Content);
+				handler.VirtualView.Children[0].Title = "New Page Name";
+				Assert.Equal("New Page Name", navItem.Content);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Selected/Unselected Color")]
+		public async Task SelectedAndUnselectedTabColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2" });
+
+			tabbedPage.SelectedTabColor = Colors.Red;
+			tabbedPage.UnselectedTabColor = Colors.Purple;
+
+			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var navItem1 = GetNavigationViewItems(navView).ToList()[0];
+				var navItem2 = GetNavigationViewItems(navView).ToList()[1];
+
+				Assert.Equal(Colors.Red, ((WSolidColorBrush)navItem1.Background).ToColor());
+				Assert.Equal(Colors.Purple, ((WSolidColorBrush)navItem2.Background).ToColor());
+
+				tabbedPage.CurrentPage = tabbedPage.Children[1];
+
+				Assert.Equal(Colors.Purple, ((WSolidColorBrush)navItem1.Background).ToColor());
+				Assert.Equal(Colors.Red, ((WSolidColorBrush)navItem2.Background).ToColor());
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Adding and Removing Pages Propagates Correctly")]
+		public async Task AddingAndRemovingPagesPropagatesCorrectly()
+		{
+			SetupBuilder();
+			await CreateHandlerAndAddToWindow<TabbedPageHandler>(CreateBasicTabbedPage(), async handler =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var items = GetNavigationViewItems(navView).ToList();
+				Assert.Single(items);
+				handler.VirtualView.Children.Add(new ContentPage());
+
+				// Wait for the navitem to propagate
+				await Task.Delay(100);
+				items = GetNavigationViewItems(navView).ToList();
+				Assert.Equal(2, items.Count);
+				handler.VirtualView.Children.RemoveAt(1);
+
+				// Wait for the navitem to propagate
+				await Task.Delay(100);
+				items = GetNavigationViewItems(navView).ToList();
+				Assert.Single(items);
+			});
+		}
+
+		[Fact(DisplayName = "Selected Item Changed Propagates to CurrentPage")]
+		public async Task SelectedItemChangedPropagatesToCurrentPage()
+		{
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.Children.Add(new ContentPage());
+
+
+
+			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var secondItem = (navView.MenuItemsSource as IEnumerable<NavigationViewItemViewModel>).Skip(1).FirstOrDefault();
+				navView.SelectedItem = secondItem;
+
+				Assert.Equal(tabbedPage.CurrentPage, tabbedPage.Children[1]);
+				return Task.CompletedTask;
+			});
+		}
+
+
 		TabbedPage CreateBasicTabbedPage()
 		{
 			return new TabbedPage()
 			{
 				Title = "Tabbed Page",
 				Children =
-					{
-						new ContentPage()
-					}
+				{
+					new ContentPage() { Title = "Page 1" }
+				}
 			};
 		}
 	}
