@@ -19,6 +19,12 @@ namespace Microsoft.Maui.Handlers
 			return nativeWebView;
 		}
 
+		internal WebNavigationEvent LastBackForwardWebNavigationEvent
+		{
+			get => _lastBackForwardEvent;
+			set => _lastBackForwardEvent = value;
+		}
+
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
 			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
@@ -29,15 +35,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.NativeView.CanGoBack)
-				handler._lastBackForwardEvent = WebNavigationEvent.Back;
+				handler.LastBackForwardWebNavigationEvent = WebNavigationEvent.Back;
 
 			handler.NativeView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.NativeView.CanGoBack)
-				handler._lastBackForwardEvent = WebNavigationEvent.Forward;
+			if (handler.NativeView.CanGoForward)
+				handler.LastBackForwardWebNavigationEvent = WebNavigationEvent.Forward;
 
 			handler.NativeView?.UpdateGoForward(webView);
 		}

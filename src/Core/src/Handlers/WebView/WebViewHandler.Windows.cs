@@ -10,6 +10,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override WebView2 CreateNativeView() => new MauiWebView();
 
+		internal WebNavigationEvent CurrentWebNavigationEvent
+		{
+			get => _eventState;
+			set => _eventState = value;
+		}
+
 		protected override void ConnectHandler(WebView2 nativeView)
 		{
 			nativeView.NavigationStarting += OnNavigationStarted;
@@ -36,15 +42,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.NativeView.CanGoBack)
-				handler._eventState = WebNavigationEvent.Back;
+				handler.CurrentWebNavigationEvent = WebNavigationEvent.Back;
 
 			handler.NativeView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.NativeView.CanGoBack)
-				handler._eventState = WebNavigationEvent.Forward;
+			if (handler.NativeView.CanGoForward)
+				handler.CurrentWebNavigationEvent = WebNavigationEvent.Forward;
 
 			handler.NativeView?.UpdateGoForward(webView);
 		}
@@ -58,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (Uri.TryCreate(e.Uri, UriKind.Absolute, out Uri? uri) && uri != null)
 			{
-				VirtualView.Navigating(_eventState, uri.AbsoluteUri);
+				VirtualView.Navigating(CurrentWebNavigationEvent, uri.AbsoluteUri);
 			}
 		}
 
@@ -88,7 +94,7 @@ namespace Microsoft.Maui.Handlers
 			Uri uri = sender.Source;
 
 			if (uri != null)
-				SendNavigated(uri.AbsoluteUri, _eventState, WebNavigationResult.Success);
+				SendNavigated(uri.AbsoluteUri, CurrentWebNavigationEvent, WebNavigationResult.Success);
 
 			if (VirtualView == null)
 				return;
@@ -101,7 +107,7 @@ namespace Microsoft.Maui.Handlers
 			Uri uri = sender.Source;
 
 			if (uri != null)
-				SendNavigated(uri.AbsoluteUri, _eventState, WebNavigationResult.Failure);
+				SendNavigated(uri.AbsoluteUri, CurrentWebNavigationEvent, WebNavigationResult.Failure);
 		}
 
 		void SendNavigated(string url, WebNavigationEvent evnt, WebNavigationResult result)
@@ -113,7 +119,7 @@ namespace Microsoft.Maui.Handlers
 				NativeView?.UpdateGoForward(VirtualView);
 			}
 
-			_eventState = WebNavigationEvent.NewPage;
+			CurrentWebNavigationEvent = WebNavigationEvent.NewPage;
 		}
 	}
 }

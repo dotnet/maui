@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Platform
 					navEvent = WebNavigationEvent.NewPage;
 					break;
 				case WKNavigationType.BackForward:
-					navEvent = _handler._lastBackForwardEvent;
+					navEvent = _handler.LastBackForwardWebNavigationEvent;
 					break;
 				case WKNavigationType.Reload:
 					navEvent = WebNavigationEvent.Refresh;

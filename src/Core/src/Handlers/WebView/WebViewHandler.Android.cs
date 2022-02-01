@@ -6,16 +6,26 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, AWebView>
 	{
+		public const string AssetBaseUrl = "file:///android_asset/";
+
 		WebViewClient? _webViewClient;
 		WebChromeClient? _webChromeClient;
 		bool _firstRun = true;
 
+		internal WebNavigationEvent _eventState;
+
 		protected override AWebView CreateNativeView()
 		{
-			return new MauiWebView(Context!)
+			return new MauiWebView(this, Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
 			};
+		}
+
+		internal WebNavigationEvent CurrentWebNavigationEvent
+		{
+			get => _eventState;
+			set => _eventState = value;
 		}
 
 		public override void SetVirtualView(IView view)
@@ -56,16 +66,23 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.NativeView.CanGoBack())
+				handler.CurrentWebNavigationEvent = WebNavigationEvent.Back;
+						
 			handler.NativeView.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.NativeView.CanGoForward())
+				handler.CurrentWebNavigationEvent = WebNavigationEvent.Forward;
+
 			handler.NativeView.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
+			handler.CurrentWebNavigationEvent = WebNavigationEvent.Refresh;
 			handler.NativeView.UpdateReload(webView);
 		}
 
@@ -77,10 +94,25 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.Eval(webView, script);
 		}
 
+		protected internal bool NavigatingCanceled(string? url)
+		{
+			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
+				return true;
+
+			if (url == AssetBaseUrl)
+				return false;
+
+			// TODO: Sync Cookies
+			VirtualView.Navigating(_eventState, url);
+			NativeView?.UpdateCanGoBackForward(VirtualView);
+	
+			return false;
+		}
+
 		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
 		{
-			//We want to load the source after making sure the mapper for webclients
-			//and settings were called already
+			// We want to load the source after making sure the mapper for webclients
+			// and settings were called already
 			if (handler._firstRun)
 				return;
 
