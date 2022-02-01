@@ -375,6 +375,7 @@ if(bases.length == 0){
 				});
 		}
 
+		[PortHandler]
 		async Task<string> OnEvaluateJavaScriptRequested(string script)
 		{
 			return await Control.ExecuteScriptAsync(script);

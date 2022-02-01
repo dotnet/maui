@@ -587,6 +587,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			EvaluateJavaScriptAsync(eventArg.Script);
 		}
 
+		[PortHandler]
 		async Task<string> OnEvaluateJavaScriptRequested(string script)
 		{
 			var result = await EvaluateJavaScriptAsync(script);

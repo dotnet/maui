@@ -1,4 +1,5 @@
-﻿using AWebView = Android.Webkit.WebView;
+﻿using System.Threading.Tasks;
+using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
 {
@@ -35,6 +36,20 @@ namespace Microsoft.Maui.Platform
 			nativeWebView.LoadUrl(source);
 		}
 
+		public static Task<string> EvaluateJavaScriptAsync(this AWebView nativeWebView, IWebView webView, string script)
+		{
+			return nativeWebView.EvaluateJavaScriptAsync(script);
+		}
+
+		public static Task<string> EvaluateJavaScriptAsync(this AWebView nativeWebView, string script)
+		{
+			var jsr = new JavascriptResult();
+
+			nativeWebView.EvaluateJavascript(script, jsr);
+
+			return jsr.JsResult;
+		}
+	
 		public static void UpdateGoBack(this AWebView nativeWebView, IWebView webView)
 		{
 			if (nativeWebView == null)

@@ -40,6 +40,33 @@
                 <Button
                     Text="Eval"
                     Clicked="OnEvalClicked"/>
+                <Label
+                    Text="Evaluate Script"
+                    Style="{StaticResource Headline}"/>
+                <VerticalStackLayout>
+                    <Label 
+                        Text="JavaScript Factorial" 
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center" />
+                    <HorizontalStackLayout>
+                        <Label 
+                            Text="Enter number: " />
+                        <Entry 
+                            x:Name="NumberEntry" 
+                            Text="10" 
+                            WidthRequest="40" />
+                    </HorizontalStackLayout>
+                    <Button 
+                        x:Name="_callJavaScriptButton" 
+                        Text="Call JavaScript" 
+                        Clicked="OnCallJavaScriptButtonClicked" />
+                    <Label 
+                        x:Name="ResultLabel" />
+                    <WebView 
+                        x:Name="JavaScriptWebView" 
+                        HeightRequest="300"
+                        WidthRequest="300" />
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

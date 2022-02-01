@@ -336,6 +336,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			LoadUrl("javascript:" + eventArg.Script, false);
 		}
 
+		[PortHandler]
 		Task<string> OnEvaluateJavaScriptRequested(string script)
 		{
 			var jsr = new JavascriptResult();

@@ -111,18 +111,27 @@ namespace Microsoft.Maui.Controls
 				script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
 			}
 
-			var result = await _evaluateJavaScriptRequested?.Invoke(script);
+			if (_evaluateJavaScriptRequested != null)
+			{
+				var result = await _evaluateJavaScriptRequested?.Invoke(script);
 
-			//if the js function errored or returned null/undefined treat it as null
-			if (result == "null")
-				result = null;
+				//if the js function errored or returned null/undefined treat it as null
+				if (result == "null")
+					result = null;
 
-			//JSON.stringify wraps the result in literal quotes, we just want the actual returned result
-			//note that if the js function returns the string "null" we will get here and not above
-			else if (result != null)
-				result = result.Trim('"');
+				//JSON.stringify wraps the result in literal quotes, we just want the actual returned result
+				//note that if the js function returns the string "null" we will get here and not above
+				else if (result != null)
+					result = result.Trim('"');
 
-			return result;
+				return result;
+			}
+			else
+			{
+				var result = await ((IWebView)this).EvaluateJavaScriptAsync(script);
+
+				return result;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='GoBack']/Docs" />

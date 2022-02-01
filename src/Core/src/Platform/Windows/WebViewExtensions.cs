@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Platform
 
 			nativeWebView.UpdateCanGoBackForward(webView);
 		}
-		
+
 		public static void UpdateGoForward(this WebView2 nativeWebView, IWebView webView)
 		{
 			if (nativeWebView == null)
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Platform
 
 			nativeWebView?.Reload();
 		}
-				
+
 		internal static void UpdateCanGoBackForward(this WebView2 nativeWebView, IWebView webView)
 		{
 			webView.CanGoBack = nativeWebView.CanGoBack;
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void Eval(this WebView2 nativeWebView, IWebView webView, string script)
-		{ 
+		{
 			if (nativeWebView == null)
 				return;
 
@@ -64,6 +65,16 @@ namespace Microsoft.Maui.Platform
 			{
 				await nativeWebView.ExecuteScriptAsync(script);
 			});
+		}
+
+		public static async Task<string> EvaluateJavaScriptAsync(this WebView2 nativeWebView, IWebView webView, string script)
+		{
+			return await nativeWebView.EvaluateJavaScriptAsync(script);
+		}
+
+		public static async Task<string> EvaluateJavaScriptAsync(this WebView2 nativeWebView, string script)
+		{
+			return await nativeWebView.ExecuteScriptAsync(script);
 		}
 	}
 }

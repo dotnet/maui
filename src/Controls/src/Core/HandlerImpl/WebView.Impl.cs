@@ -1,4 +1,16 @@
-﻿namespace Microsoft.Maui.Controls
+﻿#if __IOS__ || MACCATALYST
+using NativeView = WebKit.WKWebView;
+#elif __ANDROID__
+using NativeView = Android.Webkit.WebView;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.Controls.WebView2;
+#elif NETSTANDARD
+using NativeView = System.Object;
+# endif
+
+using System.Threading.Tasks;
+
+namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebView']/Docs" />
 	public partial class WebView : IWebView
@@ -28,6 +40,17 @@
 				((IWebViewController)this).CanGoForward = _canGoForward;
 				Handler?.UpdateValue(nameof(IWebView.CanGoForward));
 			}
+		}
+
+		Task<string> IWebView.EvaluateJavaScriptAsync(string script)
+		{
+			var virtualView = (IWebView)Handler.VirtualView;
+			var nativeView = (NativeView)Handler.NativeView;
+
+			if (virtualView == null || nativeView == null)
+				return Task.FromResult(string.Empty);
+
+			return nativeView.EvaluateJavaScriptAsync(virtualView, script);
 		}
 	}
 }
