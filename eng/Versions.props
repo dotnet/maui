@@ -1,11 +1,11 @@
 <Project>
   <PropertyGroup>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.200-rtm.22074.2</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.200-rtm.22078.8</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>6.0.2-mauipre.1.22075.3</MicrosoftNETCoreAppRefPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.46</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.52</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftiOSSdkPackageVersion>15.2.300-preview.13.1</MicrosoftiOSSdkPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.2.300-preview.13.1</MicrosoftMacCatalystSdkPackageVersion>
@@ -25,41 +25,41 @@
     <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsWebPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>6.0.1</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>6.0.0</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>6.0.0</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>6.0.0</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>6.0.0</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>6.0.0</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>6.0.0</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersCompositePackageVersion>6.0.0</MicrosoftExtensionsFileProvidersCompositePackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersCompositePackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.1</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>6.0.0</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsHostingPackageVersion>6.0.0</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.0</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>6.0.0</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingEventLogPackageVersion>6.0.0</MicrosoftExtensionsLoggingEventLogPackageVersion>
-    <MicrosoftExtensionsLoggingEventSourcePackageVersion>6.0.0</MicrosoftExtensionsLoggingEventSourcePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>6.0.0</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>6.0.0</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>6.0.0</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingEventLogPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingEventLogPackageVersion>
+    <MicrosoftExtensionsLoggingEventSourcePackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>6.0.2-mauipre.1.22075.3</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftJSInteropPackageVersion>6.0.1</MicrosoftJSInteropPackageVersion>
     <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.1</MicrosoftWindowsDesktopAppRuntimewinx64Version>
-    <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>6.0.0</SystemDiagnosticsEventLogPackageVersion>
+    <SystemCodeDomPackageVersion>7.0.0-alpha.1.21524.4</SystemCodeDomPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>7.0.0-alpha.1.21524.4</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>7.0.0-alpha.1.21524.4</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOPipelinesPackageVersion>6.0.1</SystemIOPipelinesPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>6.0.0</SystemTextEncodingsWebPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>7.0.0-alpha.1.21524.4</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>7.0.0-alpha.1.21524.4</SystemTextEncodingsWebPackageVersion>
     <SystemTextJsonPackageVersion>6.0.1</SystemTextJsonPackageVersion>
     <!-- Other packages -->
     <MicrosoftMauiGraphicsVersion>6.0.200-preview.13.909</MicrosoftMauiGraphicsVersion>
