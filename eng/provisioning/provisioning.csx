@@ -1,3 +1,7 @@
+MicrosoftOpenJdk ("17.0.1.12.1");
+
+string releaseChannel = Environment.GetEnvironmentVariable ("CHANNEL");
+
 if (IsMac)
 {
 	System.Net.Http.HttpClient client = new System.Net.Http.HttpClient (new System.Net.Http.HttpClientHandler { AllowAutoRedirect = true });
@@ -7,9 +11,8 @@ if (IsMac)
  			.Source (_ => "https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.107.macos10.xamarin.universal.pkg");
  	}
 	ForceJavaCleanup();
-	MicrosoftOpenJdk ("11.0.13.8.1");
 
-	string releaseChannel = Environment.GetEnvironmentVariable ("CHANNEL");
+
 	Console.WriteLine ("ANDROID_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("ANDROID_SDK_MAC"));
 	Console.WriteLine ("IOS_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("IOS_SDK_MAC"));
 	Console.WriteLine ("MONO_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("MONO_SDK_MAC"));
