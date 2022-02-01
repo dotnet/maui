@@ -43,11 +43,13 @@
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
+		/// Raised after web navigation begins.
 		/// </summary>
 		void Navigating(WebNavigationEvent evnt, string url);
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
+		/// Raised after web navigation completes.
 		/// </summary>
 		void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result);
 	}

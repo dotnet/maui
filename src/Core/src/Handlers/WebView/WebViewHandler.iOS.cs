@@ -8,7 +8,16 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected virtual float MinimumSize => 44f;
 
-		protected override WKWebView CreateNativeView() => new MauiWKWebView(RectangleF.Empty);
+		internal WebNavigationEvent _lastBackForwardEvent;
+
+		protected override WKWebView CreateNativeView()
+		{
+			var nativeWebView = new MauiWKWebView(RectangleF.Empty)
+			{
+				NavigationDelegate = new MauiWebViewNavigationDelegate(this)
+			};
+			return nativeWebView;
+		}
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
@@ -19,11 +28,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.NativeView.CanGoBack)
+				handler._lastBackForwardEvent = WebNavigationEvent.Back;
+
 			handler.NativeView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.NativeView.CanGoBack)
+				handler._lastBackForwardEvent = WebNavigationEvent.Forward;
+
 			handler.NativeView?.UpdateGoForward(webView);
 		}
 
