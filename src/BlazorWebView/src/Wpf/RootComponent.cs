@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,10 +18,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// <summary>
 		/// Constructs an instance of <see cref="RootComponent"/>.
 		/// </summary>
+		public RootComponent()
+		{
+		}
+
+		/// <summary>
+		/// Constructs an instance of <see cref="RootComponent"/>.
+		/// </summary>
 		/// <param name="selector">The CSS selector string that specifies where in the document the component should be placed. This must be unique among the root components within the <see cref="BlazorWebView"/>.</param>
 		/// <param name="componentType">The type of the root component. This type must implement <see cref="IComponent"/>.</param>
 		/// <param name="parameters">An optional dictionary of parameters to pass to the root component.</param>
-		public RootComponent(string selector, Type componentType, IDictionary<string, object> parameters)
+		public RootComponent(string selector, Type componentType, IDictionary<string, object?> parameters)
 		{
 			Selector = selector;
 			ComponentType = componentType;
@@ -30,17 +39,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// Gets or sets the CSS selector string that specifies where in the document the component should be placed.
 		/// This must be unique among the root components within the <see cref="BlazorWebView"/>.
 		/// </summary>
-		public string Selector { get; set; }
+		public string? Selector { get; set; }
 
 		/// <summary>
 		/// Gets or sets the type of the root component. This type must implement <see cref="IComponent"/>.
 		/// </summary>
-		public Type ComponentType { get; set; }
+		public Type? ComponentType { get; set; }
 
 		/// <summary>
 		/// Gets or sets an optional dictionary of parameters to pass to the root component.
 		/// </summary>
-		public IDictionary<string, object> Parameters { get; set; }
+		public IDictionary<string, object?>? Parameters { get; set; }
 
 		internal Task AddToWebViewManagerAsync(WebViewManager webViewManager)
 		{
@@ -64,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		internal Task RemoveFromWebViewManagerAsync(WebView2WebViewManager webviewManager)
 		{
-			return webviewManager.RemoveRootComponentAsync(Selector);
+			return webviewManager.RemoveRootComponentAsync(Selector!);
 		}
 	}
 }
