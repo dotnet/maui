@@ -211,5 +211,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4f567e5ffa4bad5d2cbb5e82470f18534ee02c9f</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-alpha.1.21601.1">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha />
+    </Dependency>   
   </ProductDependencies>
 </Dependencies>
