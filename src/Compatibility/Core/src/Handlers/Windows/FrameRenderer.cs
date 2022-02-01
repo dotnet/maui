@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element.Content == null)
 				return;
 
-			Control.Child = Element.Content.ToNative(MauiContext);
+			Control.Child = Element.Content.ToPlatform(MauiContext);
 		}
 
 		void UpdateBorder()

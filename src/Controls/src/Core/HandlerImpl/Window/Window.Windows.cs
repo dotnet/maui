@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			}
 			if (handler.NativeView.Content is UI.Xaml.Controls.Panel panel)
 			{
-				var nativeContent = view.Content.ToNative(handler.MauiContext!);
+				var nativeContent = view.Content.ToPlatform(handler.MauiContext!);
 				panel.Children.Clear();
 				panel.Children.Add(nativeContent);
 

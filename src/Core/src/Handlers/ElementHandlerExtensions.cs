@@ -15,8 +15,9 @@ namespace Microsoft.Maui
 {
 	static class ElementHandlerExtensions
 	{
-		public static NativeView? GetWrappedNativeView(this IElementHandler elementHandler) =>
-			elementHandler.VirtualView?.GetWrappedNativeView();
+		public static NativeView ToPlatform(this IElementHandler elementHandler) =>
+			(elementHandler.VirtualView?.ToPlatform() as NativeView) ??
+				throw new InvalidOperationException($"Unable to convert {elementHandler} to {typeof(NativeView)}");
 
 		public static IServiceProvider GetServiceProvider(this IElementHandler handler)
 		{
