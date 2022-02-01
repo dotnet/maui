@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Controls;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View that presents HTML content.
@@ -40,5 +42,17 @@
 		/// </summary>
 		/// <param name="script">A script to evaluate.</param>
 		void Eval(string script);
+
+		/// <summary>
+		/// For internal use by the .NET MAUI platform.
+		/// </summary>
+		/// <param name="args">Arguments for the event that is raised after web navigation begins.</param>
+		void Navigating(WebNavigatingEventArgs args);
+
+		/// <summary>
+		/// For internal use by the .NET MAUI platform.
+		/// </summary>
+		/// <param name="args">Arguments for the event that is raised after web navigation completes.</param>
+		void Navigated(WebNavigatedEventArgs args);
 	}
 }

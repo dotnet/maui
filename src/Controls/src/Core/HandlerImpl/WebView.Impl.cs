@@ -29,5 +29,15 @@
 				Handler?.UpdateValue(nameof(IWebView.CanGoForward));
 			}
 		}
+
+		void IWebView.Navigating(WebNavigatingEventArgs args)
+		{
+			(this as IWebViewController)?.SendNavigating(args);
+		}
+
+		void IWebView.Navigated(WebNavigatedEventArgs args)
+		{
+			(this as IWebViewController)?.SendNavigated(args);
+		}
 	}
 }
