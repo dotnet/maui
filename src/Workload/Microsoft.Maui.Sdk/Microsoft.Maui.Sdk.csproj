@@ -44,7 +44,7 @@
     <PackageReference Include="Microsoft.Maui.Graphics" GeneratePathProperty="true" />
     <PackageReference Include="Mono.Cecil" Version="0.11.3" GeneratePathProperty="true" />
     <PackageReference Include="System.CodeDom" GeneratePathProperty="true" />
-    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Build.Tasks/Controls.Build.Tasks-net6.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Build.Tasks/Controls.Build.Tasks.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/SourceGen/Controls.SourceGen.csproj" />
   </ItemGroup>
 
@@ -60,6 +60,12 @@
         Output="$(IntermediateOutputPath)BundledVersions.targets"
         OldValue="@VERSION@"
         NewValue="$(PackageReferenceVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)BundledVersions.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@TFM@"
+        NewValue="$(_MauiDotNetTfm)"
     />
     <ItemGroup>
       <None

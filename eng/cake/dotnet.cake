@@ -48,7 +48,7 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
     });
 
 Task("dotnet-build")
@@ -56,9 +56,9 @@ Task("dotnet-build")
     .Description("Build the solutions")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
-            RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
         else
             RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
     });
@@ -66,7 +66,7 @@ Task("dotnet-build")
 Task("dotnet-samples")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples-net6.slnf", new Dictionary<string, string> {
+        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = bool.TrueString,
         });
     });
@@ -147,11 +147,11 @@ Task("dotnet-test")
     {
         var tests = new []
         {
-            "**/Controls.Core.UnitTests-net6.csproj",
-            "**/Controls.Xaml.UnitTests-net6.csproj",
-            "**/Core.UnitTests-net6.csproj",
-            "**/Essentials.UnitTests-net6.csproj",
-            "**/Resizetizer.UnitTests-net6.csproj",
+            "**/Controls.Core.UnitTests.csproj",
+            "**/Controls.Xaml.UnitTests.csproj",
+            "**/Core.UnitTests.csproj",
+            "**/Essentials.UnitTests.csproj",
+            "**/Resizetizer.UnitTests.csproj",
             "**/Controls.Sample.Tests.csproj"
         };
 
@@ -220,13 +220,14 @@ Task("dotnet-diff")
         }
         else
         {
+            // clean all working folders
             var diffCacheDir = tempDirectory.Combine("diffCache");
             EnsureDirectoryExists(diffCacheDir);
             CleanDirectories(diffCacheDir.FullPath);
-
             EnsureDirectoryExists(diffDirectory);
             CleanDirectories(diffDirectory.FullPath);
 
+            // run the diff
             foreach (var nupkg in nupkgs)
             {
                 DotNetCoreTool("api-tools", new DotNetCoreToolSettings
@@ -245,6 +246,7 @@ Task("dotnet-diff")
                 });
             }
 
+            // clean working folders
             try
             {
                 CleanDirectories(diffCacheDir.FullPath);
@@ -252,6 +254,43 @@ Task("dotnet-diff")
             catch
             {
                 Information("Unable to clean up diff cache directory.");
+            }
+
+            var diffs = GetFiles($"{diffDirectory}/**/*.md");
+            if (!diffs.Any())
+            {
+                Warning($"##vso[task.logissue type=warning]No NuGet diffs were found.");
+            }
+            else
+            {
+                // clean working folders
+                var temp = diffCacheDir.Combine("md-files");
+                EnsureDirectoryExists(diffCacheDir);
+                CleanDirectories(diffCacheDir.FullPath);
+
+                // copy and rename files for UI
+                foreach (var diff in diffs)
+                {
+                    var segments = diff.Segments.Reverse().ToArray();
+                    var nugetId = segments[2];
+                    var platform = segments[1];
+                    var assembly = ((FilePath)segments[0]).GetFilenameWithoutExtension().GetFilenameWithoutExtension();
+                    var breaking = segments[0].EndsWith(".breaking.md");
+
+                    // using non-breaking spaces
+                    var newName = breaking ? "[BREAKING]   " : "";
+                    newName += $"{nugetId}    {assembly} ({platform}).md";
+                    var newPath = diffCacheDir.CombineWithFilePath(newName);
+
+                    CopyFile(diff, newPath);
+                }
+
+                // push changes to UI
+                var temps = GetFiles($"{diffCacheDir}/**/*.md");
+                foreach (var t in temps.OrderBy(x => x.FullPath))
+                {
+                    Information($"##vso[task.uploadsummary]{t}");
+                }
             }
         }
     });
@@ -276,8 +315,8 @@ Task("VS-NET6")
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
         
-        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj");
-        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility-net6.csproj");
+        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj");
+        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility.csproj");
         StartVisualStudioForDotNet6();
     });
 
@@ -294,14 +333,14 @@ Task("VS-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        DotNetCoreRestore("./Microsoft.Maui-net6.sln", new DotNetCoreRestoreSettings
+        DotNetCoreRestore("./Microsoft.Maui.sln", new DotNetCoreRestoreSettings
         {
             ToolPath = dotnetPath
         });
 
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj");
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
@@ -311,7 +350,7 @@ Task("SAMPLE-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", target: "Run");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid.csproj", target: "Run");
     });
 
 Task("SAMPLE-IOS")
@@ -320,7 +359,7 @@ Task("SAMPLE-IOS")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", target: "Run");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS.csproj", target: "Run");
     });
 
 Task("SAMPLE-MAC")
@@ -329,7 +368,7 @@ Task("SAMPLE-MAC")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj",  target: "Run");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst.csproj",  target: "Run");
     });
 
 
@@ -373,7 +412,7 @@ void StartVisualStudioForDotNet6(string sln = null)
     {
         if (IsRunningOnWindows())
         {
-            sln = "./Microsoft.Maui-net6.sln";
+            sln = "./Microsoft.Maui.sln";
         }
         else
         {

@@ -23,6 +23,9 @@
                             <!-- This removes a one pixel spacing between the AppBarTitle and the NavigationViews top edge -->
                             <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,0,0,0</Thickness>
 
+                            <!-- This removes a one pixel spacing between the AppBarTitle and the NavigationViews top edge -->
+                            <Thickness x:Key="TopNavigationViewTopNavGridMargin">4,0,0,0</Thickness>
+
                         </Page.Resources>
                         <Grid x:Name="RootGrid" RowSpacing="0" ColumnSpacing="0" Margin="0" Padding="0">
                             <Border x:Name="AppTitleBar"
@@ -35,7 +38,7 @@
                                         x:Name="AppFontIcon"
                                         HorizontalAlignment="Left" 
                                         VerticalAlignment="Center"
-                                        Source="Assets/Square44x44Logo.png" 
+                                        Source="Square44x44Logo.png" 
                                         Width="16" 
                                         Height="16"/>
                                     <TextBlock 

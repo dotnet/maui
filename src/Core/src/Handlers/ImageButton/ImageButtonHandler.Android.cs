@@ -46,12 +46,12 @@ namespace Microsoft.Maui.Handlers
 			(handler.NativeView as ShapeableImageView)?.UpdateStrokeColor(buttonStroke);
 		}
 
-		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke) 
+		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			(handler.NativeView as ShapeableImageView)?.UpdateStrokeThickness(buttonStroke);
 		}
 
-		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke) 
+		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			(handler.NativeView as ShapeableImageView)?.UpdateCornerRadius(buttonStroke);
 		}

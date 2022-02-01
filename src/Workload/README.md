@@ -7,7 +7,7 @@ The idea, is a project to be able to set `$(UseMaui)`:
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm)-android;$(_MauiDotNetTfm)-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <UseMaui>true</UseMaui>
   </PropertyGroup>
@@ -149,7 +149,7 @@ declared:
 
 ```dotnetcli
 $ git clean -dxf src/Controls/samples/
-$ ./bin/dotnet/dotnet build Microsoft.Maui.Samples-net6.slnf -p:UseWorkload=true
+$ ./bin/dotnet/dotnet build Microsoft.Maui.Samples.slnf -p:UseWorkload=true
 ```
 
 ### Install System-Wide
@@ -192,7 +192,7 @@ $ ./bin/dotnet/dotnet build src/DotNet/DotNet.csproj -t:Install
 Then we can build samples with `-p:UseWorkload=true`:
 
 ```dotnetcli
-$ ./bin/dotnet/dotnet build Microsoft.Maui.Samples-net6.slnf -p:UseWorkload=true
+$ ./bin/dotnet/dotnet build Microsoft.Maui.Samples.slnf -p:UseWorkload=true
 ```
 
 ## Cleanup .NET 6 installs & workloads

@@ -27,7 +27,6 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
@@ -41,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), async (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				Assert.Equal(UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed, navView.IsBackButtonVisible);
@@ -49,6 +48,42 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible, navView.IsBackButtonVisible);
 				await navPage.PopAsync();
 				Assert.Equal(UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed, navView.IsBackButtonVisible);
+			});
+		}
+
+		[Fact(DisplayName = "Set Has Back Button")]
+		public async Task SetHasBackButton()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				await navPage.PushAsync(new ContentPage());
+				NavigationPage.SetHasBackButton(navPage.CurrentPage, false);
+				Assert.Equal(UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed, navView.IsBackButtonVisible);
+				NavigationPage.SetHasBackButton(navPage.CurrentPage, true);
+				Assert.Equal(UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible, navView.IsBackButtonVisible);
+			});
+		}
+
+		[Fact(DisplayName = "Set Has Navigation Bar")]
+		public async Task SettHasNavigationBar()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var header = navView.Header as WFrameworkElement;
+				Assert.True(header.Visibility == UI.Xaml.Visibility.Visible);
+				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, false);
+				Assert.True(header.Visibility == UI.Xaml.Visibility.Collapsed);
+				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, true);
+				Assert.True(header.Visibility == UI.Xaml.Visibility.Visible);
+				return Task.CompletedTask;
 			});
 		}
 
@@ -65,10 +100,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
 			{
 				var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
-				WindowHeader windowHeader = (WindowHeader)navView.HeaderControl;
+				WindowHeader windowHeader = (WindowHeader)navView.Header;
 				var primaryCommand = ((WAppBarButton)windowHeader.CommandBar.PrimaryCommands[0]);
 
 				Assert.Equal(toolbarItem, primaryCommand.DataContext);
