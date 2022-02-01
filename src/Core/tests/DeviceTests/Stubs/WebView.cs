@@ -10,5 +10,7 @@
 		public void GoForward() { }
 		public void Reload() { }
 		public void Eval(string script) { }
+		public void Navigating(WebNavigationEvent evnt, string url) { }
+		public void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result) { }
 	}
 }
