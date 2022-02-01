@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
 			var virtualView = viewHandler.VirtualView;
-			var platformView = viewHandler.GetWrappedNativeView();
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView == null || virtualView == null)
 			{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui
 
 		internal static void NativeArrangeHandler(this IViewHandler viewHandler, Rectangle rect)
 		{
-			var nativeView = viewHandler.GetWrappedNativeView();
+			var nativeView = viewHandler.ToPlatform();
 
 			if (nativeView == null)
 				return;

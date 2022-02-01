@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				presenter.Content = _currentPage.ToNative(MauiContext);
+				presenter.Content = _currentPage.ToPlatform(MauiContext);
 			}
 			catch (Exception)
 			{

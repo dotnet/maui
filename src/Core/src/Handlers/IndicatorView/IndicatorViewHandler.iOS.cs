@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Handlers
 				if (MauiContext != null && indicatorsLayoutOverride != null)
 				{
 					ClearIndicators();
-					handler = indicatorsLayoutOverride.ToNative(MauiContext);
+					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
 					NativeView.AddSubview(handler);
 				}
 			}

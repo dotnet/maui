@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
-			var nativeScroll = scrollBar.ToNative();
+			var nativeScroll = scrollBar.ToPlatform();
 			if (nativeScroll != null)
 			{
 				var dispose = nativeScroll.AddObserver(ScrollViewContentOffsetKey, NSKeyValueObservingOptions.New, FrameAction);

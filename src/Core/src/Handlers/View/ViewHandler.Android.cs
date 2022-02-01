@@ -25,58 +25,58 @@ namespace Microsoft.Maui.Handlers
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateAnchorX(view);
-			handler.GetWrappedNativeView()?.UpdateAnchorY(view);
+			handler.ToPlatform().UpdateAnchorX(view);
+			handler.ToPlatform().UpdateAnchorY(view);
 		}
 
 		public static void MapTranslationX(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateTranslationX(view);
+			handler.ToPlatform().UpdateTranslationX(view);
 		}
 
 		public static void MapTranslationY(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateTranslationY(view);
+			handler.ToPlatform().UpdateTranslationY(view);
 		}
 
 		public static void MapScale(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateScale(view);
+			handler.ToPlatform().UpdateScale(view);
 		}
 
 		public static void MapScaleX(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateScaleX(view);
+			handler.ToPlatform().UpdateScaleX(view);
 		}
 
 		public static void MapScaleY(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateScaleY(view);
+			handler.ToPlatform().UpdateScaleY(view);
 		}
 
 		public static void MapRotation(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateRotation(view);
+			handler.ToPlatform().UpdateRotation(view);
 		}
 
 		public static void MapRotationX(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateRotationX(view);
+			handler.ToPlatform().UpdateRotationX(view);
 		}
 
 		public static void MapRotationY(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateRotationY(view);
+			handler.ToPlatform().UpdateRotationY(view);
 		}
 
 		public static void MapAnchorX(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateAnchorX(view);
+			handler.ToPlatform().UpdateAnchorX(view);
 		}
 
 		public static void MapAnchorY(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateAnchorY(view);
+			handler.ToPlatform().UpdateAnchorY(view);
 		}
 
 		static partial void MappingSemantics(IViewHandler handler, IView view)
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Handlers
 			if (appbarLayout == null)
 				appbarLayout = rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
 
-			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext);
+			var nativeToolBar = te.Toolbar?.ToPlatform(handler.MauiContext);
 
 			if (appbarLayout == null || nativeToolBar == null)
 			{
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Handlers
 			var appbarLayout = nativeView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar) ??
 				rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
 
-			var nativeToolBar = te.Toolbar?.ToNative(handler.MauiContext);
+			var nativeToolBar = te.Toolbar?.ToPlatform(handler.MauiContext);
 
 			if (appbarLayout == null)
 			{
