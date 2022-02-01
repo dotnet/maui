@@ -69,6 +69,13 @@ namespace Microsoft.Maui.Essentials
 				controller.DismissViewController(true, null);
 				tcs.TrySetResult(e.Result == MFMailComposeResult.Sent);
 			};
+
+			if (controller.PresentationController != null)
+			{
+				controller.PresentationController.Delegate =
+					new Platform.UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
+			}
+
 			parentController.PresentViewController(controller, true, null);
 
 			return tcs.Task;

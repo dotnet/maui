@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0672;0219;0414;CS0436</NoWarn>
+    <NoWarn>0672;0219;0414;CS0436;0618</NoWarn>
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
   </PropertyGroup>
@@ -18,9 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="JetBrains.DotMemoryUnit" Version="3.1.20200127.214830" />
-    <PackageReference Include="NUnit" Version="3.13.1" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.3" />
     <PackageReference Include="System.CodeDom" Version="5.0.0" />
     <PackageReference Include="Microsoft.Build" Version="16.9.0" />
@@ -31,26 +32,22 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
-    <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Core.UnitTests\MockDispatcherProvider.cs">
-      <Link>MockDispatcherProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\Core.UnitTests\MockDispatcher.cs">
-      <Link>MockDispatcher.cs</Link>
-    </Compile>
-    <Compile Include="..\Core.UnitTests\MockPlatformServices.cs">
-      <Link>MockPlatformServices.cs</Link>
-    </Compile>
-    <Compile Include="..\Core.UnitTests\BaseTestFixture.cs">
-      <Link>BaseTestFixture.cs</Link>
-    </Compile>
+    <Compile Include="..\..\..\Core\tests\UnitTests\TestClasses\DispatcherStub.cs" Link="DispatcherStub.cs" />
+    <Compile Include="..\Core.UnitTests\Log.cs" Link="Log.cs" />
+    <Compile Include="..\Core.UnitTests\MockPlatformServices.cs" />
+    <Compile Include="..\Core.UnitTests\MockMauiContext.cs" />
+    <Compile Include="..\Core.UnitTests\MockServiceProvider.cs" />
+    <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
+    <Compile Include="..\Core.UnitTests\BaseTestFixture.cs" />
   </ItemGroup>
 
 </Project>

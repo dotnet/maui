@@ -112,7 +112,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			stack.Children.Add(threadObservableButton);
 
 			layout.Children.Add(carouselView);
-			GridLayout.SetRow(scroll, 1);
+			Grid.SetRow(scroll, 1);
 			layout.Children.Add(scroll);
 
 			Content = layout;

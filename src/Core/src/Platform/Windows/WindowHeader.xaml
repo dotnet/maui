@@ -25,9 +25,9 @@
                  and then we center the TextBlock to that. This causes the backbutton and textblock to line up.
             -->
             <Border x:Name="textBlockBorder" Grid.Column="1" VerticalAlignment="Top" >
-                <TextBlock VerticalAlignment="Center"   x:Name="title" TextWrapping="NoWrap" Margin="10,0,0,0"/>
+                <TextBlock VerticalAlignment="Center" x:Name="title" TextWrapping="NoWrap" Margin="10,0,0,0"/>
             </Border>
-            
+
             <ContentControl x:Name="titleView" Grid.Column="2" HorizontalAlignment="Stretch" />
 
         </Grid>

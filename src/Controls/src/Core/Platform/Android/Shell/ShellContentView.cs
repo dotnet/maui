@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!(_context.TryGetTarget(out context)))
 					return;
 
-				NativeView = view.ToNative(_mauiContext);
+				NativeView = view.ToPlatform(_mauiContext);
 				Handler = view.Handler;
 
 				//if (View is VisualElement ve)

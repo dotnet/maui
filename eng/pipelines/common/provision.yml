@@ -1,8 +1,19 @@
 parameters:
   platform : ''
   skipXcode: false
+  poolName: ''
 
 steps:
+  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+    displayName: 'Use .NET SDK 6'
+    inputs:
+      packageType: sdk
+      version: 6.0.x
+
+  - pwsh: |
+      dotnet --version
+      dotnet --list-sdks
+    displayName: 'Show .NET SDK info'
 
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
@@ -19,10 +30,12 @@ steps:
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'
-      condition: eq(variables['provisioning'], 'true')
+      condition: and(eq(variables['provisioning'], 'true'),ne('${{ parameters.poolName }}', 'Azure Pipelines'))
       inputs:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
+      env:
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Setup SDK Paths
     - bash: |
         echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
@@ -86,7 +99,6 @@ steps:
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
-
 
   # Prepare Both
   - pwsh: ./build.ps1 --target provision

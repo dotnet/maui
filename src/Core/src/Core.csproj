@@ -1,11 +1,18 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui</RootNamespace>
     <AssemblyName>Microsoft.Maui</AssemblyName>
     <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+	<WarningsNotAsErrors>CS1571;CS1572;CS1734</WarningsNotAsErrors>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <ItemGroup>
+    <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.targets" Visible="False" Pack="True" PackagePath="build;buildTransitive" />
+    <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.props" Visible="False" Pack="True" PackagePath="build;buildTransitive" />
+    <None Include="Platform\ReflectionExtensions.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -14,11 +21,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Maui.Graphics" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="System.Numerics.Vectors" Condition="$(TargetFramework.StartsWith('netstandard'))" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.Android.Glide" />
   </ItemGroup>
   <ItemGroup>

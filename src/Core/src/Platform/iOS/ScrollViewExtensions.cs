@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateContent(this UIScrollView scrollView, IView? content, IMauiContext context)
 		{
-			var nativeContent = content == null ? null : content.ToNative(context);
+			var nativeContent = content == null ? null : content.ToPlatform(context);
 
 			if (scrollView.Subviews.Length > 0 && scrollView.Subviews[0] == nativeContent)
 			{

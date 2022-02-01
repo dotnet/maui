@@ -16,20 +16,20 @@ namespace Microsoft.Maui
 		internal static Matrix4x4 ToViewTransform(this CATransform3D transform) =>
 			new Matrix4x4
 			{
-				M11 = (float)transform.m11,
-				M12 = (float)transform.m12,
-				M13 = (float)transform.m13,
-				M14 = (float)transform.m14,
-				M21 = (float)transform.m21,
-				M22 = (float)transform.m22,
-				M23 = (float)transform.m23,
-				M24 = (float)transform.m24,
-				M31 = (float)transform.m31,
-				M32 = (float)transform.m32,
-				M33 = (float)transform.m33,
-				M34 = (float)transform.m34,
-				Translation = new Vector3((float)transform.m41, (float)transform.m42, (float)transform.m43),
-				M44 = (float)transform.m44
+				M11 = (float)transform.M11,
+				M12 = (float)transform.M12,
+				M13 = (float)transform.M13,
+				M14 = (float)transform.M14,
+				M21 = (float)transform.M21,
+				M22 = (float)transform.M22,
+				M23 = (float)transform.M23,
+				M24 = (float)transform.M24,
+				M31 = (float)transform.M31,
+				M32 = (float)transform.M32,
+				M33 = (float)transform.M33,
+				M34 = (float)transform.M34,
+				Translation = new Vector3((float)transform.M41, (float)transform.M42, (float)transform.M43),
+				M44 = (float)transform.M44
 			};
 
 		internal static Matrix4x4 GetViewTransform(this CALayer layer)

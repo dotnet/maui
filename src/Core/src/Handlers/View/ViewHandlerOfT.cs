@@ -1,5 +1,5 @@
 using System;
-#if __IOS__ || MACCATALYST
+#if IOS || MACCATALYST
 using NativeView = UIKit.UIView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		public new TNativeView NativeView
 		{
 			get => (TNativeView?)base.NativeView ?? throw new InvalidOperationException($"NativeView cannot be null here");
-			private set => base.NativeView = value;
+			private protected set => base.NativeView = value;
 		}
 
 		public new TVirtualView VirtualView

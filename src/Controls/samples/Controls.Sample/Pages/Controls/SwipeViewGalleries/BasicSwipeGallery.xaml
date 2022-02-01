@@ -15,7 +15,7 @@
                         Mode="Execute">
                         <SwipeItem
                             Text="Delete"
-                            Icon="coffee.png"
+                            IconImageSource="coffee.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>
@@ -43,15 +43,15 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="View"
-                            Icon="books.png"
+                            IconImageSource="books.png"
                             BackgroundColor="Green"/>
                         <SwipeItem
                             Text="Edit"
-                            Icon="calculator.png"
+                            IconImageSource="calculator.png"
                             BackgroundColor="Orange"/>
                         <SwipeItem
                             Text="Delete"
-                            Icon="coffee.png"
+                            IconImageSource="coffee.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>
@@ -77,15 +77,15 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="View"
-                            Icon="books.png"
+                            IconImageSource="books.png"
                             BackgroundColor="Green"/>
                         <SwipeItem
                             Text="Edit"
-                            Icon="calculator.png"
+                            IconImageSource="calculator.png"
                             BackgroundColor="Orange"/>
                         <SwipeItem
                             Text="Delete"
-                            Icon="coffee.png"
+                            IconImageSource="coffee.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>
@@ -111,7 +111,7 @@
                         Mode="Execute">
                         <SwipeItem
                             Text="Delete"
-                            Icon="coffee.png"
+                            IconImageSource="coffee.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>
@@ -137,7 +137,7 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="LeftItem"
-                            Icon="coffee.png"
+                            IconImageSource="coffee.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>
@@ -147,7 +147,7 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="TopItem"
-                            Icon="coffee.png"
+                            IconImageSource="coffee.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>
@@ -157,7 +157,7 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="RightItem"
-                            Icon="coffee.png"
+                            IconImageSource="coffee.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>
@@ -167,7 +167,7 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="BottomItem"
-                            Icon="coffee.png"
+                            IconImageSource="coffee.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>

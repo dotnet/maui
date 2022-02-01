@@ -4,7 +4,7 @@ using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorder, ContentView>
+	public partial class BorderHandler : ViewHandler<IBorderView, ContentView>
 	{
 		protected override ContentView CreateNativeView()
 		{
@@ -40,10 +40,10 @@ namespace Microsoft.Maui.Handlers
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
 			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddSubview(view.ToNative(MauiContext));
+				NativeView.AddSubview(view.ToPlatform(MauiContext));
 		}
 
-		public static void MapContent(BorderHandler handler, IBorder border)
+		public static void MapContent(BorderHandler handler, IBorderView border)
 		{
 			handler.UpdateContent();
 		}
