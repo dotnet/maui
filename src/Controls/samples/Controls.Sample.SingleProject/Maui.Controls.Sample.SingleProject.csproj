@@ -10,6 +10,7 @@
   <PropertyGroup>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>MSIX</WindowsPackageType>
+    <WindowsPackageType Condition=" $(TargetFramework.Contains('-windows10.0.20348')) ">None</WindowsPackageType>
     <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
