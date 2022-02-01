@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls
 
 			protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 			{
-				// Don't do anything here; the base methods will null out Parents, etc.
+				// Don't do anything here; the base methods will null out Parents, etc., and we don't want that
 			}
 		}
 	}
