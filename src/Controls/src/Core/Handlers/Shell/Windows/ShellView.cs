@@ -15,24 +15,19 @@ using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	[Microsoft.UI.Xaml.Data.Bindable]
-	public class ShellView : NavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
+	public class ShellView : RootNavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
-		public static readonly DependencyProperty FlyoutBackgroundColorProperty = DependencyProperty.Register(
-			nameof(FlyoutBackgroundColor), typeof(Brush), typeof(ShellView),
-			new PropertyMetadata(default(Brush)));
-
 		internal static readonly global::Windows.UI.Color DefaultBackgroundColor = global::Windows.UI.Color.FromArgb(255, 3, 169, 244);
 		internal static readonly global::Windows.UI.Color DefaultForegroundColor = Microsoft.UI.Colors.White;
 		internal static readonly global::Windows.UI.Color DefaultTitleColor = Microsoft.UI.Colors.White;
 		internal static readonly global::Windows.UI.Color DefaultUnselectedColor = global::Windows.UI.Color.FromArgb(180, 255, 255, 255);
 		Control TogglePaneButton { get; set; }
 		WButton NavigationViewBackButton { get; set; }
-
-		internal const string ShellStyle = "ShellNavigationView";
 		Shell _shell;
 		Brush _flyoutBackdrop;
 		double _flyoutHeight = -1d;
@@ -40,21 +35,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		FlyoutBehavior _flyoutBehavior;
 		List<List<Element>> _flyoutGrouping;
-		ShellItemView ItemRenderer { get; }
+		ShellItemHandler ItemRenderer { get; set; }
 		IShellController ShellController => (IShellController)_shell;
 		ObservableCollection<object> FlyoutItems = new ObservableCollection<object>();
+		IMauiContext MauiContext => Shell.Handler.MauiContext;
 
 		public ShellView()
 		{
 			_flyoutBackdrop = Brush.Default;
-			IsSettingsVisible = false;
-			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 			IsPaneOpen = false;
-			Content = ItemRenderer = CreateShellItemView();
 			MenuItemTemplateSelector = CreateShellFlyoutTemplateSelector();
 			ItemInvoked += OnMenuItemInvoked;
 			BackRequested += OnBackRequested;
-			Style = Microsoft.UI.Xaml.Application.Current.Resources["ShellNavigationView"] as Microsoft.UI.Xaml.Style;
+
 			MenuItemsSource = FlyoutItems;
 		}
 
@@ -66,16 +59,10 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			catch (Exception exc)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<ShellView>()?.LogWarning(exc, "Failed to Navigate Back");
+				_shell?.FindMauiContext()?.CreateLogger<ShellView>()?.LogWarning(exc, "Failed to Navigate Back");
 			}
 
 			UpdateToolBar();
-		}
-
-		public WBrush FlyoutBackgroundColor
-		{
-			get => (WBrush)GetValue(FlyoutBackgroundColorProperty);
-			set => SetValue(FlyoutBackgroundColorProperty, value);
 		}
 
 		protected override void OnApplyTemplate()
@@ -126,35 +113,6 @@ namespace Microsoft.Maui.Controls.Platform
 				ShellController.OnFlyoutItemSelected(item);
 		}
 
-		#region IVisualElementRenderer
-
-		public EventHandler<VisualElementChangedEventArgs> ElementChanged;
-
-		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
-
-			double oldWidth = Width;
-			double oldHeight = Height;
-
-			Height = double.NaN;
-			Width = double.NaN;
-
-			Measure(constraint);
-			var result = new Size(Math.Ceiling(DesiredSize.Width), Math.Ceiling(DesiredSize.Height));
-
-			Width = oldWidth;
-			Height = oldHeight;
-
-			return new SizeRequest(result);
-		}
-
-		public UIElement GetNativeElement() => null;
-
-		public void Dispose()
-		{
-			SetElement(null);
-		}
 
 		public void SetElement(VisualElement element)
 		{
@@ -174,13 +132,10 @@ namespace Microsoft.Maui.Controls.Platform
 				ItemInvoked += OnMenuItemInvoked;
 				BackRequested += OnBackRequested;
 
-
 				Element = (Shell)element;
 				Element.SizeChanged += OnElementSizeChanged;
 				OnElementSet(Element);
 				Element.PropertyChanged += OnElementPropertyChanged;
-				ItemRenderer.SetShellContext(this);
-				ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(null, Element));
 			}
 			else if (Element != null)
 			{
@@ -199,10 +154,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		#endregion IVisualElementRenderer
-
-
-
 		ShellSplitView ShellSplitView => GetTemplateChild("RootSplitView") as ShellSplitView;
 		ScrollViewer ShellLeftNavScrollViewer => (ScrollViewer)GetTemplateChild("LeftNavScrollViewer");
 		protected internal Shell Element { get; set; }
@@ -216,19 +167,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
-			{
-				SwitchShellItem(Element.CurrentItem);
-			}
-			else if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
-			{
-				IsPaneOpen = Shell.FlyoutIsPresented;
-			}
-			else if (e.IsOneOf(Shell.FlyoutBackgroundColorProperty, Shell.FlyoutBackgroundProperty))
-			{
-				UpdateFlyoutBackgroundColor();
-			}
-			else if (e.PropertyName == Shell.FlyoutVerticalScrollModeProperty.PropertyName)
+			if (e.PropertyName == Shell.FlyoutVerticalScrollModeProperty.PropertyName)
 			{
 				UpdateFlyoutVerticalScrollMode();
 			}
@@ -285,33 +224,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		protected virtual void UpdateFlyoutBackgroundColor()
-		{
-			if (_shell.FlyoutBackgroundColor == null &&
-				(_shell.FlyoutBackground == null ||
-				 _shell.FlyoutBackground.IsEmpty))
-			{
-				object color = null;
-				if (IsPaneOpen)
-					color = Resources["NavigationViewExpandedPaneBackground"];
-				else
-					color = Resources["NavigationViewDefaultPaneBackground"];
-
-				if (color is WBrush brush)
-					FlyoutBackgroundColor = brush;
-				else if (color is global::Windows.UI.Color uiColor)
-					new WSolidColorBrush(uiColor);
-			}
-			else
-			{
-				if (_shell.FlyoutBackground != null)
-					FlyoutBackgroundColor = _shell.FlyoutBackground.ToBrush();
-				else if (_shell.FlyoutBackgroundColor != null)
-					FlyoutBackgroundColor = _shell.FlyoutBackgroundColor.ToNative();
-			}
-				
-		}
-
 		protected virtual void OnElementSet(Shell shell)
 		{
 			if (_shell != null)
@@ -335,7 +247,6 @@ namespace Microsoft.Maui.Controls.Platform
 			ShellController.AddAppearanceObserver(this, shell);
 			ShellController.ItemsCollectionChanged += OnItemsCollectionChanged;
 			ShellController.FlyoutItemsChanged += OnFlyoutItemsChanged;
-			UpdateFlyoutBackgroundColor();
 
 			_shell.Navigated += OnShellNavigated;
 			UpdateToolBar();
@@ -351,61 +262,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (SelectedItem == null)
 				return;
 
-			bool isNavBarVisible = true;
-			if (_shell.CurrentPage != null && !Shell.GetNavBarIsVisible(_shell.CurrentPage))
-			{
-				isNavBarVisible = false;
-			}
 
-			bool backButtonEnabled = false;
-
-			// WinUI seems to reset these values if you modify Pane Properties
-			if (_shell.Navigation.NavigationStack.Count > 1 &&
-				(isNavBarVisible || _flyoutBehavior == FlyoutBehavior.Locked))
-			{
-				var backButtonBehavior = Shell.GetBackButtonBehavior(_shell.CurrentPage);
-				backButtonEnabled = backButtonBehavior?.IsVisible ?? true;
-			}
-			else
-			{
-				backButtonEnabled = false;
-			}
-
-			switch (_flyoutBehavior)
-			{
-				case FlyoutBehavior.Disabled:
-					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-					IsPaneToggleButtonVisible = false;
-					IsPaneOpen = false;
-					break;
-
-				case FlyoutBehavior.Flyout:
-					IsPaneToggleButtonVisible = !IsBackEnabled && isNavBarVisible;
-					bool shouldOpen = Shell.FlyoutIsPresented;
-					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal; //This will trigger opening the flyout
-					IsPaneOpen = shouldOpen;
-					break;
-
-				case FlyoutBehavior.Locked:
-					IsPaneOpen = true;
-					IsPaneToggleButtonVisible = false;
-					PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
-					break;
-			}
-			
-			// Don't move these above the pane display settings
-			// WinUI seems to reset these values if you modify Pane Properties
-			if (backButtonEnabled)
-			{
-				IsBackEnabled = true;
-				IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
-				IsPaneToggleButtonVisible = false;
-			}
-			else
-			{
-				IsBackEnabled = false;
-				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
-			}
+			this.UpdateFlyoutBehavior(Shell);
 		}
 
 		void OnFlyoutItemsChanged(object sender, EventArgs e)
@@ -470,10 +328,12 @@ namespace Microsoft.Maui.Controls.Platform
 				obj is FlyoutItemMenuSeparator fim && fim.Id == Id;
 		}
 
-		void SwitchShellItem(ShellItem newItem, bool animate = true)
+		internal void SwitchShellItem(ShellItem newItem, bool animate = true)
 		{
 			SelectedItem = newItem;
-			ItemRenderer.NavigateToShellItem(newItem, animate);
+			var handler = CreateShellItemView();
+			if (handler.VirtualView != newItem)
+				handler.SetVirtualView(newItem);
 		}
 
 		void UpdatePaneButtonColor(Control control, bool overrideColor)
@@ -525,7 +385,18 @@ namespace Microsoft.Maui.Controls.Platform
 		public virtual ShellFlyoutTemplateSelector CreateShellFlyoutTemplateSelector() => new ShellFlyoutTemplateSelector();
 		public virtual ShellHeaderView CreateShellHeaderView(Shell shell) => new ShellHeaderView(shell);
 		public virtual ShellFooterView CreateShellFooterView(Shell shell) => new ShellFooterView(shell);
-		public virtual ShellItemView CreateShellItemView() => new ShellItemView(this);
-		public virtual ShellSectionView CreateShellSectionView() => new ShellSectionView();
+		ShellItemHandler CreateShellItemView()
+		{
+			ItemRenderer ??= (ShellItemHandler)Shell.CurrentItem.ToHandler(MauiContext);
+
+			if (ItemRenderer.NativeView != (Content as FrameworkElement))
+				Content = ItemRenderer.NativeView;
+
+			if (ItemRenderer.VirtualView != Shell.CurrentItem)
+				ItemRenderer.SetVirtualView(Shell.CurrentItem);
+
+			return ItemRenderer;
+		}
+		//MauiNavigationView CreateShellSectionView() => new ShellSectionView();
 	}
 }

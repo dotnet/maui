@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 			SetColumn(_Toolbar, 1);
 			_HeaderArea.Children.Add(_Toolbar);
 
-			SectionView = shellContext.CreateShellSectionView();
+			//SectionView = shellContext.CreateShellSectionView();
 			SetRow(SectionView, 1);
 
 			Children.Add(SectionView);

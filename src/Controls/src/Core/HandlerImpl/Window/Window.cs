@@ -7,9 +7,9 @@ namespace Microsoft.Maui.Controls
 	{
 		public static IPropertyMapper<IWindow, WindowHandler> ControlsLabelMapper = new PropertyMapper<IWindow, WindowHandler>(WindowHandler.Mapper)
 		{
-#if ANDROID || WINDOWS
-			[nameof(IWindow.Content)] = MapContent
-#endif
+//#if ANDROID || WINDOWS
+//			[nameof(IWindow.Content)] = MapContent
+//#endif
 		};
 
 		internal static void RemapForControls()

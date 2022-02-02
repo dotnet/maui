@@ -128,28 +128,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFlyoutBehavior(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			var nativeView = handler.NativeView;
-
-			switch (flyoutView.FlyoutBehavior)
-			{
-				case FlyoutBehavior.Flyout:
-					nativeView.IsPaneToggleButtonVisible = true;
-					// Workaround for
-					// https://github.com/microsoft/microsoft-ui-xaml/issues/6493
-					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
-					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-					break;
-				case FlyoutBehavior.Locked:
-					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
-					nativeView.IsPaneToggleButtonVisible = false;
-					break;
-				case FlyoutBehavior.Disabled:
-					nativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-					nativeView.IsPaneToggleButtonVisible = false;
-					nativeView.IsPaneOpen = false;
-					break;
-
-			}
-
+			nativeView.UpdateFlyoutBehavior(flyoutView);
 			handler.UpdateFlyoutPanelMargin();
 		}
 

@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Platform
 {
@@ -103,6 +104,36 @@ namespace Microsoft.Maui.Platform
 				foreach (var item in items)
 				{
 					item.SelectedBackground = brush;
+				}
+			}
+		}
+
+		public static void UpdatePaneBackground(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var rootSplitView = navigationView.RootSplitView;
+			var brush = paint?.ToNative();
+
+			if (brush == null)
+			{
+				object? color = null;
+				if (navigationView.IsPaneOpen)
+					color = navigationView.Resources["NavigationViewExpandedPaneBackground"];
+				else
+					color = navigationView.Resources["NavigationViewDefaultPaneBackground"];
+
+				if (rootSplitView != null)
+				{
+					if (color is WBrush colorBrush)
+						rootSplitView.PaneBackground = colorBrush;
+					else if (color is global::Windows.UI.Color uiColor)
+						rootSplitView.PaneBackground = new WSolidColorBrush(uiColor);
+				}
+			}
+			else
+			{
+				if (rootSplitView != null)
+				{
+					rootSplitView.PaneBackground = brush;
 				}
 			}
 		}

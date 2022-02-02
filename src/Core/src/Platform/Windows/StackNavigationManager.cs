@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
 		protected NavigationRootManager WindowManager => _mauiContext.GetNavigationRootManager();
-		private protected INavigationView? NavigationView { get; private set; }
+		private protected IStackNavigation? NavigationView { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; set; } = new List<IView>();
 		public IMauiContext MauiContext => _mauiContext;
 		public IView CurrentPage
@@ -28,20 +28,20 @@ namespace Microsoft.Maui.Platform
 			_mauiContext = mauiContext;
 		}
 
-		public virtual void Connect(IView navigationView, Frame navigationFrame)
+		public virtual void Connect(IStackNavigation navigationView, Frame navigationFrame)
 		{
 			if (_navigationFrame != null)
 				_navigationFrame.Navigated -= OnNavigated;
 
 			navigationFrame.Navigated += OnNavigated;
 			_navigationFrame = navigationFrame;
-			NavigationView = (INavigationView)navigationView;
+			NavigationView = (IStackNavigation)navigationView;
 
 			if (WindowManager?.RootView is NavigationView nv)
 				nv.IsPaneVisible = true;
 		}
 
-		public virtual void Disconnect(IView navigationView, Frame navigationFrame)
+		public virtual void Disconnect(IStackNavigation navigationView, Frame navigationFrame)
 		{
 			if (_navigationFrame != null)
 				_navigationFrame.Navigated -= OnNavigated;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void NavigateTo(NavigationRequest args)
 		{
-			IReadOnlyList<IView> newPageStack = args.NavigationStack;
+			IReadOnlyList<IView> newPageStack = new List<IView>(args.NavigationStack);
 			var previousNavigationStack = NavigationStack;
 			var previousNavigationStackCount = previousNavigationStack.Count;
 			bool initialNavigation = NavigationStack.Count == 0;
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Platform
 				previousNavigationStack[previousNavigationStackCount - 1])
 			{
 				SyncBackStackToNavigationStack(newPageStack);
-				NavigationStack = new List<IView>(newPageStack);
+				NavigationStack = newPageStack;
 				NavigationView?.NavigationFinished(NavigationStack);
 				return;
 			}
@@ -72,15 +72,22 @@ namespace Microsoft.Maui.Platform
 			NavigationTransitionInfo? transition = GetNavigationTransition(args);
 			_currentPage = newPageStack[newPageStack.Count - 1];
 
+			_ = _currentPage ?? throw new InvalidOperationException("Navigatoin Request Contains Null Elements");
 			if (previousNavigationStack.Count < args.NavigationStack.Count)
 			{
 				Type destinationPageType = GetDestinationPageType();
-				NavigationStack = new List<IView>(newPageStack);
+				NavigationStack = newPageStack;
 				NavigationFrame.Navigate(destinationPageType, null, transition);
 			}
-			else
+			else if (previousNavigationStack.Count == args.NavigationStack.Count)
 			{
-				NavigationStack = new List<IView>(newPageStack);
+				Type destinationPageType = GetDestinationPageType();
+				NavigationStack = newPageStack;
+				NavigationFrame.Navigate(destinationPageType, null, transition);
+			}
+			else 
+			{
+				NavigationStack = newPageStack;
 				NavigationFrame.GoBack(transition);
 			}
 		}

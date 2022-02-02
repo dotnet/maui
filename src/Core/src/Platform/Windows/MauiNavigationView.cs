@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 		internal ItemsRepeater? TopNavMenuItemsHost { get; private set; }
 		internal Grid? PaneContentGrid { get; private set; }
 		internal event EventHandler? OnApplyTemplateFinished;
+		internal SplitView? RootSplitView { get; private set; }
 
 		public MauiNavigationView()
 		{
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.Platform
 			base.OnApplyTemplate();
 
 			PaneContentGrid = (Grid)GetTemplateChild("PaneContentGrid");
+			RootSplitView = (SplitView)GetTemplateChild("RootSplitView");
 			TopNavArea = ((StackPanel)GetTemplateChild("TopNavArea"));
 			TopNavMenuItemsHost = ((ItemsRepeater)GetTemplateChild("TopNavMenuItemsHost"));
 			OnApplyTemplateCore();
@@ -34,6 +36,30 @@ namespace Microsoft.Maui.Platform
 		private protected virtual void OnApplyTemplateCore()
 		{
 
+		}
+
+
+		public void UpdateFlyoutBehavior(IFlyoutView flyoutView)
+		{
+			switch (flyoutView.FlyoutBehavior)
+			{
+				case FlyoutBehavior.Flyout:
+					IsPaneToggleButtonVisible = true;
+					// Workaround for
+					// https://github.com/microsoft/microsoft-ui-xaml/issues/6493
+					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					break;
+				case FlyoutBehavior.Locked:
+					PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+					IsPaneToggleButtonVisible = false;
+					break;
+				case FlyoutBehavior.Disabled:
+					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					IsPaneToggleButtonVisible = false;
+					IsPaneOpen = false;
+					break;
+			}
 		}
 	}
 }
