@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		DeviceIdiom DetectIdiom(UiMode uiMode)
+		static DeviceIdiom DetectIdiom(UiMode uiMode)
 		{
 			if (uiMode == UiMode.TypeNormal)
 				return DeviceIdiom.Unknown;
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		string GetSystemSetting(string name, bool isGlobal = false)
+		static string GetSystemSetting(string name, bool isGlobal = false)
 		{
 			if (isGlobal && Essentials.Platform.HasApiLevelNMr1)
 				return Settings.Global.GetString(Essentials.Platform.AppContext.ContentResolver, name);
