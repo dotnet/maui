@@ -21,22 +21,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			IReadOnlyList<string> _flags;
-
 			[SetUp]
 			public void Setup()
 			{
 				Device.PlatformServices = new MockPlatformServices();
-				_flags = Device.Flags;
-				if (Device.Flags == null)
-					Device.SetFlags(new List<string>().AsReadOnly());
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
 				Device.PlatformServices = null;
-				Device.SetFlags(_flags);
 			}
 
 			[TestCase(true, true)]
