@@ -16,7 +16,6 @@ if (IsMac)
  	}
 	ForceJavaCleanup();
 
-
 	Console.WriteLine ("ANDROID_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("ANDROID_SDK_MAC"));
 	Console.WriteLine ("IOS_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("IOS_SDK_MAC"));
 	Console.WriteLine ("MONO_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("MONO_SDK_MAC"));
@@ -102,24 +101,24 @@ else
 
 }
 
-string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
+// string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
 
-if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
-{
-	AndroidSdk()
-		.ApiLevel((AndroidApiLevel)24)
-		.ApiLevel((AndroidApiLevel)28)
-		.ApiLevel((AndroidApiLevel)29)
-		.ApiLevel((AndroidApiLevel)30)
-		.ApiLevel((AndroidApiLevel)31)
-		.SdkManagerPackage ("build-tools;29.0.3");
-}
-else{
+// if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
+// {
+// 	AndroidSdk()
+// 		.ApiLevel((AndroidApiLevel)24)
+// 		.ApiLevel((AndroidApiLevel)28)
+// 		.ApiLevel((AndroidApiLevel)29)
+// 		.ApiLevel((AndroidApiLevel)30)
+// 		.ApiLevel((AndroidApiLevel)31)
+// 		.SdkManagerPackage ("build-tools;29.0.3");
+// }
+// else{
 
-	var androidSDK = AndroidSdk();
-	foreach(var sdk in ANDROID_API_SDKS.Split(','))
-	{
-		Console.WriteLine("Installing SDK: {0}", sdk);
-		androidSDK = androidSDK.SdkManagerPackage (sdk);
-	}
-}
+// 	var androidSDK = AndroidSdk();
+// 	foreach(var sdk in ANDROID_API_SDKS.Split(','))
+// 	{
+// 		Console.WriteLine("Installing SDK: {0}", sdk);
+// 		androidSDK = androidSDK.SdkManagerPackage (sdk);
+// 	}
+// }
