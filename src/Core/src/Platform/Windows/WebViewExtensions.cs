@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
@@ -64,6 +65,12 @@ namespace Microsoft.Maui.Platform
 			{
 				await nativeWebView.ExecuteScriptAsync(script);
 			});
+		}
+
+		public static async Task EvaluateJavaScript(this WebView2 webView, EvaluateJavaScriptAsyncRequest request) 
+		{
+			var result = await webView.ExecuteScriptAsync(request.Script);
+			request.SetResult(result);
 		}
 	}
 }

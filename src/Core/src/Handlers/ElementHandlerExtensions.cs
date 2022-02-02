@@ -10,6 +10,7 @@ using NativeView = System.Object;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
@@ -66,6 +67,20 @@ namespace Microsoft.Maui
 			var service = services.GetRequiredService<T>();
 
 			return service;
+		}
+	
+		public static async Task<T> InvokeAsync<T>(this IElementHandler handler, string commandName,
+			AsyncCommandArguments<T> args)
+		{
+			handler?.Invoke(commandName, args);
+			return await args.Result;
+		}
+
+		public static async Task InvokeAsync(this IElementHandler handler, string commandName,
+			AsyncCommandArguments args)
+		{
+			handler?.Invoke(commandName, args);
+			await args.Task;
 		}
 	}
 }

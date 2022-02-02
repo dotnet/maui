@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -57,6 +59,14 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			handler.NativeView?.Eval(webView, script);
+		}
+
+		public static async void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 
+		{
+			if (arg is EvaluateJavaScriptAsyncRequest request)
+			{
+				await handler.NativeView.EvaluateJavaScript(request);
+			}
 		}
 	}
 }

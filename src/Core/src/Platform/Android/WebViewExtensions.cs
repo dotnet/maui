@@ -1,4 +1,6 @@
-﻿using AWebView = Android.Webkit.WebView;
+﻿using System.Threading.Tasks;
+using Android.Webkit;
+using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
 {
@@ -71,6 +73,37 @@ namespace Microsoft.Maui.Platform
 
 			webView.CanGoBack = nativeWebView.CanGoBack();
 			webView.CanGoForward = nativeWebView.CanGoForward();
+		}
+
+		public static async Task EvaluateJavaScript(this AWebView webView, EvaluateJavaScriptAsyncRequest request) 
+		{
+			var javaScriptResult = new JavascriptResult();
+
+			webView.EvaluateJavascript(request.Script, javaScriptResult);
+			request.SetResult(await javaScriptResult.JsResult);
+		}
+
+		class JavascriptResult : Java.Lang.Object, IValueCallback
+		{
+			readonly TaskCompletionSource<string> _source;
+			public Task<string> JsResult => _source.Task;
+
+			public JavascriptResult()
+			{
+				_source = new TaskCompletionSource<string>();
+			}
+
+			public void OnReceiveValue(Java.Lang.Object? result)
+			{
+				if (result == null)
+				{
+					_source.SetResult("null");
+					return;
+				}
+
+				string json = ((Java.Lang.String)result).ToString();
+				_source.SetResult(json);
+			}
 		}
 	}
 }
