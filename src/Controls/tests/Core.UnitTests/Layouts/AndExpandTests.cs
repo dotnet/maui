@@ -309,7 +309,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
 
-			view0.SetBinding(Button.TextProperty, new Binding(nameof(ViewModel.Text));
+			view0.SetBinding(Button.TextProperty, new Binding(nameof(ViewModel.Text)));
 
 			var stackLayout = SetUpTestLayout(StackOrientation.Vertical, view0);
 			stackLayout.BindingContext = vm;
