@@ -67,7 +67,19 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsFocused(this AView nativeView, IView view)
 		{
 			if (view.IsFocused)
-				nativeView.RequestFocus();
+			{
+				// Android does the actual focus/unfocus work on the main looper
+				// So in case we're setting the focus in response to another control's un-focusing,
+				// we need to post the handling of it to the main looper so that it happens _after_ all the other focus
+				// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set here
+				MainThread.BeginInvokeOnMainThread(() =>
+				{
+					if (nativeView == null || nativeView.IsDisposed())
+						return;
+
+					nativeView?.RequestFocus();
+				});
+			}
 			else
 				nativeView.ClearFocus();
 		}

@@ -9,8 +9,7 @@ namespace Maui.Controls.Sample.Pages
 		public EntryPage()
 		{
 			InitializeComponent();
-			entryCursor.PropertyChanged += OnEntryPropertyChanged;
-			entrySelection.PropertyChanged += OnEntrySelectionPropertyChanged;
+
 			sldSelection.Maximum = entrySelection.Text.Length;
 			sldSelection.Value = entrySelection.SelectionLength;
 			sldCursorPosition.Maximum = entryCursor.Text.Length;
@@ -19,12 +18,20 @@ namespace Maui.Controls.Sample.Pages
 
 		protected override void OnAppearing()
 		{
+			IsFocusEntry.Focus();
+
+			entryCursor.PropertyChanged += OnEntryPropertyChanged;
+			entrySelection.PropertyChanged += OnEntrySelectionPropertyChanged;
+
 			IsFocusEntry.Focused += OnFocused;
 			IsFocusEntry.Unfocused += OnUnfocused;
 		}
 
 		protected override void OnDisappearing()
 		{
+			entryCursor.PropertyChanged -= OnEntryPropertyChanged;
+			entrySelection.PropertyChanged -= OnEntrySelectionPropertyChanged;
+
 			IsFocusEntry.Focused -= OnFocused;
 			IsFocusEntry.Unfocused -= OnUnfocused;
 		}

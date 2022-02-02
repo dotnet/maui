@@ -25,8 +25,7 @@
                     Text="IsFocused"
                     Style="{StaticResource Headline}" />
                 <Entry 
-                    x:Name="IsFocusEntry"
-                    IsFocused="True"/>
+                    x:Name="IsFocusEntry"/>
                 <Label
                     Text="Using TextColor"
                     Style="{StaticResource Headline}" />
