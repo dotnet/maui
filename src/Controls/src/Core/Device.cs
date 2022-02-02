@@ -71,9 +71,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='PlatformInvalidator']/Docs" />
-		public static IPlatformInvalidate PlatformInvalidator { get; set; }
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Flags']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IReadOnlyList<string> Flags { get; private set; }
@@ -184,12 +181,6 @@ namespace Microsoft.Maui.Controls
 			public static readonly Style ListItemDetailTextStyle = new Style(typeof(Label)) { BaseResourceKey = ListItemDetailTextStyleKey };
 
 			public static readonly Style CaptionStyle = new Style(typeof(Label)) { BaseResourceKey = CaptionStyleKey };
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Invalidate']/Docs" />
-		public static void Invalidate(VisualElement visualElement)
-		{
-			PlatformInvalidator?.Invalidate(visualElement);
 		}
 	}
 }

@@ -289,9 +289,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		class IOSPlatformServices : IPlatformServices
-#if __MOBILE__
-			, IPlatformInvalidate
-#endif
 		{
 			readonly double _fontScalingFactor = 1;
 			public IOSPlatformServices()
@@ -770,18 +767,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					throw new InvalidOperationException("Could not find current view controller.");
 
 				return viewController;
-			}
-
-			public void Invalidate(VisualElement visualElement)
-			{
-				var renderer = Platform.iOS.Platform.GetRenderer(visualElement);
-
-				if (renderer == null)
-				{
-					return;
-				}
-
-				renderer.NativeView.SetNeedsLayout();
 			}
 #endif
 		}

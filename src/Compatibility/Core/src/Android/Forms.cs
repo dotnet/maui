@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		class AndroidPlatformServices : IPlatformServices, IPlatformInvalidate
+		class AndroidPlatformServices : IPlatformServices
 		{
 			double _buttonDefaultSize;
 			double _editTextDefaultSize;
@@ -613,18 +613,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
 				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
-			}
-
-			public void Invalidate(VisualElement visualElement)
-			{
-				var renderer = visualElement.GetRenderer();
-				if (renderer == null || renderer.View.IsDisposed())
-				{
-					return;
-				}
-
-				renderer.View.Invalidate();
-				renderer.View.RequestLayout();
 			}
 
 			public OSAppTheme RequestedTheme

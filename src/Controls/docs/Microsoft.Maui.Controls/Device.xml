@@ -385,28 +385,6 @@ Device.BeginInvokeOnMainThread (() => {
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Invalidate">
-      <MemberSignature Language="C#" Value="public static void Invalidate (Microsoft.Maui.Controls.VisualElement visualElement);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Invalidate(class Microsoft.Maui.Controls.VisualElement visualElement) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Device.Invalidate(Microsoft.Maui.Controls.VisualElement)" />
-      <MemberSignature Language="F#" Value="static member Invalidate : Microsoft.Maui.Controls.VisualElement -&gt; unit" Usage="Microsoft.Maui.Controls.Device.Invalidate visualElement" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="visualElement" Type="Microsoft.Maui.Controls.VisualElement" />
-      </Parameters>
-      <Docs>
-        <param name="visualElement">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="InvokeOnMainThreadAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task InvokeOnMainThreadAsync (Action action);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task InvokeOnMainThreadAsync(class System.Action action) cil managed" />
@@ -740,25 +718,6 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       <Docs>
         <summary>Gets the <see cref="T:Microsoft.Maui.Controls.TargetPlatform" /> indicating the OS Microsoft.Maui.Controls is working on.</summary>
         <value>A <see cref="T:Microsoft.Maui.Controls.TargetPlatform" /> that indicates the current OS.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="PlatformInvalidator">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Internals.IPlatformInvalidate PlatformInvalidator { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property class Microsoft.Maui.Controls.Internals.IPlatformInvalidate PlatformInvalidator" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Device.PlatformInvalidator" />
-      <MemberSignature Language="F#" Value="member this.PlatformInvalidator : Microsoft.Maui.Controls.Internals.IPlatformInvalidate with get, set" Usage="Microsoft.Maui.Controls.Device.PlatformInvalidator" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Internals.IPlatformInvalidate</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
