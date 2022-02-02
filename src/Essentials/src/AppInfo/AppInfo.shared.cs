@@ -25,5 +25,7 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
 		public static AppTheme RequestedTheme => PlatformRequestedTheme();
+
+		public static bool IsPackagedApp => PlatformIsPackagedApp();
 	}
 }

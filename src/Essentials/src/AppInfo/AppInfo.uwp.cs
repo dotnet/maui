@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using Windows.ApplicationModel;
 #if WINDOWS
@@ -10,6 +11,21 @@ namespace Microsoft.Maui.Essentials
 {
 	public static partial class AppInfo
 	{
+		static Lazy<bool> _isPackagedAppLazy = new Lazy<bool>(() =>
+		{
+			try
+			{
+				if (Package.Current != null)
+					return true;
+			}
+			catch
+			{
+				// no-op
+			}
+
+			return false;
+		});
+
 		static string PlatformGetPackageName() => Package.Current.Id.Name;
 
 		static string PlatformGetName() => Package.Current.DisplayName;
@@ -28,5 +44,7 @@ namespace Microsoft.Maui.Essentials
 
 		static AppTheme PlatformRequestedTheme() =>
 			Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+
+		static bool PlatformIsPackagedApp() => _isPackagedAppLazy.Value;
 	}
 }

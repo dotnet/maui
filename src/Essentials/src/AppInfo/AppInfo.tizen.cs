@@ -27,5 +27,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			return AppTheme.Unspecified;
 		}
+
+		static bool PlatformIsPackagedApp() => true;
 	}
 }

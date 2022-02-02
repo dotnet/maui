@@ -14,5 +14,7 @@ namespace Microsoft.Maui.Essentials
 		static void PlatformShowSettingsUI() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		static AppTheme PlatformRequestedTheme() => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		static bool PlatformIsPackagedApp() => throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

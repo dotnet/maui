@@ -73,5 +73,7 @@ namespace Microsoft.Maui.Essentials
 				_ => AppTheme.Unspecified
 			};
 		}
+
+		static bool PlatformIsPackagedApp() => true;
 	}
 }

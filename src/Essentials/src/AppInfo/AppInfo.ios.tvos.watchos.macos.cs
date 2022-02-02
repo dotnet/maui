@@ -126,5 +126,7 @@ namespace Microsoft.Maui.Essentials
 			for (nuint i = 0; i < array.Count; i++)
 				yield return array.GetItem<T>(i);
 		}
+
+		static bool PlatformIsPackagedApp() => true;
 	}
 }
