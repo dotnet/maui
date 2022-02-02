@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls.Shapes;
+﻿using Microsoft.Maui.Controls.Shapes;
 
 namespace Microsoft.Maui.Controls.Handlers
 {

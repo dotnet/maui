@@ -2,11 +2,8 @@
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class RectangleHandler : ViewHandler<Rectangle, MauiShapeView>
+	public partial class RectangleHandler
 	{
-		protected override MauiShapeView CreateNativeView() =>
-			new MauiShapeView();
-
 		public static void MapRadiusX(RectangleHandler handler, Rectangle rectangle)
 		{
 			handler.NativeView?.InvalidateShape(rectangle);

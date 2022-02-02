@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<Shapes.Polygon, PolygonHandler>();
 			handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
 			handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
-			handlersCollection.AddHandler<Shapes.RoundRectangle, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
 			handlersCollection.AddHandler<Window, WindowHandler>();
 			handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 			handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
