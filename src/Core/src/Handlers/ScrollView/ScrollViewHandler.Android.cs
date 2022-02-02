@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var nativeContent = scrollView.PresentedContent.ToNative(handler.MauiContext);
+			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
 			if (FindInsetPanel(handler) is ContentViewGroup currentPaddingLayer)
 			{

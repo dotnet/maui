@@ -120,11 +120,11 @@ namespace Microsoft.Maui
 			var visualElements = new List<IVisualTreeElement>();
 			if (visualElement is IWindow window)
 			{
-				uiElement = window.Content.ToNative();
+				uiElement = window.Content.ToPlatform();
 			}
 			else if (visualElement is IView view)
 			{
-				uiElement = view.ToNative();
+				uiElement = view.ToPlatform();
 			}
 
 			if (uiElement != null)
@@ -136,7 +136,7 @@ namespace Microsoft.Maui
 				}
 
 				var uniqueElements = uiElements.Distinct();
-				var viewTree = visualElement.GetVisualTreeDescendants().Where(n => n is IView).Select(n => new Tuple<IView, object?>((IView)n, ((IView)n).ToNative()));
+				var viewTree = visualElement.GetVisualTreeDescendants().Where(n => n is IView).Select(n => new Tuple<IView, object?>((IView)n, ((IView)n).ToPlatform()));
 				var testList = viewTree.Where(n => uniqueElements.Contains(n.Item2)).Select(n => n.Item1);
 				if (testList != null && testList.Any())
 					visualElements.AddRange(testList.Select(n => (IVisualTreeElement)n));
