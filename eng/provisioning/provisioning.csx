@@ -2,7 +2,7 @@ Item ("PowerShell", "7.2.0")
   .Condition (ps => Exec ("pwsh", "--version")[0] != $"PowerShell {ps.Version}")
   .Source (ps => $"https://github.com/PowerShell/PowerShell/releases/download/v{ps.Version}/powershell-{ps.Version}-osx-x64.pkg");
 
-MicrosoftOpenJdk ("17.0.1.12.1");
+//MicrosoftOpenJdk ("17.0.1.12.1");
 
 string releaseChannel = Environment.GetEnvironmentVariable ("CHANNEL");
 
@@ -83,21 +83,21 @@ if (IsMac)
 else
 {
 
-	if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("ANDROID_SDK_WINDOWS")))
-		Item ("Xamarin.Android")
-      		.Source (_ => Environment.GetEnvironmentVariable ("ANDROID_SDK_WINDOWS"));
+	// if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("ANDROID_SDK_WINDOWS")))
+	// 	Item ("Xamarin.Android")
+    //   		.Source (_ => Environment.GetEnvironmentVariable ("ANDROID_SDK_WINDOWS"));
 
-	if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("IOS_SDK_WINDOWS")))
-		Item ("Xamarin.iOS")
-      		.Source (_ => Environment.GetEnvironmentVariable ("IOS_SDK_WINDOWS"));
+	// if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("IOS_SDK_WINDOWS")))
+	// 	Item ("Xamarin.iOS")
+    //   		.Source (_ => Environment.GetEnvironmentVariable ("IOS_SDK_WINDOWS"));
 
-	if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("MONO_SDK_WINDOWS")))
-		Item ("Mono")
-      		.Source (_ => Environment.GetEnvironmentVariable ("MONO_SDK_WINDOWS"));
+	// if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("MONO_SDK_WINDOWS")))
+	// 	Item ("Mono")
+    //   		.Source (_ => Environment.GetEnvironmentVariable ("MONO_SDK_WINDOWS"));
 
-	if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("MAC_SDK_WINDOWS")))
-		Item ("Xamarin.Mac")
-      		.Source (_ => Environment.GetEnvironmentVariable ("MAC_SDK_WINDOWS"));
+	// if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("MAC_SDK_WINDOWS")))
+	// 	Item ("Xamarin.Mac")
+    //   		.Source (_ => Environment.GetEnvironmentVariable ("MAC_SDK_WINDOWS"));
 
 }
 
