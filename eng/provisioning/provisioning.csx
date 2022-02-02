@@ -1,3 +1,7 @@
+Item ("PowerShell", "7.2.0")
+  .Condition (ps => Exec ("pwsh", "--version")[0] != $"PowerShell {ps.Version}")
+  .Source (ps => $"https://github.com/PowerShell/PowerShell/releases/download/v{ps.Version}/powershell-{ps.Version}-osx-x64.pkg");
+
 MicrosoftOpenJdk ("17.0.1.12.1");
 
 string releaseChannel = Environment.GetEnvironmentVariable ("CHANNEL");
