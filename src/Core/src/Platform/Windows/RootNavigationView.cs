@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				if (customContent.ToNative() is UIElement element)
+				if (customContent.ToPlatform() is UIElement element)
 					_flyoutPanel.Children.Add(element);
 
 				PaneFooter = _flyoutPanel;

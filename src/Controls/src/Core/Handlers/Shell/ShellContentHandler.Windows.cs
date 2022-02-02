@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override FrameworkElement CreateNativeElement()
 		{
-			return (VirtualView as IShellContentController).GetOrCreateContent().ToNative(MauiContext);
+			return (VirtualView as IShellContentController).GetOrCreateContent().ToPlatform(MauiContext);
 		}
 	}
 }
