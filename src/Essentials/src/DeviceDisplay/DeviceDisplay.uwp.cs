@@ -6,7 +6,7 @@ using Windows.Graphics.Display;
 using Windows.Graphics.Display.Core;
 using Windows.System.Display;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
