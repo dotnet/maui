@@ -14,12 +14,20 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 #if WINDOWS
 					[nameof(IToolbarElement.Toolbar)] = (handler, view) => ViewHandler.MapToolbar(handler, view),
-					[nameof(IFlyoutView.Flyout)] = MapFlyout
+					[nameof(IFlyoutView.Flyout)] = MapFlyout,
 					[nameof(IFlyoutView.IsPresented)] = MapIsPresented,
 					[nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
 					[nameof(IFlyoutView.FlyoutWidth)] = MapFlyoutWidth,
 					[nameof(Shell.FlyoutBackground)] = MapFlyoutBackground,
 					[nameof(Shell.FlyoutBackgroundColor)] = MapFlyoutBackground,
+					[nameof(Shell.CurrentItem)] = MapCurrentItem,
+					[nameof(Shell.FlyoutBackdrop)] = MapFlyoutBackdrop,
+					[nameof(Shell.FlyoutFooter)] = MapFlyoutFooter,
+					[nameof(Shell.FlyoutFooterTemplate)] = MapFlyoutFooter,
+					[nameof(Shell.FlyoutHeader)] = MapFlyoutHeader,
+					[nameof(Shell.FlyoutHeaderTemplate)] = MapFlyoutHeader,
+					[nameof(Shell.Items)] = MapItems,
+					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
 #endif
 				};
 

@@ -719,6 +719,9 @@ namespace Microsoft.Maui.Controls
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
 					new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
 			}
+
+			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
+			ShellController.ItemsCollectionChanged += (_, __) => Handler?.UpdateValue(nameof(Items));
 		}
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)

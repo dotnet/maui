@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace Microsoft.Maui.Platform
 {
@@ -136,6 +137,65 @@ namespace Microsoft.Maui.Platform
 					rootSplitView.PaneBackground = brush;
 				}
 			}
+		}
+
+		public static void UpdateFlyoutVerticalScrollMode(this MauiNavigationView navigationView, ScrollMode scrollMode)
+		{
+			var scrollViewer = navigationView.MenuItemsScrollViewer;
+			if (scrollViewer != null)
+			{
+				switch (scrollMode)
+				{
+					case ScrollMode.Disabled:
+						scrollViewer.VerticalScrollMode = WScrollMode.Disabled;
+						scrollViewer.VerticalScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Hidden;
+						break;
+					case ScrollMode.Enabled:
+						scrollViewer.VerticalScrollMode = WScrollMode.Enabled;
+						scrollViewer.VerticalScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Visible;
+						break;
+					default:
+						scrollViewer.VerticalScrollMode = WScrollMode.Auto;
+						scrollViewer.VerticalScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Auto;
+						break;
+				}
+			}
+		}
+
+		public static void UpdateFlyoutBehavior(this MauiNavigationView navigationView, IFlyoutView flyoutView)
+		{
+			switch (flyoutView.FlyoutBehavior)
+			{
+				case FlyoutBehavior.Flyout:
+					navigationView.IsPaneToggleButtonVisible = true;
+					// Workaround for
+					// https://github.com/microsoft/microsoft-ui-xaml/issues/6493
+					navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+					navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					break;
+				case FlyoutBehavior.Locked:
+					navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+					navigationView.IsPaneToggleButtonVisible = false;
+					break;
+				case FlyoutBehavior.Disabled:
+					navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					navigationView.IsPaneToggleButtonVisible = false;
+					navigationView.IsPaneOpen = false;
+					break;
+			}
+
+			if(navigationView is RootNavigationView rootNavigationView)
+				rootNavigationView.UpdateFlyoutPanelMargin();
+		}
+
+		public static void UpdateFlyoutWidth(this MauiNavigationView navigationView, IFlyoutView flyoutView)
+		{
+			if (flyoutView.Width >= 0)
+				navigationView.OpenPaneLength = flyoutView.Width;
+			else
+				navigationView.OpenPaneLength = 320;
+			// At some point this Template Setting is going to show up with a bump to winui
+			//handler.NativeView.OpenPaneLength = handler.NativeView.TemplateSettings.OpenPaneWidth;
 		}
 	}
 }
