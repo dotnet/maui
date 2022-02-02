@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AppKit;
 using Foundation;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Essentials
 {

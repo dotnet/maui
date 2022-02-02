@@ -33,13 +33,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 				layout.Add(view);
 			}
 
+			MeasureAndArrange(layout as Maui.ILayout);
+
+			return layout;
+		}
+
+		static void MeasureAndArrange(Maui.ILayout layout) 
+		{
 			var layoutSize = new Size(TestAreaWidth, TestAreaHeight);
 			var rect = new Rectangle(Point.Zero, layoutSize);
 
 			(layout as Maui.ILayout).CrossPlatformMeasure(layoutSize.Width, layoutSize.Height);
 			(layout as Maui.ILayout).CrossPlatformArrange(rect);
-
-			return layout;
 		}
 
 		[Test]
@@ -280,6 +285,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			Assert.AreEqual(0, view2.Bounds.X);
 			Assert.AreEqual(2 * (TestAreaHeight / 3), view2.Bounds.Y);
+		}
+
+		class ViewModel
+		{
+			public string Text { get; }
+
+			public ViewModel(string text) 
+			{
+				Text = text;
+			}
+		}
+
+		[Test]
+		public void AndExpandDoesNotInterfereWithBindingContext()
+		{
+			const string testText = "test text";
+
+			var vm =  new ViewModel(testText);
+
+			var view0 = new TestView
+			{
+				VerticalOptions = LayoutOptions.FillAndExpand
+			};
+
+			view0.SetBinding(Button.TextProperty, new Binding(nameof(ViewModel.Text)));
+
+			var stackLayout = SetUpTestLayout(StackOrientation.Vertical, view0);
+			stackLayout.BindingContext = vm;
+
+			Assert.AreEqual(testText, view0.Text);
+			Assert.AreEqual(vm, view0.BindingContext);
+
+			MeasureAndArrange(stackLayout as Maui.ILayout);
+
+			Assert.AreEqual(testText, view0.Text);
+			Assert.AreEqual(vm, view0.BindingContext);
 		}
 	}
 }

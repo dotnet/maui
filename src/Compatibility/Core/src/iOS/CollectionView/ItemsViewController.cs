@@ -471,7 +471,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 			{
-				if (_emptyUIView.Transform.xx == -1)
+				if (_emptyUIView.Transform.A == -1)
 				{
 					return;
 				}
@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 			{
-				if (_emptyUIView.Transform.xx == -1)
+				if (_emptyUIView.Transform.A == -1)
 				{
 					FlipEmptyView();
 				}

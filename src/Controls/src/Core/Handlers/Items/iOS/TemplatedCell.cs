@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
 
 			// Update the size of the root view to accommodate the Forms element
-			var nativeView = NativeHandler.NativeView;
+			var nativeView = NativeHandler.ToPlatform();
 			nativeView.Frame = new CGRect(CGPoint.Empty, size);
 
 			// Layout the Maui element 
@@ -164,7 +164,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void SetRenderer(INativeViewHandler renderer)
 		{
 			NativeHandler = renderer;
-			var nativeView = NativeHandler.NativeView;
+
+			var nativeView = NativeHandler.ToPlatform();
 
 			// Clear out any old views if this cell is being reused
 			ClearSubviews();
@@ -176,7 +177,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected void Layout(CGSize constraints)
 		{
-			var nativeView = NativeHandler.NativeView;
+			var nativeView = NativeHandler.ToPlatform();
 
 			var width = constraints.Width;
 			var height = constraints.Height;

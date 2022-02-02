@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/BoundsConstraint.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoundsConstraint']/Docs" />
 	public class BoundsConstraint
 	{
 		Func<Rectangle> _measureFunc;
@@ -17,6 +18,7 @@ namespace Microsoft.Maui.Controls
 		internal bool CreatedFromExpression { get; set; }
 		internal IEnumerable<View> RelativeTo { get; set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BoundsConstraint.xml" path="//Member[@MemberName='FromExpression']/Docs" />
 		public static BoundsConstraint FromExpression(Expression<Func<Rectangle>> expression, IEnumerable<View> parents = null)
 		{
 			return FromExpression(expression, false, parents);

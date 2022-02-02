@@ -25,6 +25,7 @@ namespace Samples.ViewModel
 				new PermissionItem("Network State", new Permissions.NetworkState()),
 				new PermissionItem("Phone", new Permissions.Phone()),
 				new PermissionItem("Photos", new Permissions.Photos()),
+				new PermissionItem("Photos AddOnly", new Permissions.PhotosAddOnly()),
 				new PermissionItem("Reminders", new Permissions.Reminders()),
 				new PermissionItem("Sensors", new Permissions.Sensors()),
 				new PermissionItem("SMS", new Permissions.Sms()),

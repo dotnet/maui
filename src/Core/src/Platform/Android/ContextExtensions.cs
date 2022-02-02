@@ -4,9 +4,11 @@ using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Util;
+using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
+using static Microsoft.Maui.Primitives.Dimension;
 using AActivity = Android.App.Activity;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AAttribute = Android.Resource.Attribute;
@@ -38,6 +40,13 @@ namespace Microsoft.Maui.Platform
 		{
 			return new Size(context.FromPixels(width), context.FromPixels(height));
 		}
+
+		public static Thickness FromPixels(this Context context, Thickness thickness) =>
+			new Thickness(
+				context.FromPixels(thickness.Left),
+				context.FromPixels(thickness.Top),
+				context.FromPixels(thickness.Right),
+				context.FromPixels(thickness.Bottom));
 
 		public static void HideKeyboard(this Context self, global::Android.Views.View view)
 		{
@@ -71,12 +80,26 @@ namespace Microsoft.Maui.Platform
 			);
 		}
 
+		public static Thickness ToPixels(this Context context, Thickness thickness)
+		{
+			return new Thickness(
+				context.ToPixels(thickness.Left),
+				context.ToPixels(thickness.Top),
+				context.ToPixels(thickness.Right),
+				context.ToPixels(thickness.Bottom));
+		}
+
 		public static bool HasRtlSupport(this Context self)
 		{
 			if (self == null)
 				return false;
 
 			return (self.ApplicationInfo?.Flags & AApplicationInfoFlags.SupportsRtl) == AApplicationInfoFlags.SupportsRtl;
+		}
+
+		public static int? TargetSdkVersion(this Context self)
+		{
+			return (int?)self?.ApplicationInfo?.TargetSdkVersion;
 		}
 
 		public static double GetThemeAttributeDp(this Context self, int resource)
@@ -258,6 +281,34 @@ namespace Microsoft.Maui.Platform
 		{
 			_actionBarHeight ??= (int)context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
 			return _actionBarHeight.Value;
+		}
+
+		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double maximumSize)
+		{
+			var mode = MeasureSpecMode.AtMost;
+
+			if (IsExplicitSet(explicitSize))
+			{
+				// We have a set value (i.e., a Width or Height)
+				mode = MeasureSpecMode.Exactly;
+				constraint = explicitSize;
+			}
+			else if (IsMaximumSet(maximumSize))
+			{
+				mode = MeasureSpecMode.AtMost;
+				constraint = maximumSize;
+			}
+			else if (double.IsInfinity(constraint))
+			{
+				// We've got infinite space; we'll leave the size up to the native control
+				mode = MeasureSpecMode.Unspecified;
+				constraint = 0;
+			}
+
+			// Convert to a native size to create the spec for measuring
+			var deviceConstraint = (int)context.ToPixels(constraint);
+
+			return mode.MakeMeasureSpec(deviceConstraint);
 		}
 	}
 }

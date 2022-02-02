@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SecureStorage']/Docs" />
 	public partial class SecureStorage
 	{
 		static Task<string> PlatformGetAsync(string key) =>

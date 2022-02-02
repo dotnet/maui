@@ -5,7 +5,7 @@
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;$(MauiPlatformsNoMacCat)</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatformsNoMacCat)</TargetFrameworks>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests.Runners</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Runners</AssemblyName>
@@ -23,11 +23,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

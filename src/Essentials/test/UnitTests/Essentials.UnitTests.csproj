@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>Microsoft.Maui.Essentials.UnitTests</AssemblyName>
     <DebugType>portable</DebugType>
@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Essentials.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
 
 </Project>

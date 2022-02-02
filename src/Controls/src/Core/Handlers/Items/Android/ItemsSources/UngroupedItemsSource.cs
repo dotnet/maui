@@ -1,6 +1,8 @@
-﻿namespace Microsoft.Maui.Controls.Handlers.Items
+﻿using System.Collections;
+
+namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	internal class UngroupedItemsSource : IGroupableItemsViewSource
+	internal class UngroupedItemsSource : IGroupableItemsViewSource, IObservableItemsViewSource
 	{
 		readonly IItemsViewSource _source;
 
@@ -14,9 +16,36 @@
 		public bool HasHeader { get => _source.HasHeader; set => _source.HasHeader = value; }
 		public bool HasFooter { get => _source.HasFooter; set => _source.HasFooter = value; }
 
+		public bool ObserveChanges
+		{
+			get { return (_source as IObservableItemsViewSource)?.ObserveChanges == true; }
+			set
+			{
+				if (_source is IObservableItemsViewSource observableSource)
+				{
+					observableSource.ObserveChanges = value;
+				}
+			}
+		}
+
 		public void Dispose()
 		{
 			_source.Dispose();
+		}
+
+		public object GetGroup(int groupIndex)
+		{
+			return null;
+		}
+
+		public (int group, int index) GetGroupAndIndex(int position)
+		{
+			return (-1, -1);
+		}
+
+		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
+		{
+			return null;
 		}
 
 		public object GetItem(int position)

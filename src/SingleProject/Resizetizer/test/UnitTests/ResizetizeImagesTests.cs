@@ -48,6 +48,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(File.Exists(file), $"File did not exist: {file}");
 			}
 
+			protected void AssertFileNotExists(string file)
+			{
+				file = Path.Combine(DestinationDirectory, file);
+
+				Assert.False(File.Exists(file), $"File existed: {file}");
+			}
+
 			protected void AssertFileContains(string file, params string[] snippet)
 			{
 				file = Path.Combine(DestinationDirectory, file);
@@ -324,7 +331,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData("camera_color", "the_alias", "the_alias")]
 			[InlineData("camera_color", "the_alias.png", "the_alias")]
 			[InlineData("camera_color", "folder/the_alias.png", "the_alias")]
-			public void SingleRasterAppIconWithOnlyPathSucceedsWithoutVectors(string name, string alias, string outputName)
+			public void SingleRasterAppIconWithOnlyPathSucceedsWithVectors(string name, string alias, string outputName)
 			{
 				var items = new[]
 				{
@@ -336,14 +343,31 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				var task = GetNewTask(items);
+				task.AllowVectorAdaptiveIcons = true;
 				var success = task.Execute();
 				Assert.True(success);
 
 				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
-				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_foreground.png");
 
-				var vectors = Directory.GetFiles(DestinationDirectory, "*.xml", SearchOption.AllDirectories);
-				Assert.Empty(vectors);
+				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_foreground.png");
+
+				AssertFileExists($"drawable/{outputName}_foreground.xml");
+				AssertFileNotExists($"drawable-v24/{outputName}_background.xml");
+
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}.xml");
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 			}
 
 			[Theory]
@@ -375,11 +399,17 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				var task = GetNewTask(items);
+				task.AllowVectorAdaptiveIcons = true;
 				var success = task.Execute();
 				Assert.True(success);
 
 				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_background.png");
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_foreground.png");
+
 				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_background.png");
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_foreground.png");
 
 				AssertFileExists($"drawable/{outputName}_foreground.xml");
 				AssertFileExists($"drawable-v24/{outputName}_background.xml");
@@ -394,6 +424,170 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
 					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
 					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+			}
+
+			[Theory]
+			[InlineData("camera", null, "camera")]
+			[InlineData("camera", "", "camera")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera_color", null, "camera_color")]
+			[InlineData("camera_color", "", "camera_color")]
+			[InlineData("camera_color", "camera_color", "camera_color")]
+			[InlineData("camera_color", "camera_color.png", "camera_color")]
+			[InlineData("camera_color", "folder/camera_color.png", "camera_color")]
+			[InlineData("camera_color", "the_alias", "the_alias")]
+			[InlineData("camera_color", "the_alias.png", "the_alias")]
+			[InlineData("camera_color", "folder/the_alias.png", "the_alias")]
+			public void SingleRasterAppIconWithOnlyPathSucceedsWithoutVectors(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{name}.png", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_foreground.png");
+
+				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_foreground.png");
+
+				AssertFileExists($"drawable/{outputName}_foreground.xml");
+				AssertFileNotExists($"drawable-v24/{outputName}_background.xml");
+
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}.xml");
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+			}
+
+			[Theory]
+			[InlineData("appicon", null, "appicon")]
+			[InlineData("appicon", "", "appicon")]
+			[InlineData("appicon", "appicon", "appicon")]
+			[InlineData("appicon", "appicon.png", "appicon")]
+			[InlineData("appicon", "folder/appicon.png", "appicon")]
+			[InlineData("appicon", "the_alias", "the_alias")]
+			[InlineData("appicon", "the_alias.png", "the_alias")]
+			[InlineData("appicon", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera", null, "camera")]
+			[InlineData("camera", "", "camera")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			public void SingleVectorAppIconWithOnlyPathSucceedsWithoutVectors(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{name}.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_foreground.png");
+
+				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_foreground.png");
+
+				AssertFileExists($"drawable/{outputName}_foreground.xml");
+				AssertFileNotExists($"drawable-v24/{outputName}_background.xml");
+
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}.xml");
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+			}
+
+			[Theory]
+			[InlineData("appicon", null, "dotnet_background")]
+			[InlineData("appicon", "", "dotnet_background")]
+			[InlineData("appicon", "appicon", "appicon")]
+			[InlineData("appicon", "appicon.png", "appicon")]
+			[InlineData("appicon", "folder/appicon.png", "appicon")]
+			[InlineData("appicon", "the_alias", "the_alias")]
+			[InlineData("appicon", "the_alias.png", "the_alias")]
+			[InlineData("appicon", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera", null, "dotnet_background")]
+			[InlineData("camera", "", "dotnet_background")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			[InlineData("prismicon", "rasters", "rasters")]
+			public void MultipleVectorAppIconWithOnlyPathConvertsToRaster(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem("images/dotnet_background.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = $"images/{name}.svg",
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
+				AssertFileSize($"mipmap-mdpi/{outputName}_foreground.png", 108, 108);
+
+				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_foreground.png", 216, 216);
+
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}.xml");
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
+					$"<foreground android:drawable=\"@mipmap/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
+					$"<foreground android:drawable=\"@mipmap/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 			}
 		}
 
@@ -749,8 +943,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize("Assets/camera.scale-100.png", 1792, 1792);
-				AssertFileSize("Assets/camera.scale-200.png", 3584, 3584);
+				AssertFileSize("camera.scale-100.png", 1792, 1792);
+				AssertFileSize("camera.scale-200.png", 3584, 3584);
 			}
 
 			[Fact]
@@ -766,11 +960,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize("Assets/camera.scale-100.png", 1792, 1792);
-				AssertFileSize("Assets/camera_color.scale-100.png", 256, 256);
+				AssertFileSize("camera.scale-100.png", 1792, 1792);
+				AssertFileSize("camera_color.scale-100.png", 256, 256);
 
-				AssertFileSize("Assets/camera.scale-200.png", 3584, 3584);
-				AssertFileSize("Assets/camera_color.scale-200.png", 512, 512);
+				AssertFileSize("camera.scale-200.png", 3584, 3584);
+				AssertFileSize("camera_color.scale-200.png", 512, 512);
 			}
 
 			[Fact]
@@ -789,11 +983,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(items.Length * DpiPath.Windows.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
-				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
 
 				var xhdpi = GetCopiedResource(task, "camera.scale-200.png");
-				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
 			}
 
@@ -814,19 +1008,19 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(items.Length * DpiPath.Windows.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
-				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
 
 				var xhdpi = GetCopiedResource(task, "camera.scale-200.png");
-				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
 
 				mdpi = GetCopiedResource(task, "camera_color.scale-100.png");
-				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
 
 				xhdpi = GetCopiedResource(task, "camera_color.scale-200.png");
-				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
 			}
 
@@ -854,8 +1048,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize($"Assets/{outputName}.scale-100.png", 44, 44);
-				AssertFileSize($"Assets/{outputName}.scale-200.png", 88, 88);
+				AssertFileSize($"{outputName}.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}.scale-200.png", 88, 88);
 			}
 
 			[Theory]
@@ -890,15 +1084,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize($"Assets/{outputName}Logo.scale-100.png", 44, 44);
-				AssertFileSize($"Assets/{outputName}Logo.scale-125.png", 55, 55);
-				AssertFileSize($"Assets/{outputName}Logo.scale-200.png", 88, 88);
+				AssertFileSize($"{outputName}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{outputName}Logo.scale-200.png", 88, 88);
 
-				AssertFileSize($"Assets/{outputName}StoreLogo.scale-100.png", 50, 50);
-				AssertFileSize($"Assets/{outputName}StoreLogo.scale-200.png", 100, 100);
+				AssertFileSize($"{outputName}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{outputName}StoreLogo.scale-200.png", 100, 100);
 
-				AssertFileSize($"Assets/{outputName}MediumTile.scale-100.png", 150, 150);
-				AssertFileSize($"Assets/{outputName}MediumTile.scale-150.png", 225, 225);
+				AssertFileSize($"{outputName}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{outputName}MediumTile.scale-150.png", 225, 225);
 			}
 
 			[Theory]
@@ -941,15 +1135,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize($"Assets/{outputName}Logo.scale-100.png", 44, 44);
-				AssertFileSize($"Assets/{outputName}Logo.scale-125.png", 55, 55);
-				AssertFileSize($"Assets/{outputName}Logo.scale-200.png", 88, 88);
+				AssertFileSize($"{outputName}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{outputName}Logo.scale-200.png", 88, 88);
 
-				AssertFileSize($"Assets/{outputName}StoreLogo.scale-100.png", 50, 50);
-				AssertFileSize($"Assets/{outputName}StoreLogo.scale-200.png", 100, 100);
+				AssertFileSize($"{outputName}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{outputName}StoreLogo.scale-200.png", 100, 100);
 
-				AssertFileSize($"Assets/{outputName}MediumTile.scale-100.png", 150, 150);
-				AssertFileSize($"Assets/{outputName}MediumTile.scale-150.png", 225, 225);
+				AssertFileSize($"{outputName}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{outputName}MediumTile.scale-150.png", 225, 225);
 			}
 
 			[Theory]
@@ -970,18 +1164,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize($"Assets/{bg}Logo.scale-100.png", 44, 44);
-				AssertFileSize($"Assets/{bg}Logo.scale-125.png", 55, 55);
-				AssertFileSize($"Assets/{bg}Logo.scale-200.png", 88, 88);
+				AssertFileSize($"{bg}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{bg}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{bg}Logo.scale-200.png", 88, 88);
 
-				AssertFileSize($"Assets/{bg}StoreLogo.scale-100.png", 50, 50);
-				AssertFileSize($"Assets/{bg}StoreLogo.scale-200.png", 100, 100);
+				AssertFileSize($"{bg}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{bg}StoreLogo.scale-200.png", 100, 100);
 
-				AssertFileSize($"Assets/{bg}MediumTile.scale-100.png", 150, 150);
-				AssertFileSize($"Assets/{bg}MediumTile.scale-150.png", 225, 225);
+				AssertFileSize($"{bg}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{bg}MediumTile.scale-150.png", 225, 225);
 
-				AssertFileSize($"Assets/{bg}WideTile.scale-100.png", 310, 150);
-				AssertFileSize($"Assets/{bg}WideTile.scale-200.png", 620, 300);
+				AssertFileSize($"{bg}WideTile.scale-100.png", 310, 150);
+				AssertFileSize($"{bg}WideTile.scale-200.png", 620, 300);
 			}
 		}
 	}

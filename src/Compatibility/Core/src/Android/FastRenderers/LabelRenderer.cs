@@ -315,7 +315,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		{
 			Font f = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
 
-			Typeface newTypeface = f.ToTypeface();
+			Typeface newTypeface = f.ToTypeface(Element.RequireFontManager());
 			if (newTypeface != _lastTypeface)
 			{
 				Typeface = newTypeface;
@@ -386,7 +386,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				FormattedString formattedText = Element.FormattedText ?? Element.Text;
 
 				Font f = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
-				TextFormatted = _spannableString = formattedText.ToAttributed(f, Element.TextColor, this);
+				TextFormatted = _spannableString = formattedText.ToSpannableString(Element.RequireFontManager());
 				_wasFormatted = true;
 			}
 			else

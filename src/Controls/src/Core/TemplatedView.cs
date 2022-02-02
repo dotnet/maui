@@ -5,11 +5,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplatedView']/Docs" />
 	public partial class TemplatedView : Compatibility.Layout, IControlTemplated
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="//Member[@MemberName='ControlTemplateProperty']/Docs" />
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
 			propertyChanged: TemplateUtilities.OnControlTemplateChanged);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="//Member[@MemberName='ControlTemplate']/Docs" />
 		public ControlTemplate ControlTemplate
 		{
 			get { return (ControlTemplate)GetValue(ControlTemplateProperty); }
@@ -94,6 +97,7 @@ namespace Microsoft.Maui.Controls
 
 		protected object GetTemplateChild(string name) => TemplateUtilities.GetTemplateChild(this, name);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="//Member[@MemberName='ResolveControlTemplate']/Docs" />
 		public virtual ControlTemplate ResolveControlTemplate()
 		{
 			return ControlTemplate;
