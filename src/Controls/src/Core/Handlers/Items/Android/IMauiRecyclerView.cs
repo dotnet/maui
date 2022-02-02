@@ -23,5 +23,7 @@
 		public void UpdateLayoutManager();
 
 		public void UpdateAdapter();
+
+		public void UpdateCanReorderItems();
 	}
 }

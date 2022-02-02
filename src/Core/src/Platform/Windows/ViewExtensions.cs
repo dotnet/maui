@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Platform
 
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
 				return null;
 
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Platform
 
 		public static async Task<byte[]?> RenderAsJPEG(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
 				return null;
 
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
 				return new Matrix4x4();
 			return GetViewTransform(nativeView);
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Rectangle GetNativeViewBounds(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView != null)
 				return nativeView.GetNativeViewBounds();
 			return new Rectangle();
@@ -316,7 +316,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
-			=> view.ToNative().GetBoundingBox();
+			=> view.ToPlatform().GetBoundingBox();
 
 		internal static Graphics.Rectangle GetBoundingBox(this FrameworkElement? nativeView)
 		{

@@ -223,9 +223,12 @@ namespace Microsoft.Maui.Controls.SourceGen
 			exception = null;
 
 			var xmlDoc = new XmlDocument();
-			try {
+			try
+			{
 				xmlDoc.LoadXml(text.ToString());
-			} catch (XmlException xe) {
+			}
+			catch (XmlException xe)
+			{
 				exception = xe;
 				return false;
 			}

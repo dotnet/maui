@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 						var services = Parent?.FindMauiContext()?.Services;
 						if (services != null)
 						{
-							return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, template.Type);
+							return services.GetService(template.Type) ?? Activator.CreateInstance(template.Type);
 						}
 						return Activator.CreateInstance(template.Type);
 					};

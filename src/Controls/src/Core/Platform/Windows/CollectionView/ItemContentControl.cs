@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// then we'll need to create the content from the template 
 				_visualElement = formsTemplate.CreateContent(dataContext, container) as VisualElement;
 				_visualElement.BindingContext = dataContext;
-				_renderer = _visualElement.GetOrCreateHandler(mauiContext);
+				_renderer = _visualElement.ToHandler(mauiContext);
 
 				// We need to set IsNativeStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
 				// event. If the CollectionView is in a Layout, the Layout won't measure or layout the CollectionView until
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_visualElement.BindingContext = dataContext;
 			}
 
-			Content = _renderer.GetWrappedNativeView();
+			Content = _renderer.ToPlatform();
 			itemsView?.AddLogicalChild(_visualElement);
 		}
 

@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 			_ = radioButton.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			if (radioButton.Content is IView view)
-				nativeRadioButton.Content = view.ToNative(radioButton.Handler.MauiContext);
+				nativeRadioButton.Content = view.ToPlatform(radioButton.Handler.MauiContext);
 			else
 				nativeRadioButton.Content = $"{radioButton.Content}";
 		}

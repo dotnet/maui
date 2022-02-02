@@ -27,7 +27,6 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
@@ -41,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), async (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				Assert.Equal(UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed, navView.IsBackButtonVisible);
@@ -58,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), async (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				await navPage.PushAsync(new ContentPage());
@@ -75,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var header = navView.Header as WFrameworkElement;
@@ -101,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 
-			await CreateHandlerAndAddToWindow<WindowHandler>(new Window(navPage), (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
 			{
 				var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
 				WindowHeader windowHeader = (WindowHeader)navView.Header;

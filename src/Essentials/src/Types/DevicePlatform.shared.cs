@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='macOS']/Docs" />
 		public static DevicePlatform macOS { get; } = new DevicePlatform(nameof(macOS));
 
+		public static DevicePlatform MacCatalyst { get; } = new DevicePlatform(nameof(MacCatalyst));
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='tvOS']/Docs" />
 		public static DevicePlatform tvOS { get; } = new DevicePlatform(nameof(tvOS));
 

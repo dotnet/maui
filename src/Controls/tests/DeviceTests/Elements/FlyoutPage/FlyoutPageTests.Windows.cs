@@ -28,7 +28,6 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandler));
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
 				});
@@ -59,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await CreateHandlerAndAddToWindow<WindowHandler>(new Window(flyoutPage), (handler) =>
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), (handler) =>
 				{
 					var navView = GetMauiNavigationView(handler.MauiContext);
 					Assert.NotNull(navView.Header);

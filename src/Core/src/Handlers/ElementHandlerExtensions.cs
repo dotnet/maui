@@ -1,5 +1,12 @@
-#nullable enable
-
+#if IOS || MACCATALYST
+using NativeView = UIKit.UIView;
+#elif ANDROID
+using NativeView = Android.Views.View;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD
+using NativeView = System.Object;
+#endif
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
@@ -8,6 +15,10 @@ namespace Microsoft.Maui
 {
 	static class ElementHandlerExtensions
 	{
+		public static NativeView ToPlatform(this IElementHandler elementHandler) =>
+			(elementHandler.VirtualView?.ToPlatform() as NativeView) ??
+				throw new InvalidOperationException($"Unable to convert {elementHandler} to {typeof(NativeView)}");
+
 		public static IServiceProvider GetServiceProvider(this IElementHandler handler)
 		{
 			var context = handler.MauiContext ??

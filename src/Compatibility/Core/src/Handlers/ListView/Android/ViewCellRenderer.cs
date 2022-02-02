@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_viewCell = cell;
 
-				var platformView = _viewCell.View.ToNative(Element.FindMauiContext());
+				var platformView = _viewCell.View.ToPlatform(Element.FindMauiContext());
 				_viewHandler = (INativeViewHandler)_viewCell.View.Handler;
 				AddView(platformView);
 

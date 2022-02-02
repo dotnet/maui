@@ -335,6 +335,10 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
+		public partial class PhotosAddOnly : BasePlatformPermission
+		{
+		}
+
 		public partial class Reminders : BasePlatformPermission
 		{
 		}
