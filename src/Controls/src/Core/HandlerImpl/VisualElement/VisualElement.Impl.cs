@@ -156,6 +156,12 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 
+		bool IView.IsFocused 
+		{ 
+			get => (bool)GetValue(IsFocusedProperty);
+			set => SetValueCore(IsFocusedPropertyKey, value);
+		}
+
 		Visibility IView.Visibility => IsVisible.ToVisibility();
 
 		Semantics IView.Semantics

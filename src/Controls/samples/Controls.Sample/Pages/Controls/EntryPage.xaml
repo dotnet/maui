@@ -10,7 +10,8 @@
     </views:BasePage.BindingContext>
     <views:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout Padding="12">
+            <VerticalStackLayout
+                Padding="12">
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
@@ -20,6 +21,12 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     IsEnabled="False"/>
+                <Label
+                    Text="IsFocused"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    x:Name="IsFocusEntry"
+                    IsFocused="True"/>
                 <Label
                     Text="Using TextColor"
                     Style="{StaticResource Headline}" />
@@ -41,8 +48,12 @@
                     Text="Password"
                     Style="{StaticResource Headline}" />
                 <HorizontalStackLayout>
-                    <CheckBox x:Name="chkIsPassword" IsChecked="true" />
-                    <Label Text="Is Password" VerticalOptions="Center"/>
+                    <CheckBox 
+                        x:Name="chkIsPassword" 
+                        IsChecked="true" />
+                    <Label 
+                        Text="Is Password"
+                        VerticalOptions="Center"/>
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="pwdPassword"
@@ -111,10 +122,13 @@
                     HeightRequest="100"/>
                 <HorizontalStackLayout>
                     <Label
-                    x:Name="lblCursor"
-                    Text="CursorPosition = 4"
-                    Style="{StaticResource Headline}" />
-                    <Slider x:Name="sldCursorPosition" ValueChanged="OnSlideCursorPositionValueChanged" WidthRequest="100"/>
+                        x:Name="lblCursor"
+                        Text="CursorPosition = 4"
+                        Style="{StaticResource Headline}" />
+                    <Slider 
+                        x:Name="sldCursorPosition"
+                        ValueChanged="OnSlideCursorPositionValueChanged" 
+                        WidthRequest="100"/>
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="entryCursor"
@@ -122,10 +136,13 @@
                     CursorPosition="4"/>
                 <HorizontalStackLayout>
                     <Label
-                    x:Name="lblSelection"
-                    Text="SelectionLength = 4"
-                    Style="{StaticResource Headline}" />
-                    <Slider x:Name="sldSelection" ValueChanged="OnSlideSelectionValueChanged" WidthRequest="100"/>
+                        x:Name="lblSelection"
+                        Text="SelectionLength = 4"
+                        Style="{StaticResource Headline}" />
+                    <Slider 
+                        x:Name="sldSelection" 
+                        ValueChanged="OnSlideSelectionValueChanged" 
+                        WidthRequest="100"/>
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="entrySelection"

@@ -207,11 +207,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.ResignFirstResponder();
 		}
 
+		[PortHandler]
 		void OnEditingEnded(object sender, EventArgs e)
 		{
 			ElementController?.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnEditingStarted(object sender, EventArgs e)
 		{
 			ElementController?.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);

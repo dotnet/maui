@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
@@ -14,6 +15,28 @@ namespace Maui.Controls.Sample.Pages
 			sldSelection.Value = entrySelection.SelectionLength;
 			sldCursorPosition.Maximum = entryCursor.Text.Length;
 			sldCursorPosition.Value = entryCursor.CursorPosition;
+		}
+
+		protected override void OnAppearing()
+		{
+			IsFocusEntry.Focused += OnFocused;
+			IsFocusEntry.Unfocused += OnUnfocused;
+		}
+
+		protected override void OnDisappearing()
+		{
+			IsFocusEntry.Focused -= OnFocused;
+			IsFocusEntry.Unfocused -= OnUnfocused;
+		}
+
+		void OnFocused(object sender, FocusEventArgs e)
+		{
+			Debug.WriteLine("Focused");
+		}
+
+		void OnUnfocused(object sender, FocusEventArgs e)
+		{
+			Debug.WriteLine("Unfocused");
 		}
 
 		void OnSlideCursorPositionValueChanged(object sender, ValueChangedEventArgs e)

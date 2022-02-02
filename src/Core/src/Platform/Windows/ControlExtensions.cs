@@ -20,6 +20,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled) =>
 			nativeControl.IsEnabled = isEnabled;
+	
+		public static void UpdateIsFocused(this Control nativeControl, bool isFocused) =>	
+			nativeControl.IsHitTestVisible = isFocused;
 
 		public static void UpdateBackground(this Control nativeControl, IView view, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			nativeControl.UpdateBackground(view.Background, defaultBrush);

@@ -64,6 +64,14 @@ namespace Microsoft.Maui.Platform
 			nativeView.Enabled = view.IsEnabled;
 		}
 
+		public static void UpdateIsFocused(this AView nativeView, IView view)
+		{
+			if (view.IsFocused)
+				nativeView.RequestFocus();
+			else
+				nativeView.ClearFocus();
+		}
+	
 		public static void UpdateVisibility(this AView nativeView, IView view)
 		{
 			nativeView.Visibility = view.Visibility.ToNativeVisibility();

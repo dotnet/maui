@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 			DefaultBackground ??= nativeView.Background;
 		}
 
+		ButtonFocusChangeListener FocusChangeListener { get; } = new ButtonFocusChangeListener();
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
 
@@ -47,6 +48,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			SetupDefaults(nativeView);
 
+			FocusChangeListener.Handler = this;
+			nativeView.OnFocusChangeListener = FocusChangeListener;
+
 			ClickListener.Handler = this;
 			nativeView.SetOnClickListener(ClickListener);
 
@@ -58,6 +62,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MaterialButton nativeView)
 		{
+			FocusChangeListener.Handler = null;
+			nativeView.OnFocusChangeListener = null;
+
 			ClickListener.Handler = null;
 			nativeView.SetOnClickListener(null);
 
@@ -200,6 +207,17 @@ namespace Microsoft.Maui.Handlers
 		void OnClick(IButton? button, AView? v)
 		{
 			button?.Clicked();
+		}
+
+		class ButtonFocusChangeListener : Java.Lang.Object, AView.IOnFocusChangeListener
+		{
+			public ButtonHandler? Handler { get; set; }
+
+			public void OnFocusChange(AView? v, bool hasFocus)
+			{
+				if (Handler?.VirtualView != null)
+					Handler.VirtualView.IsFocused = hasFocus;
+			}
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener

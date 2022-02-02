@@ -89,6 +89,8 @@ namespace Microsoft.Maui.Handlers
 
 		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
 		{
+			VirtualView.IsFocused = e.HasFocus;
+
 			if (!e.HasFocus)
 				VirtualView?.Completed();
 		}

@@ -31,6 +31,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
 
+		public static void UpdateIsFocused(this FrameworkElement nativeView, IView view) =>
+			(nativeView as Control)?.UpdateIsFocused(view.IsFocused);
+
 		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
 		{
 			double opacity = view.Opacity;

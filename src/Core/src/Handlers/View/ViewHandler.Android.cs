@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.Views;
 using AndroidX.Core.View;
-using AndroidX.Core.Widget;
 using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -160,7 +159,6 @@ namespace Microsoft.Maui.Handlers
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 
-
 		internal static void MapToolbar(IElementHandler handler, IToolbarElement te)
 		{
 			if (te.Toolbar == null)
@@ -190,7 +188,5 @@ namespace Microsoft.Maui.Handlers
 
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
-
-
 	}
 }

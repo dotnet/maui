@@ -60,13 +60,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiPicker nativeView)
 		{
+			nativeView.EditingDidBegin += OnStarted;
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
+
 			base.ConnectHandler(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiPicker nativeView)
 		{
+			nativeView.EditingDidBegin -= OnStarted;
 			nativeView.EditingDidEnd -= OnEnded;
 			nativeView.EditingChanged -= OnEditing;
 
@@ -137,6 +140,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateVerticalTextAlignment(picker);
 		}
 
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			VirtualView.IsFocused = true;
+		}
+
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
 			if (_pickerView == null)
@@ -148,6 +156,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				_pickerView.Select(model.SelectedIndex, 0, false);
 			}
+
+			VirtualView.IsFocused = false;
 		}
 
 		void OnEditing(object? sender, EventArgs eventArgs)

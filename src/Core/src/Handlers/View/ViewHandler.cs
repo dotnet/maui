@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.MinimumWidth)] = MapMinimumWidth,
 				[nameof(IView.MaximumWidth)] = MapMaximumWidth,
 				[nameof(IView.IsEnabled)] = MapIsEnabled,
+				[nameof(IView.IsFocused)] = MapIsFocused,
 				[nameof(IView.Opacity)] = MapOpacity,
 				[nameof(IView.Semantics)] = MapSemantics,
 				[nameof(IView.TranslationX)] = MapTranslationX,
@@ -152,9 +153,9 @@ namespace Microsoft.Maui.Handlers
 			OnConnectHandler((NativeView)nativeView);
 		}
 
-		private protected abstract void OnDisconnectHandler(NativeView nativeView);
-
 		partial void DisconnectingHandler(NativeView nativeView);
+
+		private protected abstract void OnDisconnectHandler(NativeView nativeView);
 
 		private protected sealed override void OnDisconnectHandler(object nativeView)
 		{
@@ -196,6 +197,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
+		}
+
+		public static void MapIsFocused(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateIsFocused(view);
 		}
 
 		public static void MapVisibility(IViewHandler handler, IView view)

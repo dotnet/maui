@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiTextView nativeView)
 		{
 			nativeView.ShouldChangeText += OnShouldChangeText;
+			nativeView.Started += OnStarted;
 			nativeView.Ended += OnEnded;
 			nativeView.TextSetOrChanged += OnTextPropertySet;
 		}
@@ -23,6 +24,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiTextView nativeView)
 		{
 			nativeView.ShouldChangeText -= OnShouldChangeText;
+			nativeView.Started -= OnStarted;
 			nativeView.Ended -= OnEnded;
 			nativeView.TextSetOrChanged -= OnTextPropertySet;
 		}
@@ -89,10 +91,16 @@ namespace Microsoft.Maui.Handlers
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString) =>
 			VirtualView.TextWithinMaxLength(textView.Text, range, replacementString);
+		
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			VirtualView.IsFocused = true;
+		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
+			VirtualView.IsFocused = false;
+
 			VirtualView.Completed();
 		}
 

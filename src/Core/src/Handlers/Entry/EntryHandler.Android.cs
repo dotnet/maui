@@ -1,10 +1,7 @@
 ﻿using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Android.Runtime;
 using Android.Text;
 using Android.Views;
-using Android.Views.InputMethods;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
@@ -20,7 +17,11 @@ namespace Microsoft.Maui.Handlers
 		protected override AppCompatEditText CreateNativeView()
 		{
 			var nativeEntry = new AppCompatEditText(Context);
+
+			nativeEntry.SetFocusable(ViewFocusability.Focusable);
+
 			_defaultPlaceholderColors = nativeEntry.HintTextColors;
+			
 			return nativeEntry;
 		}
 
@@ -105,6 +106,8 @@ namespace Microsoft.Maui.Handlers
 		// This will eliminate additional native property setting if not required.
 		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
 		{
+			VirtualView.IsFocused = e.HasFocus;
+
 			if (VirtualView?.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
 				UpdateValue(nameof(IEntry.ClearButtonVisibility));
 		}

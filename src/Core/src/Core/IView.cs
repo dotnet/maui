@@ -50,6 +50,11 @@ namespace Microsoft.Maui
 		bool IsEnabled { get; }
 
 		/// <summary>
+		/// Gets a value indicating whether this View is focused currently.
+		/// </summary>
+		bool IsFocused { get; set; }
+
+		/// <summary>
 		/// Gets a value that determines whether this View should be part of the visual tree or not.
 		/// </summary>
 		Visibility Visibility { get; }

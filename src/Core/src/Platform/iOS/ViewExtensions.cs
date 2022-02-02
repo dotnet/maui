@@ -25,6 +25,20 @@ namespace Microsoft.Maui.Platform
 			uiControl.Enabled = view.IsEnabled;
 		}
 
+		public static void UpdateIsFocused(this UIView nativeView, IView view)
+		{
+			if (view.IsFocused)
+			{
+				if (nativeView.CanBecomeFirstResponder)
+					nativeView.BecomeFirstResponder();
+			}
+			else
+			{
+				if (nativeView.CanResignFirstResponder)
+					nativeView.ResignFirstResponder();
+			}
+		}
+	
 		public static void UpdateVisibility(this UIView nativeView, IView view) =>
 			ViewExtensions.UpdateVisibility(nativeView, view.Visibility);
 
