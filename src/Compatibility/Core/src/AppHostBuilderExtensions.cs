@@ -68,6 +68,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<Deserializer>();
 			DependencyService.Register<ResourcesProvider>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
+			DependencyService.Register<PlatformInvalidate>();
 #endif
 
 			builder.ConfigureCompatibilityLifecycleEvents();
