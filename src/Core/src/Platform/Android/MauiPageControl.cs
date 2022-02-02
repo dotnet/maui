@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Platform
 			if (layout == null || _indicatorView?.Handler?.MauiContext == null)
 				return;
 
-			AView? handler = layout.ToNative(_indicatorView.Handler.MauiContext);
+			AView? handler = layout.ToPlatform(_indicatorView.Handler.MauiContext);
 
 			RemoveAllViews();
 			AddView(handler);

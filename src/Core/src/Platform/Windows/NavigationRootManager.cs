@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Platform
 		public virtual void Connect(IView view)
 		{
 			bool firstConnect = _rootView.Content == null;
-			var nativeView = view.ToNative(_mauiContext);
+			var nativeView = view.ToPlatform(_mauiContext);
 
 			NavigationView rootNavigationView;
 			if (nativeView is NavigationView nv)
