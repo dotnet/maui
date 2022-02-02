@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Platform
 
 
 			if (Element?.PresentedContent is IView view)
-				_contentView = view.ToNative(MauiContext);
+				_contentView = view.ToPlatform(MauiContext);
 			else
 				_contentView = CreateEmptyContent();
 
@@ -530,7 +530,7 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in items)
 			{
-				AView swipeItem = item.ToNative(MauiContext);
+				AView swipeItem = item.ToPlatform(MauiContext);
 
 				if (item is ISwipeItemView formsSwipeItemView)
 				{
@@ -640,7 +640,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
 		{
-			swipeItemView?.Handler?.GetWrappedNativeView()?.InvalidateMeasure(swipeItemView);
+			swipeItemView?.Handler?.ToPlatform().InvalidateMeasure(swipeItemView);
 		}
 
 		internal void UpdateIsSwipeEnabled(bool isEnabled)

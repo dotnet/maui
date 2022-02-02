@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return new ObservableItemsSource(itemsSource as IList, collectionViewController);
 				case IEnumerable _ when itemsSource is INotifyCollectionChanged:
 					return new ObservableItemsSource(itemsSource as IEnumerable, collectionViewController);
+				case IList list:
+					return new ListSource(list);
 				case IEnumerable<object> generic:
 					return new ListSource(generic);
 			}

@@ -62,7 +62,7 @@
     <SystemTextEncodingsWebPackageVersion>6.0.2-mauipre.1.22069.5</SystemTextEncodingsWebPackageVersion>
     <SystemTextJsonPackageVersion>6.0.2-mauipre.1.22069.5</SystemTextJsonPackageVersion>
     <!-- Other packages -->
-    <MicrosoftMauiGraphicsVersion>6.0.200-preview.13.921</MicrosoftMauiGraphicsVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.200-preview.13.935</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
     <_MicrosoftWebWebView2Version>1.0.1020.30</_MicrosoftWebWebView2Version>
     <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
@@ -71,6 +71,7 @@
     <_SkiaSharpVersion>2.88.0-preview.179</_SkiaSharpVersion>
     <_HarfBuzzSharpVersion>2.8.2-preview.179</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.fffae82cf6ec1c4a6f490ddb780709ce9211725e.179</_SkiaSharpNativeAssetsVersion>
+    <MicrosoftTemplateEngineTasksVersion>7.0.100-alpha.1.21601.1</MicrosoftTemplateEngineTasksVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Match the first three version numbers and append 00 -->

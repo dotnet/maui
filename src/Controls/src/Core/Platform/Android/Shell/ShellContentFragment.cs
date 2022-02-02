@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_root = inflater.Inflate(Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
 			_toolbar = _root.FindViewById<AToolbar>(Resource.Id.shellcontent_toolbar);
-			_page.ToNative(MauiContext);
+			_page.ToPlatform(MauiContext);
 			_viewhandler = (INativeViewHandler)_page.Handler;
 
 			_shellPageContainer = new ShellPageContainer(Context, _viewhandler);
