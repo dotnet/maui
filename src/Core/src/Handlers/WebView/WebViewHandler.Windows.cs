@@ -64,7 +64,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (Uri.TryCreate(e.Uri, UriKind.Absolute, out Uri? uri) && uri != null)
 			{
-				VirtualView.Navigating(CurrentWebNavigationEvent, uri.AbsoluteUri);
+				bool cancel = VirtualView.Navigating(CurrentWebNavigationEvent, uri.AbsoluteUri);
+				
+				e.Cancel = cancel;      
+				
+				// Reset in this case because this is the last event we will get
+				if (cancel)
+					_eventState = WebNavigationEvent.NewPage;
 			}
 		}
 

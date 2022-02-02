@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool ShouldOverrideUrlLoading(WView view, IWebResourceRequest request)
 			=> SendNavigatingCanceled(request?.Url?.ToString());
 
-		[PortHandler("Partially ported")]
+		[PortHandler]
 		public override void OnPageStarted(WView view, string url, Bitmap favicon)
 		{
 			if (_renderer?.Element == null || string.IsNullOrWhiteSpace(url) || url == WebViewRenderer.AssetBaseUrl)

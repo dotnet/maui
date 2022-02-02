@@ -30,10 +30,12 @@
 			}
 		}
 
-		void IWebView.Navigating(WebNavigationEvent evnt, string url)
+		bool IWebView.Navigating(WebNavigationEvent evnt, string url)
 		{
 			var args = new WebNavigatingEventArgs(evnt, new UrlWebViewSource { Url = url }, url);
 			(this as IWebViewController)?.SendNavigating(args);
+
+			return args.Cancel;
 		}
 
 		void IWebView.Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result)

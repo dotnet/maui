@@ -24,16 +24,25 @@ namespace Microsoft.Maui.Platform
 			if (_handler?.VirtualView == null || url == WebViewHandler.AssetBaseUrl)
 				return;
 
-			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
-			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
+			// TODO: Sync Cookies
 
-			if (navigate)
-				_handler.VirtualView.Navigated(_handler.CurrentWebNavigationEvent, GetValidUrl(url), _navigationResult);
+			var cancel = false;
 
-			if (_handler != null)
-				_handler.NativeView.UpdateCanGoBackForward(_handler.VirtualView);
+			if (!GetValidUrl(url).Equals(_handler.UrlCanceled, StringComparison.OrdinalIgnoreCase))
+				cancel = NavigatingCanceled(url);
 
-			base.OnPageStarted(view, url, favicon);
+			_handler.UrlCanceled = null;
+
+			if (cancel)
+			{
+				_navigationResult = WebNavigationResult.Cancel;
+				view?.StopLoading();
+			}
+			else
+			{
+				_navigationResult = WebNavigationResult.Success;
+				base.OnPageStarted(view, url, favicon);
+			}
 		}
 
 		public override void OnPageFinished(WebView? view, string? url)

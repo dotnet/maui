@@ -117,9 +117,9 @@ namespace Microsoft.Maui.Platform
 			var request = navigationAction.Request;
 			var lastUrl = request.Url.ToString();
 
-			virtualView.Navigating(navEvent, lastUrl);
+			bool cancel = virtualView.Navigating(navEvent, lastUrl);
 			_handler.NativeView?.UpdateCanGoBackForward(virtualView);
-			decisionHandler(WKNavigationActionPolicy.Allow);
+			decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
 		}
 
 		string GetCurrentUrl()

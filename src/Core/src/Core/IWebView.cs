@@ -45,7 +45,7 @@
 		/// For internal use by the .NET MAUI platform.
 		/// Raised after web navigation begins.
 		/// </summary>
-		void Navigating(WebNavigationEvent evnt, string url);
+		bool Navigating(WebNavigationEvent evnt, string url);
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.

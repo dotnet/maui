@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Handlers
 
 		internal WebNavigationEvent _eventState;
 
+		protected internal string? UrlCanceled { get; set; }
+
 		protected override AWebView CreateNativeView()
 		{
 			return new MauiWebView(this, Context!)
@@ -103,10 +105,11 @@ namespace Microsoft.Maui.Handlers
 				return false;
 
 			// TODO: Sync Cookies
-			VirtualView.Navigating(_eventState, url);
+			bool cancel = VirtualView.Navigating(_eventState, url);
 			NativeView?.UpdateCanGoBackForward(VirtualView);
-	
-			return false;
+			UrlCanceled = cancel ? null : url;
+
+			return cancel;
 		}
 
 		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
