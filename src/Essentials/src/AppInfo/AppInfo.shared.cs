@@ -1,4 +1,7 @@
+#nullable enable
 using System;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -23,29 +26,35 @@ namespace Microsoft.Maui.Essentials
 	public static class AppInfo
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='PackageName']/Docs" />
-		public static string PackageName => Default.PackageName;
+		public static string PackageName => Current.PackageName;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='Name']/Docs" />
-		public static string Name => Default.Name;
+		public static string Name => Current.Name;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='VersionString']/Docs" />
-		public static string VersionString => Default.VersionString;
+		public static string VersionString => Current.VersionString;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='Version']/Docs" />
-		public static Version Version => Default.Version;
+		public static Version Version => Current.Version;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='BuildString']/Docs" />
-		public static string BuildString => Default.BuildString;
+		public static string BuildString => Current.BuildString;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='ShowSettingsUI']/Docs" />
-		public static void ShowSettingsUI() => Default.ShowSettingsUI();
+		public static void ShowSettingsUI() => Current.ShowSettingsUI();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
-		public static AppTheme RequestedTheme => Default.RequestedTheme;
+		public static AppTheme RequestedTheme => Current.RequestedTheme;
 
 
-		static Lazy<IAppInfo> current = new Lazy<IAppInfo>(() => new AppInfoImplementation());
+		static IAppInfo? currentImplementation;
 
-		public static IAppInfo Current => current.Value;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IAppInfo Current =>
+			currentImplementation ??= new AppInfoImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetCurrent(IAppInfo? implementation) =>
+			currentImplementation = implementation;
 	}
 }

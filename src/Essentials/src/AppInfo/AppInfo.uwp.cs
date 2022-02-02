@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 using Windows.UI.Xaml;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	public class AppInfoImplementation : IAppInfo
 	{

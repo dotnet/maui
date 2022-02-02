@@ -11,6 +11,7 @@ using SafariServices;
 using ObjCRuntime;
 using UIKit;
 using WebKit;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
