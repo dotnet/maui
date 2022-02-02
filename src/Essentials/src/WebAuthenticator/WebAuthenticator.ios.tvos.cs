@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Essentials
 			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
 				return true;
 
-			return AppInfo.VerifyHasUrlScheme(scheme);
+			return AppInfoImplementation.VerifyHasUrlScheme(scheme);
 		}
 
 #if __IOS__
