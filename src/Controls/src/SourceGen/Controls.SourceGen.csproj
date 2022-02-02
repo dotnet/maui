@@ -33,6 +33,25 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-4.final" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="MauiGResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MauiGResources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="MauiGResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MauiGResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
   <Target Name="_CopyToNuspecDir" AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MauiNuSpecDirectory)" ContinueOnError="true" Retries="0" />
   </Target>

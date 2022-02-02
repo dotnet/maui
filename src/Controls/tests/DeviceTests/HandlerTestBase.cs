@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.DeviceTests
@@ -56,6 +56,9 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+#if WINDOWS
+					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
+#endif
 				});
 
 			additionalCreationActions?.Invoke(appBuilder);

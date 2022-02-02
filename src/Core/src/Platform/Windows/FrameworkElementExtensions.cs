@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		internal static void UpdateResourceToApplicationDefault(this FrameworkElement frameworkElement, string propertyKey, object? value)
+		internal static void SetApplicationResource(this FrameworkElement frameworkElement, string propertyKey, object? value)
 		{
 			if (value is null)
 			{

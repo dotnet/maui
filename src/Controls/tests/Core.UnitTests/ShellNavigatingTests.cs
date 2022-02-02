@@ -624,11 +624,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[TestCase(typeof(PageWithDependency), typeof(PageWithDependency))]
+		[TestCase(typeof(PageWithDependencyAndMultipleConstructors), typeof(PageWithDependencyAndMultipleConstructors))]
 		[TestCase(typeof(PageWithDependency), typeof(Dependency))]
+		[TestCase(typeof(PageWithUnregisteredDependencyAndParameterlessConstructor), typeof(PageWithUnregisteredDependencyAndParameterlessConstructor))]
 		public async Task GlobalRouteWithDependencyResolution(Type typeForRouteName, Type type)
 		{
 			var serviceCollection = new ServiceCollection();
 			serviceCollection.AddTransient<Dependency>();
+			serviceCollection.AddTransient<PageWithDependency>();
+			serviceCollection.AddTransient<PageWithDependencyAndMultipleConstructors>();
 			IServiceProvider services = serviceCollection.BuildServiceProvider();
 			var fakeMauiContext = Substitute.For<IMauiContext>();
 			var fakeHandler = Substitute.For<IElementHandler>();
@@ -650,8 +654,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNotNull(shell.Navigation.NavigationStack);
 			var page = shell.Navigation.NavigationStack[1];
 			Assert.That(page, Is.Not.Null);
-			Assert.IsInstanceOf<PageWithDependency>(page);
-			Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
+			if (type == typeof(PageWithDependency) || type == typeof(Dependency))
+			{
+				Assert.IsInstanceOf<PageWithDependency>(page);
+				Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
+			}
+
+			if (type == typeof(PageWithDependencyAndMultipleConstructors))
+			{
+				Assert.IsInstanceOf<PageWithDependencyAndMultipleConstructors>(page);
+				var testPage = page as PageWithDependencyAndMultipleConstructors;
+				Assert.That(testPage.TestDependency, Is.Not.Null);
+				Assert.That(testPage.OtherTestDependency, Is.Null);
+			}
+
+			if (type == typeof(PageWithUnregisteredDependencyAndParameterlessConstructor))
+			{
+				Assert.IsInstanceOf<PageWithUnregisteredDependencyAndParameterlessConstructor>(page);
+			}
 		}
 
 		[Test]

@@ -9,7 +9,7 @@ Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $logsDirectory = Join-Path $artifacts logs
-$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-net6.slnf
+$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.slnf
 $slnMac = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
 
 # Bootstrap ./bin/dotnet/
@@ -43,6 +43,7 @@ if ($IsWindows)
     # Modify global.json, so the IDE can load
     $globaljson = Join-Path $PSScriptRoot ../global.json
     [xml] $xml = Get-Content (Join-Path $PSScriptRoot Versions.props)
+    $jsonBackup = Get-Content $globaljson
     $json = Get-Content $globaljson | ConvertFrom-Json
     $json | Add-Member sdk (New-Object -TypeName PSObject) -Force
     $json.sdk | Add-Member version ([string]$xml.Project.PropertyGroup.MicrosoftDotnetSdkInternalPackageVersion).Trim() -Force
@@ -101,6 +102,7 @@ if ($IsWindows)
         $env:DOTNET_MULTILEVEL_LOOKUP=$oldDOTNET_MULTILEVEL_LOOKUP
         $env:MSBuildEnableWorkloadResolver=$oldMSBuildEnableWorkloadResolver
         $env:PATH=$oldPATH
+        $jsonBackup | Set-Content $globaljson
     }
 }
 else

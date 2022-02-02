@@ -31,10 +31,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
 
   <Target Name="_CopyXamarinUITestFiles" AfterTargets="Build">

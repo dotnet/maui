@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform
 							.MakeScoped(registerNewNavigationRoot: true);
 
 					newPage.Toolbar ??= new Toolbar(newPage);
-					_ = newPage.Toolbar.ToNative(modalContext);
+					_ = newPage.Toolbar.ToPlatform(modalContext);
 
 					var windowManager = modalContext.GetNavigationRootManager();
 					windowManager.Connect(newPage);

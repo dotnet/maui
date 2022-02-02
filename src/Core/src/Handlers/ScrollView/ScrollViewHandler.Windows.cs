@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 			return result;
 		}
 
-		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			if (handler.NativeView == null || handler.MauiContext == null)
 				return;
@@ -60,22 +60,22 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
 		}
 
-		public static void MapVerticalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView.VerticalScrollBarVisibility = scrollView.VerticalScrollBarVisibility.ToWindowsScrollBarVisibility();
 		}
 
-		public static void MapOrientation(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
 		}
 
-		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args)
+		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (args is ScrollToRequest request)
 			{
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static void UpdateInsetPanel(IScrollView scrollView, ScrollViewHandler handler)
+		static void UpdateInsetPanel(IScrollView scrollView, IScrollViewHandler handler)
 		{
 			if (scrollView.PresentedContent == null || handler.MauiContext == null)
 			{
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var scrollViewer = handler.NativeView;
-			var nativeContent = scrollView.PresentedContent.ToNative(handler.MauiContext);
+			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
 			if (GetInsetPanel(scrollViewer) is ContentPanel currentPaddingLayer)
 			{

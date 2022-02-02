@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Controls
 		public const string Tizen = "Tizen";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='WPF']/Docs" />
 		public const string WPF = "WPF";
+		public const string MacCatalyst = "MacCatalyst";
+		public const string tvOS = "tvOS";
 
 		static IPlatformServices s_platformServices;
 

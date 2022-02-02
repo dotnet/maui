@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class CollectionViewHandler : GroupableItemsViewHandler<GroupableItemsView>
+	public partial class CollectionViewHandler : ReorderableItemsViewHandler<ReorderableItemsView>
 	{
 		
 	}
