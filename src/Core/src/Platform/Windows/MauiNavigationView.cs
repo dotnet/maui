@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiNavigationView : NavigationView
 	{
 		internal StackPanel? TopNavArea { get; private set; }
+		internal ItemsRepeater? TopNavMenuItemsHost { get; private set; }
 		internal Grid? PaneContentGrid { get; private set; }
 		internal event EventHandler? OnApplyTemplateFinished;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Platform
 
 			PaneContentGrid = (Grid)GetTemplateChild("PaneContentGrid");
 			TopNavArea = ((StackPanel)GetTemplateChild("TopNavArea"));
-
+			TopNavMenuItemsHost = ((ItemsRepeater)GetTemplateChild("TopNavMenuItemsHost"));
 			OnApplyTemplateCore();
 			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 		}

@@ -383,7 +383,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_formsEmptyView = view ?? throw new ArgumentNullException(nameof(view));
 
-			var handler = view.GetOrCreateHandler(MauiContext);
+			var handler = view.ToHandler(MauiContext);
 			var nativeView = handler.ContainerView ?? handler.NativeView;
 
 			return nativeView as FrameworkElement;

@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
-			var platformView = content.ToNative(_mauiContext);
+			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);
 		}
 		#region INativeViewHandler

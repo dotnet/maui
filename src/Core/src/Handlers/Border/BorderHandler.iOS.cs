@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
 			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddSubview(view.ToNative(MauiContext));
+				NativeView.AddSubview(view.ToPlatform(MauiContext));
 		}
 
 		public static void MapContent(BorderHandler handler, IBorderView border)

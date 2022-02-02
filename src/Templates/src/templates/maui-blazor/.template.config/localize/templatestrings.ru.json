@@ -1,0 +1,7 @@
+{
+  "author": "Microsoft",
+  "name": ".NET MAUI Blazor App (Preview)",
+  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI using Blazor",
+  "postActions/openInEditor/description": "Opens Pages/Index.razor in the editor.",
+  "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project"
+}

@@ -5,6 +5,7 @@ using Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.HeaderFooterGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.ItemSizeGalleries;
+using Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries;
@@ -42,6 +43,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 						GalleryBuilder.NavButton("Selection Galleries", () => new SelectionGallery(), Navigation),
 						GalleryBuilder.NavButton("Propagation Galleries", () => new PropagationGallery(), Navigation),
 						GalleryBuilder.NavButton("Grouping Galleries", () => new GroupingGallery(), Navigation),
+						GalleryBuilder.NavButton("Reordering Galleries", () => new ReorderingGallery(), Navigation),
 						GalleryBuilder.NavButton("Item Spacing Galleries", () => new ItemsSpacingGallery(), Navigation),
 						GalleryBuilder.NavButton("Item Size Galleries", () => new ItemsSizeGallery(), Navigation),
 						GalleryBuilder.NavButton("Scroll Mode Galleries", () => new ScrollModeGallery(), Navigation),

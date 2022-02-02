@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
-				NativeView.AddView(child.ToNative(MauiContext));
+				NativeView.AddView(child.ToPlatform(MauiContext));
 			}
 		}
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.AddView(child.ToNative(MauiContext), targetIndex);
+			NativeView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
 		public void Remove(IView child)
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.ToNative() is View view)
+			if (child?.ToPlatform() is View view)
 			{
 				NativeView.RemoveView(view);
 			}
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.AddView(child.ToNative(MauiContext), targetIndex);
+			NativeView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
 		public void Update(int index, IView child)
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.RemoveViewAt(index);
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.AddView(child.ToNative(MauiContext), targetIndex);
+			NativeView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
 		public void UpdateZIndex(IView child)
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			AView nativeChildView = child.ToNative(MauiContext!);
+			AView nativeChildView = child.ToPlatform(MauiContext!);
 			var currentIndex = IndexOf(NativeView, nativeChildView);
 
 			if (currentIndex == -1)
