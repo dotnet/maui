@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Essentials
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		NSObject? observer;
 

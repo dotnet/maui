@@ -6,7 +6,7 @@ using Foundation;
 
 namespace Microsoft.Maui.Essentials
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		uint keepScreenOnId = 0;
 		NSObject? screenMetricsObserver;

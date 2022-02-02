@@ -8,7 +8,7 @@ using Windows.System.Display;
 
 namespace Microsoft.Maui.Essentials
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		readonly object locker = new object();
 		DisplayRequest? displayRequest;

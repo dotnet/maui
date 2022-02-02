@@ -1,20 +1,19 @@
 namespace Microsoft.Maui.Essentials
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceInfo']/Docs" />
-	public static partial class DeviceInfo
+	public class DeviceInfoImplementation : IDeviceInfo
 	{
-		static string GetModel() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string Model => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static string GetManufacturer() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string Manufacturer => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static string GetDeviceName() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string Name => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static string GetVersionString() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string VersionString => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static DevicePlatform GetPlatform() => DevicePlatform.Unknown;
+		public DevicePlatform Platform => DevicePlatform.Unknown;
 
-		static DeviceIdiom GetIdiom() => DeviceIdiom.Unknown;
+		public DeviceIdiom Idiom => DeviceIdiom.Unknown;
 
-		static DeviceType GetDeviceType() => DeviceType.Unknown;
+		public DeviceType DeviceType => DeviceType.Unknown;
 	}
 }
