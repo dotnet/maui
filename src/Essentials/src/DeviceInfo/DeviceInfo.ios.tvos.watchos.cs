@@ -35,6 +35,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public string VersionString => UIDevice.CurrentDevice.SystemVersion;
 
+		public Version Version => Utils.ParseVersion(VersionString);
+
 		public DevicePlatform Platform =>
 #if MACCATALYST
 			DevicePlatform.MacCatalyst;

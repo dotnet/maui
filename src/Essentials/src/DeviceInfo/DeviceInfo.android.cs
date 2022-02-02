@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public string VersionString => Build.VERSION.Release;
 
+		public Version Version => Utils.ParseVersion(VersionString);
+
 		public DevicePlatform Platform => DevicePlatform.Android;
 
 		public DeviceIdiom Idiom

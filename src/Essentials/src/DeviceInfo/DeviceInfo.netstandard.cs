@@ -1,3 +1,5 @@
+using System;
+
 namespace Microsoft.Maui.Essentials.Implementations
 {
 	public class DeviceInfoImplementation : IDeviceInfo
@@ -9,6 +11,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public string Name => throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public string VersionString => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public Version Version => throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public DevicePlatform Platform => DevicePlatform.Unknown;
 

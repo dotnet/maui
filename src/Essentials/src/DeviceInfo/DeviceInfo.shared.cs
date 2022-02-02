@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Essentials
 		public static string VersionString => Current.VersionString;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='Version']/Docs" />
-		public static Version Version => Utils.ParseVersion(VersionString);
+		public static Version Version => Current.Version;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='Platform']/Docs" />
 		public static DevicePlatform Platform => Current.Platform;
@@ -65,6 +65,8 @@ namespace Microsoft.Maui.Essentials
 		string Name { get; }
 
 		string VersionString { get; }
+
+		Version Version { get; }
 
 		DevicePlatform Platform { get; }
 

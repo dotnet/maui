@@ -49,6 +49,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
+		public Version Version => Utils.ParseVersion(VersionString);
+
 		public DevicePlatform Platform => DevicePlatform.macOS;
 
 		public DeviceIdiom Idiom => DeviceIdiom.Desktop;

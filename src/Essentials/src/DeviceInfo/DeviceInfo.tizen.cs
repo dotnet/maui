@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public string VersionString
 			=> Plat.GetFeatureInfo("platform.version");
 
+		public Version Version => Utils.ParseVersion(VersionString);
+
 		public DevicePlatform Platform
 			=> DevicePlatform.Tizen;
 

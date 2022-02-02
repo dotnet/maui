@@ -52,6 +52,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
+		public Version Version => Utils.ParseVersion(VersionString);
+
 		public DevicePlatform Platform => DevicePlatform.UWP;
 
 		public DeviceIdiom Idiom
