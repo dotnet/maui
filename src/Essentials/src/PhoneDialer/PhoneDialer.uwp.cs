@@ -1,16 +1,16 @@
 using Windows.ApplicationModel.Calls;
 using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class PhoneDialer
+	public class PhoneDialerImplementation : IPhoneDialer
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			 ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager");
 
-		static void PlatformOpen(string number)
+		public void PlatformOpen(string number)
 		{
-			ValidateOpen(number);
+			PhoneDialer.ValidateOpen(number);
 
 			PhoneCallManager.ShowPhoneCallUI(number, string.Empty);
 		}

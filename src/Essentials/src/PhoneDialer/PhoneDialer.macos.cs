@@ -1,16 +1,16 @@
 using AppKit;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class PhoneDialer
+	public class PhoneDialerImplementation : IPhoneDialer
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			MainThread.InvokeOnMainThread(() => NSWorkspace.SharedWorkspace.UrlForApplication(NSUrl.FromString($"tel:0000000000")) != null);
 
-		static void PlatformOpen(string number)
+		public void PlatformOpen(string number)
 		{
-			ValidateOpen(number);
+			PhoneDialer.ValidateOpen(number);
 
 			var nsurl = NSUrl.FromString($"tel:{number}");
 			NSWorkspace.SharedWorkspace.OpenUrl(nsurl);
