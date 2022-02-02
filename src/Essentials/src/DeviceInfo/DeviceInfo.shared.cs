@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Essentials
 		Virtual = 2
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceInfo']/Docs" />
 	public interface IDeviceInfo
 	{
 		string Model { get; }
