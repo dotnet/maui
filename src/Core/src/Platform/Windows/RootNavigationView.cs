@@ -86,8 +86,8 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 			}
-
 		}
+
 		void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp) =>
 			UpdateHeaderPropertyBinding();
 

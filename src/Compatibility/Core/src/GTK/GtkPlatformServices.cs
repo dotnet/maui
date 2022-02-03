@@ -59,12 +59,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 			}
 		}
 
-		public Color GetNamedColor(string name)
-		{
-			// Not supported on this platform
-			return Color.Default;
-		}
-
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
 			using (var client = new HttpClient())

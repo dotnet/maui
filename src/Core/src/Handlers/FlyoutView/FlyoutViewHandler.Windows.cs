@@ -83,19 +83,19 @@ namespace Microsoft.Maui.Handlers
 		void UpdateDetail()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView.Detail.ToNative(MauiContext);
+			_ = VirtualView.Detail.ToPlatform(MauiContext);
 
-			NativeView.Content = VirtualView.Detail.ToNative();
+			NativeView.Content = VirtualView.Detail.ToPlatform();
 		}
 
 		void UpdateFlyout()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView.Flyout.ToNative(MauiContext);
+			_ = VirtualView.Flyout.ToPlatform(MauiContext);
 
 			_flyoutPanel.Children.Clear();
 
-			if (VirtualView.Flyout.ToNative() is UIElement element)
+			if (VirtualView.Flyout.ToPlatform() is UIElement element)
 				_flyoutPanel.Children.Add(element);
 		}
 

@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Platform
 				if (Subviews.Length > 0)
 					_contentView = Subviews[0];
 
-				_contentView = view.ToNative(mauiContext);
+				_contentView = view.ToPlatform(mauiContext);
 			}
 			else
 			{
@@ -291,7 +291,7 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in items)
 			{
-				UIView swipeItem = item.ToNative(Element.Handler.MauiContext);
+				UIView swipeItem = item.ToPlatform(Element.Handler.MauiContext);
 				_actionView.AddSubview(swipeItem);
 				_swipeItems.Add(item, swipeItem);
 			}

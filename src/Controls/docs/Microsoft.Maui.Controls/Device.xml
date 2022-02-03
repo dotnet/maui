@@ -82,31 +82,6 @@ Device.BeginInvokeOnMainThread (() => {
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="Flags">
-      <MemberSignature Language="C#" Value="public static System.Collections.Generic.IReadOnlyList&lt;string&gt; Flags { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property class System.Collections.Generic.IReadOnlyList`1&lt;string&gt; Flags" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Device.Flags" />
-      <MemberSignature Language="F#" Value="member this.Flags : System.Collections.Generic.IReadOnlyList&lt;string&gt;" Usage="Microsoft.Maui.Controls.Device.Flags" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Collections.Generic.IReadOnlyList&lt;System.String&gt;</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets a list of custom flags that were set on the device before Microsoft.Maui.Controls was initialized.</summary>
-        <value>The list of custom flags that were set on the device before Microsoft.Maui.Controls was initialized.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="FlowDirection">
       <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.FlowDirection FlowDirection { get; }" />
       <MemberSignature Language="ILAsm" Value=".property valuetype Microsoft.Maui.Controls.FlowDirection FlowDirection" />
@@ -174,29 +149,6 @@ Device.BeginInvokeOnMainThread (() => {
       <Docs>
         <summary>Returns the current <see cref="T:System.Threading.SynchronizationContext" /> from the main thread.</summary>
         <returns>The current <see cref="T:System.Threading.SynchronizationContext" /> from the main thread.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetNamedColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetNamedColor (string name);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetNamedColor(string name) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Device.GetNamedColor(System.String)" />
-      <MemberSignature Language="F#" Value="static member GetNamedColor : string -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Device.GetNamedColor name" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="name" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="name">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -805,36 +757,6 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <summary>Gets the kind of device that Microsoft.Maui.Controls is currently working on.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SetFlags">
-      <MemberSignature Language="C#" Value="public static void SetFlags (System.Collections.Generic.IReadOnlyList&lt;string&gt; flags);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetFlags(class System.Collections.Generic.IReadOnlyList`1&lt;string&gt; flags) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Device.SetFlags(System.Collections.Generic.IReadOnlyList{System.String})" />
-      <MemberSignature Language="F#" Value="static member SetFlags : System.Collections.Generic.IReadOnlyList&lt;string&gt; -&gt; unit" Usage="Microsoft.Maui.Controls.Device.SetFlags flags" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="flags" Type="System.Collections.Generic.IReadOnlyList&lt;System.String&gt;" />
-      </Parameters>
-      <Docs>
-        <param name="flags">The list of custom flag values.</param>
-        <summary>Sets a list of custom flags on the device.</summary>
-        <remarks>
-          <para>Developers should only call this method before Microsoft.Maui.Controls is initialized.</para>
-        </remarks>
       </Docs>
     </Member>
     <Member MemberName="SetFlowDirection">
