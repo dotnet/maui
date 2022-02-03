@@ -12,15 +12,15 @@ using Microsoft.Maui.Controls.Platform;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using NativeView = UIKit.UIView;
-using NativeViewController = UIKit.UIViewController;
+using PlatformView = UIKit.UIView;
+using PlatformViewController = UIKit.UIViewController;
 using NativeColor = UIKit.UIColor;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using AppKit;
-using NativeView = AppKit.NSView;
-using NativeViewController = AppKit.NSViewController;
+using PlatformView = AppKit.NSView;
+using PlatformViewController = AppKit.NSViewController;
 using NativeColor = AppKit.NSColor;
 using Microsoft.Maui.Controls.Compatibility.Platform.macOS.Extensions;
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		AutoPackage = 1 << 2
 	}
 
-	public class VisualElementRenderer<TElement> : NativeView, IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
+	public class VisualElementRenderer<TElement> : PlatformView, IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
 	{
 		readonly NativeColor _defaultColor = NativeColor.Clear;
 
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
-		public static void RegisterEffect(Effect effect, NativeView container, NativeView control = null)
+		public static void RegisterEffect(Effect effect, PlatformView container, PlatformView control = null)
 		{
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect == null)
@@ -149,13 +149,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
+			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public NativeView NativeView => this;
+		public PlatformView PlatformView => this;
 
 
-		protected internal virtual NativeView GetControl() => NativeView;
+		protected internal virtual PlatformView GetControl() => PlatformView;
 
 		void IVisualElementRenderer.SetElement(VisualElement element)
 		{
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
-		public virtual NativeViewController ViewController => null;
+		public virtual PlatformViewController ViewController => null;
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
 
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			bool hasBackground = Element?.Background != null && !Element.Background.IsEmpty;
 
 			if (hasBackground)
-				NativeView.UpdateBackgroundLayer();
+				PlatformView.UpdateBackgroundLayer();
 		}
 
 #else
@@ -270,8 +270,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public override void RightMouseUp(NSEvent theEvent)
 		{
 			var menu = Microsoft.Maui.Controls.Compatibility.Element.GetMenu(Element);
-			if (menu != null && NativeView != null)
-				NSMenu.PopUpContextMenu(menu.ToNSMenu(), theEvent, NativeView);
+			if (menu != null && PlatformView != null)
+				NSMenu.PopUpContextMenu(menu.ToNSMenu(), theEvent, PlatformView);
 
 			base.RightMouseUp(theEvent);
 		}
@@ -395,7 +395,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		protected virtual void SetBackground(Brush brush)
 		{
-			NativeView.UpdateBackground(brush);
+			PlatformView.UpdateBackground(brush);
 		}
 
 #if __MOBILE__
@@ -444,7 +444,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		}
 
-		internal virtual void SendVisualElementInitialized(VisualElement element, NativeView nativeView)
+		internal virtual void SendVisualElementInitialized(VisualElement element, PlatformView nativeView)
 		{
 			element.SendViewInitialized(nativeView);
 		}

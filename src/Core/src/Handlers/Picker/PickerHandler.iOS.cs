@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		UIPickerView? _pickerView;
 
-		protected override MauiPicker CreateNativeView()
+		protected override MauiPicker CreatePlatformView()
 		{
 			_pickerView = new UIPickerView();
 
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (VirtualView?.SelectedIndex == -1 && count > 0)
 				{
-					NativeView?.SetSelectedIndex(VirtualView, 0);
+					PlatformView?.SetSelectedIndex(VirtualView, 0);
 				}
 
 				UpdatePickerFromPickerSource(pickerSource);
@@ -87,54 +87,54 @@ namespace Microsoft.Maui.Handlers
 		}
 		void Reload()
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			NativeView.UpdatePicker(VirtualView);
+			PlatformView.UpdatePicker(VirtualView);
 		}
 
 		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTitle(picker);
+			handler.PlatformView?.UpdateTitle(picker);
 		}
 
 		public static void MapTitleColor(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTitleColor(picker);
+			handler.PlatformView?.UpdateTitleColor(picker);
 		}
 
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateSelectedIndex(picker);
+			handler.PlatformView?.UpdateSelectedIndex(picker);
 		}
 
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(picker);
+			handler.PlatformView?.UpdateCharacterSpacing(picker);
 		}
 
 		public static void MapFont(PickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(picker, fontManager);
+			handler.PlatformView?.UpdateFont(picker, fontManager);
 		}
 
 		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
 		}
 
 		public static void MapTextColor(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTextColor(picker);
+			handler.PlatformView?.UpdateTextColor(picker);
 		}
 
 		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(picker);
+			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
@@ -152,24 +152,24 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEditing(object? sender, EventArgs eventArgs)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
 			// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
 			var selectedIndex = VirtualView.SelectedIndex;
 
-			NativeView.Text = VirtualView.GetItem(selectedIndex);
+			PlatformView.Text = VirtualView.GetItem(selectedIndex);
 
 			// Also clears the undo stack (undo/redo possible on iPads)
-			NativeView.UndoManager.RemoveAllActions();
+			PlatformView.UndoManager.RemoveAllActions();
 		}
 
 		void UpdatePickerFromPickerSource(PickerSource pickerSource)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			NativeView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
+			PlatformView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 

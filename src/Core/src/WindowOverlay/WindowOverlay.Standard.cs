@@ -12,7 +12,7 @@
 		/// <inheritdoc/>
 		public virtual bool Initialize()
 		{
-			return IsNativeViewInitialized = true;
+			return IsPlatformViewInitialized = true;
 		}
 
 		/// <summary>
@@ -20,7 +20,7 @@
 		/// </summary>
 		void DeinitializeNativeDependencies()
 		{
-			IsNativeViewInitialized = false;
+			IsPlatformViewInitialized = false;
 		}
 	}
 }

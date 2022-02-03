@@ -2,9 +2,9 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class NativeViewWrapper : View
+	public class PlatformViewWrapper : View
 	{
-		public NativeViewWrapper(FrameworkElement nativeElement, GetDesiredSizeDelegate getDesiredSizeDelegate = null, ArrangeOverrideDelegate arrangeOverrideDelegate = null,
+		public PlatformViewWrapper(FrameworkElement nativeElement, GetDesiredSizeDelegate getDesiredSizeDelegate = null, ArrangeOverrideDelegate arrangeOverrideDelegate = null,
 								 MeasureOverrideDelegate measureOverrideDelegate = null)
 		{
 			GetDesiredSizeDelegate = getDesiredSizeDelegate;

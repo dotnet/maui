@@ -6,19 +6,19 @@ using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform;
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-	public partial class RendererToHandlerShim : INativeViewHandler
+	public partial class RendererToHandlerShim : IPlatformViewHandler
 	{
-		UIViewController? INativeViewHandler.ViewController => VisualElementRenderer?.ViewController;
+		UIViewController? IPlatformViewHandler.ViewController => VisualElementRenderer?.ViewController;
 
-		protected override NativeView CreateNativeView()
+		protected override PlatformView CreatePlatformView()
 		{
 			_ = VisualElementRenderer ?? throw new InvalidOperationException("VisualElementRenderer cannot be null here");
 
-			return VisualElementRenderer.NativeView;
+			return VisualElementRenderer.PlatformView;
 		}
 
 		IVisualElementRenderer CreateRenderer(IView view)

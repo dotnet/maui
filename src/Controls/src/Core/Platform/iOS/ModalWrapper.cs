@@ -12,10 +12,10 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ModalWrapper : UIViewController, IUIAdaptivePresentationControllerDelegate
 	{
-		INativeViewHandler _modal;
+		IPlatformViewHandler _modal;
 		bool _isDisposed;
 
-		internal ModalWrapper(INativeViewHandler modal)
+		internal ModalWrapper(IPlatformViewHandler modal)
 		{
 			_modal = modal;
 

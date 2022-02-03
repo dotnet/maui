@@ -11,10 +11,10 @@ using UIView = AppKit.NSView;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, UIView>
+	public class PlatformViewWrapperRenderer : ViewRenderer<PlatformViewWrapper, UIView>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		public NativeViewWrapperRenderer()
+		public PlatformViewWrapperRenderer()
 		{
 
 		}
@@ -85,12 +85,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 #endif
 
-		protected override void OnElementChanged(ElementChangedEventArgs<NativeViewWrapper> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<PlatformViewWrapper> e)
 		{
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
-				SetNativeControl(Element.NativeView);
+				SetNativeControl(Element.PlatformView);
 		}
 
 		/// <summary>

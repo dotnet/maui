@@ -437,7 +437,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element e = _cell;
 			while (e.RealParent != null)
 			{
-				var renderer = (INativeViewHandler)e.RealParent.ToHandler(e.FindMauiContext());
+				var renderer = (IPlatformViewHandler)e.RealParent.ToHandler(e.FindMauiContext());
 				if (renderer.ViewController != null)
 					return renderer.ViewController;
 

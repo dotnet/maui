@@ -1,12 +1,12 @@
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 #elif __ANDROID__
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -103,14 +103,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public NativeView? ContainerView { get; private protected set; }
+		public PlatformView? ContainerView { get; private protected set; }
 
 		object? IViewHandler.ContainerView => ContainerView;
 
-		public new NativeView? NativeView
+		public new PlatformView? PlatformView
 		{
-			get => (NativeView?)base.NativeView;
-			private protected set => base.NativeView = value;
+			get => (PlatformView?)base.PlatformView;
+			private protected set => base.PlatformView = value;
 		}
 
 		public new IView? VirtualView
@@ -123,10 +123,10 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract void NativeArrange(Rectangle frame);
 
-		private protected abstract NativeView OnCreateNativeView();
+		private protected abstract PlatformView OnCreatePlatformView();
 
 		private protected sealed override object OnCreateNativeElement() =>
-			OnCreateNativeView();
+			OnCreatePlatformView();
 
 #if ANDROID
 		// This sets up AndroidBatchPropertyMapper
@@ -136,91 +136,91 @@ namespace Microsoft.Maui.Handlers
 
 			if (element is IView view)
 			{
-				((NativeView?)NativeView)?.Initialize(view);
+				((PlatformView?)PlatformView)?.Initialize(view);
 			}
 		}
 #endif
 
 #if !NETSTANDARD
-		private protected abstract void OnConnectHandler(NativeView nativeView);
+		private protected abstract void OnConnectHandler(PlatformView nativeView);
 
-		partial void ConnectingHandler(NativeView? nativeView);
+		partial void ConnectingHandler(PlatformView? nativeView);
 
 		private protected sealed override void OnConnectHandler(object nativeView)
 		{
-			ConnectingHandler((NativeView)nativeView);
-			OnConnectHandler((NativeView)nativeView);
+			ConnectingHandler((PlatformView)nativeView);
+			OnConnectHandler((PlatformView)nativeView);
 		}
 
-		private protected abstract void OnDisconnectHandler(NativeView nativeView);
+		private protected abstract void OnDisconnectHandler(PlatformView nativeView);
 
-		partial void DisconnectingHandler(NativeView nativeView);
+		partial void DisconnectingHandler(PlatformView nativeView);
 
 		private protected sealed override void OnDisconnectHandler(object nativeView)
 		{
-			DisconnectingHandler((NativeView)nativeView);
-			OnDisconnectHandler((NativeView)nativeView);
+			DisconnectingHandler((PlatformView)nativeView);
+			OnDisconnectHandler((PlatformView)nativeView);
 		}
 #endif
 
 		public static void MapWidth(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateWidth(view);
+			((PlatformView?)handler.PlatformView)?.UpdateWidth(view);
 		}
 
 		public static void MapHeight(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateHeight(view);
+			((PlatformView?)handler.PlatformView)?.UpdateHeight(view);
 		}
 
 		public static void MapMinimumHeight(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateMinimumHeight(view);
+			((PlatformView?)handler.PlatformView)?.UpdateMinimumHeight(view);
 		}
 
 		public static void MapMaximumHeight(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateMaximumHeight(view);
+			((PlatformView?)handler.PlatformView)?.UpdateMaximumHeight(view);
 		}
 
 		public static void MapMinimumWidth(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateMinimumWidth(view);
+			((PlatformView?)handler.PlatformView)?.UpdateMinimumWidth(view);
 		}
 
 		public static void MapMaximumWidth(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateMaximumWidth(view);
+			((PlatformView?)handler.PlatformView)?.UpdateMaximumWidth(view);
 		}
 
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
+			((PlatformView?)handler.PlatformView)?.UpdateIsEnabled(view);
 		}
 
 		public static void MapVisibility(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateVisibility(view);
+			((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
 		}
 
 		public static void MapBackground(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateBackground(view);
+			((PlatformView?)handler.PlatformView)?.UpdateBackground(view);
 		}
 
 		public static void MapFlowDirection(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateFlowDirection(view);
+			((PlatformView?)handler.PlatformView)?.UpdateFlowDirection(view);
 		}
 
 		public static void MapOpacity(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateOpacity(view);
+			((PlatformView?)handler.PlatformView)?.UpdateOpacity(view);
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateAutomationId(view);
+			((PlatformView?)handler.PlatformView)?.UpdateAutomationId(view);
 		}
 
 		public static void MapClip(IViewHandler handler, IView view)
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Handlers
 					handler.HasContainer = viewHandler.NeedsContainer;
 			}
 
-			((NativeView?)handler.ContainerView)?.UpdateClip(view);
+			((PlatformView?)handler.ContainerView)?.UpdateClip(view);
 		}
 
 		public static void MapShadow(IViewHandler handler, IView view)
@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Handlers
 					handler.HasContainer = viewHandler.NeedsContainer;
 			}
 
- 			((NativeView?)handler.ContainerView)?.UpdateShadow(view);
+ 			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
 		}
 
 		static partial void MappingSemantics(IViewHandler handler, IView view);
@@ -262,12 +262,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSemantics(IViewHandler handler, IView view)
 		{
 			MappingSemantics(handler, view);
-			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
+			((PlatformView?)handler.PlatformView)?.UpdateSemantics(view);
 		}
 
 		public static void MapInvalidateMeasure(IViewHandler handler, IView view, object? args)
 		{
-			(handler.NativeView as NativeView)?.InvalidateMeasure(view);
+			(handler.PlatformView as PlatformView)?.InvalidateMeasure(view);
 		}
 
 		public static void MapContainerView(IViewHandler handler, IView view)
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Handlers
 					handler.HasContainer = viewHandler.NeedsContainer;
 			}
 
- 			((NativeView?)handler.ContainerView)?.UpdateBorder(view);
+ 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view);

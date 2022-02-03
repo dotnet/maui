@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateMenu()
 		{
-			if (Handler.NativeView is not WindowHeader wh)
+			if (Handler.PlatformView is not WindowHeader wh)
 				return;
 
 			var commandBar = wh.CommandBar;
@@ -81,27 +81,27 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapToolbarDynamicOverflowEnabled(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateToolbarDynamicOverflowEnabled(arg2);
+			arg1.PlatformView.UpdateToolbarDynamicOverflowEnabled(arg2);
 		}
 
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBarTextColor(arg2);
+			arg1.PlatformView.UpdateBarTextColor(arg2);
 		}
 
 		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBarBackground(arg2);
+			arg1.PlatformView.UpdateBarBackground(arg2);
 		}
 
 		public static void MapBarBackgroundColor(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBarBackgroundColor(arg2);
+			arg1.PlatformView.UpdateBarBackgroundColor(arg2);
 		}
 
 		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBackButton(arg2);
+			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
@@ -111,32 +111,32 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateTitle(arg2);
+			arg1.PlatformView.UpdateTitle(arg2);
 		}
 
 		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateIconColor(arg2);
+			arg1.PlatformView.UpdateIconColor(arg2);
 		}
 
 		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateTitleView(arg2);
+			arg1.PlatformView.UpdateTitleView(arg2);
 		}
 
 		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateTitleIcon(arg2);
+			arg1.PlatformView.UpdateTitleIcon(arg2);
 		}
 
 		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBackButton(arg2);
+			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
 		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateIsVisible(arg2);
+			arg1.PlatformView.UpdateIsVisible(arg2);
 		}
 	}
 }

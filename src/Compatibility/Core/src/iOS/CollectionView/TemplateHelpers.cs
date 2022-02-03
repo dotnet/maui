@@ -18,12 +18,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var renderer = Platform.CreateRenderer(view);
 			Platform.SetRenderer(view, renderer);
 
-			renderer.NativeView.Bounds = view.Bounds.ToRectangleF();
+			renderer.PlatformView.Bounds = view.Bounds.ToRectangleF();
 
 			return renderer;
 		}
 
-		public static (UIView NativeView, VisualElement FormsElement) RealizeView(object view, DataTemplate viewTemplate, ItemsView itemsView)
+		public static (UIView PlatformView, VisualElement FormsElement) RealizeView(object view, DataTemplate viewTemplate, ItemsView itemsView)
 		{
 			if (viewTemplate != null)
 			{
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// and set the view as its BindingContext
 				renderer.Element.BindingContext = view;
 
-				return (renderer.NativeView, renderer.Element);
+				return (renderer.PlatformView, renderer.Element);
 			}
 
 			if (view is View formsView)
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// No template, and the EmptyView is a Forms view; use that
 				var renderer = CreateRenderer(formsView);
 
-				return (renderer.NativeView, renderer.Element);
+				return (renderer.PlatformView, renderer.Element);
 			}
 
 			return (new UILabel { TextAlignment = UITextAlignment.Center, Text = $"{view}" }, null);

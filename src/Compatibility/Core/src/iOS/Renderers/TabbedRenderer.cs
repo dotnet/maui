@@ -57,10 +57,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
+			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView NativeView
+		public UIView PlatformView
 		{
 			get { return View; }
 		}
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnPagesChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
 			if (element != null)
-				element.SendViewInitialized(NativeView);
+				element.SendViewInitialized(PlatformView);
 
 			//disable edit/reorder of tabs
 			CustomizableViewControllers = null;

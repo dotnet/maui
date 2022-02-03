@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers
 	public partial class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
 	{
 		TabbedPageManager _tabbedPageManager;
-		protected override ViewPager2 CreateNativeView()
+		protected override ViewPager2 CreatePlatformView()
 		{
 			_tabbedPageManager ??= new TabbedPageManager(MauiContext!);
 			return _tabbedPageManager.ViewPager;

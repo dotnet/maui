@@ -63,10 +63,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
+			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView NativeView
+		public UIView PlatformView
 		{
 			get { return View; }
 		}
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			if (element != null)
-				element.SendViewInitialized(NativeView);
+				element.SendViewInitialized(PlatformView);
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -1070,7 +1070,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				IVisualElementRenderer childRenderer;
 				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
-					childRenderer.NativeView.Frame = Child.Bounds.ToRectangleF();
+					childRenderer.PlatformView.Frame = Child.Bounds.ToRectangleF();
 				base.ViewDidLayoutSubviews();
 			}
 
@@ -1489,7 +1489,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			return Platform.GetRenderer(Current)?.ViewController ??
-				(Current.Handler as INativeViewHandler)?.ViewController;
+				(Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
@@ -1588,7 +1588,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_view = view;
 					_child = Platform.CreateRenderer(view);
 					Platform.SetRenderer(view, _child);
-					AddSubview(_child.NativeView);
+					AddSubview(_child.PlatformView);
 				}
 
 				ClipsToBounds = true;
@@ -1697,7 +1697,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (_child != null)
 					{
 						_child.Element?.DisposeModalAndChildRenderers();
-						_child.NativeView.RemoveFromSuperview();
+						_child.PlatformView.RemoveFromSuperview();
 						_child.Dispose();
 						_child = null;
 					}

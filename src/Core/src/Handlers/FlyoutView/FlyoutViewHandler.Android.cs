@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Handlers
 		const uint DefaultScrimColor = 0x99000000;
 		View? _navigationRoot;
 		LinearLayoutCompat? _sideBySideView;
-		DrawerLayout DrawerLayout => (DrawerLayout)NativeView;
+		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
 
-		protected override View CreateNativeView()
+		protected override View CreatePlatformView()
 		{
 			var li = MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Handlers
 				_sideBySideView.AddView(flyoutView, 0, layoutParameters);
 			}
 
-			if (_sideBySideView.Parent != NativeView)
+			if (_sideBySideView.Parent != PlatformView)
 				DrawerLayout.AddView(_sideBySideView);
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Handlers
 			_sideBySideView?.RemoveAllViews();
 			_sideBySideView?.RemoveFromParent();
 
-			if (_navigationRoot.Parent != NativeView)
+			if (_navigationRoot.Parent != PlatformView)
 			{
 				_navigationRoot.RemoveFromParent();
 
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateDetailsFragmentView();
 
-			if (flyoutView.Parent != NativeView)
+			if (flyoutView.Parent != PlatformView)
 			{
 				flyoutView.RemoveFromParent();
 

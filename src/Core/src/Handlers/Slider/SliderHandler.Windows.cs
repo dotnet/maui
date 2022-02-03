@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
-		protected override MauiSlider CreateNativeView()
+		protected override MauiSlider CreatePlatformView()
 		{
 			var slider = new MauiSlider
 			{
@@ -28,10 +28,10 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiSlider nativeView)
 		{
-			SetupDefaults(NativeView);
+			SetupDefaults(PlatformView);
 
 			nativeView.ValueChanged += OnNativeValueChanged;
-			nativeView.Ready += OnNativeViewReady;
+			nativeView.Ready += OnPlatformViewReady;
 
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiSlider nativeView)
 		{
 			nativeView.ValueChanged -= OnNativeValueChanged;
-			nativeView.Ready -= OnNativeViewReady;
+			nativeView.Ready -= OnPlatformViewReady;
 
 			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
 			nativeView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
@@ -63,39 +63,39 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimum(slider);
+			handler.PlatformView?.UpdateMinimum(slider);
 		}
 
 		public static void MapMaximum(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximum(slider);
+			handler.PlatformView?.UpdateMaximum(slider);
 		}
 
 		public static void MapValue(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateValue(slider);
+			handler.PlatformView?.UpdateValue(slider);
 		}
 
 		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimumTrackColor(slider, DefaultForegroundColor);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultForegroundColor);
 		}
 
 		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximumTrackColor(slider, DefaultBackgroundColor);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultBackgroundColor);
 		}
 
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(slider, DefaultThumbColor);
 		}
 
 		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.NativeView?.UpdateThumbImageSourceAsync(slider, provider)
+			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
  				.FireAndForget(handler);
 		}
 
@@ -115,10 +115,10 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.DragCompleted();
 		}
 
-		void OnNativeViewReady(object? sender, EventArgs e)
+		void OnPlatformViewReady(object? sender, EventArgs e)
 		{
 			if (VirtualView != null)
-				NativeView?.UpdateThumbColor(VirtualView, DefaultThumbColor);
+				PlatformView?.UpdateThumbColor(VirtualView, DefaultThumbColor);
 		}
 	}
 }

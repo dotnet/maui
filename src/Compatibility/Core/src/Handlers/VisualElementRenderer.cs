@@ -18,15 +18,15 @@ using PlatformView = UIKit.UIView;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 #if WINDOWS
-	public abstract partial class VisualElementRenderer<TElement, TNativeElement> : INativeViewHandler
+	public abstract partial class VisualElementRenderer<TElement, TNativeElement> : IPlatformViewHandler
 		where TElement : VisualElement
 		where TNativeElement : PlatformView
 #else
-	public abstract partial class VisualElementRenderer<TElement> : INativeViewHandler
+	public abstract partial class VisualElementRenderer<TElement> : IPlatformViewHandler
 		where TElement : Element, IView
 #endif
 	{
-		public static IPropertyMapper<TElement, INativeViewHandler> VisualElementRendererMapper = new PropertyMapper<TElement, INativeViewHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<TElement, IPlatformViewHandler> VisualElementRendererMapper = new PropertyMapper<TElement, IPlatformViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Background)] = MapBackground,
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #endif
 		};
 
-		public static CommandMapper<TElement, INativeViewHandler> VisualElementRendererCommandMapper = new CommandMapper<TElement, INativeViewHandler>(ViewHandler.ViewCommandMapper);
+		public static CommandMapper<TElement, IPlatformViewHandler> VisualElementRendererCommandMapper = new CommandMapper<TElement, IPlatformViewHandler>(ViewHandler.ViewCommandMapper);
 
 		TElement? _virtualView;
 		IMauiContext? _mauiContext;
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElement(IView view)
 		{
-			((INativeViewHandler)this).SetVirtualView(view);
+			((IPlatformViewHandler)this).SetVirtualView(view);
 		}
 
 		partial void ElementChangedPartial(ElementChangedEventArgs<TElement> e);
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 
-		internal static Size GetDesiredSize(INativeViewHandler handler, double widthConstraint, double heightConstraint, Size? minimumSize)
+		internal static Size GetDesiredSize(IPlatformViewHandler handler, double widthConstraint, double heightConstraint, Size? minimumSize)
 		{
 			var size = handler.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
@@ -185,9 +185,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IMauiContext? IElementHandler.MauiContext => _mauiContext;
 
-		PlatformView? INativeViewHandler.NativeView => (Element?.Handler as IElementHandler)?.NativeView as PlatformView;
+		PlatformView? IPlatformViewHandler.PlatformView => (Element?.Handler as IElementHandler)?.PlatformView as PlatformView;
 
-		PlatformView? INativeViewHandler.ContainerView => this;
+		PlatformView? IPlatformViewHandler.ContainerView => this;
 
 		void IViewHandler.NativeArrange(Rectangle rect) =>
 			this.NativeArrangeHandler(rect);
@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal static void SetVirtualView(
 			Maui.IElement view,
-			INativeViewHandler nativeViewHandler,
+			IPlatformViewHandler nativeViewHandler,
 			Action<ElementChangedEventArgs<TElement>> onElementChanged,
 			ref TElement? currentVirtualView,
 			ref IPropertyMapper _mapper,
@@ -264,7 +264,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.DisconnectHandler()
 		{
 			DisconnectHandlerCore();
-			if (Element != null && Element.Handler == (INativeViewHandler)this)
+			if (Element != null && Element.Handler == (IPlatformViewHandler)this)
 				Element.Handler = null;
 
 			_virtualView = null;
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		}
 
-		public static void MapAutomationPropertiesIsInAccessibleTree(INativeViewHandler handler, TElement view)
+		public static void MapAutomationPropertiesIsInAccessibleTree(IPlatformViewHandler handler, TElement view)
 		{
 #if WINDOWS
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #endif
 		}
 
-		public static void MapAutomationId(INativeViewHandler handler, TElement view)
+		public static void MapAutomationId(IPlatformViewHandler handler, TElement view)
 		{
 #if WINDOWS
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ver.SetAutomationId(view.AutomationId);
 		}
 
-		public static void MapBackgroundColor(INativeViewHandler handler, TElement view)
+		public static void MapBackgroundColor(IPlatformViewHandler handler, TElement view)
 		{
 #if WINDOWS
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #endif
 		}
 
-		public static void MapBackground(INativeViewHandler handler, TElement view)
+		public static void MapBackground(IPlatformViewHandler handler, TElement view)
 		{
 #if WINDOWS
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)

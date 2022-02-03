@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 						if (String.IsNullOrWhiteSpace(text))
 						{
-							itemProvider = new NSItemProvider(renderer.NativeView.ConvertToImage());
+							itemProvider = new NSItemProvider(renderer.PlatformView.ConvertToImage());
 						}
 						else
 						{

@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		private IShellFlyoutTransition _flyoutTransition;
 
-		public UIView NativeView => throw new NotImplementedException();
+		public UIView PlatformView => throw new NotImplementedException();
 
 		public UIViewController ViewController => throw new NotImplementedException();
 

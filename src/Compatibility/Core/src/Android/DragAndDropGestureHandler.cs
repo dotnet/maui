@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			DataPackage package = null;
 			CustomLocalStateData localStateData = (e.LocalState as CustomLocalStateData) ?? _currentCustomLocalStateData ?? new CustomLocalStateData();
 			_currentCustomLocalStateData = localStateData;
-			IVisualElementRenderer dragSourceRenderer = localStateData?.SourceNativeView as IVisualElementRenderer;
+			IVisualElementRenderer dragSourceRenderer = localStateData?.SourcePlatformView as IVisualElementRenderer;
 			package = localStateData?.DataPackage;
 			var dragSourceElement = _currentCustomLocalStateData?.SourceElement ?? dragSourceRenderer?.Element;
 
@@ -315,7 +315,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				var dragShadowBuilder = new AView.DragShadowBuilder(v);
 
-				customLocalStateData.SourceNativeView = v;
+				customLocalStateData.SourcePlatformView = v;
 				customLocalStateData.SourceElement = renderer?.Element;
 
 				if (Forms.IsNougatOrNewer)
@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		class CustomLocalStateData : Java.Lang.Object
 		{
-			public AView SourceNativeView { get; set; }
+			public AView SourcePlatformView { get; set; }
 			public DataPackage DataPackage { get; set; }
 			public DataPackageOperation AcceptedOperation { get; set; } = DataPackageOperation.Copy;
 			public VisualElement SourceElement { get; set; }

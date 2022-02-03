@@ -4,20 +4,20 @@ using System;
 using Microsoft.Maui.Controls.Platform;
 #if __ANDROID__
 using static Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
 #elif __IOS__ || MACCATALYST
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform;
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, System.Object>;
 #elif WINDOWS
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using static Microsoft.Maui.Controls.Compatibility.Platform.UWP.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 #endif
@@ -108,13 +108,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				throw new Exception($"{e.NewElement} must implement: {nameof(Microsoft.Maui.IView)}");
 		}
 
-		protected override void ConnectHandler(NativeView nativeView)
+		protected override void ConnectHandler(PlatformView nativeView)
 		{
 			base.ConnectHandler(nativeView);
 			base.VirtualView.Handler = this;
 		}
 
-		protected override void DisconnectHandler(NativeView nativeView)
+		protected override void DisconnectHandler(PlatformView nativeView)
 		{
 			VisualElementRenderer?.Dispose();
 			base.DisconnectHandler(nativeView);
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				base.SetVirtualView(view);
 		}
 #else
-		protected override NativeView CreateNativeView()
+		protected override PlatformView CreatePlatformView()
 		{
 			throw new NotImplementedException();
 		}

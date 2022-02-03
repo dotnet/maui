@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected virtual float MinimumSize => 44f;
 
-		protected override MauiCheckBox CreateNativeView()
+		protected override MauiCheckBox CreatePlatformView()
 		{
 			return new MauiCheckBox
 			{
@@ -31,12 +31,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
 		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

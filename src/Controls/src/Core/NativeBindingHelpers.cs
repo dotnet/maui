@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Internals
 	public static class NativeBindingHelpers
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
-		public static void SetBinding<TNativeView>(TNativeView target, string targetProperty, BindingBase bindingBase, string updateSourceEventName = null) where TNativeView : class
+		public static void SetBinding<TPlatformView>(TPlatformView target, string targetProperty, BindingBase bindingBase, string updateSourceEventName = null) where TPlatformView : class
 		{
 			var binding = bindingBase as Binding;
 			//This will allow setting bindings from Xaml by reusing the MarkupExtension
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
-		public static void SetBinding<TNativeView>(TNativeView target, string targetProperty, BindingBase bindingBase, INotifyPropertyChanged propertyChanged) where TNativeView : class
+		public static void SetBinding<TPlatformView>(TPlatformView target, string targetProperty, BindingBase bindingBase, INotifyPropertyChanged propertyChanged) where TPlatformView : class
 		{
 			if (target == null)
 				throw new ArgumentNullException(nameof(target));
@@ -37,18 +37,18 @@ namespace Microsoft.Maui.Controls.Internals
 				throw new ArgumentNullException(nameof(targetProperty));
 
 			var binding = bindingBase as Binding;
-			var proxy = BindableObjectProxy<TNativeView>.BindableObjectProxies.GetValue(target, (TNativeView key) => new BindableObjectProxy<TNativeView>(key));
+			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
 			BindableProperty bindableProperty = null;
 			propertyChanged = propertyChanged ?? target as INotifyPropertyChanged;
 			var propertyType = target.GetType().GetProperty(targetProperty)?.PropertyType;
 			var defaultValue = target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object[] { });
-			bindableProperty = CreateBindableProperty<TNativeView>(targetProperty, propertyType, defaultValue);
+			bindableProperty = CreateBindableProperty<TPlatformView>(targetProperty, propertyType, defaultValue);
 			if (binding != null && binding.Mode != BindingMode.OneWay && propertyChanged != null)
 				propertyChanged.PropertyChanged += (sender, e) =>
 				{
 					if (e.PropertyName != targetProperty)
 						return;
-					SetValueFromNative<TNativeView>(sender as TNativeView, targetProperty, bindableProperty);
+					SetValueFromNative<TPlatformView>(sender as TPlatformView, targetProperty, bindableProperty);
 					//we need to keep the listener around he same time we have the proxy
 					proxy.NativeINPCListener = propertyChanged;
 				};
@@ -59,26 +59,26 @@ namespace Microsoft.Maui.Controls.Internals
 			proxy.SetBinding(bindableProperty, bindingBase);
 		}
 
-		static BindableProperty CreateBindableProperty<TNativeView>(string targetProperty, Type propertyType = null, object defaultValue = null) where TNativeView : class
+		static BindableProperty CreateBindableProperty<TPlatformView>(string targetProperty, Type propertyType = null, object defaultValue = null) where TPlatformView : class
 		{
 			propertyType = propertyType ?? typeof(object);
 			defaultValue = defaultValue ?? (propertyType.GetTypeInfo().IsValueType ? Activator.CreateInstance(propertyType) : null);
 			return BindableProperty.Create(
 				targetProperty,
 				propertyType,
-				typeof(BindableObjectProxy<TNativeView>),
+				typeof(BindableObjectProxy<TPlatformView>),
 				defaultValue: defaultValue,
 				defaultBindingMode: BindingMode.Default,
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
-					TNativeView nativeView;
-					if ((bindable as BindableObjectProxy<TNativeView>).TargetReference.TryGetTarget(out nativeView))
+					TPlatformView nativeView;
+					if ((bindable as BindableObjectProxy<TPlatformView>).TargetReference.TryGetTarget(out nativeView))
 						SetNativeValue(nativeView, targetProperty, newValue);
 				}
 			);
 		}
 
-		static void SetNativeValue<TNativeView>(TNativeView target, string targetProperty, object newValue) where TNativeView : class
+		static void SetNativeValue<TPlatformView>(TPlatformView target, string targetProperty, object newValue) where TPlatformView : class
 		{
 			var mi = target.GetType().GetProperty(targetProperty)?.SetMethod;
 			if (mi == null)
@@ -86,10 +86,10 @@ namespace Microsoft.Maui.Controls.Internals
 			mi.Invoke(target, new[] { newValue });
 		}
 
-		static void SetValueFromNative<TNativeView>(TNativeView target, string targetProperty, BindableProperty bindableProperty) where TNativeView : class
+		static void SetValueFromNative<TPlatformView>(TPlatformView target, string targetProperty, BindableProperty bindableProperty) where TPlatformView : class
 		{
-			BindableObjectProxy<TNativeView> proxy;
-			if (!BindableObjectProxy<TNativeView>.BindableObjectProxies.TryGetValue(target, out proxy))
+			BindableObjectProxy<TPlatformView> proxy;
+			if (!BindableObjectProxy<TPlatformView>.BindableObjectProxies.TryGetValue(target, out proxy))
 				return;
 			SetValueFromRenderer(proxy, bindableProperty, target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object[] { }));
 		}
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
-		public static void SetBinding<TNativeView>(TNativeView target, BindableProperty targetProperty, BindingBase binding) where TNativeView : class
+		public static void SetBinding<TPlatformView>(TPlatformView target, BindableProperty targetProperty, BindingBase binding) where TPlatformView : class
 		{
 			if (target == null)
 				throw new ArgumentNullException(nameof(target));
@@ -109,29 +109,29 @@ namespace Microsoft.Maui.Controls.Internals
 			if (binding == null)
 				throw new ArgumentNullException(nameof(binding));
 
-			var proxy = BindableObjectProxy<TNativeView>.BindableObjectProxies.GetValue(target, (TNativeView key) => new BindableObjectProxy<TNativeView>(key));
+			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
 			proxy.BindingsBackpack.Add(new KeyValuePair<BindableProperty, BindingBase>(targetProperty, binding));
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetValue']/Docs" />
-		public static void SetValue<TNativeView>(TNativeView target, BindableProperty targetProperty, object value) where TNativeView : class
+		public static void SetValue<TPlatformView>(TPlatformView target, BindableProperty targetProperty, object value) where TPlatformView : class
 		{
 			if (target == null)
 				throw new ArgumentNullException(nameof(target));
 			if (targetProperty == null)
 				throw new ArgumentNullException(nameof(targetProperty));
 
-			var proxy = BindableObjectProxy<TNativeView>.BindableObjectProxies.GetValue(target, (TNativeView key) => new BindableObjectProxy<TNativeView>(key));
+			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
 			proxy.ValuesBackpack.Add(new KeyValuePair<BindableProperty, object>(targetProperty, value));
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBindingContext']/Docs" />
-		public static void SetBindingContext<TNativeView>(TNativeView target, object bindingContext, Func<TNativeView, IEnumerable<TNativeView>> getChild = null) where TNativeView : class
+		public static void SetBindingContext<TPlatformView>(TPlatformView target, object bindingContext, Func<TPlatformView, IEnumerable<TPlatformView>> getChild = null) where TPlatformView : class
 		{
 			if (target == null)
 				throw new ArgumentNullException(nameof(target));
 
-			var proxy = BindableObjectProxy<TNativeView>.BindableObjectProxies.GetValue(target, (TNativeView key) => new BindableObjectProxy<TNativeView>(key));
+			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
 			proxy.BindingContext = bindingContext;
 			if (getChild == null)
 				return;
@@ -144,12 +144,12 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='TransferBindablePropertiesToWrapper']/Docs" />
-		public static void TransferBindablePropertiesToWrapper<TNativeView, TNativeWrapper>(TNativeView nativeView, TNativeWrapper wrapper)
-			where TNativeView : class
+		public static void TransferBindablePropertiesToWrapper<TPlatformView, TNativeWrapper>(TPlatformView nativeView, TNativeWrapper wrapper)
+			where TPlatformView : class
 			where TNativeWrapper : View
 		{
-			BindableObjectProxy<TNativeView> proxy;
-			if (!BindableObjectProxy<TNativeView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
+			BindableObjectProxy<TPlatformView> proxy;
+			if (!BindableObjectProxy<TPlatformView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
 				return;
 			proxy.TransferAttachedPropertiesTo(wrapper);
 		}
@@ -187,17 +187,17 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		//This needs to be internal for testing purposes
-		internal class BindableObjectProxy<TNativeView> : BindableObject where TNativeView : class
+		internal class BindableObjectProxy<TPlatformView> : BindableObject where TPlatformView : class
 		{
-			public static ConditionalWeakTable<TNativeView, BindableObjectProxy<TNativeView>> BindableObjectProxies { get; } = new ConditionalWeakTable<TNativeView, BindableObjectProxy<TNativeView>>();
-			public WeakReference<TNativeView> TargetReference { get; set; }
+			public static ConditionalWeakTable<TPlatformView, BindableObjectProxy<TPlatformView>> BindableObjectProxies { get; } = new ConditionalWeakTable<TPlatformView, BindableObjectProxy<TPlatformView>>();
+			public WeakReference<TPlatformView> TargetReference { get; set; }
 			public IList<KeyValuePair<BindableProperty, BindingBase>> BindingsBackpack { get; } = new List<KeyValuePair<BindableProperty, BindingBase>>();
 			public IList<KeyValuePair<BindableProperty, object>> ValuesBackpack { get; } = new List<KeyValuePair<BindableProperty, object>>();
 			public INotifyPropertyChanged NativeINPCListener;
 
-			public BindableObjectProxy(TNativeView target)
+			public BindableObjectProxy(TPlatformView target)
 			{
-				TargetReference = new WeakReference<TNativeView>(target);
+				TargetReference = new WeakReference<TPlatformView>(target);
 			}
 
 			public void TransferAttachedPropertiesTo(View wrapper)

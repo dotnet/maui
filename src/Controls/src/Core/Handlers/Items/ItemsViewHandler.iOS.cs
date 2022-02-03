@@ -25,11 +25,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsView.ScrollToRequested += ScrollToRequested;
 		}
 
-		private protected override UIView OnCreateNativeView()
+		private protected override UIView OnCreatePlatformView()
 		{
 			UpdateLayout();
 			Controller = CreateController(ItemsView, _layout);
-			return base.OnCreateNativeView();
+			return base.OnCreatePlatformView();
 		}
 
 		protected TItemsView ItemsView => VirtualView;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected abstract ItemsViewController<TItemsView> CreateController(TItemsView newElement, ItemsViewLayout layout);
 
-		protected override UIView CreateNativeView() => Controller?.View;
+		protected override UIView CreatePlatformView() => Controller?.View;
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{

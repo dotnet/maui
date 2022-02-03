@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Platform
 		public static Task<byte[]?> RenderAsJPEG(this AView view)
 			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		internal static Rectangle GetPlatformViewBounds(this IView view)
 		{
 			var nativeView = view?.ToPlatform();
 			if (nativeView?.Context == null)
@@ -320,10 +320,10 @@ namespace Microsoft.Maui.Platform
 				return new Rectangle();
 			}
 
-			return nativeView.GetNativeViewBounds();
+			return nativeView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this View nativeView)
+		internal static Rectangle GetPlatformViewBounds(this View nativeView)
 		{
 			if (nativeView?.Context == null)
 				return new Rectangle();

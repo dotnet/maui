@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_currentCustomLocalStateData = localStateData;
 
 			// TODO MAUI FIX FOR COMPAT
-			//IVisualElementRenderer dragSourceRenderer = localStateData?.SourceNativeView as IVisualElementRenderer;
+			//IVisualElementRenderer dragSourceRenderer = localStateData?.SourcePlatformView as IVisualElementRenderer;
 			package = localStateData?.DataPackage;
 			var dragSourceElement = _currentCustomLocalStateData?.SourceElement;// ?? dragSourceRenderer?.Element;
 
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var element = GetView();
 				// TODO MAUI FIX FOR COMPAT
 				//var renderer = AppCompat.Platform.GetRenderer(element);
-				var v = (AView)element.Handler.NativeView;
+				var v = (AView)element.Handler.PlatformView;
 
 				if (v.Handle == IntPtr.Zero)
 					return;
@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var dragShadowBuilder = new AView.DragShadowBuilder(v);
 
-				customLocalStateData.SourceNativeView = v;
+				customLocalStateData.SourcePlatformView = v;
 				customLocalStateData.SourceElement = element;
 
 				if (NativeVersion.IsAtLeast(24))
@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		class CustomLocalStateData : Java.Lang.Object
 		{
-			public AView SourceNativeView { get; set; }
+			public AView SourcePlatformView { get; set; }
 			public DataPackage DataPackage { get; set; }
 			public DataPackageOperation AcceptedOperation { get; set; } = DataPackageOperation.Copy;
 			public VisualElement SourceElement { get; set; }

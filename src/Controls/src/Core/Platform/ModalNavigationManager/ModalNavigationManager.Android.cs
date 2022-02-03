@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Page modal = _navModel.PopModal();
 			var source = new TaskCompletionSource<Page>();
 
-			var modalHandler = modal.Handler as INativeViewHandler;
+			var modalHandler = modal.Handler as IPlatformViewHandler;
 			if (modalHandler != null)
 			{
 				ModalContainer? modalContainer = null;

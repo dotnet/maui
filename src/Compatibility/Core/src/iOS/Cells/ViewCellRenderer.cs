@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				IVisualElementRenderer renderer;
 				if (_rendererRef.TryGetTarget(out renderer))
-					renderer.NativeView.Frame = view.Bounds.ToRectangleF();
+					renderer.PlatformView.Frame = view.Bounds.ToRectangleF();
 
 				Performance.Stop(reference);
 			}
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				var newRenderer = Platform.CreateRenderer(_viewCell.View);
 				_rendererRef = new WeakReference<IVisualElementRenderer>(newRenderer);
-				ContentView.AddSubview(newRenderer.NativeView);
+				ContentView.AddSubview(newRenderer.PlatformView);
 				return newRenderer;
 			}
 

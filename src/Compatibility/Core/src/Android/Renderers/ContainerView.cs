@@ -113,8 +113,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 				_shellViewRenderer.OnViewSet(view);
 
-			if (_shellViewRenderer.NativeView != null)
-				AddView(_shellViewRenderer.NativeView);
+			if (_shellViewRenderer.PlatformView != null)
+				AddView(_shellViewRenderer.PlatformView);
 		}
 	}
 }

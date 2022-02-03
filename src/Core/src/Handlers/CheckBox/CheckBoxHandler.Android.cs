@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 
-		protected override AppCompatCheckBox CreateNativeView()
+		protected override AppCompatCheckBox CreatePlatformView()
 		{
 			var nativeCheckBox = new AppCompatCheckBox(Context)
 			{
@@ -34,17 +34,17 @@ namespace Microsoft.Maui.Handlers
 		// This is an Android-specific mapping
 		public static void MapBackground(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateBackground(check);
+			handler.PlatformView?.UpdateBackground(check);
 		}
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
 		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		void OnCheckedChanged(bool isChecked)

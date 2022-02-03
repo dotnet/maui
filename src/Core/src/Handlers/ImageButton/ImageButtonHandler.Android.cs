@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageButtonHandler : ViewHandler<IImageButton, ShapeableImageView>
 	{
-		protected override ShapeableImageView CreateNativeView()
+		protected override ShapeableImageView CreatePlatformView()
 		{
 			var nativeView = new ShapeableImageView(Context);
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSetImageSource(Drawable? obj)
 		{
-			NativeView.SetImageDrawable(obj);
+			PlatformView.SetImageDrawable(obj);
 		}
 
 		protected override void DisconnectHandler(ShapeableImageView nativeView)
@@ -43,17 +43,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.NativeView as ShapeableImageView)?.UpdateStrokeColor(buttonStroke);
+			(handler.PlatformView as ShapeableImageView)?.UpdateStrokeColor(buttonStroke);
 		}
 
 		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.NativeView as ShapeableImageView)?.UpdateStrokeThickness(buttonStroke);
+			(handler.PlatformView as ShapeableImageView)?.UpdateStrokeThickness(buttonStroke);
 		}
 
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.NativeView as ShapeableImageView)?.UpdateCornerRadius(buttonStroke);
+			(handler.PlatformView as ShapeableImageView)?.UpdateCornerRadius(buttonStroke);
 		}
 
 		void OnTouch(object? sender, View.TouchEventArgs e)

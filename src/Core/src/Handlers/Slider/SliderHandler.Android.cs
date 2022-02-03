@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 
 		SeekBarChangeListener ChangeListener { get; } = new SeekBarChangeListener();
 
-		protected override SeekBar CreateNativeView()
+		protected override SeekBar CreatePlatformView()
 		{
 			return new SeekBar(Context)
 			{
@@ -49,39 +49,39 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimum(slider);
+			handler.PlatformView?.UpdateMinimum(slider);
 		}
 
 		public static void MapMaximum(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximum(slider);
+			handler.PlatformView?.UpdateMaximum(slider);
 		}
 
 		public static void MapValue(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateValue(slider);
+			handler.PlatformView?.UpdateValue(slider);
 		}
 
 		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimumTrackColor(slider, DefaultProgressBackgroundTintList, DefaultProgressBackgroundTintMode);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultProgressBackgroundTintList, DefaultProgressBackgroundTintMode);
 		}
 
 		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximumTrackColor(slider, DefaultProgressTintList, DefaultProgressTintMode);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultProgressTintList, DefaultProgressTintMode);
 		}
 
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColorFilter);
+			handler.PlatformView?.UpdateThumbColor(slider, DefaultThumbColorFilter);
 		}
 
 		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.NativeView?.UpdateThumbImageSourceAsync(slider, provider, DefaultThumb)
+			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider, DefaultThumb)
 				.FireAndForget(handler);
 		}
 

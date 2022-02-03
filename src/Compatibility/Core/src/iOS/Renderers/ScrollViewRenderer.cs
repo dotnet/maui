@@ -46,10 +46,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
+			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
 		}
 
-		public UIView NativeView
+		public UIView PlatformView
 		{
 			get { return this; }
 		}
@@ -312,12 +312,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackground()
 		{
-			if (NativeView == null)
+			if (PlatformView == null)
 				return;
 
 			Brush background = Element.Background;
 
-			NativeView.UpdateBackground(background);
+			PlatformView.UpdateBackground(background);
 		}
 
 		void UpdateContentSize()
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
-			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, NativeView);
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, PlatformView);
 		}
 	}
 }

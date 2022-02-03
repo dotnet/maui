@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		static float? LineSpacingAddDefault { get; set; }
 		static float? LineSpacingMultDefault { get; set; }
 
-		protected override AppCompatTextView CreateNativeView() => new AppCompatTextView(Context);
+		protected override AppCompatTextView CreatePlatformView() => new AppCompatTextView(Context);
 
 		public override void NativeArrange(Rectangle frame)
 		{
@@ -60,59 +60,59 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextPlainText(label);
+			handler.PlatformView?.UpdateTextPlainText(label);
 		}
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextColor(label, DefaultTextColor);
+			handler.PlatformView?.UpdateTextColor(label, DefaultTextColor);
 		}
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(label);
+			handler.PlatformView?.UpdateCharacterSpacing(label);
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(label);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
 		}
 
 		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(label);
+			handler.PlatformView?.UpdateVerticalTextAlignment(label);
 		}
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateLineBreakMode(label);
+			handler.PlatformView?.UpdateLineBreakMode(label);
 		}
 
 		public static void MapMaxLines(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateMaxLines(label);
+			handler.PlatformView?.UpdateMaxLines(label);
 		}
 
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdatePadding(label);
+			handler.PlatformView?.UpdatePadding(label);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextDecorations(label);
+			handler.PlatformView?.UpdateTextDecorations(label);
 		}
 
 		public static void MapFont(LabelHandler handler, ILabel label)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(label, fontManager);
+			handler.PlatformView?.UpdateFont(label, fontManager);
 		}
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateLineHeight(label);
+			handler.PlatformView?.UpdateLineHeight(label);
 		}
 
 		bool NeedsExactMeasure()

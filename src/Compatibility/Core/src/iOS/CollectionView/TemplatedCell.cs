@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
 
 			// Update the size of the root view to accommodate the Forms element
-			var nativeView = VisualElementRenderer.NativeView;
+			var nativeView = VisualElementRenderer.PlatformView;
 			nativeView.Frame = new CGRect(CGPoint.Empty, size);
 
 			// Layout the Forms element 
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void SetRenderer(IVisualElementRenderer renderer)
 		{
 			VisualElementRenderer = renderer;
-			var nativeView = VisualElementRenderer.NativeView;
+			var nativeView = VisualElementRenderer.PlatformView;
 
 			// Clear out any old views if this cell is being reused
 			ContentView.ClearSubviews();
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected void Layout(CGSize constraints)
 		{
-			var nativeView = VisualElementRenderer.NativeView;
+			var nativeView = VisualElementRenderer.PlatformView;
 
 			var width = constraints.Width;
 			var height = constraints.Height;

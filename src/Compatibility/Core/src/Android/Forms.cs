@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			EventHandler<ViewInitializedEventArgs> viewInitialized = ViewInitialized;
 			if (viewInitialized != null)
-				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
+				viewInitialized(self, new ViewInitializedEventArgs { View = self, PlatformView = nativeView });
 		}
 
 		static bool IsInitializedRenderers;

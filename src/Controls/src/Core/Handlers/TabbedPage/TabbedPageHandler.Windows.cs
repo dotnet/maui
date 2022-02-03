@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		WFrame? _navigationFrame;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
 
-		protected override FrameworkElement CreateNativeView()
+		protected override FrameworkElement CreatePlatformView()
 		{
 			_navigationFrame = new WFrame();
 			if (VirtualView.FindParentOfType<FlyoutPage>() != null)
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.OnConnectHandler(nativeView);
 			NavigationFrame.Navigated += OnNavigated;
 
-			// If CreateNativeView didn't set the NavigationView then that means we are using the
+			// If CreatePlatformView didn't set the NavigationView then that means we are using the
 			// WindowRootView for our tabs
 			if (_navigationView == null)
 			{

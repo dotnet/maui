@@ -2,7 +2,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView>
+	public abstract partial class ViewHandler<TVirtualView, TPlatformView>
 	{
 		public override void NativeArrange(Rectangle rect)
 		{

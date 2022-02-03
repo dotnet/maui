@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, MauiCheckBox>
 	{
-		protected override MauiCheckBox CreateNativeView() => new MauiCheckBox();
+		protected override MauiCheckBox CreatePlatformView() => new MauiCheckBox();
 
 		protected override void ConnectHandler(MauiCheckBox nativeView)
 		{
@@ -25,12 +25,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
 		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		void OnChecked(object sender, RoutedEventArgs e)

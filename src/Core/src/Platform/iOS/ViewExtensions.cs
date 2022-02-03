@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Platform
 			return nativeView.RenderAsImage(skipChildren, asPng);
 		}
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		internal static Rectangle GetPlatformViewBounds(this IView view)
 		{
 			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
@@ -368,10 +368,10 @@ namespace Microsoft.Maui.Platform
 				return new Rectangle();
 			}
 
-			return nativeView.GetNativeViewBounds();
+			return nativeView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this UIView nativeView)
+		internal static Rectangle GetPlatformViewBounds(this UIView nativeView)
 		{
 			if (nativeView == null)
 				return new Rectangle();
@@ -410,7 +410,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (nativeView == null)
 				return new Rectangle();
-			var nvb = nativeView.GetNativeViewBounds();
+			var nvb = nativeView.GetPlatformViewBounds();
 			var transform = nativeView.GetViewTransform();
 			var radians = transform.ExtractAngleInRadians();
 			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);

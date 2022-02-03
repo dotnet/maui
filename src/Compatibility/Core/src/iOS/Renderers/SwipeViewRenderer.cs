@@ -624,7 +624,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Platform.SetRenderer(formsSwipeItemView, renderer);
 			UpdateSwipeItemViewLayout(formsSwipeItemView);
 
-			var swipeItemView = renderer?.NativeView;
+			var swipeItemView = renderer?.PlatformView;
 
 			if (swipeItemView != null)
 				swipeItemView.Hidden = !formsSwipeItemView.IsVisible;

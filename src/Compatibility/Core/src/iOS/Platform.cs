@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Performance.Start(out string reference);
 
 			var renderView = GetRenderer(view);
-			if (renderView == null || renderView.NativeView == null)
+			if (renderView == null || renderView.PlatformView == null)
 			{
 				if (view is IView iView)
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else if (handler is IVisualElementRenderer ver)
 					renderer = ver;
-				else if (handler is INativeViewHandler vh)
+				else if (handler is IPlatformViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
 					element.Handler = handler;
@@ -389,12 +389,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var viewRenderer = CreateRenderer(view);
 				SetRenderer(view, viewRenderer);
 
-				var nativeView = viewRenderer.NativeView;
+				var nativeView = viewRenderer.PlatformView;
 
 				_renderer.View.AddSubview(nativeView);
 				if (viewRenderer.ViewController != null)
 					_renderer.AddChildViewController(viewRenderer.ViewController);
-				viewRenderer.NativeView.Frame = new CGRect(0, 0, _renderer.View.Bounds.Width, _renderer.View.Bounds.Height);
+				viewRenderer.PlatformView.Frame = new CGRect(0, 0, _renderer.View.Bounds.Width, _renderer.View.Bounds.Height);
 				viewRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
 			}
 			else
@@ -539,7 +539,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				SetRenderer(modal, modalRenderer);
 			}
 
-			var wrapper = new ModalWrapper(modalRenderer.Element.Handler as INativeViewHandler);
+			var wrapper = new ModalWrapper(modalRenderer.Element.Handler as IPlatformViewHandler);
 
 			if (_modals.Count > 1)
 			{

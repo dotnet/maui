@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 using BasePlatformType = ObjCRuntime.INativeObject;
 using PlatformWindow = UIKit.UIWindow;
 using PlatformApplication = UIKit.IUIApplicationDelegate;
 #elif MONOANDROID
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 using BasePlatformType = Android.Content.Context;
 using PlatformWindow = Android.App.Activity;
 using PlatformApplication = Android.App.Application;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using BasePlatformType = WinRT.IWinRTObject;
 using PlatformWindow = Microsoft.UI.Xaml.Window;
 using PlatformApplication = Microsoft.UI.Xaml.Application;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
+using PlatformView = System.Object;
 using BasePlatformType = System.Object;
-using INativeViewHandler = Microsoft.Maui.IViewHandler;
+using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 using PlatformWindow = System.Object;
 using PlatformApplication = System.Object;
 #endif
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 			return handler;
 		}
 
-		internal static NativeView ToPlatform(this IElement view)
+		internal static PlatformView ToPlatform(this IElement view)
 		{
 			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
 				return replaceableView.ReplacedView.ToPlatform();
@@ -111,27 +111,27 @@ namespace Microsoft.Maui.Platform
 
 			if (view.Handler is IViewHandler viewHandler)
 			{
-				if (viewHandler.ContainerView is NativeView containerView)
+				if (viewHandler.ContainerView is PlatformView containerView)
 					return containerView;
 
-				if (viewHandler.NativeView is NativeView nativeView)
+				if (viewHandler.PlatformView is PlatformView nativeView)
 					return nativeView;
 			}
 
-			return (view.Handler?.NativeView as NativeView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
 
 		}
 
-		public static NativeView ToPlatform(this IElement view, IMauiContext context)
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
 		{
 			var handler = view.ToHandler(context);
 
-			if (handler.NativeView is not NativeView result)
+			if (handler.PlatformView is not PlatformView result)
 			{
-				throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
 			}
 
-			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
 
 		}
 

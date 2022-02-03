@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				result.TableView = tableView;
 
 				var cellRenderer = result.ToHandler(View.FindMauiContext());
-				return (UIView)cellRenderer.NativeView;
+				return (UIView)cellRenderer.PlatformView;
 			}
 			return null;
 		}

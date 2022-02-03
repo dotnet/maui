@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		object? _foregroundDefault;
 
-		protected override ProgressBar CreateNativeView() => new() { Minimum = 0, Maximum = 1 };
+		protected override ProgressBar CreatePlatformView() => new() { Minimum = 0, Maximum = 1 };
 
 		protected override void ConnectHandler(ProgressBar nativeView)
 		{

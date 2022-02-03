@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RefreshViewHandler : ViewHandler<IRefreshView, MauiSwipeRefreshLayout>
 	{
-		protected override MauiSwipeRefreshLayout CreateNativeView()
+		protected override MauiSwipeRefreshLayout CreatePlatformView()
 		{
 			return new MauiSwipeRefreshLayout(Context);
 		}
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		void UpdateContent() =>
-			NativeView.UpdateContent(VirtualView.Content, MauiContext);
+			PlatformView.UpdateContent(VirtualView.Content, MauiContext);
 
 		void UpdateRefreshColor()
 		{
@@ -39,11 +39,11 @@ namespace Microsoft.Maui.Handlers
 			var color = VirtualView.RefreshColor.ToColor()?.ToInt();
 
 			if (color != null)
-				NativeView.SetColorSchemeColors(color.Value);
+				PlatformView.SetColorSchemeColors(color.Value);
 		}
 
 		void UpdateIsRefreshing() =>
-			NativeView.Refreshing = VirtualView.IsRefreshing;
+			PlatformView.Refreshing = VirtualView.IsRefreshing;
 
 		void UpdateBackground()
 		{
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 
 			var color = VirtualView.Background.ToColor()?.ToInt();
 			if (color != null)
-				NativeView.SetProgressBackgroundColorSchemeColor(color.Value);
+				PlatformView.SetProgressBackgroundColorSchemeColor(color.Value);
 		}
 
 		public static void MapBackground(RefreshViewHandler handler, IView view)

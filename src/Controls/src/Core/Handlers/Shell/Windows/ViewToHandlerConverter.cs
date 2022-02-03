@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			readonly View _view;
 			IView View => _view;
-			INativeViewHandler? Handler => View.Handler as INativeViewHandler;
+			IPlatformViewHandler? Handler => View.Handler as IPlatformViewHandler;
 
 			FrameworkElement FrameworkElement { get; }
 
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 					// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
 					// with all the controls in a consistent native state (i.e., loaded) so they'll actually
 					// have Bounds set
-					Handler?.NativeView?.InvalidateMeasure(View);
+					Handler?.PlatformView?.InvalidateMeasure(View);
 					InvalidateMeasure();
 				};
 			}

@@ -4,7 +4,7 @@ using System.Text;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Handlers;
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		public override void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
+		public override void OnInitializeAccessibilityNodeInfo(PlatformView? host, AccessibilityNodeInfoCompat? info)
 		{
 			base.OnInitializeAccessibilityNodeInfo(host, info);
 
-			if (Handler?.NativeView is NativeView nativeView && Handler?.VirtualView != null)
+			if (Handler?.PlatformView is PlatformView nativeView && Handler?.VirtualView != null)
 				nativeView.UpdateSemanticNodeInfo(Handler.VirtualView, info);
 		}
 	}

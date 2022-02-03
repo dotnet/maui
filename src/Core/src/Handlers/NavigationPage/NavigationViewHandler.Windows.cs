@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 		ViewHandler<IStackNavigationView, Frame>
 	{
 		StackNavigationManager? _navigationManager;
-		protected override Frame CreateNativeView()
+		protected override Frame CreatePlatformView()
 		{
 			_navigationManager = CreateNavigationManager();
 			return new Frame();

@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public virtual bool Initialize()
 		{
-			if (IsNativeViewInitialized)
+			if (IsPlatformViewInitialized)
 				return true;
 
 			if (Window?.Content == null)
@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 			if (_nativeElement == null)
 				return false;
 			var handler = Window.Handler as WindowHandler;
-			if (handler?.NativeView is not Window _window)
+			if (handler?.PlatformView is not Window _window)
 				return false;
 
 			_panel = _window.Content as Panel;
@@ -54,8 +54,8 @@ namespace Microsoft.Maui
 
 			_panel?.Children.Add(_graphicsView);
 			
-			IsNativeViewInitialized = true;
-			return IsNativeViewInitialized;
+			IsPlatformViewInitialized = true;
+			return IsPlatformViewInitialized;
 		}
 
 		/// <inheritdoc/>
@@ -90,7 +90,7 @@ namespace Microsoft.Maui
 				_graphicsView.PointerMoved -= PointerMoved;
 			}
 			_graphicsView = null;
-			IsNativeViewInitialized = false;
+			IsPlatformViewInitialized = false;
 		}
 
 		void PointerMoved(object sender, UI.Xaml.Input.PointerRoutedEventArgs e)

@@ -39,14 +39,14 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
-			handler.NativeView?.UpdateTitle(window);
+			handler.PlatformView?.UpdateTitle(window);
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
 			windowManager.Connect(handler.VirtualView.Content);
-			var rootPanel = handler.NativeView.Content as Panel;
+			var rootPanel = handler.PlatformView.Content as Panel;
 
 			if (rootPanel == null)
 				return;

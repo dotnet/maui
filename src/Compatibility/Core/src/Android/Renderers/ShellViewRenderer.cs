@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var request = View.Measure(width, height, MeasureFlags.None);
 
-			var layoutParams = NativeView.LayoutParameters;
+			var layoutParams = PlatformView.LayoutParameters;
 			if (double.IsInfinity(height))
 				height = request.Request.Height;
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (layoutParams.Height != LP.MatchParent)
 				layoutParams.Height = (int)context.ToPixels(height);
 
-			NativeView.LayoutParameters = layoutParams;
+			PlatformView.LayoutParameters = layoutParams;
 			View.Layout(new Rectangle(x, y, width, height));
 			Renderer.UpdateLayout();
 		}
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				Renderer = Platform.CreateRenderer(view, context);
 				Platform.SetRenderer(view, Renderer);
-				NativeView = Renderer.View;
+				PlatformView = Renderer.View;
 
 				if (View is VisualElement ve)
 					ve.MeasureInvalidated += OnViewSizeChanged;
@@ -139,14 +139,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else
 			{
-				NativeView = null;
+				PlatformView = null;
 			}
 		}
 
 		void OnViewSizeChanged(object sender, EventArgs e) =>
 			LayoutView(X, Y, Width, Height, MaxWidth, MaxHeight);
 
-		public AView NativeView
+		public AView PlatformView
 		{
 			get;
 			private set;

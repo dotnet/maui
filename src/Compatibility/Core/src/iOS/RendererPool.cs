@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var sameChildrenTypes = true;
 
 			var oldChildren = ((IElementController)_oldElement).LogicalChildren;
-			var oldNativeChildren = _parent.NativeView.Subviews;
+			var oldNativeChildren = _parent.PlatformView.Subviews;
 			var newChildren = ((IElementController)newElement).LogicalChildren;
 
 			if (oldChildren.Count == newChildren.Count && oldNativeChildren.Length >= oldChildren.Count)
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (renderer == null)
 				return;
 
-			var subviews = renderer.NativeView.Subviews;
+			var subviews = renderer.PlatformView.Subviews;
 			for (var i = 0; i < subviews.Length; i++)
 			{
 				var childRenderer = subviews[i] as IVisualElementRenderer;
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					{
 						var renderer = GetFreeRenderer(child) ?? Platform.CreateRenderer(child);
 						Platform.SetRenderer(child, renderer);
-						_parent.NativeView.AddSubview(renderer.NativeView);
+						_parent.PlatformView.AddSubview(renderer.PlatformView);
 					}
 				}
 			}
@@ -144,14 +144,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (newElementController.LogicalChildren.Count == 0)
 				return;
 
-			var subviews = _parent.NativeView.Subviews;
+			var subviews = _parent.PlatformView.Subviews;
 			for (var i = 0; i < subviews.Length; i++)
 			{
 				var childRenderer = subviews[i] as IVisualElementRenderer;
 				if (childRenderer == null)
 					continue;
 
-				var x = (int)childRenderer.NativeView.Layer.ZPosition / 1000;
+				var x = (int)childRenderer.PlatformView.Layer.ZPosition / 1000;
 				var element = newElementController.LogicalChildren[x] as VisualElement;
 				if (element == null)
 					continue;

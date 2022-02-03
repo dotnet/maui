@@ -74,9 +74,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		static SizeRequest? SizeBrokenControl(NativeViewWrapperRenderer renderer,
 			int widthConstraint, int heightConstraint)
 		{
-			global::Android.Views.View nativeView = renderer.Control;
+			global::Android.Views.View platformView = renderer.Control;
 
-			if ((widthConstraint == 0 && heightConstraint == 0) || nativeView == null)
+			if ((widthConstraint == 0 && heightConstraint == 0) || platformView == null)
 			{
 				return null;
 			}
@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			int width = global::Android.Views.View.MeasureSpec.GetSize(widthConstraint);
 			int widthSpec = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(width * 2,
 				global::Android.Views.View.MeasureSpec.GetMode(widthConstraint));
-			nativeView.Measure(widthSpec, heightConstraint);
-			var size = new Size(nativeView.MeasuredWidth, nativeView.MeasuredHeight);
+			platformView.Measure(widthSpec, heightConstraint);
+			var size = new Size(platformView.MeasuredWidth, platformView.MeasuredHeight);
 			return new SizeRequest(size);
 		}
 

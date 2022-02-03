@@ -5,9 +5,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, UIPageControl>
 	{
-		MauiPageControl? UIPager => NativeView as MauiPageControl;
+		MauiPageControl? UIPager => PlatformView as MauiPageControl;
 
-		protected override UIPageControl CreateNativeView() => new MauiPageControl();
+		protected override UIPageControl CreatePlatformView() => new MauiPageControl();
 
 		protected override void ConnectHandler(UIPageControl nativeView)
 		{
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHideSingle(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView?.UpdateHideSingle(indicator);
+			handler.PlatformView?.UpdateHideSingle(indicator);
 		}
 
 		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator)
@@ -49,12 +49,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView?.UpdatePagesIndicatorTintColor(indicator);
+			handler.PlatformView?.UpdatePagesIndicatorTintColor(indicator);
 		}
 
 		public static void MapSelectedIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView?.UpdateCurrentPagesIndicatorTintColor(indicator);
+			handler.PlatformView?.UpdateCurrentPagesIndicatorTintColor(indicator);
 		}
 
 		public static void MapIndicatorShape(IndicatorViewHandler handler, IIndicatorView indicator)
@@ -72,13 +72,13 @@ namespace Microsoft.Maui.Handlers
 				{
 					ClearIndicators();
 					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
-					NativeView.AddSubview(handler);
+					PlatformView.AddSubview(handler);
 				}
 			}
 
 			void ClearIndicators()
 			{
-				foreach (var child in NativeView.Subviews)
+				foreach (var child in PlatformView.Subviews)
 					child.RemoveFromSuperview();
 			}
 		}

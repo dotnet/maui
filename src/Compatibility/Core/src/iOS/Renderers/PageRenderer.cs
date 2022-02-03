@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		// storing this into a local variable causes it to not get collected. Do not delete this please		
 		PageContainer _pageContainer;
-		internal PageContainer Container => NativeView as PageContainer;
+		internal PageContainer Container => PlatformView as PageContainer;
 
 		Page Page => Element as Page;
 		Thickness SafeAreaInsets => Page.On<PlatformConfiguration.iOS>().SafeAreaInsets();
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
-			VisualElementRenderer<VisualElement>.RegisterEffect(effect, NativeView);
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, PlatformView);
 		}
 
 		public VisualElement Element { get; private set; }
@@ -47,10 +47,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
+			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView NativeView
+		public UIView PlatformView
 		{
 			get { return _disposed ? null : View; }
 		}
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (!string.IsNullOrEmpty(element.AutomationId))
 					SetAutomationId(element.AutomationId);
 
-				element.SendViewInitialized(NativeView);
+				element.SendViewInitialized(PlatformView);
 
 				var parent = Element.Parent;
 
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateUseSafeArea();
 
 			if (Element.Background != null && !Element.Background.IsEmpty)
-				NativeView?.UpdateBackgroundLayer();
+				PlatformView?.UpdateBackgroundLayer();
 		}
 
 		public override void ViewSafeAreaInsetsDidChange()
@@ -184,16 +184,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.ViewDidLoad();
 
-			if (NativeView == null)
+			if (PlatformView == null)
 				return;
 
-			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => NativeView?.EndEditing(true));
+			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => PlatformView?.EndEditing(true));
 
 			uiTapGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
 			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
 			uiTapGestureRecognizer.DelaysTouchesBegan =
 				uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
-			NativeView.AddGestureRecognizer(uiTapGestureRecognizer);
+			PlatformView.AddGestureRecognizer(uiTapGestureRecognizer);
 
 			UpdateBackground();
 
@@ -203,14 +203,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Element.PropertyChanged += OnHandlePropertyChanged;
 			_tracker = new VisualElementTracker(this, !(Element.Parent is BaseShellItem));
 
-			Element.SendViewInitialized(NativeView);
+			Element.SendViewInitialized(PlatformView);
 		}
 
 		public override void ViewWillDisappear(bool animated)
 		{
 			base.ViewWillDisappear(animated);
 
-			NativeView?.Window?.EndEditing(true);
+			PlatformView?.Window?.EndEditing(true);
 		}
 
 		void IDisconnectable.Disconnect()
@@ -267,8 +267,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected virtual void SetAutomationId(string id)
 		{
-			if (NativeView != null)
-				NativeView.AccessibilityIdentifier = id;
+			if (PlatformView != null)
+				PlatformView.AccessibilityIdentifier = id;
 		}
 
 		void OnHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Forms.IsiOS11OrNewer)
 			{
-				var insets = NativeView.SafeAreaInsets;
+				var insets = PlatformView.SafeAreaInsets;
 				if (Page.Parent is TabbedPage)
 				{
 					insets.Bottom = 0;
@@ -427,7 +427,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UIView.Animate(0.25, () => SetNeedsStatusBarAppearanceUpdate());
 			else
 				SetNeedsStatusBarAppearanceUpdate();
-			NativeView?.SetNeedsLayout();
+			PlatformView?.SetNeedsLayout();
 		}
 
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
@@ -457,25 +457,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackground()
 		{
-			if (NativeView == null)
+			if (PlatformView == null)
 				return;
 
 			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
-				if (NativeView == null)
+				if (PlatformView == null)
 					return;
 
 				if (bgImage != null)
-					NativeView.BackgroundColor = UIColor.FromPatternImage(bgImage);
+					PlatformView.BackgroundColor = UIColor.FromPatternImage(bgImage);
 				else
 				{
 					Brush background = Element.Background;
 
 					if (!Brush.IsNullOrEmpty(background))
-						NativeView.UpdateBackground(Element.Background);
+						PlatformView.UpdateBackground(Element.Background);
 					else
 					{
-						NativeView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? ColorExtensions.BackgroundColor;
+						PlatformView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? ColorExtensions.BackgroundColor;
 					}
 				}
 			});

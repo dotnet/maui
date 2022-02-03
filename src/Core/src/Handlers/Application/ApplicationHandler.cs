@@ -2,11 +2,11 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.IUIApplicationDelegate;
+using PlatformView = UIKit.IUIApplicationDelegate;
 #elif MONOANDROID
-using NativeView = Android.App.Application;
+using PlatformView = Android.App.Application;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Application;
+using PlatformView = Microsoft.UI.Xaml.Application;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -42,8 +42,8 @@ namespace Microsoft.Maui.Handlers
 			_logger ??= MauiContext?.Services.CreateLogger<ApplicationHandler>();
 
 #if !NETSTANDARD
-		protected override NativeView CreateNativeElement() =>
-			MauiContext?.Services.GetService<NativeView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid application.");
+		protected override PlatformView CreateNativeElement() =>
+			MauiContext?.Services.GetService<PlatformView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid application.");
 #endif
 	}
 }

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		StackNavigationManager? _stackNavigationManager;
 		internal StackNavigationManager? StackNavigationManager => _stackNavigationManager;
 
-		protected override View CreateNativeView()
+		protected override View CreatePlatformView()
 		{
 			LayoutInflater? li = CreateNavigationManager().MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");

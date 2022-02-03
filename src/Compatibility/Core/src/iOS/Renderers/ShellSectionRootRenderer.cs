@@ -166,8 +166,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					var oldRenderer = renderer.Value;
 
-					if (oldRenderer.NativeView != null)
-						oldRenderer.NativeView.RemoveFromSuperview();
+					if (oldRenderer.PlatformView != null)
+						oldRenderer.PlatformView.RemoveFromSuperview();
 
 					if (oldRenderer.ViewController != null)
 						oldRenderer.ViewController.RemoveFromParentViewController();
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var shellContent = items[i];
 				if (_renderers.TryGetValue(shellContent, out var renderer))
 				{
-					var view = renderer.NativeView;
+					var view = renderer.PlatformView;
 					if (view != null)
 						view.Frame = new CGRect(0, 0, View.Bounds.Width, View.Bounds.Height);
 				}
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (item == currentItem)
 				{
-					_containerArea.AddSubview(renderer.NativeView);
+					_containerArea.AddSubview(renderer.PlatformView);
 					_currentContent = currentItem;
 					_currentIndex = i;
 				}
@@ -337,21 +337,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			int newIndex,
 			UIView containerView)
 		{
-			containerView.AddSubview(newRenderer.NativeView);
+			containerView.AddSubview(newRenderer.PlatformView);
 			// -1 == slide left, 1 ==  slide right
 			int motionDirection = newIndex > oldIndex ? -1 : 1;
 
-			newRenderer.NativeView.Frame = new CGRect(-motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
+			newRenderer.PlatformView.Frame = new CGRect(-motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
 
-			if (oldRenderer.NativeView != null)
-				oldRenderer.NativeView.Frame = containerView.Bounds;
+			if (oldRenderer.PlatformView != null)
+				oldRenderer.PlatformView.Frame = containerView.Bounds;
 
 			return new UIViewPropertyAnimator(0.25, UIViewAnimationCurve.EaseOut, () =>
 			{
-				newRenderer.NativeView.Frame = containerView.Bounds;
+				newRenderer.PlatformView.Frame = containerView.Bounds;
 
-				if (oldRenderer.NativeView != null)
-					oldRenderer.NativeView.Frame = new CGRect(motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
+				if (oldRenderer.PlatformView != null)
+					oldRenderer.PlatformView.Frame = new CGRect(motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
 
 			});
 		}
@@ -374,14 +374,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					var oldContent = r.Key;
 					var oldRenderer = r.Value;
 
-					r.Value.NativeView.RemoveFromSuperview();
+					r.Value.PlatformView.RemoveFromSuperview();
 
 					if (!sectionItems.Contains(oldContent) && _renderers.ContainsKey(oldContent))
 					{
 						removeMe = removeMe ?? new List<ShellContent>();
 						removeMe.Add(oldContent);
 
-						if (oldRenderer.NativeView != null)
+						if (oldRenderer.PlatformView != null)
 						{
 							oldRenderer.ViewController.RemoveFromParentViewController();
 							oldRenderer.Dispose();
@@ -468,7 +468,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						_currentIndex--;
 
 					_renderers.Remove(oldItem);
-					oldRenderer.NativeView.RemoveFromSuperview();
+					oldRenderer.PlatformView.RemoveFromSuperview();
 					oldRenderer.ViewController.RemoveFromParentViewController();
 					oldRenderer.Dispose();
 				}

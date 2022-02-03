@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_footer != null)
 			{
 				var renderer = Platform.CreateRenderer(_footer);
-				_footerView = renderer.NativeView;
+				_footerView = renderer.PlatformView;
 				Platform.SetRenderer(_footer, renderer);
 				_uIViews[FooterIndex] = _footerView;
 				AddViewInCorrectOrder(_footerView, previousIndex);

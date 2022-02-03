@@ -2,13 +2,13 @@
 using Android.Views;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		partial void DisconnectingHandler(NativeView nativeView)
+		partial void DisconnectingHandler(PlatformView nativeView)
 		{
 			if (nativeView.IsAlive()
 				&& ViewCompat.GetAccessibilityDelegate(nativeView) is MauiAccessibilityDelegateCompat ad)
@@ -81,12 +81,12 @@ namespace Microsoft.Maui.Handlers
 
 		static partial void MappingSemantics(IViewHandler handler, IView view)
 		{
-			if (handler.NativeView == null)
+			if (handler.PlatformView == null)
 				return;
 
-			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.NativeView as View) as MauiAccessibilityDelegateCompat;
+			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.PlatformView as View) as MauiAccessibilityDelegateCompat;
 
-			if (handler.NativeView is not NativeView nativeView)
+			if (handler.PlatformView is not PlatformView nativeView)
 				return;
 
 			nativeView = nativeView.GetSemanticNativeElement();
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Handlers
 			var rootManager = handler.MauiContext?.GetNavigationRootManager();
 			rootManager?.SetToolbarElement(te);
 
-			var nativeView = handler.NativeView as View;
+			var nativeView = handler.PlatformView as View;
 			if (nativeView == null)
 				return;
 
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Handlers
 			var rootManager = handler.MauiContext?.GetNavigationRootManager();
 			rootManager?.SetToolbarElement(te);
 
-			var nativeView = handler.NativeView as View;
+			var nativeView = handler.PlatformView as View;
 
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			var appbarLayout = nativeView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar) ??

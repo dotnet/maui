@@ -2,13 +2,13 @@ using Android.Views;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	public class NativeViewWrapper : View
+	public class PlatformViewWrapper : View
 	{
-		public NativeViewWrapper(global::Android.Views.View nativeView, GetDesiredSizeDelegate getDesiredSizeDelegate = null, OnLayoutDelegate onLayoutDelegate = null,
+		public PlatformViewWrapper(global::Android.Views.View nativeView, GetDesiredSizeDelegate getDesiredSizeDelegate = null, OnLayoutDelegate onLayoutDelegate = null,
 								 OnMeasureDelegate onMeasureDelegate = null)
 		{
 			GetDesiredSizeDelegate = getDesiredSizeDelegate;
-			NativeView = nativeView;
+			PlatformView = nativeView;
 			OnLayoutDelegate = onLayoutDelegate;
 			OnMeasureDelegate = onMeasureDelegate;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public GetDesiredSizeDelegate GetDesiredSizeDelegate { get; }
 
-		public global::Android.Views.View NativeView { get; }
+		public global::Android.Views.View PlatformView { get; }
 
 		public OnLayoutDelegate OnLayoutDelegate { get; }
 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override void OnBindingContextChanged()
 		{
-			NativeView.SetBindingContext(BindingContext, (view) => (view as ViewGroup)?.GetChildrenOfType<global::Android.Views.View>());
+			PlatformView.SetBindingContext(BindingContext, (view) => (view as ViewGroup)?.GetChildrenOfType<global::Android.Views.View>());
 			base.OnBindingContextChanged();
 		}
 	}

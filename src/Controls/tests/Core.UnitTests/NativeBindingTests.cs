@@ -10,9 +10,9 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class MockNativeView
+	public class MockPlatformView
 	{
-		public IList<MockNativeView> SubViews { get; set; }
+		public IList<MockPlatformView> SubViews { get; set; }
 		public string Foo { get; set; }
 		public int Bar { get; set; }
 		public string Baz { get; set; }
@@ -53,19 +53,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	}
 
-	class MockNativeViewWrapper : View
+	class MockPlatformViewWrapper : View
 	{
-		public MockNativeView NativeView { get; }
+		public MockPlatformView PlatformView { get; }
 
-		public MockNativeViewWrapper(MockNativeView nativeView)
+		public MockPlatformViewWrapper(MockPlatformView nativeView)
 		{
-			NativeView = nativeView;
+			PlatformView = nativeView;
 			nativeView.TransferbindablePropertiesToWrapper(this);
 		}
 
 		protected override void OnBindingContextChanged()
 		{
-			NativeView.SetBindingContext(BindingContext, nv => nv.SubViews);
+			PlatformView.SetBindingContext(BindingContext, nv => nv.SubViews);
 			base.OnBindingContextChanged();
 		}
 	}
@@ -85,39 +85,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	public static class MockNativeViewExtensions
+	public static class MockPlatformViewExtensions
 	{
-		public static View ToView(this MockNativeView nativeView)
+		public static View ToView(this MockPlatformView nativeView)
 		{
-			return new MockNativeViewWrapper(nativeView);
+			return new MockPlatformViewWrapper(nativeView);
 		}
 
-		public static void SetBinding(this MockNativeView target, string targetProperty, BindingBase binding, string updateSourceEventName = null)
+		public static void SetBinding(this MockPlatformView target, string targetProperty, BindingBase binding, string updateSourceEventName = null)
 		{
 			NativeBindingHelpers.SetBinding(target, targetProperty, binding, updateSourceEventName);
 		}
 
-		internal static void SetBinding(this MockNativeView target, string targetProperty, BindingBase binding, INotifyPropertyChanged propertyChanged)
+		internal static void SetBinding(this MockPlatformView target, string targetProperty, BindingBase binding, INotifyPropertyChanged propertyChanged)
 		{
 			NativeBindingHelpers.SetBinding(target, targetProperty, binding, propertyChanged);
 		}
 
-		public static void SetBinding(this MockNativeView target, BindableProperty targetProperty, BindingBase binding)
+		public static void SetBinding(this MockPlatformView target, BindableProperty targetProperty, BindingBase binding)
 		{
 			NativeBindingHelpers.SetBinding(target, targetProperty, binding);
 		}
 
-		public static void SetValue(this MockNativeView target, BindableProperty targetProperty, object value)
+		public static void SetValue(this MockPlatformView target, BindableProperty targetProperty, object value)
 		{
 			NativeBindingHelpers.SetValue(target, targetProperty, value);
 		}
 
-		public static void SetBindingContext(this MockNativeView target, object bindingContext, Func<MockNativeView, IEnumerable<MockNativeView>> getChild = null)
+		public static void SetBindingContext(this MockPlatformView target, object bindingContext, Func<MockPlatformView, IEnumerable<MockPlatformView>> getChild = null)
 		{
 			NativeBindingHelpers.SetBindingContext(target, bindingContext, getChild);
 		}
 
-		internal static void TransferbindablePropertiesToWrapper(this MockNativeView target, MockNativeViewWrapper wrapper)
+		internal static void TransferbindablePropertiesToWrapper(this MockPlatformView target, MockPlatformViewWrapper wrapper)
 		{
 			NativeBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
 		}
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SetOneWayBinding()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 
@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AttachedPropertiesAreTransferredFromTheBackpack()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			nativeView.SetValue(Grid.ColumnProperty, 3);
 			nativeView.SetBinding(Grid.RowProperty, new Binding("foo"));
 
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Set2WayBindings()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 
@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Set2WayBindingsWithUpdateSourceEvent()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Baz);
 
 			var vm = new MockVMForNativeBinding();
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Set2WayBindingsWithUpdateSourceEventInBindingObject()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Baz);
 
 			var vm = new MockVMForNativeBinding();
@@ -316,7 +316,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void NativeViewsAreCollected()
+		public void PlatformViewsAreCollected()
 		{
 			WeakReference wr = null;
 
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					return;
 				}
 
-				var nativeView = new MockNativeView();
+				var nativeView = new MockPlatformView();
 				nativeView.SetBinding("fooBar", new Binding("Foo", BindingMode.TwoWay));
 				nativeView.SetBinding("Baz", new Binding("Qux", BindingMode.TwoWay), "BazChanged");
 
@@ -363,12 +363,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					return;
 				}
 
-				var nativeView = new MockNativeView();
+				var nativeView = new MockPlatformView();
 				nativeView.SetBinding("fooBar", new Binding("Foo", BindingMode.TwoWay));
 				nativeView.SetBinding("Baz", new Binding("Qux", BindingMode.TwoWay), "BazChanged");
 
-				NativeBindingHelpers.BindableObjectProxy<MockNativeView> proxy;
-				if (!NativeBindingHelpers.BindableObjectProxy<MockNativeView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
+				NativeBindingHelpers.BindableObjectProxy<MockPlatformView> proxy;
+				if (!NativeBindingHelpers.BindableObjectProxy<MockPlatformView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
 					Assert.Fail();
 
 				wr = new WeakReference(proxy);
@@ -387,8 +387,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SetBindingContextToSubviews()
 		{
-			var nativeView = new MockNativeView { SubViews = new List<MockNativeView>() };
-			var nativeViewChild = new MockNativeView();
+			var nativeView = new MockPlatformView { SubViews = new List<MockPlatformView>() };
+			var nativeViewChild = new MockPlatformView();
 
 			nativeViewChild.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.OneWay));
 			nativeViewChild.SetBinding("Bar", new Binding("BBar", mode: BindingMode.OneWay));
@@ -409,7 +409,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestConverterDoesNotThrow()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 			var vm = new MockVMForNativeBinding();
@@ -421,7 +421,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestConverterWorks()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 			var vm = new MockVMForNativeBinding();
@@ -435,7 +435,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestConverter2WayWorks()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 			var inpc = new MockINPC();
@@ -458,7 +458,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Binding2WayWithConvertersDoNotLoop()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			int count = 0;
 
 			nativeView.SelectedColorChanged += (o, e) =>
@@ -478,7 +478,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThrowsOnMissingProperty()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			nativeView.SetBinding("Qux", new Binding("Foo"));
 			Assert.Throws<InvalidOperationException>(() => nativeView.SetBindingContext(new { Foo = 42 }));
 		}
@@ -486,14 +486,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThrowsOnMissingEvent()
 		{
-			var nativeView = new MockNativeView();
+			var nativeView = new MockPlatformView();
 			Assert.Throws<ArgumentException>(() => nativeView.SetBinding("Foo", new Binding("Foo", BindingMode.TwoWay), "missingEvent"));
 		}
 
 		[Test]
 		public void OneWayToSourceAppliedOnSetBC()
 		{
-			var nativeView = new MockNativeView { Foo = "foobar" };
+			var nativeView = new MockPlatformView { Foo = "foobar" };
 			nativeView.SetBinding("Foo", new Binding("FFoo", BindingMode.OneWayToSource));
 			var vm = new MockVMForNativeBinding { FFoo = "qux" };
 			nativeView.SetBindingContext(vm);
@@ -503,7 +503,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void DoNotApplyNull()
 		{
-			var native = new MockNativeView();
+			var native = new MockPlatformView();
 			Assert.NotNull(native.CantBeNull);
 			native.SetBinding("CantBeNull", new Binding("FFoo", BindingMode.TwoWay));
 			Assert.NotNull(native.CantBeNull);

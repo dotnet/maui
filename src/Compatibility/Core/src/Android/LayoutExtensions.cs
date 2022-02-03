@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public static View ToView(this AView view, GetDesiredSizeDelegate getDesiredSizeDelegate = null, OnLayoutDelegate onLayoutDelegate = null, OnMeasureDelegate onMeasureDelegate = null)
 		{
-			return new NativeViewWrapper(view, getDesiredSizeDelegate, onLayoutDelegate, onMeasureDelegate);
+			return new PlatformViewWrapper(view, getDesiredSizeDelegate, onLayoutDelegate, onMeasureDelegate);
 		}
 	}
 }

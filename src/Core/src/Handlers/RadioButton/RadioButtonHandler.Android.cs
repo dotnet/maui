@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
-		AppCompatRadioButton? PlatformRadioButton => (NativeView as AppCompatRadioButton);
+		AppCompatRadioButton? PlatformRadioButton => (PlatformView as AppCompatRadioButton);
 
-		protected override AppCompatRadioButton CreateNativeView()
+		protected override AppCompatRadioButton CreatePlatformView()
 		{
 			return new AppCompatRadioButton(Context)
 			{

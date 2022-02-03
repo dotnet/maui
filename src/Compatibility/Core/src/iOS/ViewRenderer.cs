@@ -11,11 +11,11 @@ using ObjCRuntime;
 using UIKit;
 using NativeColor = UIKit.UIColor;
 using NativeControl = UIKit.UIControl;
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
-using NativeView = AppKit.NSView;
+using PlatformView = AppKit.NSView;
 using NativeColor = CoreGraphics.CGColor;
 using NativeControl = AppKit.NSControl;
 
@@ -24,14 +24,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 {
 	public interface ITabStop
 	{
-		NativeView TabStop { get; }
+		PlatformView TabStop { get; }
 	}
 
-	public abstract class ViewRenderer : ViewRenderer<View, NativeView>
+	public abstract class ViewRenderer : ViewRenderer<View, PlatformView>
 	{
 	}
 
-	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IVisualNativeElementRenderer, ITabStop where TView : View where TNativeView : NativeView
+	public abstract class ViewRenderer<TView, TPlatformView> : VisualElementRenderer<TView>, IVisualNativeElementRenderer, ITabStop where TView : View where TPlatformView : PlatformView
 	{
 		string _defaultAccessibilityLabel;
 		string _defaultAccessibilityHint;
@@ -46,13 +46,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		private protected bool IsElementOrControlEmpty => Element == null || Control == null;
 
-		protected virtual TNativeView CreateNativeControl()
+		protected virtual TPlatformView CreateNativeControl()
 		{
-			return default(TNativeView);
+			return default(TPlatformView);
 		}
 
-		public TNativeView Control { get; private set; }
-		NativeView IVisualNativeElementRenderer.Control => Control;
+		public TPlatformView Control { get; private set; }
+		PlatformView IVisualNativeElementRenderer.Control => Control;
 
 
 		event EventHandler<PropertyChangedEventArgs> IVisualNativeElementRenderer.ElementPropertyChanged
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 
-		NativeView ITabStop.TabStop => Control;
+		PlatformView ITabStop.TabStop => Control;
 #if __MOBILE__
 		public override void LayoutSubviews()
 		{
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #else
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return (Control ?? NativeView).GetSizeRequest(widthConstraint, heightConstraint);
+			return (Control ?? PlatformView).GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
 		public override void Layout()
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Control.UpdateBackground(brush);
 		}
 
-		protected void SetNativeControl(TNativeView uiview)
+		protected void SetNativeControl(TPlatformView uiview)
 		{
 			_controlChanging?.Invoke(this, EventArgs.Empty);
 #if __MOBILE__
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				Control?.SetNeedsDisplay();
 		}
 
-		internal override void SendVisualElementInitialized(VisualElement element, NativeView nativeView)
+		internal override void SendVisualElementInitialized(VisualElement element, PlatformView nativeView)
 		{
 			base.SendVisualElementInitialized(element, Control);
 		}

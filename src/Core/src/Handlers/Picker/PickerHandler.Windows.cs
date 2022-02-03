@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		WBrush? _defaultForeground;
 
-		protected override MauiComboBox CreateNativeView()
+		protected override MauiComboBox CreatePlatformView()
 		{
 			var nativePicker = new MauiComboBox();
 
@@ -36,59 +36,59 @@ namespace Microsoft.Maui.Handlers
 
 		void Reload()
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
-			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
+			PlatformView.ItemsSource = new ItemDelegateList<string>(VirtualView);
 		}
 
 		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker) 
 		{
-			handler.NativeView?.UpdateTitle(picker);
+			handler.PlatformView?.UpdateTitle(picker);
 		}
 
 		public static void MapTitleColor(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTitle(picker);
+			handler.PlatformView?.UpdateTitle(picker);
 		}
 
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateSelectedIndex(picker);
+			handler.PlatformView?.UpdateSelectedIndex(picker);
 		}
 
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker) 
 		{
-			handler.NativeView?.UpdateCharacterSpacing(picker);
+			handler.PlatformView?.UpdateCharacterSpacing(picker);
 		}
 
 		public static void MapFont(PickerHandler handler, IPicker picker) 
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(picker, fontManager);
+			handler.PlatformView?.UpdateFont(picker, fontManager);
 		}
 
 		public static void MapTextColor(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTextColor(picker, handler._defaultForeground);
+			handler.PlatformView?.UpdateTextColor(picker, handler._defaultForeground);
 		}
 
 		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
 		}
 		
 		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(picker);
+			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
 		}
 
 		void OnControlSelectionChanged(object? sender, WSelectionChangedEventArgs e)
 		{
-			if (VirtualView != null && NativeView != null)
-				VirtualView.SelectedIndex = NativeView.SelectedIndex;
+			if (VirtualView != null && PlatformView != null)
+				VirtualView.SelectedIndex = PlatformView.SelectedIndex;
 		}
 	}
 }

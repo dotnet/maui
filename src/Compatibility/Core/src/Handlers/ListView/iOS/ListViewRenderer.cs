@@ -30,8 +30,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UIView _backgroundUIView;
 		ListViewDataSource _dataSource;
-		INativeViewHandler _headerRenderer;
-		INativeViewHandler _footerRenderer;
+		IPlatformViewHandler _headerRenderer;
+		IPlatformViewHandler _footerRenderer;
 
 		KeyboardInsetTracker _insetTracker;
 		RectangleF _previousFrame;
@@ -468,6 +468,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_footerRenderer = footerView.ToHandler(MauiContext);
+
 				footerView.MeasureInvalidated += OnFooterMeasureInvalidated;
 				UpdateFooterMeasure();
 			}
@@ -506,6 +507,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_headerRenderer = headerView.ToHandler(MauiContext);
+
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
 				UpdateHeaderMeasure();
 			}
@@ -787,7 +789,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal class UnevenListViewDataSource : ListViewDataSource
 		{
-			INativeViewHandler _prototype;
+			IPlatformViewHandler _prototype;
 			bool _disposed;
 			Dictionary<object, Cell> _prototypicalCellByTypeOrDataTemplate = new Dictionary<object, Cell>();
 
@@ -1129,8 +1131,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				cell.ReusableCell = null;
 
 				var handler = cell.ToHandler(cell.FindMauiContext());
-				var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
-				header.SetTableViewCell(renderer.NativeView);
+				var renderer = (handler as CellRenderer) ?? (handler.PlatformView as CellRenderer);
+				header.SetTableViewCell(renderer.PlatformView);
 
 				return header;
 			}

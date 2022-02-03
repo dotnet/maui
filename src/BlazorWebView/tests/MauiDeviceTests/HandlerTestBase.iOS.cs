@@ -11,14 +11,14 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
 		{
-			var nativeView = ((UIView)viewHandler.NativeView);
-			return nativeView.IsAccessibilityElement;
+			var platformView = ((UIView)viewHandler.NativeView);
+			return platformView.IsAccessibilityElement;
 		}
 
 		protected bool GetExcludedWithChildren(IViewHandler viewHandler)
 		{
-			var nativeView = ((UIView)viewHandler.NativeView);
-			return nativeView.AccessibilityElementsHidden;
+			var platformView = ((UIView)viewHandler.NativeView);
+			return platformView.AccessibilityElementsHidden;
 		}
 	}
 }

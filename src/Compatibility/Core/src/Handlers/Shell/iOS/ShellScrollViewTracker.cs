@@ -19,18 +19,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _disposed;
 		bool _isInShell;
 		bool _isInItems;
-		INativeViewHandler _renderer;
+		IPlatformViewHandler _renderer;
 		UIScrollView _scrollView;
 		ShellSection _shellSection;
 		IShellSectionController ShellSectionController => _shellSection;
 
-		public ShellScrollViewTracker(INativeViewHandler renderer)
+		public ShellScrollViewTracker(IPlatformViewHandler renderer)
 		{
 			_renderer = renderer;
 
-			if (_renderer.NativeView is UIScrollView scrollView)
+			if (_renderer.PlatformView is UIScrollView scrollView)
 				_scrollView = scrollView;
-			else if (_renderer.NativeView.Subviews.Length > 0 && _renderer.NativeView.Subviews[0] is UIScrollView nestedScrollView)
+			else if (_renderer.PlatformView.Subviews.Length > 0 && _renderer.PlatformView.Subviews[0] is UIScrollView nestedScrollView)
 				_scrollView = nestedScrollView;
 
 			if (_scrollView == null)

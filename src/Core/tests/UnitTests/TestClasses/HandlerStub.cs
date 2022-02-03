@@ -15,7 +15,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 		}
 
-		protected override object CreateNativeView()
+		protected override object CreatePlatformView()
 		{
 			return new object();
 		}

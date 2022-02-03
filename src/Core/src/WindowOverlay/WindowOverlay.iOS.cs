@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 
 		public virtual bool Initialize()
 		{
-			if (IsNativeViewInitialized)
+			if (IsPlatformViewInitialized)
 				return true;
 
 			var nativeLayer = Window?.ToPlatform();
@@ -53,8 +53,8 @@ namespace Microsoft.Maui
 
 			// Any time the passthrough view is touched, handle it.
 			_passthroughView.OnTouch += UIViewOnTouch;
-			IsNativeViewInitialized = true;
-			return IsNativeViewInitialized;
+			IsPlatformViewInitialized = true;
+			return IsPlatformViewInitialized;
 		}
 
 		/// <inheritdoc/>
@@ -72,7 +72,7 @@ namespace Microsoft.Maui
 			_frameObserver?.Dispose();
 			_passthroughView?.RemoveFromSuperview();
 			_passthroughView?.Dispose();
-			IsNativeViewInitialized = false;
+			IsPlatformViewInitialized = false;
 		}
 
 		void UIViewOnTouch(object? sender, CGPoint e) =>

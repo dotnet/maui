@@ -1,11 +1,11 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIWindow;
+using PlatformView = UIKit.UIWindow;
 #elif MONOANDROID
-using NativeView = Android.App.Activity;
+using PlatformView = Android.App.Activity;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Window;
+using PlatformView = Microsoft.UI.Xaml.Window;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if !NETSTANDARD
-		protected override NativeView CreateNativeElement() =>
-			MauiContext?.Services.GetService<NativeView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
+		protected override PlatformView CreateNativeElement() =>
+			MauiContext?.Services.GetService<PlatformView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
 #endif
 	}
 }

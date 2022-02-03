@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 
 		protected IShellContext ShellContext => _shellContext;
-		protected AView FooterView => _footerView?.NativeView;
+		protected AView FooterView => _footerView?.PlatformView;
 		protected AView View => _rootView;
 
 
@@ -201,12 +201,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_contentView = new ShellContentView(ShellContext.AndroidContext, content, MauiContext);
 
-			_contentView.NativeView.LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.MatchParent)
+			_contentView.PlatformView.LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.MatchParent)
 			{
 				Behavior = new AppBarLayout.ScrollingViewBehavior()
 			};
 
-			return _contentView.NativeView;
+			return _contentView.PlatformView;
 		}
 
 		protected virtual void UpdateFlyoutHeader()
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_footerView != null)
 			{
 				var oldFooterView = _footerView;
-				_rootView.RemoveView(_footerView.NativeView);
+				_rootView.RemoveView(_footerView.PlatformView);
 				_footerView = null;
 				oldFooterView.TearDown();
 			}
@@ -261,9 +261,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_footerView = new ShellContentView(_shellContext.AndroidContext, footer, MauiContext);
 
-			_rootView.AddView(_footerView.NativeView);
+			_rootView.AddView(_footerView.PlatformView);
 
-			if (_footerView.NativeView.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+			if (_footerView.PlatformView.LayoutParameters is CoordinatorLayout.LayoutParams cl)
 				cl.Gravity = (int)(GravityFlags.Bottom | GravityFlags.End);
 
 			UpdateFooterLayout();
@@ -478,8 +478,8 @@ namespace Microsoft.Maui.Controls.Platform
 					_appBar.RemoveView(_headerView);
 				}
 
-				if (_rootView != null && _footerView?.NativeView != null)
-					_rootView.RemoveView(_footerView.NativeView);
+				if (_rootView != null && _footerView?.PlatformView != null)
+					_rootView.RemoveView(_footerView.PlatformView);
 
 				if (View != null && View is ShellFlyoutLayout sfl)
 					sfl.LayoutChanging -= OnFlyoutViewLayoutChanged;

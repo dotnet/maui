@@ -74,9 +74,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.ReusableCell = reusableCell;
 			cell.TableView = tableView;
 			var handler = cell.ToHandler(cell.FindMauiContext());
-			var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
+			var renderer = (handler as CellRenderer) ?? (handler.PlatformView as CellRenderer);
 
-			var nativeCell = renderer.NativeView;
+			var nativeCell = renderer.PlatformView;
 
 			var cellWithContent = nativeCell;
 

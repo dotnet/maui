@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		public VisualElement Element { get; private set; }
-		public UIView NativeView => FlyoutRenderer.View;
+		public UIView PlatformView => FlyoutRenderer.View;
 		public Shell Shell => (Shell)Element;
 		public UIViewController ViewController => FlyoutRenderer.ViewController;
 

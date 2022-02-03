@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		const string InsetPanelTag = "MAUIContentInsetPanel";
 
-		protected override MauiScrollView CreateNativeView()
+		protected override MauiScrollView CreatePlatformView()
 		{
 			var scrollView = new MauiScrollView(
 				new Android.Views.ContextThemeWrapper(MauiContext!.Context, Resource.Style.scrollViewTheme), null!,
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.NativeView == null || handler.MauiContext == null)
+			if (handler.PlatformView == null || handler.MauiContext == null)
 				return;
 
 			if (NeedsInsetView(scrollView))
@@ -68,23 +68,23 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				handler.NativeView.UpdateContent(scrollView.PresentedContent, handler.MauiContext);
+				handler.PlatformView.UpdateContent(scrollView.PresentedContent, handler.MauiContext);
 			}
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView.SetHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
+			handler.PlatformView.SetHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
 		}
 
 		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView.SetVerticalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
+			handler.PlatformView.SetVerticalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
 		}
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView.SetOrientation(scrollView.Orientation);
+			handler.PlatformView.SetOrientation(scrollView.Orientation);
 		}
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var context = handler.NativeView.Context;
+			var context = handler.PlatformView.Context;
 
 			if (context == null)
 			{
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Handlers
 			var horizontalOffsetDevice = (int)context.ToPixels(request.HoriztonalOffset);
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 
-			handler.NativeView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice,
+			handler.PlatformView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice,
 				request.Instant, () => handler.VirtualView.ScrollFinished());
 		}
 
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Handlers
 
 		static ContentViewGroup? FindInsetPanel(IScrollViewHandler handler)
 		{
-			return handler.NativeView.FindViewWithTag(InsetPanelTag) as ContentViewGroup;
+			return handler.PlatformView.FindViewWithTag(InsetPanelTag) as ContentViewGroup;
 		}
 
 		static void UpdateInsetView(IScrollView scrollView, IScrollViewHandler handler)
@@ -187,9 +187,9 @@ namespace Microsoft.Maui.Handlers
 				Tag = InsetPanelTag
 			};
 
-			handler.NativeView.RemoveAllViews();
+			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
-			handler.NativeView.SetContent(paddingShim);
+			handler.PlatformView.SetContent(paddingShim);
 		}
 
 		static Func<double, double, Size> IncludeScrollViewInsets(Func<double, double, Size> internalMeasure, IScrollView scrollView)

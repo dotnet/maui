@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, WebView2>
 	{
-		protected override WebView2 CreateNativeView() => new MauiWebView();
+		protected override WebView2 CreatePlatformView() => new MauiWebView();
 
 		protected override void ConnectHandler(WebView2 nativeView)
 		{
@@ -25,24 +25,24 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
-			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
+			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 
-			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateGoBack(webView);
+			handler.PlatformView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateGoForward(webView);
+			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateReload(webView);
+			handler.PlatformView?.UpdateReload(webView);
 		}
 
 		void OnNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 			if (arg is not string script)
 				return;
 
-			handler.NativeView?.Eval(webView, script);
+			handler.PlatformView?.Eval(webView, script);
 		}
 
 		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 

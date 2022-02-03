@@ -21,15 +21,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 	}
 
-	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IViewRenderer, ITabStop, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
+	public abstract class ViewRenderer<TView, TPlatformView> : VisualElementRenderer<TView>, IViewRenderer, ITabStop, AView.IOnFocusChangeListener where TView : View where TPlatformView : AView
 	{
 		protected ViewRenderer(Context context) : base(context)
 		{
 		}
 
-		protected virtual TNativeView CreateNativeControl()
+		protected virtual TPlatformView CreateNativeControl()
 		{
-			return default(TNativeView);
+			return default(TPlatformView);
 		}
 
 		ViewGroup _container;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		SoftInput _startingInputMode;
 
-		public TNativeView Control { get; private set; }
+		public TPlatformView Control { get; private set; }
 		protected virtual AView ControlUsedForAutomation => Control;
 
 		AView ITabStop.TabStop => Control;
@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(ControlUsedForAutomation, Element);
 		}
 
-		protected void SetNativeControl(TNativeView control)
+		protected void SetNativeControl(TPlatformView control)
 		{
 			SetNativeControl(control, this);
 		}
@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.SendVisualElementInitialized(element, Control);
 		}
 
-		internal void SetNativeControl(TNativeView control, ViewGroup container)
+		internal void SetNativeControl(TPlatformView control, ViewGroup container)
 		{
 			if (Control != null)
 			{

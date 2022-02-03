@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? DefaultMaxTrackColor;
 		static UIColor? DefaultThumbColor;
 
-		protected override UISlider CreateNativeView() => new UISlider { Continuous = true };
+		protected override UISlider CreatePlatformView() => new UISlider { Continuous = true };
 
 		protected override void ConnectHandler(UISlider nativeView)
 		{
@@ -39,48 +39,48 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimum(slider);
+			handler.PlatformView?.UpdateMinimum(slider);
 		}
 
 		public static void MapMaximum(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximum(slider);
+			handler.PlatformView?.UpdateMaximum(slider);
 		}
 
 		public static void MapValue(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateValue(slider);
+			handler.PlatformView?.UpdateValue(slider);
 		}
 
 		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
 		}
 
 		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
 		}
 
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(slider, DefaultThumbColor);
 		}
 
 		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.NativeView?.UpdateThumbImageSourceAsync(slider, provider)
+			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
 				.FireAndForget(handler);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
-			if (NativeView == null || VirtualView == null)
+			if (PlatformView == null || VirtualView == null)
 				return;
 
-			VirtualView.Value = NativeView.Value;
+			VirtualView.Value = PlatformView.Value;
 		}
 
 		void OnTouchDownControlEvent(object? sender, EventArgs e)

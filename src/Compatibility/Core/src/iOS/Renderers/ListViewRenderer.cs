@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					if (_headerRenderer != null)
-						Control.TableHeaderView = _headerRenderer.NativeView;
+						Control.TableHeaderView = _headerRenderer.PlatformView;
 				});
 			}
 
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					if (_footerRenderer != null)
-						Control.TableFooterView = _footerRenderer.NativeView;
+						Control.TableFooterView = _footerRenderer.PlatformView;
 				});
 			}
 
@@ -401,7 +401,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 			Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
 
-			Control.TableFooterView = _footerRenderer.NativeView;
+			Control.TableFooterView = _footerRenderer.PlatformView;
 		}
 
 		void OnGroupedCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -423,7 +423,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 			Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
 
-			Control.TableHeaderView = _headerRenderer.NativeView;
+			Control.TableHeaderView = _headerRenderer.PlatformView;
 		}
 
 		void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 				Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
 
-				Control.TableFooterView = _footerRenderer.NativeView;
+				Control.TableFooterView = _footerRenderer.PlatformView;
 				footerView.MeasureInvalidated += OnFooterMeasureInvalidated;
 			}
 			else if (_footerRenderer != null)
@@ -540,7 +540,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 				Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
 
-				Control.TableHeaderView = _headerRenderer.NativeView;
+				Control.TableHeaderView = _headerRenderer.PlatformView;
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
 			}
 			else if (_headerRenderer != null)

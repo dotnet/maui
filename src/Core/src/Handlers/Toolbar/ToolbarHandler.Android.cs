@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_drawerLayout == drawerLayout)
 			{
-				NativeView.SetNavigationOnClickListener(BackNavigationClick);
+				PlatformView.SetNavigationOnClickListener(BackNavigationClick);
 				return;
 			}
 
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_navController == navController && _stackNavigationManager == stackNavigationManager)
 			{
-				NativeView.SetNavigationOnClickListener(BackNavigationClick);
+				PlatformView.SetNavigationOnClickListener(BackNavigationClick);
 				return;
 			}
 
@@ -85,11 +85,11 @@ namespace Microsoft.Maui.Handlers
 				appbarConfigBuilder.Build();
 
 			NavigationUI
-				.SetupWithNavController(NativeView, _navController, appbarConfig);
+				.SetupWithNavController(PlatformView, _navController, appbarConfig);
 
 			// the call to SetupWithNavController resets the Navigation Icon
 			UpdateValue(nameof(IToolbar.BackButtonVisible));
-			NativeView.SetNavigationOnClickListener(BackNavigationClick);
+			PlatformView.SetNavigationOnClickListener(BackNavigationClick);
 		}
 
 		void BackClick()

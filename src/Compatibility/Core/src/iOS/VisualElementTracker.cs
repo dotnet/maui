@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void OnUpdateNativeControl(CALayer caLayer)
 		{
 			var view = Renderer.Element;
-			var uiview = Renderer.NativeView;
+			var uiview = Renderer.PlatformView;
 
 			if (view == null || view.Batched)
 				return;
@@ -387,11 +387,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (_layer == null)
 			{
 #if !__MOBILE__
-				Renderer.NativeView.WantsLayer = true;
+				Renderer.PlatformView.WantsLayer = true;
 #endif
-				_layer = Renderer.NativeView.Layer;
+				_layer = Renderer.PlatformView.Layer;
 #if __MOBILE__
-				_isInteractive = Renderer.NativeView.UserInteractionEnabled;
+				_isInteractive = Renderer.PlatformView.UserInteractionEnabled;
 #endif
 
 				_originalAnchor = _layer.AnchorPoint;
@@ -411,7 +411,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return;
 
 			var element = Renderer.Element;
-			var uiview = Renderer.NativeView;
+			var uiview = Renderer.PlatformView;
 
 			var formsGeometry = element.Clip;
 			var nativeGeometry = formsGeometry.ToCGPath();
@@ -457,7 +457,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		bool ShouldUpdateClip()
 		{
 			var element = Renderer?.Element;
-			var uiview = Renderer?.NativeView;
+			var uiview = Renderer?.PlatformView;
 
 			if (element == null || uiview == null)
 				return false;

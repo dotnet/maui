@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Platform.SetRenderer(view, _renderer);
 			}
 
-			ContentView.AddSubview(_renderer.NativeView);
-			_renderer.NativeView.ClipsToBounds = true;
+			ContentView.AddSubview(_renderer.PlatformView);
+			_renderer.PlatformView.ClipsToBounds = true;
 			ContentView.ClipsToBounds = true;
 
 			BindingContext = context;

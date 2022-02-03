@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		WBrush? _defaultForeground;
 
-		protected override CalendarDatePicker CreateNativeView() => new CalendarDatePicker();
+		protected override CalendarDatePicker CreatePlatformView() => new CalendarDatePicker();
 
 		protected override void ConnectHandler(CalendarDatePicker nativeView)
 		{
@@ -29,39 +29,39 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMinimumDate(datePicker);
+			handler.PlatformView?.UpdateMinimumDate(datePicker);
 		}
 
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMaximumDate(datePicker);
+			handler.PlatformView?.UpdateMaximumDate(datePicker);
 		}
 
 		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(datePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
 		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
 		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultForeground);
+			handler.PlatformView?.UpdateTextColor(datePicker, handler._defaultForeground);
 		}
 
 		private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)

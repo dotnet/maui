@@ -10,16 +10,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		public HandlerToRendererShim(INativeViewHandler vh)
+		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		INativeViewHandler ViewHandler { get; }
+		IPlatformViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public UIView NativeView => ViewHandler.ContainerView ?? ViewHandler.NativeView;
+		public UIView PlatformView => ViewHandler.ContainerView ?? ViewHandler.PlatformView;
 
 		public UIViewController ViewController => ViewHandler.ViewController;
 

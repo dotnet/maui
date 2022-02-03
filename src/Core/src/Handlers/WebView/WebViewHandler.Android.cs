@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 		WebChromeClient? _webChromeClient;
 		bool _firstRun = true;
 
-		protected override AWebView CreateNativeView()
+		protected override AWebView CreatePlatformView()
 		{
 			return new MauiWebView(Context!)
 			{
@@ -41,32 +41,32 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapWebViewClient(WebViewHandler handler, IWebView webView)
 		{
-			handler.NativeView.SetWebViewClient(handler._webViewClient ??= new MauiWebViewClient(handler));
+			handler.PlatformView.SetWebViewClient(handler._webViewClient ??= new MauiWebViewClient(handler));
 		}
 
 		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
 		{
-			handler.NativeView.SetWebChromeClient(handler._webChromeClient ??= new WebChromeClient());
+			handler.PlatformView.SetWebChromeClient(handler._webChromeClient ??= new WebChromeClient());
 		}
 
 		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
 		{
-			handler.NativeView.UpdateSettings(webView, true, true);
+			handler.PlatformView.UpdateSettings(webView, true, true);
 		}
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView.UpdateGoBack(webView);
+			handler.PlatformView.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView.UpdateGoForward(webView);
+			handler.PlatformView.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView.UpdateReload(webView);
+			handler.PlatformView.UpdateReload(webView);
 		}
 
 		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Handlers
 			if (arg is not string script)
 				return;
 
-			handler.NativeView?.Eval(webView, script);
+			handler.PlatformView?.Eval(webView, script);
 		}
 
 		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Handlers
 			if (handler._firstRun)
 				return;
 
-			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
-			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
+			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
 		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)

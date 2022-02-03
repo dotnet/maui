@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Fragments are always destroyed if they aren't visible
-		// The Handler/NativeView associated with the visible IView remain intact
+		// The Handler/PlatformView associated with the visible IView remain intact
 		// The performance hit of destorying/recreating fragments should be negligible
 		// Hopefully this behavior survives implementation
 		// This will need to be tested with Maps and WebViews to make sure they behave efficiently
@@ -423,7 +423,7 @@ namespace Microsoft.Maui.Platform
 				IToolbar? toolbar = null;
 
 				if (_stackNavigationManager.NavigationView?.Toolbar is IToolbar tb &&
-					tb?.Handler?.NativeView is AToolbar ntb)
+					tb?.Handler?.PlatformView is AToolbar ntb)
 				{
 					nativeToolbar = ntb;
 					toolbar = tb;

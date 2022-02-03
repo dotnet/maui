@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Content != null)
 			{
 				var renderer = Platform.CreateRenderer(Content);
-				ContentView = renderer.NativeView;
+				ContentView = renderer.PlatformView;
 				Platform.SetRenderer(Content, renderer);
 				ContentView.ClipsToBounds = true;
 
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (ContentView is UIScrollView sv1)
 					ScrollView = sv1;
-				else if (ContentView is IVisualElementRenderer ver && ver.NativeView is UIScrollView uIScroll)
+				else if (ContentView is IVisualElementRenderer ver && ver.PlatformView is UIScrollView uIScroll)
 					ScrollView = uIScroll;
 
 				if (ScrollView != null && Forms.IsiOS11OrNewer)

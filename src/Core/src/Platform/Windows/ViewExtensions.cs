@@ -98,13 +98,13 @@ namespace Microsoft.Maui.Platform
 			}
 			else if(border is IView v)
 			{
-				nativeView?.UpdateNativeViewBackground(v);
+				nativeView?.UpdatePlatformViewBackground(v);
 			}
 		}
 
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
-			nativeView?.UpdateNativeViewBackground(view);
+			nativeView?.UpdatePlatformViewBackground(view);
 		}
 
 		public static WFlowDirection ToNative(this FlowDirection flowDirection)
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(null);
 		}
 
-		internal static void UpdateNativeViewBackground(this FrameworkElement nativeView, IView view)
+		internal static void UpdatePlatformViewBackground(this FrameworkElement nativeView, IView view)
 		{
 			(nativeView as ContentPanel)?.UpdateBackground(null);
 
@@ -294,15 +294,15 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		internal static Rectangle GetPlatformViewBounds(this IView view)
 		{
 			var nativeView = view?.ToPlatform();
 			if (nativeView != null)
-				return nativeView.GetNativeViewBounds();
+				return nativeView.GetPlatformViewBounds();
 			return new Rectangle();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this FrameworkElement nativeView)
+		internal static Rectangle GetPlatformViewBounds(this FrameworkElement nativeView)
 		{
 			if (nativeView == null)
 				return new Rectangle();

@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (!args.Handled && renderer != null)
 				{
-					if (renderer.NativeView is Microsoft.UI.Xaml.Controls.Image nativeImage &&
+					if (renderer.PlatformView is Microsoft.UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)
 					{
 						e.Data.SetBitmap(RandomAccessStreamReference.CreateFromUri(bi.UriSource));

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		internal class ViewTableCell : UITableViewCell, INativeElementView
 		{
 			IMauiContext MauiContext => _viewCell.FindMauiContext();
-			WeakReference<INativeViewHandler> _rendererRef;
+			WeakReference<IPlatformViewHandler> _rendererRef;
 			ViewCell _viewCell;
 
 			Element INativeElementView.Element => ViewCell;
@@ -103,9 +103,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_rendererRef == null)
 					return;
 
-				INativeViewHandler renderer;
+				IPlatformViewHandler renderer;
 				if (_rendererRef.TryGetTarget(out renderer))
-					renderer.NativeView.Frame = view.Bounds.ToCGRect();
+					renderer.PlatformView.Frame = view.Bounds.ToCGRect();
 
 				Performance.Stop(reference);
 			}
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				Performance.Start(out string reference);
 
-				INativeViewHandler renderer;
+				IPlatformViewHandler renderer;
 				if (!_rendererRef.TryGetTarget(out renderer))
 					return base.SizeThatFits(size);
 
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (disposing)
 				{
-					INativeViewHandler renderer;
+					IPlatformViewHandler renderer;
 					if (_rendererRef != null && _rendererRef.TryGetTarget(out renderer) && renderer.VirtualView != null)
 					{
 						renderer.VirtualView.DisposeModalAndChildHandlers();
@@ -161,15 +161,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.Dispose(disposing);
 			}
 
-			INativeViewHandler GetNewRenderer()
+			IPlatformViewHandler GetNewRenderer()
 			{
 				if (_viewCell.View == null)
 					throw new InvalidOperationException($"ViewCell must have a {nameof(_viewCell.View)}");
 
 				var newRenderer = _viewCell.View.ToHandler(_viewCell.View.FindMauiContext());
-				_rendererRef = new WeakReference<INativeViewHandler>(newRenderer);
-				ContentView.AddSubview(newRenderer.NativeView);
-				return (INativeViewHandler)newRenderer;
+				_rendererRef = new WeakReference<IPlatformViewHandler>(newRenderer);
+				ContentView.AddSubview(newRenderer.PlatformView);
+				return (IPlatformViewHandler)newRenderer;
 			}
 
 			void UpdateCell(ViewCell cell)
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_viewCell.PropertyChanged += ViewCellPropertyChanged;
 				Device.BeginInvokeOnMainThread(_viewCell.SendAppearing);
 
-				INativeViewHandler renderer;
+				IPlatformViewHandler renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))
 					renderer = GetNewRenderer();
 				else

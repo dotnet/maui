@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		static readonly int BaseHeight = 30;
 
-		protected override MauiTextView CreateNativeView() => new MauiTextView();
+		protected override MauiTextView CreatePlatformView() => new MauiTextView();
 
 		protected override void ConnectHandler(MauiTextView nativeView)
 		{
@@ -32,38 +32,38 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateText(editor);
+			handler.PlatformView?.UpdateText(editor);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, editor);
 		}
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateTextColor(editor);
+			handler.PlatformView?.UpdateTextColor(editor);
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdatePlaceholder(editor);
+			handler.PlatformView?.UpdatePlaceholder(editor);
 
 		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdatePlaceholderColor(editor);
+			handler.PlatformView?.UpdatePlaceholderColor(editor);
 
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateCharacterSpacing(editor);
+			handler.PlatformView?.UpdateCharacterSpacing(editor);
 
 		public static void MapMaxLength(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateMaxLength(editor);
+			handler.PlatformView?.UpdateMaxLength(editor);
 
 		public static void MapIsReadOnly(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateIsReadOnly(editor);
+			handler.PlatformView?.UpdateIsReadOnly(editor);
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
 
 		public static void MapFont(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
+			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
 
 		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 
 		[MissingMapper]
 		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
@@ -71,20 +71,20 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapCursorPosition(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateCursorPosition(editor);
+			handler.PlatformView?.UpdateCursorPosition(editor);
 
 		public static void MapSelectionLength(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateSelectionLength(editor);
+			handler.PlatformView?.UpdateSelectionLength(editor);
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateKeyboard(editor);
+			handler.PlatformView?.UpdateKeyboard(editor);
 
 		public static void MapFormatting(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateMaxLength(editor);
+			handler.PlatformView?.UpdateMaxLength(editor);
 
 			// Update all of the attributed text formatting properties
-			handler.NativeView?.UpdateCharacterSpacing(editor);
+			handler.PlatformView?.UpdateCharacterSpacing(editor);
 		}
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString) =>
@@ -97,6 +97,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>
-			VirtualView.UpdateText(NativeView.Text);
+			VirtualView.UpdateText(PlatformView.Text);
 	}
 }

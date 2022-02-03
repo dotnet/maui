@@ -1,18 +1,18 @@
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
-using NativeView = AppKit.NSView;
+using PlatformView = AppKit.NSView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
 	public static class AccessibilityExtensions
 	{
-		public static void SetAccessibilityProperties(this NativeView nativeViewElement, Element element)
+		public static void SetAccessibilityProperties(this PlatformView nativeViewElement, Element element)
 		{
 			if (element == null)
 				return;
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			SetAccessibilityElementsHidden(nativeViewElement, element);
 		}
 
-		public static string SetAccessibilityHint(this NativeView Control, Element Element, string _defaultAccessibilityHint = null)
+		public static string SetAccessibilityHint(this PlatformView Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityHint;
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return _defaultAccessibilityHint;
 		}
 
-		public static string SetAccessibilityLabel(this NativeView Control, Element Element, string _defaultAccessibilityLabel = null)
+		public static string SetAccessibilityLabel(this PlatformView Control, Element Element, string _defaultAccessibilityLabel = null)
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityLabel;
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 #endif
 
-		public static bool? SetIsAccessibilityElement(this NativeView Control, Element Element, bool? _defaultIsAccessibilityElement = null)
+		public static bool? SetIsAccessibilityElement(this PlatformView Control, Element Element, bool? _defaultIsAccessibilityElement = null)
 		{
 			if (Element == null || Control == null)
 				return _defaultIsAccessibilityElement;
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return _defaultIsAccessibilityElement;
 		}
 
-		public static bool? SetAccessibilityElementsHidden(this NativeView Control, Element Element, bool? _defaultAccessibilityElementsHidden = null)
+		public static bool? SetAccessibilityElementsHidden(this PlatformView Control, Element Element, bool? _defaultAccessibilityElementsHidden = null)
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityElementsHidden;

@@ -42,15 +42,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (cell.View == null)
 				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
 
-			var view = (INativeViewHandler)cell.View.ToHandler(cell.FindMauiContext());
+			var view = (IPlatformViewHandler)cell.View.ToHandler(cell.FindMauiContext());
 			cell.View.IsPlatformEnabled = true;
 
-			ViewCellContainer c = view.NativeView.GetParentOfType<ViewCellContainer>();
+			ViewCellContainer c = view.PlatformView.GetParentOfType<ViewCellContainer>();
 
 			if (c != null)
 				return c;
 
-			c = new ViewCellContainer(context, (INativeViewHandler)cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
+			c = new ViewCellContainer(context, (IPlatformViewHandler)cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
 
 			Performance.Stop(reference, "GetCellCore");
 
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			readonly View _parent;
 			readonly BindableProperty _rowHeight;
 			readonly BindableProperty _unevenRows;
-			INativeViewHandler _viewHandler;
+			IPlatformViewHandler _viewHandler;
 			ViewCell _viewCell;
 			GestureDetector _tapGestureDetector;
 			GestureDetector _longPressGestureDetector;
@@ -124,15 +124,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Added default constructor to prevent crash when accessing selected row in ListViewAdapter.Dispose
 			}
 
-			public ViewCellContainer(Context context, INativeViewHandler view, ViewCell viewCell, View parent,
+			public ViewCellContainer(Context context, IPlatformViewHandler view, ViewCell viewCell, View parent,
 				BindableProperty unevenRows, BindableProperty rowHeight) : base(context)
 			{
-				_viewHandler = (INativeViewHandler)view;
+				_viewHandler = (IPlatformViewHandler)view;
 				_parent = parent;
 				_unevenRows = unevenRows;
 				_rowHeight = rowHeight;
 				_viewCell = viewCell;
-				AddView(view.NativeView);
+				AddView(view.PlatformView);
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
 			}
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				RemoveView(_viewHandler.NativeView);
+				RemoveView(_viewHandler.PlatformView);
 				_viewCell.View.Handler?.DisconnectHandler();
 				_viewCell.View.IsPlatformEnabled = false;
 
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_viewCell = cell;
 
 				var platformView = _viewCell.View.ToPlatform(Element.FindMauiContext());
-				_viewHandler = (INativeViewHandler)_viewCell.View.Handler;
+				_viewHandler = (IPlatformViewHandler)_viewCell.View.Handler;
 				AddView(platformView);
 
 				UpdateIsEnabled();
@@ -229,12 +229,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (_viewHandler.NativeView == null || Context == null)
+				if (_viewHandler.PlatformView == null || Context == null)
 				{
 					return;
 				}
 
-				_viewHandler.NativeView.Layout(l, t, r, b);
+				_viewHandler.PlatformView.Layout(l, t, r, b);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -246,23 +246,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (ParentHasUnevenRows)
 				{
-					if (_viewHandler.NativeView == null)
+					if (_viewHandler.PlatformView == null)
 					{
 						SetMeasuredDimension(0, 0);
 						return;
 					}
 
-					_viewHandler.NativeView.Measure(widthMeasureSpec, heightMeasureSpec);
-					height = (int)Context.ToPixels(_viewHandler.NativeView.MeasuredHeight);
+					_viewHandler.PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
+					height = (int)Context.ToPixels(_viewHandler.PlatformView.MeasuredHeight);
 				}
 				else
 				{
 					height = (int)Context.ToPixels(ParentRowHeight == -1 ? BaseCellView.DefaultMinHeight : ParentRowHeight);
 
 
-					if (_viewHandler.NativeView != null)
+					if (_viewHandler.PlatformView != null)
 					{
-						_viewHandler.NativeView.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+						_viewHandler.PlatformView.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
 					}
 				}
 

@@ -374,7 +374,7 @@ namespace Microsoft.Maui.Platform
 			if (!_isOpen)
 				return;
 
-			if (item?.Handler?.NativeView is UIView nativeView)
+			if (item?.Handler?.PlatformView is UIView nativeView)
 			{
 				_swipeThreshold = 0;
 				LayoutSwipeItems(GetNativeSwipeItems());

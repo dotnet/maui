@@ -22,11 +22,11 @@ using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using TNativeView = UIKit.UIView;
+using TPlatformView = UIKit.UIView;
 #else
 using AppKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.MacOS;
-using TNativeView = AppKit.NSView;
+using TPlatformView = AppKit.NSView;
 #endif
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -249,9 +249,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
-		internal static void SendViewInitialized(this VisualElement self, TNativeView nativeView)
+		internal static void SendViewInitialized(this VisualElement self, TPlatformView nativeView)
 		{
-			ViewInitialized?.Invoke(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
+			ViewInitialized?.Invoke(self, new ViewInitializedEventArgs { View = self, PlatformView = nativeView });
 		}
 
 		class iOSExpressionSearch : ExpressionVisitor, IExpressionSearch

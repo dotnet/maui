@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapTextColor(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
-			handler.NativeView.UpdateTextColor(view);
+			handler.PlatformView.UpdateTextColor(view);
 
 		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view) { }
 
@@ -18,29 +18,29 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) 
 		{
-			handler.NativeView.Text = view.Text;
+			handler.PlatformView.Text = view.Text;
 		}
 
 		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
-			handler.NativeView.UpdateBackground(view.Background);
+			handler.PlatformView.UpdateBackground(view.Background);
 
 		public static void MapVisibility(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
 		public static void MapSource(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			handler.NativeView.IconSource = view.Source?.ToIconSource(handler.MauiContext!);
+			handler.PlatformView.IconSource = view.Source?.ToIconSource(handler.MauiContext!);
 		}
 
 		protected override void ConnectHandler(WSwipeItem nativeView)
 		{
 			base.ConnectHandler(nativeView);
-			NativeView.Invoked += OnSwipeItemInvoked;
+			PlatformView.Invoked += OnSwipeItemInvoked;
 		}
 
 		protected override void DisconnectHandler(WSwipeItem nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			NativeView.Invoked -= OnSwipeItemInvoked;
+			PlatformView.Invoked -= OnSwipeItemInvoked;
 		}
 
 		void OnSwipeItemInvoked(WSwipeItem sender, Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs args)

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, TextBox>
 	{
-		protected override TextBox CreateNativeView() =>
+		protected override TextBox CreatePlatformView() =>
 			new TextBox
 			{
 				AcceptsReturn = true,
@@ -29,57 +29,57 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateText(editor);
+			handler.PlatformView?.UpdateText(editor);
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdatePlaceholder(editor);
+			handler.PlatformView?.UpdatePlaceholder(editor);
 
 		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdatePlaceholderColor(editor);
+			handler.PlatformView?.UpdatePlaceholderColor(editor);
 
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateCharacterSpacing(editor);
+			handler.PlatformView?.UpdateCharacterSpacing(editor);
 
 		public static void MapMaxLength(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateMaxLength(editor);
+			handler.PlatformView?.UpdateMaxLength(editor);
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
 
 		public static void MapFont(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
+			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
 
 		public static void MapIsReadOnly(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateIsReadOnly(editor);
+			handler.PlatformView?.UpdateIsReadOnly(editor);
 
 		public static void MapBackground(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateBackground(editor);
+			handler.PlatformView?.UpdateBackground(editor);
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateTextColor(editor);
+			handler.PlatformView?.UpdateTextColor(editor);
 
 		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 
 		public static void MapCursorPosition(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateCursorPosition(editor);
+			handler.PlatformView?.UpdateCursorPosition(editor);
 
 		public static void MapSelectionLength(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateSelectionLength(editor);
+			handler.PlatformView?.UpdateSelectionLength(editor);
 
 		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateVerticalTextAlignment(editor);
+			handler.PlatformView?.UpdateVerticalTextAlignment(editor);
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateKeyboard(editor);
+			handler.PlatformView?.UpdateKeyboard(editor);
 
 		void OnTextChanged(object sender, TextChangedEventArgs args) =>
-			VirtualView?.UpdateText(NativeView.Text);
+			VirtualView?.UpdateText(PlatformView.Text);
 
 		void OnLostFocus(object? sender, RoutedEventArgs e) =>
 			VirtualView?.Completed();
 
 		void OnNativeLoaded(object sender, RoutedEventArgs e) =>
-			MauiTextBox.InvalidateAttachedProperties(NativeView);
+			MauiTextBox.InvalidateAttachedProperties(PlatformView);
 	}
 }

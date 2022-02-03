@@ -7,7 +7,7 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler
 	{
 		public Context Context => MauiContext?.Context ?? throw new InvalidOperationException($"Context cannot be null here");
 
@@ -19,16 +19,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
-			if (Context == null || NativeView == null || ContainerView != null)
+			if (Context == null || PlatformView == null || ContainerView != null)
 				return;
 
-			var oldParent = (ViewGroup?)NativeView.Parent;
+			var oldParent = (ViewGroup?)PlatformView.Parent;
 
-			var oldIndex = oldParent?.IndexOfChild(NativeView);
-			oldParent?.RemoveView(NativeView);
+			var oldIndex = oldParent?.IndexOfChild(PlatformView);
+			oldParent?.RemoveView(PlatformView);
 
 			ContainerView ??= new WrapperView(Context);
-			((ViewGroup)ContainerView).AddView(NativeView);
+			((ViewGroup)ContainerView).AddView(PlatformView);
 
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.AddView(ContainerView, idx);
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void RemoveContainer()
 		{
-			if (Context == null || NativeView == null || ContainerView == null || NativeView.Parent != ContainerView)
+			if (Context == null || PlatformView == null || ContainerView == null || PlatformView.Parent != ContainerView)
 				return;
 
 			var oldParent = (ViewGroup?)ContainerView.Parent;
@@ -50,9 +50,9 @@ namespace Microsoft.Maui.Handlers
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)
-				oldParent?.AddView(NativeView, idx);
+				oldParent?.AddView(PlatformView, idx);
 			else
-				oldParent?.AddView(NativeView);
+				oldParent?.AddView(PlatformView);
 		}
 	}
 }

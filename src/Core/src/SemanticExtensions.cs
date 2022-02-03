@@ -1,16 +1,16 @@
 ﻿using System;
 #if __IOS__ || MACCATALYST
 using UIKit;
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 #elif __ANDROID__
 using Android.Text;
 using Android.Views;
 using Android.Views.Accessibility;
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui
@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 	{
 		public static void SetSemanticFocus(this IView element)
 		{
-			if (element?.Handler?.NativeView is not NativeView nativeView)
+			if (element?.Handler?.PlatformView is not PlatformView nativeView)
 				throw new NullReferenceException("Can't access view from a null handler");
 
 #if __ANDROID__

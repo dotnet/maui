@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
+			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
 		}
 
 		public void SetElement(VisualElement element)
@@ -901,7 +901,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		#region IPlatformRenderer implementation
 
-		public UIView NativeView
+		public UIView PlatformView
 		{
 			get { return this; }
 		}
@@ -917,7 +917,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
-			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, NativeView);
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, PlatformView);
 		}
 	}
 }

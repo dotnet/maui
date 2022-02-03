@@ -18,8 +18,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		TNativeElement? _nativeView;
 		public FrameworkElement ContainerElement => this;
 
-		public TNativeElement? Control => ((IElementHandler)this).NativeView as TNativeElement ?? _nativeView;
-		object? IElementHandler.NativeView => _nativeView;
+		public TNativeElement? Control => ((IElementHandler)this).PlatformView as TNativeElement ?? _nativeView;
+		object? IElementHandler.PlatformView => _nativeView;
 
 		public UIElement? GetNativeElement() => Control;
 
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			foreach (var child in vte.GetVisualChildren())
 			{
-				if (child is Maui.IElement childElement && childElement.Handler is INativeViewHandler nvh)
+				if (child is Maui.IElement childElement && childElement.Handler is IPlatformViewHandler nvh)
 				{
 					var size = nvh.GetDesiredSizeFromHandler(availableSize.Width, availableSize.Height);
 					height = Math.Max(height, size.Height);
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var mauiRect = new Graphics.Rectangle(0, 0, finalSize.Width, finalSize.Height);
 			foreach (var child in vte.GetVisualChildren())
 			{
-				if (child is Maui.IElement childElement && childElement.Handler is INativeViewHandler nvh)
+				if (child is Maui.IElement childElement && childElement.Handler is IPlatformViewHandler nvh)
 					nvh.NativeArrangeHandler(mauiRect);
 			}
 
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		static partial void ProcessAutoPackage(Maui.IElement element)
 		{
-			if (element.Handler is not INativeViewHandler nvh ||
+			if (element.Handler is not IPlatformViewHandler nvh ||
 				nvh.ContainerView is not Panel panel)
 			{
 				return;
@@ -155,19 +155,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		public static void MapAutomationPropertiesLabeledBy(INativeViewHandler handler, TElement view)
+		public static void MapAutomationPropertiesLabeledBy(IPlatformViewHandler handler, TElement view)
 		{
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
 				ver.SetAutomationPropertiesLabeledBy();
 		}
 
-		public static void MapAutomationPropertiesHelpText(INativeViewHandler handler, TElement view)
+		public static void MapAutomationPropertiesHelpText(IPlatformViewHandler handler, TElement view)
 		{
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
 				ver.SetAutomationPropertiesHelpText();
 		}
 
-		public static void MapAutomationPropertiesName(INativeViewHandler handler, TElement view)
+		public static void MapAutomationPropertiesName(IPlatformViewHandler handler, TElement view)
 		{
 			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
 				ver.SetAutomationPropertiesName();

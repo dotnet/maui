@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 
 		public UITextField? QueryEditor => _editor;
 
-		protected override MauiSearchBar CreateNativeView()
+		protected override MauiSearchBar CreatePlatformView()
 		{
 			var searchBar = new MauiSearchBar() { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateText(searchBar);
+			handler.PlatformView?.UpdateText(searchBar);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, searchBar);
@@ -80,12 +80,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholder(searchBar, handler._editor);
+			handler.PlatformView?.UpdatePlaceholder(searchBar, handler._editor);
 		}
 
 		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholder(searchBar, handler._editor);
+			handler.PlatformView?.UpdatePlaceholder(searchBar, handler._editor);
 		}
 
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler?._editor);
+			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar, handler?._editor);
 		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
 
 			// We also update MaxLength which depends on the text
-			handler.NativeView?.UpdateMaxLength(searchBar);
+			handler.PlatformView?.UpdateMaxLength(searchBar);
 		}
 
 		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
@@ -130,12 +130,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar, handler?._editor);
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar, handler?._editor);
 		}
 
 		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateMaxLength(searchBar);
+			handler.PlatformView?.UpdateMaxLength(searchBar);
 		}
 
 		[MissingMapper]
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateCancelButton(searchBar, handler._cancelButtonTextColorDefaultNormal, handler._cancelButtonTextColorDefaultHighlighted, handler._cancelButtonTextColorDefaultDisabled);
+			handler.PlatformView?.UpdateCancelButton(searchBar, handler._cancelButtonTextColorDefaultNormal, handler._cancelButtonTextColorDefaultHighlighted, handler._cancelButtonTextColorDefaultDisabled);
 		}
 
 		void OnCancelClicked(object? sender, EventArgs args)
@@ -151,13 +151,13 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView != null)
 				VirtualView.Text = string.Empty;
 
-			NativeView?.ResignFirstResponder();
+			PlatformView?.ResignFirstResponder();
 		}
 
 		void OnSearchButtonClicked(object? sender, EventArgs e)
 		{
 			VirtualView?.SearchButtonPressed();
-			NativeView?.ResignFirstResponder();
+			PlatformView?.ResignFirstResponder();
 		}
 
 		void OnTextPropertySet(object? sender, UISearchBarTextChangedEventArgs a) =>

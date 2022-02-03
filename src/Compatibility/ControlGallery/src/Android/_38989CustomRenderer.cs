@@ -25,12 +25,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			var nativeView = convertView;
+			var platformView = convertView;
 
-			if (nativeView == null)
-				nativeView = (context.GetActivity()).LayoutInflater.Inflate(Resource.Layout.Layout38989, null);
+			if (platformView == null)
+				platformView = (context.GetActivity()).LayoutInflater.Inflate(Resource.Layout.Layout38989, null);
 
-			return nativeView;
+			return platformView;
 		}
 	}
 }

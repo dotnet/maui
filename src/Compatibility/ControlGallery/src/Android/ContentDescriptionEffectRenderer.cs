@@ -26,23 +26,23 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			System.Diagnostics.Debug.WriteLine("OnElementPropertyChanged" + args.PropertyName);
 
 			var viewGroup = Control as AViews.ViewGroup;
-			var nativeView = Control as AViews.View;
+			var platformView = Control as AViews.View;
 
-			if (nativeView != null && viewGroup != null && viewGroup.ChildCount > 0)
+			if (platformView != null && viewGroup != null && viewGroup.ChildCount > 0)
 			{
-				nativeView = viewGroup.GetChildAt(0);
+				platformView = viewGroup.GetChildAt(0);
 			}
 
-			if (nativeView == null)
+			if (platformView == null)
 			{
 				return;
 			}
 
-			var info = AccessibilityNodeInfoCompat.Obtain(nativeView);
-			ViewCompat.OnInitializeAccessibilityNodeInfo(nativeView, info);
+			var info = AccessibilityNodeInfoCompat.Obtain(platformView);
+			ViewCompat.OnInitializeAccessibilityNodeInfo(platformView, info);
 
 			System.Diagnostics.Debug.WriteLine(info.ContentDescription);
-			System.Diagnostics.Debug.WriteLine(nativeView.ContentDescription);
+			System.Diagnostics.Debug.WriteLine(platformView.ContentDescription);
 
 			Element.SetValue(
 				ContentDescriptionEffectProperties.NameAndHelpTextProperty,
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			Element.SetValue(
 				ContentDescriptionEffectProperties.ContentDescriptionProperty,
-				nativeView.ContentDescription);
+				platformView.ContentDescription);
 		}
 
 	}

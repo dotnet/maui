@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 		Drawable? _clearButtonDrawable;
 		ColorStateList? _defaultPlaceholderColors;
 
-		protected override AppCompatEditText CreateNativeView()
+		protected override AppCompatEditText CreatePlatformView()
 		{
 			var nativeEntry = new AppCompatEditText(Context);
 			_defaultPlaceholderColors = nativeEntry.HintTextColors;
@@ -46,58 +46,58 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapBackground(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateBackground(entry);
+			handler.PlatformView?.UpdateBackground(entry);
 
 		public static void MapText(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateText(entry);
+			handler.PlatformView?.UpdateText(entry);
 
 		public static void MapTextColor(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateTextColor(entry);
+			handler.PlatformView?.UpdateTextColor(entry);
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateIsPassword(entry);
+			handler.PlatformView?.UpdateIsPassword(entry);
 
 		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
 
 		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry) =>
-			handler?.NativeView?.UpdateVerticalTextAlignment(entry);
+			handler?.PlatformView?.UpdateVerticalTextAlignment(entry);
 
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateIsTextPredictionEnabled(entry);
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(entry);
 
 		public static void MapMaxLength(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateMaxLength(entry);
+			handler.PlatformView?.UpdateMaxLength(entry);
 
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdatePlaceholder(entry);
+			handler.PlatformView?.UpdatePlaceholder(entry);
 
 		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdatePlaceholderColor(entry, handler._defaultPlaceholderColors);
+			handler.PlatformView?.UpdatePlaceholderColor(entry, handler._defaultPlaceholderColors);
 
 		public static void MapFont(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateFont(entry, handler.GetRequiredService<IFontManager>());
+			handler.PlatformView?.UpdateFont(entry, handler.GetRequiredService<IFontManager>());
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateIsReadOnly(entry);
+			handler.PlatformView?.UpdateIsReadOnly(entry);
 
 		public static void MapKeyboard(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateKeyboard(entry);
+			handler.PlatformView?.UpdateKeyboard(entry);
 
 		public static void MapReturnType(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateReturnType(entry);
+			handler.PlatformView?.UpdateReturnType(entry);
 
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateCharacterSpacing(entry);
+			handler.PlatformView?.UpdateCharacterSpacing(entry);
 
 		public static void MapCursorPosition(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateCursorPosition(entry);
+			handler.PlatformView?.UpdateCursorPosition(entry);
 
 		public static void MapSelectionLength(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateSelectionLength(entry);
+			handler.PlatformView?.UpdateSelectionLength(entry);
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateClearButtonVisibility(entry, handler.GetClearButtonDrawable);
+			handler.PlatformView?.UpdateClearButtonVisibility(entry, handler.GetClearButtonDrawable);
 
 		void OnTextChanged(object? sender, TextChangedEventArgs e) =>
 			VirtualView?.UpdateText(e);
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 		void OnTouch(object? sender, TouchEventArgs e) =>
 			e.Handled =
 				VirtualView?.ClearButtonVisibility == ClearButtonVisibility.WhileEditing &&
-				NativeView.HandleClearButtonTouched(VirtualView.FlowDirection, e, GetClearButtonDrawable);
+				PlatformView.HandleClearButtonTouched(VirtualView.FlowDirection, e, GetClearButtonDrawable);
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
 		{

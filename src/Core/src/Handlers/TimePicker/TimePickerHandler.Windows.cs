@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		WBrush? _defaultForeground;
 
-		protected override TimePicker CreateNativeView() => new TimePicker();
+		protected override TimePicker CreatePlatformView() => new TimePicker();
 
 		protected override void ConnectHandler(TimePicker nativeView)
 		{
@@ -27,29 +27,29 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTime(timePicker);
+			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTime(timePicker);
+			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(timePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
 		}
 
 		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(timePicker, fontManager);
+			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
 		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTextColor(timePicker, handler._defaultForeground);
+			handler.PlatformView?.UpdateTextColor(timePicker, handler._defaultForeground);
 		}
 
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)

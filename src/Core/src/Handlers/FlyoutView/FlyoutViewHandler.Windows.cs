@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, RootNavigationView>
 	{
 		NavigationRootManager? _navigationRootManager;
-		protected override RootNavigationView CreateNativeView()
+		protected override RootNavigationView CreatePlatformView()
 		{
 			var navigationView = new RootNavigationView();
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView.Detail.ToPlatform(MauiContext);
 
-			NativeView.Content = VirtualView.Detail.ToPlatform();
+			PlatformView.Content = VirtualView.Detail.ToPlatform();
 		}
 
 		void UpdateFlyout()
@@ -60,23 +60,23 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsPresented(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.NativeView.IsPaneOpen = flyoutView.IsPresented;
+			handler.PlatformView.IsPaneOpen = flyoutView.IsPresented;
 		}
 
 		public static void MapFlyoutWidth(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			if (flyoutView.Width >= 0)
-				handler.NativeView.OpenPaneLength = flyoutView.Width;
+				handler.PlatformView.OpenPaneLength = flyoutView.Width;
 			else
-				handler.NativeView.OpenPaneLength = 320;
+				handler.PlatformView.OpenPaneLength = 320;
 			// At some point this Template Setting is going to show up with a bump to winui
-			//handler.NativeView.OpenPaneLength = handler.NativeView.TemplateSettings.OpenPaneWidth;
+			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 
 		}
 
 		public static void MapFlyoutBehavior(FlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.NativeView.UpdateFlyoutBehavior(flyoutView);
+			handler.PlatformView.UpdateFlyoutBehavior(flyoutView);
 		}
 
 		public static void MapIsGestureEnabled(FlyoutViewHandler handler, IFlyoutView view)

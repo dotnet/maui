@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 
-		protected override ASwitch CreateNativeView()
+		protected override ASwitch CreatePlatformView()
 		{
 			return new ASwitch(Context);
 		}
@@ -65,17 +65,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsOn(view);
+			handler.PlatformView?.UpdateIsOn(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, handler._defaultTrackDrawable);
+			handler.PlatformView?.UpdateTrackColor(view, handler._defaultTrackDrawable);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateThumbColor(view, handler._defaultThumbDrawable);
+			handler.PlatformView?.UpdateThumbColor(view, handler._defaultThumbDrawable);
 		}
 
 		void OnCheckedChanged(bool isOn)

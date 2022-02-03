@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (item.Parent is View parentView)
 				ParentView = parentView;
 
-			if (parent == null && ParentView?.Handler?.NativeView is ViewGroup platformParent)
+			if (parent == null && ParentView?.Handler?.PlatformView is ViewGroup platformParent)
 				parent = platformParent;
 
 			Performance.Start(out string reference);

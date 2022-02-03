@@ -11,7 +11,7 @@ using ObjCRuntime;
 using UIKit;
 using NativeGestureRecognizer = UIKit.UIGestureRecognizer;
 using NativeGestureRecognizerState = UIKit.UIGestureRecognizerState;
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -21,10 +21,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		readonly Dictionary<IGestureRecognizer, NativeGestureRecognizer> _gestureRecognizers = new Dictionary<IGestureRecognizer, NativeGestureRecognizer>();
 
-		readonly INativeViewHandler _handler;
+		readonly IPlatformViewHandler _handler;
 
 		bool _disposed;
-		NativeView? _nativeView;
+		PlatformView? _nativeView;
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
 
@@ -39,11 +39,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
-			_handler = (INativeViewHandler)handler;
-			_nativeView = _handler.NativeView;
+			_handler = (IPlatformViewHandler)handler;
+			_nativeView = _handler.PlatformView;
 
 			if (_nativeView == null)
-				throw new ArgumentNullException(nameof(handler.NativeView));
+				throw new ArgumentNullException(nameof(handler.PlatformView));
 
 			_collectionChangedHandler = GestureRecognizersOnCollectionChanged;
 
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (eventTracker == null || eventTracker._disposed || view == null)
 				return null;
 
-			var originPoint = sender.LocationInView(eventTracker._handler.NativeView);
+			var originPoint = sender.LocationInView(eventTracker._handler.PlatformView);
 			var childGestures = view.GetChildElements(new Point(originPoint.X, originPoint.Y));
 			return childGestures;
 		}
@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Platform
 #if __MOBILE__
 						originPoint = window.ConvertPointToView(originPoint, eventTracker._nativeView);
 #else
-						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._handler.NativeView);
+						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._handler.PlatformView);
 #endif
 						var scaledPoint = new Point(originPoint.X / view.Width, originPoint.Y / view.Height);
 
@@ -653,11 +653,11 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					dragFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDragInteraction == null && _handler.NativeView != null)
+					if (uIDragInteraction == null && _handler.PlatformView != null)
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
 						interaction.Enabled = true;
-						_handler.NativeView.AddInteraction(interaction);
+						_handler.PlatformView.AddInteraction(interaction);
 					}
 				}
 
@@ -665,21 +665,21 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					dropFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDropInteraction == null && _handler.NativeView != null)
+					if (uIDropInteraction == null && _handler.PlatformView != null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
-						_handler.NativeView.AddInteraction(interaction);
+						_handler.PlatformView.AddInteraction(interaction);
 					}
 				}
 #endif
 			}
 
 #if __MOBILE__
-			if (!dragFound && uIDragInteraction != null && _handler.NativeView != null)
-				_handler.NativeView.RemoveInteraction(uIDragInteraction);
+			if (!dragFound && uIDragInteraction != null && _handler.PlatformView != null)
+				_handler.PlatformView.RemoveInteraction(uIDragInteraction);
 
-			if (!dropFound && uIDropInteraction != null && _handler.NativeView != null)
-				_handler.NativeView.RemoveInteraction(uIDropInteraction);
+			if (!dropFound && uIDropInteraction != null && _handler.PlatformView != null)
+				_handler.PlatformView.RemoveInteraction(uIDropInteraction);
 #endif
 
 			var toRemove = new List<IGestureRecognizer>();
@@ -706,7 +706,7 @@ namespace Microsoft.Maui.Controls.Platform
 #if __MOBILE__
 		bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
-			if (touch.View == _handler.NativeView)
+			if (touch.View == _handler.PlatformView)
 			{
 				return true;
 			}
@@ -714,13 +714,13 @@ namespace Microsoft.Maui.Controls.Platform
 			// If the touch is coming from the UIView our handler is wrapping (e.g., if it's  
 			// wrapping a UIView which already has a gesture recognizer), then we should let it through
 			// (This goes for children of that control as well)
-			if (_handler?.NativeView == null)
+			if (_handler?.PlatformView == null)
 			{
 				return false;
 			}
 
-			if (touch.View.IsDescendantOfView(_handler.NativeView) &&
-				(touch.View.GestureRecognizers?.Length > 0 || _handler.NativeView.GestureRecognizers?.Length > 0))
+			if (touch.View.IsDescendantOfView(_handler.PlatformView) &&
+				(touch.View.GestureRecognizers?.Length > 0 || _handler.PlatformView.GestureRecognizers?.Length > 0))
 			{
 				return true;
 			}

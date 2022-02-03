@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected override ContentViewGroup CreateNativeView()
+		protected override ContentViewGroup CreatePlatformView()
 		{
 			if (VirtualView == null)
 			{
@@ -55,22 +55,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
 		void UpdateContent()
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			NativeView.RemoveAllViews();
+			PlatformView.RemoveAllViews();
 
 			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddView(view.ToPlatform(MauiContext));
+				PlatformView.AddView(view.ToPlatform(MauiContext));
 		}
 
 		public static void MapContent(SwipeItemViewHandler handler, ISwipeItemView page)
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(SwipeItemViewHandler handler, ISwipeItemView view)
 		{
-			var swipeView = handler.NativeView?.Parent.GetParentOfType<MauiSwipeView>();
+			var swipeView = handler.PlatformView?.Parent.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
 				swipeView.UpdateIsVisibleSwipeItem(view);
 		}

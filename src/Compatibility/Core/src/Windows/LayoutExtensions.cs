@@ -4,11 +4,11 @@ using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public delegate SizeRequest? GetDesiredSizeDelegate(NativeViewWrapperRenderer renderer, double widthConstraint, double heightConstraint);
+	public delegate SizeRequest? GetDesiredSizeDelegate(PlatformViewWrapperRenderer renderer, double widthConstraint, double heightConstraint);
 
-	public delegate WSize? ArrangeOverrideDelegate(NativeViewWrapperRenderer renderer, WSize finalSize);
+	public delegate WSize? ArrangeOverrideDelegate(PlatformViewWrapperRenderer renderer, WSize finalSize);
 
-	public delegate WSize? MeasureOverrideDelegate(NativeViewWrapperRenderer renderer, WSize availableSize);
+	public delegate WSize? MeasureOverrideDelegate(PlatformViewWrapperRenderer renderer, WSize availableSize);
 
 	public static class LayoutExtensions
 	{
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static View ToView(this FrameworkElement view, GetDesiredSizeDelegate getDesiredSizeDelegate = null, ArrangeOverrideDelegate arrangeOverrideDelegate = null,
 								  MeasureOverrideDelegate measureOverrideDelegate = null)
 		{
-			return new NativeViewWrapper(view, getDesiredSizeDelegate, arrangeOverrideDelegate, measureOverrideDelegate);
+			return new PlatformViewWrapper(view, getDesiredSizeDelegate, arrangeOverrideDelegate, measureOverrideDelegate);
 		}
 	}
 }

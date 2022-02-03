@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RefreshViewHandler : ViewHandler<IRefreshView, MauiRefreshView>
 	{
-		protected override MauiRefreshView CreateNativeView()
+		protected override MauiRefreshView CreatePlatformView()
 		{
 			return new MauiRefreshView();
 		}
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapBackground(RefreshViewHandler handler, IRefreshView view)
-			=> handler.NativeView.RefreshControl.UpdateBackground(view);
+			=> handler.PlatformView.RefreshControl.UpdateBackground(view);
 
 		public static void MapIsRefreshing(RefreshViewHandler handler, IRefreshView refreshView)
 			=> handler.UpdateIsRefreshing();
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 			=> handler.UpdateRefreshColor();
 
 		public static void MapIsEnabled(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.NativeView?.UpdateIsEnabled(refreshView.IsEnabled);
+			=> handler.PlatformView?.UpdateIsEnabled(refreshView.IsEnabled);
 
 		void OnRefresh(object? sender, EventArgs e)
 		{
@@ -48,18 +48,18 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateIsRefreshing()
 		{
-			NativeView.IsRefreshing = VirtualView.IsRefreshing;
+			PlatformView.IsRefreshing = VirtualView.IsRefreshing;
 		}
 
 		void UpdateContent() =>
-			NativeView.UpdateContent(VirtualView.Content, MauiContext);
+			PlatformView.UpdateContent(VirtualView.Content, MauiContext);
 
 		void UpdateRefreshColor()
 		{
 			var color = VirtualView?.RefreshColor?.ToColor()?.ToNative();
 
 			if (color != null)
-				NativeView.RefreshControl.TintColor = color;
+				PlatformView.RefreshControl.TintColor = color;
 		}
 
 	}

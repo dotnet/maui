@@ -12,16 +12,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		bool _nativeViewLoaded;
 
-		public HandlerToRendererShim(INativeViewHandler vh)
+		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		INativeViewHandler ViewHandler { get; }
+		IPlatformViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public FrameworkElement ContainerElement => ViewHandler.ContainerView ?? ViewHandler.NativeView;
+		public FrameworkElement ContainerElement => ViewHandler.ContainerView ?? ViewHandler.PlatformView;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -57,18 +57,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 				ViewHandler.SetVirtualView((IView)element);
 			}
 
-			if (ViewHandler.NativeView is FrameworkElement frameworkElement)
+			if (ViewHandler.PlatformView is FrameworkElement frameworkElement)
 			{
-				frameworkElement.Loaded += NativeViewLoaded;
+				frameworkElement.Loaded += PlatformViewLoaded;
 			}
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
 		}
 
-		void NativeViewLoaded(object sender, RoutedEventArgs e)
+		void PlatformViewLoaded(object sender, RoutedEventArgs e)
 		{
 			_nativeViewLoaded = true;
-			((FrameworkElement)sender).Loaded -= NativeViewLoaded;
+			((FrameworkElement)sender).Loaded -= PlatformViewLoaded;
 
 			// For old-school renderers on Windows, VisualElementRenderer watches for the Loaded event and 
 			// sets IsNativeStateConsistent, which invalidates the measure for the element. This tells everything 
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public UIElement GetNativeElement()
 		{
-			return (FrameworkElement)ViewHandler.NativeView;
+			return (FrameworkElement)ViewHandler.PlatformView;
 		}
 	}
 }

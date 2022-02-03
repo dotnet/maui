@@ -10,14 +10,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	{
 		public ShellPageContainer(Context context, IVisualElementRenderer child, bool inFragment = false) : base(context, child, inFragment)
 		{
-			if (child.Element.Handler is INativeViewHandler nvh &&
+			if (child.Element.Handler is IPlatformViewHandler nvh &&
 				nvh.VirtualView.Background == null)
 			{
 				var color = NativeVersion.IsAtLeast(23) ?
 								Context.Resources.GetColor(AColorRes.BackgroundLight, Context.Theme) :
 								new AColor(ContextCompat.GetColor(Context, AColorRes.BackgroundLight));
 
-				nvh.NativeView.SetBackgroundColor(color);
+				nvh.PlatformView.SetBackgroundColor(color);
 			}
 		}
 

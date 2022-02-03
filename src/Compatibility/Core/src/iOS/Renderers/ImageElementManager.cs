@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			var nativeRenderer = renderer as IVisualNativeElementRenderer;
 
-			if (element == null || renderer.NativeView == null || (nativeRenderer != null && nativeRenderer.Control == null))
+			if (element == null || renderer.PlatformView == null || (nativeRenderer != null && nativeRenderer.Control == null))
 				return;
 
 			onLoading?.Invoke(true);
@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 						element = bindable ?? renderer.Element;
 
 						// makse sure things are good now that we are back
-						if (element == null || renderer.NativeView == null || (nativeRenderer != null && nativeRenderer.Control == null))
+						if (element == null || renderer.PlatformView == null || (nativeRenderer != null && nativeRenderer.Control == null))
 							return;
 
 						// only set if we are still on the same image

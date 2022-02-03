@@ -31,17 +31,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
 		double _previousVerticalOffset;
-		protected ListViewBase ListViewBase => NativeView;
+		protected ListViewBase ListViewBase => PlatformView;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 		protected WASDKDataTemplate ViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["View"];
 		protected WASDKDataTemplate ItemsViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["ItemsViewDefaultTemplate"];
 
-		UIElement Control => NativeView;
+		UIElement Control => PlatformView;
 
 		protected abstract IItemsLayout Layout { get; }
 
-		protected override ListViewBase CreateNativeView()
+		protected override ListViewBase CreatePlatformView()
 		{
 			return SelectListViewBase();
 		}
@@ -90,12 +90,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateFlowDirection(itemsView);
+			handler.PlatformView.UpdateFlowDirection(itemsView);
 		}
 
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateVisibility(itemsView);
+			handler.PlatformView.UpdateVisibility(itemsView);
 		}
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -154,8 +154,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
 
-					if (NativeView.ActualWidth >= 0 && NativeView.ActualHeight >= 0)
-						_formsEmptyView?.Layout(new Rectangle(0, 0, NativeView.ActualWidth, NativeView.ActualHeight));
+					if (PlatformView.ActualWidth >= 0 && PlatformView.ActualHeight >= 0)
+						_formsEmptyView?.Layout(new Rectangle(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
 				}
 
 				_emptyViewDisplayed = true;
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_formsEmptyView = view ?? throw new ArgumentNullException(nameof(view));
 
 			var handler = view.ToHandler(MauiContext);
-			var nativeView = handler.ContainerView ?? handler.NativeView;
+			var nativeView = handler.ContainerView ?? handler.PlatformView;
 
 			return nativeView as FrameworkElement;
 		}

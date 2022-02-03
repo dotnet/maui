@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
-			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, NativeView);
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, PlatformView);
 		}
 	}
 }

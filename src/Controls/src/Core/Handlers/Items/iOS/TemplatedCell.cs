@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		internal INativeViewHandler NativeHandler { get; private set; }
+		internal IPlatformViewHandler NativeHandler { get; private set; }
 
 		public override void ConstrainTo(CGSize constraint)
 		{
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CurrentTemplate = itemTemplate;
 		}
 
-		void SetRenderer(INativeViewHandler renderer)
+		void SetRenderer(IPlatformViewHandler renderer)
 		{
 			NativeHandler = renderer;
 

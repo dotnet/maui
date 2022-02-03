@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		UIColor? _defaultTextColor;
 		UIDatePicker? _picker;
 
-		protected override MauiDatePicker CreateNativeView()
+		protected override MauiDatePicker CreatePlatformView()
 		{
 			MauiDatePicker nativeDatePicker = new MauiDatePicker();
 
@@ -80,39 +80,39 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFormat(datePicker);
+			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMinimumDate(datePicker, handler._picker);
+			handler.PlatformView?.UpdateMinimumDate(datePicker, handler._picker);
 		}
 
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMaximumDate(datePicker, handler._picker);
+			handler.PlatformView?.UpdateMaximumDate(datePicker, handler._picker);
 		}
 
 		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(datePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
 		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
 		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColor);
+			handler.PlatformView?.UpdateTextColor(datePicker, handler._defaultTextColor);
 		}
 
 		void OnStarted(object? sender, EventArgs eventArgs)

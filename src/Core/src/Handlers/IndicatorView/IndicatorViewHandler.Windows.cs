@@ -7,9 +7,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, ItemsControl>
 	{
-		MauiPageControl? MauiPagerControl => NativeView as MauiPageControl;
+		MauiPageControl? MauiPagerControl => PlatformView as MauiPageControl;
 
-		protected override ItemsControl CreateNativeView() => new MauiPageControl();
+		protected override ItemsControl CreatePlatformView() => new MauiPageControl();
 
 		protected override void ConnectHandler(ItemsControl nativeView)
 		{
@@ -38,13 +38,13 @@ namespace Microsoft.Maui.Handlers
 					ClearIndicators();
 					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
 					if (handler != null)
-						NativeView.ItemsSource = new ObservableCollection<FrameworkElement>() { handler };
+						PlatformView.ItemsSource = new ObservableCollection<FrameworkElement>() { handler };
 				}
 			}
 
 			void ClearIndicators()
 			{
-				NativeView.Items.Clear();
+				PlatformView.Items.Clear();
 			}
 		}
 	}

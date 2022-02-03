@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 		{
 			foreach (var window in MauiWinUIApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView is UI.Xaml.Window win && win == nativeWindow)
+				if (window?.Handler?.PlatformView is UI.Xaml.Window win && win == nativeWindow)
 					return window;
 			}
 

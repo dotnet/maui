@@ -50,10 +50,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
+			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView NativeView
+		public UIView PlatformView
 		{
 			get { return View; }
 		}
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			if (element != null)
-				element.SendViewInitialized(NativeView);
+				element.SendViewInitialized(PlatformView);
 
 			_previousPage = Carousel?.CurrentPage;
 		}
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (renderer != null)
 				{
 					renderer.ViewController.RemoveFromParentViewController();
-					renderer.NativeView.RemoveFromSuperview();
+					renderer.PlatformView.RemoveFromSuperview();
 					Platform.SetRenderer(kvp.Key, null);
 				}
 			}
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UIView container = new CarouselPageContainer(page);
 
-			UIView view = renderer.NativeView;
+			UIView view = renderer.PlatformView;
 
 			container.AddSubview(view);
 			_containerMap[page] = container;
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			renderer.ViewController.RemoveFromParentViewController();
-			renderer.NativeView.RemoveFromSuperview();
+			renderer.PlatformView.RemoveFromSuperview();
 		}
 
 		void Reset()

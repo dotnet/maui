@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler
 	{
 		public override void NativeArrange(Rectangle rect) =>
 			this.NativeArrangeHandler(rect);
@@ -16,16 +16,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
-			if (NativeView == null || ContainerView != null)
+			if (PlatformView == null || ContainerView != null)
 				return;
 
-			var oldParent = (Panel?)NativeView.Parent;
+			var oldParent = (Panel?)PlatformView.Parent;
 
-			var oldIndex = oldParent?.Children.IndexOf(NativeView);
-			oldParent?.Children.Remove(NativeView);
+			var oldIndex = oldParent?.Children.IndexOf(PlatformView);
+			oldParent?.Children.Remove(PlatformView);
 
 			ContainerView ??= new WrapperView();
-			((WrapperView)ContainerView).Child = NativeView;
+			((WrapperView)ContainerView).Child = PlatformView;
 
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.Children.Insert(idx, ContainerView);
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void RemoveContainer()
 		{
-			if (NativeView == null || ContainerView == null || NativeView.Parent != ContainerView)
+			if (PlatformView == null || ContainerView == null || PlatformView.Parent != ContainerView)
 				return;
 
 			var oldParent = (Panel?)ContainerView.Parent;
@@ -47,9 +47,9 @@ namespace Microsoft.Maui.Handlers
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)
-				oldParent?.Children.Insert(idx, NativeView);
+				oldParent?.Children.Insert(idx, PlatformView);
 			else
-				oldParent?.Children.Add(NativeView);
+				oldParent?.Children.Add(PlatformView);
 		}
 	}
 }

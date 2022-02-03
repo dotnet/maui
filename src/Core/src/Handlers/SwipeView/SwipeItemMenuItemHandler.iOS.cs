@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var color = view.GetTextColor();
 			if (color != null)
-				handler.NativeView.SetTitleColor(color.ToNative(), UIControlState.Normal);
+				handler.PlatformView.SetTitleColor(color.ToNative(), UIControlState.Normal);
 		}
 
 		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view) { }
@@ -32,44 +32,44 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			handler.NativeView.RestorationIdentifier = view.Text;
-			handler.NativeView.SetTitle(view.Text, UIControlState.Normal);
+			handler.PlatformView.RestorationIdentifier = view.Text;
+			handler.PlatformView.SetTitle(view.Text, UIControlState.Normal);
 		}
 
 		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			handler.NativeView.UpdateBackground(view.Background);
+			handler.PlatformView.UpdateBackground(view.Background);
 		}
 
 		public static void MapVisibility(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			var swipeView = handler.NativeView.GetParentOfType<MauiSwipeView>();
+			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
 				swipeView.UpdateIsVisibleSwipeItem(view);
 
-			handler.NativeView.UpdateVisibility(view.Visibility);
+			handler.PlatformView.UpdateVisibility(view.Visibility);
 		}
 
 		void OnSetImageSource(UIImage? image)
 		{
 			if (image == null)
 			{
-				NativeView.SetImage(null, UIControlState.Normal);
+				PlatformView.SetImage(null, UIControlState.Normal);
 			}
 			else
 			{
-				var maxWidth = NativeView.Frame.Width * 0.5f;
-				var maxHeight = NativeView.Frame.Height * 0.5f;
+				var maxWidth = PlatformView.Frame.Width * 0.5f;
+				var maxHeight = PlatformView.Frame.Height * 0.5f;
 
 				var resizedImage = MaxResizeSwipeItemIconImage(image, maxWidth, maxHeight);
 
 				try
 				{
-					NativeView.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+					PlatformView.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
 					var tintColor = VirtualView.GetTextColor();
 
 					if (tintColor != null)
-						NativeView.TintColor = tintColor.ToNative();
+						PlatformView.TintColor = tintColor.ToNative();
 				}
 				catch (Exception)
 				{

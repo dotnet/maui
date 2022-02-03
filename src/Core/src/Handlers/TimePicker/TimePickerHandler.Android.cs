@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 		MauiTimePicker? _timePicker;
 		AlertDialog? _dialog;
 
-		protected override MauiTimePicker CreateNativeView()
+		protected override MauiTimePicker CreatePlatformView()
 		{
 			_timePicker = new MauiTimePicker(Context)
 			{
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			void onTimeSetCallback(object? obj, TimePickerDialog.TimeSetEventArgs args)
 			{
-				if (VirtualView == null || NativeView == null)
+				if (VirtualView == null || PlatformView == null)
 					return;
 
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
@@ -52,34 +52,34 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateBackground(timePicker, DefaultBackground);
+			handler.PlatformView?.UpdateBackground(timePicker, DefaultBackground);
 		}
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateFormat(timePicker);
+			handler.PlatformView?.UpdateFormat(timePicker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTime(timePicker);
+			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(timePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
 		}
 
 		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(timePicker, fontManager);
+			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
 		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTextColor(timePicker, DefaultTextColors);
+			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColors);
 		}
 
 		static void SetupDefaults(MauiTimePicker nativeView)
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Handlers
 			_dialog = null;
 		}
 
-		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(NativeView?.Context)
+		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
 			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
 	}
 }

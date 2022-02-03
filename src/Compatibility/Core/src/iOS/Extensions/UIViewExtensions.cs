@@ -60,10 +60,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return;
 			}
 
-			NativeViewPropertyListener nativePropertyListener = null;
+			PlatformViewPropertyListener nativePropertyListener = null;
 			if (bindingBase.Mode == BindingMode.TwoWay)
 			{
-				nativePropertyListener = new NativeViewPropertyListener(propertyName);
+				nativePropertyListener = new PlatformViewPropertyListener(propertyName);
 				try
 				{
 					//TODO: We need to figure a way to map the value back to the real objectiveC property.

@@ -59,8 +59,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			ViewHandler.ViewMapper
 				.Add(nameof(IView.AutomationId), (h, v) =>
 				{
-					if (h.NativeView is global::Android.Views.View nativeView)
-						nativeView.ContentDescription = v.AutomationId;
+					if (h.NativeView is global::Android.Views.View platformView)
+						platformView.ContentDescription = v.AutomationId;
 				});
 
 			//FormsMaterial.Init(this, bundle);
