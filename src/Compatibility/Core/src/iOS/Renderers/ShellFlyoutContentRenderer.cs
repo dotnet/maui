@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 			}
 
-			using (var nativeImage = await imageSource.GetNativeImageAsync())
+			using (var nativeImage = await imageSource.GetPlatformImageAsync())
 			{
 				if (View == null)
 					return;

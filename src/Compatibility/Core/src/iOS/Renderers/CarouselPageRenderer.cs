@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackground()
 		{
-			this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
+			this.ApplyPlatformImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);

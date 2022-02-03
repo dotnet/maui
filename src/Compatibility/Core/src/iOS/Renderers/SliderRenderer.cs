@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateThumbImage()
 		{
-			_ = this.ApplyNativeImageAsync(Slider.ThumbImageSourceProperty, uiimage =>
+			_ = this.ApplyPlatformImageAsync(Slider.ThumbImageSourceProperty, uiimage =>
 			{
 				Control?.SetThumbImage(uiimage, UIControlState.Normal);
 

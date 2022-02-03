@@ -687,7 +687,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 			{
-				var image = await swipeItem.IconImageSource.GetNativeImageAsync();
+				var image = await swipeItem.IconImageSource.GetPlatformImageAsync();
 
 				var maxWidth = swipeButton.Frame.Width * 0.5f;
 				var maxHeight = swipeButton.Frame.Height * 0.5f;

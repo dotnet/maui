@@ -10,11 +10,11 @@ using Microsoft.Extensions.Logging;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using NativeImage = UIKit.UIImage;
+using PlatformImage = UIKit.UIImage;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using AppKit;
-using NativeImage = AppKit.NSImage;
+using PlatformImage = AppKit.NSImage;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				else
 #endif
 				{
-					var uiimage = await source.GetNativeImageAsync();
+					var uiimage = await source.GetPlatformImageAsync();
 
 					if (renderer.IsDisposed)
 						return;
@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 #endif
 
-		internal static async Task<NativeImage> GetNativeImageAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
+		internal static async Task<PlatformImage> GetPlatformImageAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (source == null || source.IsEmpty)
 				return null;
@@ -295,20 +295,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 #if __MOBILE__
-		internal static Task ApplyNativeImageAsync(this IShellContext shellContext, BindableObject bindable, BindableProperty imageSourceProperty, Action<UIImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+		internal static Task ApplyPlatformImageAsync(this IShellContext shellContext, BindableObject bindable, BindableProperty imageSourceProperty, Action<UIImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			_ = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
 			var renderer = shellContext as IVisualElementRenderer ?? throw new InvalidOperationException($"The shell context {shellContext.GetType()} must be a {typeof(IVisualElementRenderer)}.");
 
-			return renderer.ApplyNativeImageAsync(bindable, imageSourceProperty, onSet, onLoading, cancellationToken);
+			return renderer.ApplyPlatformImageAsync(bindable, imageSourceProperty, onSet, onLoading, cancellationToken);
 		}
 #endif
-		internal static Task ApplyNativeImageAsync(this IVisualElementRenderer renderer, BindableProperty imageSourceProperty, Action<NativeImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+		internal static Task ApplyPlatformImageAsync(this IVisualElementRenderer renderer, BindableProperty imageSourceProperty, Action<PlatformImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			return renderer.ApplyNativeImageAsync(null, imageSourceProperty, onSet, onLoading, cancellationToken);
+			return renderer.ApplyPlatformImageAsync(null, imageSourceProperty, onSet, onLoading, cancellationToken);
 		}
 
-		internal static async Task ApplyNativeImageAsync(this IVisualElementRenderer renderer, BindableObject bindable, BindableProperty imageSourceProperty, Action<NativeImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+		internal static async Task ApplyPlatformImageAsync(this IVisualElementRenderer renderer, BindableObject bindable, BindableProperty imageSourceProperty, Action<PlatformImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			_ = renderer ?? throw new ArgumentNullException(nameof(renderer));
 			_ = imageSourceProperty ?? throw new ArgumentNullException(nameof(imageSourceProperty));
@@ -329,7 +329,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				try
 				{
-					using (var drawable = await initialSource.GetNativeImageAsync(cancellationToken))
+					using (var drawable = await initialSource.GetPlatformImageAsync(cancellationToken))
 					{
 						// TODO: it might be good to make sure the renderer has not been disposed
 
@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
-		internal static async Task ApplyNativeImageAsync(this BindableObject bindable, BindableProperty imageSourceProperty, Action<NativeImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+		internal static async Task ApplyPlatformImageAsync(this BindableObject bindable, BindableProperty imageSourceProperty, Action<PlatformImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			_ = bindable ?? throw new ArgumentNullException(nameof(bindable));
 			_ = imageSourceProperty ?? throw new ArgumentNullException(nameof(imageSourceProperty));
@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				try
 				{
-					using (var nsimage = await initialSource.GetNativeImageAsync(cancellationToken))
+					using (var nsimage = await initialSource.GetPlatformImageAsync(cancellationToken))
 					{
 						// only set if we are still on the same image
 						if (bindable.GetValue(imageSourceProperty) == initialSource)

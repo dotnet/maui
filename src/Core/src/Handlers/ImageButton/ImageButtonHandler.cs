@@ -1,19 +1,19 @@
 ﻿#if __IOS__ || MACCATALYST
-using NativeImage = UIKit.UIImage;
-using NativeImageView = UIKit.UIImageView;
+using PlatformImage = UIKit.UIImage;
+using PlatformImageView = UIKit.UIImageView;
 using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
-using NativeImage = Android.Graphics.Drawables.Drawable;
-using NativeImageView = Android.Widget.ImageView;
+using PlatformImage = Android.Graphics.Drawables.Drawable;
+using PlatformImageView = Android.Widget.ImageView;
 using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
 #elif WINDOWS
 using System;
-using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
-using NativeImageView = Microsoft.UI.Xaml.Controls.Image;
+using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
+using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeImage = System.Object;
-using NativeImageView = System.Object;
+using PlatformImage = System.Object;
+using PlatformImageView = System.Object;
 using PlatformView = System.Object;
 #endif
 
@@ -49,11 +49,11 @@ namespace Microsoft.Maui.Handlers
 
 		IImage IImageHandler.TypedVirtualView => VirtualView;
 
-		NativeImageView IImageHandler.TypedPlatformView =>
+		PlatformImageView IImageHandler.TypedPlatformView =>
 #if __IOS__
 			PlatformView.ImageView;
 #elif WINDOWS
-			PlatformView.GetContent<NativeImageView>() ?? throw new InvalidOperationException("ImageButton did not contain an Image element.");
+			PlatformView.GetContent<PlatformImageView>() ?? throw new InvalidOperationException("ImageButton did not contain an Image element.");
 #else
 			PlatformView;
 #endif

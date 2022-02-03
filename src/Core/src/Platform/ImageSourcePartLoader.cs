@@ -3,17 +3,17 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
 
 #if __IOS__ || MACCATALYST
-using NativeImage = UIKit.UIImage;
+using PlatformImage = UIKit.UIImage;
 using PlatformView = UIKit.UIView;
 #elif MONOANDROID
-using NativeImage = Android.Graphics.Drawables.Drawable;
+using PlatformImage = Android.Graphics.Drawables.Drawable;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
-using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
+using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
-using NativeImage = System.Object;
+using PlatformImage = System.Object;
 #endif
 
 namespace Microsoft.Maui.Platform
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			_imageSourceServiceProvider ??= Handler.GetRequiredService<IImageSourceServiceProvider>();
 
 		readonly Func<IImageSourcePart?> _imageSourcePart;
-		Action<NativeImage?>? SetImage { get; }
+		Action<PlatformImage?>? SetImage { get; }
 		PlatformView? PlatformView => Handler.PlatformView as PlatformView;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 		public ImageSourcePartLoader(
 			IElementHandler handler,
 			Func<IImageSourcePart?> imageSourcePart,
-			Action<NativeImage?> setImage)
+			Action<PlatformImage?> setImage)
 		{
 			Handler = handler;
 			_imageSourcePart = imageSourcePart;

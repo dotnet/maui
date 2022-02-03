@@ -526,7 +526,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		/// </returns>
 		protected virtual async Task<Tuple<UIImage, UIImage>> GetIcon(Page page)
 		{
-			var icon = await page.IconImageSource.GetNativeImageAsync();
+			var icon = await page.IconImageSource.GetPlatformImageAsync();
 			return icon == null ? null : Tuple.Create(icon, (UIImage)null);
 		}
 	}

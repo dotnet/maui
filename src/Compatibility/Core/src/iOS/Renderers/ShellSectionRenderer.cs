@@ -464,7 +464,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected virtual void UpdateTabBarItem()
 		{
 			Title = ShellSection.Title;
-			_ = _context.ApplyNativeImageAsync(ShellSection, ShellSection.IconProperty, icon =>
+			_ = _context.ApplyPlatformImageAsync(ShellSection, ShellSection.IconProperty, icon =>
 			{
 				TabBarItem = new UITabBarItem(ShellSection.Title, icon, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;

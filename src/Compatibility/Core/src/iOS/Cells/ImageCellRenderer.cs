@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			target.ImageView.Image = null;
 
-			var uiimage = await source.GetNativeImageAsync().ConfigureAwait(false);
+			var uiimage = await source.GetPlatformImageAsync().ConfigureAwait(false);
 			if (uiimage != null)
 			{
 				NSRunLoop.Main.BeginInvokeOnMainThread(() =>

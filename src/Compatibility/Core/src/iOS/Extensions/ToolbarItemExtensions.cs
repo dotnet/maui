@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			async void UpdateIconAndStyle()
 			{
-				Image = await _item.IconImageSource.GetNativeImageAsync();
+				Image = await _item.IconImageSource.GetPlatformImageAsync();
 				Style = UIBarButtonItemStyle.Plain;
 			}
 
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UIImage image = null;
 				if (_item.IconImageSource != null && !_item.IconImageSource.IsEmpty)
 				{
-					image = await _item.IconImageSource.GetNativeImageAsync();
+					image = await _item.IconImageSource.GetPlatformImageAsync();
 				}
 				((SecondaryToolbarItemContent)CustomView).Image = image;
 			}

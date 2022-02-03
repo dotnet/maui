@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (PlatformView == null)
 				return;
 
-			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
+			_ = this.ApplyPlatformImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (PlatformView == null)
 					return;

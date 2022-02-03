@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (fid?.IconBitmapSource == image)
 					customIcon = fid.IconBitmap;
 				else
-					customIcon = (await image.GetNativeImageAsync(MauiContext))?.Value;
+					customIcon = (await image.GetPlatformImageAsync(MauiContext))?.Value;
 
 				if (customIcon != null)
 				{
