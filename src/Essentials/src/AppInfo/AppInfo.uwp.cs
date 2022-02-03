@@ -18,8 +18,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public string VersionString
 		{
-			var version = Package.Current.Id.Version;
-			return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+			get
+			{
+				var version = Package.Current.Id.Version;
+				return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+			}
 		}
 
 		public string BuildString =>
