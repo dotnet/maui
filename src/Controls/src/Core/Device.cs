@@ -154,12 +154,6 @@ namespace Microsoft.Maui.Controls
 			return PlatformServices.GetNamedSize(size, targetElementType, useOldSizes);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedColor']/Docs" />
-		public static Color GetNamedColor(string name)
-		{
-			return PlatformServices.GetNamedColor(name);
-		}
-
 		public static class Styles
 		{
 			public static readonly string TitleStyleKey = "TitleStyle";

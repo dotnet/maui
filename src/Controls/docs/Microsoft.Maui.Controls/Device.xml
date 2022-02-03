@@ -177,29 +177,6 @@ Device.BeginInvokeOnMainThread (() => {
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetNamedColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetNamedColor (string name);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetNamedColor(string name) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Device.GetNamedColor(System.String)" />
-      <MemberSignature Language="F#" Value="static member GetNamedColor : string -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Device.GetNamedColor name" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="name" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="name">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="GetNamedSize">
       <MemberSignature Language="C#" Value="public static double GetNamedSize (Microsoft.Maui.Controls.NamedSize size, Type targetElementType);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 GetNamedSize(valuetype Microsoft.Maui.Controls.NamedSize size, class System.Type targetElementType) cil managed" />
