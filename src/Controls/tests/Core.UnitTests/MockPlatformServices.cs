@@ -48,22 +48,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		public Color GetNamedColor(string name)
-		{
-			// Some mock values to test color type converter
-			switch (name)
-			{
-				case "SystemBlue":
-					return Color.FromRgb(0, 122, 255);
-				case "SystemChromeHighColor":
-					return Color.FromArgb("#FF767676");
-				case "HoloBlueBright":
-					return Color.FromArgb("#ff00ddff");
-				default:
-					return null;
-			}
-		}
-
 		public string RuntimePlatform { get; set; }
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)

@@ -93,14 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return size.GetFontSize();
 		}
 
-		public Color GetNamedColor(string name)
-		{
-			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
-				return KnownColor.Default;
-
-			return ((global::Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
-		}
-
 		public string RuntimePlatform => Device.UWP;
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)

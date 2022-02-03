@@ -64,12 +64,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			}
 		}
 
-		public Color GetNamedColor(string name)
-		{
-			// Not supported on this platform
-			return Color.Default;
-		}
-
 		public bool IsInvokeRequired
 		{
 			get { return _isInvokeRequired; }
