@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Microsoft.UI.Xaml;
 using Windows.Security.ExchangeActiveSyncProvisioning;
 using Windows.System.Profile;
 using Windows.UI.ViewManagement;
@@ -51,6 +52,7 @@ namespace Microsoft.Maui.Essentials
 
 		static DevicePlatform GetPlatform() => DevicePlatform.UWP;
 
+
 		static DeviceIdiom GetIdiom()
 		{
 			switch (AnalyticsInfo.VersionInfo.DeviceFamily)
@@ -63,8 +65,17 @@ namespace Microsoft.Maui.Essentials
 					{
 						try
 						{
-							var currentHandle = Essentials.Platform.CurrentWindowHandle;
-							var settings = UIViewSettingsInterop.GetForWindow(currentHandle);
+							IntPtr windowHandle = IntPtr.Zero;
+
+							if (Essentials.Platform.CurrentWindow != null)
+								windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(Essentials.Platform.CurrentWindow);
+							else
+							{
+								using var process = Process.GetCurrentProcess();
+								windowHandle = process.MainWindowHandle;
+							}
+
+							var settings = UIViewSettingsInterop.GetForWindow(windowHandle);
 							var uiMode = settings.UserInteractionMode;
 							currentIdiom = uiMode == UserInteractionMode.Mouse ? DeviceIdiom.Desktop : DeviceIdiom.Tablet;
 						}

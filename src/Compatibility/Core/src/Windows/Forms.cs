@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
+
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Windows.System.Profile;
+using Windows.UI.ViewManagement;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -47,18 +50,44 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			KnownColor.SetAccent(accent.ToColor());
 
-			switch (UserInteractionMode)
+			TargetIdiom currentIdiom = TargetIdiom.Unsupported;
+
+			switch (AnalyticsInfo.VersionInfo.DeviceFamily)
 			{
-				case UserInteractionModeEnum.Mouse:
-					Device.SetIdiom(TargetIdiom.Desktop);
+				case "Windows.Mobile":
+					currentIdiom = TargetIdiom.Phone;
 					break;
-				case UserInteractionModeEnum.Touch:
-					Device.SetIdiom(TargetIdiom.Tablet);
+				case "Windows.Universal":
+				case "Windows.Desktop":
+					{
+						try
+						{
+							if (mainWindow != null)
+							{
+								var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
+								var settings = UIViewSettingsInterop.GetForWindow(windowHandle);
+
+								var uiMode = settings.UserInteractionMode;
+								currentIdiom = uiMode == UserInteractionMode.Mouse ? TargetIdiom.Desktop : TargetIdiom.Tablet;
+							}
+						}
+						catch (Exception ex)
+						{
+							Debug.WriteLine($"Unable to get device . {ex.Message}");
+						}
+					}
 					break;
+				case "Windows.Xbox":
+				case "Windows.Team":
+					currentIdiom = TargetIdiom.TV;
+					break;
+				case "Windows.IoT":
 				default:
-					Device.SetIdiom(TargetIdiom.Unsupported);
+					currentIdiom = TargetIdiom.Unsupported;
 					break;
 			}
+
+			Device.SetIdiom(currentIdiom);
 
 			Device.SetFlowDirection(mauiContext.GetFlowDirection());
 
@@ -78,31 +107,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			IsInitialized = true;
 		}
-
-		public enum UserInteractionModeEnum { Touch, Mouse };
-
-		public static UserInteractionModeEnum UserInteractionMode
-		{
-			get
-			{
-				UserInteractionModeEnum userInteractionMode = UserInteractionModeEnum.Mouse;
-
-				int SM_CONVERTIBLESLATEMODE = 0x2003;
-				int SM_TABLETPC = 0x56;
-
-				bool isTouchMode = GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0; // Tablet Mode
-				bool isTabletPC = GetSystemMetrics(SM_TABLETPC) != 0;// Tablet PC
-
-				if (isTouchMode && isTabletPC)
-				{
-					userInteractionMode = UserInteractionModeEnum.Touch;
-				}
-
-				return userInteractionMode;
-			}
-		}
-
-		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto, EntryPoint = "GetSystemMetrics")]
-		private static extern int GetSystemMetrics(int nIndex);
 	}
 }
