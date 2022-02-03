@@ -230,7 +230,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var androidServices = new AndroidPlatformServices(activity);
 
 			Device.PlatformServices = androidServices;
-			Device.PlatformInvalidator = androidServices;
 
 			Profile.FramePartition("RegisterAll");
 
