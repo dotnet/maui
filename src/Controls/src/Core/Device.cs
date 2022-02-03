@@ -182,11 +182,5 @@ namespace Microsoft.Maui.Controls
 
 			public static readonly Style CaptionStyle = new Style(typeof(Label)) { BaseResourceKey = CaptionStyleKey };
 		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Invalidate']/Docs" />
-		public static void Invalidate(VisualElement visualElement)
-		{
-			PlatformInvalidator?.Invalidate(visualElement);
-		}
 	}
 }
