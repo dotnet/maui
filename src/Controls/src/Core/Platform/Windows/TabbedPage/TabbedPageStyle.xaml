@@ -10,6 +10,7 @@
             Background="{Binding Background}" 
             IsSelected="{Binding IsSelected, Mode=TwoWay}"
             MenuItemsSource="{Binding MenuItemsSource}"
+            Icon="{Binding Icon}"
             />
     </DataTemplate>
 

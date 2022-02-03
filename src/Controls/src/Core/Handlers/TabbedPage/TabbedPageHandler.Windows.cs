@@ -280,6 +280,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				items.SyncItems(handler.VirtualView.Children,
 					(vm, page) =>
 					{
+						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
 						vm.Content = page.Title;
 						vm.Data = page;
 						vm.Foreground = view.BarTextColor?.AsPaint()?.ToNative();

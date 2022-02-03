@@ -91,6 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_mainLevelTabs.SyncItems(items, (navItem, baseShellItem) =>
 			{
 				navItem.Content = baseShellItem.Title;
+				navItem.Icon = baseShellItem.Icon?.ToIconSource(MauiContext!)?.CreateIconElement();
 
 				if (baseShellItem is not ShellSection shellSection)
 				{

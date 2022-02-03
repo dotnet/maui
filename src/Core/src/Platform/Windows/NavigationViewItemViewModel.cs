@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WIconElement = Microsoft.UI.Xaml.Controls.IconElement;
 using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Platform
@@ -63,11 +64,18 @@ namespace Microsoft.Maui.Platform
 		WBrush? _selectedBackground;
 		WBrush? _unselectedBackground;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
+		WIconElement? _icon;
 
 		public object? Content
 		{
 			get { return _content; }
 			set { this.SetProperty(ref _content, value, OnPropertyChanged); }
+		}
+
+		public WIconElement? Icon
+		{
+			get { return _icon; }
+			set { this.SetProperty(ref _icon, value, OnPropertyChanged); }
 		}
 
 		public WBrush? Foreground
