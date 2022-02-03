@@ -71,7 +71,7 @@
     <_SkiaSharpVersion>2.88.0-preview.179</_SkiaSharpVersion>
     <_HarfBuzzSharpVersion>2.8.2-preview.179</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.fffae82cf6ec1c4a6f490ddb780709ce9211725e.179</_SkiaSharpNativeAssetsVersion>
-    <MicrosoftTemplateEngineTasksVersion>7.0.100-alpha.1.21601.1</MicrosoftTemplateEngineTasksVersion>
+    <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.2.22102.8</MicrosoftTemplateEngineTasksVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Match the first three version numbers and append 00 -->
