@@ -65,7 +65,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void SyncNavigationStack(bool animated)
 		{
-			var currentContent = VirtualView.CurrentItem.ToHandler(MauiContext!);
 			List<IView> pageStack = new List<IView>()
 			{
 				(VirtualView.CurrentItem as IShellContentController).GetOrCreateContent()
@@ -76,7 +75,12 @@ namespace Microsoft.Maui.Controls.Handlers
 				pageStack.Add(VirtualView.Navigation.NavigationStack[i]);
 			}
 
-			RequestNavigation(this, VirtualView, new NavigationRequest(pageStack, false));
+			// The point of this is to push the shell navigation over to using the INavigationStack
+			// work flow. Ideally we rewrite all the push/pop/etc.. parts inside ShellSection.cs
+			// to just use INavigationStack but that will be easier once all platforms are using
+			// ShellHandler
+			(VirtualView as IStackNavigation)
+				.RequestNavigation(new NavigationRequest(pageStack, animated));
 		}
 
 		// this should move to a factory method
@@ -95,11 +99,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		public static void RequestNavigation(ShellSectionHandler arg1, IStackNavigation arg2, object? arg3)
+		public static void RequestNavigation(ShellSectionHandler handler, IStackNavigation view, object? arg3)
 		{
 			if (arg3 is NavigationRequest nr)
 			{
-				arg1._navigationManager?.NavigateTo(nr);
+				handler._navigationManager?.NavigateTo(nr);
 			}
 			else
 			{

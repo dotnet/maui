@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Platform
 			{
 				SyncBackStackToNavigationStack(newPageStack);
 				NavigationStack = newPageStack;
-				NavigationView?.NavigationFinished(NavigationStack);
+				FireNavigationFinished();
 				return;
 			}
 
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Platform
 				NavigationStack = newPageStack;
 				NavigationFrame.Navigate(destinationPageType, null, transition);
 			}
-			else 
+			else
 			{
 				NavigationStack = newPageStack;
 				NavigationFrame.GoBack(transition);
@@ -174,13 +175,13 @@ namespace Microsoft.Maui.Platform
 			}
 			catch (Exception)
 			{
-				NavigationView?.NavigationFinished(NavigationStack);
+				FireNavigationFinished();
 				throw;
 			}
 
 			if (fe.IsLoaded)
 			{
-				NavigationView?.NavigationFinished(NavigationStack);
+				FireNavigationFinished();
 				return;
 			}
 
@@ -188,8 +189,13 @@ namespace Microsoft.Maui.Platform
 			void OnLoaded(object sender, RoutedEventArgs e)
 			{
 				fe.Loaded -= OnLoaded;
-				NavigationView?.NavigationFinished(NavigationStack);
+				FireNavigationFinished();
 			}
+		}
+
+		void FireNavigationFinished()
+		{
+			NavigationView?.NavigationFinished(NavigationStack);
 		}
 	}
 }

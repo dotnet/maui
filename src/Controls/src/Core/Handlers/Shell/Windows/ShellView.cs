@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new NotSupportedException("Reuse of the Shell Renderer is not supported");
 
 			Element = (Shell)element;
+			ShellController.AddAppearanceObserver(this, Element);
 		}
 		
 		internal Shell Element { get; set; }
@@ -160,6 +161,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			global::Windows.UI.Color backgroundColor = DefaultBackgroundColor;
 			global::Windows.UI.Color titleColor = DefaultTitleColor;
+
 			if (appearance != null)
 			{
 				if (!appearance.BackgroundColor.IsDefault())
