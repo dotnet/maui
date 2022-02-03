@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		public void Invalidate(VisualElement visualElement)
 		{
-			var renderer = Platform.iOS.Platform.GetRenderer(visualElement);
+			var renderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.GetRenderer(visualElement);
 
 			if (renderer == null)
 			{
