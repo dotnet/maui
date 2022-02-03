@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 		/// <summary>
-		/// The native control we're wrapping isn't ours to dispose of
+		/// The platform control we're wrapping isn't ours to dispose of
 		/// </summary>
 		protected override bool ManagePlatformControlLifetime => false;
 	}

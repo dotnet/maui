@@ -443,7 +443,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 
 		}
-
+		
 		internal virtual void SendVisualElementInitialized(VisualElement element, PlatformView platformView)
 		{
 			element.SendViewInitialized(platformView);

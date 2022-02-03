@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 
 		/// <summary>
-		/// Determines whether the native control is disposed of when this renderer is disposed
+		/// Determines whether the platform control is disposed of when this renderer is disposed
 		/// Can be overridden in deriving classes 
 		/// </summary>
 		protected virtual bool ManagePlatformControlLifetime => true;
