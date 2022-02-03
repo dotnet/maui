@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				=> new CarouselViewController(newElement, layout);
 		
 		protected override ItemsViewLayout SelectLayout() =>
-				_layout = new CarouselViewLayout(VirtualView.ItemsLayout, VirtualView);
+				_layout ??= new CarouselViewLayout(VirtualView.ItemsLayout, VirtualView);
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
