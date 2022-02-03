@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		bool _dynamicOverflowEnabled;
 		bool _isVisible = false;
 		bool _backButtonVisible;
-		private protected bool _drawerToggleVisible;
+		bool _drawerToggleVisible;
 
 		public Toolbar(Maui.IElement parent)
 		{
@@ -34,20 +34,20 @@ namespace Microsoft.Maui.Controls
 		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
 		public Color BarBackgroundColor { get => _barBackgroundColor; set => SetProperty(ref _barBackgroundColor, value); }
 		public Brush BarBackground { get => _barBackground; set => SetProperty(ref _barBackground, value); }
-		public Color BarTextColor { get => _barTextColor; set => SetProperty(ref _barTextColor, value); }
-		public Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
-		public string Title { get => _title; set => SetProperty(ref _title, value); }
-		public VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
+		public virtual Color BarTextColor { get => _barTextColor; set => SetProperty(ref _barTextColor, value); }
+		public virtual Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
+		public virtual string Title { get => _title; set => SetProperty(ref _title, value); }
+		public virtual VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
 		public bool DynamicOverflowEnabled { get => _dynamicOverflowEnabled; set => SetProperty(ref _dynamicOverflowEnabled, value); }
 		public bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
-		public bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
+		public virtual bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
 		public IElementHandler Handler { get; set; }
 
 		Maui.IElement _parent;
 		public Maui.IElement Parent => _parent;
 
-		void SetProperty<T>(ref T backingStore, T value,
+		private protected void SetProperty<T>(ref T backingStore, T value,
 			[CallerMemberName] string propertyName = "")
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))

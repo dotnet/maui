@@ -6,12 +6,23 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class NavigationPageToolbar : Toolbar
+	internal class NavigationPageToolbar : Toolbar, IToolbar
 	{
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
 		NavigationPage _currentNavigationPage;
 		Page _currentPage;
 		bool _hasAppeared;
+		Color _barTextColor;
+		Color _iconColor;
+		string _title;
+		VisualElement _titleView;
+		bool _drawerToggleVisible;
+
+		public override Color BarTextColor { get => GetBarTextColor(); set => SetProperty(ref _barTextColor, value); }
+		public override Color IconColor { get => GetIconColor(); set => SetProperty(ref _iconColor, value); }
+		public override string Title { get => GetTitle(); set => SetProperty(ref _title, value); }
+		public override VisualElement TitleView { get => GetTitleView(); set => SetProperty(ref _titleView, value); }
+		public override bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 
 		public NavigationPageToolbar(Maui.IElement parent) : base(parent)
 		{
