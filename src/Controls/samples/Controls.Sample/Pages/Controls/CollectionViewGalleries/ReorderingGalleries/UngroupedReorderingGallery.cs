@@ -77,7 +77,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 		{
 			generator.GenerateItems(itemsSourceType);
 
-			if (Device.RuntimePlatform == Device.UWP && !(collectionView.ItemsSource is INotifyCollectionChanged))
+			if (Device.RuntimePlatform == Device.WinUI && !(collectionView.ItemsSource is INotifyCollectionChanged))
 			{
 				await DisplayAlert("Warning!", "Reordering on UWP/WinUI only works with ObservableCollections!", "OK");
 			}

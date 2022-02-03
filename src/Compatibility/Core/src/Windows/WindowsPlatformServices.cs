@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return ((global::Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
 		}
 
-		public string RuntimePlatform => Device.UWP;
+		public string RuntimePlatform => Device.WinUI;
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{

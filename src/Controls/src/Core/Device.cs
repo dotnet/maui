@@ -19,15 +19,16 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Android']/Docs" />
 		public const string Android = "Android";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='UWP']/Docs" />
-		public const string UWP = "UWP";
+		internal const string UWP = "UWP";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='macOS']/Docs" />
-		public const string macOS = "macOS";
+		internal const string macOS = "macOS";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GTK']/Docs" />
-		public const string GTK = "GTK";
+		internal const string GTK = "GTK";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Tizen']/Docs" />
 		public const string Tizen = "Tizen";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='WPF']/Docs" />
-		public const string WPF = "WPF";
+		internal const string WPF = "WPF";
+		public const string WinUI = "WinUI";
 		public const string MacCatalyst = "MacCatalyst";
 		public const string tvOS = "tvOS";
 

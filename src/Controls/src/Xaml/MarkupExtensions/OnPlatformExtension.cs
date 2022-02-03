@@ -12,13 +12,14 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public object Default { get; set; } = s_notset;
 		public object Android { get; set; } = s_notset;
-		public object GTK { get; set; } = s_notset;
+		internal object GTK { get; set; } = s_notset;
 		public object iOS { get; set; } = s_notset;
-		public object macOS { get; set; } = s_notset;
+		internal object macOS { get; set; } = s_notset;
 		public object MacCatalyst { get; set; } = s_notset;
 		public object Tizen { get; set; } = s_notset;
-		public object UWP { get; set; } = s_notset;
-		public object WPF { get; set; } = s_notset;
+		internal object UWP { get; set; } = s_notset;
+		internal object WPF { get; set; } = s_notset;
+		public object WinUI { get; set; } = s_notset;
 
 		public IValueConverter Converter { get; set; }
 
@@ -33,7 +34,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& MacCatalyst == s_notset
 				&& Tizen == s_notset
 				&& UWP == s_notset
-				&& WPF == s_notset
+				&& WPF == s_notset 
+				&& WinUI == s_notset
 				&& Default == s_notset)
 			{
 				throw new XamlParseException("OnPlatformExtension requires a value to be specified for at least one platform or Default.", serviceProvider);
@@ -145,6 +147,11 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (Device.RuntimePlatform == Device.WPF && WPF != s_notset)
 			{
 				value = WPF;
+				return true;
+			}
+			if (Device.RuntimePlatform == Device.WinUI && WinUI != s_notset)
+			{
+				value = WinUI;
 				return true;
 			}
 			value = Default;

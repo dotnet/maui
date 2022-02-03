@@ -98,7 +98,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				case Device.iOS:
 					fontFamily = "Ionicons";
 					break;
-				case Device.UWP:
+				case Device.WinUI:
 					fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
 					break;
 				case Device.Android:
