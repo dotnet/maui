@@ -13,12 +13,6 @@ using NUnit.Framework;
 //{
 //	public class ShellTests : PlatformTestFixture
 //	{
-//		[OneTimeSetUp]
-//		public void ShellTestSetup()
-//		{
-//			Device.SetFlags(new[] { "Shell_UWP_Experimental" });
-//		}
-
 //		[Test, Category("Shell")]
 //		[Description("Shell doesn't crash when Flyout Behavior Initialized to Locked")]
 //		public async Task FlyoutHeaderReactsToChanges()
