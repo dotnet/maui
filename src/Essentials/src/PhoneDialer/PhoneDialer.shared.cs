@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			if (string.IsNullOrWhiteSpace(number))
 				throw new ArgumentNullException(nameof(number));
 
-			if (!Current.IsSupported)
+			if (!IsSupported)
 				throw new FeatureNotSupportedException();
 		}
 	}
