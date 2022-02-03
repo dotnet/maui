@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 	{
 		Shell _shell;
 		BackButtonBehavior _backButtonBehavior;
+		ToolbarTracker _toolbarTracker = new ToolbarTracker();
 
 		public ShellToolbar(Shell shell) : base(shell)
 		{
@@ -17,12 +18,12 @@ namespace Microsoft.Maui.Controls
 			shell.Navigated += (_, __) => ApplyChanges();
 			shell.PropertyChanged += (_, p) =>
 			{
-				if(p.Is(Shell.BackButtonBehaviorProperty))
+				if (p.Is(Shell.BackButtonBehaviorProperty))
 				{
-					if(_backButtonBehavior != null)
+					if (_backButtonBehavior != null)
 						_backButtonBehavior.PropertyChanged -= OnBackButtonPropertyChanged;
 
-					_backButtonBehavior = 
+					_backButtonBehavior =
 						_shell.GetEffectiveValue<BackButtonBehavior>(Shell.BackButtonBehaviorProperty, null);
 
 					if (_backButtonBehavior != null)
@@ -47,6 +48,8 @@ namespace Microsoft.Maui.Controls
 				_backButtonBehavior.PropertyChanged += OnBackButtonPropertyChanged;
 
 			ApplyChanges();
+			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
+			_toolbarTracker.AdditionalTargets = new List<Page> { shell };
 		}
 
 		void OnBackButtonPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -63,14 +66,15 @@ namespace Microsoft.Maui.Controls
 			if (stack.Count == 0)
 				return;
 
-			//UpdateCurrentPage();
 			var currentPage = _shell.CurrentPage;
+
+			_toolbarTracker.Target = currentPage;
 
 			Page previousPage = null;
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
-			//ToolbarItems = _toolbarTracker.ToolbarItems;
+			ToolbarItems = _toolbarTracker.ToolbarItems;
 			IsVisible = _shell.GetEffectiveValue<bool>(Shell.NavBarIsVisibleProperty, true);
 			_backButtonBehavior = _shell.GetEffectiveValue<BackButtonBehavior>(Shell.BackButtonBehaviorProperty, null);
 			bool backButtonVisible = true;
@@ -81,40 +85,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
-
-			//if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
-			//	BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
-			//else
-			//	BarHeight = null;
-
-			//			if (previousPage != null)
-			//				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
-			//			else
-			//				BackButtonTitle = null;
-
-			//			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
-
-			//			BarBackground = navigationPage.BarBackground;
-			//			if (!Brush.IsNullOrEmpty(navigationPage.BarBackground))
-			//				BarBackgroundColor = null;
-			//			else
-			//				BarBackgroundColor = navigationPage.BarBackgroundColor;
-
-			//#if WINDOWS
-			//			if (Brush.IsNullOrEmpty(BarBackground) && BarBackgroundColor == null)
-			//			{
-			//				BarBackgroundColor = navigationPage.CurrentPage.BackgroundColor ??
-			//					navigationPage.BackgroundColor;
-
-			//				BarBackground = navigationPage.CurrentPage.Background ??
-			//					navigationPage.Background;
-			//			}
-			//#endif
-			//BarTextColor = GetBarTextColor();
-			//IconColor = GetIconColor();
 			Title = (!String.IsNullOrWhiteSpace(currentPage.Title)) ? currentPage.Title : _shell.Title;
 
-			//TitleView = GetTitleView();
+			TitleView = _shell.GetEffectiveValue<VisualElement>(Shell.TitleViewProperty, null);
 
 			if (currentPage != null)
 				DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(currentPage);
