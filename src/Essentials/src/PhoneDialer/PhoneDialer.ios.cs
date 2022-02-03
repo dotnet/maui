@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class PhoneDialerImplementation : IPhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string noNetworkProviderCode = "65535";
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public async void Open(string number)
 		{
-			PhoneDialer.ValidateOpen(number);
+			ValidateOpen(number);
 
 			var nsUrl = CreateNsUrl(number);
 			await Launcher.PlatformOpenAsync(nsUrl);

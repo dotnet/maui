@@ -8,7 +8,7 @@ using Uri = Android.Net.Uri;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class PhoneDialerImplementation : IPhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string intentCheck = "00000000000";
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public void Open(string number)
 		{
-			PhoneDialer.ValidateOpen(number);
+			ValidateOpen(number);
 
 			var phoneNumber = string.Empty;
 			if (Platform.HasApiLevelN)

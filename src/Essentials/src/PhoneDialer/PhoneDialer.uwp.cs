@@ -3,14 +3,14 @@ using Windows.Foundation.Metadata;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class PhoneDialerImplementation : IPhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		public bool IsSupported =>
-			 ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager");
+			ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager");
 
-		public void PlatformOpen(string number)
+		public void Open(string number)
 		{
-			PhoneDialer.ValidateOpen(number);
+			ValidateOpen(number);
 
 			PhoneCallManager.ShowPhoneCallUI(number, string.Empty);
 		}

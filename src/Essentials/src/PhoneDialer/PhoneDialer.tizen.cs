@@ -2,14 +2,14 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class PhoneDialerImplementation : IPhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		public bool IsSupported
 			=> Platform.GetFeatureInfo<bool>("contact");
 
 		public void PlatformOpen(string number)
 		{
-			PhoneDialer.ValidateOpen(number);
+			ValidateOpen(number);
 
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
