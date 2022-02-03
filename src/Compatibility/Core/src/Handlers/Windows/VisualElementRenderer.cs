@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			foreach (var child in vte.GetVisualChildren())
 			{
 				if (child is Maui.IElement childElement && childElement.Handler is IPlatformViewHandler nvh)
-					nvh.NativeArrangeHandler(mauiRect);
+					nvh.PlatformArrangeHandler(mauiRect);
 			}
 
 			return finalSize;

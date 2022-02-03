@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		// any layout that's inside a shimmed ScrollView. 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
 		{
-			ViewHandler?.NativeArrange(Element.Bounds);
+			ViewHandler?.PlatformArrange(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

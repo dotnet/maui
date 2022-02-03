@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler
 	{
-		public override void NativeArrange(Rectangle rect) =>
-			this.NativeArrangeHandler(rect);
+		public override void PlatformArrange(Rectangle rect) =>
+			this.PlatformArrangeHandler(rect);
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);

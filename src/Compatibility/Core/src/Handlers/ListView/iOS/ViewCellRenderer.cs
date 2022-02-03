@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var view = ViewCell.View;
 
 				view.Frame = new Graphics.Rectangle(0, 0, contentFrame.Width, contentFrame.Height);
-				view.Handler.NativeArrangeHandler(contentFrame.ToRectangle());
+				view.Handler.PlatformArrangeHandler(contentFrame.ToRectangle());
 				if (_rendererRef == null)
 					return;
 

@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		public Context Context => MauiContext?.Context ?? throw new InvalidOperationException($"Context cannot be null here");
 
-		public override void NativeArrange(Rectangle frame) =>
-			this.NativeArrangeHandler(frame);
+		public override void PlatformArrange(Rectangle frame) =>
+			this.PlatformArrangeHandler(frame);
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);

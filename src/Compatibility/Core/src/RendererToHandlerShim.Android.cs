@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				VisualElementRenderer, widthConstraint, heightConstraint);
 		}
 
-		public override void NativeArrange(Rectangle frame)
+		public override void PlatformArrange(Rectangle frame)
 		{
 			// This is a hack to force the shimmed control to actually do layout; without this, some controls won't actually
 			// call OnLayout after SetFrame if their sizes haven't changed (e.g., ScrollView)
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			PlatformView?.Measure(MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Width),
 				MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Height));
 
-			base.NativeArrange(frame);
+			base.PlatformArrange(frame);
 		}
 	}
 }

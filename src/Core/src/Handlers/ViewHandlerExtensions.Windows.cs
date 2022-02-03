@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 			return new Size(nativeView.DesiredSize.Width, nativeView.DesiredSize.Height);
 		}
 
-		internal static void NativeArrangeHandler(this IViewHandler viewHandler, Rectangle rect)
+		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rectangle rect)
 		{
 			var nativeView = viewHandler.ToPlatform();
 

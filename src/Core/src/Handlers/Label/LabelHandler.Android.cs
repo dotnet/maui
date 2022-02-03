@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatTextView CreatePlatformView() => new AppCompatTextView(Context);
 
-		public override void NativeArrange(Rectangle frame)
+		public override void PlatformArrange(Rectangle frame)
 		{
 			var nativeView = this.ToPlatform();
 
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 				nativeView.Measure(MakeMeasureSpecExact(frame.Width), MakeMeasureSpecExact(frame.Height));
 			}
 
-			base.NativeArrange(frame);
+			base.PlatformArrange(frame);
 		}
 
 		protected override void ConnectHandler(AppCompatTextView nativeView)

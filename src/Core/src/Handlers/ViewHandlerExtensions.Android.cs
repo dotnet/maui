@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 
 		}
 
-		internal static void NativeArrangeHandler(this IViewHandler viewHandler, Rectangle frame)
+		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rectangle frame)
 		{
 			var nativeView = viewHandler.ToPlatform();
 
