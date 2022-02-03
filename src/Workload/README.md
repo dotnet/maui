@@ -95,7 +95,7 @@ installed:
 * `maui-windows`
 
 Android has an `android` workload id that excludes AOT compilers, so
-`maui-android` will extend this. `android-aot` includes AOT support.
+`maui-android` will extend this.
 
 These ids will not map exactly to the Visual Studio Installer's
 concept of a "workload". Consider the following diagram for what .NET
