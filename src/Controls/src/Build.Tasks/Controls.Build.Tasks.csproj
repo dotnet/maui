@@ -1,54 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!-- NOTE: This project is temporarily replacing part of Microsoft.Maui.Sdk -->
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
 		<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
-		<Description>Microsoft MAUI Build Task</Description>
+		<Description>.NET MAUI MSBuild tasks. Enabled via &lt;UseMaui&gt;true&lt;/UseMaui&gt;.</Description>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Mono.Cecil" Version="0.11.3" GeneratePathProperty="true" />
-		<PackageReference Include="System.CodeDom" Version="5.0.0" GeneratePathProperty="true" />
+		<PackageReference Include="Mono.Cecil" Version="0.11.3" />
 		<PackageReference Include="Microsoft.Build" Version="15.9.20" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" />
 		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" />
-		<PackageReference Include="Microsoft.Maui.Graphics" GeneratePathProperty="true" />
-	</ItemGroup>
-
-	<PropertyGroup>
-		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
-		<IncludeBuildOutput>False</IncludeBuildOutput>
-		<NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<_Files Include="$(PkgMicrosoft_Maui_Graphics)\lib\netstandard2.0\Microsoft.Maui.Graphics.dll" />
-		<_Files Include="$(PkgMicrosoft_Maui_Graphics)\lib\netstandard2.0\Microsoft.Maui.Graphics.pdb" />
-		<_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.dll" />
-		<_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.pdb" />
-		<_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Mdb.dll" />
-		<_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Mdb.pdb" />
-		<_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Pdb.dll" />
-		<_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Pdb.pdb" />
-		<_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.dll" />
-		<_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.pdb" />
-		<_Files Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" />
-		<_Files Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.dll" />
-		<_Files Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.pdb" />
-		<_Files Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" />
-		<_Files Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.pdb" />
-		<_Files Include="..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" />
-		<_Files Include="..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.pdb" />
-		<_Files Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" />
-		<_Files Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" />
-		<None Include="@(_Files)" Visible="false" Pack="true" PackagePath="build" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="build" />
-		<None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="build" />
-		<None Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" Visible="false" Pack="true" PackagePath="build\$(PackageId).props" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" Visible="false" Pack="true" PackagePath="build\$(PackageId).targets" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -56,7 +24,7 @@
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj" />
 		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
 		<Compile Update="ErrorMessages.Designer.cs">
 			<DesignTime>True</DesignTime>
@@ -74,8 +42,6 @@
 
 	<Target Name="_CopyToNuspecDir" AfterTargets="Build">
 		<ItemGroup>
-			<!-- The satellite assemblies need to be added after Build, so they exist -->
-			<None Include="$(OutputPath)*\$(AssemblyName).resources.dll" Visible="false" Pack="true" PackagePath="build" />
 			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
 		</ItemGroup>
 		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(MauiNuSpecDirectory)" ContinueOnError="true" Retries="0" />

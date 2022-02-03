@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_shell.AddLogicalChild(_content);
 				
 				_content.MeasureInvalidated += OnMeasureInvalidated;
-				var renderer = _content.ToNative(_shell.Handler.MauiContext);
+				var renderer = _content.ToPlatform(_shell.Handler.MauiContext);
 
 				Content = renderer;
 				FrameworkElement = renderer;

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 					vg.RemoveAllViews();
 
 					if (handler.VirtualView.PresentedContent is IView view)
-						vg.AddView(view.ToNative(handler.MauiContext));
+						vg.AddView(view.ToPlatform(handler.MauiContext));
 				}
 
 				return;

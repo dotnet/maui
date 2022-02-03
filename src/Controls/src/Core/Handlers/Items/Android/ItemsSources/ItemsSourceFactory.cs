@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return new ObservableItemsSource(new MarshalingObservableCollection(list), notifier);
 				case IEnumerable _ when itemsSource is INotifyCollectionChanged:
 					return new ObservableItemsSource(itemsSource as IEnumerable, notifier);
+				case IList list:
+					return new ListSource(list);
 				case IEnumerable<object> generic:
 					return new ListSource(generic);
 			}

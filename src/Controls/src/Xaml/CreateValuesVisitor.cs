@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var assemblyName = (Context.RootAssembly ?? Context.RootElement?.GetType().GetTypeInfo().Assembly)?.GetName().Name;
 			if (assemblyName != null && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
-				Diagnostics.VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+				VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
 
 		}
 
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var assemblyName = (Context.RootAssembly ?? Context.RootElement.GetType().GetTypeInfo().Assembly)?.GetName().Name;
 			if (rnode.Root != null && !rnode.Root.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
-				Diagnostics.VisualDiagnostics.RegisterSourceInfo(rnode.Root, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+				VisualDiagnostics.RegisterSourceInfo(rnode.Root, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
 		}
 
 		public void Visit(ListNode node, INode parentNode)

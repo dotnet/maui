@@ -1,10 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-		<AssemblyName>Microsoft.Maui.Controls.Core.UnitTests</AssemblyName>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Controls.Core.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
     <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998;4014</NoWarn>
+    <!--
+      NOTE: Keep this project on C# 9 to avoid changes in overload resolution:
+      src/Controls/tests/Core.UnitTests/TemplatedItemsListTests.cs(543,11): error CS0121: The call is ambiguous between the following methods or properties: 'Assert.That(TestDelegate, IResolveConstraint)' and 'Assert.That<TActual>(TActual, IResolveConstraint)'
+    -->
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>Microsoft.Maui.Controls.Core.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,18 +20,21 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NSubstitute" Version="4.2.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
-    <PackageReference Include="NUnit" Version="3.13.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
-    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
 
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <ItemGroup>
+    <Compile Include="..\..\..\Core\tests\UnitTests\TestClasses\DispatcherStub.cs" Link="TestClasses\DispatcherStub.cs" />
+  </ItemGroup>
 
 </Project>

@@ -12,6 +12,10 @@ using Microsoft.UI.Xaml.Media.Animation;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 using WPage = Microsoft.UI.Xaml.Controls.Page;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
+using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -38,10 +42,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				};
 
 				// Unset styles set by parent NavigationView
-				_navigationView.UpdateResourceToApplicationDefault("NavigationViewContentMargin", null);
-				_navigationView.UpdateResourceToApplicationDefault("NavigationViewMinimalHeaderMargin", null);
-				_navigationView.UpdateResourceToApplicationDefault("NavigationViewHeaderMargin", null);
-				_navigationView.UpdateResourceToApplicationDefault("NavigationViewMinimalContentGridBorderThickness", null);
+				_navigationView.SetApplicationResource("NavigationViewContentMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewHeaderMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewMinimalContentGridBorderThickness", null);
 
 				return _navigationView;
 			}
@@ -66,7 +70,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				SetupNavigationView();
 			}
 
-			if(_navigationView == null && _navigationRootManager?.RootView is WindowRootView wrv)
+			if (_navigationView == null && _navigationRootManager?.RootView is WindowRootView wrv)
 			{
 				wrv.ContentChanged += OnContentChanged;
 
@@ -141,7 +145,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_navigationView == null)
 				return;
 
-			_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			if (_navigationView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top)
+				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+
 			_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
 
 			if (_navigationView.TopNavArea != null)
@@ -157,19 +163,25 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			UpdateValue(nameof(TabbedPage.BarBackground));
 			UpdateValue(nameof(TabbedPage.ItemsSource));
+			UpdateValue(nameof(TabbedPage.BarTextColor));
+			UpdateValue(nameof(TabbedPage.SelectedTabColor));
+			UpdateValue(nameof(TabbedPage.UnselectedTabColor));
 
 			_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
 
-			if (_navigationView.SelectedItem != VirtualView.CurrentPage)
-				_navigationView.SelectedItem = VirtualView.CurrentPage;
+			if (_navigationView.SelectedItem is NavigationViewItemViewModel vm && vm.Data != VirtualView.CurrentPage)
+				UpdateValue(nameof(TabbedPage.CurrentPage));
 			else
 				NavigateToPage(VirtualView.CurrentPage);
 		}
 
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 		{
-			if (args.SelectedItem is Page page)
+			if (args.SelectedItem is NavigationViewItemViewModel itemViewModel &&
+				itemViewModel.Data is Page page)
+			{
 				NavigateToPage(page);
+			}
 		}
 
 		void NavigateToPage(Page page)
@@ -215,7 +227,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (presenter == null || _currentPage == null)
 				return;
 
-			presenter.Content = _currentPage.ToNative(MauiContext);
+			presenter.Content = _currentPage.ToPlatform(MauiContext);
 		}
 
 		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)
@@ -236,20 +248,60 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapBarTextColor(TabbedPageHandler handler, TabbedPage view)
 		{
+			handler._navigationView?.UpdateTopNavigationViewItemTextColor(view.BarTextColor?.AsPaint());
 		}
 
 		public static void MapUnselectedTabColor(TabbedPageHandler handler, TabbedPage view)
 		{
+			handler._navigationView?.UpdateTopNavigationViewItemBackgroundUnselectedColor(view.UnselectedTabColor?.AsPaint());
 		}
 
 		public static void MapSelectedTabColor(TabbedPageHandler handler, TabbedPage view)
 		{
+			handler._navigationView?.UpdateTopNavigationViewItemBackgroundSelectedColor(view.SelectedTabColor?.AsPaint());
 		}
 
 		public static void MapItemsSource(TabbedPageHandler handler, TabbedPage view)
 		{
 			if (handler._navigationView != null)
-				handler._navigationView.MenuItemsSource = handler.VirtualView.Children;
+			{
+				ObservableCollection<NavigationViewItemViewModel> items;
+
+				if (handler._navigationView.MenuItemsSource is ObservableCollection<NavigationViewItemViewModel> source)
+				{
+					items = source;
+				}
+				else
+				{
+					items = new ObservableCollection<NavigationViewItemViewModel>();
+					handler._navigationView.MenuItemsSource = items;
+				}
+
+				// Sync up the number of items in the MenuItemsSource to our pages
+				// Then we update all the related properties
+				while (items.Count < handler.VirtualView.Children.Count)
+				{
+					items.Add(new NavigationViewItemViewModel());
+				}
+
+				while (handler.VirtualView.Children.Count < items.Count)
+				{
+					items.RemoveAt(0);
+				}
+
+				for (var i = 0; i < handler.VirtualView.Children.Count; i++)
+				{
+					Page page = handler.VirtualView.Children[i];
+					var vm = items[i];
+					vm.Content = page.Title;
+					vm.Data = page;
+					vm.Foreground = view.BarTextColor?.AsPaint()?.ToNative();
+					vm.SelectedBackground = view.SelectedTabColor?.AsPaint()?.ToNative();
+					vm.UnselectedBackground = view.UnselectedTabColor?.AsPaint()?.ToNative();
+				}
+
+				handler.UpdateValue(nameof(TabbedPage.CurrentPage));
+			}
 		}
 
 		public static void MapItemTemplate(TabbedPageHandler handler, TabbedPage view)
@@ -264,8 +316,16 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapCurrentPage(TabbedPageHandler handler, TabbedPage view)
 		{
-			if (handler._navigationView != null && handler._navigationView.SelectedItem != view.CurrentPage)
-				handler._navigationView.SelectedItem = view.CurrentPage;
+			if (handler._navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					if (item.Data == view.CurrentPage)
+					{
+						handler._navigationView.SelectedItem = item;
+					}
+				}
+			}
 		}
 	}
 }

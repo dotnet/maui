@@ -3,7 +3,7 @@
   <Import Project="..\..\src\Wpf\build\Microsoft.AspNetCore.Components.WebView.Wpf.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm)-windows</TargetFrameworks>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>

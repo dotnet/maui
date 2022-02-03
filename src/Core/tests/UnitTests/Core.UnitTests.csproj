@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <TargetFramework Condition="'$(BuildForLegacy)' == 'true'">netcoreapp3.1</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
-    <!-- Solves: LifecycleEventsTests.cs(26,77): error CS8652: The feature 'inferred delegate type' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version. -->
-    <LangVersion>preview</LangVersion>
+    <!--
+      NOTE: Keep this project on C# 9 to avoid changes in overload resolution, test failures:
+      CanAddMultipleEventsViaMultipleConfigureLifecycleEvents, CanAddMultipleEventsViaBuilder, EventsFireExactlyOnce
+    -->
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,15 +37,10 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildForLegacy)' == 'true'">
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(BuildForLegacy)' != 'true'">
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
-    <ProjectReference Include="..\..\src\Core-net6.csproj" />
   </ItemGroup>
 
 </Project>

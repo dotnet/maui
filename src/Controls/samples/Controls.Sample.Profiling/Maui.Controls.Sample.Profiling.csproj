@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-android;net6.0-maccatalyst;net6.0-ios</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm)-android;$(_MauiDotNetTfm)-maccatalyst;$(_MauiDotNetTfm)-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <ApplicationTitle>Profiling</ApplicationTitle>
@@ -9,9 +9,9 @@
     <ApplicationVersion>1</ApplicationVersion>
     <IsPackable>false</IsPackable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
-    <RuntimeIdentifiers Condition="'$(TargetFramework)' == 'net6.0-android'">android-arm64;android-x64</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == '$(_MauiDotNetTfm)-ios'">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == '$(_MauiDotNetTfm)-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers Condition="'$(TargetFramework)' == '$(_MauiDotNetTfm)-android'">android-arm64;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,10 +26,10 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

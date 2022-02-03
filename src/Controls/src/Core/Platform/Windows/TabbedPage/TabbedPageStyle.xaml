@@ -3,7 +3,13 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:maui="clr-namespace:Microsoft.Maui;assembly=Microsoft.Maui">
     <DataTemplate x:Key="TabBarNavigationViewMenuItem">
-        <NavigationViewItem Content="{Binding Title}" />
+        <NavigationViewItem 
+            x:Name="navViewItem"
+            Content="{Binding Content}" 
+            Foreground="{Binding Foreground}" 
+            Background="{Binding Background}" 
+            IsSelected="{Binding IsSelected, Mode=TwoWay}"
+            />
     </DataTemplate>
 
 

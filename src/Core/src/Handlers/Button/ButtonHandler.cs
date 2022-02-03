@@ -38,17 +38,19 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius
 		};
 
-		public ButtonHandler() : base(Mapper)
+		public static CommandMapper<IButton, IButtonHandler> CommandMapper = new(ViewCommandMapper);
+
+		public ButtonHandler() : base(Mapper, CommandMapper)
 		{
 
 		}
 
-		public ButtonHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public ButtonHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper, CommandMapper)
 		{
 		}
 
-		IButton IButtonHandler.TypedVirtualView => VirtualView;
+		IButton IButtonHandler.VirtualView => VirtualView;
 
-		NativeView IButtonHandler.TypedNativeView => NativeView;
+		NativeView IButtonHandler.NativeView => NativeView;
 	}
 }
