@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		Size IViewHandler.GetDesiredSize(double widthMeasureSpec, double heightMeasureSpec)
 		{
-			return VisualElementRenderer<Frame>.GetDesiredSize(this, heightMeasureSpec, widthMeasureSpec,
+			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthMeasureSpec, heightMeasureSpec,
 				new Size(20, 20));
 		}
 
