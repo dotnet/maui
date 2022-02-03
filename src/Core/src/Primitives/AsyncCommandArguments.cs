@@ -55,7 +55,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		public Task Task => _taskCompletionSource.Task;
 
-		protected AsyncCommandArguments()
+		public AsyncCommandArguments()
 		{
 			_taskCompletionSource = new TaskCompletionSource<object?>();
 			SetComplete = () => _taskCompletionSource.SetResult(null);
