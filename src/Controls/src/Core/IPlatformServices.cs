@@ -15,8 +15,6 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes);
 
-		Color GetNamedColor(string name);
-
 		OSAppTheme RequestedTheme { get; }
 
 		void StartTimer(TimeSpan interval, Func<bool> callback);

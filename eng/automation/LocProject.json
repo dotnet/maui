@@ -14,41 +14,6 @@
                 "LclFile": "loc\\{Lang}\\src\\Controls\\src\\Build.Tasks\\ErrorMessages.resx.lcl",
                 "CopyOption": "LangIDOnName",
                 "OutputPath": "src\\Controls\\src\\Build.Tasks\\xlf\\"
-            },
-            {
-              "SourceFile": "src\\Templates\\src\\template\\maui-blazor\\.template.config\\localize\\templatestrings.json",
-              "CopyOption":  "LangIDOnName",
-              "OutputPath":  "src\\Templates\\src\\template\\maui-blazor\\.template.config\\localize\\"
-            },
-            {
-              "SourceFile": "src\\Templates\\src\\template\\maui-contentpage-csharp\\.template.config\\localize\\templatestrings.json",
-              "CopyOption":  "LangIDOnName",
-              "OutputPath":  "src\\Templates\\src\\template\\maui-contentpage-csharp\\.template.config\\localize\\"
-            },
-            {
-              "SourceFile": "src\\Templates\\src\\template\\maui-contentpage-xaml\\.template.config\\localize\\templatestrings.json",
-              "CopyOption":  "LangIDOnName",
-              "OutputPath":  "src\\Templates\\src\\template\\maui-contentpage-xaml\\.template.config\\localize\\"
-            },
-            {
-              "SourceFile": "src\\Templates\\src\\template\\maui-contentview-csharp\\.template.config\\localize\\templatestrings.json",
-              "CopyOption":  "LangIDOnName",
-              "OutputPath":  "src\\Templates\\src\\template\\maui-contentview-csharp\\.template.config\\localize\\"
-            },
-            {
-              "SourceFile": "src\\Templates\\src\\template\\maui-contentview-xaml\\.template.config\\localize\\templatestrings.json",
-              "CopyOption":  "LangIDOnName",
-              "OutputPath":  "src\\Templates\\src\\template\\maui-contentview-xaml\\.template.config\\localize\\"
-            },
-            {
-              "SourceFile": "src\\Templates\\src\\template\\maui-lib\\.template.config\\localize\\templatestrings.json",
-              "CopyOption":  "LangIDOnName",
-              "OutputPath":  "src\\Templates\\src\\template\\maui-lib\\.template.config\\localize\\"
-            },
-            {
-              "SourceFile": "src\\Templates\\src\\template\\maui-mobile\\.template.config\\localize\\templatestrings.json",
-              "CopyOption":  "LangIDOnName",
-              "OutputPath":  "src\\Templates\\src\\template\\maui-mobile\\.template.config\\localize\\"
             }
         ],
         "LssFiles": [],
