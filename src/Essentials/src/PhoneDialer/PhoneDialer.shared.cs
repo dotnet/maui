@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	partial class PhoneDialerImplementation
 	{
-		internal static void ValidateOpen(string number)
+		internal void ValidateOpen(string number)
 		{
 			if (string.IsNullOrWhiteSpace(number))
 				throw new ArgumentNullException(nameof(number));
