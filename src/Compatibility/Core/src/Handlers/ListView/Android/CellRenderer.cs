@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected Cell Cell { get; set; }
 
-		protected override AView CreateNativeElement()
+		protected override AView CreatePlatformElement()
 		{
 			var creationArgs = VirtualView.ConvertView;
 			VirtualView.ConvertView = null;

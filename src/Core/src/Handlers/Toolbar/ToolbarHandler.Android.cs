@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 		ProcessBackClick? _processBackClick;
 		ProcessBackClick BackNavigationClick => _processBackClick ??= new ProcessBackClick(this);
 
-		protected override MaterialToolbar CreateNativeElement()
+		protected override MaterialToolbar CreatePlatformElement()
 		{
 			LayoutInflater? li = MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");

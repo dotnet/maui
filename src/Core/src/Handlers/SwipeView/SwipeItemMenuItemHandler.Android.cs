@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Visibility = view.Visibility.ToNativeVisibility();
 		}
 
-		protected override AView CreateNativeElement()
+		protected override AView CreatePlatformElement()
 		{
 			_ = MauiContext?.Context ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 

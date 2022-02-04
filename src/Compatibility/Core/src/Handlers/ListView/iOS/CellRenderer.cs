@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
-		protected override UITableViewCell CreateNativeElement()
+		protected override UITableViewCell CreatePlatformElement()
 		{
 			var reusableCell = VirtualView.ReusableCell;
 			var tv = VirtualView.TableView;

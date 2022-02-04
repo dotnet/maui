@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if !NETSTANDARD
-		protected override PlatformView CreateNativeElement() =>
+		protected override PlatformView CreatePlatformElement() =>
 			MauiContext?.Services.GetService<PlatformView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
 #endif
 	}

@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 		object? IElementHandler.PlatformView => base.PlatformView;
 
-		protected abstract TPlatformView CreateNativeElement();
+		protected abstract TPlatformView CreatePlatformElement();
 
 		protected virtual void ConnectHandler(TPlatformView nativeView)
 		{
@@ -42,8 +42,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		private protected override object OnCreateNativeElement() =>
-			CreateNativeElement();
+		private protected override object OnCreatePlatformElement() =>
+			CreatePlatformElement();
 
 		private protected override void OnConnectHandler(object nativeView) =>
 			ConnectHandler((TPlatformView)nativeView);

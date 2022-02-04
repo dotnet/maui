@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Handlers
 
 		private protected abstract PlatformView OnCreatePlatformView();
 
-		private protected sealed override object OnCreateNativeElement() =>
+		private protected sealed override object OnCreatePlatformElement() =>
 			OnCreatePlatformView();
 
 #if ANDROID

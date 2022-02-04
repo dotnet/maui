@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, UIButton>
 	{
-		protected override UIButton CreateNativeElement()
+		protected override UIButton CreatePlatformElement()
 		{
 			return new UIButton(UIButtonType.Custom)
 			{

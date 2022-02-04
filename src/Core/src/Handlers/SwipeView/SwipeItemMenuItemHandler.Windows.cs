@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, WSwipeItem>
 	{
-		protected override WSwipeItem CreateNativeElement()
+		protected override WSwipeItem CreatePlatformElement()
 		{
 			return new WSwipeItem();
 		}

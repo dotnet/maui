@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 			bool setupPlatformView = oldVirtualView == null;
 
 			VirtualView = view;
-			PlatformView ??= CreateNativeElement();
+			PlatformView ??= CreatePlatformElement();
 
 			if (VirtualView.Handler != this)
 				VirtualView.Handler = this;
@@ -90,10 +90,10 @@ namespace Microsoft.Maui.Handlers
 			_commandMapper?.Invoke(this, VirtualView, command, args);
 		}
 
-		private protected abstract object OnCreateNativeElement();
+		private protected abstract object OnCreatePlatformElement();
 
-		object CreateNativeElement() =>
-			OnCreateNativeElement();
+		object CreatePlatformElement() =>
+			OnCreatePlatformElement();
 
 		private protected abstract void OnConnectHandler(object nativeView);
 

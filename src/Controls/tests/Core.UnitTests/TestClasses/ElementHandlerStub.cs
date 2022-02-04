@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 		}
 
-		private protected override object OnCreateNativeElement()
+		private protected override object OnCreatePlatformElement()
 		{
 			return new object();
 		}
