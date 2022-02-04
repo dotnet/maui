@@ -1,9 +1,11 @@
-﻿namespace Microsoft.Maui
+﻿using System.Threading.Tasks;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Specifies JavasScript to be evaluated by a platform web view control
 	/// </summary>
-	public class EvaluateJavaScriptAsyncRequest : AsyncCommandArguments<string>
+	public class EvaluateJavaScriptAsyncRequest : TaskCompletionSource<string>
 	{
 		/// <summary>
 		/// The JavaScript to be evaluated.

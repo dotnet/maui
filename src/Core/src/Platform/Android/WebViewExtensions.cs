@@ -80,7 +80,14 @@ namespace Microsoft.Maui.Platform
 			var javaScriptResult = new JavascriptResult();
 
 			webView.EvaluateJavascript(request.Script, javaScriptResult);
-			request.SetResult(await javaScriptResult.JsResult);
+			try
+			{
+				request.SetResult(await javaScriptResult.JsResult);
+			}
+			catch(System.Exception exc)
+			{
+				request.SetException(exc);
+			}
 		}
 
 		class JavascriptResult : Java.Lang.Object, IValueCallback
