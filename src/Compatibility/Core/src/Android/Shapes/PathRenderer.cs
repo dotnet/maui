@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new PathView(Context));
+				SetPlatformControl(new PathView(Context));
 			}
 
 			base.OnElementChanged(args);

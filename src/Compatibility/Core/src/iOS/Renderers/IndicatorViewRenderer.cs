@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				? (UIView)(Element.IndicatorLayout as VisualElement).GetRenderer()
 				: CreatePlatformControl();
 
-			SetNativeControl(control);
+			SetPlatformControl(control);
 		}
 
 		void ClearIndicators()

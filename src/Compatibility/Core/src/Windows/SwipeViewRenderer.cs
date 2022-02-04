@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				if (Control == null)
 				{
-					SetNativeControl(new WSwipeControl());
+					SetPlatformControl(new WSwipeControl());
 				}
 
 				UpdateContent();

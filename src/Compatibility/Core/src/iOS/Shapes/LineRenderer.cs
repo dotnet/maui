@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new LineView());
+				SetPlatformControl(new LineView());
 			}
 
 			base.OnElementChanged(args);

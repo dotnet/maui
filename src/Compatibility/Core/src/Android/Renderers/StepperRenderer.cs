@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				StepperRendererManager.CreateStepperButtons(this, out _downButton, out _upButton);
 				layout.AddView(_downButton, new LinearLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.MatchParent));
 				layout.AddView(_upButton, new LinearLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.MatchParent));
-				SetNativeControl(layout);
+				SetPlatformControl(layout);
 			}
 
 			StepperRendererManager.UpdateButtons(this, _downButton, _upButton);

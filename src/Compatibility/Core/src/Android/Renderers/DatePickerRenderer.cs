@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (e.OldElement == null)
 			{
 				var textField = CreatePlatformControl();
-				SetNativeControl(textField);
+				SetPlatformControl(textField);
 				_originalHintTextColor = EditText.CurrentHintTextColor;
 			}
 

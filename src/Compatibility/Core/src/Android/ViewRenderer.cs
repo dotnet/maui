@@ -261,9 +261,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(ControlUsedForAutomation, Element);
 		}
 
-		protected void SetNativeControl(TPlatformView control)
+		protected void SetPlatformControl(TPlatformView control)
 		{
-			SetNativeControl(control, this);
+			SetPlatformControl(control, this);
 		}
 
 		protected virtual void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.SendVisualElementInitialized(element, Control);
 		}
 
-		internal void SetNativeControl(TPlatformView control, ViewGroup container)
+		internal void SetPlatformControl(TPlatformView control, ViewGroup container)
 		{
 			if (Control != null)
 			{

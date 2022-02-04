@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				SetNativeControl(Element.PlatformView);
+				SetPlatformControl(Element.PlatformView);
 				Control.LayoutChange += (sender, args) => ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 			}
 		}

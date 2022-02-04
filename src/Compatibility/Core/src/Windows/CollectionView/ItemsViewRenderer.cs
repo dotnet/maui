@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				Layout.PropertyChanged += LayoutPropertyChanged;
 
-				SetNativeControl(ListViewBase);
+				SetPlatformControl(ListViewBase);
 			}
 
 			UpdateItemTemplate();
@@ -419,7 +419,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			FindScrollViewer(ListViewBase);
 
-			SetNativeControl(ListViewBase);
+			SetPlatformControl(ListViewBase);
 
 			_defaultHorizontalScrollVisibility = null;
 			_defaultVerticalScrollVisibility = null;

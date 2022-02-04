@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (e.OldElement == null)
 			{
 				var seekBar = CreatePlatformControl();
-				SetNativeControl(seekBar);
+				SetPlatformControl(seekBar);
 
 				seekBar.Max = 1000;
 				seekBar.SetOnSeekBarChangeListener(this);

@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new UIStepper(RectangleF.Empty));
+					SetPlatformControl(new UIStepper(RectangleF.Empty));
 					Control.ValueChanged += OnValueChanged;
 				}
 

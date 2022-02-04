@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				? (FrameworkElement)(Element.IndicatorLayout as VisualElement).GetOrCreateRenderer()
 				: CreatePlatformControl();
 
-			SetNativeControl(control);
+			SetPlatformControl(control);
 		}
 
 		FrameworkElement CreatePlatformControl()

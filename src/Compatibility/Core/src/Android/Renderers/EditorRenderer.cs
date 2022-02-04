@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				edit = CreatePlatformControl();
 
-				SetNativeControl(edit);
+				SetPlatformControl(edit);
 				EditText.AddTextChangedListener(this);
 				if (EditText is IFormsEditText formsEditText)
 					formsEditText.OnKeyboardBackPressed += OnKeyboardBackPressed;

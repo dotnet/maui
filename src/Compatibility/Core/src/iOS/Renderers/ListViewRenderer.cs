@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
 					}
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
-					SetNativeControl(_tableViewController.TableView);
+					SetPlatformControl(_tableViewController.TableView);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
 

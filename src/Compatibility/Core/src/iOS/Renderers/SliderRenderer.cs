@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new UISlider { Continuous = true });
+					SetPlatformControl(new UISlider { Continuous = true });
 					Control.ValueChanged += OnControlValueChanged;
 
 					// sliders SizeThatFits method returns non-useful answers

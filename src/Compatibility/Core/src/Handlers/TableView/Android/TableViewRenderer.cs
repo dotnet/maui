@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (listView == null)
 			{
 				listView = CreatePlatformControl();
-				SetNativeControl(listView);
+				SetPlatformControl(listView);
 			}
 
 			listView.Focusable = false;

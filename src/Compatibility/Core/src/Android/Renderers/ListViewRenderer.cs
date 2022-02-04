@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_refresh = CreateNativePullToRefresh(ctx);
 					_refresh.SetOnRefreshListener(this);
 					_refresh.AddView(nativeListView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
-					SetNativeControl(nativeListView, _refresh);
+					SetPlatformControl(nativeListView, _refresh);
 
 					_headerView = new Container(ctx);
 					nativeListView.AddHeaderView(_headerView, null, false);

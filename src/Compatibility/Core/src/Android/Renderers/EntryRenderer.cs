@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				SetNativeControl(CreatePlatformControl());
+				SetPlatformControl(CreatePlatformControl());
 
 				EditText.AddTextChangedListener(this);
 				EditText.SetOnEditorActionListener(this);

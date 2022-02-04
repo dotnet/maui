@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (Control == null)
 				{
 
-					SetNativeControl(new Microsoft.UI.Xaml.Controls.ListView
+					SetPlatformControl(new Microsoft.UI.Xaml.Controls.ListView
 					{
 						ItemContainerStyle = (Microsoft.UI.Xaml.Style)Microsoft.UI.Xaml.Application.Current.Resources["FormsListViewItem"],
 						ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["CellTemplate"],

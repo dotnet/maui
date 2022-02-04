@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					var imageView = new FormsUIImageView();
 					imageView.ContentMode = UIViewContentMode.ScaleAspectFit;
 					imageView.ClipsToBounds = true;
-					SetNativeControl(imageView);
+					SetPlatformControl(imageView);
 				}
 			}
 

@@ -23,9 +23,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public UIElement? GetNativeElement() => Control;
 
-		protected virtual void UpdateNativeControl() { }
+		protected virtual void UpdatePlatformControl() { }
 
-		protected void SetNativeControl(TNativeElement control)
+		protected void SetPlatformControl(TNativeElement control)
 		{
 			TNativeElement? oldControl = Control;
 			_nativeView = control;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Control.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
 			Children.Add(control);
-			UpdateNativeControl();
+			UpdatePlatformControl();
 		}
 
 		protected virtual void Dispose(bool disposing)

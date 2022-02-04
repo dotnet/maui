@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new PolylineView(Context));
+				SetPlatformControl(new PolylineView(Context));
 			}
 
 			base.OnElementChanged(args);

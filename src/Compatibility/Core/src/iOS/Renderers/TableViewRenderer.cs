@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					var tv = CreatePlatformControl();
 					_originalBackgroundView = tv.BackgroundView;
 
-					SetNativeControl(tv);
+					SetPlatformControl(tv);
 					if (Forms.IsiOS9OrNewer)
 						tv.CellLayoutMarginsFollowReadableWidth = false;
 

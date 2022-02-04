@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 					progressBar.ValueChanged += ProgressBarOnValueChanged;
 
-					SetNativeControl(progressBar);
+					SetPlatformControl(progressBar);
 
 					Control.Loaded += OnControlLoaded;
 				}

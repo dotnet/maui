@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(CreatePlatformControl());
+					SetPlatformControl(CreatePlatformControl());
 					Control.CheckedChanged += OnControlCheckedChanged;
 				}
 

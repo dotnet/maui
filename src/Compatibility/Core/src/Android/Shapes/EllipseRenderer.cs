@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new EllipseView(Context));
+				SetPlatformControl(new EllipseView(Context));
 			}
 
 			base.OnElementChanged(args);

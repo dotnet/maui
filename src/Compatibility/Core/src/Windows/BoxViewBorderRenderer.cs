@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						DataContext = Element
 					};
 
-					SetNativeControl(rect);
+					SetPlatformControl(rect);
 				}
 
 				SetColor(Element.Color);

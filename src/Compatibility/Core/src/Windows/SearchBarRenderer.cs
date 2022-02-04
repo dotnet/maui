@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						QueryIcon = new SymbolIcon(Symbol.Find),
 						Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsAutoSuggestBoxStyle"] as Microsoft.UI.Xaml.Style
 					};
-					SetNativeControl(nativeAutoSuggestBox);
+					SetPlatformControl(nativeAutoSuggestBox);
 					Control.QuerySubmitted += OnQuerySubmitted;
 					Control.TextChanged += OnTextChanged;
 					Control.Loaded += OnControlLoaded;

@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_density = Resources.DisplayMetrics.Density;
 
-					SetNativeControl(CreatePlatformControl());
+					SetPlatformControl(CreatePlatformControl());
 				}
 
 				UpdateContent();

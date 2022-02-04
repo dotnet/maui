@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					control.ClearValue(ToggleSwitch.OnContentProperty);
 					control.ClearValue(ToggleSwitch.OffContentProperty);
 
-					SetNativeControl(control);
+					SetPlatformControl(control);
 				}
 
 				Control.IsOn = Element.IsToggled;

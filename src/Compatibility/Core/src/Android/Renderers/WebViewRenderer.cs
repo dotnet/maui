@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				webView.SetWebChromeClient(_webChromeClient);
 				webView.Settings.JavaScriptEnabled = true;
 				webView.Settings.DomStorageEnabled = true;
-				SetNativeControl(webView);
+				SetPlatformControl(webView);
 			}
 
 			if (e.OldElement != null)

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_button.AddHandler(PointerPressedEvent, _pointerPressedHandler, true);
 					_button.Loaded += ButtonOnLoaded;
 
-					SetNativeControl(_button);
+					SetPlatformControl(_button);
 				}
 				else
 				{

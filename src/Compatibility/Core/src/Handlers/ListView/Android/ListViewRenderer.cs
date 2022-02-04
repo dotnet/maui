@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_refresh = CreateNativePullToRefresh(MauiContext.Context);
 					_refresh.SetOnRefreshListener(new ListViewSwipeRefreshLayoutListener(this));
 					_refresh.AddView(nativeListView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
-					SetNativeControl(nativeListView, _refresh);
+					SetPlatformControl(nativeListView, _refresh);
 
 					_headerView = new Container(MauiContext.Context);
 					nativeListView.AddHeaderView(_headerView, null, false);

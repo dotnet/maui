@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					var image = new Microsoft.UI.Xaml.Controls.Image();
 					image.ImageOpened += OnImageOpened;
 					image.ImageFailed += OnImageFailed;
-					SetNativeControl(image);
+					SetPlatformControl(image);
 				}
 
 				await TryUpdateSource().ConfigureAwait(false);

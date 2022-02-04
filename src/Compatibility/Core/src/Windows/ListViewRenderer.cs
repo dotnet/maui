@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_zoom.ViewChangeCompleted += OnViewChangeCompleted;
 
 					// Specific order to let SNC unparent the ListView for us
-					SetNativeControl(_zoom);
+					SetPlatformControl(_zoom);
 					_zoom.ZoomedInView = List;
 				}
 				else
@@ -427,7 +427,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_zoom != null)
 					_zoom.CanChangeViews = false;
 				else if (List != Control)
-					SetNativeControl(List);
+					SetPlatformControl(List);
 			}
 		}
 

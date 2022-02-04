@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Dispose(true);
 		}
 
-		public event EventHandler NativeControlUpdated;
+		public event EventHandler PlatformControlUpdated;
 
 		internal void Disconnect()
 		{
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 							   e.PropertyName == VisualElement.WidthProperty.PropertyName ||
 							   e.PropertyName == VisualElement.HeightProperty.PropertyName))
 			{
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 			else if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName ||
 				e.PropertyName == VisualElement.AnchorYProperty.PropertyName ||
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				e.PropertyName == VisualElement.OpacityProperty.PropertyName ||
 				e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
 			{
-				UpdateNativeControl(); // poorly optimized
+				UpdatePlatformControl(); // poorly optimized
 			}
 			else if (e.PropertyName == VisualElement.ClipProperty.PropertyName)
 			{
@@ -139,12 +139,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		void HandleRedrawNeeded(object sender, EventArgs e)
 		{
-			UpdateNativeControl();
+			UpdatePlatformControl();
 		}
 
 		void HandleSizeChanged(object sender, EventArgs e)
 		{
-			UpdateNativeControl();
+			UpdatePlatformControl();
 		}
 
 		void OnRendererElementChanged(object s, VisualElementChangedEventArgs e)
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			SetElement(_element, e.NewElement);
 		}
 
-		void OnUpdateNativeControl(CALayer caLayer)
+		void OnUpdatePlatformControl(CALayer caLayer)
 		{
 			var view = Renderer.Element;
 			var uiview = Renderer.PlatformView;
@@ -372,12 +372,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				newElement.SizeChanged += _sizeChangedEventHandler;
 				newElement.PropertyChanged += _propertyChangedHandler;
 
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 		}
 
 		[PortHandler("Partially ported")]
-		void UpdateNativeControl()
+		void UpdatePlatformControl()
 		{
 			Performance.Start(out string reference);
 
@@ -397,11 +397,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				_originalAnchor = _layer.AnchorPoint;
 			}
 
-			OnUpdateNativeControl(_layer);
+			OnUpdatePlatformControl(_layer);
 
 			UpdateClip();
 
-			NativeControlUpdated?.Invoke(this, EventArgs.Empty);
+			PlatformControlUpdated?.Invoke(this, EventArgs.Empty);
 			Performance.Stop(reference);
 		}
 

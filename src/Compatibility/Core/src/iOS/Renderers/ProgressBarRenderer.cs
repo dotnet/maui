@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (e.NewElement != null)
 			{
 				if (Control == null)
-					SetNativeControl(new UIProgressView(UIProgressViewStyle.Default));
+					SetPlatformControl(new UIProgressView(UIProgressViewStyle.Default));
 
 				UpdateProgressColor();
 				UpdateProgress();

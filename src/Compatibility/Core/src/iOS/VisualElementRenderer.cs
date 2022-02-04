@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (_tracker == null)
 				{
 					_tracker = new VisualElementTracker(this);
-					_tracker.NativeControlUpdated += (sender, e) => UpdatePlatformWidget();
+					_tracker.PlatformControlUpdated += (sender, e) => UpdatePlatformWidget();
 				}
 
 				if (AutoPackage && _packager == null)

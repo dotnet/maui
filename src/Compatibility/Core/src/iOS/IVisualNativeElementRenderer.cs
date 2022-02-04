@@ -6,14 +6,14 @@ using System.Text;
 
 #if __MOBILE__
 using NativeColor = UIKit.UIColor;
-using NativeControl = UIKit.UIControl;
+using PlatformControl = UIKit.UIControl;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using PlatformView = AppKit.NSView;
 using NativeColor = CoreGraphics.CGColor;
-using NativeControl = AppKit.NSControl;
+using PlatformControl = AppKit.NSControl;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {

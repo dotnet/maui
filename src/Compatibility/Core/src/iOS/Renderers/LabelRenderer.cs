@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				e.NewElement.PropertyChanging += ElementPropertyChanging;
 				if (Control == null)
 				{
-					SetNativeControl(CreatePlatformControl());
+					SetPlatformControl(CreatePlatformControl());
 #if !__MOBILE__
 					Control.Editable = false;
 					Control.Bezeled = false;

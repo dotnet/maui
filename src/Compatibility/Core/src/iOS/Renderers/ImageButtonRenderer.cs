@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					var control = CreatePlatformControl();
 					control.ClipsToBounds = true;
-					SetNativeControl(control);
+					SetPlatformControl(control);
 
 					Debug.Assert(Control != null, "Control != null");
 				}

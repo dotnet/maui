@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_labelTextColorDefault = _view.TextColors;
 				_lineSpacingMultiplierDefault = _view.LineSpacingMultiplier;
 				_lineSpacingExtraDefault = _view.LineSpacingExtra;
-				SetNativeControl(_view);
+				SetPlatformControl(_view);
 			}
 
 			if (e.OldElement == null)

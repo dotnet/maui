@@ -84,11 +84,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				{
 					SwitchCompat aswitch = CreatePlatformControl();
 					aswitch.SetOnCheckedChangeListener(this);
-					SetNativeControl(aswitch);
+					SetPlatformControl(aswitch);
 					_defaultTrackDrawable = aswitch.TrackDrawable;
 				}
 				else
-					UpdateEnabled(); // Normally set by SetNativeControl, but not when the Control is reused.
+					UpdateEnabled(); // Normally set by SetPlatformControl, but not when the Control is reused.
 
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;

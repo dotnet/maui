@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Packager?.Dispose();
 			Packager = null;
 
-			SetNativeControl(null);
+			SetPlatformControl(null);
 			SetElement(null);
 		}
 
@@ -395,7 +395,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, null, _defaultAutomationPropertiesLabeledBy);
 		}
 
-		protected void SetNativeControl(TNativeElement control)
+		protected void SetPlatformControl(TNativeElement control)
 		{
 			_controlChanging?.Invoke(this, EventArgs.Empty);
 			TNativeElement oldControl = Control;
@@ -527,7 +527,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				AccessKeyHelper.UpdateAccessKey(Control, Element);
 		}
 
-		protected virtual void UpdateNativeControl()
+		protected virtual void UpdatePlatformControl()
 		{
 			UpdateEnabled();
 			UpdateInputTransparent();
@@ -607,7 +607,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnTrackerUpdated(object sender, EventArgs e)
 		{
-			UpdateNativeControl();
+			UpdatePlatformControl();
 		}
 
 		void UpdateEnabled()

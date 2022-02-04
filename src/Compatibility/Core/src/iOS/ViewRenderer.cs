@@ -10,14 +10,14 @@ using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 using NativeColor = UIKit.UIColor;
-using NativeControl = UIKit.UIControl;
+using PlatformControl = UIKit.UIControl;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using PlatformView = AppKit.NSView;
 using NativeColor = CoreGraphics.CGColor;
-using NativeControl = AppKit.NSControl;
+using PlatformControl = AppKit.NSControl;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Control.UpdateBackground(brush);
 		}
 
-		protected void SetNativeControl(TPlatformView uiview)
+		protected void SetPlatformControl(TPlatformView uiview)
 		{
 			_controlChanging?.Invoke(this, EventArgs.Empty);
 #if __MOBILE__
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (IsElementOrControlEmpty)
 				return;
 
-			var uiControl = Control as NativeControl;
+			var uiControl = Control as PlatformControl;
 			if (uiControl == null)
 				return;
 			uiControl.Enabled = Element.IsEnabled;

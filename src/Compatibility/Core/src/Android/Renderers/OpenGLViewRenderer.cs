@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					surfaceView = CreatePlatformControl();
 					surfaceView.SetEGLContextClientVersion(2);
-					SetNativeControl(surfaceView);
+					SetPlatformControl(surfaceView);
 				}
 
 				((IOpenGlViewController)Element).DisplayRequested += Render;

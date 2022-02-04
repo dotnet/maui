@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					var textBox = CreateTextBox();
 
-					SetNativeControl(textBox);
+					SetPlatformControl(textBox);
 
 					textBox.TextChanged += OnNativeTextChanged;
 					textBox.LostFocus += OnLostFocus;

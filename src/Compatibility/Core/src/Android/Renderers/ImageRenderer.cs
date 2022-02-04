@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (e.OldElement == null)
 			{
 				var view = CreatePlatformControl();
-				SetNativeControl(view);
+				SetPlatformControl(view);
 			}
 
 			_motionEventHelper.UpdateElement(e.NewElement);

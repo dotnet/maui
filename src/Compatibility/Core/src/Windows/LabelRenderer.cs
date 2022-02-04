@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new TextBlock());
+					SetPlatformControl(new TextBlock());
 				}
 
 				_isInitiallyDefault = Element.ToFont().IsDefault;

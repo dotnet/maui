@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (Control == null)
 				{
 					var slider = new FormsSlider();
-					SetNativeControl(slider);
+					SetPlatformControl(slider);
 
 					slider.Ready += (sender, args) =>
 					{

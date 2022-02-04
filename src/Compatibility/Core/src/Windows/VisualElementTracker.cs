@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				_container = value;
 
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 		}
 
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					return;
 
 				_control = value;
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 		}
 
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_element.PropertyChanged += OnPropertyChanged;
 				}
 
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 		}
 
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		protected virtual void UpdateNativeControl()
+		protected virtual void UpdatePlatformControl()
 		{
 			if (Element == null || Container == null)
 				return;
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnRedrawNeeded(object sender, EventArgs e)
 		{
-			UpdateNativeControl();
+			UpdatePlatformControl();
 		}
 
 		void OnUpdated()

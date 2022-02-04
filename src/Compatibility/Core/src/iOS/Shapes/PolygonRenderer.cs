@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new PolygonView());
+				SetPlatformControl(new PolygonView());
 			}
 
 			base.OnElementChanged(args);

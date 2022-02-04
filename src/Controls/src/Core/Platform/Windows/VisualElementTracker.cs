@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				UpdatingGestureRecognizers();
 
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 		}
 
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_control = value;
-				UpdateNativeControl();
+				UpdatePlatformControl();
 
 				if (PreventGestureBubbling)
 				{
@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 		}
 
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		protected virtual void UpdateNativeControl()
+		protected virtual void UpdatePlatformControl()
 		{
 			if (Element == null || Container == null)
 				return;
@@ -584,7 +584,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnRedrawNeeded(object? sender, EventArgs e)
 		{
-			UpdateNativeControl();
+			UpdatePlatformControl();
 		}
 
 		void OnTap(object? sender, TappedRoutedEventArgs e)

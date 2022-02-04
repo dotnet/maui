@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					var tv = CreatePlatformControl();
 					_originalBackgroundView = tv.BackgroundView;
 
-					SetNativeControl(tv);
+					SetPlatformControl(tv);
 					if (NativeVersion.IsAtLeast(9))
 						tv.CellLayoutMarginsFollowReadableWidth = false;
 

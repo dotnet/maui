@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(CreatePlatformControl());
+					SetPlatformControl(CreatePlatformControl());
 
 					Debug.Assert(Control != null, "Control != null");
 

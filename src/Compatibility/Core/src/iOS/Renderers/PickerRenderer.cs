@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					entry.AccessibilityTraits = UIAccessibilityTrait.Button;
 
-					SetNativeControl(entry);
+					SetPlatformControl(entry);
 				}
 
 				_picker.Model = new PickerSource(this);

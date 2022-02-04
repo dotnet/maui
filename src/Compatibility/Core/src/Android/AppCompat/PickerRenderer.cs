@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				{
 					var textField = CreatePlatformControl();
 
-					SetNativeControl(textField);
+					SetPlatformControl(textField);
 
 					ControlUsedForAutomation.SetAccessibilityDelegate(_pickerAccessibilityDelegate = new EntryAccessibilityDelegate(Element));
 				}

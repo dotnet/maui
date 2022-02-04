@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				searchView = CreatePlatformControl();
 				searchView.SetIconifiedByDefault(false);
 				searchView.Iconified = false;
-				SetNativeControl(searchView);
+				SetPlatformControl(searchView);
 				_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
 
 				if (_editText != null)

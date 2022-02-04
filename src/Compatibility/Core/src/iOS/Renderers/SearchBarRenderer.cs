@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_cancelButtonTextColorDefaultHighlighted = cancelButton.TitleColor(UIControlState.Highlighted);
 					_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
 
-					SetNativeControl(searchBar);
+					SetPlatformControl(searchBar);
 
 					_textField = _textField ?? Control.FindDescendantView<UITextField>();
 					_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();

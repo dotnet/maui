@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new PolygonView(Context));
+				SetPlatformControl(new PolygonView(Context));
 			}
 
 			base.OnElementChanged(args);

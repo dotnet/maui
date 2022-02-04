@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new WPath());
+				SetPlatformControl(new WPath());
 			}
 
 			base.OnElementChanged(args);

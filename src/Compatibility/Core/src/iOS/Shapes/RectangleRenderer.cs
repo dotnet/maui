@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new RectangleView());
+				SetPlatformControl(new RectangleView());
 			}
 
 			base.OnElementChanged(args);

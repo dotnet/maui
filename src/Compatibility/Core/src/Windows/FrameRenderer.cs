@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (e.NewElement != null)
 			{
 				if (Control == null)
-					SetNativeControl(new WBorder());
+					SetPlatformControl(new WBorder());
 
 				PackChild();
 				UpdateBorder();

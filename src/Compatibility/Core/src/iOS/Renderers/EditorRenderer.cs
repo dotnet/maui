@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Control == null)
 			{
-				SetNativeControl(CreatePlatformControl());
+				SetPlatformControl(CreatePlatformControl());
 
 				if (Device.Idiom == TargetIdiom.Phone)
 				{

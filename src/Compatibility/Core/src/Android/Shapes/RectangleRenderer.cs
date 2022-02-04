@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new RectView(Context));
+				SetPlatformControl(new RectView(Context));
 			}
 
 			base.OnElementChanged(args);

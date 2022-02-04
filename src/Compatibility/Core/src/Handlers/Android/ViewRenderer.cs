@@ -38,12 +38,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return default(TPlatformView)!;
 		}
 
-		protected void SetNativeControl(TPlatformView control)
+		protected void SetPlatformControl(TPlatformView control)
 		{
-			SetNativeControl(control, this);
+			SetPlatformControl(control, this);
 		}
 
-		internal void SetNativeControl(TPlatformView control, AViewGroup container)
+		internal void SetPlatformControl(TPlatformView control, AViewGroup container)
 		{
 			if (Control != null)
 			{

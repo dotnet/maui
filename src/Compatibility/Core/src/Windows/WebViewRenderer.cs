@@ -201,7 +201,7 @@ if(bases.length == 0){
 				{
 					var webView = CreatePlatformControl();
 					Connect(webView);
-					SetNativeControl(webView);
+					SetPlatformControl(webView);
 				}
 
 				IWebViewController newElement = e.NewElement;
@@ -493,7 +493,7 @@ if(bases.length == 0){
 			TearDown(Control);
 			var webView = CreatePlatformControl();
 			Connect(webView);
-			SetNativeControl(webView);
+			SetPlatformControl(webView);
 			Load();
 		}
 

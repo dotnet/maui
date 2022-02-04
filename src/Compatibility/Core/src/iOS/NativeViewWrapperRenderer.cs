@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
-				SetNativeControl(Element.PlatformView);
+				SetPlatformControl(Element.PlatformView);
 		}
 
 		/// <summary>

@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					control.Checked += OnNativeChecked;
 					control.Unchecked += OnNativeChecked;
 
-					SetNativeControl(control);
+					SetPlatformControl(control);
 				}
 
 				UpdateIsChecked();

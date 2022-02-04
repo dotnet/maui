@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					var textBox = new FormsTextBox { Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Microsoft.UI.Xaml.Style };
 
-					SetNativeControl(textBox);
+					SetPlatformControl(textBox);
 					textBox.TextChanged += OnNativeTextChanged;
 					textBox.KeyUp += TextBoxOnKeyUp;
 					textBox.SelectionChanged += SelectionChanged;

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (listView == null)
 			{
 				listView = CreatePlatformControl();
-				SetNativeControl(listView);
+				SetPlatformControl(listView);
 			}
 
 			listView.Focusable = false;

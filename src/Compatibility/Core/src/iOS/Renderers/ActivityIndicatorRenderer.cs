@@ -51,9 +51,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (Control == null)
 				{
 					if (Forms.IsiOS13OrNewer)
-						SetNativeControl(new UIActivityIndicatorViewDelegate(RectangleF.Empty, e.NewElement) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Medium });
+						SetPlatformControl(new UIActivityIndicatorViewDelegate(RectangleF.Empty, e.NewElement) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Medium });
 					else
-						SetNativeControl(new UIActivityIndicatorViewDelegate(RectangleF.Empty, e.NewElement) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray });
+						SetPlatformControl(new UIActivityIndicatorViewDelegate(RectangleF.Empty, e.NewElement) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray });
 				}
 
 				UpdateColor();

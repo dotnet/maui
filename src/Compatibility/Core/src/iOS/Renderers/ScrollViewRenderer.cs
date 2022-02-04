@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_packager.Load();
 
 					_tracker = new VisualElementTracker(this);
-					_tracker.NativeControlUpdated += OnNativeControlUpdated;
+					_tracker.PlatformControlUpdated += OnPlatformControlUpdated;
 					_events = new EventTracker(this);
 					_events.LoadEvents(this);
 
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_packager.Dispose();
 				_packager = null;
 
-				_tracker.NativeControlUpdated -= OnNativeControlUpdated;
+				_tracker.PlatformControlUpdated -= OnPlatformControlUpdated;
 				_tracker.Dispose();
 				_tracker = null;
 
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateScrollPosition();
 		}
 
-		void OnNativeControlUpdated(object sender, EventArgs eventArgs)
+		void OnPlatformControlUpdated(object sender, EventArgs eventArgs)
 		{
 			var elementContentSize = RetrieveElementContentSize();
 			ContentSize = elementContentSize.IsEmpty ? Bounds.Size : elementContentSize;

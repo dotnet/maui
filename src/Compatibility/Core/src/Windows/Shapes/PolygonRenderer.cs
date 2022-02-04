@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetNativeControl(new WPolygon());
+				SetPlatformControl(new WPolygon());
 			}
 
 			base.OnElementChanged(args);

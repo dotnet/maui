@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					var progressBar = CreatePlatformControl();
 
-					SetNativeControl(progressBar);
+					SetPlatformControl(progressBar);
 				}
 
 				UpdateProgressColor();

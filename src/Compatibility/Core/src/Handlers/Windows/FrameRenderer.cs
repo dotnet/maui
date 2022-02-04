@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.NewElement != null)
 			{
 				if (Control == null)
-					SetNativeControl(new WBorder());
+					SetPlatformControl(new WBorder());
 
 				PackChild();
 				UpdateBorder();

@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var textField = CreatePlatformControl();
 
-				SetNativeControl(textField);
+				SetPlatformControl(textField);
 			}
 
 			SetTime(e.NewElement.Time);

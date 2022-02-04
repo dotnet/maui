@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 			{
 				var textField = CreatePlatformControl();
-				SetNativeControl(textField);
+				SetPlatformControl(textField);
 
 				// Cache the default text color
 				_defaultTextColor = textField.TextColor;

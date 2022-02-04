@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					button.AddOnAttachStateChangeListener(this);
 					_textColorSwitcher = new TextColorSwitcher(button.TextColors, e.NewElement.UseLegacyColorManagement());
 
-					SetNativeControl(button);
+					SetPlatformControl(button);
 				}
 
 				_defaultFontSize = 0f;
