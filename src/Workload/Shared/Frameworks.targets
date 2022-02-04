@@ -45,9 +45,9 @@
     />
     <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'tizen' "
-        Include="net6.0-tizen6.5"
+        Include="net$(_MauiDotNetVersion)-tizen$(TizenTargetFrameworkVersion)"
         FullTfm="%(Identity)"
-        Tfm="net6.0-tizen"
+        Tfm="net$(_MauiDotNetVersion)-tizen$(TizenTargetFrameworkVersion)"
         Profile="Tizen"
     />
   </ItemGroup>

@@ -31,7 +31,6 @@
     <None Remove="WPF\**" />
     <Content Remove="GTK\**" />
     <Content Remove="MacOS\**" />
-    <Content Remove="Tizen\**" />
     <Content Remove="WPF\**" />
     <Page Remove="**\WPF\**\*.xaml" />
     <MauiXaml Remove="**\WPF\**\*.xaml" />
@@ -48,20 +47,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen'" >
-    <Compile Include="$(TizenRoot)**\*.cs"></Compile>
     <EmbeddedResource Include="$(TizenRoot)Resources\*.resx" />
     <EmbeddedResource Include="$(TizenRoot)Resources\*.png" />
-    <Compile Remove="$(TizenRoot)bin\**\*.cs" />
-    <Compile Remove="$(TizenRoot)obj\**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="RendererToHandlerShim.cs" />
-    <Compile Include="AppHostBuilderExtensions.cs" />
-    <Compile Include="MauiHandlersCollectionExtensions.cs" />
-    <Compile Include="ExportRendererAttribute.cs" />
-    <Compile Include="Forms.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>

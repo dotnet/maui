@@ -29,14 +29,7 @@
     <Compile Remove="**\Android\**\*.cs" />
     <None Include="**\Android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('tizen')) != true AND $(TargetFramework.StartsWith('net6.0-tizen')) != true ">
-    <Compile Remove="**\**\*.Tizen.cs" />
-    <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Compile Remove="**\Tizen\**\*.cs" />
-    <None Include="**\Tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-  </ItemGroup>
   <ItemGroup Condition="'$(_MauiNoTargetPlatform)' != 'True'">
-  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true AND '$(TargetFramework)' != 'net6.0'">
     <Compile Remove="**\*.Standard.cs" />
     <None Include="**\*.Standard.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Remove="**\Standard\**\*.cs" />
@@ -65,6 +58,12 @@
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' != 'True' ">
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' != 'True' ">
+    <Compile Remove="**\**\*.Tizen.cs" />
+    <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Tizen\**\*.cs" />
+    <None Include="**\Tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="bin\**;obj\**" />
@@ -107,7 +106,7 @@
   </PropertyGroup>
 
   <!-- Tizen  -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-tizen'">
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
     <DefineConstants>$(DefineConstants);TIZEN</DefineConstants>
   </PropertyGroup>
 
@@ -132,7 +131,7 @@
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('tizen')) == true OR '$(TargetFramework)' == 'net6.0-tizen'">
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
     <PackageReference Include="Tizen.UIExtensions.ElmSharp" Version="0.6.0-pre1" />
   </ItemGroup>
 </Project>
