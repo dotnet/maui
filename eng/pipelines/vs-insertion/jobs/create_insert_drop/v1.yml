@@ -1,0 +1,168 @@
+parameters:
+  artifactName: vsdrop-signed                       # The name of the artifact containing artifacts and vsman file.
+  symbolArtifactName: ''                            # The name of the artifact containing symbol files.
+  symbolArtifactPatterns: ''                        # A new line delimited list of artifact filters to use when downloading symbols.
+  symbolArtifactExtensions: '*nupkg,*.zip'          # A comma delimited list of file extension wildcards to use to determine which symbol artifacts to unzip.
+  symbolConversionFilters: ''                       # A comma delimited list of file wildcards to use to determine which symbol files to ignore.
+  pdb2pdbPackageId: Microsoft.DiaSymReader.Pdb2Pdb  # NuGet package ID for Pdb2Pdb tool
+  pdb2pdbPackageVersion: 1.1.0-beta2-21528-01       # NuGet package version for Pdb2Pdb tool
+  pdb2pdbPackageFeed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json  # NuGet package feed for Pdb2Pdb tool
+  topicBranchName: ''                               # The name of the Visual Studio branch to push changes to.
+  targetBranchName: main                            # The name of the target Visual Studio branch.
+  insertionPayloadSuffix: .NET SDK Workloads        # Optional payload name for the git commit description and the PR title. Value is appended to the $(TeamName) variable.
+  teamEmail: $(Build.RequestedForEmail)             # The email address to use for symbol archiving results and PR creation.
+  nugetVersionSpec: 5.x                             # Version of NuGet.exe to use for downloading pdb2pdb and pushing to a "shipping" feed.
+  nupkgArtifactName: ''                             # Artifact containing .nupkg files to push to a "shipping" feed.
+  nupkgArtifactPatterns: ''                         # A new line delimited list of artifact filters to use when downloading .nupkg files to push to a "shipping" feed.
+  msiNupkgArtifactName: vs-msi-nugets               # Artifact containing msi .nupkg files to push to a "shipping" feed.
+  msiNupkgArtifactPatterns: ''                      # A new line delimited list of artifact filters to use when downloading msi.nupkg files to push to a "shipping" feed.
+  serviceConnection: maui-net6-shipping public feed # Service connection to use to push to a "shipping" feed.
+  pushToShippingFeed: false                         # Condition to determine whether to push package to a "shipping" feed or not.
+  archiveSymbols: true                              # Condition to determine whether to attempt to archive symbols files or not.
+  createVSPR: true                                  # Condition to determine whether to create a VS PR or not.
+
+steps:
+- checkout: none
+
+- task: NuGetToolInstaller@1
+  displayName: Use NuGet ${{ parameters.nugetVersionSpec }}
+  inputs:
+    versionSpec: ${{ parameters.nugetVersionSpec }}
+
+- powershell: |
+    $email = "${{ parameters.teamEmail }}"
+    if (-not $email) {
+       $email = "dotnetmobile@microsoft.com"
+    }
+    Write-Host "##vso[task.setvariable variable=TeamEmail;]$email"
+    Get-ChildItem env: | format-table -autosize -wrap
+  displayName: Set TeamEmail
+
+
+- ${{ if eq(parameters.pushToShippingFeed, true) }}:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifactName: ${{ parameters.nupkgArtifactName }}
+      downloadPath: $(System.ArtifactsDirectory)\shipping\${{ parameters.nupkgArtifactName }}
+      patterns: |
+        ${{ parameters.nupkgArtifactPatterns }}
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifactName: ${{ parameters.msiNupkgArtifactName }}
+      downloadPath: $(System.ArtifactsDirectory)\shipping\${{ parameters.msiNupkgArtifactName }}
+      patterns: |
+        ${{ parameters.msiNupkgArtifactPatterns }}
+
+  - task: NuGetCommand@2
+    displayName: push packs and msi packs to ${{ parameters.serviceConnection }}
+    continueOnError: true
+    inputs:
+      command: push
+      packagesToPush: $(System.ArtifactsDirectory)\shipping\**\*.nupkg
+      nuGetFeedType: external
+      allowPackageConflicts: true
+      publishFeedCredentials: ${{ parameters.serviceConnection }}
+
+
+- ${{ if ne(parameters.symbolArtifactName, '') }}:
+  - task: DownloadPipelineArtifact@2
+    displayName: Download Symbol Artifacts
+    continueOnError: true
+    inputs:
+      artifactName: ${{ parameters.symbolArtifactName }}
+      downloadPath: $(System.DefaultWorkingDirectory)\sym
+      patterns: |
+        ${{ parameters.symbolArtifactPatterns }}
+
+  - powershell: |
+      $filters = "${{ parameters.symbolArtifactExtensions }}" -split ","
+      $filters = $filters.trim()
+      $filesToExtract = Get-ChildItem $(System.DefaultWorkingDirectory)\sym -Include $filters -Recurse
+      if ($filesToExtract.Count -eq 0) {
+          Write-Error "Did not find any $filters files to extract in '$(System.DefaultWorkingDirectory)\sym'."
+          exit 2
+      }
+      if (Test-Path $(SymbolsAgentPath)) {
+          Remove-Item -Recurse -Force $(SymbolsAgentPath)
+      }
+      foreach ($archive in $filesToExtract) {
+          $destFileName = $archive.BaseName + $archive.Extension.Replace(".","-")
+          $dest = Join-Path $(SymbolsAgentPath) $destFileName
+          if (Test-Path $dest) {
+              Write-Warning "Skipping duplicate file: $($archive.FullName)"
+              continue
+          }
+          Write-Host "Extracting: $($archive.FullName) => $($dest)"
+          Copy-Item $archive.FullName "$($archive.FullName).zip"
+          Expand-Archive "$($archive.FullName).zip" -DestinationPath $dest
+          Remove-Item "$($archive.FullName).zip"
+      }
+    displayName: Extract Symbol Payloads
+    continueOnError: true
+
+  - template: ../../steps/run-pdb2pdb/v1.yml
+    parameters:
+      pdb2pdbPackageId: ${{ parameters.pdb2pdbPackageId }}
+      pdb2pdbPackageVersion: ${{ parameters.pdb2pdbPackageVersion }}
+      pdb2pdbPackageFeed: ${{ parameters.pdb2pdbPackageFeed }}
+      symbolConversionFilters: ${{ parameters.symbolConversionFilters }}
+
+  - task: MicroBuildArchiveSymbols@1
+    displayName: Archive Symbols on Symweb
+    condition: ${{ parameters.archiveSymbols }}
+    continueOnError: true
+    inputs:
+      CreateBuildArtifact: false
+      SymbolsFeatureName: $(TeamName)
+      SymbolsSymwebProject: VS
+      SymbolsUncPath: \\cpvsbuild\drops\xamarin\$(TeamName)\Build-$(Build.BuildId)-$(System.JobAttempt)
+      SymbolsEmailContacts: $(TeamEmail)
+      SymbolsAgentPath: $(SymbolsAgentPath)
+
+
+- task: DownloadPipelineArtifact@2
+  displayName: Download VS Drop Artifacts
+  continueOnError: true
+  inputs:
+    artifactName: ${{ parameters.artifactName }}
+    downloadPath: $(XamarinDropFolder)
+
+- task: MicroBuildUploadVstsDropFolder@2
+  displayName: Upload Azure DevOps Drop
+  continueOnError: true
+  inputs:
+    DropFolder: $(XamarinDropFolder)
+    DropName: $(XamarinDropName)
+
+- task: MicroBuildRetainVstsDrops@1
+  displayName: Retain Azure DevOps Drops
+  continueOnError: true
+  inputs:
+    DropNames: $(XamarinDropName)
+
+- powershell: |
+    $branchName = "${{ parameters.topicBranchName }}"
+    if (-not $branchName) {
+        $weekOfYear = [Globalization.CultureInfo]::InvariantCulture.Calendar.GetWeekOfYear([DateTime]::UtcNow, [Globalization.CalendarWeekRule]::FirstFourDayWeek, [DayOfWeek]::Monday)
+        Write-Host "Appending week of year value of '$weekOfYear' to branch name."
+        $branchName = "team/xamarin/maui-shared-insertion-week$weekOfYear"
+    }
+    Write-Host "##vso[task.setvariable variable=InsertionTopicBranch;]$branchName"
+    Get-ChildItem env: | format-table -autosize -wrap
+  displayName: Set InsertionTopicBranch
+
+- task: MicroBuildInsertVsPayload@4
+  displayName: Insert VS Payload
+  condition: ${{ parameters.createVSPR }}
+  inputs:
+    ComponentJsonValues: '$(XamarinDropManifestName){$(XamarinDropManifestVersion)}=https://vsdrop.corp.microsoft.com/file/v1/$(XamarinDropName);$(XamarinDropManifestName)'
+    InsertionAccessToken: $(pat--xamarinc--packages)
+    InsertionBuildPolicy: Request Perf DDRITs
+    InsertionPayloadName: ${{ parameters.insertionPayloadSuffix }}
+    InsertionTopicBranch: $(InsertionTopicBranch)
+    TargetBranch: ${{ parameters.targetBranchName }}
+    TeamName: $(TeamName)
+    TeamEmail: $(TeamEmail)
+    AllowTopicBranchUpdate: true
+    AddCommitsToPR: false

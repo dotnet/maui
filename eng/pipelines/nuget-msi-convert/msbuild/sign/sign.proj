@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.0.4">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <_RootDir Condition=" '$(BUILD_STAGINGDIRECTORY)' != '' ">$([MSBuild]::EnsureTrailingSlash($(BUILD_STAGINGDIRECTORY)))</_RootDir>
+    <_RootDir Condition=" '$(_RootDir)' == '' ">$(MSBuildThisFileDirectory)..\..\convert-v2\</_RootDir>
+    <OutputPath>$(_RootDir)bin\</OutputPath>
+    <FileExtensionsToSign Condition=" '$(FileExtensionsToSign)' == '' ">.nupkg</FileExtensionsToSign>
+    <Authenticode Condition=" '$(Authenticode)' == '' ">NuGet</Authenticode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="0.4.1" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="_CalculateFilesToSign"
+      BeforeTargets="SignFiles"
+      AfterTargets="AfterBuild" >
+    <ItemGroup>
+      <FilesToSign Include="$(OutputPath)**\*$(FileExtensionsToSign)">
+        <Authenticode>$(Authenticode)</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
+  </Target>
+
+</Project>

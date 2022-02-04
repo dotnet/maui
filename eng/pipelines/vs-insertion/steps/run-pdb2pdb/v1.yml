@@ -1,0 +1,114 @@
+parameters:
+  pdb2pdbPackageId: Microsoft.DiaSymReader.Pdb2Pdb
+  pdb2pdbPackageVersion: 1.1.0-beta2-21528-01
+  pdb2pdbPackageFeed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+  symbolRootDirectory: $(SymbolsAgentPath)
+  symbolConversionFilters: ''
+  continueOnError: true
+
+steps:
+- task: NuGetAuthenticate@0
+  displayName: NuGet Authenticate
+  continueOnError: ${{ parameters.continueOnError }}
+  inputs:
+    forceReinstallCredentialProvider: true
+
+- task: NuGetCommand@2
+  displayName: Install Pdb2Pdb
+  continueOnError: ${{ parameters.continueOnError }}
+  inputs:
+    command: custom
+    arguments: >-
+      install ${{ parameters.pdb2pdbPackageId }} -Version ${{ parameters.pdb2pdbPackageVersion }}
+      -Source ${{ parameters.pdb2pdbPackageFeed }}
+      -OutputDirectory "$(System.DefaultWorkingDirectory)\Pdb2Pdb"
+
+- powershell: |
+    $pdb2pdb = "$(System.DefaultWorkingDirectory)\Pdb2Pdb\${{ parameters.pdb2pdbPackageId }}.${{ parameters.pdb2pdbPackageVersion }}\tools\Pdb2Pdb.exe"
+    $symbolDirectory = "${{ parameters.symbolRootDirectory }}"
+    $filters = "${{ parameters.symbolConversionFilters }}" -split ","
+    $filters = $filters.trim()
+
+    Function Exec {
+        param (
+            [ScriptBlock] $ScriptBlock,
+            [string] $name
+        )
+        $converted = $true
+        $backupErrorActionPreference = $script:ErrorActionPreference
+        $script:ErrorActionPreference = "Continue"
+        try {
+            & $ScriptBlock 2>&1 | ForEach-Object -Process `
+                {
+                    $converted = $false
+                    Write-Warning "$_"
+                    Write-Host "##vso[task.logissue type=warning;]Error converting $($pdb.FullName): $_"
+                }
+        }
+        finally {
+            $script:ErrorActionPreference = $backupErrorActionPreference
+        }
+        return $converted
+    }
+
+    Function Get-IsPortable {
+        Param ([System.Object]$pdb)
+
+        # https://github.com/xamarin/xamarin-android-tools/blob/e618e00ce06339e9fb14f9b817f11b9339939df8/src/Microsoft.Android.Build.BaseTasks/Files.cs#L477-L491
+        [uint32]$ppdb_signature = 0x424a5342
+        $fs = New-Object System.IO.FileStream $pdb.FullName,'Open','Read'
+        $br = New-Object System.IO.BinaryReader $fs
+        [uint32]$file_signature = $br.ReadUInt32()
+        $br.Close()
+        $fs.Close()
+        return $file_signature -eq $ppdb_signature
+    }
+
+    Function Get-ShouldConvert {
+        Param ([System.Object]$pdb)
+
+        foreach ($filter in $filters) {
+            if ($pdb.FullName -like "$filter") {
+                Write-Host "Skipping PDB '$($pdb.FullName)' due to matching filter '$filter'."
+                return $false
+            }
+        }
+        return $true
+    }
+
+    Function Get-MatchingDll { Param ([string]$pdb) [System.IO.Path]::ChangeExtension($pdb, "dll") }
+
+    Function Get-MatchingExe { Param ([string]$pdb) [System.IO.Path]::ChangeExtension($pdb, "exe") }
+
+    Function Get-MatchingBinary {
+        Param ([System.Object]$pdb)
+    
+        $bin = Get-MatchingDll -pdb $pdb.FullName
+        if(Test-Path $bin -PathType Leaf) { return $bin }
+    
+        $bin = Get-MatchingExe -pdb $pdb.FullName
+        if(Test-Path $bin -PathType Leaf) { return $bin }
+    }
+
+    Function Convert-ToWindowsPdb {
+        Param ([System.Object]$pdb)
+    
+        if ((Exec { & "$pdb2pdb" (Get-MatchingBinary -pdb $pdb) /pdb $pdb.FullName } -name $pdb)) {
+    
+            # Windows PDB output is .pdb2, remove old and rename this one
+            Remove-Item $pdb.FullName
+            Rename-Item -Path ([string]::Format('{0}{1}', $pdb.FullName, "2")) -NewName $pdb
+        }
+    }
+
+    Get-ChildItem -Name -Recurse -Path "$(System.DefaultWorkingDirectory)\Pdb2Pdb"
+    Get-ChildItem -Path "$symbolDirectory"
+    $pdbs = Get-ChildItem -Path "$symbolDirectory" -Filter "*.pdb" -Recurse 
+    foreach ($pdb in $pdbs) {
+        if ((Get-IsPortable -pdb $pdb) -and (Get-ShouldConvert -pdb $pdb)) {
+            Write-Host "Converting portable PDB '$($pdb.FullName)' to Windows PDB"
+            Convert-ToWindowsPdb -pdb $pdb
+        }
+    }
+  displayName: Convert PPDB to Windows PDB
+  continueOnError: ${{ parameters.continueOnError }}

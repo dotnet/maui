@@ -1,0 +1,126 @@
+####################################################################################################
+# Create VS Drop and insert into Visual Studio
+#
+# https://devdiv.visualstudio.com/DevDiv/_wiki/wikis/DevDiv.wiki/629/Automated-VS-Insertion
+#
+# NOTE: This template must be used with the `nuget-msi-convert/job/v*.yml` job. The $(TeamName) variable must also be set at a scope high enough to be used by this stage.
+#
+# This template contains a stage that will immediately trigger a manual approval event.
+# If the event is approved, it will attempt to create a VS Drop and open a PR against VS.
+# Any pipeline consuming this template must have a stage which creates and uploads an artifact containing
+#  VS installers and manifests using the "PublishPipelineArtifacts" task.
+#
+# Typical usage is:
+#
+#  resources:
+#    repositories:
+#      - repository: xamarin-templates
+#        type: github
+#        name: xamarin/yaml-templates
+#
+#  ...
+#
+#  stages:
+#    - template: vs-insertion/stage/v1.yml@xamarin-templates
+#      parameters:
+#        dependsOn: nuget_signing
+#        artifactName: vsdrop-signed
+#        symbolArtifactName: nuget-signed
+#        symbolArtifactPatterns: |
+#          **/*nupkg
+#        pushToShippingFeed: true
+#        nupkgArtifactName: nuget-signed
+#        nupkgArtifactPatterns: |
+#          **/*.nupkg
+#
+####################################################################################################
+
+parameters:
+  dependsOn: []                                     # The stage that produces the NuGet artifacts for insertion.
+  jobTimeoutInMinutes: 60                           # The job timeout should be longer than the approval task timeout.
+  approvalTimeoutInMinutes: 30                      # Approval times out in 30 minutes, but the stage can be re-ran if needed.
+  artifactName: vsdrop-signed                       # The name of the artifact containing artifacts and vsman file.
+  symbolArtifactName: ''                            # The name of the artifact containing symbol files.
+  symbolArtifactPatterns: ''                        # A new line delimited list of artifact filters to use when downloading symbols.
+  symbolArtifactExtensions: '*nupkg,*.zip'          # A comma delimited list of file extension wildcards to use to determine which symbol artifacts to unzip.
+  symbolConversionFilters: ''                       # A comma delimited list of file wildcards to use to determine which symbole files to ignore.
+  pdb2pdbPackageId: Microsoft.DiaSymReader.Pdb2Pdb  # NuGet package ID for Pdb2Pdb tool
+  pdb2pdbPackageVersion: 1.1.0-beta2-21528-01       # NuGet package version for Pdb2Pdb tool
+  pdb2pdbPackageFeed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json  # NuGet package feed for Pdb2Pdb tool
+  topicBranchName: ''                               # The name of the Visual Studio branch to push changes to.
+  targetBranchName: main                            # The name of the target Visual Studio branch.
+  insertionPayloadSuffix: .NET SDK Workloads        # Optional payload name for the git commit description and the PR title. Value is appended to the $(TeamName) variable.
+  teamEmail: $(Build.RequestedForEmail)             # The email address to use for symbol archiving results and PR creation.
+  nugetVersionSpec: 5.x                             # Version of NuGet.exe to use for downloading pdb2pdb and pushing to a "shipping" feed.
+  nupkgArtifactName: ''                             # Artifact containing .nupkg files to push to a "shipping" feed.
+  nupkgArtifactPatterns: ''                         # A new line delimited list of artifact filters to use when downloading .nupkg files to push to a "shipping" feed.
+  msiNupkgArtifactName: vs-msi-nugets               # Artifact containing msi .nupkg files to push to a "shipping" feed.
+  msiNupkgArtifactPatterns: ''                      # A new line delimited list of artifact filters to use when downloading msi.nupkg files to push to a "shipping" feed.
+  serviceConnection: maui-net6-shipping public feed # Service connection to use to push to a "shipping" feed.
+  pushToShippingFeed: false                         # Condition to determine whether to push package to a "shipping" feed or not.
+  archiveSymbols: true                              # Condition to determine whether to attempt to archive symbols files or not.
+  createVSPR: true                                  # Condition to determine whether to create a VS PR or not.
+  requireApproval: true                             # Condition to determine whether to wait or not for a manual validation.
+  condition: true                                   # Condition to determine whether this stage should run or not.
+
+stages:
+- stage: vs_nuget_insertion
+  displayName: VS Insertion
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: and(eq(dependencies.${{ parameters.dependsOn }}.result, 'Succeeded'), ${{ parameters.condition }})
+  variables:
+    XamarinDropName: $[ stageDependencies.${{ parameters.dependsOn }}.nuget_convert.outputs['SetVSDropVar.XamarinDropName'] ]
+    XamarinDropManifestName: $[ stageDependencies.${{ parameters.dependsOn }}.nuget_convert.outputs['SetVSDropVar.XamarinDropManifestName'] ]
+    XamarinDropManifestVersion: $[ stageDependencies.${{ parameters.dependsOn }}.nuget_convert.outputs['SetVSDropVar.XamarinDropManifestVersion'] ]
+    XamarinDropFolder: $(System.ArtifactsDirectory)\vsdrop
+    SymbolsAgentPath: $(System.ArtifactsDirectory)\symbols
+  jobs:
+  - job: wait_for_approval
+    displayName: Wait For Approval
+    timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: ${{ parameters.approvalTimeoutInMinutes }}
+      inputs:
+        instructions: 'Press "Resume" to insert artifact: ${{ parameters.artifactName }} into Visual Studio.'
+        onTimeout: reject
+      condition: ${{ parameters.requireApproval }}
+      continueOnError: true
+
+  - job: create_insert_drop
+    displayName: Create VS Drop and Open PR
+    timeoutInMinutes: 120
+    variables:
+    - name: skipComponentGovernanceDetection
+      value: true
+    - name: skipNugetSecurityAnalysis
+      value: true
+    - group: Xamarin-Secrets
+    dependsOn: wait_for_approval
+    condition: and(eq(dependencies.wait_for_approval.result, 'Succeeded'), ${{ parameters.condition }})
+    pool: VSEng-ReleasePool-1ES
+    steps:
+    - template: ../jobs/create_insert_drop/v1.yml
+      parameters:
+        artifactName: ${{ parameters.artifactName }}
+        symbolArtifactName: ${{ parameters.symbolArtifactName }}
+        symbolArtifactPatterns: ${{ parameters.symbolArtifactPatterns }}
+        symbolArtifactExtensions: ${{ parameters.symbolArtifactExtensions }}
+        symbolConversionFilters: ${{ parameters.symbolConversionFilters }}
+        pdb2pdbPackageId: ${{ parameters.pdb2pdbPackageId }}
+        pdb2pdbPackageVersion: ${{ parameters.pdb2pdbPackageVersion }}
+        pdb2pdbPackageFeed: ${{ parameters.pdb2pdbPackageFeed }}
+        topicBranchName: ${{ parameters.topicBranchName }}
+        targetBranchName: ${{ parameters.targetBranchName }}
+        insertionPayloadSuffix: ${{ parameters.insertionPayloadSuffix }}
+        teamEmail: ${{ parameters.teamEmail }}
+        nugetVersionSpec: ${{ parameters.nugetVersionSpec }}
+        nupkgArtifactName: ${{ parameters.nupkgArtifactName }}
+        nupkgArtifactPatterns: ${{ parameters.nupkgArtifactPatterns }}
+        msiNupkgArtifactName: ${{ parameters.msiNupkgArtifactName }}
+        msiNupkgArtifactPatterns: ${{ parameters.msiNupkgArtifactPatterns }}
+        serviceConnection: ${{ parameters.serviceConnection }}
+        pushToShippingFeed: ${{ parameters.pushToShippingFeed }}
+        archiveSymbols: ${{ parameters.archiveSymbols }}
+        createVSPR: ${{ parameters.createVSPR }}

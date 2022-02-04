@@ -1,0 +1,95 @@
+#####################################################################################################
+# Convert .nupkg files into .msi files
+#
+# NOTE:  This template is designed to depend on the `sign-artifacts/jobs/v*.yml` job, but
+#         other jobs that produce the required artifacts can be used.
+#
+# This template will convert .nupkg files into .msi files, sign them, and then generate
+#  a Visual Studio manifest file to be used for VS insertion.
+# Any pipeline consuming this template must have a stage which creates and uploads signed
+#  NuGet packages using the "PublishPipelineArtifacts" task.  The pipeline must also upload
+#  an artifact containing a `vs-workload.props` file with various properties and items set, e.g.
+#
+#    <PropertyGroup>
+#      <TargetName>Microsoft.NET.Sdk.Maui.Workload</TargetName>
+#      <ManifestBuildVersion>@VERSION@</ManifestBuildVersion>
+#    </PropertyGroup>
+#    <ItemGroup>
+#      <!-- Shorten package names to avoid long path caching issues in Visual Studio -->
+#      <ShortNames Include="@PACK_VERSION_LONG@">
+#        <Replacement>@VERSION@</Replacement>
+#      </ShortNames>
+#      <ComponentResources Include="maui" Version="@VERSION@" Category=".NET" Title=".NET MAUI workload" Description=".NET MAUI SDK for all platforms"/>
+#      <ComponentResources Include="maui-mobile" Version="@VERSION@" Category=".NET" Title=".NET MAUI mobile workload" Description=".NET MAUI SDK for Mobile"/>
+#      <WorkloadPackages Include="**\Microsoft.NET.Sdk.Maui.Manifest*.nupkg" Version="@VERSION@" />
+#    </ItemGroup>
+#
+# Typical usage is:
+#
+#  resources:
+#    repositories:
+#      - repository: xamarin-templates
+#        type: github
+#        name: xamarin/yaml-templates
+#
+#  ...
+#
+#  jobs:
+#    - template: nuget-msi-convert/job/v2.yml@xamarin-templates
+#      parameters:
+#        dependsOn: signing
+#        artifactName: nuget-signed
+#        artifactPatterns: |
+#          !*Darwin*
+#        propsArtifactName: nuget-unsigned
+#        signType: Real
+#
+####################################################################################################
+
+parameters:
+  yamlResourceName: yaml                            # The name of your xamarin/yaml-templates repository resource declaration.
+  dependsOn: signing                                # The job that produces the NuGet artifacts to be converted.
+  artifactName: nuget-signed                        # The name of the artifact containing signed nugets.
+  artifactPatterns: ''                              # A new line delimited list of package names to use or ignore when downloading the nuget-signed artifact.
+  artifactPath: ''                                  # The path to the signed nugets within the artifact, if nested.
+  propsArtifactName: nuget-unsigned                 # The name of the artifact containing vs-workload.props.
+  signedMsiArtifactName: vsdrop-signed              # The name of the vsdrop artifact that will be uploaded after generation / signing.
+  msiNuGetArtifactName: vs-msi-nugets               # The name of the .msi -> .nupkg repack artifact that will be uploaded after generation / signing.
+  signType: Test                                    # The type of signing to perform (Test or Real).
+  convertProjFolderName: convert-v2                 # The name of the yaml-templates folder containing convert.proj to use.
+  arcadePackageVersion: 7.0.0-beta.22063.1          # The package version of the arcade build tasks to use.
+  swixBuildPackageVersion: '1.1.37'                 # The package version of MicroBuild.Plugins.SwixBuild to use.
+  wixPackageVersion: 1.0.0-v3.14.0.5722             # The package version of Microsoft.Signed.WiX to use.
+  runInParallel: true                               # Run msi generation in parallel.
+  postConvertSteps: []                              # Any additional steps to run after .msi conversion, before artifact uploading.
+  condition: true                                   # Condition to determine whether this stage should run or not.
+
+jobs:
+- template: v1.yml
+  parameters:
+    yamlResourceName: ${{ parameters.yamlResourceName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    artifactName: ${{ parameters.artifactName }}
+    artifactPatterns: ${{ parameters.artifactPatterns }}
+    artifactPath: ${{ parameters.artifactPath }}
+    propsArtifactName: ${{ parameters.propsArtifactName }}
+    signedMsiArtifactName: ${{ parameters.signedMsiArtifactName }}
+    msiNuGetArtifactName: ${{ parameters.msiNuGetArtifactName }}
+    signType: ${{ parameters.signType }}
+    convertProjFolderName: ${{ parameters.convertProjFolderName }}
+    arcadePackageVersion: ${{ parameters.arcadePackageVersion }}
+    swixBuildPackageVersion: ${{ parameters.swixBuildPackageVersion }}
+    wixPackageVersion: ${{ parameters.wixPackageVersion }}
+    runInParallel: ${{ parameters.runInParallel }}
+    condition:  ${{ parameters.condition }}
+    postConvertSteps:
+    - task: MSBuild@1
+      displayName: Restore sign.proj
+      inputs:
+        solution: $(System.DefaultWorkingDirectory)\nuget-msi-convert\msbuild\sign\sign.proj
+        msbuildArguments: /t:Restore /p:ArcadePackageVersion=${{ parameters.arcadePackageVersion }}
+    - task: MSBuild@1
+      displayName: Sign .nupkg files
+      inputs:
+        solution: $(System.DefaultWorkingDirectory)\nuget-msi-convert\msbuild\sign\sign.proj
+        msbuildArguments: /p:SignType=${{ parameters.signType }} /p:ArcadePackageVersion=${{ parameters.arcadePackageVersion }} /bl:$(Build.StagingDirectory)\bin\msi-nupkgs\sign-nupkg.binlog

@@ -92,14 +92,6 @@ parameters:
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
 
-resources:
-  repositories:
-    - repository: xamarin-templates
-      type: github
-      name: xamarin/yaml-templates
-      endpoint: xamarin
-      ref: refs/heads/main # still defaults to master even though main is the main branch
-
 stages:
 
   - stage: build_net6
@@ -128,7 +120,7 @@ stages:
                   - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
+                - template: agent-cleanser/v1.yml
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
@@ -174,7 +166,7 @@ stages:
                 - Agent.IsPaired -equals False
           steps:
             - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-              - template: agent-cleanser/v1.yml@xamarin-templates
+              - template: agent-cleanser/v1.yml
                 parameters:
                   UninstallMono: false
                   UninstallXamarinMac: false
@@ -247,7 +239,7 @@ stages:
                   - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
+                - template: agent-cleanser/v1.yml
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
@@ -299,7 +291,7 @@ stages:
                   - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
+                - template: agent-cleanser/v1.yml
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
@@ -337,7 +329,7 @@ stages:
       dependsOn: pack_net6
       displayName: Sign Nuget
       jobs:
-        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+        - template: sign-artifacts/jobs/v2.yml
           parameters:
             signType: Real
             teamName: $(TeamName)
@@ -348,7 +340,7 @@ stages:
             displayName: Sign Phase
             condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
 
-        - template: nuget-msi-convert/job/v2.yml@xamarin-templates
+        - template: nuget-msi-convert/job/v2.yml
           parameters:
             yamlResourceName: xamarin-templates
             dependsOn: signing
@@ -359,7 +351,7 @@ stages:
             propsArtifactName: nuget
             signType: Real
 
-    - template: vs-insertion/stage/v1.yml@xamarin-templates
+    - template: vs-insertion/stage/v1.yml
       parameters:
         dependsOn: nuget_signing
         approvalTimeoutInMinutes: 30

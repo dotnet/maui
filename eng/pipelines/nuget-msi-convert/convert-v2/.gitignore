@@ -1,0 +1,6 @@
+bin
+obj
+manifests
+msi-nupkgs
+nugets
+vs-workload.props

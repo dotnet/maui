@@ -1,0 +1,327 @@
+parameters:
+  UninstallMono: true
+  UninstallXamarinMac: true
+  CleanseProvisionatorCache: true
+  CleanseXcodeArchives: true
+
+steps:
+- powershell: |
+    Write-Host "IsWindows: ${IsWindows}"
+    Write-Host "IsMacOS: ${IsMacOS}"
+    Write-Host "IsLinux: ${IsLinux}"
+
+    # https://stackoverflow.com/questions/64893785/how-to-detect-linux-or-macos-or-windows-in-powershell
+    # https://stackoverflow.com/questions/44703646/determine-the-os-version-linux-and-windows-from-powershell
+    $platform = ''
+    if ($IsWindows -or $env:OS) {
+      $platform = 'Windows'
+    } elseif ($IsMacOS) {
+      $platform = 'Mac'
+    } elseif ($IsLinux) {
+      throw "Agent-Cleanser: Linux is not supported"
+    } else {
+      throw "Agent-Cleanser: Unrecognized platform"
+    }
+
+    Write-Host "Platform.Name: ${platform}"
+    Write-Host "##vso[task.setvariable variable=Platform.Name]${platform}"
+  displayName: 'Agent-Cleanser: Set platform variable'
+
+- powershell: |
+    # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+    $homeDirectory = "${env:AGENT_HOMEDIRECTORY}"
+    $buildDirectory = "${env:AGENT_BUILDDIRECTORY}"   # Example: Mac: ~/azdo/_work/1
+
+    Write-Host "Agent home directory: ${homeDirectory}"
+    Write-Host "Agent build directory: ${buildDirectory}"
+
+    $platformName = "$(Platform.Name)"
+    Write-Host "Platform.Name: ${platformName}"
+
+    if (-not ([string]::IsNullOrEmpty($homeDirectory))) {
+        if ($platformName -eq 'Windows') {
+            Write-Host "Windows"
+
+            $agentDrive = $homeDirectory.Substring(0, 2)
+            Write-Host "Agent drive: ${agentDrive}"
+
+            # https://dev.azure.com/devdiv/DevDiv/_git/DeploymentScripts?path=%2FScripts%2FVirtualMachine%2FGetDiskSpace.ps1
+            $disks = Get-WmiObject Win32_LogicalDisk
+            $disks | ForEach-Object {
+                    $deviceID = $_.DeviceID
+                    if ($agentDrive -eq $deviceID) {
+                        $driveType = $_.DriveType
+                        $volumeName = $_.VolumeName
+                        $size = [double]$_.Size
+                        $free = [double]$_.FreeSpace
+
+                        if($_.Freespace -ne $null)
+                        {
+                            [double] $percentFree = ($_.FreeSpace/$_.Size) * 100
+                        } else {
+                            [double] $percentFree = 0.0
+                        }
+
+                        Write-Host "deviceID: ${deviceID}"
+                        Write-Host "driveType: ${driveType}"
+                        Write-Host "volumeName: ${volumeName}"
+                        Write-Host "size: ${size}"
+                        Write-Host "free: ${free}"
+                        Write-Host "percentFree: ${percentFree}"
+                    }
+            }
+        } else {
+            Write-Host "IsMacOS: ${IsMacOS}"
+
+            # Mac: df -h /System/Volumes/Data
+            #
+            # Filesystem      Size   Used  Avail Capacity iused      ifree %iused  Mounted on
+            # /dev/disk1s10  918Gi  6.4Gi  892Gi     1%  134955 9621358805    0%   /System/Volumes/Data
+
+            <#
+            $results = @"
+        Filesystem      Size   Used  Avail Capacity iused      ifree %iused  Mounted on
+        /dev/disk1s10  918Gi  6.4Gi  892Gi     1%  134955 9621358805    0%   /System/Volumes/Data
+        "@
+        #>
+            Write-Host "Disk space report for the agent home directory: ${homeDirectory}"
+            $results = $(df -h "$homeDirectory")
+
+            $lines = $results.Split([Environment]::NewLine, [System.StringSplitOptions]::RemoveEmptyEntries)
+            $items = $lines[1].Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)      # Note: $lines[0] are the column titles; $lines[1] is the data
+            $fileSystem = $items[0]
+            $size = $items[1]
+            $used = $items[2]
+            $free = $items[3]
+            $mountedPoint = $items[8]
+
+            Write-Host "fileSystem: ${fileSystem}"
+            Write-Host "size: ${size}"
+            Write-Host "used: ${used}"
+            Write-Host "free: ${free}"
+            Write-Host "mountedPoint: ${mountedPoint}"
+        }
+    } else {
+        Write-Host "The AGENT_BUILDDIRECTORY environment variable is not set"
+    }
+  displayName: 'Agent-Cleanser: Agent directory disk usage summary'
+
+- powershell: |
+    function Get-Directories([string] $Directory, [string] $Pattern) {
+        return [IO.Directory]::EnumerateDirectories($Directory, "${Pattern}*", [IO.SearchOption]::AllDirectories)
+    }
+
+    function Get-MountPoints([string] $Directory, [string[]] $MountPointPatterns) {
+        $mountPoints = @()
+        $MountPointPatterns | ForEach-Object {
+          $mountPoints += Get-Directories -Directory $Directory -Pattern $_
+        }
+
+        return $mountPoints
+    }
+
+    function Unmount-MountPoints([string] $AgentBuildDirectory) {
+      Write-Host "Enumerating mount points under '${AgentBuildDirectory}'"
+      $mountPoints = Get-MountPoints -Directory $AgentBuildDirectory -MountPointPatterns @('tmp', 'Visual Studio ')
+      $mountPoints | ForEach-Object {
+          Write-Host "Mount Point: $_"
+          Write-Host "UNMOUNTING: $_"
+          try {
+              if ([IO.Directory]::Exists($_)) {       # Since we enumerate all directories (recursively) we might be attempting to unmount a child directory where its parent has already been unmounted/deleted
+                Write-Host "hdiutil unmount $_"
+                hdiutil unmount $_
+                if ([IO.Directory]::Exists($_)) {
+                  Write-Host "DELETING: $_"
+                  [IO.Directory]::Delete($_, $true)
+                } else {
+                  Write-Host "Mount point '$_' successfully unmounted and removed"
+                }
+              } else {
+                Write-Host "WARNING: Directory '$_' does not exist. It may have been unmounted/deleted if its parent directory was unmounted/deleted"
+              }
+          } catch {
+              Write-Host "ERROR: EXCEPTION: Unmount and delete mount point: $($_.Exception.message)"
+          }
+      }
+    }
+
+    try {
+      $agentHomeDirectory = "${env:AGENT_HOMEDIRECTORY}"
+      Write-Host "Agent home directory: ${agentHomeDirectory}"
+
+      if ([string]::IsNullOrEmpty($agentHomeDirectory)) {
+        Write-Host "ERROR: AGENT_HOMEDIRECTORY environment variable not set. Exiting ..."
+        exit
+      }
+
+      $agentWorkDirectory = [IO.Path]::Combine($agentHomeDirectory, '_work')
+      Write-Host "Agent work directory: ${agentWorkDirectory}"
+
+      $agentBuildDirectory = "${env:AGENT_BUILDDIRECTORY}"   # Example: Mac: ~/azdo/_work/1
+      Write-Host "Agent build directory: ${agentBuildDirectory}"
+
+      if ([string]::IsNullOrEmpty($agentBuildDirectory)) {
+        Write-Host "ERROR: AGENT_BUILDDIRECTORY environment variable not set. Exiting ..."
+        exit
+      }
+
+      $agentWorkspaces = [IO.Directory]::EnumerateDirectories($agentWorkDirectory)
+      $agentWorkspaces | ForEach-Object {
+          $dirName = [IO.Path]::GetFileName($_)
+          $dirNameParts = $dirName.Split(".")
+
+          $workspace = 0
+          if ([int]::TryParse($dirNameParts[0], [ref]$workspace)) {
+              Write-Host "Agent workspace (build directory): ${workspace}"
+              if ($_ -ne $agentBuildDirectory) {                                        # Avoid deleting the agent directory we're currently running from
+                  if ($dirNameParts.Count -eq 1 -or $dirNameParts[1] -eq 'backup') {    # Only delete numerical agent build directories or backups of such directories such as '1.backup'
+                      $agentDirectoryBeingCleansed = $_
+                      Write-Host "DELETING: ${agentDirectoryBeingCleansed}"
+
+                      try {
+                        [IO.Directory]::Delete($agentDirectoryBeingCleansed, $true)     # Recursive
+                      } catch {
+                        $platformName = "$(Platform.Name)"
+                        Write-Host "Platform.Name: ${platformName}"
+
+                        if ($platformName -eq 'Mac') {
+                          # A recursive delete will not delete a mount point directory, which is read-only. The delete will delete everything else, but will throw an exception leaving the mount point directory behind
+                          # Assume the exception occurred because a mount point directory could not be deleted. Enumerate any tmp* mount point directories, unmount and delete them
+                          Unmount-MountPoints -AgentBuildDirectory $agentDirectoryBeingCleansed
+
+                          try {
+                            Write-Host "DELETING: ${agentDirectoryBeingCleansed}"
+                            [IO.Directory]::Delete($agentDirectoryBeingCleansed, $true)
+                          } catch {
+                            Write-Host "ERROR: EXCEPTION: $($_.Exception.message)"
+                          }
+                        } else {
+                          Write-Host "ERROR: EXCEPTION: $($_.Exception.message)"
+                        }
+                      }
+
+                      if ([IO.Directory]::Exists($agentDirectoryBeingCleansed)) {
+                        Write-Host "ERROR: Directory '${agentDirectoryBeingCleansed}' still exists after being cleansed"
+                        Write-Host "-------------------------------------------------------------------------------"
+                        Write-Host "DIRECTORY CONTENTS: ${agentDirectoryBeingCleansed}"
+                        Write-Host "-------------------------------------------------------------------------------"
+                        $files = [IO.Directory]::EnumerateFiles($agentDirectoryBeingCleansed, '*', [IO.SearchOption]::AllDirectories)
+                        $files | ForEach-Object {
+                          Write-Host $_
+                        }
+                      }
+                  } else {
+                      Write-Host "Skip deleting '$_' since it is not a agent build directory of the form '$($dirNameParts[0])' or '$($dirNameParts[0]).backup'"
+                  }
+              } else {
+                  Write-Host "Skip deleting '$_' since it is the current agent build directory"
+              }
+          } else {
+              Write-Host "WARNING: Not an agent build directory: $_"
+          }
+      }
+    } catch {
+      Write-Host "ERROR: EXCEPTION: $($_.Exception.message)"
+    }
+  errorActionPreference: silentlyContinue
+  ignoreLASTEXITCODE: true
+  failOnStderr: false
+  displayName: 'Agent-Cleanser: Cleanse agent workspaces'
+
+- bash: |
+    uninstallXamarinMac=${{ parameters.UninstallXamarinMac }}
+    uninstallMono=${{ parameters.UninstallMono }}
+
+    echo "uninstallXamarinMac: ${uninstallXamarinMac}"
+    echo "uninstallMono: ${uninstallMono}"
+
+    if $uninstallXamarinMac ; then
+      if [[ -d "/Library/Frameworks/Xamarin.Mac.framework" ]]; then
+        echo "Agent-Cleanser: Uninstalling Xamarin.Mac"
+        /Library/Frameworks/Xamarin.Mac.framework/Versions/Current/bin/mmp --version
+        sudo rm -rf /Library/Frameworks/Xamarin.Mac.framework
+        # Forget all Xamarin.Mac packages
+        for pkg in $(pkgutil --pkgs='com.xamarin.mac.*'); do if [[ -n "$pkg" ]]; then pkgutil --forget "$pkg" ]]; fi; done
+      else
+        echo "Agent-Cleanser: Xamarin.Mac not found. Skipping uninstall"
+      fi
+    else
+      echo "Agent-Cleanser: Skipping uninstall of Xamarin.Mac. UninstallXamarinMac is set to false"
+    fi
+
+    if $uninstallMono ; then
+      if [[ -d "/Library/Frameworks/Mono.framework" ]]; then
+        echo "Agent-Cleanser: Uninstalling mono"
+        mono --version
+        sudo rm -rf  /Library/Frameworks/Mono.framework
+        /usr/sbin/pkgutil --forget com.xamarin.mono-MDK.pkg
+      else
+        echo "Agent-Cleanser: Mono not found. Skipping uninstall"
+      fi
+    else
+      echo "Agent-Cleanser: Skipping uninstall of mono. UninstallMono is set to false"
+    fi
+  displayName: 'Agent-Cleanser: Uninstall Mono and Xamarin.Mac'
+  condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
+
+- bash: |
+    cleanseProvisionatorCache=${{ parameters.CleanseProvisionatorCache }}
+    echo "cleanseProvisionatorCache: ${cleanseProvisionatorCache}"
+
+    if $cleanseProvisionatorCache ; then
+      if [[ -d "/Users/$USER/Library/caches/com.xamarin.provisionator/Provisions" ]]; then
+        echo "Agent-Cleanser: Cleansing the Provisionator cache"
+        echo "Provisionator cache contents: /Users/$USER/Library/caches/com.xamarin.provisionator/Provisions"
+        echo "-----------------------------------------------------------------------------------------------------------"
+        sudo ls -l "/Users/$USER/Library/caches/com.xamarin.provisionator/Provisions"
+        sudo du -sh "/Users/$USER/Library/caches/com.xamarin.provisionator/Provisions"
+        sudo df -h "/Users/$USER/Library/caches/com.xamarin.provisionator/Provisions"
+        echo "-----------------------------------------------------------------------------------------------------------"
+        echo "Cleansing /Users/$USER/Library/caches/com.xamarin.provisionator/Provisions"
+        echo "-----------------------------------------------------------------------------------------------------------"
+        sudo rm -rf "/Users/$USER/Library/caches/com.xamarin.provisionator/Provisions"
+        sudo df -h "/Users/$USER/Library/caches/com.xamarin.provisionator"
+      else
+        echo "Agent-Cleanser: Provisionator cache not found. Skipping cleanse. Cache: /Users/$USER/Library/caches/com.xamarin.provisionator/Provisions"
+      fi
+    else
+      echo "Agent-Cleanser: Skipping cleansing of the Provisionator cache. CleanseProvisionatorCache is set to false. Cache: /Users/$USER/Library/caches/com.xamarin.provisionator/Provisions"
+    fi
+  displayName: 'Agent-Cleanser: Cleanse Provisionator cache'
+  condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
+
+- bash: |
+    function ShowXcodeArchivesContent() {
+        echo "Xcode archives contents: /Users/$USER/Library/Developer/Xcode/Archives"
+        echo "-----------------------------------------------------------------------------------------------------------"
+        sudo ls -l "/Users/$USER/Library/Developer/Xcode/Archives"
+        sudo du -sh "/Users/$USER/Library/Developer/Xcode/Archives"
+        sudo df -h "/Users/$USER/Library/Developer/Xcode/Archives"
+    }
+
+    cleanseXcodeArchives=${{ parameters.CleanseXcodeArchives }}
+    echo "cleanseXcodeArchives: ${cleanseXcodeArchives}"
+
+    if $cleanseXcodeArchives ; then
+      if [[ -d "/Users/$USER/Library/Developer/Xcode/Archives" ]]; then
+        echo "Agent-Cleanser: Cleansing the Xcode archives"
+
+        ShowXcodeArchivesContent
+
+        DAYS_OLDER_THAN=2
+
+        echo "-----------------------------------------------------------------------------------------------------------"
+        echo "Cleansing content older than ${DAYS_OLDER_THAN} days under /Users/$USER/Library/Developer/Xcode/Archives"
+        echo "-----------------------------------------------------------------------------------------------------------"
+
+        find "/Users/$USER/Library/Developer/Xcode/Archives" -depth 1 -name "*" -type d -mtime +${DAYS_OLDER_THAN} | xargs rm -rf
+
+        ShowXcodeArchivesContent
+      else
+        echo "Agent-Cleanser: Xcode archives not found. Skipping cleanse. Archives: /Users/$USER/Library/Developer/Xcode/Archives"
+      fi
+    else
+      echo "Agent-Cleanser: Skipping cleansing of Xcode archives. CleanseXcodeArchives is set to false. Archives: /Users/$USER/Library/Developer/Xcode/Archives"
+    fi
+  displayName: 'Agent-Cleanser: Cleanse Xcode archives'
+  condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))

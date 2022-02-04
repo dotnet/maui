@@ -1,0 +1,101 @@
+####################################################################################################
+# SIGN AZURE DEVOPS ARTIFACTS
+#
+# This template is a pipeline template that can be used to host a "signing pipeline" which serves
+# as a way for other builds to request a signing job. This pipeline will read input parameters and 
+# then download, sign and upload the artifacts.
+#
+####################################################################################################
+
+parameters:
+  - name: artifactsProject
+    displayName: Pipeline Project
+    type: string
+    default: 'devdiv'
+  - name: artifactsPipeline
+    displayName: Pipeline Pipeline Definition ID
+    type: number
+    default: 0
+  - name: artifactsBuildId
+    displayName: Pipeline Build ID
+    type: number
+    default: 0
+  - name: artifactName
+    displayName: Artifact Name
+    type: string
+    default: 'nuget'
+  - name: signType
+    displayName: Sign Type
+    type: string
+    default: 'Real'
+    values:
+      - 'Test'
+      - 'Real'
+  - name: teamName
+    displayName: Team Name
+    type: string
+    default: 'Xamarin'
+  - name: poolName
+    displayName: Agent Pool Name
+    type: string
+    default: VSEngSS-MicroBuild2019-1ES
+
+trigger: none
+
+variables:
+  skipComponentGovernanceDetection: true
+
+pool:
+  name: ${{ parameters.poolName }}
+  demands:
+    - msbuild
+
+steps:
+  - powershell: |
+      $_ARTIFACTS_PROJECT_ID = if (-not $env:ARTIFACTS_PROJECT_ID) { "${{ parameters.artifactsProject }}" } else { $env:ARTIFACTS_PROJECT_ID }
+      $_ARTIFACTS_PIPELINE_ID = if (-not $env:ARTIFACTS_PIPELINE_ID) { "${{ parameters.artifactsPipeline }}" } else { $env:ARTIFACTS_PIPELINE_ID }
+      $_ARTIFACTS_BUILD_ID = if (-not $env:ARTIFACTS_BUILD_ID) { "${{ parameters.artifactsBuildId }}" } else { $env:ARTIFACTS_BUILD_ID }
+      $_ARTIFACT_NAME = if (-not $env:ARTIFACT_NAME) { "${{ parameters.artifactName }}" } else { $env:ARTIFACT_NAME }
+      $_SIGN_TYPE = if (-not $env:SIGN_TYPE) { "${{ parameters.signType }}" } else { $env:SIGN_TYPE }
+      $_TEAM_NAME = if (-not $env:TEAM_NAME) { "${{ parameters.teamName }}" } else { $env:TEAM_NAME }
+
+      Write-Host "_ARTIFACTS_PROJECT_ID:   $_ARTIFACTS_PROJECT_ID"
+      Write-Host "_ARTIFACTS_PIPELINE_ID:  $_ARTIFACTS_PIPELINE_ID"
+      Write-Host "_ARTIFACTS_BUILD_ID:     $_ARTIFACTS_BUILD_ID"
+      Write-Host "_ARTIFACT_NAME:          $_ARTIFACT_NAME"
+      Write-Host "_SIGN_TYPE:              $_SIGN_TYPE"
+      Write-Host "_TEAM_NAME:              $_TEAM_NAME"
+
+      Write-Host "##vso[task.setvariable variable=_ARTIFACTS_PROJECT_ID]$_ARTIFACTS_PROJECT_ID"
+      Write-Host "##vso[task.setvariable variable=_ARTIFACTS_PIPELINE_ID]$_ARTIFACTS_PIPELINE_ID"
+      Write-Host "##vso[task.setvariable variable=_ARTIFACTS_BUILD_ID]$_ARTIFACTS_BUILD_ID"
+      Write-Host "##vso[task.setvariable variable=_ARTIFACT_NAME]$_ARTIFACT_NAME"
+      Write-Host "##vso[task.setvariable variable=_SIGN_TYPE]$_SIGN_TYPE"
+      Write-Host "##vso[task.setvariable variable=_TEAM_NAME]$_TEAM_NAME"
+    displayName: 'Merge Input Parameters'
+
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download Unsigned Artifacts'
+    inputs:
+      project: $(_ARTIFACTS_PROJECT_ID)
+      pipeline: $(_ARTIFACTS_PIPELINE_ID)
+      buildId: $(_ARTIFACTS_BUILD_ID)
+      downloadPath: '$(Agent.TempDirectory)\artifact-signing\unsigned'
+      artifactName: $(_ARTIFACT_NAME)
+      buildType: specific
+      buildVersionToDownload: specific
+      downloadType: single
+
+  - template: ../steps/v2.yml
+    parameters:
+      sourceFolder: '$(Agent.TempDirectory)\artifact-signing\unsigned'
+      targetFolder: '$(Agent.TempDirectory)\artifact-signing\signed'
+      workingDirectory: '$(Agent.TempDirectory)\artifact-signing'
+      signType: $(_SIGN_TYPE)
+      teamName: $(_TEAM_NAME)
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Signed Artifacts'
+    inputs:
+      artifactName: signed
+      pathToPublish: $(Agent.TempDirectory)\artifact-signing\signed

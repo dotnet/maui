@@ -1,0 +1,67 @@
+
+<Project Sdk="Microsoft.Build.NoTargets/3.0.4">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <_RootDir Condition=" '$(BUILD_STAGINGDIRECTORY)' != '' ">$([MSBuild]::EnsureTrailingSlash($(BUILD_STAGINGDIRECTORY)))</_RootDir>
+    <_RootDir Condition=" '$(_RootDir)' == '' ">$(MSBuildThisFileDirectory)</_RootDir>
+    <OutputPath>$(_RootDir)bin\</OutputPath>
+    <ManifestOutputPath>$(OutputPath)manifests</ManifestOutputPath>
+    <MsiNuGetOutputPath>$(OutputPath)msi-nupkgs</MsiNuGetOutputPath>
+    <NuGetPackagePath Condition=" '$(NuGetPackagePath)' == '' ">$(_RootDir)nugets</NuGetPackagePath>
+    <WorkloadMsiGenProps Condition=" '$(WorkloadMsiGenProps)' == '' ">$(_RootDir)vs-workload.props</WorkloadMsiGenProps>
+    <ArcadePackageVersion Condition=" '$(ArcadePackageVersion)' == '' ">6.0.0-beta.21355.2</ArcadePackageVersion>
+  </PropertyGroup>
+
+  <Import Project="$(WorkloadMsiGenProps)" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(ArcadePackageVersion)" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="MicroBuild.Plugins.SwixBuild" Version="1.1.37" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="0.4.1" PrivateAssets="all" />
+    <PackageReference Include="Wix" Version="3.14.0-dotnet" GeneratePathProperty="true" PrivateAssets="all" />
+  </ItemGroup>
+
+  <UsingTask TaskName="GenerateVisualStudioWorkload" AssemblyFile="$(PkgMicrosoft_DotNet_Build_Tasks_Workloads)\tools\net472\Microsoft.DotNet.Build.Tasks.Workloads.dll" />
+  <UsingTask TaskName="GenerateVisualStudioManifest" AssemblyFile="$(PkgMicrosoft_DotNet_Build_Tasks_Workloads)\tools\net472\Microsoft.DotNet.Build.Tasks.Workloads.dll" />
+  
+  <Target Name="_GenerateAndSignMsis"
+      BeforeTargets="SignFiles"
+      AfterTargets="AfterBuild" >
+    <PropertyGroup>
+      <WixToolSetPath>$(PkgWix)\tools</WixToolSetPath>
+      <SwixTargetsPath>$(PkgMicroBuild_Plugins_SwixBuild)\build\MicroBuild.Plugins.SwixBuild.targets</SwixTargetsPath>
+      <WorkloadTargets>$(PkgMicrosoft_DotNet_Build_Tasks_Workloads)\tools\net472</WorkloadTargets>
+    </PropertyGroup>
+    <ItemGroup>
+      <WorkloadPackages Include="$(NuGetPackagePath)\Microsoft.NET.Sdk.*.Manifest*.nupkg" />
+    </ItemGroup>
+    <GenerateVisualStudioWorkload
+        ComponentResources="@(ComponentResources)"
+        ComponentVersions="@(ComponentVersions)"
+        IntermediateBaseOutputPath="$(IntermediateOutputPath)"
+        OutputPath="$(OutputPath)"
+        PackagesPath="$(NuGetPackagePath)"
+        ShortNames="@(ShortNames)"
+        SuppressIces="ICE03"
+        WixToolsetPath="$(WixToolsetPath)"
+        WorkloadPackages="@(WorkloadPackages)">
+      <Output TaskParameter="SwixProjects" ItemName="SwixProjects"/>
+      <Output TaskParameter="Msis" ItemName="Msis" />
+    </GenerateVisualStudioWorkload>
+    <ItemGroup>
+      <FilesToSign Include="$(OutputPath)*.msi">
+        <Authenticode>Microsoft400</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateManifestsAndMsiNuGets"
+        AfterTargets="SignFiles" >
+    <MSBuild Projects="%(SwixProjects.Identity)" Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=$(ManifestOutputPath)" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)vsman\xamarin-workload.vsmanproj" Targets="Restore;Build;SetXamarinDropVars" Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=$(ManifestOutputPath);WorkloadMsiGenProps=$(WorkloadMsiGenProps)" />
+    <MSBuild Projects="%(Msis.PackageProject)" Targets="Restore;Pack" Properties="OutputPath=$(MsiNuGetOutputPath)" />
+  </Target>
+
+</Project>
