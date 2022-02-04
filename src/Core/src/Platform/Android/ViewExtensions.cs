@@ -10,6 +10,7 @@ using AndroidX.Core.View;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Primitives;
 using AColor = Android.Graphics.Color;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
@@ -251,14 +252,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumHeight(this AView nativeView, IView view)
 		{
-			var value = (int)nativeView.Context!.ToPixels(view.MinimumHeight);
+			var min = Dimension.ResolveMinimum(view.MinimumHeight);
+
+			var value = (int)nativeView.Context!.ToPixels(min);
 			nativeView.SetMinimumHeight(value);
 			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateMinimumWidth(this AView nativeView, IView view)
 		{
-			var value = (int)nativeView.Context!.ToPixels(view.MinimumWidth);
+			var min = Dimension.ResolveMinimum(view.MinimumWidth);
+
+			var value = (int)nativeView.Context!.ToPixels(min);
 			nativeView.SetMinimumWidth(value);
 			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
