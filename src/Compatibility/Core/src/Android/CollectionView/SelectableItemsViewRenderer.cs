@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				SelectableItemsView.SelectedItemsProperty,
 				SelectableItemsView.SelectionModeProperty))
 			{
-				UpdateNativeSelection();
+				UpdatePlatformSelection();
 			}
 		}
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			base.SetUpNewElement(newElement);
 
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
 		protected override TAdapter CreateAdapter()
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return (TAdapter)new SelectableItemsViewAdapter<TItemsView, TItemsViewSource>(ItemsView);
 		}
 
-		void UpdateNativeSelection()
+		void UpdatePlatformSelection()
 		{
 			var mode = ItemsView.SelectionMode;
 

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				newListViewBase.SelectionChanged += NativeSelectionChanged;
 			}
 
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
 		protected override void DisconnectHandler(ListViewBase nativeView)
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		void UpdateNativeSelection()
+		void UpdatePlatformSelection()
 		{
 			_ignoreNativeSelectionChange = true;
 
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void VirtualSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
 		void NativeSelectionChanged(object sender, WASDKSelectionChangedEventArgs args)
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_ignoreNativeSelectionChange = true;
 
 			base.UpdateItemsSource();
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 
 			_ignoreNativeSelectionChange = false;
 		}

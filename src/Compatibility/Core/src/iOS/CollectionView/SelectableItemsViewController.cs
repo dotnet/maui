@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		internal void UpdateNativeSelection()
+		internal void UpdatePlatformSelection()
 		{
 			if (ItemsView == null)
 			{
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					break;
 			}
 
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
 		void SynchronizeNativeSelectionWithSelectedItems()

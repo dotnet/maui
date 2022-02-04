@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (changedProperty.IsOneOf(SelectableItemsView.SelectedItemProperty, SelectableItemsView.SelectedItemsProperty))
 			{
-				UpdateNativeSelection();
+				UpdatePlatformSelection();
 			}
 			else if (changedProperty.Is(SelectableItemsView.SelectionModeProperty))
 			{
@@ -39,12 +39,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			UpdateSelectionMode();
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
-		protected virtual void UpdateNativeSelection()
+		protected virtual void UpdatePlatformSelection()
 		{
-			Controller.UpdateNativeSelection();
+			Controller.UpdatePlatformSelection();
 		}
 
 		protected virtual void UpdateSelectionMode()
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void UpdateItemsSource()
 		{
 			base.UpdateItemsSource();
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 	}
 }

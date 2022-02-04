@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				newListViewBase.SelectionChanged += NativeSelectionChanged;
 			}
 
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
 		protected override void UpdateItemsSource()
@@ -69,12 +69,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_ignoreNativeSelectionChange = true;
 
 			base.UpdateItemsSource();
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 
 			_ignoreNativeSelectionChange = false;
 		}
 
-		void UpdateNativeSelection()
+		void UpdatePlatformSelection()
 		{
 			_ignoreNativeSelectionChange = true;
 
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void FormsSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
 		void NativeSelectionChanged(object sender, UWPSelectionChangedEventArgs args)
