@@ -93,7 +93,6 @@ if ($IsWindows)
         $env:DOTNET_MULTILEVEL_LOOKUP=$oldDOTNET_MULTILEVEL_LOOKUP
         $env:MSBuildEnableWorkloadResolver=$oldMSBuildEnableWorkloadResolver
         $env:PATH=$oldPATH
-        $jsonBackup | Set-Content $globaljson
     }
 }
 else
