@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return new Size(40, 40);
 		}
 
-		protected virtual SwipeRefreshLayout CreateNativePullToRefresh(Context context)
+		protected virtual SwipeRefreshLayout CreatePlatformPullToRefresh(Context context)
 			=> new SwipeRefreshLayoutWithFixedNestedScrolling(context);
 
 		protected override void OnAttachedToWindow()
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					var ctx = Context;
 					nativeListView = CreatePlatformControl();
-					_refresh = CreateNativePullToRefresh(ctx);
+					_refresh = CreatePlatformPullToRefresh(ctx);
 					_refresh.SetOnRefreshListener(this);
 					_refresh.AddView(nativeListView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
 					SetPlatformControl(nativeListView, _refresh);

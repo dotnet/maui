@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return new Size(40, 40);
 		}
 
-		protected virtual SwipeRefreshLayout CreateNativePullToRefresh(Context context)
+		protected virtual SwipeRefreshLayout CreatePlatformPullToRefresh(Context context)
 			=> new SwipeRefreshLayoutWithFixedNestedScrolling(context);
 
 		protected override void OnAttachedToWindow()
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		//	if (ContainerView == null)
 		//	{
-		//		_refresh = CreateNativePullToRefresh(Context);
+		//		_refresh = CreatePlatformPullToRefresh(Context);
 		//		_refresh.SetOnRefreshListener(new ListViewSwipeRefreshLayoutListener(this));
 		//		ContainerView = _refresh;
 		//	}
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (nativeListView == null)
 				{
 					nativeListView = CreatePlatformControl();
-					_refresh = CreateNativePullToRefresh(MauiContext.Context);
+					_refresh = CreatePlatformPullToRefresh(MauiContext.Context);
 					_refresh.SetOnRefreshListener(new ListViewSwipeRefreshLayoutListener(this));
 					_refresh.AddView(nativeListView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
 					SetPlatformControl(nativeListView, _refresh);
