@@ -17,6 +17,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 		void StartTimer(TimeSpan interval, Func<bool> callback);
 
-		SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint);
+		SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint);
 	}
 }

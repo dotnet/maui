@@ -46,9 +46,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			CompositionTarget.Rendering += renderingFrameEventHandler;
 		}
 
-		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
-			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+			return Platform.GetPlatformSize(view, widthConstraint, heightConstraint);
 		}
 
 		void UISettingsColorValuesChanged(UISettings sender, object args)

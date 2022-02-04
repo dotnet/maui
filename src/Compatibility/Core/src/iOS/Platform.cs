@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			throw new InvalidOperationException("RemovePage is not supported globally on iOS, please use a NavigationPage.");
 		}
 
-		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public static SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			Performance.Start(out string reference);
 

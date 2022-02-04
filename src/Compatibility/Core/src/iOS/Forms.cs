@@ -312,12 +312,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 #endif
 
-			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+			public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
 #if __MOBILE__
-				return Platform.iOS.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+				return Platform.iOS.Platform.GetPlatformSize(view, widthConstraint, heightConstraint);
 #else
-				return Platform.MacOS.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+				return Platform.MacOS.Platform.GetPlatformSize(view, widthConstraint, heightConstraint);
 #endif
 			}
 

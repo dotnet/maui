@@ -260,7 +260,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return tcs.Task;
 		}
 
-		public static SizeRequest GetNativeSize(VisualElement element, double widthConstraint, double heightConstraint)
+		public static SizeRequest GetPlatformSize(VisualElement element, double widthConstraint, double heightConstraint)
 		{
 			// Hack around the fact that Canvas ignores the child constraints.
 			// It is entirely possible using Canvas as our base class is not wise.

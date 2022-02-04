@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (VisualElementRenderer == null)
 				return Size.Zero;
 
-			return GetNativeSize(
+			return GetPlatformSize(
 				VisualElementRenderer, widthConstraint, heightConstraint);
 		}
 

@@ -904,7 +904,7 @@ namespace Microsoft.Maui.Controls
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
-			return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
+			return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)

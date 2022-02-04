@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			throw new InvalidOperationException("RemovePage is not supported globally on Android, please use a NavigationPage.");
 		}
 
-		public static SizeRequest GetNativeSize(
+		public static SizeRequest GetPlatformSize(
 			IVisualElementRenderer visualElementRenderer,
 			double widthConstraint,
 			double heightConstraint)
@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return result;
 		}
 
-		internal static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		internal static SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			Performance.Start(out string reference);
 
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else if (visualElementRenderer != null)
 			{
-				returnValue = GetNativeSize(visualElementRenderer, widthConstraint, heightConstraint);
+				returnValue = GetPlatformSize(visualElementRenderer, widthConstraint, heightConstraint);
 			}
 			else
 			{
