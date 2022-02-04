@@ -10,5 +10,6 @@
 		public void GoForward() { }
 		public void Reload() { }
 		public void Eval(string script) { }
+		public Task<string> EvaluateJavaScriptAsync(string script) { return null; }
 	}
 }
