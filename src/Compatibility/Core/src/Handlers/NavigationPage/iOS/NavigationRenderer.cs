@@ -35,29 +35,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _hasNavigationBar;
 		UIImage _defaultNavBarShadowImage;
 		UIImage _defaultNavBarBackImage;
-		protected IPropertyMapper _mapper;
-		protected CommandMapper _commandMapper;
-		protected readonly IPropertyMapper _defaultMapper;
 		bool _disposed;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext ?? NavPage.Handler.MauiContext;
 		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper);
 		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
+		ViewHandlerDelegator<NavigationPage> _viewHandlerWrapper;
 
 		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
 		{
-			_defaultMapper = Mapper;
-			_mapper = _defaultMapper;
-			_commandMapper = CommandMapper;
-			// TODO MAUI:
-			//MessagingCenter.Subscribe<IVisualElementRenderer>(this, UpdateToolbarButtons, sender =>
-			//{
-			//	if (!ViewControllers.Any())
-			//		return;
-			//	var parentingViewController = GetParentingViewController();
-			//	parentingViewController?.UpdateLeftBarButtonItem();
-			//});
+			_viewHandlerWrapper = new ViewHandlerDelegator<NavigationPage>(Mapper, CommandMapper, this);
 		}
 
 		Page Current { get; set; }
@@ -67,7 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		NavigationPage NavPage => Element as NavigationPage;
 		INavigationPageController NavPageController => NavPage;
 
-		public VisualElement Element { get => _element; private set => _element = (NavigationPage)value; }
+		public VisualElement Element { get => _viewHandlerWrapper.Element;  }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -265,9 +253,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
-				//Todo: MAUI
-				//MessagingCenter.Unsubscribe<IVisualElementRenderer>(this, UpdateToolbarButtons);
-
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
 
@@ -911,7 +896,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static string _defaultAccessibilityHint;
 		static bool? _defaultIsAccessibilityElement;
 		static bool? _defaultAccessibilityElementsHidden;
-		NavigationPage _element;
 
 		internal void ValidateInsets()
 		{
@@ -1518,11 +1502,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		UIViewController INativeViewHandler.ViewController => this;
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			VisualElementRenderer<NavigationPage>.GetDesiredSize(this, widthConstraint, heightConstraint,
-				new Size(0, 0));
+			_viewHandlerWrapper.GetDesiredSize(widthConstraint, heightConstraint);
 
 		void IViewHandler.NativeArrange(Rectangle rect) =>
-			this.NativeArrangeHandler(rect);
+			_viewHandlerWrapper.NativeArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
 		{
@@ -1531,7 +1514,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
-			VisualElementRenderer<NavigationPage>.SetVirtualView(view, this, ElementChanged, ref _element, ref _mapper, _defaultMapper, false);
+			_viewHandlerWrapper.SetVirtualView(view, ElementChanged, false);
 
 			void ElementChanged(ElementChangedEventArgs<NavigationPage> e)
 			{
@@ -1541,20 +1524,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.UpdateValue(string property)
 		{
-			_mapper.UpdateProperty(this, Element, property);
+			_viewHandlerWrapper.UpdateProperty(property);
 		}
 
 		void IElementHandler.Invoke(string command, object args)
 		{
-			_commandMapper.Invoke(this, Element, command, args);
+			_viewHandlerWrapper.Invoke(command, args);
 		}
 
 		void IElementHandler.DisconnectHandler()
 		{
-			if (Element?.Handler == (INativeViewHandler)this)
-				Element.Handler = null;
-
-			_element = null;
+			_viewHandlerWrapper.DisconnectHandler();
 		}
 
 		internal class MauiControlsNavigationBar : UINavigationBar
@@ -1757,9 +1737,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (_child != null)
 					{
-						//_child.VirtualView?.DisposeModalAndChildRenderers();
 						_child.NativeView.RemoveFromSuperview();
-						//_child.Dispose();
+						_child.DisconnectHandler();
 						_child = null;
 					}
 
