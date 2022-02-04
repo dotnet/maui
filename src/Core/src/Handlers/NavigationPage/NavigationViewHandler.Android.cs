@@ -6,7 +6,7 @@ using AndroidX.Fragment.App;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, View>
+		ViewHandler<IStackNavigationView, View>
 	{
 		StackNavigationManager? _stackNavigationManager;
 		internal StackNavigationManager? StackNavigationManager => _stackNavigationManager;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			base.OnDisconnectHandler(nativeView);
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
 			if (arg3 is NavigationRequest ea)
 				arg1._stackNavigationManager?.RequestNavigation(ea);

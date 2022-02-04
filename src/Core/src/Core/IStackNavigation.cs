@@ -3,9 +3,9 @@
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Provides top-level navigation for the .NET MAUI app.
+	/// Provides stack based navigation for the .NET MAUI app.
 	/// </summary>
-	public interface INavigationView : IView
+	public interface IStackNavigation
 	{
 		IToolbar Toolbar { get; }
 		void RequestNavigation(NavigationRequest eventArgs);

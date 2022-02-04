@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, Frame>
+		ViewHandler<IStackNavigationView, Frame>
 	{
 		StackNavigationManager? _navigationManager;
 		protected override Frame CreateNativeView()
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
 			if (arg3 is NavigationRequest nr)
 			{
