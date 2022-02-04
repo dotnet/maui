@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public object GTK { get; set; } = s_notset;
 		public object iOS { get; set; } = s_notset;
 		public object macOS { get; set; } = s_notset;
+		public object MacCatalyst { get; set; } = s_notset;
 		public object Tizen { get; set; } = s_notset;
 		public object UWP { get; set; } = s_notset;
 		public object WPF { get; set; } = s_notset;
@@ -29,6 +30,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& GTK == s_notset
 				&& iOS == s_notset
 				&& macOS == s_notset
+				&& MacCatalyst == s_notset
 				&& Tizen == s_notset
 				&& UWP == s_notset
 				&& WPF == s_notset
@@ -123,6 +125,11 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (Device.RuntimePlatform == Device.macOS && macOS != s_notset)
 			{
 				value = macOS;
+				return true;
+			}
+			if (Device.RuntimePlatform == Device.MacCatalyst && MacCatalyst != s_notset)
+			{
+				value = MacCatalyst;
 				return true;
 			}
 			if (Device.RuntimePlatform == Device.Tizen && Tizen != s_notset)

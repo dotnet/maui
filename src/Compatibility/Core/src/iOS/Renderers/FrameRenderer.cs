@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
@@ -7,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer instead")]
 	public class FrameRenderer : VisualElementRenderer<Frame>, ITabStop
 	{
 		UIView _actualView;

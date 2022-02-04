@@ -1,74 +1,68 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.Net.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;$(MauiPlatforms);$(MauiAdditionalPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <LangVersion>9.0</LangVersion>
+    <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
+    <IsPackable>false</IsPackable>
+	<WarningsNotAsErrors>CS1571;CS1572;CS1734</WarningsNotAsErrors>
   </PropertyGroup>
-  <PropertyGroup>
-    <PackageId>Microsoft.Maui.Essentials</PackageId>
-  </PropertyGroup>
+  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <!-- remove other AndroidX packages from the MultiTargeting -->
+    <PackageReference Remove="*" />
+  </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="Microsoft.Maui.Graphics" />
     <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
     <None Include="..\..\..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />
     <None Include="nugetreadme.txt" PackagePath="readme.txt" Pack="true" />
-    <Compile Include="**\*.shared.cs" />
-    <Compile Include="**\*.shared.*.cs" />
+    <Compile Include="**\*.shared.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.shared.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
-    <Compile Include="**\*.netstandard.cs" />
-    <Compile Include="**\*.netstandard.*.cs" />
+    <PackageReference Include="System.Numerics.Vectors" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" PrivateAssets="all" />
-    <Compile Include="**\*.uwp.cs" />
-    <Compile Include="**\*.uwp.*.cs" />
-    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
-      <Name>Windows Mobile Extensions for the UWP</Name>
-    </SDKReference>
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(_MauiDotNetTfm)' OR $(TargetFramework.StartsWith('netstandard'))">
+    <Compile Include="**\*.netstandard.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.netstandard.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
+    <Compile Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.uwp.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <Compile Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.android.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <AndroidResource Include="Resources\xml\*.xml" />
     <PackageReference Include="Xamarin.AndroidX.Browser" />
     <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
     <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
-    <Compile Include="**\*.android.cs" />
-    <Compile Include="**\*.android.*.cs" />
-    <Reference Include="System.Numerics" />
-    <AndroidResource Include="Resources\xml\*.xml" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
-    <Compile Include="**\*.ios.cs" />
-    <Compile Include="**\*.ios.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="OpenTK-1.0" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
+    <Compile Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.ios.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.TVOS')) ">
-    <Compile Include="**\*.tvos.cs" />
-    <Compile Include="**\*.tvos.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="netstandard" />
-    <Reference Include="OpenTK-1.0" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
+    <Compile Include="**\*.maccatalyst.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.maccatalyst.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.WatchOS')) ">
-    <Compile Include="**\*.watchos.cs" />
-    <Compile Include="**\*.watchos.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="netstandard" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tvos' ">
+    <Compile Include="**\*.tvos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.tvos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('tizen')) ">
+  <!-- <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'watchos' ">
+    <Compile Include="**\*.watchos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.watchos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup> -->
+  <!-- <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen' ">
     <PackageReference Include="Tizen.NET" Version="4.0.0" PrivateAssets="All" />
-    <Compile Include="**\*.tizen.cs" />
-    <Compile Include="**\*.tizen.*.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.Mac20')) ">
-    <Compile Include="**\*.macos.cs" />
-    <Compile Include="**\*.macos.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
-    <Reference Include="OpenTK" />
-  </ItemGroup>
+    <Compile Include="**\*.tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.tizen.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup> -->
+  <!-- <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'macos' ">
+    <Compile Include="**\*.macos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.macos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup> -->
 </Project>

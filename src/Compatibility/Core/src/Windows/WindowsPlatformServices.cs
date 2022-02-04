@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
@@ -90,14 +91,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			return size.GetFontSize();
-		}
-
-		public Color GetNamedColor(string name)
-		{
-			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
-				return KnownColor.Default;
-
-			return ((global::Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
 		}
 
 		public string RuntimePlatform => Device.UWP;

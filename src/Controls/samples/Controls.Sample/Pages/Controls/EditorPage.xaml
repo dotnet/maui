@@ -66,6 +66,12 @@
                     Text="123"
                     Keyboard="Numeric"/>
                 <Label
+                    Text="Cursor position"
+                    Style="{StaticResource Headline}"/>
+                <Editor
+                    Text="Cursor position"
+                    CursorPosition="2"/>
+                <Label
                     Text="HorizontalTextAlignment"
                     Style="{StaticResource Headline}" />
                 <Editor 

@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 
 
 			Grid.Children.Add(_collectionView);
-			GridLayout.SetRow(_collectionView, 5);
+			Grid.SetRow((BindableObject)_collectionView, 5);
 
 			_collectionView.ItemTemplate = dataTemplate == null ? ExampleTemplates.PhotoTemplate() : dataTemplate();
 			_collectionView.ItemsSource = _demoFilteredItemSource.Items;

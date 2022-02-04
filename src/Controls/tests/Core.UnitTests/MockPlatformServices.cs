@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch (size)
 			{
 				case NamedSize.Default:
-					return 10;
+					return new MockFontManager().DefaultFontSize;
 				case NamedSize.Micro:
 					return 4;
 				case NamedSize.Small:
@@ -45,22 +45,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					return 16;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(size));
-			}
-		}
-
-		public Color GetNamedColor(string name)
-		{
-			// Some mock values to test color type converter
-			switch (name)
-			{
-				case "SystemBlue":
-					return Color.FromRgb(0, 122, 255);
-				case "SystemChromeHighColor":
-					return Color.FromArgb("#FF767676");
-				case "HoloBlueBright":
-					return Color.FromArgb("#ff00ddff");
-				default:
-					return null;
 			}
 		}
 

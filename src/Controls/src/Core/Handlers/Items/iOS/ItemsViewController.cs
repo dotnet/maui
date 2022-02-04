@@ -474,7 +474,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 			{
-				if (_emptyUIView.Transform.xx == -1)
+				if (_emptyUIView.Transform.A == -1)
 				{
 					return;
 				}
@@ -483,7 +483,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				if (_emptyUIView.Transform.xx == -1)
+				if (_emptyUIView.Transform.A == -1)
 				{
 					FlipEmptyView();
 				}

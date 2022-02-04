@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageButton']/Docs" />
 	public partial class ImageButton : IImageButton
 	{
 		void IImageSourcePart.UpdateIsLoading(bool isLoading) { }

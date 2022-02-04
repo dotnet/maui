@@ -69,9 +69,6 @@ namespace Microsoft.Maui
 
 		public partial class Id
 		{
-			// aapt resource value: 0x7F080059
-			public static int automation_tag_id = 2131230809;
-
 			// aapt resource value: 0x7F080132
 			public static int navigation_layout = 2131231026;
 

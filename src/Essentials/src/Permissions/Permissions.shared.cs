@@ -2,16 +2,20 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Permissions']/Docs" />
 	public static partial class Permissions
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="//Member[@MemberName='CheckStatusAsync']/Docs" />
 		public static Task<PermissionStatus> CheckStatusAsync<TPermission>()
 			where TPermission : BasePermission, new() =>
 				new TPermission().CheckStatusAsync();
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="//Member[@MemberName='RequestAsync']/Docs" />
 		public static Task<PermissionStatus> RequestAsync<TPermission>()
 			where TPermission : BasePermission, new() =>
 				new TPermission().RequestAsync();
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="//Member[@MemberName='ShouldShowRationale']/Docs" />
 		public static bool ShouldShowRationale<TPermission>()
 			where TPermission : BasePermission, new() =>
 				new TPermission().ShouldShowRationale();
@@ -45,6 +49,7 @@ namespace Microsoft.Maui.Essentials
 			public abstract bool ShouldShowRationale();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
 		public partial class Battery
 		{
 		}
@@ -69,6 +74,7 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
 		public partial class Flashlight
 		{
 		}
@@ -109,6 +115,10 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
+		public partial class PhotosAddOnly : BasePlatformPermission
+		{
+		}
+
 		public partial class Reminders
 		{
 		}
@@ -117,6 +127,7 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
 		public partial class Sms
 		{
 		}

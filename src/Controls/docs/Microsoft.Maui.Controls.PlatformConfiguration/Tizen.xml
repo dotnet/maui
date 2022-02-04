@@ -1,0 +1,43 @@
+<Type Name="Tizen" FullName="Microsoft.Maui.Controls.PlatformConfiguration.Tizen">
+  <TypeSignature Language="C#" Value="public sealed class Tizen : Microsoft.Maui.Controls.IConfigPlatform" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit Tizen extends System.Object implements class Microsoft.Maui.Controls.IConfigPlatform" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.PlatformConfiguration.Tizen" />
+  <TypeSignature Language="F#" Value="type Tizen = class&#xA;    interface IConfigPlatform" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Microsoft.Maui.Controls.IConfigPlatform</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Docs>
+    <summary>Marker class that identifies the Tizen platform.</summary>
+    <remarks>
+      <para>Developers specify the type name of this marker class to the <see cref="M:Microsoft.Maui.Controls.IElementConfiguration`1.On``1" /> method to specify the underlying Tizen control on which to run a platform-specific effect.</para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Tizen ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.Tizen.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new Tizen marker class.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

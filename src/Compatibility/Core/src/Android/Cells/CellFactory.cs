@@ -1,3 +1,4 @@
+using System;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Controls.Internals;
@@ -6,6 +7,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.CellFactory instead")]
 	public static class CellFactory
 	{
 		public static AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context, View view)

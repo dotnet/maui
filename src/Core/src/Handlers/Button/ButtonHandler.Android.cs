@@ -10,20 +10,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
-		static Thickness? DefaultPadding;
-		static ColorStateList? TransparentColorStateList;
+		// The padding value has to be done here because in the Material Components,
+		// there is a minumum size of the buttons: 88dp x 48dp
+		// So, this is calculated:
+		//   - Vertical: 6dp*2 (inset) + 8.5dp*2 (padding) + 2.5dp*2 (text magic) + 14dp (text size) = 48dp
+		//   - Horizontal: 16dp (from the styles)
+		public readonly static Thickness DefaultPadding = new Thickness(16, 8.5);
+
+		static ColorStateList TransparentColorStateList = Colors.Transparent.ToDefaultColorStateList();
 
 		// not static and each button has a new instance
 		Drawable? DefaultBackground;
 
 		void SetupDefaults(MaterialButton nativeView)
 		{
-			DefaultPadding ??= new Thickness(
-				nativeView.PaddingLeft,
-				nativeView.PaddingTop,
-				nativeView.PaddingRight,
-				nativeView.PaddingBottom);
-
 			DefaultBackground ??= nativeView.Background;
 		}
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				IconGravity = MaterialButton.IconGravityTextStart,
 				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
-				IconTint = (TransparentColorStateList ??= Colors.Transparent.ToDefaultColorStateList()),
+				IconTint = TransparentColorStateList,
 				SoundEffectsEnabled = false
 			};
 
@@ -72,49 +72,49 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateBackground(button, (handler as ButtonHandler)?.DefaultBackground);
+			handler.NativeView?.UpdateBackground(button, (handler as ButtonHandler)?.DefaultBackground);
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateStrokeColor(buttonStroke);
+			handler.NativeView?.UpdateStrokeColor(buttonStroke);
 		}
 
 		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateStrokeThickness(buttonStroke);
+			handler.NativeView?.UpdateStrokeThickness(buttonStroke);
 		}
 
 		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateCornerRadius(buttonStroke);
+			handler.NativeView?.UpdateCornerRadius(buttonStroke);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{
-			handler.TypedNativeView?.UpdateTextPlainText(button);
+			handler.NativeView?.UpdateTextPlainText(button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.TypedNativeView?.UpdateTextColor(button);
+			handler.NativeView?.UpdateTextColor(button);
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(button);
+			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(button, fontManager);
+			handler.NativeView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
+			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle frame)
 		{
-			var nativeView = this.GetWrappedNativeView();
+			var nativeView = this.ToPlatform();
 
 			if (nativeView == null || Context == null)
 			{

@@ -1,0 +1,6 @@
+<metadata>
+  <!-- Normalize the namespace for .NET -->
+  <attr path="//package[@name='com.microsoft.maui']" name="managedName">Microsoft.Maui</attr>
+  <!-- Make all classes internal -->
+  <attr path="//class[@visibility='public']" name="visibility">internal</attr>
+</metadata>

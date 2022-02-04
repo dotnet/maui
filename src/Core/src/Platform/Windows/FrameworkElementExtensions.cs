@@ -10,6 +10,8 @@ using Microsoft.UI.Xaml.Media;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Microsoft.Maui.Platform
 {
@@ -187,6 +189,76 @@ namespace Microsoft.Maui.Platform
 					foreach (var subChild in child.GetChildren<T>())
 						yield return subChild;
 				}
+			}
+		}
+
+		internal static Task LoadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			if (frameworkElement.IsLoaded)
+			{
+				taskCompletionSource.SetResult(true);
+				return taskCompletionSource.Task;
+			}
+
+			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Loaded -= routedEventHandler;
+
+				taskCompletionSource.SetResult(true);
+			};
+
+			frameworkElement.Loaded += routedEventHandler;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+		}
+
+		internal static Task UnloadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			if (!frameworkElement.IsLoaded)
+			{
+				taskCompletionSource.SetResult(true);
+				return taskCompletionSource.Task;
+			}
+
+			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Unloaded -= routedEventHandler;
+
+				taskCompletionSource.SetResult(true);
+			};
+
+			frameworkElement.Unloaded += routedEventHandler;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+		}
+
+
+		internal static void SetApplicationResource(this FrameworkElement frameworkElement, string propertyKey, object? value)
+		{
+			if (value is null)
+			{
+				if (Application.Current.Resources.TryGetValue(propertyKey, out value))
+				{
+					frameworkElement.Resources[propertyKey] = value;
+				}
+				else
+				{
+					frameworkElement.Resources.Remove(propertyKey);
+				}
+			}
+			else
+			{
+				frameworkElement.Resources[propertyKey] = value;
 			}
 		}
 	}

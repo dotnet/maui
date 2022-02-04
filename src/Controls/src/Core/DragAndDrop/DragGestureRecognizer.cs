@@ -9,20 +9,27 @@ using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.DragGestureRecognizer']/Docs" />
 	public class DragGestureRecognizer : GestureRecognizer
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='CanDragProperty']/Docs" />
 		public static readonly BindableProperty CanDragProperty = BindableProperty.Create(nameof(CanDrag), typeof(bool), typeof(DragGestureRecognizer), true);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DropCompletedCommandProperty']/Docs" />
 		public static readonly BindableProperty DropCompletedCommandProperty = BindableProperty.Create(nameof(DropCompletedCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DropCompletedCommandParameterProperty']/Docs" />
 		public static readonly BindableProperty DropCompletedCommandParameterProperty = BindableProperty.Create(nameof(DropCompletedCommandParameter), typeof(object), typeof(DragGestureRecognizer), null);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DragStartingCommandProperty']/Docs" />
 		public static readonly BindableProperty DragStartingCommandProperty = BindableProperty.Create(nameof(DragStartingCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DragStartingCommandParameterProperty']/Docs" />
 		public static readonly BindableProperty DragStartingCommandParameterProperty = BindableProperty.Create(nameof(DragStartingCommandParameter), typeof(object), typeof(DragGestureRecognizer), null);
 
 		bool _isDragActive;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public DragGestureRecognizer()
 		{
 		}
@@ -30,30 +37,35 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<DropCompletedEventArgs> DropCompleted;
 		public event EventHandler<DragStartingEventArgs> DragStarting;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='CanDrag']/Docs" />
 		public bool CanDrag
 		{
 			get { return (bool)GetValue(CanDragProperty); }
 			set { SetValue(CanDragProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DropCompletedCommand']/Docs" />
 		public ICommand DropCompletedCommand
 		{
 			get { return (ICommand)GetValue(DropCompletedCommandProperty); }
 			set { SetValue(DropCompletedCommandProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DropCompletedCommandParameter']/Docs" />
 		public object DropCompletedCommandParameter
 		{
 			get { return (object)GetValue(DropCompletedCommandParameterProperty); }
 			set { SetValue(DropCompletedCommandParameterProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DragStartingCommand']/Docs" />
 		public ICommand DragStartingCommand
 		{
 			get { return (ICommand)GetValue(DragStartingCommandProperty); }
 			set { SetValue(DragStartingCommandProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DragStartingCommandParameter']/Docs" />
 		public object DragStartingCommandParameter
 		{
 			get { return (object)GetValue(DragStartingCommandParameterProperty); }

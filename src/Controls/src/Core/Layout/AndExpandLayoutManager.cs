@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// We have to rebuild this every time because the StackLayout contents
 			// and values may have changed
+			_gridLayout?.Clear();
 			_gridLayout = Gridify(_stackLayout);
 			_manager = new GridLayoutManager(_gridLayout);
 
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls
 
 		IGridLayout ConvertToRows(StackLayout stackLayout)
 		{
-			GridLayout grid = new GridLayout
+			Grid grid = new AndExpandGrid
 			{
 				ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition { Width = GridLength.Star } },
 				RowDefinitions = new RowDefinitionCollection()
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls
 
 		IGridLayout ConvertToColumns(StackLayout stackLayout)
 		{
-			GridLayout grid = new GridLayout
+			Grid grid = new AndExpandGrid
 			{
 				RowDefinitions = new RowDefinitionCollection { new RowDefinition { Height = GridLength.Star } },
 				ColumnDefinitions = new ColumnDefinitionCollection()
@@ -93,6 +94,19 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return grid;
+		}
+
+		class AndExpandGrid : Grid
+		{
+			protected override void OnChildAdded(Element child)
+			{
+				// We don't want to actually re-parent the stuff we add to this			
+			}
+
+			protected override void OnChildRemoved(Element child, int oldLogicalIndex)
+			{
+				// Don't do anything here; the base methods will null out Parents, etc., and we don't want that
+			}
 		}
 	}
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <Description>.NET MAUI NuGet dependencies pack</Description>
-    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeSymbols>false</IncludeSymbols>
@@ -25,6 +25,8 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
     <PackageReference Include="Xamarin.AndroidX.Browser" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
+    <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
+    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
