@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 			CurrentPageController?.SendDisappearing();
 			_navModel.PushModal(modal);
 
-			var nativeView = modal.ToNative(MauiContext);
+			var nativeView = modal.ToPlatform(MauiContext);
 
 			_modalStack.Push(nativeView);
 

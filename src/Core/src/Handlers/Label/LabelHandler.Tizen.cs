@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(LabelHandler handler, ILabel label)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
-			handler.GetWrappedNativeView()?.UpdateBackground(label);
+			handler.ToPlatform()?.UpdateBackground(label);
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label)

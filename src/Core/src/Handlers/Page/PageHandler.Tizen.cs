@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.NativeView.BackgroundColor = EColor.Transparent;
 			}
-			handler.GetWrappedNativeView()?.UpdateBackground(page);
+			handler.ToPlatform()?.UpdateBackground(page);
 		}
 
 		[MissingMapper]

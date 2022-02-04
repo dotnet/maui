@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView != null && VirtualView.PresentedContent != null)
 			{
 				var frame = VirtualView.PresentedContent.Frame;
-				VirtualView.PresentedContent.ToNative(MauiContext!)?.Move((int)e.Geometry.X + frame.X.ToScaledPixel(), (int)e.Geometry.Y + frame.Y.ToScaledPixel());
+				VirtualView.PresentedContent.ToPlatform(MauiContext!)?.Move((int)e.Geometry.X + frame.X.ToScaledPixel(), (int)e.Geometry.Y + frame.Y.ToScaledPixel());
 			}
 
 			UpdateContentSize();
@@ -96,38 +96,38 @@ namespace Microsoft.Maui.Handlers
 			});
 		}
 
-		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.MauiContext == null || scrollView.PresentedContent == null || handler.Canvas == null)
+			if (handler.MauiContext == null || scrollView.PresentedContent == null || handler is not ScrollViewHandler sHandler || sHandler.Canvas == null)
 			{
 				return;
 			}
 
-			handler.Canvas.UnPackAll();
-			handler.Canvas.PackEnd(scrollView.PresentedContent.ToNative(handler.MauiContext));
+			sHandler.Canvas.UnPackAll();
+			sHandler.Canvas.PackEnd(scrollView.PresentedContent.ToPlatform(handler.MauiContext));
 			if (scrollView.PresentedContent.Handler is INativeViewHandler thandler)
 			{
-				thandler?.SetParent(handler);
+				thandler?.SetParent(sHandler);
 			}
-			handler.UpdateContentSize();
+			sHandler.UpdateContentSize();
 		}
 
-		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
 		}
 
-		public static void MapVerticalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateVerticalScrollBarVisibility(scrollView.VerticalScrollBarVisibility);
 		}
 
-		public static void MapOrientation(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateOrientation(scrollView.Orientation);
 		}
 
-		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args)
+		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (args is ScrollToRequest request)
 			{

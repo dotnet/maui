@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(EditorHandler handler, IEditor editor)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
-			handler.GetWrappedNativeView()?.UpdateBackground(editor);
+			handler.ToPlatform()?.UpdateBackground(editor);
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)

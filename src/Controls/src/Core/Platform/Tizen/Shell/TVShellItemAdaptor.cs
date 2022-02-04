@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Platform
 			View? view = GetTemplatedView(index);
 			if (view != null)
 			{
-				var native = view.ToNative(_context);
+				var native = view.ToPlatform(_context);
 				_nativeFormsTable[native] = view;
 				return native;
 			}
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Platform
 			View? view = GetTemplatedView(index);
 			if (view != null)
 			{
-				var native = view.ToNative(_context);
+				var native = view.ToPlatform(_context);
 				view.Parent = _element;
 
 				if (Count > index)

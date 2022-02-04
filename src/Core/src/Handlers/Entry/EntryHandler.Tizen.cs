@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(EntryHandler handler, IEntry entry)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
-			handler.GetWrappedNativeView()?.UpdateBackground(entry);
+			handler.ToPlatform()?.UpdateBackground(entry);
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)

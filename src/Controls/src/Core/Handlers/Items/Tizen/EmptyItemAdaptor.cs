@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			layout.Parent = Element;
 
-			return layout.ToNative(_context);
+			return layout.ToPlatform(_context);
 		}
 
 		public override void RemoveNativeView(EvasObject native)

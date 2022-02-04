@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ContentViewHandler handler, IContentView view)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
-			handler.GetWrappedNativeView()?.UpdateBackground(view);
+			handler.ToPlatform()?.UpdateBackground(view);
 		}
 
 		public static void MapContent(ContentViewHandler handler, IContentView page)
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.PresentedContent is IView view)
 			{
-				NativeView.Children.Add(view.ToNative(MauiContext));
+				NativeView.Children.Add(view.ToPlatform(MauiContext));
 				if (view.Handler is INativeViewHandler thandler)
 				{
 					thandler?.SetParent(this);

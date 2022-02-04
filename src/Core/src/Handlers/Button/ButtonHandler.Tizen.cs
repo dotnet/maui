@@ -31,12 +31,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{
-			handler.TypedNativeView?.UpdateText(button);
+			handler.NativeView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.TypedNativeView?.UpdateTextColor(button);
+			handler.NativeView?.UpdateTextColor(button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>

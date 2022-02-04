@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void UpdateTransformation(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateTransformation(view);
+			handler.ToPlatform()?.UpdateTransformation(view);
 		}
 
 		protected virtual void OnNativeViewDeleted()

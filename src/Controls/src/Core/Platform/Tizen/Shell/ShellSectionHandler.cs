@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls.Platform
 		EvasObject CreateShellContent(ShellContent content)
 		{
 			Page xpage = ((IShellContentController)content).GetOrCreateContent();
-			return xpage.ToNative(MauiContext);
+			return xpage.ToPlatform(MauiContext);
 		}
 
 		void OnLayout()
