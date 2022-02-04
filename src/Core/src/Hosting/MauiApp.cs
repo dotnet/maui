@@ -24,18 +24,6 @@ namespace Microsoft.Maui.Hosting
 		public IConfiguration Configuration => _services.GetRequiredService<IConfiguration>();
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="MauiApp"/> class with preconfigured defaults.
-		/// </summary>
-		/// <returns>The <see cref="MauiApp"/>.</returns>
-		public static MauiApp Create() => new MauiAppBuilder().Build();
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="MauiAppBuilder"/> class with preconfigured defaults.
-		/// </summary>
-		/// <returns>The <see cref="MauiAppBuilder"/>.</returns>
-		public static MauiAppBuilder CreateBuilder() => new();
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="MauiAppBuilder"/> class with optional defaults.
 		/// </summary>
 		/// <param name="useDefaults">Whether to create the <see cref="MauiAppBuilder"/> with common defaults.</param>

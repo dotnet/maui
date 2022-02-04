@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Hosting
 		private Func<IServiceProvider>? _createServiceProvider;
 		private MauiApp? _builtApplication;
 
-		internal MauiAppBuilder(bool useDefaults = true)
+		internal MauiAppBuilder(bool useDefaults)
 		{
 			Configuration = new();
 			Services.AddSingleton<IConfiguration>(Configuration);
