@@ -1,0 +1,40 @@
+# http://aka.ms/vs/security/credscan
+
+parameters:
+  toolMajorVersion: V2
+  toolVersion: Latest
+  toolVersionV2: Latest
+  scanFolder: '$(Build.SourcesDirectory)'
+  searchersFileType: Default
+  suppressionsFile: ''
+  suppressAsError: false
+  verboseOutput: false
+  batchSize: 20
+  regexMatchTimeoutInSeconds: ''
+  fileScanReadBufferSize: 524288
+  maxFileScanReadBytes: 104857600
+  debugMode: false
+  folderSuppression: false
+  condition: succeededOrFailed()
+  continueOnError: true
+
+steps:
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+  displayName: Run CredScan Analysis
+  inputs:
+    toolMajorVersion: ${{ parameters.toolMajorVersion }}
+    toolVersion: ${{ parameters.toolVersion }}
+    toolVersionV2: ${{ parameters.toolVersionV2 }}
+    scanFolder: ${{ parameters.scanFolder }}
+    searchersFileType: ${{ parameters.searchersFileType }}
+    suppressionsFile: ${{ parameters.suppressionsFile }}
+    suppressAsError: ${{ parameters.suppressAsError }}
+    verboseOutput: ${{ parameters.verboseOutput }}
+    batchSize: ${{ parameters.batchSize }}
+    regexMatchTimeoutInSeconds: ${{ parameters.regexMatchTimeoutInSeconds }}
+    fileScanReadBufferSize: ${{ parameters.fileScanReadBufferSize }}
+    maxFileScanReadBytes: ${{ parameters.maxFileScanReadBytes }}
+    debugMode: ${{ parameters.debugMode }}
+    folderSuppression: ${{ parameters.folderSuppression }}
+  continueOnError: ${{ parameters.continueOnError }}
+  condition: ${{ parameters.condition }}

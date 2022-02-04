@@ -1,0 +1,13 @@
+# http://aka.ms/vs/security/credscan
+
+parameters:
+  suppressionsFile: ''
+  condition: succeededOrFailed()
+
+steps:
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+  displayName: Run CredScan Analysis
+  inputs:
+    suppressionsFile: ${{ parameters.suppressionsFile }}
+  continueOnError: true
+  condition: ${{ parameters.condition }}

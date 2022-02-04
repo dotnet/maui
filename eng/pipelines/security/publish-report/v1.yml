@@ -1,0 +1,23 @@
+# http://aka.ms/vs/security/staticanalysis
+# https://www.1eswiki.com/wiki/Secure_Development_Tools_Extension_For_Azure_DevOps
+
+# ~~~ DEPRECATED ~~~
+
+parameters:
+  ArtifactName: CodeAnalysisLogs
+  condition: succeededOrFailed()
+
+steps:
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+  displayName: Create Security Analysis Report
+  inputs:
+    AllTools: true
+  continueOnError: true
+  condition: ${{ parameters.condition }}
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+  displayName: Publish Security Analysis Logs
+  inputs:
+    ArtifactName: ${{ parameters.ArtifactName }}
+  continueOnError: true
+  condition: ${{ parameters.condition }}

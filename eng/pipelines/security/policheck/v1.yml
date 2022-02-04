@@ -1,0 +1,163 @@
+# https://www.1eswiki.com/index.php?title=PoliCheck_Build_Task
+
+# TermType Table Lookup List
+# Numbers before the : are Term Types. Numbers after - are the LocaleIDs
+# 
+# "0000aNone":,
+# "0001aCustom":,
+# "0002a1078":"Afrikaans - 1078",
+# "0003a1052":"Albanian - 1052",
+# "0004a1118":"Amharic - 1118",
+# "0005a14337":"Arabic - 14337",
+# "0006a1067":"Armenian - 1067",
+# "0007a1101":"Assamese - 1101",
+# "0008a1068":"Azerbaijani - 1068",
+# "0009a2117":"Bangla - Bangladesh - 2117",
+# "0010a1093":"Bangla - India - 1093",
+# "0011a1069":"Basque - 1069",
+# "0012a35":"Belarusian - 35",
+# "0013a8218":"Bosnian - Cyrillic - 8218",
+# "0014a5146":"Bosnian - Latin - 5146",
+# "0015a1150":"Breton - 1150",
+# "0016a1026":"Bulgarian - 1026",
+# "0017a1109":"Burmese - 1109",
+# "0018a1027":"Catalan - 1027",
+# "0019a146":"Central Kurdish - 146",
+# "0020a1169":"Cherokee - 1169",
+# "0021a2052":"Chinese (Simplified) - 2052",
+# "0022a3076":"Chinese (Traditional) - Hong Kong SAR - 3076",
+# "0023a1028":"Chinese (Traditional) - Taiwan - 1028",
+# "0024a1050":"Croatian - 1050",
+# "0025a1029":"Czech - 1029",
+# "0026a1030":"Danish - 1030",
+# "0027a1164":"Dari - 1164",
+# "0028a1043":"Dutch - 1043",
+# "0029a9":"English - 9",
+# "0030a1061":"Estonian - 1061",
+# "0031a1124":"Filipino - 1124",
+# "0032a1035":"Finnish - 1035",
+# "0033a1036":"French - 1036",
+# "0034a1110":"Galician - 1110",
+# "0035a1079":"Georgian - 1079",
+# "0036a1031":"German - 1031",
+# "0037a127":"Global - 127",
+# "0038a1032":"Greek - 1032",
+# "0039a1095":"Gujarati - 1095",
+# "0040a1128":"Hausa - 1128",
+# "0041a1037":"Hebrew - 1037",
+# "0042a1081":"Hindi - 1081",
+# "0043a1038":"Hungarian - 1038",
+# "0044a1039":"Icelandic - 1039",
+# "0045a1136":"Igbo - 1136",
+# "0046a1057":"Indonesian - 1057",
+# "0047a1117":"Inuktitut - 1117",
+# "0048a2108":"Irish - 2108",
+# "0049a1076":"isiXhosa - 1076",
+# "0050a1077":"isiZulu - 1077",
+# "0051a1040":"Italian - 1040",
+# "0052a1041":"Japanese - 1041",
+# "0053a1099":"Kannada - 1099",
+# "0054a1087":"Kazakh - 1087",
+# "0055a1107":"Khmer - 1107",
+# "0056a134":"K\u0027iche\u0027 - 134",
+# "0057a135":"Kinyarwanda - 135",
+# "0058a1089":"Kiswahili - 1089",
+# "0059a1111":"Konkani - 1111",
+# "0060a1042":"Korean - 1042",
+# "0061a1088":"Kyrgyz - 1088",
+# "0062a1108":"Lao - 1108",
+# "0063a1062":"Latvian - 1062",
+# "0064a1063":"Lithuanian - 1063",
+# "0065a1134":"Luxembourgish - 1134",
+# "0066a1071":"Macedonian - 1071",
+# "0067a1086":"Malay - 1086",
+# "0068a1100":"Malayalam - 1100",
+# "0069a1082":"Maltese - 1082",
+# "0070a1153":"Maori - 1153",
+# "0071a1102":"Marathi - 1102",
+# "0072a1104":"Mongolian - 1104",
+# "0073a1121":"Nepali - 1121",
+# "0074a1044":"Norwegian (Bokmal) - 1044",
+# "0075a2068":"Norwegian (Nynorsk) - 2068",
+# "0076a1096":"Odia - 1096",
+# "0077a1123":"Pashto - 1123",
+# "0078a1065":"Persian - 1065",
+# "0079a1045":"Polish - 1045",
+# "0080a1046":"Portuguese - Brazil - 1046",
+# "0081a2070":"Portuguese - Portugal - 2070",
+# "0082a1171":"Pulaar - 1171",
+# "0083a1094":"Punjabi - 1094",
+# "0084a2118":"Punjabi (Pakistan) - 2118",
+# "0085a3179":"Quechua (Peru) - 3179",
+# "0086a1048":"Romanian - 1048",
+# "0087a1049":"Russian - 1049",
+# "0088a145":"Scottish Gaelic - 145",
+# "0089a3098":"Serbian (Cyrillic) - 3098",
+# "0090a7194":"Serbian (Cyrillic, Bosnia and Herzegovina) - 7194",
+# "0091a2074":"Serbian (Latin) - 2074",
+# "0092a1072":"Sesotho - 1072",
+# "0093a1132":"Sesotho sa Leboa - 1132",
+# "0094a1074":"Setswana - 1074",
+# "0095a2137":"Sindhi - 2137",
+# "0096a1115":"Sinhala - 1115",
+# "0097a1051":"Slovak - 1051",
+# "0098a1060":"Slovenian - 1060",
+# "0099a1034":"Spanish - 1034",
+# "0100a1053":"Swedish - 1053",
+# "0101a40":"Tajik - 40",
+# "0102a1097":"Tamil - 1097",
+# "0103a1092":"Tatar - 1092",
+# "0104a1098":"Telugu - 1098",
+# "0105a1054":"Thai - 1054",
+# "0106a115":"Tigrinya - 115",
+# "0107a1055":"Turkish - 1055",
+# "0108a1090":"Turkmen - 1090",
+# "0109a1058":"Ukrainian - 1058",
+# "0110a1056":"Urdu - 1056",
+# "0111a128":"Uyghur - 128",
+# "0112a1091":"Uzbek - 1091",
+# "0113a2051":"Valencian - 2051",
+# "0114a1066":"Vietnamese - 1066",
+# "0115a1106":"Welsh - 1106",
+# "0116a136":"Wolof - 136",
+# "0117a1130":"Yorub - 1130a"
+
+# PE Values
+# 0-Disable all exclusions
+# 1-Enable Exclusions
+# 2-Enable Context Exception
+# 3-Enable File and Context Exception
+# 4-Enable File Exception. 
+
+parameters:
+  targetType: F
+  targetArgument: '$(Build.SourcesDirectory)'
+  exclusionFile: ''
+  termType: '0029a9'
+  keywords: ''
+  localeCode: ''
+  excludeGlobalTermTable: false
+  outputFilename: 'PoliCheck.xml'
+  toolVersion: Latest
+  continueOnError: true
+  pE: ''
+  rulesDBPath: ''
+  condition: succeededOrFailed()
+
+steps:
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+  displayName: Run PoliCheck
+  inputs:
+    targetType: ${{ parameters.targetType }}
+    targetArgument: ${{ parameters.targetArgument }}
+    optionsUEPATH: ${{ parameters.exclusionFile }}
+    termTypeT: ${{ parameters.termType }}
+    termTypeK: ${{ parameters.keywords }}
+    termTypeL: ${{ parameters.localeCode }}
+    EXGT: ${{ parameters.excludeGlobalTermTable }}
+    result: ${{ parameters.outputFilename }}
+    toolVersion: ${{ parameters.toolVersion }}
+    optionsPE: ${{ parameters.pE }}
+    optionsRulesDBPath: ${{ parameters.rulesDBPath }}
+  continueOnError: ${{ parameters.continueOnError }}
+  condition: ${{ parameters.condition }}

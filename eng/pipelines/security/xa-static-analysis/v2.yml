@@ -1,0 +1,33 @@
+# http://aka.ms/vs/security/staticanalysis
+# https://www.1eswiki.com/wiki/Secure_Development_Tools_Extension_For_Azure_DevOps
+
+# Runs static analysis tools (currently only Credscan) and reports any detected issues.
+
+parameters:
+  credScanSuppressionsFile: ''
+  credScanToolMajorVersion: V2
+  condition: succeededOrFailed()
+
+steps:
+- template: ../credscan/v2.yml
+  parameters:
+    suppressionsFile: ${{ parameters.credScanSuppressionsFile }}
+    toolMajorVersion: ${{ parameters.credScanToolMajorVersion }}
+    condition: ${{ parameters.condition }}
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+  displayName: Create Security Analysis Report
+  inputs:
+    CredScan: true
+  condition: ${{ parameters.condition }}
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+  displayName: Publish Security Analysis Logs
+  inputs:
+    ArtifactName: CodeAnalysisLogs
+  condition: ${{ parameters.condition }}
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+  displayName: Fail Job If Issues Are Detected
+  inputs:
+    CredScan: true
