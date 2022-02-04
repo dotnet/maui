@@ -72,6 +72,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
-		protected override bool ManageNativeControlLifetime => false;
+		protected override bool ManagePlatformControlLifetime => false;
 	}
 }

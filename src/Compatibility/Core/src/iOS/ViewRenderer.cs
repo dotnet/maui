@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		/// Determines whether the native control is disposed of when this renderer is disposed
 		/// Can be overridden in deriving classes 
 		/// </summary>
-		protected virtual bool ManageNativeControlLifetime => true;
+		protected virtual bool ManagePlatformControlLifetime => true;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				_controlChanging = null;
 				_controlChanged = null;
 
-				if (Control != null && ManageNativeControlLifetime)
+				if (Control != null && ManagePlatformControlLifetime)
 				{
 					Control.RemoveFromSuperview();
 					Control.Dispose();

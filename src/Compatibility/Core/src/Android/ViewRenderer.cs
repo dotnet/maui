@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (disposing && !_disposed)
 			{
-				if (Control != null && ManageNativeControlLifetime)
+				if (Control != null && ManagePlatformControlLifetime)
 				{
 					Control.OnFocusChangeListener = null;
 				}
