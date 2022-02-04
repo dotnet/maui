@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnViewRecycled(holder);
 		}
 
-		internal void ClearNativeSelection()
+		internal void ClearPlatformSelection()
 		{
 			for (int i = 0; i < _currentViewHolders.Count; i++)
 			{
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		internal void MarkNativeSelection(object selectedItem)
+		internal void MarkPlatformSelection(object selectedItem)
 		{
 			if (selectedItem == null)
 			{

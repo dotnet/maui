@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					return;
 				case SelectionMode.Multiple:
-					SynchronizeNativeSelectionWithSelectedItems();
+					SynchronizePlatformSelectionWithSelectedItems();
 					break;
 			}
 		}
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdatePlatformSelection();
 		}
 
-		void SynchronizeNativeSelectionWithSelectedItems()
+		void SynchronizePlatformSelectionWithSelectedItems()
 		{
 			var selectedItems = ItemsView.SelectedItems;
 			var selectedIndexPaths = CollectionView.GetIndexPathsForSelectedItems();

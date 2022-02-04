@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.KeyUp += OnNativeKeyUp;
 			nativeView.TextChanged += OnNativeTextChanged;
-			nativeView.SelectionChanged += OnNativeSelectionChanged;
+			nativeView.SelectionChanged += OnPlatformSelectionChanged;
 			nativeView.Loaded += OnNativeLoaded;
 		}
 
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Loaded -= OnNativeLoaded;
 			nativeView.KeyUp -= OnNativeKeyUp;
 			nativeView.TextChanged -= OnNativeTextChanged;
-			nativeView.SelectionChanged -= OnNativeSelectionChanged;
+			nativeView.SelectionChanged -= OnPlatformSelectionChanged;
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry) =>
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Completed();
 		}
 
-		void OnNativeSelectionChanged(object sender, RoutedEventArgs e)
+		void OnPlatformSelectionChanged(object sender, RoutedEventArgs e)
 		{
 			if (VirtualView.CursorPosition != PlatformView.SelectionStart)
 				VirtualView.CursorPosition = PlatformView.SelectionStart;

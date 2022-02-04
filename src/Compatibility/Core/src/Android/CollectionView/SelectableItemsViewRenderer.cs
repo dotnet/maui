@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var mode = ItemsView.SelectionMode;
 
-			ItemsViewAdapter.ClearNativeSelection();
+			ItemsViewAdapter.ClearPlatformSelection();
 
 			switch (mode)
 			{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				case SelectionMode.Single:
 					var selectedItem = ItemsView.SelectedItem;
-					ItemsViewAdapter.MarkNativeSelection(selectedItem);
+					ItemsViewAdapter.MarkPlatformSelection(selectedItem);
 					return;
 
 				case SelectionMode.Multiple:
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					foreach (var item in selectedItems)
 					{
-						ItemsViewAdapter.MarkNativeSelection(item);
+						ItemsViewAdapter.MarkPlatformSelection(item);
 					}
 					return;
 			}
