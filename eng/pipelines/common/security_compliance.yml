@@ -11,9 +11,9 @@ stages:
       steps:
       - checkout: self
 
-      - template: security/policheck/v1.yml
+      - template: ../security/policheck/v1.yml
 
-      - template: security/xa-static-analysis/v2.yml
+      - template: ../security/xa-static-analysis/v2.yml
         parameters:
           credScanSuppressionsFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
 
