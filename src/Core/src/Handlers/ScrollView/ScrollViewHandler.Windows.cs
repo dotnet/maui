@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var scrollViewer = handler.NativeView;
-			var nativeContent = scrollView.PresentedContent.ToNative(handler.MauiContext);
+			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
 			if (GetInsetPanel(scrollViewer) is ContentPanel currentPaddingLayer)
 			{

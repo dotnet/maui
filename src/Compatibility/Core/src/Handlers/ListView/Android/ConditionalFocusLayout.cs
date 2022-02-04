@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (viewCell?.View == null)
 				return;
 
-			var renderer = viewCell.View.ToNative(item.Handler.MauiContext);
+			var renderer = viewCell.View.ToPlatform(item.Handler.MauiContext);
 			GetEditText(renderer)?.SetOnTouchListener(this);
 
 			foreach (Element descendant in viewCell.View.Descendants())
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var element = descendant as VisualElement;
 				if (element == null)
 					continue;
-				renderer = element.ToNative(item.Handler.MauiContext);
+				renderer = element.ToPlatform(item.Handler.MauiContext);
 				GetEditText(renderer)?.SetOnTouchListener(this);
 			}
 		}

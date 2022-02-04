@@ -74,20 +74,8 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='PlatformInvalidator']/Docs" />
 		public static IPlatformInvalidate PlatformInvalidator { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Flags']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IReadOnlyList<string> Flags { get; private set; }
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetFlags']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetFlags(IReadOnlyList<string> flags)
-		{
-			Flags = flags;
-		}
-
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='IsInvokeRequired']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsInvokeRequired =>
 			Application.Current.FindDispatcher().IsDispatchRequired;
 
@@ -151,12 +139,6 @@ namespace Microsoft.Maui.Controls
 		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			return PlatformServices.GetNamedSize(size, targetElementType, useOldSizes);
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedColor']/Docs" />
-		public static Color GetNamedColor(string name)
-		{
-			return PlatformServices.GetNamedColor(name);
 		}
 
 		public static class Styles

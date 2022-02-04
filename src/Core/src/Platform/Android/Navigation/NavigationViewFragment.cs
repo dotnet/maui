@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var scopedContext = NavigationManager.MauiContext.MakeScoped(inflater, ChildFragmentManager);
 
-				_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
+				_currentView = NavigationManager.CurrentPage.ToPlatform(scopedContext);
 			}
 
 			_currentView.RemoveFromParent();

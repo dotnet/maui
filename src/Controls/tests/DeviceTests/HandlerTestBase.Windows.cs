@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 					navigationRootManager.UseCustomAppTitleBar = false;
 
 					newWindowHandler = window.ToHandler(mauiContext);
-					var content = window.Content.Handler.GetWrappedNativeView();
+					var content = window.Content.Handler.ToPlatform();
 					await content.LoadedAsync();
 					await Task.Delay(10);
 

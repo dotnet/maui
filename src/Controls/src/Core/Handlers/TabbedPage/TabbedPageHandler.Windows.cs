@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (presenter == null || _currentPage == null)
 				return;
 
-			presenter.Content = _currentPage.ToNative(MauiContext);
+			presenter.Content = _currentPage.ToPlatform(MauiContext);
 		}
 
 		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)

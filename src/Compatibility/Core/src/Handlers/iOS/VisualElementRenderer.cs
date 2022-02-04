@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			foreach (var child in vte.GetVisualChildren())
 			{
 				if (child is Maui.IElement childElement)
-					viewGroup.AddSubview(childElement.ToNative(mauiContext));
+					viewGroup.AddSubview(childElement.ToPlatform(mauiContext));
 			}
 		}
 

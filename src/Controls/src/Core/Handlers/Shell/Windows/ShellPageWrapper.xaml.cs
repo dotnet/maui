@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (Page != null)
 			{
-				var container = Page.ToNative(Page.FindMauiContext());
+				var container = Page.ToPlatform(Page.FindMauiContext());
 				Root.Content = container;
 				container.Loaded -= OnPageLoaded;
 				container.Loaded += OnPageLoaded; 
