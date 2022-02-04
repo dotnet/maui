@@ -17,9 +17,10 @@
 			TallModeConfiguration.ItemsSource = System.Enum.GetValues(typeof(TwoPaneViewTallModeConfiguration));
 			WideModeConfiguration.ItemsSource = System.Enum.GetValues(typeof(TwoPaneViewWideModeConfiguration));
 
-			twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
-			Pane1Length.Value = 0.5;
-			Pane2Length.Value = 0.5;
+			OnReset(null, null);
+			//twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
+			//Pane1Length.Value = 0.5;
+			//Pane2Length.Value = 0.5;
 		}
 
 		private void PaneLength_ValueChanged(object sender, Microsoft.Maui.Controls.ValueChangedEventArgs e)
@@ -34,12 +35,12 @@
 			System.Diagnostics.Debug.Write("TwoPaneViewPage.OnAppearing - hinge angle prepped", "JWM");
 			DualScreenInfo.Current.HingeAngleChanged += Current_HingeAngleChanged;
 			DualScreenInfo.Current.PropertyChanged += Current_PropertyChanged;
-			hingeLabel.Text = "Hinge prepped " + await DualScreenInfo.Current.GetHingeAngleAsync();
-			hingeLabel.Text += " spanmode:" + DualScreenInfo.Current.SpanMode;
 
 			PanePriority.SelectedIndex = 0;
 			TallModeConfiguration.SelectedIndex = 1;
 			WideModeConfiguration.SelectedIndex = 1;
+
+			hingeLabel.Text = "Hinge prepped " + await DualScreenInfo.Current.GetHingeAngleAsync();
 		}
 
 		private void Current_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -50,6 +51,7 @@
 		protected override void OnDisappearing()
 		{
 			DualScreenInfo.Current.HingeAngleChanged -= Current_HingeAngleChanged;
+			DualScreenInfo.Current.PropertyChanged -= Current_PropertyChanged;
 		}
 		private void Current_HingeAngleChanged(object sender, HingeAngleChangedEventArgs e)
 		{
@@ -60,9 +62,12 @@
 
 		void OnReset(object sender, System.EventArgs e)
 		{
-			twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
+			//twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
+			PanePriority.SelectedIndex = 0;
 			Pane1Length.Value = 0.5;
 			Pane2Length.Value = 0.5;
+			TallModeConfiguration.SelectedIndex = 1;
+			WideModeConfiguration.SelectedIndex = 1;
 		}
 	}
 }

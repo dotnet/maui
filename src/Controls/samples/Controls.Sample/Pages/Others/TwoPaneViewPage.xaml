@@ -8,9 +8,9 @@
     BackgroundColor="#bbbbbb">
     <views:BasePage.Content>
         <foldable:TwoPaneView x:Name="twoPaneView"
-                              TallModeConfiguration="TopBottom"
-                              WideModeConfiguration="LeftRight"
-                              PanePriority="Pane1"
+                              TallModeConfiguration="{Binding Source={x:Reference TallModeConfiguration}, Path=SelectedItem}"
+                              WideModeConfiguration="{Binding Source={x:Reference WideModeConfiguration}, Path=SelectedItem}"
+                              PanePriority="{Binding Source={x:Reference PanePriority}, Path=SelectedItem, Mode=TwoWay}"
                               MinWideModeWidth="400"
                               MinTallModeHeight="600">
             <foldable:TwoPaneView.Pane1

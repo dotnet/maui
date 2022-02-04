@@ -16,9 +16,9 @@
     <PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.101-preview.9.512" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
@@ -51,7 +51,7 @@
     <Compile Remove="IFoldableContext.netstandard.cs" />
     <AndroidResource Include="Resources\xml\*.xml" />
     <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" Version="1.0.0.3-beta02" />
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj">
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj">
     </ProjectReference>
   </ItemGroup>
   

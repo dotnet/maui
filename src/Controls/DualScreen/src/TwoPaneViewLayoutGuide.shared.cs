@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 
 		Rectangle GetContainerArea(double width, double height)
-		{
+		{System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.UpdateLayouts ", "JWM");
 			Rectangle containerArea;
 			if (_layout == null)
 			{
@@ -253,6 +253,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			_layoutHeight = height;
 
 			Rectangle containerArea = GetContainerArea(width, height);
+			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.containerArea {containerArea}", "JWM");
 			if (containerArea.Width <= 0)
 			{
 				return;
@@ -266,10 +267,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 				locationOnScreen = containerArea;
 
 			bool isSpanned = IsInMultipleRegions(locationOnScreen);
+			bool hingeIsVertical = Hinge.Height >= Hinge.Width;
 
-			if (DualScreenService.IsLandscape)
+			if (isSpanned)
 			{
-				if (isSpanned)
+				if (hingeIsVertical)
 				{
 					var pane2X = Hinge.X + Hinge.Width;
 					var containerRightX = locationOnScreen.X + locationOnScreen.Width;
@@ -279,6 +281,19 @@ namespace Microsoft.Maui.Controls.DualScreen
 					_newPane2 = new Rectangle(_newPane1.Width + Hinge.Width, 0, pane2Width, locationOnScreen.Height);
 				}
 				else
+				{
+					var pane2Y = Hinge.Y + Hinge.Height;
+					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
+					var pane2Height = containerBottomY - pane2Y;
+
+					_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
+					_newPane2 = new Rectangle(0, _newPane1.Height + Hinge.Height, locationOnScreen.Width, pane2Height);
+				}
+			}
+
+			else 
+			{   // not spanned
+				if (DualScreenService.IsLandscape)
 				{
 					// Check if part of the layout is underneath the hinge
 					var containerRightX = locationOnScreen.X + locationOnScreen.Width;
@@ -300,19 +315,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 					_newPane2 = Rectangle.Zero;
 				}
-			}
-			else // isPortrait
-			{
-				if (isSpanned)
-				{
-					var pane2Y = Hinge.Y + Hinge.Height;
-					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
-					var pane2Height = containerBottomY - pane2Y;
-
-					_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
-					_newPane2 = new Rectangle(0, _newPane1.Height + Hinge.Height, locationOnScreen.Width, pane2Height);
-				}
-				else
+				else // isPortrait
 				{
 					// Check if part of the layout is underneath the hinge
 					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
@@ -364,8 +367,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			bool isInMultipleRegions = false;
 			var hinge = DualScreenService.GetHinge();
+			bool hingeIsVertical = Hinge.Height >= Hinge.Width;
 
-			if (DualScreenService.IsLandscape)
+			if (hingeIsVertical) //DualScreenService.IsLandscape)
 			{
 				// Check that the control is over the split
 				if (layoutBounds.Y < hinge.Y && layoutBounds.Y + layoutBounds.Height > (hinge.Y + hinge.Height))
@@ -392,7 +396,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					isInMultipleRegions = true;
 				}
 			}
-			
+			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.IsInMultipleRegions {layoutBounds} == {isInMultipleRegions}", "JWM");
 			return isInMultipleRegions;
 		}
 

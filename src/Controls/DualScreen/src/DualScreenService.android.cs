@@ -167,9 +167,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 					}
 					else
 					{
+						//TODO: zero-size hinge
 						_hingeDp = new Rectangle((hinge.Left), (hinge.Top), (hinge.Width()), (hinge.Height()));
 					}
 				}
+				global::Android.Util.Log.Debug("JWM", "                             _hingeDp:" + _hingeDp);
 
 
 				//HACK:FOLDABLE
@@ -186,6 +188,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					}
 				}
 
+				global::Android.Util.Log.Debug("JWM", "                             ScaledScreenSize:" + ScaledScreenSize);
 				global::Android.Util.Log.Debug("JWM", "                             _isLandscape:" + _isLandscape);
 			}
 

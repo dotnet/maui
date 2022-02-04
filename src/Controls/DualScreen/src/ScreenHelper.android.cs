@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		public SurfaceOrientation GetRotation()
 			=> GetRotation(Activity);
 
+		[Obsolete("No longer used with rotation parameter")]
 		Rect GetHinge(SurfaceOrientation rotation)
 		{
 			// Hinge's coordinates of its 4 edges in different mode
@@ -140,7 +141,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					&& (hinge.Width() > 0 || hinge.Height() > 0)
 					&& windowRect.Width() > 0 && windowRect.Height() > 0)
 				{
-					// If the hinge intersects the window, dual mode
+					// If the hinge intersects the window, dual mode is true and fold location is fixed
 					return hinge.Intersect(windowRect);
 				}
 
