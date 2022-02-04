@@ -35,6 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _hasNavigationBar;
 		UIImage _defaultNavBarShadowImage;
 		UIImage _defaultNavBarBackImage;
+		protected IPropertyMapper _mapper;
+		protected CommandMapper _commandMapper;
+		protected readonly IPropertyMapper _defaultMapper;
 		bool _disposed;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext ?? NavPage.Handler.MauiContext;
@@ -44,6 +47,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
 		{
+			_defaultMapper = Mapper;
+			_mapper = _defaultMapper;
+			_commandMapper = CommandMapper;
 			// TODO MAUI:
 			//MessagingCenter.Subscribe<IVisualElementRenderer>(this, UpdateToolbarButtons, sender =>
 			//{
@@ -61,7 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		NavigationPage NavPage => Element as NavigationPage;
 		INavigationPageController NavPageController => NavPage;
 
-		public VisualElement Element { get; private set; }
+		public VisualElement Element { get => _element; private set => _element = (NavigationPage)value; }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -905,6 +911,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static string _defaultAccessibilityHint;
 		static bool? _defaultIsAccessibilityElement;
 		static bool? _defaultAccessibilityElementsHidden;
+		NavigationPage _element;
 
 		internal void ValidateInsets()
 		{
@@ -1524,24 +1531,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
-			var oldElement = Element;
-			Element = (VisualElement)view;
-			Mapper.UpdateProperties(this, Element);
-			OnElementChanged(new VisualElementChangedEventArgs(oldElement, Element));
+			VisualElementRenderer<NavigationPage>.SetVirtualView(view, this, ElementChanged, ref _element, ref _mapper, _defaultMapper, false);
+
+			void ElementChanged(ElementChangedEventArgs<NavigationPage> e)
+			{
+				OnElementChanged(new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
+			}
 		}
 
 		void IElementHandler.UpdateValue(string property)
 		{
-			Mapper.UpdateProperty(this, Element, property);
+			_mapper.UpdateProperty(this, Element, property);
 		}
 
 		void IElementHandler.Invoke(string command, object args)
 		{
-			CommandMapper.Invoke(this, Element, command, args);
+			_commandMapper.Invoke(this, Element, command, args);
 		}
 
 		void IElementHandler.DisconnectHandler()
 		{
+			if (Element?.Handler == (INativeViewHandler)this)
+				Element.Handler = null;
+
+			_element = null;
 		}
 
 		internal class MauiControlsNavigationBar : UINavigationBar

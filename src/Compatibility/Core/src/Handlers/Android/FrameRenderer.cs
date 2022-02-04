@@ -308,6 +308,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);
 		}
+
 		#region INativeViewHandler
 		bool IViewHandler.HasContainer { get => false; set { } }
 
