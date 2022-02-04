@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		{
 			// Default value of color documented to be black in iOS docs
 			var textColor = textStyle.TextColor;
-			nativeLabel.TextColor = textColor.ToNative(defaultColor ?? ColorExtensions.LabelColor);
+			nativeLabel.TextColor = textColor.ToPlatform(defaultColor ?? ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateCharacterSpacing(this UILabel nativeLabel, ITextStyle textStyle)
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UILabel nativeLabel, ILabel label)
 		{
-			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(label);
+			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatform(label);
 		}
 
 		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)

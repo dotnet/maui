@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextColor(this Button nativeButton, ITextStyle button)
 		{
-			var brush = button.TextColor?.ToNative();
+			var brush = button.TextColor?.ToPlatform();
 
 			if (brush is null)
 			{

@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (backgroundColor == null)
 						_backgroundUIView.BackgroundColor = UIColor.White;
 					else
-						_backgroundUIView.BackgroundColor = backgroundColor.ToNative();
+						_backgroundUIView.BackgroundColor = backgroundColor.ToPlatform();
 				}
 				else
 				{
@@ -711,7 +711,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// ...and Steve said to the unbelievers the separator shall be gray, and gray it was. The unbelievers looked on, and saw that it was good, and
 			// they went forth and documented the default color. The holy scripture still reflects this default.
 			// Defined here: https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instp/UITableView/separatorColor
-			Control.SeparatorColor = color?.ToNative() ?? Controls.Compatibility.Platform.iOS.ColorExtensions.SeparatorColor;
+			Control.SeparatorColor = color?.ToPlatform() ?? Controls.Compatibility.Platform.iOS.ColorExtensions.SeparatorColor;
 		}
 
 		void UpdateSeparatorVisibility()
@@ -746,7 +746,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var color = Element.RefreshControlColor;
 
 			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToNative());
+				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
 		}
 
 		void UpdateVerticalScrollBarVisibility()

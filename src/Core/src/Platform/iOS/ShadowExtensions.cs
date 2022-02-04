@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 
 			var radius = shadow.Radius;
 			var opacity = shadow.Opacity;
-			var color = shadow.Paint.ToColor()?.ToNative();
+			var color = shadow.Paint.ToColor()?.ToPlatform();
 
 			var offset = new CGSize((double)shadow.Offset.X, (double)shadow.Offset.Y);
 

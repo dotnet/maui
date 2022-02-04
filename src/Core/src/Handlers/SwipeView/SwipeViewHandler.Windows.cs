@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems, swipeView, swipeControl);
 
 			if (windowsSwipeItems != null)
-				windowsSwipeItems.Mode = swipeItems.Mode.ToNative();
+				windowsSwipeItems.Mode = swipeItems.Mode.ToPlatform();
 		}
 
 		static void UpdateSwipeBehaviorOnInvoked(ISwipeItems swipeItems, ISwipeView swipeView, WSwipeControl swipeControl)
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (windowsSwipeItems != null)
 				foreach (var windowSwipeItem in windowsSwipeItems.ToList())
-					windowSwipeItem.BehaviorOnInvoked = swipeItems.SwipeBehaviorOnInvoked.ToNative();
+					windowSwipeItem.BehaviorOnInvoked = swipeItems.SwipeBehaviorOnInvoked.ToPlatform();
 		}
 
 		static bool IsValidSwipeItems(ISwipeItems? swipeItems)
@@ -172,14 +172,14 @@ namespace Microsoft.Maui.Handlers
 			if (items == null)
 				return swipeItems;
 
-			swipeItems.Mode = items.Mode.ToNative();
+			swipeItems.Mode = items.Mode.ToPlatform();
 
 			foreach (var item in items)
 			{
 				if (item is ISwipeItemMenuItem &&
 					item.ToHandler(handler.MauiContext!).PlatformView is WSwipeItem swipeItem)
 				{
-					swipeItem.BehaviorOnInvoked = items.SwipeBehaviorOnInvoked.ToNative();
+					swipeItem.BehaviorOnInvoked = items.SwipeBehaviorOnInvoked.ToPlatform();
 					swipeItems.Add(swipeItem);
 				}
 			}

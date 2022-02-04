@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = textColor.ToNative();
+				var androidColor = textColor.ToPlatform();
 				if (!nativeDatePicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
 					nativeDatePicker.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}

@@ -25,16 +25,16 @@ namespace Microsoft.Maui.Platform
 			nativeControl.UpdateBackground(view.Background, defaultBrush);
 
 		public static void UpdateBackground(this Control nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateProperty(Control.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToNative());
+			nativeControl.UpdateProperty(Control.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
 		public static void UpdateBackground(this Border nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateProperty(Border.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToNative());
+			nativeControl.UpdateProperty(Border.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
 		public static void UpdateBackground(this Panel nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToNative());
+			nativeControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
 		public static void UpdateForegroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Foreground = color?.ToNative() ?? defaultBrush ?? nativeControl.Foreground;
+			nativeControl.Foreground = color?.ToPlatform() ?? defaultBrush ?? nativeControl.Foreground;
 
 		public static void UpdatePadding(this Control nativeControl, IPadding padding, UI.Xaml.Thickness? defaultThickness = null) =>
 			nativeControl.UpdatePadding(padding.Padding, defaultThickness);
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeControl.Padding = padding.IsNaN
 				? defaultThickness ?? new UI.Xaml.Thickness()
-				: padding.ToNative();
+				: padding.ToPlatform();
 		}
 	}
 }

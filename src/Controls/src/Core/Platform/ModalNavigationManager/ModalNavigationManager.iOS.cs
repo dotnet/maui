@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Platform
 				elementConfiguration?
 					.On<PlatformConfiguration.iOS>()?
 					.ModalPresentationStyle()
-					.ToNativeModalPresentationStyle();
+					.ToPlatformModalPresentationStyle();
 
 			_navModel.PushModal(modal);
 

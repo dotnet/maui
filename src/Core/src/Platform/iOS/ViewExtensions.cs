@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Platform
 				if (backgroundColor == null)
 					nativeView.BackgroundColor = ColorExtensions.BackgroundColor;
 				else
-					nativeView.BackgroundColor = backgroundColor.ToNative();
+					nativeView.BackgroundColor = backgroundColor.ToPlatform();
 
 				return;
 			}

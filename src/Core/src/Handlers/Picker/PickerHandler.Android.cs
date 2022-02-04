@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Handlers
 					else
 					{
 						var title = new SpannableString(VirtualView.Title ?? string.Empty);
-						title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToNative()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+						title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
 						builder.SetTitle(title);
 					}
 

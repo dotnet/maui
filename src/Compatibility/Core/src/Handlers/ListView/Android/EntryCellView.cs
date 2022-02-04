@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			_labelTextColor = color;
-			_label.SetTextColor(color.ToNative(defaultColorResourceId, _label.Context));
+			_label.SetTextColor(color.ToPlatform(defaultColorResourceId, _label.Context));
 		}
 
 		public void SetRenderHeight(double height)

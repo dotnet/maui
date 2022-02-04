@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateStrokeColor(this Button nativeButton, IButtonStroke buttonStroke)
 		{
-			var brush = buttonStroke.StrokeColor?.ToNative();
+			var brush = buttonStroke.StrokeColor?.ToPlatform();
 
 			if (brush is null)
 			{
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this Button nativeButton, IButton button)
 		{
-			var brush = button.Background?.ToNative();
+			var brush = button.Background?.ToPlatform();
 
 			if (brush is null)
 			{
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this ButtonBase nativeButton, ITextStyle button)
 		{
-			var brush = button.TextColor?.ToNative();
+			var brush = button.TextColor?.ToPlatform();
 
 			if (brush is null)
 			{

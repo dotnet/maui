@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 	public static partial class SwipeViewExtensions
 	{
 		public static void UpdateBackground(this WSwipeItem nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateProperty(WSwipeItem.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToNative());
+			nativeControl.UpdateProperty(WSwipeItem.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
 		internal static void UpdateProperty(this WSwipeItem nativeControl, DependencyProperty property, object? value)
 		{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 				nativeControl.SetValue(property, value);
 		}
 
-		public static WSwipeMode ToNative(this SwipeMode swipeMode)
+		public static WSwipeMode ToPlatform(this SwipeMode swipeMode)
 		{
 			switch (swipeMode)
 			{
@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Platform
 			var textColor = view.TextColor ?? view.GetTextColor();
 
 			if (textColor != null)
-				nativeControl.Foreground = textColor.ToNative();
+				nativeControl.Foreground = textColor.ToPlatform();
 		}
 
-		public static WSwipeBehaviorOnInvoked ToNative(this SwipeBehaviorOnInvoked swipeBehaviorOnInvoked)
+		public static WSwipeBehaviorOnInvoked ToPlatform(this SwipeBehaviorOnInvoked swipeBehaviorOnInvoked)
 		{
 			switch (swipeBehaviorOnInvoked)
 			{

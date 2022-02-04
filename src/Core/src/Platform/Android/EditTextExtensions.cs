@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = textColor.ToNative();
+				var androidColor = textColor.ToPlatform();
 				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
 					editText.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = placeholderTextColor.ToNative();
+				var androidColor = placeholderTextColor.ToPlatform();
 				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
 					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
-			editText.ImeOptions = entry.ReturnType.ToNative();
+			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
 		public static void UpdateCursorPosition(this EditText editText, ITextInput entry)

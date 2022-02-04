@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateProgressColor(this UIProgressView nativeProgressBar, IProgress progress)
 		{
-			nativeProgressBar.ProgressTintColor = progress.ProgressColor?.ToNative();
+			nativeProgressBar.ProgressTintColor = progress.ProgressColor?.ToPlatform();
 		}
 	}
 }

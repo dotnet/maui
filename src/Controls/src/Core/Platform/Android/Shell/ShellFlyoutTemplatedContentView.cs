@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_defaultBackgroundColor == null)
 					_defaultBackgroundColor = _rootView.Background;
 
-				_rootView.Background = color == null ? _defaultBackgroundColor : new ColorDrawable(color.ToNative());
+				_rootView.Background = color == null ? _defaultBackgroundColor : new ColorDrawable(color.ToPlatform());
 			}
 			else
 				_rootView.UpdateBackground(brush);

@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Graphics
 				SetDefaultBackgroundColor();
 			else
 			{
-				var backgroundColor = solidPaint.Color.ToNative();
+				var backgroundColor = solidPaint.Color.ToPlatform();
 				SetBackgroundColor(backgroundColor);
 			}
 		}
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Graphics
 
 			var borderColor = solidPaint.Color == null
 				? (AColor?)null
-				: solidPaint.Color.ToNative();
+				: solidPaint.Color.ToPlatform();
 
 			_stroke = null;
 			SetBorderColor(borderColor);
@@ -587,7 +587,7 @@ namespace Microsoft.Maui.Graphics
 			int count = 0;
 			foreach (var orderStop in orderStops)
 			{
-				data.Colors[count] = orderStop.Color.ToNative().ToArgb();
+				data.Colors[count] = orderStop.Color.ToPlatform().ToArgb();
 				data.Offsets[count] = orderStop.Offset;
 				count++;
 			}

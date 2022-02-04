@@ -704,7 +704,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Color separatorColor = _listView.SeparatorColor;
 
 			if (isHeader || separatorColor != null)
-				bline.SetBackgroundColor(separatorColor.ToNative(Application.AccentColor));
+				bline.SetBackgroundColor(separatorColor.ToPlatform(Application.AccentColor));
 			else
 			{
 				if (s_dividerHorizontalDarkId == int.MinValue)

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var color = button.TextColor.ToNative();
+				var color = button.TextColor.ToPlatform();
 
 				nativeButton.SetTitleColor(color, UIControlState.Normal);
 				nativeButton.SetTitleColor(color, UIControlState.Highlighted);

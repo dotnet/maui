@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color? defaultColor)
 		{
-			var textColor = textStyle.TextColor?.ToNative() ?? defaultColor?.ToNative();
+			var textColor = textStyle.TextColor?.ToPlatform() ?? defaultColor?.ToPlatform();
 
 			if (textColor != null)
 				textView.SetTextColor(textColor.Value);
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 
 			if (textColor != null)
 			{
-				textView.SetTextColor(textColor.ToNative());
+				textView.SetTextColor(textColor.ToPlatform());
 				return;
 			}
 

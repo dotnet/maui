@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var emptyContentView = new UIView
 			{
-				BackgroundColor = Colors.Transparent.ToNative()
+				BackgroundColor = Colors.Transparent.ToPlatform()
 			};
 
 			return emptyContentView;

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = titleColor.ToNative();
+				var androidColor = titleColor.ToPlatform();
 				if (!nativePicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
 					nativePicker.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = textColor.ToNative();
+				var androidColor = textColor.ToPlatform();
 				if (!nativePicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
 					nativePicker.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}

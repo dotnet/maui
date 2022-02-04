@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var elementConfiguration = modal.VirtualView as IElementConfiguration<Page>;
 			if (elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 			{
-				var result = style.ToNativeModalPresentationStyle();
+				var result = style.ToPlatformModalPresentationStyle();
 
 				if (!NativeVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
 				Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
-				View.BackgroundColor = modalBkgndColor?.ToNative() ?? Maui.Platform.ColorExtensions.BackgroundColor;
+				View.BackgroundColor = modalBkgndColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 			}
 			else
 			{

@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (sectionHeaderTextColor != null)
 				{
-					header.TextLabel.TextColor = sectionHeaderTextColor.ToNative();
+					header.TextLabel.TextColor = sectionHeaderTextColor.ToPlatform();
 				}
 			}
 		}

@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			nativeStepper.ButtonBackground = background.ToNative();
+			nativeStepper.ButtonBackground = background.ToPlatform();
 		}
 	}
 }

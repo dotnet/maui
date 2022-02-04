@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Handlers
 		////	var globalTitleTextAttributes = UINavigationBar.Appearance.TitleTextAttributes;
 		////	var titleTextAttributes = new UIStringAttributes
 		////	{
-		////		ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToNative(),
+		////		ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 		////		Font = globalTitleTextAttributes?.Font
 		////	};
 
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 
 		////		largeTitleTextAttributes = new UIStringAttributes
 		////		{
-		////			ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToNative(),
+		////			ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 		////			Font = globalLargeTitleTextAttributes?.Font
 		////		};
 		////	}

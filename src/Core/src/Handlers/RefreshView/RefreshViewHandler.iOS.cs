@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateRefreshColor()
 		{
-			var color = VirtualView?.RefreshColor?.ToColor()?.ToNative();
+			var color = VirtualView?.RefreshColor?.ToColor()?.ToPlatform();
 
 			if (color != null)
 				PlatformView.RefreshControl.TintColor = color;

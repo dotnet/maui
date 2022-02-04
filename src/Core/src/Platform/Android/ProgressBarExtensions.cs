@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var tintList = ColorStateList.ValueOf(color.ToNative());
+				var tintList = ColorStateList.ValueOf(color.ToPlatform());
 
 				if (nativeProgressBar.Indeterminate)
 					nativeProgressBar.IndeterminateTintList = tintList;

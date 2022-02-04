@@ -54,9 +54,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			return _navigationFrame;
 		}
 
-		private protected override void OnConnectHandler(FrameworkElement nativeView)
+		private protected override void OnConnectHandler(FrameworkElement platformView)
 		{
-			base.OnConnectHandler(nativeView);
+			base.OnConnectHandler(platformView);
 			NavigationFrame.Navigated += OnNavigated;
 
 			// If CreatePlatformView didn't set the NavigationView then that means we are using the
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		private protected override void OnDisconnectHandler(FrameworkElement nativeView)
+		private protected override void OnDisconnectHandler(FrameworkElement platformView)
 		{
 			if (_navigationView != null)
 			{
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
 			}
 
-			((WFrame)nativeView).Navigated -= OnNavigated;
+			((WFrame)platformView).Navigated -= OnNavigated;
 			VirtualView.Appearing -= OnTabbedPageAppearing;
 			VirtualView.Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_previousView = null;
 			_navigationFrame = null;
 
-			base.OnDisconnectHandler(nativeView);
+			base.OnDisconnectHandler(platformView);
 		}
 
 		public override void SetVirtualView(IView view)
@@ -295,9 +295,9 @@ namespace Microsoft.Maui.Controls.Handlers
 						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
 						vm.Content = page.Title;
 						vm.Data = page;
-						vm.Foreground = view.BarTextColor?.AsPaint()?.ToNative();
-						vm.SelectedBackground = view.SelectedTabColor?.AsPaint()?.ToNative();
-						vm.UnselectedBackground = view.UnselectedTabColor?.AsPaint()?.ToNative();
+						vm.Foreground = view.BarTextColor?.AsPaint()?.ToPlatform();
+						vm.SelectedBackground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
+						vm.UnselectedBackground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));

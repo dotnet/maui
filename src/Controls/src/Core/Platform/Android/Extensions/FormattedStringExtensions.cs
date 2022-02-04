@@ -53,12 +53,12 @@ namespace Microsoft.Maui.Controls.Platform
 				var fgcolor = span.TextColor ?? defaultColor;
 				if (fgcolor != null)
 				{
-					spannable.SetSpan(new ForegroundColorSpan(fgcolor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new ForegroundColorSpan(fgcolor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
 				}
 
 				if (span.BackgroundColor != null)
 				{
-					spannable.SetSpan(new BackgroundColorSpan(span.BackgroundColor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new BackgroundColorSpan(span.BackgroundColor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
 				}
 
 				var lineHeight = span.LineHeight >= 0

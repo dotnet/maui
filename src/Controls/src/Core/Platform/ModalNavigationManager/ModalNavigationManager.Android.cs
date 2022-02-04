@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (modalBkgndColor == null)
 					_backgroundView.SetWindowBackground();
 				else
-					_backgroundView.SetBackgroundColor(modalBkgndColor.ToNative());
+					_backgroundView.SetBackgroundColor(modalBkgndColor.ToPlatform());
 			}
 
 			public void Destroy()

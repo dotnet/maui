@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStrokeColor(this ShapeableImageView nativeButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.StrokeColor is Color stroke)
-				nativeButton.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToNative());
+				nativeButton.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
 		}
 
 		public static void UpdateStrokeThickness(this ShapeableImageView nativeButton, IButtonStroke buttonStroke)

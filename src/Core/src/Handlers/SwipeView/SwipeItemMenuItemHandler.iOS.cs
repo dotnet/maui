@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var color = view.GetTextColor();
 			if (color != null)
-				handler.PlatformView.SetTitleColor(color.ToNative(), UIControlState.Normal);
+				handler.PlatformView.SetTitleColor(color.ToPlatform(), UIControlState.Normal);
 		}
 
 		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view) { }
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 					var tintColor = VirtualView.GetTextColor();
 
 					if (tintColor != null)
-						PlatformView.TintColor = tintColor.ToNative();
+						PlatformView.TintColor = tintColor.ToPlatform();
 				}
 				catch (Exception)
 				{

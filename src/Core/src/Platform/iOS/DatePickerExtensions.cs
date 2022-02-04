@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 			if (textColor == null)
 				nativeDatePicker.TextColor = defaultTextColor;
 			else
-				nativeDatePicker.TextColor = textColor.ToNative();
+				nativeDatePicker.TextColor = textColor.ToPlatform();
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			nativeDatePicker.UpdateDate(datePicker);

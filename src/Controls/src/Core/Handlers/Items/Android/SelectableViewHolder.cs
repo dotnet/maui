@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				var color = Color.FromUint((uint)value.Data);
-				var colorDrawable = new ColorDrawable(color.ToNative());
+				var colorDrawable = new ColorDrawable(color.ToPlatform());
 
 				var stateListDrawable = new StateListDrawable();
 				stateListDrawable.AddState(new[] { global::Android.Resource.Attribute.StateActivated }, colorDrawable);

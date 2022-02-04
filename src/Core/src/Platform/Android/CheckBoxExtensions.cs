@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 				targetColor = solid.Color;
 			}
 
-			var tintColor = targetColor.ToNative();
+			var tintColor = targetColor.ToPlatform();
 
 			var tintList = ColorStateListExtensions.CreateCheckBox(tintColor);
 

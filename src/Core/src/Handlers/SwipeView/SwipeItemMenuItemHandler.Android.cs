@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView.UpdateBackground(handler.VirtualView.Background);
 
-			var textColor = handler.VirtualView.GetTextColor()?.ToNative();
+			var textColor = handler.VirtualView.GetTextColor()?.ToPlatform();
 
 			if (handler.PlatformView is TextView textView)
 			{
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Handlers
 			if (swipeView != null)
 				swipeView.UpdateIsVisibleSwipeItem(view);
 
-			handler.PlatformView.Visibility = view.Visibility.ToNativeVisibility();
+			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
 		}
 
 		protected override AView CreatePlatformElement()
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 			if (drawable != null)
 			{
 				var iconSize = GetIconSize();
-				var textColor = VirtualView.GetTextColor()?.ToNative();
+				var textColor = VirtualView.GetTextColor()?.ToPlatform();
 				int drawableWidth = drawable.IntrinsicWidth;
 				int drawableHeight = drawable.IntrinsicHeight;
 

@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this TextBox textBox, IView view)
 		{
-			var brush = view.Background?.ToNative();
+			var brush = view.Background?.ToPlatform();
 			if (brush is null)
 			{
 				textBox.Resources.Remove("TextControlBackground");
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this TextBox textBox, ITextStyle textStyle)
 		{
-			var brush = textStyle.TextColor?.ToNative();
+			var brush = textStyle.TextColor?.ToPlatform();
 			if (brush is null)
 			{
 				textBox.Resources.Remove("TextControlForeground");
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholderColor(this TextBox textBox, IPlaceholder placeholder)
 		{
-			var brush = placeholder.PlaceholderColor?.ToNative();
+			var brush = placeholder.PlaceholderColor?.ToPlatform();
 
 			if (brush is null)
 			{
@@ -172,11 +172,11 @@ namespace Microsoft.Maui.Platform
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
 			// TODO: Update this when FlowDirection is available 
 			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			textBox.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
+			textBox.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatform(true);
 		}
 
 		public static void UpdateVerticalTextAlignment(this TextBox textBox, ITextAlignment textAlignment) =>
-			MauiTextBox.SetVerticalTextAlignment(textBox, textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment());
+			MauiTextBox.SetVerticalTextAlignment(textBox, textAlignment.VerticalTextAlignment.ToPlatformVerticalAlignment());
 
 		public static void UpdateCursorPosition(this TextBox textBox, ITextInput entry)
 		{

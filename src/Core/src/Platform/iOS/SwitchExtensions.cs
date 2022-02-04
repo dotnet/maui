@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Platform
 			if (view.TrackColor == null)
 				uiSwitch.OnTintColor = defaultOnTrackColor;
 			else
-				uiSwitch.OnTintColor = view.TrackColor.ToNative();
+				uiSwitch.OnTintColor = view.TrackColor.ToPlatform();
 
 			UIView uIView;
 			if (NativeVersion.IsAtLeast(13))
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			Graphics.Color thumbColor = view.ThumbColor;
-			uiSwitch.ThumbTintColor = thumbColor?.ToNative() ?? defaultThumbColor;
+			uiSwitch.ThumbTintColor = thumbColor?.ToPlatform() ?? defaultThumbColor;
 		}
 
 		internal static UIView GetTrackSubview(this UISwitch uISwitch)

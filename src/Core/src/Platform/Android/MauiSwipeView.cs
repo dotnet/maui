@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Platform
 		AView CreateEmptyContent()
 		{
 			var emptyContentView = new AView(_context);
-			emptyContentView.SetBackgroundColor(Colors.Transparent.ToNative());
+			emptyContentView.SetBackgroundColor(Colors.Transparent.ToPlatform());
 
 			return emptyContentView;
 		}

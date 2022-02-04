@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				nativeProgressBar.Foreground = progressColor.ToNative();
+				nativeProgressBar.Foreground = progressColor.ToPlatform();
 			}
 		}
 	}

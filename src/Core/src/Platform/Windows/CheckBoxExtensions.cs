@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateForeground(this MauiCheckBox nativeCheckBox, ICheckBox check) 
 		{
-			var tintBrush = check.Foreground?.ToNative();
+			var tintBrush = check.Foreground?.ToPlatform();
 
 			if (tintBrush == null)
 			{

@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Platform
 			if (color == null)
 				SetColorFilter(drawable, defaultColorFilter);
 			else
-				drawable.SetColorFilter(color.ToNative(), mode);
+				drawable.SetColorFilter(color.ToPlatform(), mode);
 		}
 
 		public static void SetColorFilter(this ADrawable drawable, Graphics.Color color, FilterMode mode)
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			if (drawable == null)
 				return;
 
-			drawable.SetColorFilter(color.ToNative(), mode);
+			drawable.SetColorFilter(color.ToPlatform(), mode);
 		}
 
 		public static void SetColorFilter(this ADrawable drawable, AColor color, FilterMode mode)

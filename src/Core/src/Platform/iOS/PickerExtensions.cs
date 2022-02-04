@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
  			nativePicker.SetTitleColor(picker);
 
 		public static void UpdateTextColor(this MauiPicker nativePicker, IPicker picker) =>
-			nativePicker.TextColor = picker.TextColor?.ToNative();
+			nativePicker.TextColor = picker.TextColor?.ToPlatform();
 
 		public static void UpdateSelectedIndex(this MauiPicker nativePicker, IPicker picker) =>
 			nativePicker.SetSelectedIndex(picker, picker.SelectedIndex);
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 			if (titleColor == null)
 				return;
 
-			nativePicker.UpdateAttributedPlaceholder(new NSAttributedString(title, null, titleColor.ToNative()));
+			nativePicker.UpdateAttributedPlaceholder(new NSAttributedString(title, null, titleColor.ToPlatform()));
 		}
 
 		internal static void UpdateAttributedPlaceholder(this MauiPicker nativePicker, NSAttributedString nsAttributedString)

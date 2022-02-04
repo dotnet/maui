@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ImeActionExtensions
 	{
-		public static ImeAction ToNative(this ReturnType returnType)
+		public static ImeAction ToPlatform(this ReturnType returnType)
 		{
 			switch (returnType)
 			{

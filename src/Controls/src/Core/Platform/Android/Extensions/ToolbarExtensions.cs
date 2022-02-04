@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
-				nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToNative());
+				nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
 			}
 		}
 
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (textColor != null)
 			{
-				nativeToolbar.SetTitleTextColor(textColor.ToNative().ToArgb());
+				nativeToolbar.SetTitleTextColor(textColor.ToPlatform().ToArgb());
 			}
 			else
 			{
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (textColor != null)
 				{
 					_defaultNavigationIconColor = icon.Color;
-					icon.Color = textColor.ToNative().ToArgb();
+					icon.Color = textColor.ToPlatform().ToArgb();
 				}
 				else if (_defaultNavigationIconColor != null)
 				{
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (item.Order != ToolbarItemOrder.Secondary && tintColor != null && tintColor != null)
 				{
-					var color = item.IsEnabled ? tintColor.ToNative() : tintColor.MultiplyAlpha(0.302f).ToNative();
+					var color = item.IsEnabled ? tintColor.ToPlatform() : tintColor.MultiplyAlpha(0.302f).ToPlatform();
 					SpannableString titleTinted = new SpannableString(item.Text);
 					titleTinted.SetSpan(new ForegroundColorSpan(color), 0, titleTinted.Length(), 0);
 					newTitle = titleTinted;
@@ -310,9 +310,9 @@ namespace Microsoft.Maui.Controls.Platform
 				if (view is ATextView textView)
 				{
 					if (item.IsEnabled)
-						textView.SetTextColor(tintColor.ToNative());
+						textView.SetTextColor(tintColor.ToPlatform());
 					else
-						textView.SetTextColor(tintColor.MultiplyAlpha(0.302f).ToNative());
+						textView.SetTextColor(tintColor.MultiplyAlpha(0.302f).ToPlatform());
 				}
 			}
 		}
@@ -334,7 +334,7 @@ namespace Microsoft.Maui.Controls.Platform
 					using (var iconDrawable = newDrawable.Mutate())
 					{
 						if (tintColor != null)
-							iconDrawable.SetColorFilter(tintColor.ToNative(Colors.White), FilterMode.SrcAtop);
+							iconDrawable.SetColorFilter(tintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
 
 						if (!menuItem.IsEnabled)
 						{

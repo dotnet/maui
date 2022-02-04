@@ -487,7 +487,7 @@ namespace Microsoft.Maui.Controls.Platform
 					using (var newDrawable = constant.NewDrawable())
 					using (var iconDrawable = newDrawable.Mutate())
 					{
-						iconDrawable.SetColorFilter(TintColor.ToNative(Colors.White), FilterMode.SrcAtop);
+						iconDrawable.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
 						menuItem.SetIcon(iconDrawable);
 					}
 				}
@@ -586,7 +586,7 @@ namespace Microsoft.Maui.Controls.Platform
 					item.SetEnabled(SearchHandler.IsSearchEnabled);
 					item.SetIcon(Resource.Drawable.abc_ic_search_api_material);
 					using (var icon = item.Icon)
-						icon.SetColorFilter(TintColor.ToNative(Colors.White), FilterMode.SrcAtop);
+						icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
 					item.SetShowAsAction(ShowAsAction.IfRoom | ShowAsAction.CollapseActionView);
 
 					if (_searchView.View.Parent != null)
@@ -638,7 +638,7 @@ namespace Microsoft.Maui.Controls.Platform
 					// we want the newly added button which will need layout
 					if (child.IsLayoutRequested)
 					{
-						button.SetColorFilter(TintColor.ToNative(Colors.White), PorterDuff.Mode.SrcAtop);
+						button.SetColorFilter(TintColor.ToPlatform(Colors.White), PorterDuff.Mode.SrcAtop);
 					}
 
 					button.Dispose();
@@ -702,7 +702,7 @@ namespace Microsoft.Maui.Controls.Platform
 				bool pressed = false;
 				if (IconBitmap != null)
 				{
-					ADrawableCompat.SetTint(IconBitmap, TintColor.ToNative());
+					ADrawableCompat.SetTint(IconBitmap, TintColor.ToPlatform());
 					ADrawableCompat.SetTintMode(IconBitmap, PorterDuff.Mode.SrcAtop);
 
 					IconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
@@ -712,7 +712,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
-					paint.Color = pressed ? _pressedBackgroundColor.ToNative() : TintColor.ToNative();
+					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;
 					canvas.DrawText(Text, 0, y, paint);

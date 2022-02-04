@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
-			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());
+			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToPlatform());
 
 		public static void UpdateCharacterSpacing(this TextBlock nativeControl, ITextStyle label)
 		{
@@ -102,12 +102,12 @@ namespace Microsoft.Maui.Platform
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
 			// TODO: Update this when FlowDirection is available 
-			nativeControl.TextAlignment = label.HorizontalTextAlignment.ToNative(true);
+			nativeControl.TextAlignment = label.HorizontalTextAlignment.ToPlatform(true);
 		}
 
 		public static void UpdateVerticalTextAlignment(this TextBlock nativeControl, ILabel label)
 		{
-			nativeControl.VerticalAlignment = label.VerticalTextAlignment.ToNativeVerticalAlignment();
+			nativeControl.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		internal static void UpdateTextHtml(this TextBlock nativeControl, ILabel label)

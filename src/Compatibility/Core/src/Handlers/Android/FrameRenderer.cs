@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			Color bgColor = Element.BackgroundColor;
-			_backgroundDrawable.SetColor(bgColor?.ToNative() ?? AColor.White);
+			_backgroundDrawable.SetColor(bgColor?.ToPlatform() ?? AColor.White);
 		}
 
 		void UpdateBackground()
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
 			else
-				_backgroundDrawable.SetStroke(3, borderColor.ToNative());
+				_backgroundDrawable.SetStroke(3, borderColor.ToPlatform());
 		}
 
 		void UpdateShadow()

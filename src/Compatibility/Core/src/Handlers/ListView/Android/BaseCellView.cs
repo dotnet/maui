@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_defaultMainTextColor = defaultColor;
 			if (_mainTextColor == null && defaultColor != null)
-				_mainText.SetTextColor(defaultColor.ToNative());
+				_mainText.SetTextColor(defaultColor.ToPlatform());
 		}
 
 		public void SetDetailTextColor(Color color)
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_defaultDetailColor = Color.FromUint((uint)_detailText.CurrentTextColor);
 
 			_detailTextColor = color;
-			_detailText.SetTextColor(color.ToNative(_defaultDetailColor));
+			_detailText.SetTextColor(color.ToPlatform(_defaultDetailColor));
 		}
 
 		public void SetImageSource(ImageSource source)
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Color defaultColorToSet = _defaultMainTextColor == null ? _androidDefaultTextColor : _defaultMainTextColor;
 
 			_mainTextColor = color;
-			_mainText.SetTextColor(color.ToNative(defaultColorToSet));
+			_mainText.SetTextColor(color.ToPlatform(defaultColorToSet));
 		}
 
 		public void SetRenderHeight(double height)

@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker, WBrush? defaultForeground)
 		{
 			Color textColor = datePicker.TextColor;
-			nativeDatePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToNative()) : textColor.ToNative();
+			nativeDatePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToPlatform()) : textColor.ToPlatform();
 		}
 	}
 }
