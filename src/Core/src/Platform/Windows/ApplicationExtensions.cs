@@ -5,10 +5,10 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
-		public static void CreateNativeWindow(this UI.Xaml.Application nativeApplication, IApplication application, UI.Xaml.LaunchActivatedEventArgs? args) =>
-			nativeApplication.CreateNativeWindow(application, new OpenWindowRequest(LaunchArgs: args));
+		public static void CreatePlatformWindow(this UI.Xaml.Application nativeApplication, IApplication application, UI.Xaml.LaunchActivatedEventArgs? args) =>
+			nativeApplication.CreatePlatformWindow(application, new OpenWindowRequest(LaunchArgs: args));
 
-		public static void CreateNativeWindow(this UI.Xaml.Application nativeApplication, IApplication application, OpenWindowRequest? args)
+		public static void CreatePlatformWindow(this UI.Xaml.Application nativeApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return;

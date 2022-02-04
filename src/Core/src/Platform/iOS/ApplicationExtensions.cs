@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 				err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
 		}
 
-		public static void CreateNativeWindow(this IUIApplicationDelegate nativeApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
+		public static void CreatePlatformWindow(this IUIApplicationDelegate nativeApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 			if (launchOptions is not null)
 				dicts.Add(launchOptions);
 
-			var window = CreateNativeWindow(application, null, dicts.ToArray());
+			var window = CreatePlatformWindow(application, null, dicts.ToArray());
 			if (window is not null)
 			{
 				nativeApplication.SetWindow(window);
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void CreateNativeWindow(this IUIWindowSceneDelegate sceneDelegate, IApplication application, UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
+		public static void CreatePlatformWindow(this IUIWindowSceneDelegate sceneDelegate, IApplication application, UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			var window = CreateNativeWindow(application, scene as UIWindowScene, dicts.ToArray());
+			var window = CreatePlatformWindow(application, scene as UIWindowScene, dicts.ToArray());
 			if (window is not null)
 			{
 				sceneDelegate.SetWindow(window);
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static UIWindow? CreateNativeWindow(IApplication application, UIWindowScene? windowScene, NSDictionary[]? states)
+		static UIWindow? CreatePlatformWindow(IApplication application, UIWindowScene? windowScene, NSDictionary[]? states)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return null;

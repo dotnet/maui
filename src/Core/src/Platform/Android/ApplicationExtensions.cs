@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 			nativeApplication.StartActivity(intent);
 		}
 
-		public static void CreateNativeWindow(this Activity activity, IApplication application, Bundle? savedInstanceState = null)
+		public static void CreatePlatformWindow(this Activity activity, IApplication application, Bundle? savedInstanceState = null)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return;

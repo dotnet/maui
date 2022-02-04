@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
-			handler.PlatformView?.CreateNativeWindow(application, args as OpenWindowRequest);
+			handler.PlatformView?.CreatePlatformWindow(application, args as OpenWindowRequest);
 		}
 
 		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
