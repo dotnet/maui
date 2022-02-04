@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using WebKit;
 
 namespace Microsoft.Maui.Platform
@@ -60,10 +61,15 @@ namespace Microsoft.Maui.Platform
 			nativeWebView.EvaluateJavaScriptAsync(script);
 		}
 
-		public static async Task EvaluateJavaScript(this WKWebView webView, EvaluateJavaScriptAsyncRequest request)
+		public static void EvaluateJavaScript(this WKWebView webView, EvaluateJavaScriptAsyncRequest request)
 		{
-			var result = await webView.EvaluateJavaScriptAsync(request.Script);
-			request.SetResult(result?.ToString() ?? "null");
+			request.RunAndReport(EvaluateJavaScript(webView, request.Script));
+		}
+
+		static async Task<string> EvaluateJavaScript(WKWebView webView, string script) 
+		{
+			var result = await webView.EvaluateJavaScriptAsync(script);
+			return result?.ToString() ?? "null";
 		}
 	}
 }

@@ -67,10 +67,9 @@ namespace Microsoft.Maui.Platform
 			});
 		}
 
-		public static async Task EvaluateJavaScript(this WebView2 webView, EvaluateJavaScriptAsyncRequest request) 
+		public static void EvaluateJavaScript(this WebView2 webView, EvaluateJavaScriptAsyncRequest request) 
 		{
-			var result = await webView.ExecuteScriptAsync(request.Script);
-			request.SetResult(result);
+			request.RunAndReport(webView.ExecuteScriptAsync(request.Script));
 		}
 	}
 }

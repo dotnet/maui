@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
 
@@ -75,12 +76,18 @@ namespace Microsoft.Maui.Platform
 			webView.CanGoForward = nativeWebView.CanGoForward();
 		}
 
-		public static async Task EvaluateJavaScript(this AWebView webView, EvaluateJavaScriptAsyncRequest request) 
+		public static void EvaluateJavaScript(this AWebView webView, EvaluateJavaScriptAsyncRequest request) 
 		{
-			var javaScriptResult = new JavascriptResult();
-
-			webView.EvaluateJavascript(request.Script, javaScriptResult);
-			request.SetResult(await javaScriptResult.JsResult);
+			try
+			{
+				var javaScriptResult = new JavascriptResult();
+				webView.EvaluateJavascript(request.Script, javaScriptResult);
+				request.RunAndReport(javaScriptResult.JsResult);
+			}
+			catch (Exception ex)
+			{
+				request.SetException(ex);
+			}
 		}
 
 		class JavascriptResult : Java.Lang.Object, IValueCallback

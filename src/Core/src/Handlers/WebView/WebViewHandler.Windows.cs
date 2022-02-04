@@ -61,11 +61,17 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.Eval(webView, script);
 		}
 
-		public static async void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 
+		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
-				await handler.NativeView.EvaluateJavaScript(request);
+				if (handler.NativeView == null)
+				{ 
+					request.SetCanceled();
+					return;
+				}
+
+				handler.NativeView.EvaluateJavaScript(request);
 			}
 		}
 	}

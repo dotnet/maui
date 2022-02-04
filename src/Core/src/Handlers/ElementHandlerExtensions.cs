@@ -70,17 +70,10 @@ namespace Microsoft.Maui
 		}
 	
 		public static async Task<T> InvokeAsync<T>(this IElementHandler handler, string commandName,
-			AsyncCommandArguments<T> args)
+			TaskCompletionSource<T> args)
 		{
 			handler?.Invoke(commandName, args);
-			return await args.Result;
-		}
-
-		public static async Task InvokeAsync(this IElementHandler handler, string commandName,
-			AsyncCommandArguments args)
-		{
-			handler?.Invoke(commandName, args);
-			await args.Task;
+			return await args.Task;
 		}
 	}
 }
