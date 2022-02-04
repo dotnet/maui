@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			InitializeStatusBar();
 				
-			if(!NativeVersion.IsDesktop)
+			if(!PlatformVersion.IsDesktop)
 				SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 
 			// TODO WINUI: This event is only available on UWP

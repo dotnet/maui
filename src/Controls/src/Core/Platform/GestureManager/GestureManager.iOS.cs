@@ -649,7 +649,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 #if __MOBILE__
-				if (NativeVersion.IsAtLeast(11) && recognizer is DragGestureRecognizer)
+				if (PlatformVersion.IsAtLeast(11) && recognizer is DragGestureRecognizer)
 				{
 					dragFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
@@ -661,7 +661,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
-				if (NativeVersion.IsAtLeast(11) && recognizer is DropGestureRecognizer)
+				if (PlatformVersion.IsAtLeast(11) && recognizer is DropGestureRecognizer)
 				{
 					dropFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);

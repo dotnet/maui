@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (Control == null)
 				{
-					if (NativeVersion.IsAtLeast(11))
+					if (PlatformVersion.IsAtLeast(11))
 					{
 						var parentNav = e.NewElement.FindParentOfType<NavigationPage>();
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
@@ -309,7 +309,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the cells adhere to changes UI theme
-			if (NativeVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (PlatformVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				ReloadData();
 		}
 
@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					Control.Layer.RemoveAllAnimations();
 					//iOS11 hack
-					if (NativeVersion.IsAtLeast(11))
+					if (PlatformVersion.IsAtLeast(11))
 						this.BeginInvokeOnMainThread(() =>
 						{
 							if (Control != null /*&& !_disposed*/)
@@ -856,7 +856,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var estimatedRowHeight = GetEstimatedRowHeight(tableView);
 				//if we are providing 0 we are disabling EstimatedRowHeight,
 				//this works fine on newer versions, but iOS10 it will cause a crash so we leave the default value
-				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && NativeVersion.IsAtLeast(11)))
+				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && PlatformVersion.IsAtLeast(11)))
 					tableView.EstimatedRowHeight = estimatedRowHeight;
 			}
 
@@ -1517,7 +1517,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
-			if (NativeVersion.IsAtLeast(9))
+			if (PlatformVersion.IsAtLeast(9))
 				TableView.CellLayoutMarginsFollowReadableWidth = false;
 
 			_usingLargeTitles = usingLargeTitles;

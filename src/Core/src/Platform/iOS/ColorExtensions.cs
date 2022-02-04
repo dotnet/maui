@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.LabelColor;
 
 				return UIColor.Black;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.PlaceholderTextColor;
 
 				return SeventyPercentGrey;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.SecondaryLabelColor;
 
 				return new Color(.32f, .4f, .57f).ToPlatform();
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.SystemBackgroundColor;
 
 				return UIColor.White;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.SeparatorColor;
 
 				return UIColor.Gray;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.OpaqueSeparatorColor;
 
 				return UIColor.Black;
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.SystemGroupedBackgroundColor;
 
 				return new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.SystemBlueColor;
 
 				return Color.FromRgba(50, 79, 133, 255).ToPlatform();
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.SystemRedColor;
 
 				return UIColor.FromRGBA(255, 0, 0, 255);
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.SystemGrayColor;
 
 				return UIColor.Gray;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 					return UIColor.SystemGray2Color;
 
 				return UIColor.LightGray;

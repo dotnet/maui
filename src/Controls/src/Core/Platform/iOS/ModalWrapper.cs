@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var result = style.ToPlatformModalPresentationStyle();
 
-				if (!NativeVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (!PlatformVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			modal.ViewController.DidMoveToParentViewController(this);
 
-			if (NativeVersion.IsAtLeast(13))
+			if (PlatformVersion.IsAtLeast(13))
 				PresentationController.Delegate = this;
 
 			((Page)modal.VirtualView).PropertyChanged += OnModalPagePropertyChanged;
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (NativeVersion.Supports(NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 

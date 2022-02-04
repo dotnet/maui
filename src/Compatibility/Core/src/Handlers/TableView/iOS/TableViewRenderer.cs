@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetPlatformControl(tv);
-					if (NativeVersion.IsAtLeast(9))
+					if (PlatformVersion.IsAtLeast(9))
 						tv.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the cells adhere to changes UI theme
-			if (NativeVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (PlatformVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Control.ReloadData();
 		}
 

@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrEmpty(hint))
 			{
 				// info HintText won't read anything back when using TalkBack pre API 26
-				if (NativeVersion.IsAtLeast(26))
+				if (PlatformVersion.IsAtLeast(26))
 				{
 					info.HintText = hint;
 

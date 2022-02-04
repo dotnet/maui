@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Platform
 
 		public static UIImage? ConvertToImage(this UIView view)
 		{
-			if (!NativeVersion.IsAtLeast(10))
+			if (!PlatformVersion.IsAtLeast(10))
 			{
 				UIGraphics.BeginImageContext(view.Frame.Size);
 				view.Layer.RenderInContext(UIGraphics.GetCurrentContext());

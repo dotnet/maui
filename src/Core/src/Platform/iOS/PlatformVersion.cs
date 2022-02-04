@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class NativeVersion
+	public static class PlatformVersion
 	{
 		public static bool IsAtLeast(int version)
 		{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		{
 			switch (capability)
 			{
-				case NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden:
+				case PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden:
 					if (!SetNeedsUpdateOfHomeIndicatorAutoHidden.HasValue)
 					{
 						SetNeedsUpdateOfHomeIndicatorAutoHidden = new UIViewController().RespondsToSelector(new ObjCRuntime.Selector("setNeedsUpdateOfHomeIndicatorAutoHidden"));
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
-	public static class NativeApis
+	public static class PlatformApis
 	{
 		public const string RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden = "RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden";
 		public const int UIActivityIndicatorViewStyleMedium = 13;

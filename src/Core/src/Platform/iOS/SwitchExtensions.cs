@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 				uiSwitch.OnTintColor = view.TrackColor.ToPlatform();
 
 			UIView uIView;
-			if (NativeVersion.IsAtLeast(13))
+			if (PlatformVersion.IsAtLeast(13))
 				uIView = uiSwitch.Subviews[0].Subviews[0];
 			else
 				uIView = uiSwitch.Subviews[0].Subviews[0].Subviews[0];
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 		internal static UIView GetTrackSubview(this UISwitch uISwitch)
 		{
 			UIView uIView;
-			if (NativeVersion.IsAtLeast(13))
+			if (PlatformVersion.IsAtLeast(13))
 				uIView = uISwitch.Subviews[0].Subviews[0];
 			else
 				uIView = uISwitch.Subviews[0].Subviews[0].Subviews[0];

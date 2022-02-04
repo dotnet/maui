@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Platform
 			if (drawable == null)
 				return;
 
-			if (NativeVersion.Supports(NativeApis.BlendModeColorFilter))
+			if (PlatformVersion.Supports(PlatformApis.BlendModeColorFilter))
 			{
 				BlendMode? filterMode29 = GetFilterMode(mode);
 

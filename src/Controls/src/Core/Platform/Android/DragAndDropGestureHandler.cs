@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls.Platform
 				customLocalStateData.SourcePlatformView = v;
 				customLocalStateData.SourceElement = element;
 
-				if (NativeVersion.IsAtLeast(24))
+				if (PlatformVersion.IsAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
 				else
 #pragma warning disable CS0618 // Type or member is obsolete

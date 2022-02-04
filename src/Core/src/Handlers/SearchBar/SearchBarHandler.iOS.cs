@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var searchBar = new MauiSearchBar() { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
-			if (NativeVersion.IsAtLeast(13))
+			if (PlatformVersion.IsAtLeast(13))
 				_editor = searchBar.SearchTextField;
 			else
 				_editor = searchBar.FindDescendantView<UITextField>();

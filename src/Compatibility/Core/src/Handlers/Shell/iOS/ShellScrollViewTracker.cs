@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!_isInShell)
 				return;
 
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
 				var newBounds = _scrollView.AdjustedContentInset.InsetRect(_scrollView.Bounds).ToRectangle();
 				newBounds.X = 0;
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_lastInset == 0 && _tabThickness == 0)
 				return false;
 
-			if (!NativeVersion.IsAtLeast(11))
+			if (!PlatformVersion.IsAtLeast(11))
 			{
 				UpdateContentInset(_lastInset, _tabThickness);
 				return true;
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_lastInset = inset;
 			_tabThickness = tabThickness;
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
 				if (ShellSectionController.GetItems().Count > 1 && _isInItems)
 				{
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// If we can't bounce in that case you may not be able to expose the handler.
 			// Also the hiding behavior only depends on scroll on iOS 11. In 10 and below
 			// the search goes in the TitleView so there is nothing to collapse/expand.
-			if (!NativeVersion.IsAtLeast(11) ||
+			if (!PlatformVersion.IsAtLeast(11) ||
 				(_renderer.VirtualView is ScrollView scrollView && scrollView.Orientation == ScrollOrientation.Horizontal))
 				return;
 

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (child.Element.Handler is IPlatformViewHandler nvh &&
 				nvh.VirtualView.Background == null)
 			{
-				var color = NativeVersion.IsAtLeast(23) ?
+				var color = PlatformVersion.IsAtLeast(23) ?
 								Context.Resources.GetColor(AColorRes.BackgroundLight, Context.Theme) :
 								new AColor(ContextCompat.GetColor(Context, AColorRes.BackgroundLight));
 

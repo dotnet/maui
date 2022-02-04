@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Handlers
 		////	var navController = handler._controlsNavigationController;
 		////	var NavigationBar = navController.NavigationBar;
 
-		////	if (NativeVersion.IsAtLeast(13))
+		////	if (PlatformVersion.IsAtLeast(13))
 		////	{
 		////		var navigationBarAppearance = NavigationBar.StandardAppearance;
 
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Handlers
 
 		////	// Determine new large title text attributes via global static data
 		////	var largeTitleTextAttributes = titleTextAttributes;
-		////	if (NativeVersion.IsAtLeast(11))
+		////	if (PlatformVersion.IsAtLeast(11))
 		////	{
 		////		var globalLargeTitleTextAttributes = UINavigationBar.Appearance.LargeTitleTextAttributes;
 
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Handlers
 		////		};
 		////	}
 
-		////	if (NativeVersion.IsAtLeast(13))
+		////	if (PlatformVersion.IsAtLeast(13))
 		////	{
 		////		if (NavigationBar.CompactAppearance != null)
 		////		{
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Handlers
 		////	{
 		////		NavigationBar.TitleTextAttributes = titleTextAttributes;
 
-		////		if (NativeVersion.IsAtLeast(11))
+		////		if (PlatformVersion.IsAtLeast(11))
 		////			NavigationBar.LargeTitleTextAttributes = largeTitleTextAttributes;
 		////	}
 

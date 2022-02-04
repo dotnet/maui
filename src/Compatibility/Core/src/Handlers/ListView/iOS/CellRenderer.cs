@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		EventHandler? _onForceUpdateSizeRequested;
 		PropertyChangedEventHandler? _onPropertyChangedEventHandler;
-		readonly UIColor _defaultCellBgColor = NativeVersion.IsAtLeast(13) ? UIColor.Clear : UIColor.White;
+		readonly UIColor _defaultCellBgColor = PlatformVersion.IsAtLeast(13) ? UIColor.Clear : UIColor.White;
 
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
 				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);

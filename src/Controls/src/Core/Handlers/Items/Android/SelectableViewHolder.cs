@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
-			if (NativeVersion.IsAtLeast(Android.OS.BuildVersionCodes.M))
+			if (PlatformVersion.IsAtLeast(Android.OS.BuildVersionCodes.M))
 			{
 				// We're looking for the foreground ripple effect, which is not available on older APIs
 				// Limiting this to Marshmallow and newer, because View.setForeground() is not available on lower APIs
