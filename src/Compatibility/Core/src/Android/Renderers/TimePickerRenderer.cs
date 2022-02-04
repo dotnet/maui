@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				var textField = CreateNativeControl();
+				var textField = CreatePlatformControl();
 
 				SetNativeControl(textField);
 			}
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		protected override EditText CreateNativeControl()
+		protected override EditText CreatePlatformControl()
 		{
 			return new PickerEditText(Context);
 		}

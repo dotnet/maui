@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_adapter.IsAttachedToWindow = _isAttached;
 		}
 
-		protected override AListView CreateNativeControl()
+		protected override AListView CreatePlatformControl()
 		{
 			return new AListView(Context);
 		}
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				AListView nativeListView = Control;
 				if (nativeListView == null)
 				{
-					nativeListView = CreateNativeControl();
+					nativeListView = CreatePlatformControl();
 					_refresh = CreateNativePullToRefresh(MauiContext.Context);
 					_refresh.SetOnRefreshListener(new ListViewSwipeRefreshLayoutListener(this));
 					_refresh.AddView(nativeListView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));

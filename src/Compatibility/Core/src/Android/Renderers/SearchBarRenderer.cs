@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return sizerequest;
 		}
 
-		protected override SearchView CreateNativeControl()
+		protected override SearchView CreatePlatformControl()
 		{
 			var context = (Context as ContextThemeWrapper)?.BaseContext ?? Context;
 			return new SearchView(context);
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (searchView == null)
 			{
-				searchView = CreateNativeControl();
+				searchView = CreatePlatformControl();
 				searchView.SetIconifiedByDefault(false);
 				searchView.Iconified = false;
 				SetNativeControl(searchView);

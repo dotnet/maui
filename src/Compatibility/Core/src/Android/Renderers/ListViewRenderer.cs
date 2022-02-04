@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_adapter.IsAttachedToWindow = _isAttached;
 		}
 
-		protected override AListView CreateNativeControl()
+		protected override AListView CreatePlatformControl()
 		{
 			return new AListView(Context);
 		}
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (nativeListView == null)
 				{
 					var ctx = Context;
-					nativeListView = CreateNativeControl();
+					nativeListView = CreatePlatformControl();
 					_refresh = CreateNativePullToRefresh(ctx);
 					_refresh.SetOnRefreshListener(this);
 					_refresh.AddView(nativeListView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));

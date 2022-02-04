@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		private protected bool IsElementOrControlEmpty => Element == null || Control == null;
 
-		protected virtual TPlatformView CreateNativeControl()
+		protected virtual TPlatformView CreatePlatformControl()
 		{
 			return default(TPlatformView);
 		}

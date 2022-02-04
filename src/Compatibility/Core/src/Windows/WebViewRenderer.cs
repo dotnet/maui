@@ -154,7 +154,7 @@ if(bases.length == 0){
 			base.Dispose(disposing);
 		}
 
-		protected virtual WWebView CreateNativeControl()
+		protected virtual WWebView CreatePlatformControl()
 		{
 			// TODO WINUI3
 			//if (Element.IsSet(PlatformConfiguration.WindowsSpecific.WebView.ExecutionModeProperty))
@@ -199,7 +199,7 @@ if(bases.length == 0){
 			{
 				if (Control == null)
 				{
-					var webView = CreateNativeControl();
+					var webView = CreatePlatformControl();
 					Connect(webView);
 					SetNativeControl(webView);
 				}
@@ -491,7 +491,7 @@ if(bases.length == 0){
 		void UpdateExecutionMode()
 		{
 			TearDown(Control);
-			var webView = CreateNativeControl();
+			var webView = CreatePlatformControl();
 			Connect(webView);
 			SetNativeControl(webView);
 			Load();

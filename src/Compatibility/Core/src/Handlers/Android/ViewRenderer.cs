@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
-		protected virtual TPlatformView CreateNativeControl()
+		protected virtual TPlatformView CreatePlatformControl()
 		{
 			return default(TPlatformView)!;
 		}

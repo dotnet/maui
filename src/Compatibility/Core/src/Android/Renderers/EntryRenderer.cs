@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		protected override FormsEditText CreateNativeControl()
+		protected override FormsEditText CreatePlatformControl()
 		{
 			return new FormsEditText(Context);
 		}
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				SetNativeControl(CreateNativeControl());
+				SetNativeControl(CreatePlatformControl());
 
 				EditText.AddTextChangedListener(this);
 				EditText.SetOnEditorActionListener(this);

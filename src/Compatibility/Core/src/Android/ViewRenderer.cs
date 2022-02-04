@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		protected virtual TPlatformView CreateNativeControl()
+		protected virtual TPlatformView CreatePlatformControl()
 		{
 			return default(TPlatformView);
 		}

@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return Control?.SizeThatFits(size) ?? base.SizeThatFits(size);
 		}
 
-		protected virtual TPlatformView CreateNativeControl()
+		protected virtual TPlatformView CreatePlatformControl()
 		{
 			return default(TPlatformView)!;
 		}

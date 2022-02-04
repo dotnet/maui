@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			((ISliderController)Element)?.SendDragCompleted();
 		}
 
-		protected override SeekBar CreateNativeControl()
+		protected override SeekBar CreatePlatformControl()
 		{
 			return new FormsSeekBar(Context);
 		}
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				var seekBar = CreateNativeControl();
+				var seekBar = CreatePlatformControl();
 				SetNativeControl(seekBar);
 
 				seekBar.Max = 1000;

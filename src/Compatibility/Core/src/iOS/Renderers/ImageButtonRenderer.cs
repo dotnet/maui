@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var control = CreateNativeControl();
+					var control = CreatePlatformControl();
 					control.ClipsToBounds = true;
 					SetNativeControl(control);
 
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		protected override UIButton CreateNativeControl()
+		protected override UIButton CreatePlatformControl()
 		{
 			return new UIButton(UIButtonType.System);
 		}

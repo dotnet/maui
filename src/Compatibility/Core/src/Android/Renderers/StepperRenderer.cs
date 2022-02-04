@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		[PortHandler]
-		protected override LinearLayout CreateNativeControl()
+		protected override LinearLayout CreatePlatformControl()
 		{
 			return new LinearLayout(Context)
 			{
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				var layout = CreateNativeControl();
+				var layout = CreatePlatformControl();
 				StepperRendererManager.CreateStepperButtons(this, out _downButton, out _upButton);
 				layout.AddView(_downButton, new LinearLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.MatchParent));
 				layout.AddView(_upButton, new LinearLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.MatchParent));

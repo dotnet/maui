@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[PortHandler]
-		protected override UITextField CreateNativeControl()
+		protected override UITextField CreatePlatformControl()
 		{
 			return new ReadOnlyField { BorderStyle = UITextBorderStyle.RoundedRect };
 		}
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
-		protected abstract override TControl CreateNativeControl();
+		protected abstract override TControl CreatePlatformControl();
 
 		[PortHandler("Partially ported, still missing code related to TitleColor, etc.")]
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (Control == null)
 				{
 					// disabled cut, delete, and toggle actions because they can throw an unhandled native exception
-					var entry = CreateNativeControl();
+					var entry = CreatePlatformControl();
 
 					entry.EditingDidBegin += OnStarted;
 					entry.EditingDidEnd += OnEnded;

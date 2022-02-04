@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				e.NewElement.PropertyChanging += ElementPropertyChanging;
 				if (Control == null)
 				{
-					SetNativeControl(CreateNativeControl());
+					SetNativeControl(CreatePlatformControl());
 #if !__MOBILE__
 					Control.Editable = false;
 					Control.Bezeled = false;
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				UpdateText();
 		}
 
-		protected override NativeLabel CreateNativeControl()
+		protected override NativeLabel CreatePlatformControl()
 		{
 #if __MOBILE__
 			return Element.Padding.IsEmpty ? new NativeLabel(RectangleF.Empty) : new FormsLabel(RectangleF.Empty);

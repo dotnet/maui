@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		}
 
 		[PortHandler]
-		protected override SwitchCompat CreateNativeControl()
+		protected override SwitchCompat CreatePlatformControl()
 		{
 			return new SwitchCompat(Context);
 		}
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				if (Control == null)
 				{
-					SwitchCompat aswitch = CreateNativeControl();
+					SwitchCompat aswitch = CreatePlatformControl();
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
 					_defaultTrackDrawable = aswitch.TrackDrawable;

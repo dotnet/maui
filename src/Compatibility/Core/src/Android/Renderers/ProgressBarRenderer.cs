@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		[PortHandler]
-		protected override AProgressBar CreateNativeControl()
+		protected override AProgressBar CreatePlatformControl()
 		{
 			return new AProgressBar(Context, null, global::Android.Resource.Attribute.ProgressBarStyleHorizontal) { Indeterminate = false, Max = 10000 };
 		}
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (Control == null)
 				{
-					var progressBar = CreateNativeControl();
+					var progressBar = CreatePlatformControl();
 
 					SetNativeControl(progressBar);
 				}

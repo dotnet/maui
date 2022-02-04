@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (Control == null)
 				{
-					SetNativeControl(CreateNativeControl());
+					SetNativeControl(CreatePlatformControl());
 				}
 
 				UpdateContent();
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementChanged(e);
 		}
 
-		protected override UIView CreateNativeControl()
+		protected override UIView CreatePlatformControl()
 		{
 			return new UIView();
 		}

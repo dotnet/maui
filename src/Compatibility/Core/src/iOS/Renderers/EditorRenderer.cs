@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[PortHandler]
-		protected override UITextView CreateNativeControl()
+		protected override UITextView CreatePlatformControl()
 		{
 			return new FormsUITextView(CGRect.Empty);
 		}
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Control == null)
 			{
-				SetNativeControl(CreateNativeControl());
+				SetNativeControl(CreatePlatformControl());
 
 				if (Device.Idiom == TargetIdiom.Phone)
 				{

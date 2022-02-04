@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return sizeConstraint;
 		}
 
-		protected abstract override T CreateNativeControl();
+		protected abstract override T CreatePlatformControl();
 
 		protected override void Dispose(bool disposing)
 		{
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(CreateNativeControl());
+					SetNativeControl(CreatePlatformControl());
 					Control.CheckedChanged += OnControlCheckedChanged;
 				}
 

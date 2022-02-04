@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[PortHandler]
-		protected override UITextField CreateNativeControl()
+		protected override UITextField CreatePlatformControl()
 		{
 			return new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
 		}
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		internal UIDatePicker Picker => _picker;
 
-		abstract protected override TControl CreateNativeControl();
+		abstract protected override TControl CreatePlatformControl();
 
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public DatePickerRendererBase()
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Control == null)
 			{
-				var entry = CreateNativeControl();
+				var entry = CreatePlatformControl();
 
 				entry.EditingDidBegin += OnStarted;
 				entry.EditingDidEnd += OnEnded;

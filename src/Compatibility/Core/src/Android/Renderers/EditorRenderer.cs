@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		[PortHandler]
-		protected override FormsEditText CreateNativeControl()
+		protected override FormsEditText CreatePlatformControl()
 		{
 			return new FormsEditText(Context)
 			{
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var edit = Control;
 			if (edit == null)
 			{
-				edit = CreateNativeControl();
+				edit = CreatePlatformControl();
 
 				SetNativeControl(edit);
 				EditText.AddTextChangedListener(this);

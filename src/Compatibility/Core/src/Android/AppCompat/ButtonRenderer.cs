@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnLayout(changed, l, t, r, b);
 		}
 
-		protected override AppCompatButton CreateNativeControl()
+		protected override AppCompatButton CreatePlatformControl()
 		{
 			return new AppCompatButton(Context);
 		}
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				if (Control == null)
 				{
-					AppCompatButton button = CreateNativeControl();
+					AppCompatButton button = CreatePlatformControl();
 
 					button.SetOnClickListener(this);
 					button.SetOnTouchListener(this);

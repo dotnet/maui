@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_density = Resources.DisplayMetrics.Density;
 
-					SetNativeControl(CreateNativeControl());
+					SetNativeControl(CreatePlatformControl());
 				}
 
 				UpdateContent();
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementChanged(e);
 		}
 
-		protected override AView CreateNativeControl()
+		protected override AView CreatePlatformControl()
 		{
 			return new AView(_context);
 		}

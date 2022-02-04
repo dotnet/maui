@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[PortHandler]
-		protected override UITextField CreateNativeControl()
+		protected override UITextField CreatePlatformControl()
 		{
 			return new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 
-		protected abstract override TControl CreateNativeControl();
+		protected abstract override TControl CreatePlatformControl();
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
 		{
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var entry = CreateNativeControl();
+					var entry = CreatePlatformControl();
 
 					entry.EditingDidBegin += OnStarted;
 					entry.EditingDidEnd += OnEnded;

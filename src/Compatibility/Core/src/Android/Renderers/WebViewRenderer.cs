@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return new Size(Context.ToPixels(40), Context.ToPixels(40));
 		}
 
-		protected override AWebView CreateNativeControl()
+		protected override AWebView CreatePlatformControl()
 		{
 			var webView = new AWebView(Context);
 			webView.Settings.SetSupportMultipleWindows(true);
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (Control == null)
 			{
-				var webView = CreateNativeControl();
+				var webView = CreatePlatformControl();
 #pragma warning disable 618 // This can probably be replaced with LinearLayout(LayoutParams.MatchParent, LayoutParams.MatchParent); just need to test that theory
 				webView.LayoutParameters = new global::Android.Widget.AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0);
 #pragma warning restore 618

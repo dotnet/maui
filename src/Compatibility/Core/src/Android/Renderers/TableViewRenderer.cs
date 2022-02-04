@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return new Size(40, 40);
 		}
 
-		protected override AListView CreateNativeControl()
+		protected override AListView CreatePlatformControl()
 		{
 			return new AListView(Context);
 		}
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AListView listView = Control;
 			if (listView == null)
 			{
-				listView = CreateNativeControl();
+				listView = CreatePlatformControl();
 				SetNativeControl(listView);
 			}
 

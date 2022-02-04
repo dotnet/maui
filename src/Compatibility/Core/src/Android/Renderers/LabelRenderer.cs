@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control.RecalculateSpanPositions(Element, _spannableString, new SizeRequest(new Size(r - l, b - t)));
 		}
 
-		protected override TextView CreateNativeControl()
+		protected override TextView CreatePlatformControl()
 		{
 			return new FormsTextView(Context);
 		}
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementChanged(e);
 			if (_view == null)
 			{
-				_view = (FormsTextView)CreateNativeControl();
+				_view = (FormsTextView)CreatePlatformControl();
 				_labelTextColorDefault = _view.TextColors;
 				_lineSpacingMultiplierDefault = _view.LineSpacingMultiplier;
 				_lineSpacingExtraDefault = _view.LineSpacingExtra;

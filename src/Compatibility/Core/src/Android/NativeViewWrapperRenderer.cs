@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		// not called by the view wrapper renderer
-		protected override global::Android.Views.View CreateNativeControl()
+		protected override global::Android.Views.View CreatePlatformControl()
 		{
 			return new global::Android.Views.View(Context);
 		}

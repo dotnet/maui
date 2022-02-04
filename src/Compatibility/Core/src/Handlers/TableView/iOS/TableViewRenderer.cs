@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.Dispose(disposing);
 		}
 
-		protected override UITableView CreateNativeControl()
+		protected override UITableView CreatePlatformControl()
 		{
 			return new UITableView(RectangleF.Empty, GetTableViewStyle(Element?.Intent ?? TableIntent.Data));
 		}
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						Control.Dispose();
 					}
 
-					var tv = CreateNativeControl();
+					var tv = CreatePlatformControl();
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);
