@@ -397,7 +397,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
 			if (firstPage != null)
+#pragma warning disable CS0618 // Type or member is obsolete
 				NavigationRenderer.SetFlyoutLeftBarButton(firstPage, FlyoutPage);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateApplyShadow(bool value)
