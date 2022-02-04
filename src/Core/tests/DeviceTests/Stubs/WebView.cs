@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.DeviceTests.Stubs
+using System.Threading.Tasks;
+
+namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WebViewStub : StubBase, IWebView
 	{
