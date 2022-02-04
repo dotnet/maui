@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Platform
 			{
 				flowDirection = FlowDirection.LeftToRight;
 			}
-
+			
 			platformView.FlowDirection = flowDirection.ToPlatform();
 		}
 

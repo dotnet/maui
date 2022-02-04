@@ -31,7 +31,6 @@ namespace Microsoft.Maui.Platform
 			{
 				return;
 			}
-
 			platformStepper.ButtonBackground = background.ToPlatform();
 		}
 	}
