@@ -1571,6 +1571,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 			}
 
+			protected internal MauiControlsNavigationBar(NativeHandle handle) : base(handle)
+			{
+			}
+
 			public RectangleF BackButtonFrameSize { get; private set; }
 			public UILabel NavBarLabel { get; private set; }
 
