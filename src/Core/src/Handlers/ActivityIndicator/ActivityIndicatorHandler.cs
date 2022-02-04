@@ -3,7 +3,11 @@ using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
 #elif MONOANDROID
 using PlatformView = Android.Widget.ProgressBar;
 #elif WINDOWS
+<<<<<<< HEAD
 using PlatformView = Microsoft.UI.Xaml.Controls.ProgressRing;
+=======
+using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
+>>>>>>> bb8b370f1 ([Tizen] Fix INativeViewHandler to return more expected NativeView)
 #elif TIZEN
 using PlatformView = ElmSharp.ProgressBar;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)

@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Handlers
 			toBeRemoved.Unrealize();
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.Children.Insert(targetIndex, child.ToNative(MauiContext));
+			NativeView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var nativeChildView = child.ToNative(MauiContext!);
+			var nativeChildView = child.ToPlatform(MauiContext!);
 			var currentIndex = NativeView.Children.IndexOf(nativeChildView);
 
 			if (currentIndex == -1)
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Handlers
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			if (targetIndex > currentIndex)
 			{
-				child.ToNative(MauiContext!).RaiseTop();
+				child.ToPlatform(MauiContext!).RaiseTop();
 				for (int i = targetIndex+1; i < NativeView.Children.Count; i++)
 				{
 					NativeView.Children[i].RaiseTop();
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				child.ToNative(MauiContext!).Lower();
+				child.ToPlatform(MauiContext!).Lower();
 				for (int i = targetIndex-1; i >= 0; i--)
 				{
 					NativeView.Children[i].Lower();

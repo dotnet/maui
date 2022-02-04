@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Rectangle GetNativeViewBounds(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
 			{
 				return new Rectangle();
@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
 				return new Matrix4x4();
 			return nativeView.GetViewTransform();
@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Platform
 			=> new Matrix4x4();
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view)
-			=> view.ToNative().GetBoundingBox();
+			=> view.ToPlatform().GetBoundingBox();
 
 		internal static Graphics.Rectangle GetBoundingBox(this EvasObject? nativeView)
 		{
