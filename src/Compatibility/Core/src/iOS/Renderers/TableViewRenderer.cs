@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateBackgroundView();
 		}
 
-		protected override void UpdateNativeWidget()
+		protected override void UpdatePlatformWidget()
 		{
 			if (Element.Opacity < 1)
 			{
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 				Control.Layer.ShouldRasterize = false;
-			base.UpdateNativeWidget();
+			base.UpdatePlatformWidget();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
