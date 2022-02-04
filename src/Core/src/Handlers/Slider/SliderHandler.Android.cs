@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			return new SeekBar(Context)
 			{
 				DuplicateParentStateEnabled = false,
-				Max = (int)SliderExtensions.NativeMaxValue
+				Max = (int)SliderExtensions.PlatformMaxValue
 			};
 		}
 
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 			var min = VirtualView.Minimum;
 			var max = VirtualView.Maximum;
 
-			var value = min + (max - min) * (progress / SliderExtensions.NativeMaxValue);
+			var value = min + (max - min) * (progress / SliderExtensions.PlatformMaxValue);
 
 			VirtualView.Value = value;
 		}
