@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 #endif
 
-		protected virtual NativeGestureRecognizer GetNativeRecognizer(IGestureRecognizer recognizer)
+		protected virtual NativeGestureRecognizer GetPlatformRecognizer(IGestureRecognizer recognizer)
 		{
 			if (recognizer == null)
 				return null;
@@ -597,7 +597,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (_gestureRecognizers.ContainsKey(recognizer))
 					continue;
 
-				var nativeRecognizer = GetNativeRecognizer(recognizer);
+				var nativeRecognizer = GetPlatformRecognizer(recognizer);
 				if (nativeRecognizer != null && _handler != null)
 				{
 #if __MOBILE__
