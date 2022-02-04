@@ -18,7 +18,7 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	internal class WindowsPlatformServices : IPlatformServices, IPlatformInvalidate
+	internal class WindowsPlatformServices : IPlatformServices
 	{
 		readonly UISettings _uiSettings = new UISettings();
 
@@ -123,17 +123,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Application.Current.Dispatcher.DispatchIfRequired(() =>
 				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme)));
-		}
-
-		public void Invalidate(VisualElement visualElement)
-		{
-			var renderer = Platform.GetRenderer(visualElement);
-			if (renderer == null)
-			{
-				return;
-			}
-
-			renderer.ContainerElement.InvalidateMeasure();
 		}
 
 		public OSAppTheme RequestedTheme =>
