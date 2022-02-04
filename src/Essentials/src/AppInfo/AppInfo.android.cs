@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					return PackageInfoCompat.GetLongVersionCode(info).ToString(CultureInfo.InvariantCulture);
 #else
 #pragma warning disable CS0618 // Type or member is obsolete
-				return info.VersionCode.ToString(CultureInfo.InvariantCulture);
+					return info.VersionCode.ToString(CultureInfo.InvariantCulture);
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 				}
