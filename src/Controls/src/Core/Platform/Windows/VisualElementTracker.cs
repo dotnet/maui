@@ -479,7 +479,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void MaybeInvalidate()
 		{
-			if (Element?.IsInNativeLayout == true)
+			if (Element?.IsInPlatformLayout == true)
 				return;
 
 			var parent = (FrameworkElement?)Container?.Parent;

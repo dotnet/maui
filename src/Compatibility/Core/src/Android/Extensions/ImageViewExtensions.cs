@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (SourceIsNotChanged(newView, newImageSource))
 				{
 					imageController?.SetIsLoading(false);
-					imageController?.NativeSizeChanged();
+					imageController?.PlatformSizeChanged();
 				}
 			}
 

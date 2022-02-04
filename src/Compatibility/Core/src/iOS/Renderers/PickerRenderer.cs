@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatePickerNativeSize(string oldText)
 		{
 			if (oldText != Control.Text)
-				((IVisualElementController)Element).NativeSizeChanged();
+				((IVisualElementController)Element).PlatformSizeChanged();
 		}
 
 		[PortHandler]

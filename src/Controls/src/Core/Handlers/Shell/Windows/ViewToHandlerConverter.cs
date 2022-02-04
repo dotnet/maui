@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 			{
-				_view.IsInNativeLayout = true;
+				_view.IsInPlatformLayout = true;
 				_view.Frame = new Rectangle(0, 0, finalSize.Width, finalSize.Height);
 				FrameworkElement?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 					Opacity = 1;
 				}
 
-				_view.IsInNativeLayout = false;
+				_view.IsInPlatformLayout = false;
 
 				return finalSize;
 			}

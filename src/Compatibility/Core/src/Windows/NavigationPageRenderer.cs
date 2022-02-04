@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					_container = new PageControl();
 					_container.PointerPressed += OnPointerPressed;
-					_container.SizeChanged += OnNativeSizeChanged;
+					_container.SizeChanged += OnPlatformSizeChanged;
 
 					Tracker = new BackgroundTracker<PageControl>(Control.BackgroundProperty) { Element = (Page)element, Container = _container };
 
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_disposed = true;
 
 			_container.PointerPressed -= OnPointerPressed;
-			_container.SizeChanged -= OnNativeSizeChanged;
+			_container.SizeChanged -= OnPlatformSizeChanged;
 			_container.Loaded -= OnLoaded;
 			_container.Unloaded -= OnUnloaded;
 
@@ -418,7 +418,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		void OnNativeSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnPlatformSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			UpdateContainerArea();
 		}

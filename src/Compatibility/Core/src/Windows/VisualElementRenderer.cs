@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null || finalSize.Width * finalSize.Height == 0)
 				return finalSize;
 
-			Element.IsInNativeLayout = true;
+			Element.IsInPlatformLayout = true;
 
 			var myRect = new WRect(0, 0, finalSize.Width, finalSize.Height);
 
@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			_backgroundLayer?.Arrange(myRect);
 
-			Element.IsInNativeLayout = false;
+			Element.IsInPlatformLayout = false;
 
 			return finalSize;
 		}
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null || availableSize.Width * availableSize.Height == 0)
 				return new global::Windows.Foundation.Size(0, 0);
 
-			Element.IsInNativeLayout = true;
+			Element.IsInPlatformLayout = true;
 
 			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
 			{
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.Measure(new global::Windows.Foundation.Size(w, h));
 			}
 
-			Element.IsInNativeLayout = false;
+			Element.IsInPlatformLayout = false;
 
 			return result;
 		}
@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					"Cannot assign a native control without an Element; Renderer unbound and/or disposed. " +
 					"Please consult Microsoft.Maui.Controls.Compatibility renderers for reference implementation of OnElementChanged.");
 
-			Element.IsNativeStateConsistent = false;
+			Element.IsPlatformStateConsistent = false;
 			control.Loaded += OnControlLoaded;
 
 			control.GotFocus += OnControlGotFocus;
@@ -597,7 +597,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnControlLoaded(object sender, RoutedEventArgs args)
 		{
-			Element.IsNativeStateConsistent = true;
+			Element.IsPlatformStateConsistent = true;
 		}
 
 		void OnControlLostFocus(object sender, RoutedEventArgs args)

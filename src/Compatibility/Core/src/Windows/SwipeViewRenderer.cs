@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (Element == null || availableSize.Width * availableSize.Height == 0)
 					return new global::Windows.Foundation.Size(0, 0);
 
-				Element.IsInNativeLayout = true;
+				Element.IsInPlatformLayout = true;
 
 				double width = Math.Max(0, Element.Width);
 				double height = Math.Max(0, Element.Height);
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Control.Loaded += (sender, args) => { Control.Measure(new global::Windows.Foundation.Size(w, h)); };
 				}
 
-				Element.IsInNativeLayout = false;
+				Element.IsInPlatformLayout = false;
 
 				return result;
 			}

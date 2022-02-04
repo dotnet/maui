@@ -142,9 +142,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_renderer = Platform.CreateRenderer(_visualElement);
 				Platform.SetRenderer(_visualElement, _renderer);
 
-				// We need to set IsNativeStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
+				// We need to set IsPlatformStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
 				// event. If the CollectionView is in a Layout, the Layout won't measure or layout the CollectionView until
-				// every visible descendant has `IsNativeStateConsistent == true`. And the problem that Layout is trying
+				// every visible descendant has `IsPlatformStateConsistent == true`. And the problem that Layout is trying
 				// to avoid by skipping layout for controls with not-yet-loaded children does not apply to CollectionView
 				// items. If we don't set this, the CollectionView just won't get layout at all, and will be invisible until
 				// the window is resized. 
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void SetNativeStateConsistent(VisualElement visualElement) 
 		{
-			visualElement.IsNativeStateConsistent = true;
+			visualElement.IsPlatformStateConsistent = true;
 
 			foreach (var child in ((IElementController)visualElement).LogicalChildren)
 			{

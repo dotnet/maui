@@ -634,9 +634,9 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool DisableLayout { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsInNativeLayout']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsInPlatformLayout']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IsInNativeLayout
+		public bool IsInPlatformLayout
 		{
 			get
 			{
@@ -647,7 +647,7 @@ namespace Microsoft.Maui.Controls
 				if (parent != null)
 				{
 					var visualElement = parent as VisualElement;
-					if (visualElement != null && visualElement.IsInNativeLayout)
+					if (visualElement != null && visualElement.IsInPlatformLayout)
 						return true;
 				}
 
@@ -656,9 +656,9 @@ namespace Microsoft.Maui.Controls
 			set { _isInNativeLayout = value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsNativeStateConsistent']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsPlatformStateConsistent']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IsNativeStateConsistent
+		public bool IsPlatformStateConsistent
 		{
 			get { return _isNativeStateConsistent; }
 			set
@@ -685,7 +685,7 @@ namespace Microsoft.Maui.Controls
 					return;
 
 				_isPlatformEnabled = value;
-				if (value && IsNativeStateConsistent)
+				if (value && IsPlatformStateConsistent)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 
 				InvalidateStateTriggers(IsPlatformEnabled);
@@ -756,9 +756,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='NativeSizeChanged']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='PlatformSizeChanged']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void NativeSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		public void PlatformSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		public event EventHandler ChildrenReordered;
 

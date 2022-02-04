@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Control = new FlyoutPageControl();
 					Control.Loaded += OnControlLoaded;
 					Control.Unloaded += OnControlUnloaded;
-					Control.SizeChanged += OnNativeSizeChanged;
+					Control.SizeChanged += OnPlatformSizeChanged;
 
 					Control.RegisterPropertyChangedCallback(FlyoutPageControl.IsPaneOpenProperty, OnIsPaneOpenChanged);
 
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.FlyoutTitle = _master?.Title;
 		}
 
-		void OnNativeSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnPlatformSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			UpdateBounds();
 		}
