@@ -345,5 +345,18 @@ namespace Microsoft.Maui.Platform
 			var y2 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Max();
 			return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 		}
+
+		internal static DependencyObject? GetParent(this FrameworkElement? view)
+		{
+			return view?.Parent;
+		}
+
+		internal static DependencyObject? GetParent(this DependencyObject? view)
+		{
+			if (view is FrameworkElement pv)
+				return pv.Parent;
+
+			return null;
+		}
 	}
 }

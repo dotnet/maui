@@ -398,48 +398,65 @@ namespace Microsoft.Maui.Platform
 			return new Rectangle(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
 		}
 
-		internal static IViewParent? FindParent(this IViewParent? view, Func<IViewParent?, bool> searchExpression)
+
+		internal static Task LoadedAsync(this AView frameworkElement, TimeSpan? timeOut = null)
 		{
-			if (searchExpression(view))
-				return view;
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
-			while (view != null)
+			if (frameworkElement.IsAttachedToWindow)
 			{
-				var parent = view?.Parent;
-				if (searchExpression(parent))
-					return parent;
-
-				view = view?.Parent;
+				taskCompletionSource.SetResult(true);
+				return taskCompletionSource.Task;
 			}
 
-			return default;
+			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
+
+				taskCompletionSource.SetResult(true);
+			};
+
+			frameworkElement.ViewAttachedToWindow += routedEventHandler;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
-		internal static T? GetParentOfType<T>(this IViewParent? view)
-			where T : class
+		internal static Task UnloadedAsync(this AView frameworkElement, TimeSpan? timeOut = null)
 		{
-			if (view is T t)
-				return t;
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
-			while (view != null)
+			if (!frameworkElement.IsAttachedToWindow)
 			{
-				T? parent = view?.Parent as T;
-				if (parent != null)
-					return parent;
-
-				view = view?.Parent;
+				taskCompletionSource.SetResult(true);
+				return taskCompletionSource.Task;
 			}
 
-			return default;
+			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.ViewDetachedFromWindow -= routedEventHandler;
+
+				taskCompletionSource.SetResult(true);
+			};
+
+			frameworkElement.ViewDetachedFromWindow += routedEventHandler;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
-		internal static T? GetParentOfType<T>(this AView view)
-			where T : class
+		internal static IViewParent? GetParent(this View? view)
 		{
-			if (view is T t)
-				return t;
+			return view?.Parent;
+		}
 
-			return view.Parent?.GetParentOfType<T>();
+		internal static IViewParent? GetParent(this IViewParent? view)
+		{
+			return view?.Parent;
 		}
 	}
 }
