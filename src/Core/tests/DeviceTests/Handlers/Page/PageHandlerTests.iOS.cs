@@ -3,6 +3,7 @@ using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -20,6 +21,23 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(1, childCount);
 			return null;
+		}
+
+
+		[Fact(DisplayName = "Page Controller View used for ContainerView")]
+		public async Task AddingPageControllerToParentController()
+		{
+			var slider = new SliderStub();
+			var page = new PageStub
+			{
+				Content = new ButtonStub()
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(page);
+				Assert.Equal(handler.ViewController.View, handler.ToPlatform());
+			});
 		}
 	}
 }

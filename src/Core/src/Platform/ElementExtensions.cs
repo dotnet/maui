@@ -111,6 +111,11 @@ namespace Microsoft.Maui.Platform
 
 			if (view.Handler is IViewHandler viewHandler)
 			{
+#if IOS
+				if (viewHandler is INativeViewHandler nvh && nvh.ViewController?.View != null)
+					return nvh.ViewController.View;
+#endif
+
 				if (viewHandler.ContainerView is NativeView containerView)
 					return containerView;
 
