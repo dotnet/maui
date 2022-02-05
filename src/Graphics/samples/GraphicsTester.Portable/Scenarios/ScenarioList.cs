@@ -61,6 +61,7 @@ namespace GraphicsTester.Scenarios
 						new ClipRect(),
 						new SubtractFromClip(),
 						new DimensionTest(),
+						new ScaleCanvas(),
 					};
 				}
 
