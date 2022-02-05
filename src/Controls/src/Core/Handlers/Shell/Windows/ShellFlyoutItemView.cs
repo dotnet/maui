@@ -21,13 +21,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 		View _content;
 		object _previousDataContext;
-		double _previousWidth;
 		FrameworkElement FrameworkElement { get; set; }
 		Shell _shell;
 		public ShellFlyoutItemView()
 		{
 			this.DataContextChanged += OnDataContextChanged;
-			this.LayoutUpdated += OnLayoutUpdated;
+		}
+
+		protected override void OnContentChanged(object oldContent, object newContent)
+		{
+			base.OnContentChanged(oldContent, newContent);
 		}
 
 		public bool IsSelected
@@ -41,7 +44,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_previousDataContext == args.NewValue)
 				return;
 
-			_previousWidth = -1;
 			_previousDataContext = args.NewValue;
 			if (_content != null)
 			{
@@ -50,7 +52,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_shell?.RemoveLogicalChild(_content);
 				_content.Cleanup();
-				_content.MeasureInvalidated -= OnMeasureInvalidated;
 				_content.BindingContext = null;
 				_content.Parent = null;
 				_content = null;
@@ -69,27 +70,13 @@ namespace Microsoft.Maui.Controls.Platform
 				_content = (View)dataTemplate.CreateContent();
 				_content.BindingContext = bo;
 				_shell.AddLogicalChild(_content);
-				
-				_content.MeasureInvalidated += OnMeasureInvalidated;
+
 				var renderer = _content.ToPlatform(_shell.Handler.MauiContext);
 
 				Content = renderer;
 				FrameworkElement = renderer;
 
-				// make sure we re-measure once the template is applied
-				if (FrameworkElement != null)
-				{
-					FrameworkElement.Loaded += OnFrameworkElementLoaded;
-
-					void OnFrameworkElementLoaded(object _, RoutedEventArgs __)
-					{
-						OnMeasureInvalidated();
-						FrameworkElement.Loaded -= OnFrameworkElementLoaded;
-					}
-				}
-
 				UpdateVisualState();
-				OnMeasureInvalidated();
 			}
 		}
 
@@ -100,55 +87,40 @@ namespace Microsoft.Maui.Controls.Platform
 
 		}
 
-		void OnMeasureInvalidated(object sender, EventArgs e)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
-			OnMeasureInvalidated();
+			if (this.ActualWidth > 0 && _content is IView view)
+			{
+				if (Parent is FrameworkElement fe)
+				{
+					if (!_content.IsVisible)
+					{
+						fe.Visibility = WVisibility.Collapsed;
+					}
+					else
+					{
+						fe.Visibility = WVisibility.Visible;
+					}
+				}
+
+				var request = view.Handler.GetDesiredSizeFromHandler(availableSize.Width, availableSize.Height);
+				view.Frame = new Rectangle(0, 0, request.Width, request.Height);
+				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
+				return request.ToNative();
+			}
+
+			return base.MeasureOverride(availableSize);
 		}
 
-		private void OnLayoutUpdated(object sender, object e)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			if (this.ActualWidth > 0 && this.ActualWidth != _content.Width && _previousWidth != this.ActualWidth)
+			if (this.ActualWidth > 0 && _content is IView view)
 			{
-				_previousWidth = this.ActualWidth;
-				OnMeasureInvalidated();
-			}
-		}
-
-		void OnMeasureInvalidated()
-		{
-			if (this.ActualWidth <= 0)
-				return;
-
-			if (Parent is FrameworkElement fe)
-			{
-				if (!_content.IsVisible)
-				{
-					fe.Visibility = WVisibility.Collapsed;
-				}
-				else
-				{
-					fe.Visibility = WVisibility.Visible;
-				}
+				view.Handler.NativeArrangeHandler(new Rectangle(0, 0, finalSize.Width, finalSize.Height));
+				return finalSize;
 			}
 
-
-			double height = (_content.HeightRequest < -1) ? _content.HeightRequest : double.PositiveInfinity;
-			double width = this.ActualWidth;
-
-			Size request = _content.Measure(width, height, MeasureFlags.IncludeMargins).Request;
-
-			var minSize = (double)Microsoft.UI.Xaml.Application.Current.Resources["NavigationViewItemOnLeftMinHeight"];
-
-			if (request.Height < minSize)
-			{
-				request.Height = minSize;
-			}
-
-			if (this.ActualWidth > request.Width)
-				request.Width = this.ActualWidth;
-
-			Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_content, new Rectangle(0, 0, request.Width, request.Height));
-			Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
+			return base.ArrangeOverride(finalSize);
 		}
 
 		void UpdateVisualState()

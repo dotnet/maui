@@ -6,13 +6,13 @@ using Java.Net;
 using Java.Util;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class PhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string intentCheck = "00000000000";
 
-		internal static bool IsSupported
+		public bool IsSupported
 		{
 			get
 			{
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void PlatformOpen(string number)
+		public void Open(string number)
 		{
 			ValidateOpen(number);
 

@@ -3,6 +3,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Windows.Foundation;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Microsoft.Maui.Graphics;
+using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
+using System.Collections.Generic;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -15,6 +20,8 @@ namespace Microsoft.Maui.Platform
 		internal ItemsRepeater? TopNavMenuItemsHost { get; private set; }
 		internal Grid? PaneContentGrid { get; private set; }
 		internal event EventHandler? OnApplyTemplateFinished;
+		internal SplitView? RootSplitView { get; private set; }
+		internal ScrollViewer? MenuItemsScrollViewer { get; private set; }
 
 		public MauiNavigationView()
 		{
@@ -24,7 +31,9 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnApplyTemplate();
 
+			MenuItemsScrollViewer = (ScrollViewer)GetTemplateChild("MenuItemsScrollViewer");
 			PaneContentGrid = (Grid)GetTemplateChild("PaneContentGrid");
+			RootSplitView = (SplitView)GetTemplateChild("RootSplitView");
 			TopNavArea = ((StackPanel)GetTemplateChild("TopNavArea"));
 			TopNavMenuItemsHost = ((ItemsRepeater)GetTemplateChild("TopNavMenuItemsHost"));
 			OnApplyTemplateCore();

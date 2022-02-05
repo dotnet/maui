@@ -230,7 +230,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var androidServices = new AndroidPlatformServices(activity);
 
 			Device.PlatformServices = androidServices;
-			Device.PlatformInvalidator = androidServices;
 
 			Profile.FramePartition("RegisterAll");
 
@@ -377,7 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		class AndroidPlatformServices : IPlatformServices, IPlatformInvalidate
+		class AndroidPlatformServices : IPlatformServices
 		{
 			double _buttonDefaultSize;
 			double _editTextDefaultSize;
@@ -481,75 +480,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			public Color GetNamedColor(string name)
-			{
-				int color;
-				switch (name)
-				{
-					case NamedPlatformColor.BackgroundDark:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.BackgroundDark);
-						break;
-					case NamedPlatformColor.BackgroundLight:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.BackgroundLight);
-						break;
-					case NamedPlatformColor.Black:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.Black);
-						break;
-					case NamedPlatformColor.DarkerGray:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.DarkerGray);
-						break;
-					case NamedPlatformColor.HoloBlueBright:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloBlueBright);
-						break;
-					case NamedPlatformColor.HoloBlueDark:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloBlueDark);
-						break;
-					case NamedPlatformColor.HoloBlueLight:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloBlueLight);
-						break;
-					case NamedPlatformColor.HoloGreenDark:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloGreenDark);
-						break;
-					case NamedPlatformColor.HoloGreenLight:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloGreenLight);
-						break;
-					case NamedPlatformColor.HoloOrangeDark:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloOrangeDark);
-						break;
-					case NamedPlatformColor.HoloOrangeLight:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloOrangeLight);
-						break;
-					case NamedPlatformColor.HoloPurple:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloPurple);
-						break;
-					case NamedPlatformColor.HoloRedDark:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloRedDark);
-						break;
-					case NamedPlatformColor.HoloRedLight:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.HoloRedLight);
-						break;
-					case NamedPlatformColor.TabIndicatorText:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.TabIndicatorText);
-						break;
-					case NamedPlatformColor.Transparent:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.Transparent);
-						break;
-					case NamedPlatformColor.White:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.White);
-						break;
-					case NamedPlatformColor.WidgetEditTextDark:
-						color = ContextCompat.GetColor(_context, AndroidResource.Color.WidgetEditTextDark);
-						break;
-					default:
-						return null;
-				}
-
-				if (color != 0)
-					return new AColor(color).ToColor();
-
-				return null;
-			}
-
 			public string RuntimePlatform => Device.Android;
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
@@ -613,18 +543,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
 				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
-			}
-
-			public void Invalidate(VisualElement visualElement)
-			{
-				var renderer = visualElement.GetRenderer();
-				if (renderer == null || renderer.View.IsDisposed())
-				{
-					return;
-				}
-
-				renderer.View.Invalidate();
-				renderer.View.RequestLayout();
 			}
 
 			public OSAppTheme RequestedTheme
