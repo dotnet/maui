@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			string result;
-			
+
 			if (_evaluateJavaScriptRequested?.GetInvocationList().Length == 0)
 			{
 				// This is the WebViewRenderer subscribing to these requests; the handler stuff
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				// Use the handler command to evaluate the JS
-				result = await Handler.InvokeAsync(nameof(IWebView.EvaluateJavaScriptAsync), 
+				result = await Handler.InvokeAsync(nameof(IWebView.EvaluateJavaScriptAsync),
 					new EvaluateJavaScriptAsyncRequest(script));
 			}
 

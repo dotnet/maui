@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Handlers
 			return size;
 		}
 
-		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 
+		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{

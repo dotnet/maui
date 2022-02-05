@@ -59,14 +59,14 @@ namespace Microsoft.Maui
 		static void Log(ILogger? logger, Exception ex, string? callerName) =>
 			logger?.LogError(ex, "Unexpected exception in {Member}.", callerName);
 
-		public static async void RunAndReport<T>(this TaskCompletionSource<T> request, Task<T> task) 
+		public static async void RunAndReport<T>(this TaskCompletionSource<T> request, Task<T> task)
 		{
 			try
 			{
 				var result = await task.ConfigureAwait(false);
 				request.SetResult(result);
 			}
-			catch (Exception ex) 
+			catch (Exception ex)
 			{
 				request.SetException(ex);
 			}
