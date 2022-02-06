@@ -111,7 +111,20 @@ namespace Microsoft.Maui.Controls
 				script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
 			}
 
-			var result = await _evaluateJavaScriptRequested?.Invoke(script);
+			string result;
+
+			if (_evaluateJavaScriptRequested?.GetInvocationList().Length == 0)
+			{
+				// This is the WebViewRenderer subscribing to these requests; the handler stuff
+				// doesn't use them.
+				result = await _evaluateJavaScriptRequested?.Invoke(script);
+			}
+			else
+			{
+				// Use the handler command to evaluate the JS
+				result = await Handler.InvokeAsync(nameof(IWebView.EvaluateJavaScriptAsync),
+					new EvaluateJavaScriptAsyncRequest(script));
+			}
 
 			//if the js function errored or returned null/undefined treat it as null
 			if (result == "null")

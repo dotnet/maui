@@ -59,6 +59,11 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
+#if WINDOWS
+			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
+			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
+			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
+#endif
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
 			return handlersCollection;

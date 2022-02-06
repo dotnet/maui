@@ -14,26 +14,13 @@ using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WWindow = Microsoft.UI.Xaml.Window;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.FlyoutPage)]
 	public partial class FlyoutPageTests : HandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
-					handlers.AddHandler<Page, PageHandler>();
-				});
-			});
-		}
-
 		[Fact(DisplayName = "FlyoutPage Initializes with PaneFooter Set")]
 		public async Task FlyoutPageInitializesWithPaneFooterSet()
 		{
@@ -66,6 +53,8 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+		NavigationView FindPlatformFlyoutView(WFrameworkElement aView) =>
+			aView.GetParentOfType<NavigationView>();
 
 		FlyoutPage CreateBasicFlyoutPage()
 		{

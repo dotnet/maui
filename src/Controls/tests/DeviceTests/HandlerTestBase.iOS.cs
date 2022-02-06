@@ -20,5 +20,10 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = ((UIView)viewHandler.NativeView);
 			return nativeView.AccessibilityElementsHidden;
 		}
+		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
+		   where THandler : class, IElementHandler
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

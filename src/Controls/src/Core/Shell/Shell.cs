@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs" />
 	[ContentProperty(nameof(Items))]
-	public class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
+	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs" />
 		public Page CurrentPage => (CurrentSection as IShellSectionController)?.PresentedPage;
@@ -702,6 +702,8 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public Shell()
 		{
+			Toolbar = new ShellToolbar(this);
+
 			_navigationManager = new ShellNavigationManager(this);
 			_navigationManager.Navigated += (_, args) => SendNavigated(args);
 			_navigationManager.Navigating += (_, args) => SendNavigating(args);
@@ -717,6 +719,9 @@ namespace Microsoft.Maui.Controls
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
 					new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
 			}
+
+			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
+			ShellController.ItemsCollectionChanged += (_, __) => Handler?.UpdateValue(nameof(Items));
 		}
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
