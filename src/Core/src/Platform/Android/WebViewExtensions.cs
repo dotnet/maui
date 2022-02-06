@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			webView.CanGoForward = nativeWebView.CanGoForward();
 		}
 
-		public static void EvaluateJavaScript(this AWebView webView, EvaluateJavaScriptAsyncRequest request) 
+		public static void EvaluateJavaScript(this AWebView webView, EvaluateJavaScriptAsyncRequest request)
 		{
 			try
 			{

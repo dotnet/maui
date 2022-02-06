@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 			request.RunAndReport(EvaluateJavaScript(webView, request.Script));
 		}
 
-		static async Task<string> EvaluateJavaScript(WKWebView webView, string script) 
+		static async Task<string> EvaluateJavaScript(WKWebView webView, string script)
 		{
 			var result = await webView.EvaluateJavaScriptAsync(script);
 			return result?.ToString() ?? "null";

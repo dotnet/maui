@@ -68,7 +68,7 @@ namespace Microsoft.Maui
 
 			return service;
 		}
-	
+
 		public static async Task<T> InvokeAsync<T>(this IElementHandler handler, string commandName,
 			TaskCompletionSource<T> args)
 		{
