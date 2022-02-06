@@ -7,7 +7,7 @@ using Windows.Devices.Lights;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class FlashlightImplementation:IFlashLight
+	public class FlashlightImplementation:IFlashlight
 	{
 		static readonly object locker = new object();
 		bool hasLoadedLamp;

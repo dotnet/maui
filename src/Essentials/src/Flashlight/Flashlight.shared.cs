@@ -5,7 +5,7 @@ using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
-	public interface IFlashLight
+	public interface IFlashlight
 	{
 		Task TurnOnAsync();
 		Task TurnOffAsync();
@@ -21,14 +21,14 @@ namespace Microsoft.Maui.Essentials
 		public static Task TurnOffAsync() =>
 			Current.TurnOffAsync();
 
-		static IFlashLight? currentImplementation;
+		static IFlashlight? currentImplementation;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IFlashLight Current =>
+		public static IFlashlight Current =>
 			currentImplementation ??= new FlashlightImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IFlashLight? implementation) =>
+		public static void SetCurrent(IFlashlight? implementation) =>
 			currentImplementation = implementation;
 	}
 }
