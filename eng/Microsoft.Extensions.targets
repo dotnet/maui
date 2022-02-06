@@ -25,6 +25,10 @@
         Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Configuration.Json"
+        Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
         Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"
     />
