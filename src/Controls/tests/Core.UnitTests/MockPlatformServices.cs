@@ -181,6 +181,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		DeviceIdiom deviceIdiom;
 		TargetIdiom targetIdiom;
 
+		public MockDeviceInfo()
+		{
+			Platform = DevicePlatform.Unknown;
+			Idiom = DeviceIdiom.Unknown;
+			DeviceType = DeviceType.Unknown;
+		}
+
 		public MockDeviceInfo(DevicePlatform? platform = null, DeviceIdiom? idiom = null, DeviceType? deviceType = null)
 		{
 			Platform = platform ?? DevicePlatform.Unknown;
@@ -188,14 +195,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			DeviceType = deviceType ?? DeviceType.Unknown;
 		}
 
-
-		public MockDeviceInfo(string? platform = null, TargetIdiom idiom = TargetIdiom.Unsupported, DeviceType? deviceType = null)
+		public MockDeviceInfo(string platform = null, TargetIdiom idiom = TargetIdiom.Unsupported, DeviceType? deviceType = null)
 		{
 			Platform = platform switch
 			{
 				Device.Android => DevicePlatform.Android,
 				Device.iOS => DevicePlatform.iOS,
 				Device.UWP => DevicePlatform.UWP,
+				_ => DevicePlatform.Unknown,
 			};
 			TargetIdiom = idiom;
 			DeviceType = deviceType ?? DeviceType.Unknown;

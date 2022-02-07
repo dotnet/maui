@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThrowsInSetIsPresentOnSplitModeOnTablet()
 		{
-			mockDeviceInfo.Idiom = TargetIdiom.Tablet;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			var page = new FlyoutPage
 			{
 				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
@@ -283,7 +283,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThorwsInSetIsPresentOnSplitPortraitModeOnTablet()
 		{
-			mockDeviceInfo.Idiom = TargetIdiom.Tablet;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Portrait);
 
 			var page = new FlyoutPage
