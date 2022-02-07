@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Graphics
 		public Color()
 		{
 			// Default Black
-			Red = Green = Blue = 0;	
+			Red = Green = Blue = 0;
 		}
 
 		public Color(float gray)
