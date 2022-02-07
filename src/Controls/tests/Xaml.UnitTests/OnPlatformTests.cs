@@ -122,37 +122,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<Label Text=""child1""/>			
 			</StackLayout>";
 
-			DeviceInfo.SetCurrent(new OnIdiomTestsDeviceInfo(DeviceIdiom.Phone));
+			DeviceInfo.SetCurrent(new MockDeviceInfo(idiom: DeviceIdiom.Phone));
 			var layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Vertical, layout.Orientation);
 
-			DeviceInfo.SetCurrent(new OnIdiomTestsDeviceInfo(DeviceIdiom.Tablet));
+			DeviceInfo.SetCurrent(new MockDeviceInfo(idiom: DeviceIdiom.Tablet));
 			layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
-		}
-
-		class OnIdiomTestsDeviceInfo : IDeviceInfo
-		{
-			public OnIdiomTestsDeviceInfo(DeviceIdiom idiom)
-			{
-				Idiom = idiom;
-			}
-
-			public string Model => throw new NotImplementedException();
-
-			public string Manufacturer => throw new NotImplementedException();
-
-			public string Name => throw new NotImplementedException();
-
-			public string VersionString => throw new NotImplementedException();
-
-			public Version Version => throw new NotImplementedException();
-
-			public DevicePlatform Platform => DevicePlatform.Unknown;
-
-			public DeviceIdiom Idiom { get; }
-
-			public DeviceType DeviceType => DeviceType.Unknown;
 		}
 	}
 }

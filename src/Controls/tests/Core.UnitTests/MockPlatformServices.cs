@@ -6,6 +6,7 @@ using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 [assembly: Dependency(typeof(MockDeserializer))]
@@ -173,5 +174,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			action();
 			return true;
 		}
+	}
+
+	class MockDeviceInfo : IDeviceInfo
+	{
+		public MockDeviceInfo(DevicePlatform? platform = null, DeviceIdiom? idiom = null, DeviceType? deviceType = null)
+		{
+			Platform = platform ?? DevicePlatform.Unknown;
+			Idiom = idiom ?? DeviceIdiom.Unknown;
+			DeviceType = deviceType ?? DeviceType.Unknown;
+		}
+
+
+		public MockDeviceInfo(string? platform = null, TargetIdiom idiom = TargetIdiom.Unsupported, DeviceType? deviceType = null)
+		{
+			Platform = platform switch
+			{
+				Device.Android => DevicePlatform.Android,
+				Device.iOS => DevicePlatform.iOS,
+				Device.UWP => DevicePlatform.UWP,
+			};
+			Idiom = idiom switch
+			{
+				TargetIdiom.Phone => DeviceIdiom.Phone,
+				TargetIdiom.Tablet => DeviceIdiom.Tablet,
+				TargetIdiom.Desktop => DeviceIdiom.Desktop,
+				TargetIdiom.Watch => DeviceIdiom.Watch,
+				TargetIdiom.TV => DeviceIdiom.TV,
+				_ => DeviceIdiom.Unknown,
+			};
+			DeviceType = deviceType ?? DeviceType.Unknown;
+		}
+
+		public string Model { get; set; }
+
+		public string Manufacturer { get; set; }
+
+		public string Name { get; set; }
+
+		public string VersionString { get; set; }
+
+		public Version Version { get; set; }
+
+		public DevicePlatform Platform { get; set; }
+
+		public DeviceIdiom Idiom { get; set; }
+
+		public DeviceType DeviceType { get; set; }
 	}
 }

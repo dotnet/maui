@@ -30,37 +30,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false)]
 			public void OnIdiomXDouble(bool useCompiledXaml)
 			{
-				DeviceInfo.SetCurrent(new Bz58922DeviceInfo(DeviceIdiom.Phone));
+				DeviceInfo.SetCurrent(new MockDeviceInfo(DeviceIdiom.Phone));
 				var layout = new Bz58922(useCompiledXaml);
 				Assert.That(layout.grid.HeightRequest, Is.EqualTo(320));
 
-				DeviceInfo.SetCurrent(new Bz58922DeviceInfo(DeviceIdiom.Tablet));
+				DeviceInfo.SetCurrent(new MockDeviceInfo(DeviceIdiom.Tablet));
 				layout = new Bz58922(useCompiledXaml);
 				Assert.That(layout.grid.HeightRequest, Is.EqualTo(480));
-			}
-
-			class Bz58922DeviceInfo : IDeviceInfo
-			{
-				public Bz58922DeviceInfo(DeviceIdiom idiom)
-				{
-					Idiom = idiom;
-				}
-
-				public string Model => throw new NotImplementedException();
-
-				public string Manufacturer => throw new NotImplementedException();
-
-				public string Name => throw new NotImplementedException();
-
-				public string VersionString => throw new NotImplementedException();
-
-				public Version Version => throw new NotImplementedException();
-
-				public DevicePlatform Platform => DevicePlatform.Unknown;
-
-				public DeviceIdiom Idiom { get; }
-
-				public DeviceType DeviceType => DeviceType.Unknown;
 			}
 		}
 	}
