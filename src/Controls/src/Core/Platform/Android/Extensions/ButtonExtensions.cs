@@ -13,7 +13,17 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateText(this MaterialButton nativeButton, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
-			nativeButton.Text = text;
+
+			try
+			{
+				System.Diagnostics.Debug.WriteLine(nativeButton.LayoutParameters);
+				nativeButton.Text = text;
+			}
+			catch (Exception ex) 
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+				throw;
+			}
 
 			// Content layout depends on whether or not the text is empty; changing the text means
 			// we may need to update the content layout

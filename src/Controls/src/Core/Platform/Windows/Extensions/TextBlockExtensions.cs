@@ -81,4 +81,5 @@ namespace Microsoft.Maui.Controls.Platform
 			return height;
 		}
 	}
+
 }
