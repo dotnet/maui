@@ -72,7 +72,7 @@
     <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
     <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
     <!-- Ids for 'dotnet workload install' -->
-    <_WorkloadIds Include="android-aot" />
+    <_WorkloadIds Include="android" />
     <_WorkloadIds Include="maccatalyst" />
     <_WorkloadIds Include="macos" />
     <_WorkloadIds Include="ios" />
