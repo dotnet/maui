@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Essentials;
 using NUnit.Framework;
@@ -105,6 +104,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class OnIdiomTests : BaseTestFixture
 	{
+		MockDeviceInfo mockDeviceInfo;
+
+		[SetUp]
+		public override void Setup()
+		{
+			base.Setup();
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		}
+
 		[Test]
 		public void StackLayoutOrientation()
 		{
@@ -122,11 +130,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<Label Text=""child1""/>			
 			</StackLayout>";
 
-			DeviceInfo.SetCurrent(new MockDeviceInfo(idiom: DeviceIdiom.Phone));
+			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Vertical, layout.Orientation);
 
-			DeviceInfo.SetCurrent(new MockDeviceInfo(idiom: DeviceIdiom.Tablet));
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
 		}

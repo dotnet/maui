@@ -178,6 +178,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	class MockDeviceInfo : IDeviceInfo
 	{
+		DeviceIdiom deviceIdiom;
+		TargetIdiom targetIdiom;
+
 		public MockDeviceInfo(DevicePlatform? platform = null, DeviceIdiom? idiom = null, DeviceType? deviceType = null)
 		{
 			Platform = platform ?? DevicePlatform.Unknown;
@@ -194,15 +197,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Device.iOS => DevicePlatform.iOS,
 				Device.UWP => DevicePlatform.UWP,
 			};
-			Idiom = idiom switch
-			{
-				TargetIdiom.Phone => DeviceIdiom.Phone,
-				TargetIdiom.Tablet => DeviceIdiom.Tablet,
-				TargetIdiom.Desktop => DeviceIdiom.Desktop,
-				TargetIdiom.Watch => DeviceIdiom.Watch,
-				TargetIdiom.TV => DeviceIdiom.TV,
-				_ => DeviceIdiom.Unknown,
-			};
+			TargetIdiom = idiom;
 			DeviceType = deviceType ?? DeviceType.Unknown;
 		}
 
@@ -218,7 +213,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public DevicePlatform Platform { get; set; }
 
-		public DeviceIdiom Idiom { get; set; }
+		public DeviceIdiom Idiom
+		{
+			get => deviceIdiom;
+			set
+			{
+				if (deviceIdiom == value)
+					return;
+
+				deviceIdiom = value;
+				if (value == DeviceIdiom.Tablet)
+					targetIdiom = TargetIdiom.Tablet;
+				else if (value == DeviceIdiom.Phone)
+					targetIdiom = TargetIdiom.Phone;
+				else if (value == DeviceIdiom.Desktop)
+					targetIdiom = TargetIdiom.Desktop;
+				else if (value == DeviceIdiom.TV)
+					targetIdiom = TargetIdiom.TV;
+				else if (value == DeviceIdiom.Watch)
+					targetIdiom = TargetIdiom.Watch;
+				else
+					targetIdiom = TargetIdiom.Unsupported;
+			}
+		}
+
+		public TargetIdiom TargetIdiom
+		{
+			get => targetIdiom;
+			set
+			{
+				if (targetIdiom == value)
+					return;
+
+				targetIdiom = value;
+				deviceIdiom = value switch
+				{
+					TargetIdiom.Phone => DeviceIdiom.Phone,
+					TargetIdiom.Tablet => DeviceIdiom.Tablet,
+					TargetIdiom.Desktop => DeviceIdiom.Desktop,
+					TargetIdiom.Watch => DeviceIdiom.Watch,
+					TargetIdiom.TV => DeviceIdiom.TV,
+					_ => DeviceIdiom.Unknown,
+				};
+			}
+		}
 
 		public DeviceType DeviceType { get; set; }
 	}

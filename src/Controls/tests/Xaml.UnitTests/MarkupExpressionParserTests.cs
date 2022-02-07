@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class MarkupExpressionParserTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
+		MockDeviceInfo mockDeviceInfo;
 
 		public static readonly string Foo = "Foo";
 
@@ -88,6 +89,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			var nsManager = new XmlNamespaceManager(new NameTable());
 			nsManager.AddNamespace("local", "clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests");
 			nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
@@ -391,7 +393,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnIdiom Phone=23}", TargetIdiom.Desktop, default(int))]
 		public void OnIdiomExtension(string markup, TargetIdiom idiom, int expected)
 		{
-			DeviceInfo.SetCurrent(new MockDeviceInfo(idiom: idiom));
+			mockDeviceInfo.TargetIdiom = idiom;
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{
 				IXamlTypeResolver = typeResolver,

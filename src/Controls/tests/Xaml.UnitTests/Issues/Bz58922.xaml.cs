@@ -1,4 +1,4 @@
-using System;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
@@ -19,6 +19,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
+			MockDeviceInfo mockDeviceInfo;
+
+			[SetUp]
+			public void Setup()
+			{
+				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+			}
+
 			[TearDown]
 			public void TearDown()
 			{
@@ -30,11 +38,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false)]
 			public void OnIdiomXDouble(bool useCompiledXaml)
 			{
-				DeviceInfo.SetCurrent(new MockDeviceInfo(DeviceIdiom.Phone));
+				mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 				var layout = new Bz58922(useCompiledXaml);
 				Assert.That(layout.grid.HeightRequest, Is.EqualTo(320));
 
-				DeviceInfo.SetCurrent(new MockDeviceInfo(DeviceIdiom.Tablet));
+				mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 				layout = new Bz58922(useCompiledXaml);
 				Assert.That(layout.grid.HeightRequest, Is.EqualTo(480));
 			}
