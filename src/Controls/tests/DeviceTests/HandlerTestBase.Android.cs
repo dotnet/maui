@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AndroidX.Fragment.App;
-using AView = Android.Views.View;
-using AViewGroup = Android.Views.ViewGroup;
-using ALayoutInflater = Android.Views.LayoutInflater;
+using Android.OS;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Maui.Platform;
-using Android.OS;
+using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Platform;
+using ALayoutInflater = Android.Views.LayoutInflater;
+using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
 using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
 
 namespace Microsoft.Maui.DeviceTests

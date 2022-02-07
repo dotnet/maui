@@ -67,7 +67,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				Builder = builder;
 				_serviceProvider = builder.Services.BuildServiceProvider();
 			}
-			
+
 			public object GetService(Type serviceType) => _serviceProvider.GetService(serviceType);
 		}
 	}
