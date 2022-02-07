@@ -1,4 +1,7 @@
-namespace Microsoft.Maui.Devices
+using System;
+using Plat = Microsoft.Maui.Essentials.Platform;
+
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	class DeviceInfoImplementation : IDeviceInfo
 	{
