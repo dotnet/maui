@@ -44,34 +44,34 @@ namespace Microsoft.Maui.Graphics
 
 		public Color(byte red, byte green, byte blue)
 		{
-			Red = (red / 255f).Clamp(0, 255);
-			Green = (green / 255f).Clamp(0, 255);
-			Blue = (blue / 255f).Clamp(0, 255);
+			Red = (red / 255f).Clamp(0, 1);
+			Green = (green / 255f).Clamp(0, 1);
+			Blue = (blue / 255f).Clamp(0, 1);
 			Alpha = 1.0f;
 		}
 
 		public Color(byte red, byte green, byte blue, byte alpha)
 		{
-			Red = (red / 255f).Clamp(0, 255);
-			Green = (green / 255f).Clamp(0, 255);
-			Blue = (blue / 255f).Clamp(0, 255);
-			Alpha = (alpha / 255f).Clamp(0, 255);
+			Red = (red / 255f).Clamp(0, 1);
+			Green = (green / 255f).Clamp(0, 1);
+			Blue = (blue / 255f).Clamp(0, 1);
+			Alpha = (alpha / 255f).Clamp(0, 1);
 		}
 
 		public Color(int red, int green, int blue)
 		{
-			Red = (red / 255f).Clamp(0, 255);
-			Green = (green / 255f).Clamp(0, 255);
-			Blue = (blue / 255f).Clamp(0, 255);
+			Red = (red / 255f).Clamp(0, 1);
+			Green = (green / 255f).Clamp(0, 1);
+			Blue = (blue / 255f).Clamp(0, 1);
 			Alpha = 1.0f;
 		}
 
 		public Color(int red, int green, int blue, int alpha)
 		{
-			Red = (red / 255f).Clamp(0, 255);
-			Green = (green / 255f).Clamp(0, 255);
-			Blue = (blue / 255f).Clamp(0, 255);
-			Alpha = (alpha / 255f).Clamp(0, 255);
+			Red = (red / 255f).Clamp(0, 1);
+			Green = (green / 255f).Clamp(0, 1);
+			Blue = (blue / 255f).Clamp(0, 1);
+			Alpha = (alpha / 255f).Clamp(0, 1);
 		}
 
 		public Color(Vector4 color)
