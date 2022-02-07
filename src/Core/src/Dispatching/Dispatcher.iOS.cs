@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Dispatching
 		}
 
 		bool IsDispatchRequiredImplementation() =>
-			_dispatchQueue != DispatchQueue.CurrentQueue;
+			_dispatchQueue.Label != DispatchQueue.CurrentQueueLabel;
 
 		bool DispatchImplementation(Action action)
 		{
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Dispatching
 	{
 		static IDispatcher? GetForCurrentThreadImplementation()
 		{
-			var q = DispatchQueue.CurrentQueue;
+			var q = DispatchQueue.DefaultGlobalQueue;
 			if (q != DispatchQueue.MainQueue)
 				return null;
 
