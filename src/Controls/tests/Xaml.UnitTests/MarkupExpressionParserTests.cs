@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -390,7 +391,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnIdiom Phone=23}", TargetIdiom.Desktop, default(int))]
 		public void OnIdiomExtension(string markup, TargetIdiom idiom, int expected)
 		{
-			Device.SetIdiom(idiom);
+			DeviceInfo.SetCurrent(new MarkupExpressionParserTestsDeviceInfo(idiom));
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{
 				IXamlTypeResolver = typeResolver,
@@ -413,6 +414,38 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			serviceProvider.IXamlTypeResolver = typeResolver;
 			serviceProvider.IProvideValueTarget = new MockValueProvider("Bar", new ReverseConverter());
 			Assert.Throws<XamlParseException>(() => (new MarkupExtensionParser()).ParseExpression(ref expression, serviceProvider));
+		}
+
+		class MarkupExpressionParserTestsDeviceInfo : IDeviceInfo
+		{
+			public MarkupExpressionParserTestsDeviceInfo(TargetIdiom idiom)
+			{
+				Idiom = idiom switch
+				{
+					TargetIdiom.Phone => DeviceIdiom.Phone,
+					TargetIdiom.Tablet => DeviceIdiom.Tablet,
+					TargetIdiom.Desktop => DeviceIdiom.Desktop,
+					TargetIdiom.Watch => DeviceIdiom.Watch,
+					TargetIdiom.TV => DeviceIdiom.TV,
+					_ => DeviceIdiom.Unknown,
+				};
+			}
+
+			public string Model => throw new NotImplementedException();
+
+			public string Manufacturer => throw new NotImplementedException();
+
+			public string Name => throw new NotImplementedException();
+
+			public string VersionString => throw new NotImplementedException();
+
+			public Version Version => throw new NotImplementedException();
+
+			public DevicePlatform Platform => DevicePlatform.Unknown;
+
+			public DeviceIdiom Idiom { get; }
+
+			public DeviceType DeviceType => DeviceType.Unknown;
 		}
 	}
 }

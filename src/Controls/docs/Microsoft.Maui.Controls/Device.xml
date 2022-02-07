@@ -750,62 +750,6 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetIdiom">
-      <MemberSignature Language="C#" Value="public static void SetIdiom (Microsoft.Maui.Controls.TargetIdiom value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetIdiom(valuetype Microsoft.Maui.Controls.TargetIdiom value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Device.SetIdiom(Microsoft.Maui.Controls.TargetIdiom)" />
-      <MemberSignature Language="F#" Value="static member SetIdiom : Microsoft.Maui.Controls.TargetIdiom -&gt; unit" Usage="Microsoft.Maui.Controls.Device.SetIdiom value" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.TargetIdiom" />
-      </Parameters>
-      <Docs>
-        <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
-        <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SetTargetIdiom">
-      <MemberSignature Language="C#" Value="public static void SetTargetIdiom (Microsoft.Maui.Controls.TargetIdiom value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTargetIdiom(valuetype Microsoft.Maui.Controls.TargetIdiom value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Device.SetTargetIdiom(Microsoft.Maui.Controls.TargetIdiom)" />
-      <MemberSignature Language="F#" Value="static member SetTargetIdiom : Microsoft.Maui.Controls.TargetIdiom -&gt; unit" Usage="Microsoft.Maui.Controls.Device.SetTargetIdiom value" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.TargetIdiom" />
-      </Parameters>
-      <Docs>
-        <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
-        <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="StartTimer">
       <MemberSignature Language="C#" Value="public static void StartTimer (TimeSpan interval, Func&lt;bool&gt; callback);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void StartTimer(valuetype System.TimeSpan interval, class System.Func`1&lt;bool&gt; callback) cil managed" />

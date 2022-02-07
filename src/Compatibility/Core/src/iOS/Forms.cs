@@ -191,10 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-#if MACCATALYST || __MACCATALYST__
-			Device.SetIdiom(TargetIdiom.Desktop);
-#elif __MOBILE__
-			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
+#if __MOBILE__
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #else
 			if (!IsInitialized)
@@ -212,7 +209,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				});
 			}
 
-			Device.SetIdiom(TargetIdiom.Desktop);
 			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 
 			if (IsMojaveOrNewer)

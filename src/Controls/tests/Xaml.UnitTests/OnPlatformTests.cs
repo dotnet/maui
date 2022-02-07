@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -120,13 +121,38 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<Label Text=""child0""/>
 				<Label Text=""child1""/>			
 			</StackLayout>";
-			Device.Idiom = TargetIdiom.Phone;
+
+			DeviceInfo.SetCurrent(new OnIdiomTestsDeviceInfo(DeviceIdiom.Phone));
 			var layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Vertical, layout.Orientation);
 
-			Device.Idiom = TargetIdiom.Tablet;
+			DeviceInfo.SetCurrent(new OnIdiomTestsDeviceInfo(DeviceIdiom.Tablet));
 			layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
+		}
+
+		class OnIdiomTestsDeviceInfo : IDeviceInfo
+		{
+			public OnIdiomTestsDeviceInfo(DeviceIdiom idiom)
+			{
+				Idiom = idiom;
+			}
+
+			public string Model => throw new NotImplementedException();
+
+			public string Manufacturer => throw new NotImplementedException();
+
+			public string Name => throw new NotImplementedException();
+
+			public string VersionString => throw new NotImplementedException();
+
+			public Version Version => throw new NotImplementedException();
+
+			public DevicePlatform Platform => DevicePlatform.Unknown;
+
+			public DeviceIdiom Idiom { get; }
+
+			public DeviceType DeviceType => DeviceType.Unknown;
 		}
 	}
 }
