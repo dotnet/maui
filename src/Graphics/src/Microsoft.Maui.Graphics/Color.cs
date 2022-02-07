@@ -267,10 +267,20 @@ namespace Microsoft.Maui.Graphics
 
 		public static Color FromRgb(byte red, byte green, byte blue)
 		{
-			return Color.FromRgba(red, green, blue, 255);
+			return new Color(red / 255f, green / 255f, blue / 255f, 1f);
 		}
 
 		public static Color FromRgba(byte red, byte green, byte blue, byte alpha)
+		{
+			return new Color(red / 255f, green / 255f, blue / 255f, alpha / 255f);
+		}
+
+		public static Color FromRgb(int red, int green, int blue)
+		{
+			return new Color(red / 255f, green / 255f, blue / 255f, 1f);
+		}
+
+		public static Color FromRgba(int red, int green, int blue, int alpha)
 		{
 			return new Color(red / 255f, green / 255f, blue / 255f, alpha / 255f);
 		}
