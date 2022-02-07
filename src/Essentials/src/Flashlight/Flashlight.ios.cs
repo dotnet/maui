@@ -3,7 +3,7 @@ using AVFoundation;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class FlashlightImplementation:IFlashlight
+	public class FlashlightImplementation : IFlashlight
 	{
 		public Task TurnOnAsync()
 		{

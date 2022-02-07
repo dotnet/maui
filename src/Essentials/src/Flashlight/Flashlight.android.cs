@@ -9,7 +9,7 @@ using Camera = Android.Hardware.Camera;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class FlashlightImplementation:IFlashlight
+	public class FlashlightImplementation : IFlashlight
 	{
 		static readonly object locker = new object();
 

@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.DeviceTests

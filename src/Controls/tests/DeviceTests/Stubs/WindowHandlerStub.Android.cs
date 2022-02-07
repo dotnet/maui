@@ -1,15 +1,15 @@
 ﻿using System;
-using Microsoft.Maui.Platform;
-using Microsoft.Maui.Handlers;
-using AActivity = Android.App.Activity;
-using AViewGroup = Android.Views.ViewGroup;
-using AView = Android.Views.View;
-using AndroidX.AppCompat.Widget;
 using System.Threading.Tasks;
-using Android.Views;
 using Android.OS;
+using Android.Views;
 using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
+using AActivity = Android.App.Activity;
+using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.DeviceTests
 {
