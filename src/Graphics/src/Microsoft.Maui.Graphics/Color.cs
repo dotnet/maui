@@ -42,6 +42,22 @@ namespace Microsoft.Maui.Graphics
 			Alpha = alpha.Clamp(0, 1);
 		}
 
+		public Color(int red, int green, int blue)
+		{
+			Red = (red / 255f).Clamp(0, 255);
+			Green = (green / 255f).Clamp(0, 255);
+			Blue = (blue / 255f).Clamp(0, 255);
+			Alpha = 1.0f;
+		}
+
+		public Color(int red, int green, int blue, int alpha)
+		{
+			Red = (red / 255f).Clamp(0, 255);
+			Green = (green / 255f).Clamp(0, 255);
+			Blue = (blue / 255f).Clamp(0, 255);
+			Alpha = (alpha / 255f).Clamp(0, 255);
+		}
+
 		public Color(Vector4 color)
 		{
 			Red = color.X.Clamp(0, 1);
