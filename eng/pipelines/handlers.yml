@@ -99,7 +99,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main # still defaults to master even though main is the main branch
+      ref: refs/heads/dev/bond/sbom-artifact-map    # UNDONE: DO NOT MERGE TO MAIN
     - repository: sdk-insertions
       type: github
       name: xamarin/sdk-insertions
@@ -426,3 +426,19 @@ stages:
         nupkgArtifactPatterns: |
           **/signed/*.nupkg
         msiNupkgArtifactName: vs-msi-nugets
+
+    - stage: sbom
+      displayName: 'Software Bill of Materials'
+      dependsOn: nuget_signing
+      jobs:
+      - template: compliance/sbom/job.yml@xamarin-templates
+        parameters:
+          artifactNames: [ nuget, vs-msi-nugts, vsdrop-signed ]
+          artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact
+          packageName: 'Maui'
+          packageFilter: '*.msi;*.nuget'
+          GitHub.Token: $(GitHub.Token)
+
+
+
+
