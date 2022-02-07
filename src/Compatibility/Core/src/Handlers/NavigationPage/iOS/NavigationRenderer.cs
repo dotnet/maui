@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		NavigationPage NavPage => Element as NavigationPage;
 		INavigationPageController NavPageController => NavPage;
 
-		public VisualElement Element { get => _viewHandlerWrapper.Element;  }
+		public VisualElement Element { get => _viewHandlerWrapper.Element; }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -809,10 +809,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
-
 			FlyoutPage.Flyout.IconImageSource.LoadImage(FlyoutPage.FindMauiContext(), result =>
 			{
-				var icon = result.Value;
+				var icon = result?.Value;
 				if (icon != null)
 				{
 					try
@@ -1311,7 +1310,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					titleIcon.LoadImage(titleIcon.FindMauiContext(), result =>
 					{
-						var image = result.Value;
+						var image = result?.Value;
 						try
 						{
 							titleViewContainer.Icon = new UIImageView(image);

@@ -13,10 +13,9 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using TabbedPageConfiguration = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TabbedPage;
 using TranslucencyMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TranslucencyMode;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer instead")]
-	public class TabbedRenderer : UITabBarController, IVisualElementRenderer, IEffectControlProvider
+	public class TabbedRenderer : UITabBarController, INativeViewHandler
 	{
 		bool _barBackgroundColorWasSet;
 		bool _barTextColorWasSet;
@@ -27,13 +26,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		bool? _defaultBarTranslucent;
 		bool _loaded;
 		Size _queuedSize;
-
+		IMauiContext _mauiContext;
+		IMauiContext MauiContext => _mauiContext;
+		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(ViewHandler.ViewMapper);
+		public static CommandMapper<TabbedPage, TabbedRenderer> CommandMapper = new CommandMapper<TabbedPage, TabbedRenderer>(ViewHandler.ViewCommandMapper);
+		ViewHandlerDelegator<TabbedPage> _viewHandlerWrapper;
 		Page Page => Element as Page;
 
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public TabbedRenderer()
 		{
-
+			_viewHandlerWrapper = new ViewHandlerDelegator<TabbedPage>(Mapper, CommandMapper, this);
 		}
 
 		public override UIViewController SelectedViewController
@@ -51,14 +54,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			get { return (TabbedPage)Element; }
 		}
 
-		public VisualElement Element { get; private set; }
+		public VisualElement Element => _viewHandlerWrapper.Element;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
-		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
-		}
+		public Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
 		public UIView NativeView
 		{
@@ -67,19 +68,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElement(VisualElement element)
 		{
-			var oldElement = Element;
-			Element = element;
+			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
 
 			FinishedCustomizingViewControllers += HandleFinishedCustomizingViewControllers;
 			Tabbed.PropertyChanged += OnPropertyChanged;
 			Tabbed.PagesChanged += OnPagesChanged;
 
-			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
-
 			OnPagesChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-
-			if (element != null)
-				element.SendViewInitialized(NativeView);
 
 			//disable edit/reorder of tabs
 			CustomizableViewControllers = null;
@@ -89,8 +84,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateBarTextColor();
 			UpdateSelectedTabColors();
 			UpdateBarTranslucent();
-
-			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
 
 		public void SetElementSize(Size size)
@@ -175,11 +168,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		UIViewController GetViewController(Page page)
 		{
-			var renderer = Platform.GetRenderer(page);
-			if (renderer == null)
+			if (page.Handler is not INativeViewHandler nvh)
 				return null;
 
-			return renderer.ViewController;
+			return nvh.ViewController;
 		}
 
 		void HandleFinishedCustomizingViewControllers(object sender, UITabBarCustomizeChangeEventArgs e)
@@ -192,21 +184,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			// Setting TabBarItem.Title in iOS 10 causes rendering bugs
 			// Work around this by creating a new UITabBarItem on each change
-			if (e.PropertyName == Page.TitleProperty.PropertyName && !Forms.IsiOS10OrNewer)
+			if (e.PropertyName == Page.TitleProperty.PropertyName && !NativeVersion.IsAtLeast(10))
 			{
 				var page = (Page)sender;
-				var renderer = Platform.GetRenderer(page);
+				var renderer = page.ToHandler(_mauiContext);
 				if (renderer == null)
 					return;
 
 				if (renderer.ViewController.TabBarItem != null)
 					renderer.ViewController.TabBarItem.Title = page.Title;
 			}
-			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && Forms.IsiOS10OrNewer)
+			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && NativeVersion.IsAtLeast(10))
 			{
 				var page = (Page)sender;
 
-				IVisualElementRenderer renderer = Platform.GetRenderer(page);
+				INativeViewHandler renderer = page.ToHandler(_mauiContext);
 
 				if (renderer?.ViewController.TabBarItem == null)
 					return;
@@ -267,7 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
-			var current = Tabbed.CurrentPage;
+			var current = Tabbed?.CurrentPage;
 			if (current == null)
 				return null;
 
@@ -323,23 +315,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			for (var i = 0; i < logicalChildren.Count; i++)
 			{
 				var child = logicalChildren[i];
-				var v = child as VisualElement;
+				var v = child as Page;
 				if (v == null)
 					continue;
-				if (Platform.GetRenderer(v) != null)
-					list.Add(Platform.GetRenderer(v).ViewController);
+				if (GetViewController(v) != null)
+					list.Add(GetViewController(v));
 			}
 			ViewControllers = list.ToArray();
 		}
 
 		void SetupPage(Page page, int index)
 		{
-			IVisualElementRenderer renderer = Platform.GetRenderer(page);
-			if (renderer == null)
-			{
-				renderer = Platform.CreateRenderer(page);
-				Platform.SetRenderer(page, renderer);
-			}
+			var renderer = (INativeViewHandler)page.ToHandler(_mauiContext);
 
 			page.PropertyChanged += OnPagePropertyChanged;
 
@@ -350,7 +337,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			page.PropertyChanged -= OnPagePropertyChanged;
 
-			Platform.SetRenderer(page, null);
+			page.Handler?.DisconnectHandler();
 		}
 
 		void UpdateBarBackgroundColor()
@@ -374,7 +361,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!isDefaultColor)
 				_barBackgroundColorWasSet = true;
 
-			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToUIColor();
+			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToNative();
 		}
 
 		void UpdateBarBackground()
@@ -411,7 +398,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (isDefaultColor)
 				tabBarTextColor = _defaultBarTextColor;
 			else
-				tabBarTextColor = barTextColor.ToUIColor();
+				tabBarTextColor = barTextColor.ToNative();
 
 			var attributes = new UIStringAttributes();
 			attributes.ForegroundColor = tabBarTextColor;
@@ -423,7 +410,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
-			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToUIColor();
+			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToNative();
 		}
 
 		void UpdateBarTranslucent()
@@ -466,14 +453,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			((TabbedPage)Element).CurrentPage = index >= 0 && index < count ? Tabbed.GetPageByIndex(index) : null;
 		}
 
-		void IEffectControlProvider.RegisterEffect(Effect effect)
+		async void SetTabBarItem(INativeViewHandler renderer)
 		{
-			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
-		}
-
-		async void SetTabBarItem(IVisualElementRenderer renderer)
-		{
-			var page = renderer.Element as Page;
+			var page = renderer.VirtualView as Page;
 			if (page == null)
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
 
@@ -494,25 +476,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != null)
 			{
-				if (Forms.IsiOS10OrNewer)
-					TabBar.TintColor = Tabbed.SelectedTabColor.ToUIColor();
+				if (NativeVersion.IsAtLeast(10))
+					TabBar.TintColor = Tabbed.SelectedTabColor.ToNative();
 				else
-					TabBar.SelectedImageTintColor = Tabbed.SelectedTabColor.ToUIColor();
+					TabBar.SelectedImageTintColor = Tabbed.SelectedTabColor.ToNative();
 
 			}
 			else
 			{
-				if (Forms.IsiOS10OrNewer)
+				if (NativeVersion.IsAtLeast(10))
 					TabBar.TintColor = UITabBar.Appearance.TintColor;
 				else
 					TabBar.SelectedImageTintColor = UITabBar.Appearance.SelectedImageTintColor;
 			}
 
-			if (!Forms.IsiOS10OrNewer)
+			if (!NativeVersion.IsAtLeast(10))
 				return;
 
 			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
-				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToUIColor();
+				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToNative();
 			else
 				TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;
 		}
@@ -524,10 +506,68 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		/// A tuple containing as item1: the unselected version of the icon, item2: the selected version of the icon (item2 can be null),
 		/// or null if no icon should be set.
 		/// </returns>
-		protected virtual async Task<Tuple<UIImage, UIImage>> GetIcon(Page page)
+		protected virtual Task<Tuple<UIImage, UIImage>> GetIcon(Page page)
 		{
-			var icon = await page.IconImageSource.GetNativeImageAsync();
-			return icon == null ? null : Tuple.Create(icon, (UIImage)null);
+			TaskCompletionSource<Tuple<UIImage, UIImage>> source =
+				new TaskCompletionSource<Tuple<UIImage, UIImage>>();
+
+			page.IconImageSource.LoadImage(MauiContext, result =>
+			{
+				if (result?.Value == null)
+					source.SetResult(null);
+				else
+					source.SetResult(Tuple.Create(result.Value, (UIImage)null));
+			});
+
+			return source.Task;
 		}
+
+		#region INativeViewHandler
+		bool IViewHandler.HasContainer { get => false; set { } }
+
+		object IViewHandler.ContainerView => null;
+
+		IView IViewHandler.VirtualView => Element;
+
+		object IElementHandler.NativeView => NativeView;
+
+		Maui.IElement IElementHandler.VirtualView => Element;
+
+		IMauiContext IElementHandler.MauiContext => _mauiContext;
+
+		UIView INativeViewHandler.NativeView => NativeView;
+
+		UIView INativeViewHandler.ContainerView => null;
+
+		UIViewController INativeViewHandler.ViewController => this;
+
+		void IViewHandler.NativeArrange(Rectangle rect) =>
+			_viewHandlerWrapper.NativeArrange(rect);
+
+		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
+		{
+			_mauiContext = mauiContext;
+		}
+
+		void IElementHandler.SetVirtualView(Maui.IElement view)
+		{
+			SetElement((VisualElement)view);
+		}
+
+		void IElementHandler.UpdateValue(string property)
+		{
+			_viewHandlerWrapper.UpdateProperty(property);
+		}
+
+		void IElementHandler.Invoke(string command, object args)
+		{
+			_viewHandlerWrapper.Invoke(command, args);
+		}
+
+		void IElementHandler.DisconnectHandler()
+		{
+			_viewHandlerWrapper.DisconnectHandler();
+		}
+		#endregion
 	}
 }
