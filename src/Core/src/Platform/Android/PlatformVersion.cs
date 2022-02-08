@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 
 		public static bool IsAtLeast(int apiLevel) => OperatingSystem.IsAndroidVersionAtLeast(apiLevel);
 
-		public static bool Supports(int nativeApi) => OperatingSystem.IsAndroidVersionAtLeast(nativeApi);
+		public static bool Supports(int platformApi) => OperatingSystem.IsAndroidVersionAtLeast(platformApi);
 	}
 
 	public static class PlatformApis
