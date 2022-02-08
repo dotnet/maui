@@ -10,19 +10,19 @@ namespace Microsoft.Maui.Controls
 {
 	public static class FormsMaps
 	{
-		static bool s_isInitialized;
+		static bool IsInitialized;
 #if __MOBILE__
-		static bool? s_isiOs8OrNewer;
-		static bool? s_isiOs9OrNewer;
-		static bool? s_isiOs10OrNewer;
+		static bool? IsiOs8OrNewer;
+		static bool? IsiOs9OrNewer;
+		static bool? IsiOs10OrNewer;
 
 		internal static bool IsiOs8OrNewer
 		{
 			get
 			{
-				if (!s_isiOs8OrNewer.HasValue)
-					s_isiOs8OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(8, 0);
-				return s_isiOs8OrNewer.Value;
+				if (!IsiOs8OrNewer.HasValue)
+					IsiOs8OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(8, 0);
+				return IsiOs8OrNewer.Value;
 			}
 		}
 
@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!s_isiOs9OrNewer.HasValue)
-					s_isiOs9OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(9, 0);
-				return s_isiOs9OrNewer.Value;
+				if (!IsiOs9OrNewer.HasValue)
+					IsiOs9OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(9, 0);
+				return IsiOs9OrNewer.Value;
 			}
 		}
 
@@ -40,18 +40,18 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!s_isiOs10OrNewer.HasValue)
-					s_isiOs10OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(10, 0);
-				return s_isiOs10OrNewer.Value;
+				if (!IsiOs10OrNewer.HasValue)
+					IsiOs10OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(10, 0);
+				return IsiOs10OrNewer.Value;
 			}
 		}
 #endif
 		public static void Init()
 		{
-			if (s_isInitialized)
+			if (IsInitialized)
 				return;
 			GeocoderBackend.Register();
-			s_isInitialized = true;
+			IsInitialized = true;
 		}
 	}
 }
