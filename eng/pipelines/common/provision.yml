@@ -4,11 +4,20 @@ parameters:
   poolName: ''
 
 steps:
+  - ${{ if eq(parameters.platform, 'macos') }}:
+    -pwsh: |
+      $dotnetToolsPath = "$(Agent.ToolsDirectory)/dotnet"
+      if ([IO.Directory]::Exists($dotnetToolsPath))) {
+        Write-Host "Deleting: ${dotnetToolsPath}"
+        [IO.Directory]::Delete($dotnetToolsPath, $true)
+      }
+
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
     displayName: 'Use .NET SDK 6'
     inputs:
       packageType: sdk
       version: 6.0.102
+
 
   - pwsh: |
       Write-Host "dotnet --version"
