@@ -4,27 +4,27 @@ namespace Microsoft.Maui.Platform
 {
 	public static class StepperExtensions
 	{
-		public static void UpdateMinimum(this MauiStepper nativeStepper, IStepper stepper)
+		public static void UpdateMinimum(this MauiStepper platformStepper, IStepper stepper)
 		{
-			nativeStepper.Minimum = stepper.Minimum;
+			platformStepper.Minimum = stepper.Minimum;
 		}
 
-		public static void UpdateMaximum(this MauiStepper nativeStepper, IStepper stepper)
+		public static void UpdateMaximum(this MauiStepper platformStepper, IStepper stepper)
 		{
-			nativeStepper.Maximum = stepper.Maximum;
+			platformStepper.Maximum = stepper.Maximum;
 		}
 
-		public static void UpdateInterval(this MauiStepper nativeStepper, IStepper stepper)
+		public static void UpdateInterval(this MauiStepper platformStepper, IStepper stepper)
 		{
-			nativeStepper.Increment = stepper.Interval;
+			platformStepper.Increment = stepper.Interval;
 		}
 
-		public static void UpdateValue(this MauiStepper nativeStepper, IStepper stepper)
+		public static void UpdateValue(this MauiStepper platformStepper, IStepper stepper)
 		{
-			nativeStepper.Value = stepper.Value;
+			platformStepper.Value = stepper.Value;
 		}
 
-		public static void UpdateBackground(this MauiStepper nativeStepper, IStepper stepper)
+		public static void UpdateBackground(this MauiStepper platformStepper, IStepper stepper)
 		{
 			var background = stepper?.Background;
 			if (background == null)
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			nativeStepper.ButtonBackground = background.ToPlatform();
+			platformStepper.ButtonBackground = background.ToPlatform();
 		}
 	}
 }
