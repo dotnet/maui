@@ -592,6 +592,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void OnControlGotFocus(object sender, RoutedEventArgs args)
 		{
 			((IVisualElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
@@ -602,6 +603,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element.IsNativeStateConsistent = true;
 		}
 
+		[PortHandler]
 		void OnControlLostFocus(object sender, RoutedEventArgs args)
 		{
 			((IVisualElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);

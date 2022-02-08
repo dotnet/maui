@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 
 		partial void DisconnectingHandler(NativeView nativeView)
 		{
+			UpdateIsFocused(false);
+
 			nativeView.GotFocus -= OnNativeViewGotFocus;
 			nativeView.LostFocus -= OnNativeViewLostFocus;
 		}
@@ -98,18 +100,23 @@ namespace Microsoft.Maui.Handlers
 
 		void OnNativeViewGotFocus(object sender, RoutedEventArgs args)
 		{
-			if (VirtualView == null)
-				return;
-
-			VirtualView.IsFocused = true;
+			UpdateIsFocused(true);
 		}
 
 		void OnNativeViewLostFocus(object sender, RoutedEventArgs args)
 		{
+			UpdateIsFocused(false);
+		}
+
+		void UpdateIsFocused(bool isFocused)
+		{
 			if (VirtualView == null)
 				return;
 
-			VirtualView.IsFocused = false;
+			bool updateIsFocused = (isFocused && !VirtualView.IsFocused) || (!isFocused && VirtualView.IsFocused);
+
+			if (updateIsFocused)
+				VirtualView.IsFocused = isFocused;
 		}
 	}
 }
