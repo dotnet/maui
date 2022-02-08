@@ -66,6 +66,9 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
+#if IOS
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
+#endif
 			return handlersCollection;
 		}
 
