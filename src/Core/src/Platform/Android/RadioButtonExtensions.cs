@@ -56,7 +56,6 @@ namespace Microsoft.Maui
 
 			if (radioButton.CornerRadius > 0)
 				mauiDrawable.SetCornerRadius(radioButton.CornerRadius);
-
 		}
 	}
 }
