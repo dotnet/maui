@@ -5,19 +5,19 @@ namespace Microsoft.Maui
 {
 	public static class RadioButtonExtensions
 	{
-		public static void UpdateBackground(this AppCompatRadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateBackground(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.UpdateBorderDrawable(radioButton);
+			platformRadioButton.UpdateBorderDrawable(radioButton);
 		}
 
-		public static void UpdateIsChecked(this AppCompatRadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateIsChecked(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.Checked = radioButton.IsChecked;
+			platformRadioButton.Checked = radioButton.IsChecked;
 		}
 
-		public static void UpdateContent(this AppCompatRadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateContent(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.Text = $"{radioButton.Content}";
+			platformRadioButton.Text = $"{radioButton.Content}";
 		}
 
 		public static void UpdateStrokeColor(this AppCompatRadioButton nativeRadioButton, IRadioButton radioButton)
