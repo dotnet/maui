@@ -107,6 +107,34 @@ resources:
       endpoint: xamarin
 
 stages:
+  - stage: reproNet6Issue
+    displayName: 'Repro .NET issue'
+    dependsOn: []
+    jobs:
+    - job: reproNet6Issue
+      displayName: 'Repro .NET 6 multi-install issue'
+      pool:
+        vmImage: 'internal-macos-11'
+      workspace:
+        clean: all
+      steps:
+      - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+        displayName: 'Use .NET SDK 6 101'
+        inputs:
+          packageType: sdk
+          version: 6.0.101
+      - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+        displayName: 'Use .NET SDK 6 102'
+        inputs:
+          packageType: sdk
+          version: 6.0.102
+      - pwsh: |
+          Write-Host "dotnet --version"
+          dotnet --version
+          Write-Host "dotnet --list-sdks"
+          dotnet --list-sdks
+        displayName: 'Show .NET SDK info'
+        # workingDirectory: $(Agent.ToolsDirectory)/dotnet
 
   - stage: build_net6
     displayName: Build .NET 6
