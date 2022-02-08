@@ -10,7 +10,6 @@ steps:
       packageType: sdk
       version: 6.0.x
 
-
   - pwsh: |
       Write-Host "dotnet --version"
       dotnet --version
