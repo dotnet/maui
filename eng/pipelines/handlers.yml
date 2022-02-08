@@ -436,6 +436,6 @@ stages:
           artifactNames: [ nuget, vs-msi-nugets, vsdrop-signed ]
           artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact
           packageName: 'Maui'
-          packageFilter: '*.msi;*.nuget'
+          packageFilter: '*.msi;*.nupkg'
           GitHub.Token: $(GitHub.Token)
           condition: ${{ variables.signingCondition }}
