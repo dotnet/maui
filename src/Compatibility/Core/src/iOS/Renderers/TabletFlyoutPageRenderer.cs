@@ -9,6 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete]
 	internal class ChildViewController : UIViewController
 	{
 		public override void ViewDidLayoutSubviews()
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[Obsolete]
 	internal class EventedViewController : ChildViewController
 	{
 		FlyoutView _flyoutView;
@@ -114,6 +116,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer instead")]
 	public class TabletFlyoutPageRenderer : UISplitViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIViewController _detailController;

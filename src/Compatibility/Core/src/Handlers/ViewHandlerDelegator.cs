@@ -86,6 +86,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			VisualElementRenderer<TElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
 #endif
 		}
+
+		public void SetVirtualView(
+			Maui.IElement view,
+			Action<VisualElementChangedEventArgs> onElementChanged,
+			bool autoPackage)
+		{
+			SetVirtualView(view, ElementChanged, false);
+
+			void ElementChanged(ElementChangedEventArgs<TElement> e)
+			{
+				onElementChanged(new VisualElementChangedEventArgs(
+					e.OldElement as VisualElement,
+					e.NewElement as VisualElement));
+			}
+		}
 	}
 }
 #endif
