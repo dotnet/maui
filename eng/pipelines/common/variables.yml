@@ -50,4 +50,5 @@ variables:
     value: true
   # For eng/common/SetupNugetSources.ps1
   - group: DotNetBuilds storage account read tokens
+  - group: AzureDevOps-Artifact-Feeds-Pats
 - group: Xamarin-Secrets
