@@ -73,12 +73,12 @@ namespace Microsoft.Maui.Controls.Internals
 				{
 					TPlatformView nativeView;
 					if ((bindable as BindableObjectProxy<TPlatformView>).TargetReference.TryGetTarget(out nativeView))
-						SetNativeValue(nativeView, targetProperty, newValue);
+						SetPlatformValue(nativeView, targetProperty, newValue);
 				}
 			);
 		}
 
-		static void SetNativeValue<TPlatformView>(TPlatformView target, string targetProperty, object newValue) where TPlatformView : class
+		static void SetPlatformValue<TPlatformView>(TPlatformView target, string targetProperty, object newValue) where TPlatformView : class
 		{
 			var mi = target.GetType().GetProperty(targetProperty)?.SetMethod;
 			if (mi == null)

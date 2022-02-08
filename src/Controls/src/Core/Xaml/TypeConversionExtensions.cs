@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
-			var nativeValueConverterService = DependencyService.Get<INativeValueConverterService>();
+			var nativeValueConverterService = DependencyService.Get<IPlatformValueConverterService>();
 
 			object nativeValue = null;
 			if (nativeValueConverterService != null && nativeValueConverterService.ConvertTo(value, toType, out nativeValue))

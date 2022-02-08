@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Control.Value = e.NewElement.Value;
 					Control.IsThumbToolTipEnabled = false;
 
-					slider.ValueChanged += OnNativeValueChanged;
+					slider.ValueChanged += OnPlatformValueChanged;
 
 					defaultforegroundcolor = slider.Foreground;
 					defaultbackgroundcolor = slider.Background;
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override bool PreventGestureBubbling { get; set; } = true;
 
 		[PortHandler]
-		void OnNativeValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+		void OnPlatformValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, e.NewValue);
 		}

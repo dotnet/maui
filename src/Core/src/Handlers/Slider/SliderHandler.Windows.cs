@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			SetupDefaults(PlatformView);
 
-			nativeView.ValueChanged += OnNativeValueChanged;
+			nativeView.ValueChanged += OnPlatformValueChanged;
 			nativeView.Ready += OnPlatformViewReady;
 
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiSlider nativeView)
 		{
-			nativeView.ValueChanged -= OnNativeValueChanged;
+			nativeView.ValueChanged -= OnPlatformValueChanged;
 			nativeView.Ready -= OnPlatformViewReady;
 
 			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
  				.FireAndForget(handler);
 		}
 
-		void OnNativeValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
+		void OnPlatformValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
 		{
 			if (VirtualView != null)
 				VirtualView.Value = e.NewValue;

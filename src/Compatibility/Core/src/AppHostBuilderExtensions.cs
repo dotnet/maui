@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.SetToInitialized();
 			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<PlatformBindingService>();
-			DependencyService.Register<NativeValueConverterService>();
+			DependencyService.Register<PlatformValueConverterService>();
 			DependencyService.Register<Deserializer>();
 			DependencyService.Register<ResourcesProvider>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
