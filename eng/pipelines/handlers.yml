@@ -115,7 +115,7 @@ stages:
     - job: reproNet6Issue
       displayName: 'Repro .NET 6 multi-install issue'
       pool:
-        vmImage: 'internal-macos-10.15'
+        name: 'XamarinFormsOSX'
       workspace:
         clean: all
       steps:
