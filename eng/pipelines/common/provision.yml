@@ -11,7 +11,9 @@ steps:
       version: 6.0.102
 
   - powershell: |
+      Write-Host "dotnet --version"
       dotnet --version
+      Write-Host "dotnet --list-sdks"
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
 
