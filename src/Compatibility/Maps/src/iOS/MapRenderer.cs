@@ -227,19 +227,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		protected virtual MKAnnotationView GetViewForAnnotation(MKMapView mapView, IMKAnnotation annotation)
 		{
-			MKAnnotationView mapPin = null;
-
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=26416
 			var userLocationAnnotation = Runtime.GetNSObject(annotation.Handle) as MKUserLocation;
 			if (userLocationAnnotation != null)
 				return null;
 
 			const string defaultPinId = "defaultPin";
-			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
+			MKAnnotationView mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
 			if (mapPin == null)
 			{
-				mapPin = new MKPinAnnotationView(annotation, defaultPinId);
-				mapPin.CanShowCallout = true;
+				mapPin = new MKPinAnnotationView(annotation, defaultPinId)
+				{
+					CanShowCallout = true
+				};
 			}
 
 			mapPin.Annotation = annotation;
@@ -373,9 +373,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		void PinOnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			Pin pin = (Pin)sender;
-			var annotation = pin.MarkerId as MKPointAnnotation;
 
-			if (annotation == null)
+			if (pin.MarkerId is not MKPointAnnotation annotation)
 			{
 				return;
 			}
