@@ -498,20 +498,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 				return;
 			}
 
-			switch (Map.MapType)
+			map.MapType = Map.MapType switch
 			{
-				case MapType.Street:
-					map.MapType = GoogleMap.MapTypeNormal;
-					break;
-				case MapType.Satellite:
-					map.MapType = GoogleMap.MapTypeSatellite;
-					break;
-				case MapType.Hybrid:
-					map.MapType = GoogleMap.MapTypeHybrid;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+				MapType.Street => GoogleMap.MapTypeNormal,
+				MapType.Satellite => GoogleMap.MapTypeSatellite,
+				MapType.Hybrid => GoogleMap.MapTypeHybrid,
+				_ => throw new ArgumentOutOfRangeException(),
+			};
 		}
 
 		void UpdateVisibleRegion(LatLng pos)
