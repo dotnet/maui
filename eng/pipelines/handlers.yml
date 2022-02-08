@@ -139,7 +139,7 @@ stages:
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 env:
-                  DOTNET_TOKEN: $(dotnetclimsrc-read-sas-token)
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -187,7 +187,7 @@ stages:
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
               env:
-                DOTNET_TOKEN: $(dotnetbuilds-internal-container-uri)
+                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             - ${{ if eq(BuildPlatform.name, 'Windows') }}:
               - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
                 displayName: 'Diff .NET Maui artifacts with NuGet'
@@ -324,7 +324,7 @@ stages:
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
                 env:
-                  DOTNET_TOKEN: $(dotnetclimsrc-read-sas-token)
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Templates'
               - task: PublishBuildArtifacts@1
