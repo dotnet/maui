@@ -88,11 +88,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-		{
-			return size.GetFontSize();
-		}
-
 		public string RuntimePlatform => Device.UWP;
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
