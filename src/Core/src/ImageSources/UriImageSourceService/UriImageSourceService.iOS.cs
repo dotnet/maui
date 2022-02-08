@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		internal string CacheDirectory = Essentials.FileSystem.CacheDirectory + "/com.microsoft.maui.sample/MauiUriImages/";
+		internal string CacheDirectory = Path.Combine(Essentials.FileSystem.CacheDirectory, "com.microsoft.maui.sample", "MauiUriImages");
 
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync((IUriImageSource)imageSource, scale, cancellationToken);
@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 					if (imageData == null)
 						throw new InvalidOperationException("Unable to load image stream data.");
 
-					await CacheImage(imageData, pathToImageCache);
+					CacheImage(imageData, pathToImageCache);
 			}
 
 				var image = UIImage.LoadFromData(imageData, scale);
@@ -67,7 +67,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public Task<bool> CacheImage(NSData imageData, string path)
+		public void CacheImage(NSData imageData, string path)
 		{
 			var directory = Path.GetDirectoryName(path);
 
@@ -80,8 +80,6 @@ namespace Microsoft.Maui
 
 			if (result == false)
 				throw new InvalidOperationException($"Unable to cache image at '{path}'.");
-
-			return Task.FromResult(result);
 		}
 
 		public bool IsImageCached(string path)
