@@ -9,6 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete]
 	internal class ChildViewController : UIViewController
 	{
 		public override void ViewDidLayoutSubviews()
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[Obsolete]
 	internal class EventedViewController : ChildViewController
 	{
 		FlyoutView _flyoutView;
@@ -114,6 +116,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer instead")]
 	public class TabletFlyoutPageRenderer : UISplitViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIViewController _detailController;
@@ -391,7 +395,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 
 				FlyoutPage.UpdateFlyoutLayoutBehavior();
+#pragma warning disable CS0618 // Type or member is obsolete
 				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			base.WillRotate(toInterfaceOrientation, duration);
@@ -449,7 +455,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
+#pragma warning disable CS0618 // Type or member is obsolete
 				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -470,7 +478,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else if (e.Is(Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty))
 				UpdateFlyoutLayoutBehavior(base.View.Bounds.Size);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
