@@ -49,5 +49,5 @@ variables:
   - name: PrivateBuild
     value: true
   # For eng/common/SetupNugetSources.ps1
-  - group:DotNetBuilds storage account read tokens
+  - group: DotNetBuilds storage account read tokens
 - group: Xamarin-Secrets
