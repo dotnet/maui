@@ -17,7 +17,7 @@ steps:
     displayName: 'Use .NET SDK 6'
     inputs:
       packageType: sdk
-      version: 6.0.102
+      version: 6.0.*
 
 
   - pwsh: |
