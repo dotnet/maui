@@ -438,4 +438,4 @@ stages:
           packageName: 'Maui'
           packageFilter: '*.msi;*.nuget'
           GitHub.Token: $(GitHub.Token)
-          condition: ${{ variables.signingCondition }}
+          jobCondition: ${{ variables.signingCondition }}
