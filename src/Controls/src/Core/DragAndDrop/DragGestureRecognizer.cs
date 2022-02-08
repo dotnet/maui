@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls
 				args.Data.Image = ie.Source;
 			}
 
-			if (String.IsNullOrWhiteSpace(args.Data.Text))
+			if (string.IsNullOrWhiteSpace(args.Data.Text))
 				args.Data.Text = element.GetStringValue();
 
 			return args;

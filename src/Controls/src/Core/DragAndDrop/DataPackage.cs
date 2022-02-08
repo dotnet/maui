@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackage.xml" path="//Member[@MemberName='Text']/Docs" />
 		public string Text { get; set; }
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackage.xml" path="//Member[@MemberName='View']/Docs" />
-		public DataPackageView View => new DataPackageView(this.Clone());
+		public DataPackageView View => new(Clone());
 
 		internal DataPackage Clone()
 		{
