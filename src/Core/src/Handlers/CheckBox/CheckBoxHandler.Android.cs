@@ -9,14 +9,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatCheckBox CreatePlatformView()
 		{
-			var nativeCheckBox = new AppCompatCheckBox(Context)
+			var platformCheckBox = new AppCompatCheckBox(Context)
 			{
 				SoundEffectsEnabled = false
 			};
 
-			nativeCheckBox.SetClipToOutline(true);
+			platformCheckBox.SetClipToOutline(true);
 
-			return nativeCheckBox;
+			return platformCheckBox;
 		}
 
 		protected override void ConnectHandler(AppCompatCheckBox nativeView)
@@ -61,9 +61,9 @@ namespace Microsoft.Maui.Handlers
 			{
 			}
 
-			public void OnCheckedChanged(CompoundButton? nativeCheckBox, bool isChecked)
+			public void OnCheckedChanged(CompoundButton? platformCheckBox, bool isChecked)
 			{
-				if (Handler == null || nativeCheckBox == null)
+				if (Handler == null || platformCheckBox == null)
 					return;
 
 				Handler.OnCheckedChanged(isChecked);

@@ -5,22 +5,22 @@ namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{
-		public static void UpdateIsChecked(this MauiCheckBox nativeCheckBox, ICheckBox check)
+		public static void UpdateIsChecked(this MauiCheckBox platformCheckBox, ICheckBox check)
 		{
-			nativeCheckBox.IsChecked = check.IsChecked;
+			platformCheckBox.IsChecked = check.IsChecked;
 		}
 
-		public static void UpdateForeground(this MauiCheckBox nativeCheckBox, ICheckBox check) 
+		public static void UpdateForeground(this MauiCheckBox platformCheckBox, ICheckBox check) 
 		{
 			var tintBrush = check.Foreground?.ToPlatform();
 
 			if (tintBrush == null)
 			{
-				nativeCheckBox.TintBrush = new SolidColorBrush(UI.Colors.Black);
+				platformCheckBox.TintBrush = new SolidColorBrush(UI.Colors.Black);
 				return;
 			}
 
-			nativeCheckBox.TintBrush = tintBrush;
+			platformCheckBox.TintBrush = tintBrush;
 		}
 	}
 }
