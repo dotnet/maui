@@ -431,11 +431,11 @@ stages:
       displayName: 'Software Bill of Materials'
       dependsOn: nuget_signing
       jobs:
-      - template: compliance/sbom/job.yml@xamarin-templates
+      - template: compliance/sbom/job.v1.yml@xamarin-templates
         parameters:
-          artifactNames: [ nuget, vs-msi-nugts, vsdrop-signed ]
+          artifactNames: [ nuget, vs-msi-nugets, vsdrop-signed ]
           artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact
           packageName: 'Maui'
           packageFilter: '*.msi;*.nuget'
           GitHub.Token: $(GitHub.Token)
-          jobCondition: ${{ variables.signingCondition }}
+          condition: ${{ variables.signingCondition }}
