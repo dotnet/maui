@@ -4,11 +4,6 @@ parameters:
   poolName: ''
 
 steps:
-  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
-    displayName: 'Use .NET SDK 6'
-    inputs:
-      packageType: sdk
-      version: 6.0.101
 
   - pwsh: |
       dotnet --version
