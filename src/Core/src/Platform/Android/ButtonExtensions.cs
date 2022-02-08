@@ -6,22 +6,22 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateStrokeColor(this MaterialButton nativeButton, IButtonStroke buttonStroke)
+		public static void UpdateStrokeColor(this MaterialButton platformButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.StrokeColor is Color stroke)
-				nativeButton.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
+				platformButton.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
 		}
 
-		public static void UpdateStrokeThickness(this MaterialButton nativeButton, IButtonStroke buttonStroke)
+		public static void UpdateStrokeThickness(this MaterialButton platformButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.StrokeThickness >= 0)
-				nativeButton.StrokeWidth = (int)nativeButton.Context.ToPixels(buttonStroke.StrokeThickness);
+				platformButton.StrokeWidth = (int)platformButton.Context.ToPixels(buttonStroke.StrokeThickness);
 		}
 
-		public static void UpdateCornerRadius(this MaterialButton nativeButton, IButtonStroke buttonStroke)
+		public static void UpdateCornerRadius(this MaterialButton platformButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.CornerRadius >= 0)
-				nativeButton.CornerRadius = (int)nativeButton.Context.ToPixels(buttonStroke.CornerRadius);
+				platformButton.CornerRadius = (int)platformButton.Context.ToPixels(buttonStroke.CornerRadius);
 		}
 
 		public static void UpdatePadding(this Button nativeControl, IPadding padding, Thickness? defaultPadding = null) =>

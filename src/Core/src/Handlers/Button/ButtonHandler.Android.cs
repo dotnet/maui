@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MaterialButton CreatePlatformView()
 		{
-			MaterialButton nativeButton = new MauiMaterialButton(Context)
+			MaterialButton platformButton = new MauiMaterialButton(Context)
 			{
 				IconGravity = MaterialButton.IconGravityTextStart,
 				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 				SoundEffectsEnabled = false
 			};
 
-			return nativeButton;
+			return platformButton;
 		}
 
 		protected override void ConnectHandler(MaterialButton nativeView)

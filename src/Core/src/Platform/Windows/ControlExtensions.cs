@@ -6,8 +6,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ControlExtensions
 	{
-		public static void UpdateFont(this Control nativeButton, ITextStyle textStyle, IFontManager fontManager) =>
-			nativeButton.UpdateFont(textStyle.Font, fontManager);
+		public static void UpdateFont(this Control platformButton, ITextStyle textStyle, IFontManager fontManager) =>
+			platformButton.UpdateFont(textStyle.Font, fontManager);
 
 		public static void UpdateFont(this Control nativeControl, Font font, IFontManager fontManager)
 		{

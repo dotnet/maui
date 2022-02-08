@@ -10,31 +10,31 @@ namespace Microsoft.Maui
 			nativeRadioButton.IsChecked = radioButton.IsChecked;
 		}
 
-		public static void UpdateTextColor(this Button nativeButton, ITextStyle button)
+		public static void UpdateTextColor(this Button platformButton, ITextStyle button)
 		{
 			var brush = button.TextColor?.ToPlatform();
 
 			if (brush is null)
 			{
 				// Windows.Foundation.UniversalApiContract < 5
-				nativeButton.Resources.Remove("RadioButtonForeground");
-				nativeButton.Resources.Remove("RadioButtonForegroundPointerOver");
-				nativeButton.Resources.Remove("RadioButtonForegroundPressed");
-				nativeButton.Resources.Remove("RadioButtonForegroundDisabled");
+				platformButton.Resources.Remove("RadioButtonForeground");
+				platformButton.Resources.Remove("RadioButtonForegroundPointerOver");
+				platformButton.Resources.Remove("RadioButtonForegroundPressed");
+				platformButton.Resources.Remove("RadioButtonForegroundDisabled");
 
 				// Windows.Foundation.UniversalApiContract >= 5
-				nativeButton.ClearValue(RadioButton.ForegroundProperty);
+				platformButton.ClearValue(RadioButton.ForegroundProperty);
 			}
 			else
 			{
 				// Windows.Foundation.UniversalApiContract < 5
-				nativeButton.Resources["RadioButtonForeground"] = brush;
-				nativeButton.Resources["RadioButtonForegroundPointerOver"] = brush;
-				nativeButton.Resources["RadioButtonForegroundPressed"] = brush;
-				nativeButton.Resources["RadioButtonForegroundDisabled"] = brush;
+				platformButton.Resources["RadioButtonForeground"] = brush;
+				platformButton.Resources["RadioButtonForegroundPointerOver"] = brush;
+				platformButton.Resources["RadioButtonForegroundPressed"] = brush;
+				platformButton.Resources["RadioButtonForegroundDisabled"] = brush;
 
 				// Windows.Foundation.UniversalApiContract >= 5
-				nativeButton.Foreground = brush;
+				platformButton.Foreground = brush;
 			}
 		}
 
