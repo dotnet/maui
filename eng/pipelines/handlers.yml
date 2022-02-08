@@ -411,21 +411,21 @@ stages:
                   artifactName: vsdrop-signed
                   downloadPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
 
-
-    - template: vs-insertion/stage/v1.yml@xamarin-templates
-      parameters:
-        dependsOn: nuget_signing
-        approvalTimeoutInMinutes: 30
-        symbolArtifactName: nuget
-        symbolArtifactPatterns: |
-          **/signed/*.nupkg
-          **/*.snupkg
-          **/additional-assets.zip
-        pushToShippingFeed: true
-        nupkgArtifactName: nuget
-        nupkgArtifactPatterns: |
-          **/signed/*.nupkg
-        msiNupkgArtifactName: vs-msi-nugets
+    # UNDONE: TEST: Disable the VS insertion stage
+    # - template: vs-insertion/stage/v1.yml@xamarin-templates
+    #  parameters:
+    #    dependsOn: nuget_signing
+    #    approvalTimeoutInMinutes: 30
+    #    symbolArtifactName: nuget
+    #    symbolArtifactPatterns: |
+    #      **/signed/*.nupkg
+    #      **/*.snupkg
+    #      **/additional-assets.zip
+    #    pushToShippingFeed: true
+    #    nupkgArtifactName: nuget
+    #    nupkgArtifactPatterns: |
+    #      **/signed/*.nupkg
+    #    msiNupkgArtifactName: vs-msi-nugets
 
     - stage: sbom
       displayName: 'Software Bill of Materials'
