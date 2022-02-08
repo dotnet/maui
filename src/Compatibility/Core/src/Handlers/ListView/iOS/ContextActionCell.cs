@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Dispose(true);
 		}
 
-		public void Update(UITableView tableView, Cell cell, UITableViewCell nativeCell)
+		public void Update(UITableView tableView, Cell cell, UITableViewCell platformCell)
 		{
 			var parentListView = cell.RealParent as ListView;
 			var recycling = parentListView != null &&
@@ -144,8 +144,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var height = Frame.Height + (parentListView != null && parentListView.SeparatorVisibility == SeparatorVisibility.None ? 0.5f : 0f);
 			var width = ContentView.Frame.Width;
 
-			nativeCell.Frame = new RectangleF(0, 0, width, height);
-			nativeCell.SetNeedsLayout();
+			platformCell.Frame = new RectangleF(0, 0, width, height);
+			platformCell.SetNeedsLayout();
 
 			var handler = new PropertyChangedEventHandler(OnMenuItemPropertyChanged);
 
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ScrollDelegate.Dispose();
 			}
 
-			if (ContentCell != nativeCell)
+			if (ContentCell != platformCell)
 			{
 				if (ContentCell != null)
 				{
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					ContentCell = null;
 				}
 
-				ContentCell = nativeCell;
+				ContentCell = platformCell;
 
 				//Hack: if we have a ImageCell the insets are slightly different,
 				//the inset numbers user below were taken using the Reveal app from the default cells
@@ -230,7 +230,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					SeparatorInset = new UIEdgeInsets(0, imageCellInsetLeft, 0, imageCellInsetRight);
 				}
 
-				_scroller.AddSubview(nativeCell);
+				_scroller.AddSubview(platformCell);
 			}
 
 			SetupButtons(width, height);

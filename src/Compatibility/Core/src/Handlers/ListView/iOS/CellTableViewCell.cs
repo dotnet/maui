@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var handler = cell.ToHandler(cell.FindMauiContext());
 			var renderer = (handler as CellRenderer) ?? (handler.PlatformView as CellRenderer);
 
-			var nativeCell = renderer.PlatformView;
+			var platformCell = renderer.PlatformView;
 
-			var cellWithContent = nativeCell;
+			var cellWithContent = platformCell;
 
 			// Sometimes iOS for returns a dequeued cell whose Layer is hidden. 
 			// This prevents it from showing up, so lets turn it back on!
@@ -87,18 +87,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (contextCell != null)
 			{
-				contextCell.Update(tableView, cell, nativeCell);
+				contextCell.Update(tableView, cell, platformCell);
 				var viewTableCell = contextCell.ContentCell as ViewCellRenderer.ViewTableCell;
 				if (viewTableCell != null)
 					viewTableCell.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
-				nativeCell = contextCell;
+				platformCell = contextCell;
 			}
 
 			// Because the layer was hidden we need to layout the cell by hand
 			if (cellWithContent != null)
 				cellWithContent.LayoutSubviews();
 
-			return nativeCell;
+			return platformCell;
 		}
 
 		protected override void Dispose(bool disposing)

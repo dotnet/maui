@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			SetBackgroundColor(tableViewCell, cell, uiBgColor);
 		}
 
-		protected void WireUpForceUpdateSizeRequested(ICellController cell, UITableViewCell nativeCell, UITableView tableView)
+		protected void WireUpForceUpdateSizeRequested(ICellController cell, UITableViewCell platformCell, UITableView tableView)
 		{
 			var inpc = cell as INotifyPropertyChanged;
 			cell.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_onForceUpdateSizeRequested = (sender, e) =>
 			{
-				var index = tableView?.IndexPathForCell(nativeCell);
+				var index = tableView?.IndexPathForCell(platformCell);
 				if (index == null && sender is Cell c)
 				{
 					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);

@@ -1031,9 +1031,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_isDragging = true;
 			}
 
-			void SetupSelection(UITableViewCell nativeCell, UITableView tableView)
+			void SetupSelection(UITableViewCell platformCell, UITableView tableView)
 			{
-				if (!(nativeCell is ContextActionsCell))
+				if (!(platformCell is ContextActionsCell))
 					return;
 
 				if (_setupSelection)
@@ -1047,7 +1047,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 			{
 				Cell cell;
-				UITableViewCell nativeCell;
+				UITableViewCell platformCell;
 
 				Performance.Start(out string reference);
 
@@ -1055,23 +1055,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (cachingStrategy == ListViewCachingStrategy.RetainElement)
 				{
 					cell = GetCellForPath(indexPath);
-					nativeCell = CellTableViewCell.GetNativeCell(tableView, cell);
+					platformCell = CellTableViewCell.GetNativeCell(tableView, cell);
 				}
 				else if ((cachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 				{
 					var id = TemplateIdForPath(indexPath);
-					nativeCell = tableView.DequeueReusableCell(ContextActionsCell.Key + id);
-					if (nativeCell == null)
+					platformCell = tableView.DequeueReusableCell(ContextActionsCell.Key + id);
+					if (platformCell == null)
 					{
 						cell = GetCellForPath(indexPath);
 
-						nativeCell = CellTableViewCell.GetNativeCell(tableView, cell, true, id.ToString());
+						platformCell = CellTableViewCell.GetNativeCell(tableView, cell, true, id.ToString());
 					}
 					else
 					{
 						var templatedList = TemplatedItemsView.TemplatedItems.GetGroup(indexPath.Section);
 
-						cell = (Cell)((IPlatformElementView)nativeCell).Element;
+						cell = (Cell)((IPlatformElementView)platformCell).Element;
 						cell.SendDisappearing();
 
 						templatedList.UpdateContent(cell, indexPath.Row);
@@ -1081,22 +1081,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 					throw new NotSupportedException();
 
-				SetupSelection(nativeCell, tableView);
+				SetupSelection(platformCell, tableView);
 
 				if (List.IsSet(Specifics.SeparatorStyleProperty))
 				{
 					if (List.OnThisPlatform().GetSeparatorStyle() == SeparatorStyle.FullWidth)
 					{
-						nativeCell.SeparatorInset = UIEdgeInsets.Zero;
-						nativeCell.LayoutMargins = UIEdgeInsets.Zero;
-						nativeCell.PreservesSuperviewLayoutMargins = false;
+						platformCell.SeparatorInset = UIEdgeInsets.Zero;
+						platformCell.LayoutMargins = UIEdgeInsets.Zero;
+						platformCell.PreservesSuperviewLayoutMargins = false;
 					}
 				}
 				var bgColor = tableView.IndexPathForSelectedRow != null && tableView.IndexPathForSelectedRow.Equals(indexPath) ? UIColor.Clear : DefaultBackgroundColor;
-				SetCellBackgroundColor(nativeCell, bgColor);
+				SetCellBackgroundColor(platformCell, bgColor);
 				PreserveActivityIndicatorState(cell);
 				Performance.Stop(reference);
-				return nativeCell;
+				return platformCell;
 			}
 
 			public override nfloat GetHeightForHeader(UITableView tableView, nint section)

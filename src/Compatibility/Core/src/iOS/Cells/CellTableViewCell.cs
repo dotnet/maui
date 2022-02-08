@@ -73,9 +73,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 				reusableCell = tableView.DequeueReusableCell(id);
 
-			var nativeCell = renderer.GetCell(cell, reusableCell, tableView);
+			var platformCell = renderer.GetCell(cell, reusableCell, tableView);
 
-			var cellWithContent = nativeCell;
+			var cellWithContent = platformCell;
 
 			// Sometimes iOS for returns a dequeued cell whose Layer is hidden. 
 			// This prevents it from showing up, so lets turn it back on!
@@ -84,18 +84,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (contextCell != null)
 			{
-				contextCell.Update(tableView, cell, nativeCell);
+				contextCell.Update(tableView, cell, platformCell);
 				var viewTableCell = contextCell.ContentCell as ViewCellRenderer.ViewTableCell;
 				if (viewTableCell != null)
 					viewTableCell.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
-				nativeCell = contextCell;
+				platformCell = contextCell;
 			}
 
 			// Because the layer was hidden we need to layout the cell by hand
 			if (cellWithContent != null)
 				cellWithContent.LayoutSubviews();
 
-			return nativeCell;
+			return platformCell;
 		}
 
 		protected override void Dispose(bool disposing)
