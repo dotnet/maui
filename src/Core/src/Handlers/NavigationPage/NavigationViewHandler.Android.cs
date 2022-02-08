@@ -39,9 +39,9 @@ namespace Microsoft.Maui.Handlers
 			return _stackNavigationManager ??= new StackNavigationManager(MauiContext);
 		}
 
-		protected override void ConnectHandler(View nativeView)
+		protected override void ConnectHandler(View platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			_stackNavigationManager?.Connect(VirtualView);
 			NativeView.LayoutChange += OnLayoutChanged;
 		}
@@ -51,11 +51,11 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Arrange(e);
 		}
 
-		private protected override void OnDisconnectHandler(View nativeView)
+		private protected override void OnDisconnectHandler(View platformView)
 		{
 			_stackNavigationManager?.Disconnect();
-			base.OnDisconnectHandler(nativeView);
-			nativeView.LayoutChange -= OnLayoutChanged;
+			base.OnDisconnectHandler(platformView);
+			platformView.LayoutChange -= OnLayoutChanged;
 		}
 
 		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)

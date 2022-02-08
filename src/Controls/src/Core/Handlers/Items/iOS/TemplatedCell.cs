@@ -82,11 +82,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
 
 			// Update the size of the root view to accommodate the Forms element
-			var nativeView = PlatformHandler.ToPlatform();
-			nativeView.Frame = new CGRect(CGPoint.Empty, size);
+			var platformView = PlatformHandler.ToPlatform();
+			platformView.Frame = new CGRect(CGPoint.Empty, size);
 
 			// Layout the Maui element 
-			var nativeBounds = nativeView.Frame.ToRectangle();
+			var nativeBounds = platformView.Frame.ToRectangle();
 			PlatformHandler.VirtualView.Arrange(nativeBounds);
 			_size = nativeBounds.Size;
 
@@ -165,28 +165,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			PlatformHandler = renderer;
 
-			var nativeView = PlatformHandler.ToPlatform();
+			var platformView = PlatformHandler.ToPlatform();
 
 			// Clear out any old views if this cell is being reused
 			ClearSubviews();
 
-			InitializeContentConstraints(nativeView);
+			InitializeContentConstraints(platformView);
 
 			(renderer.VirtualView as View).MeasureInvalidated += MeasureInvalidated;
 		}
 
 		protected void Layout(CGSize constraints)
 		{
-			var nativeView = PlatformHandler.ToPlatform();
+			var platformView = PlatformHandler.ToPlatform();
 
 			var width = constraints.Width;
 			var height = constraints.Height;
 
 			PlatformHandler.VirtualView.Measure(width, height);
 
-			nativeView.Frame = new CGRect(0, 0, width, height);
+			platformView.Frame = new CGRect(0, 0, width, height);
 
-			var rectangle = nativeView.Frame.ToRectangle();
+			var rectangle = platformView.Frame.ToRectangle();
 			PlatformHandler.VirtualView.Arrange(rectangle);
 			_size = rectangle.Size;
 		}

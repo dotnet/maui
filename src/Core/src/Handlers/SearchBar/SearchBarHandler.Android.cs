@@ -25,22 +25,22 @@ namespace Microsoft.Maui.Handlers
 			return searchView;
 		}
 
-		protected override void ConnectHandler(SearchView nativeView)
+		protected override void ConnectHandler(SearchView platformView)
 		{
-			nativeView.QueryTextChange += OnQueryTextChange;
-			nativeView.QueryTextSubmit += OnQueryTextSubmit;
-			SetupDefaults(nativeView);
+			platformView.QueryTextChange += OnQueryTextChange;
+			platformView.QueryTextSubmit += OnQueryTextSubmit;
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(SearchView nativeView)
+		protected override void DisconnectHandler(SearchView platformView)
 		{
-			nativeView.QueryTextChange -= OnQueryTextChange;
-			nativeView.QueryTextSubmit -= OnQueryTextSubmit;
+			platformView.QueryTextChange -= OnQueryTextChange;
+			platformView.QueryTextSubmit -= OnQueryTextSubmit;
 		}
 
-		void SetupDefaults(SearchView nativeView)
+		void SetupDefaults(SearchView platformView)
 		{
-			DefaultBackground = nativeView.Background;
+			DefaultBackground = platformView.Background;
 		}
 
 		// This is a Android-specific mapping

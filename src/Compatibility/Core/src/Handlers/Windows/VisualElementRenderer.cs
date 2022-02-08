@@ -15,11 +15,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : VisualElement
 		where TPlatformElement : FrameworkElement
 	{
-		TPlatformElement? _nativeView;
+		TPlatformElement? _platformView;
 		public FrameworkElement ContainerElement => this;
 
-		public TPlatformElement? Control => ((IElementHandler)this).PlatformView as TPlatformElement ?? _nativeView;
-		object? IElementHandler.PlatformView => _nativeView;
+		public TPlatformElement? Control => ((IElementHandler)this).PlatformView as TPlatformElement ?? _platformView;
+		object? IElementHandler.PlatformView => _platformView;
 
 		public UIElement? GetPlatformElement() => Control;
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected void SetPlatformControl(TPlatformElement control)
 		{
 			TPlatformElement? oldControl = Control;
-			_nativeView = control;
+			_platformView = control;
 
 			if (oldControl != null)
 			{

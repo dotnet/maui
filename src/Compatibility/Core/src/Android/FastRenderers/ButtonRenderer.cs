@@ -287,9 +287,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		{
 		}
 
-		internal void SendVisualElementInitialized(VisualElement element, AView nativeView)
+		internal void SendVisualElementInitialized(VisualElement element, AView platformView)
 		{
-			element.SendViewInitialized(nativeView);
+			element.SendViewInitialized(platformView);
 		}
 
 		void Initialize()

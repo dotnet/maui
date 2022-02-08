@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Handlers
 			//	});
 		}
 
-		//protected override void ConnectHandler(UIView nativeView)
+		//protected override void ConnectHandler(UIView platformView)
 		//{
-		//	base.ConnectHandler(nativeView);
+		//	base.ConnectHandler(platformView);
 
 		//	if (VirtualView == null || MauiContext == null || _controlsNavigationController == null)
 		//		return;
@@ -194,9 +194,9 @@ namespace Microsoft.Maui.Handlers
 		////}
 
 
-		//protected override void ConnectHandler(UIView nativeView)
+		//protected override void ConnectHandler(UIView platformView)
 		//{
-		//	base.ConnectHandler(nativeView);
+		//	base.ConnectHandler(platformView);
 
 		//	if (VirtualView == null)
 		//		return;
@@ -210,9 +210,9 @@ namespace Microsoft.Maui.Handlers
 		//	//VirtualView.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 		//}
 
-		//protected override void DisconnectHandler(UIView nativeView)
+		//protected override void DisconnectHandler(UIView platformView)
 		//{
-		//	base.DisconnectHandler(nativeView);
+		//	base.DisconnectHandler(platformView);
 
 		//	if (VirtualView == null)
 		//		return;

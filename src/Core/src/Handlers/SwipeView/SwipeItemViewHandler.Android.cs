@@ -85,11 +85,11 @@ namespace Microsoft.Maui.Handlers
 				swipeView.UpdateIsVisibleSwipeItem(view);
 		}
 
-		protected override void DisconnectHandler(ContentViewGroup nativeView)
+		protected override void DisconnectHandler(ContentViewGroup platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			nativeView.RemoveAllViews();
-			base.DisconnectHandler(nativeView);
+			platformView.RemoveAllViews();
+			base.DisconnectHandler(platformView);
 		}
 	}
 }

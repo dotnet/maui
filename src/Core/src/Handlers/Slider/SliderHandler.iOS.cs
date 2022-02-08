@@ -12,29 +12,29 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UISlider CreatePlatformView() => new UISlider { Continuous = true };
 
-		protected override void ConnectHandler(UISlider nativeView)
+		protected override void ConnectHandler(UISlider platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.ValueChanged += OnControlValueChanged;
-			nativeView.AddTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
-			nativeView.AddTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
+			platformView.ValueChanged += OnControlValueChanged;
+			platformView.AddTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
+			platformView.AddTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
 		}
 
-		protected override void DisconnectHandler(UISlider nativeView)
+		protected override void DisconnectHandler(UISlider platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.ValueChanged -= OnControlValueChanged;
-			nativeView.RemoveTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
-			nativeView.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
+			platformView.ValueChanged -= OnControlValueChanged;
+			platformView.RemoveTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
+			platformView.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
 		}
 
-		void SetupDefaults(UISlider nativeView)
+		void SetupDefaults(UISlider platformView)
 		{
-			DefaultMinTrackColor = nativeView.MinimumTrackTintColor;
-			DefaultMaxTrackColor = nativeView.MaximumTrackTintColor;
-			DefaultThumbColor = nativeView.ThumbTintColor;
+			DefaultMinTrackColor = platformView.MinimumTrackTintColor;
+			DefaultMaxTrackColor = platformView.MaximumTrackTintColor;
+			DefaultThumbColor = platformView.ThumbTintColor;
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)

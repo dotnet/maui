@@ -27,11 +27,11 @@ namespace Microsoft.Maui.Handlers
 			ProcessSourceWhenReady(this, VirtualView);
 		}
 
-		protected override void DisconnectHandler(AWebView nativeView)
+		protected override void DisconnectHandler(AWebView platformView)
 		{
-			nativeView.StopLoading();
+			platformView.StopLoading();
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)

@@ -7,35 +7,35 @@ namespace Microsoft.Maui
 	{
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
-			var nativeView = viewHandler.ToPlatform();
+			var platformView = viewHandler.ToPlatform();
 
-			if (nativeView == null)
+			if (platformView == null)
 				return Size.Zero;
 
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;
 
-			widthConstraint = AdjustForExplicitSize(widthConstraint, nativeView.Width);
-			heightConstraint = AdjustForExplicitSize(heightConstraint, nativeView.Height);
+			widthConstraint = AdjustForExplicitSize(widthConstraint, platformView.Width);
+			heightConstraint = AdjustForExplicitSize(heightConstraint, platformView.Height);
 
 			var measureConstraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
-			nativeView.Measure(measureConstraint);
+			platformView.Measure(measureConstraint);
 
-			return new Size(nativeView.DesiredSize.Width, nativeView.DesiredSize.Height);
+			return new Size(platformView.DesiredSize.Width, platformView.DesiredSize.Height);
 		}
 
 		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rectangle rect)
 		{
-			var nativeView = viewHandler.ToPlatform();
+			var platformView = viewHandler.ToPlatform();
 
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
 			if (rect.Width < 0 || rect.Height < 0)
 				return;
 
-			nativeView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
+			platformView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 
 			viewHandler.Invoke(nameof(IView.Frame), rect);
 		}

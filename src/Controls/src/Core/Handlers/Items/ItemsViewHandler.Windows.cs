@@ -46,16 +46,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return SelectListViewBase();
 		}
 
-		protected override void ConnectHandler(ListViewBase nativeView)
+		protected override void ConnectHandler(ListViewBase platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			VirtualView.ScrollToRequested += ScrollToRequested;
 		}
 
-		protected override void DisconnectHandler(ListViewBase nativeView)
+		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView) 
@@ -384,9 +384,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_formsEmptyView = view ?? throw new ArgumentNullException(nameof(view));
 
 			var handler = view.ToHandler(MauiContext);
-			var nativeView = handler.ContainerView ?? handler.PlatformView;
+			var platformView = handler.ContainerView ?? handler.PlatformView;
 
-			return nativeView as FrameworkElement;
+			return platformView as FrameworkElement;
 		}
 
 		internal void HandleScroll(ScrollViewer scrollViewer)

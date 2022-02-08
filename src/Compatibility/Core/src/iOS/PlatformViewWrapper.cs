@@ -10,15 +10,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 {
 	public class PlatformViewWrapper : View
 	{
-		public PlatformViewWrapper(UIView nativeView, GetDesiredSizeDelegate getDesiredSizeDelegate = null,
+		public PlatformViewWrapper(UIView platformView, GetDesiredSizeDelegate getDesiredSizeDelegate = null,
 			SizeThatFitsDelegate sizeThatFitsDelegate = null, LayoutSubviewsDelegate layoutSubViews = null)
 		{
 			GetDesiredSizeDelegate = getDesiredSizeDelegate;
 			SizeThatFitsDelegate = sizeThatFitsDelegate;
 			LayoutSubViews = layoutSubViews;
-			PlatformView = nativeView;
+			PlatformView = platformView;
 
-			nativeView.TransferbindablePropertiesToWrapper(this);
+			platformView.TransferbindablePropertiesToWrapper(this);
 		}
 
 		public GetDesiredSizeDelegate GetDesiredSizeDelegate { get; }

@@ -611,7 +611,7 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItems.TryGetValue(item, out object? view);
 
-			if (view != null && view is AView nativeView)
+			if (view != null && view is AView platformView)
 			{
 				_swipeThreshold = 0;
 				LayoutSwipeItems(GetNativeSwipeItems());

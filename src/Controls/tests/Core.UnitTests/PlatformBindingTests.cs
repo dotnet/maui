@@ -57,10 +57,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		public MockPlatformView PlatformView { get; }
 
-		public MockPlatformViewWrapper(MockPlatformView nativeView)
+		public MockPlatformViewWrapper(MockPlatformView platformView)
 		{
-			PlatformView = nativeView;
-			nativeView.TransferbindablePropertiesToWrapper(this);
+			PlatformView = platformView;
+			platformView.TransferbindablePropertiesToWrapper(this);
 		}
 
 		protected override void OnBindingContextChanged()
@@ -87,9 +87,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public static class MockPlatformViewExtensions
 	{
-		public static View ToView(this MockPlatformView nativeView)
+		public static View ToView(this MockPlatformView platformView)
 		{
-			return new MockPlatformViewWrapper(nativeView);
+			return new MockPlatformViewWrapper(platformView);
 		}
 
 		public static void SetBinding(this MockPlatformView target, string targetProperty, BindingBase binding, string updateSourceEventName = null)
@@ -208,28 +208,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SetOneWayBinding()
 		{
-			var nativeView = new MockPlatformView();
-			Assert.AreEqual(null, nativeView.Foo);
-			Assert.AreEqual(0, nativeView.Bar);
+			var platformView = new MockPlatformView();
+			Assert.AreEqual(null, platformView.Foo);
+			Assert.AreEqual(0, platformView.Bar);
 
-			nativeView.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.OneWay));
-			nativeView.SetBinding("Bar", new Binding("BBar", mode: BindingMode.OneWay));
-			Assert.AreEqual(null, nativeView.Foo);
-			Assert.AreEqual(0, nativeView.Bar);
+			platformView.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.OneWay));
+			platformView.SetBinding("Bar", new Binding("BBar", mode: BindingMode.OneWay));
+			Assert.AreEqual(null, platformView.Foo);
+			Assert.AreEqual(0, platformView.Bar);
 
-			nativeView.SetBindingContext(new { FFoo = "Foo", BBar = 42 });
-			Assert.AreEqual("Foo", nativeView.Foo);
-			Assert.AreEqual(42, nativeView.Bar);
+			platformView.SetBindingContext(new { FFoo = "Foo", BBar = 42 });
+			Assert.AreEqual("Foo", platformView.Foo);
+			Assert.AreEqual(42, platformView.Bar);
 		}
 
 		[Test]
 		public void AttachedPropertiesAreTransferredFromTheBackpack()
 		{
-			var nativeView = new MockPlatformView();
-			nativeView.SetValue(Grid.ColumnProperty, 3);
-			nativeView.SetBinding(Grid.RowProperty, new Binding("foo"));
+			var platformView = new MockPlatformView();
+			platformView.SetValue(Grid.ColumnProperty, 3);
+			platformView.SetBinding(Grid.RowProperty, new Binding("foo"));
 
-			var view = nativeView.ToView();
+			var view = platformView.ToView();
 			view.BindingContext = new { foo = 42 };
 			Assert.AreEqual(3, view.GetValue(Grid.ColumnProperty));
 			Assert.AreEqual(42, view.GetValue(Grid.RowProperty));
@@ -238,33 +238,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Set2WayBindings()
 		{
-			var nativeView = new MockPlatformView();
-			Assert.AreEqual(null, nativeView.Foo);
-			Assert.AreEqual(0, nativeView.Bar);
+			var platformView = new MockPlatformView();
+			Assert.AreEqual(null, platformView.Foo);
+			Assert.AreEqual(0, platformView.Bar);
 
 			var vm = new MockVMForPlatformBinding();
-			nativeView.SetBindingContext(vm);
+			platformView.SetBindingContext(vm);
 			var inpc = new MockINPC();
-			nativeView.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.TwoWay), inpc);
-			nativeView.SetBinding("Bar", new Binding("BBar", mode: BindingMode.TwoWay), inpc);
-			Assert.AreEqual(null, nativeView.Foo);
-			Assert.AreEqual(0, nativeView.Bar);
+			platformView.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.TwoWay), inpc);
+			platformView.SetBinding("Bar", new Binding("BBar", mode: BindingMode.TwoWay), inpc);
+			Assert.AreEqual(null, platformView.Foo);
+			Assert.AreEqual(0, platformView.Bar);
 			Assert.AreEqual(null, vm.FFoo);
 			Assert.AreEqual(0, vm.BBar);
 
-			nativeView.Foo = "oof";
-			inpc.FireINPC(nativeView, "Foo");
-			nativeView.Bar = -42;
-			inpc.FireINPC(nativeView, "Bar");
-			Assert.AreEqual("oof", nativeView.Foo);
-			Assert.AreEqual(-42, nativeView.Bar);
+			platformView.Foo = "oof";
+			inpc.FireINPC(platformView, "Foo");
+			platformView.Bar = -42;
+			inpc.FireINPC(platformView, "Bar");
+			Assert.AreEqual("oof", platformView.Foo);
+			Assert.AreEqual(-42, platformView.Bar);
 			Assert.AreEqual("oof", vm.FFoo);
 			Assert.AreEqual(-42, vm.BBar);
 
 			vm.FFoo = "foo";
 			vm.BBar = 42;
-			Assert.AreEqual("foo", nativeView.Foo);
-			Assert.AreEqual(42, nativeView.Bar);
+			Assert.AreEqual("foo", platformView.Foo);
+			Assert.AreEqual(42, platformView.Bar);
 			Assert.AreEqual("foo", vm.FFoo);
 			Assert.AreEqual(42, vm.BBar);
 		}
@@ -272,46 +272,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Set2WayBindingsWithUpdateSourceEvent()
 		{
-			var nativeView = new MockPlatformView();
-			Assert.AreEqual(null, nativeView.Baz);
+			var platformView = new MockPlatformView();
+			Assert.AreEqual(null, platformView.Baz);
 
 			var vm = new MockVMForPlatformBinding();
-			nativeView.SetBindingContext(vm);
+			platformView.SetBindingContext(vm);
 
-			nativeView.SetBinding("Baz", new Binding("FFoo", mode: BindingMode.TwoWay), "BazChanged");
-			Assert.AreEqual(null, nativeView.Baz);
+			platformView.SetBinding("Baz", new Binding("FFoo", mode: BindingMode.TwoWay), "BazChanged");
+			Assert.AreEqual(null, platformView.Baz);
 			Assert.AreEqual(null, vm.FFoo);
 
-			nativeView.Baz = "oof";
-			nativeView.FireBazChanged();
-			Assert.AreEqual("oof", nativeView.Baz);
+			platformView.Baz = "oof";
+			platformView.FireBazChanged();
+			Assert.AreEqual("oof", platformView.Baz);
 			Assert.AreEqual("oof", vm.FFoo);
 
 			vm.FFoo = "foo";
-			Assert.AreEqual("foo", nativeView.Baz);
+			Assert.AreEqual("foo", platformView.Baz);
 			Assert.AreEqual("foo", vm.FFoo);
 		}
 
 		[Test]
 		public void Set2WayBindingsWithUpdateSourceEventInBindingObject()
 		{
-			var nativeView = new MockPlatformView();
-			Assert.AreEqual(null, nativeView.Baz);
+			var platformView = new MockPlatformView();
+			Assert.AreEqual(null, platformView.Baz);
 
 			var vm = new MockVMForPlatformBinding();
-			nativeView.SetBindingContext(vm);
+			platformView.SetBindingContext(vm);
 
-			nativeView.SetBinding("Baz", new Binding("FFoo", mode: BindingMode.TwoWay) { UpdateSourceEventName = "BazChanged" });
-			Assert.AreEqual(null, nativeView.Baz);
+			platformView.SetBinding("Baz", new Binding("FFoo", mode: BindingMode.TwoWay) { UpdateSourceEventName = "BazChanged" });
+			Assert.AreEqual(null, platformView.Baz);
 			Assert.AreEqual(null, vm.FFoo);
 
-			nativeView.Baz = "oof";
-			nativeView.FireBazChanged();
-			Assert.AreEqual("oof", nativeView.Baz);
+			platformView.Baz = "oof";
+			platformView.FireBazChanged();
+			Assert.AreEqual("oof", platformView.Baz);
 			Assert.AreEqual("oof", vm.FFoo);
 
 			vm.FFoo = "foo";
-			Assert.AreEqual("foo", nativeView.Baz);
+			Assert.AreEqual("foo", platformView.Baz);
 			Assert.AreEqual("foo", vm.FFoo);
 		}
 
@@ -330,12 +330,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					return;
 				}
 
-				var nativeView = new MockPlatformView();
-				nativeView.SetBinding("fooBar", new Binding("Foo", BindingMode.TwoWay));
-				nativeView.SetBinding("Baz", new Binding("Qux", BindingMode.TwoWay), "BazChanged");
+				var platformView = new MockPlatformView();
+				platformView.SetBinding("fooBar", new Binding("Foo", BindingMode.TwoWay));
+				platformView.SetBinding("Baz", new Binding("Qux", BindingMode.TwoWay), "BazChanged");
 
-				wr = new WeakReference(nativeView);
-				nativeView = null;
+				wr = new WeakReference(platformView);
+				platformView = null;
 
 			};
 
@@ -363,16 +363,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					return;
 				}
 
-				var nativeView = new MockPlatformView();
-				nativeView.SetBinding("fooBar", new Binding("Foo", BindingMode.TwoWay));
-				nativeView.SetBinding("Baz", new Binding("Qux", BindingMode.TwoWay), "BazChanged");
+				var platformView = new MockPlatformView();
+				platformView.SetBinding("fooBar", new Binding("Foo", BindingMode.TwoWay));
+				platformView.SetBinding("Baz", new Binding("Qux", BindingMode.TwoWay), "BazChanged");
 
 				PlatformBindingHelpers.BindableObjectProxy<MockPlatformView> proxy;
-				if (!PlatformBindingHelpers.BindableObjectProxy<MockPlatformView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
+				if (!PlatformBindingHelpers.BindableObjectProxy<MockPlatformView>.BindableObjectProxies.TryGetValue(platformView, out proxy))
 					Assert.Fail();
 
 				wr = new WeakReference(proxy);
-				nativeView = null;
+				platformView = null;
 			};
 
 			create();
@@ -387,69 +387,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SetBindingContextToSubviews()
 		{
-			var nativeView = new MockPlatformView { SubViews = new List<MockPlatformView>() };
-			var nativeViewChild = new MockPlatformView();
+			var platformView = new MockPlatformView { SubViews = new List<MockPlatformView>() };
+			var platformViewChild = new MockPlatformView();
 
-			nativeViewChild.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.OneWay));
-			nativeViewChild.SetBinding("Bar", new Binding("BBar", mode: BindingMode.OneWay));
+			platformViewChild.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.OneWay));
+			platformViewChild.SetBinding("Bar", new Binding("BBar", mode: BindingMode.OneWay));
 
-			nativeView.SubViews.Add(nativeViewChild);
+			platformView.SubViews.Add(platformViewChild);
 
 			var vm = new MockVMForPlatformBinding();
-			nativeView.SetBindingContext(vm, v => v.SubViews);
+			platformView.SetBindingContext(vm, v => v.SubViews);
 
-			Assert.AreEqual(null, nativeViewChild.Foo);
-			Assert.AreEqual(0, nativeViewChild.Bar);
+			Assert.AreEqual(null, platformViewChild.Foo);
+			Assert.AreEqual(0, platformViewChild.Bar);
 
-			nativeView.SetBindingContext(new { FFoo = "Foo", BBar = 42 }, v => v.SubViews);
-			Assert.AreEqual("Foo", nativeViewChild.Foo);
-			Assert.AreEqual(42, nativeViewChild.Bar);
+			platformView.SetBindingContext(new { FFoo = "Foo", BBar = 42 }, v => v.SubViews);
+			Assert.AreEqual("Foo", platformViewChild.Foo);
+			Assert.AreEqual(42, platformViewChild.Bar);
 		}
 
 		[Test]
 		public void TestConverterDoesNotThrow()
 		{
-			var nativeView = new MockPlatformView();
-			Assert.AreEqual(null, nativeView.Foo);
-			Assert.AreEqual(0, nativeView.Bar);
+			var platformView = new MockPlatformView();
+			Assert.AreEqual(null, platformView.Foo);
+			Assert.AreEqual(0, platformView.Bar);
 			var vm = new MockVMForPlatformBinding();
 			var converter = new MockCustomColorConverter();
-			nativeView.SetBinding("SelectedColor", new Binding("CColor", converter: converter));
-			Assert.DoesNotThrow(() => nativeView.SetBindingContext(vm));
+			platformView.SetBinding("SelectedColor", new Binding("CColor", converter: converter));
+			Assert.DoesNotThrow(() => platformView.SetBindingContext(vm));
 		}
 
 		[Test]
 		public void TestConverterWorks()
 		{
-			var nativeView = new MockPlatformView();
-			Assert.AreEqual(null, nativeView.Foo);
-			Assert.AreEqual(0, nativeView.Bar);
+			var platformView = new MockPlatformView();
+			Assert.AreEqual(null, platformView.Foo);
+			Assert.AreEqual(0, platformView.Bar);
 			var vm = new MockVMForPlatformBinding();
 			vm.CColor = Colors.Red;
 			var converter = new MockCustomColorConverter();
-			nativeView.SetBinding("SelectedColor", new Binding("CColor", converter: converter));
-			nativeView.SetBindingContext(vm);
-			Assert.AreEqual(vm.CColor, nativeView.SelectedColor.FormsColor);
+			platformView.SetBinding("SelectedColor", new Binding("CColor", converter: converter));
+			platformView.SetBindingContext(vm);
+			Assert.AreEqual(vm.CColor, platformView.SelectedColor.FormsColor);
 		}
 
 		[Test]
 		public void TestConverter2WayWorks()
 		{
-			var nativeView = new MockPlatformView();
-			Assert.AreEqual(null, nativeView.Foo);
-			Assert.AreEqual(0, nativeView.Bar);
+			var platformView = new MockPlatformView();
+			Assert.AreEqual(null, platformView.Foo);
+			Assert.AreEqual(0, platformView.Bar);
 			var inpc = new MockINPC();
 			var vm = new MockVMForPlatformBinding();
 			vm.CColor = Colors.Red;
 			var converter = new MockCustomColorConverter();
-			nativeView.SetBinding("SelectedColor", new Binding("CColor", BindingMode.TwoWay, converter), inpc);
-			nativeView.SetBindingContext(vm);
-			Assert.AreEqual(vm.CColor, nativeView.SelectedColor.FormsColor);
+			platformView.SetBinding("SelectedColor", new Binding("CColor", BindingMode.TwoWay, converter), inpc);
+			platformView.SetBindingContext(vm);
+			Assert.AreEqual(vm.CColor, platformView.SelectedColor.FormsColor);
 
 			var newFormsColor = Colors.Blue;
 			var newColor = new MockNativeColor(newFormsColor);
-			nativeView.SelectedColor = newColor;
-			inpc.FireINPC(nativeView, nameof(nativeView.SelectedColor));
+			platformView.SelectedColor = newColor;
+			inpc.FireINPC(platformView, nameof(platformView.SelectedColor));
 
 			Assert.AreEqual(newFormsColor, vm.CColor);
 
@@ -458,10 +458,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Binding2WayWithConvertersDoNotLoop()
 		{
-			var nativeView = new MockPlatformView();
+			var platformView = new MockPlatformView();
 			int count = 0;
 
-			nativeView.SelectedColorChanged += (o, e) =>
+			platformView.SelectedColorChanged += (o, e) =>
 			{
 				if (++count > 5)
 					Assert.Fail("Probable loop detected");
@@ -469,8 +469,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var vm = new MockVMForPlatformBinding { CColor = Colors.Red };
 
-			nativeView.SetBinding("SelectedColor", new Binding("CColor", BindingMode.TwoWay, new MockCustomColorConverter()), "SelectedColorChanged");
-			nativeView.SetBindingContext(vm);
+			platformView.SetBinding("SelectedColor", new Binding("CColor", BindingMode.TwoWay, new MockCustomColorConverter()), "SelectedColorChanged");
+			platformView.SetBindingContext(vm);
 
 			Assert.AreEqual(count, 1);
 		}
@@ -478,25 +478,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThrowsOnMissingProperty()
 		{
-			var nativeView = new MockPlatformView();
-			nativeView.SetBinding("Qux", new Binding("Foo"));
-			Assert.Throws<InvalidOperationException>(() => nativeView.SetBindingContext(new { Foo = 42 }));
+			var platformView = new MockPlatformView();
+			platformView.SetBinding("Qux", new Binding("Foo"));
+			Assert.Throws<InvalidOperationException>(() => platformView.SetBindingContext(new { Foo = 42 }));
 		}
 
 		[Test]
 		public void ThrowsOnMissingEvent()
 		{
-			var nativeView = new MockPlatformView();
-			Assert.Throws<ArgumentException>(() => nativeView.SetBinding("Foo", new Binding("Foo", BindingMode.TwoWay), "missingEvent"));
+			var platformView = new MockPlatformView();
+			Assert.Throws<ArgumentException>(() => platformView.SetBinding("Foo", new Binding("Foo", BindingMode.TwoWay), "missingEvent"));
 		}
 
 		[Test]
 		public void OneWayToSourceAppliedOnSetBC()
 		{
-			var nativeView = new MockPlatformView { Foo = "foobar" };
-			nativeView.SetBinding("Foo", new Binding("FFoo", BindingMode.OneWayToSource));
+			var platformView = new MockPlatformView { Foo = "foobar" };
+			platformView.SetBinding("Foo", new Binding("FFoo", BindingMode.OneWayToSource));
 			var vm = new MockVMForPlatformBinding { FFoo = "qux" };
-			nativeView.SetBindingContext(vm);
+			platformView.SetBindingContext(vm);
 			Assert.AreEqual("foobar", vm.FFoo);
 		}
 

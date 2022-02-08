@@ -20,16 +20,16 @@ namespace Microsoft.Maui.Handlers
 			return scrollView;
 		}
 
-		protected override void ConnectHandler(MauiScrollView nativeView)
+		protected override void ConnectHandler(MauiScrollView platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.ScrollChange += ScrollChange;
+			base.ConnectHandler(platformView);
+			platformView.ScrollChange += ScrollChange;
 		}
 
-		protected override void DisconnectHandler(MauiScrollView nativeView)
+		protected override void DisconnectHandler(MauiScrollView platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.ScrollChange -= ScrollChange;
+			base.DisconnectHandler(platformView);
+			platformView.ScrollChange -= ScrollChange;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

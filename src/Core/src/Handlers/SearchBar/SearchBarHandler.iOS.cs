@@ -28,39 +28,39 @@ namespace Microsoft.Maui.Handlers
 			return searchBar;
 		}
 
-		protected override void ConnectHandler(MauiSearchBar nativeView)
+		protected override void ConnectHandler(MauiSearchBar platformView)
 		{
-			nativeView.CancelButtonClicked += OnCancelClicked;
-			nativeView.SearchButtonClicked += OnSearchButtonClicked;
-			nativeView.TextSetOrChanged += OnTextPropertySet;
-			nativeView.ShouldChangeTextInRange += ShouldChangeText;
+			platformView.CancelButtonClicked += OnCancelClicked;
+			platformView.SearchButtonClicked += OnSearchButtonClicked;
+			platformView.TextSetOrChanged += OnTextPropertySet;
+			platformView.ShouldChangeTextInRange += ShouldChangeText;
 
-			nativeView.OnEditingStarted += OnEditingStarted;
-			nativeView.OnEditingStopped += OnEditingEnded;
+			platformView.OnEditingStarted += OnEditingStarted;
+			platformView.OnEditingStopped += OnEditingEnded;
 
-			base.ConnectHandler(nativeView);
-			SetupDefaults(nativeView);
+			base.ConnectHandler(platformView);
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiSearchBar nativeView)
+		protected override void DisconnectHandler(MauiSearchBar platformView)
 		{
-			nativeView.CancelButtonClicked -= OnCancelClicked;
-			nativeView.SearchButtonClicked -= OnSearchButtonClicked;
-			nativeView.TextSetOrChanged -= OnTextPropertySet;
-			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
+			platformView.CancelButtonClicked -= OnCancelClicked;
+			platformView.SearchButtonClicked -= OnSearchButtonClicked;
+			platformView.TextSetOrChanged -= OnTextPropertySet;
+			platformView.ShouldChangeTextInRange -= ShouldChangeText;
 
-			nativeView.OnEditingStarted -= OnEditingStarted;
-			nativeView.OnEditingStopped -= OnEditingEnded;
+			platformView.OnEditingStarted -= OnEditingStarted;
+			platformView.OnEditingStopped -= OnEditingEnded;
 
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(UISearchBar nativeView)
+		void SetupDefaults(UISearchBar platformView)
 		{
 			_defaultTextColor = QueryEditor?.TextColor;
 
-			var cancelButton = nativeView.FindDescendantView<UIButton>();
+			var cancelButton = platformView.FindDescendantView<UIButton>();
 
 			if (cancelButton != null)
 			{

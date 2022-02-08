@@ -16,24 +16,24 @@ namespace Microsoft.Maui.Handlers
 			return new UISwitch(RectangleF.Empty);
 		}
 
-		protected override void ConnectHandler(UISwitch nativeView)
+		protected override void ConnectHandler(UISwitch platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.ValueChanged += OnControlValueChanged;
+			platformView.ValueChanged += OnControlValueChanged;
 		}
 
-		protected override void DisconnectHandler(UISwitch nativeView)
+		protected override void DisconnectHandler(UISwitch platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.ValueChanged -= OnControlValueChanged;
+			platformView.ValueChanged -= OnControlValueChanged;
 		}
 
-		void SetupDefaults(UISwitch nativeView)
+		void SetupDefaults(UISwitch platformView)
 		{
 			DefaultOnTrackColor = UISwitch.Appearance.OnTintColor;
-			DefaultOffTrackColor = nativeView.GetOffTrackColor();
+			DefaultOffTrackColor = platformView.GetOffTrackColor();
 			DefaultThumbColor = UISwitch.Appearance.ThumbTintColor;
 		}
 

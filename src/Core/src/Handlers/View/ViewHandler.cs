@@ -142,24 +142,24 @@ namespace Microsoft.Maui.Handlers
 #endif
 
 #if !NETSTANDARD
-		private protected abstract void OnConnectHandler(PlatformView nativeView);
+		private protected abstract void OnConnectHandler(PlatformView platformView);
 
-		partial void ConnectingHandler(PlatformView? nativeView);
+		partial void ConnectingHandler(PlatformView? platformView);
 
-		private protected sealed override void OnConnectHandler(object nativeView)
+		private protected sealed override void OnConnectHandler(object platformView)
 		{
-			ConnectingHandler((PlatformView)nativeView);
-			OnConnectHandler((PlatformView)nativeView);
+			ConnectingHandler((PlatformView)platformView);
+			OnConnectHandler((PlatformView)platformView);
 		}
 
-		private protected abstract void OnDisconnectHandler(PlatformView nativeView);
+		private protected abstract void OnDisconnectHandler(PlatformView platformView);
 
-		partial void DisconnectingHandler(PlatformView nativeView);
+		partial void DisconnectingHandler(PlatformView platformView);
 
-		private protected sealed override void OnDisconnectHandler(object nativeView)
+		private protected sealed override void OnDisconnectHandler(object platformView)
 		{
-			DisconnectingHandler((PlatformView)nativeView);
-			OnDisconnectHandler((PlatformView)nativeView);
+			DisconnectingHandler((PlatformView)platformView);
+			OnDisconnectHandler((PlatformView)platformView);
 		}
 #endif
 

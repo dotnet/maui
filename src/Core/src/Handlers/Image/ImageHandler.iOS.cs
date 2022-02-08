@@ -11,17 +11,17 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override UIImageView CreatePlatformView() => new MauiImageView();
 
-		protected override void ConnectHandler(UIImageView nativeView)
+		protected override void ConnectHandler(UIImageView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
 			if (PlatformView is MauiImageView imageView)
 				imageView.WindowChanged += OnWindowChanged;
 		}
 
-		protected override void DisconnectHandler(UIImageView nativeView)
+		protected override void DisconnectHandler(UIImageView platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
 			if (PlatformView is MauiImageView imageView)
 				imageView.WindowChanged -= OnWindowChanged;

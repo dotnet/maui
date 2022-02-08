@@ -12,18 +12,18 @@ namespace Microsoft.Maui.Handlers
 			return new UIStepper(RectangleF.Empty);
 		}
 
-		protected override void ConnectHandler(UIStepper nativeView)
+		protected override void ConnectHandler(UIStepper platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.ValueChanged += OnValueChanged;
+			platformView.ValueChanged += OnValueChanged;
 		}
 
-		protected override void DisconnectHandler(UIStepper nativeView)
+		protected override void DisconnectHandler(UIStepper platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.ValueChanged -= OnValueChanged;
+			platformView.ValueChanged -= OnValueChanged;
 		}
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper)

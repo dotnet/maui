@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			_tabbedPageManager.SetElement((TabbedPage)view);
 		}
 
-		protected override void DisconnectHandler(ViewPager2 nativeView)
+		protected override void DisconnectHandler(ViewPager2 platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			_tabbedPageManager.SetElement(null);
 		}
 

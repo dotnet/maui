@@ -28,21 +28,21 @@ namespace Microsoft.Maui.Handlers
 		protected virtual Drawable GetClearButtonDrawable() =>
 			_clearButtonDrawable ??= ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
-		protected override void ConnectHandler(AppCompatEditText nativeView)
+		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			nativeView.TextChanged += OnTextChanged;
-			nativeView.FocusChange += OnFocusedChange;
-			nativeView.Touch += OnTouch;
-			nativeView.EditorAction += OnEditorAction;
+			platformView.TextChanged += OnTextChanged;
+			platformView.FocusChange += OnFocusedChange;
+			platformView.Touch += OnTouch;
+			platformView.EditorAction += OnEditorAction;
 		}
 
-		protected override void DisconnectHandler(AppCompatEditText nativeView)
+		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
-			nativeView.TextChanged -= OnTextChanged;
-			nativeView.FocusChange -= OnFocusedChange;
-			nativeView.Touch -= OnTouch;
-			nativeView.EditorAction -= OnEditorAction;
+			platformView.TextChanged -= OnTextChanged;
+			platformView.FocusChange -= OnFocusedChange;
+			platformView.Touch -= OnTouch;
+			platformView.EditorAction -= OnEditorAction;
 		}
 
 		public static void MapBackground(EntryHandler handler, IEntry entry) =>

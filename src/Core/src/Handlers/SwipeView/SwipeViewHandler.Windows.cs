@@ -49,15 +49,15 @@ namespace Microsoft.Maui.Handlers
 		}
 
 
-		protected override void ConnectHandler(WSwipeControl nativeView)
+		protected override void ConnectHandler(WSwipeControl platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			PlatformView.Loaded += OnLoaded;
 		}
 
-		protected override void DisconnectHandler(WSwipeControl nativeView)
+		protected override void DisconnectHandler(WSwipeControl platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			PlatformView.Loaded -= OnLoaded;
 		}
 

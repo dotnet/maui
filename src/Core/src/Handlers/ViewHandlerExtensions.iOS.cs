@@ -36,18 +36,18 @@ namespace Microsoft.Maui
 
 		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rectangle rect)
 		{
-			var nativeView = viewHandler.ToPlatform();
+			var platformView = viewHandler.ToPlatform();
 
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
 			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
 			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
-			nativeView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
+			platformView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
 
 			// The position of Bounds is usually (0,0), but in some cases (e.g., UIScrollView) it's the content offset.
 			// So just leave it a whatever value iOS thinks it should be.
-			nativeView.Bounds = new CoreGraphics.CGRect(nativeView.Bounds.X, nativeView.Bounds.Y, rect.Width, rect.Height);
+			platformView.Bounds = new CoreGraphics.CGRect(platformView.Bounds.X, platformView.Bounds.Y, rect.Width, rect.Height);
 
 			viewHandler.Invoke(nameof(IView.Frame), rect);
 		}

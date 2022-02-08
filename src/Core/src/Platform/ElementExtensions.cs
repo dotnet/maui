@@ -114,8 +114,8 @@ namespace Microsoft.Maui.Platform
 				if (viewHandler.ContainerView is PlatformView containerView)
 					return containerView;
 
-				if (viewHandler.PlatformView is PlatformView nativeView)
-					return nativeView;
+				if (viewHandler.PlatformView is PlatformView platformView)
+					return platformView;
 			}
 
 			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");

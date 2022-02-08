@@ -22,24 +22,24 @@ namespace Microsoft.Maui.Handlers
 				}
 			};
 
-		protected override void ConnectHandler(Button nativeView)
+		protected override void ConnectHandler(Button platformView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 
-			nativeView.Click += OnClick;
-			nativeView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
+			platformView.Click += OnClick;
+			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Button nativeView)
+		protected override void DisconnectHandler(Button platformView)
 		{
-			nativeView.Click -= OnClick;
-			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
+			platformView.Click -= OnClick;
+			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
 
 			_pointerPressedHandler = null;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
 			SourceLoader.Reset();
 		}

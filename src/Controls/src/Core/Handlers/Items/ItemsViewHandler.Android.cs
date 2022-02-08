@@ -15,10 +15,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual ItemsViewAdapter<TItemsView, IItemsViewSource> CreateAdapter() => new(VirtualView);
 
-		protected override void ConnectHandler(RecyclerView nativeView)
+		protected override void ConnectHandler(RecyclerView platformView)
 		{
-			base.ConnectHandler(nativeView);
-			(nativeView as IMauiRecyclerView<TItemsView>)?.SetUpNewElement(VirtualView);
+			base.ConnectHandler(platformView);
+			(platformView as IMauiRecyclerView<TItemsView>)?.SetUpNewElement(VirtualView);
 		}
 		protected override RecyclerView CreatePlatformView() =>
 			new MauiRecyclerView<TItemsView, ItemsViewAdapter<TItemsView, IItemsViewSource>, IItemsViewSource>(Context, GetItemsLayout, CreateAdapter);

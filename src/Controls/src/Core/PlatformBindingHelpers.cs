@@ -71,9 +71,9 @@ namespace Microsoft.Maui.Controls.Internals
 				defaultBindingMode: BindingMode.Default,
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
-					TPlatformView nativeView;
-					if ((bindable as BindableObjectProxy<TPlatformView>).TargetReference.TryGetTarget(out nativeView))
-						SetPlatformValue(nativeView, targetProperty, newValue);
+					TPlatformView platformView;
+					if ((bindable as BindableObjectProxy<TPlatformView>).TargetReference.TryGetTarget(out platformView))
+						SetPlatformValue(platformView, targetProperty, newValue);
 				}
 			);
 		}
@@ -144,12 +144,12 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='TransferBindablePropertiesToWrapper']/Docs" />
-		public static void TransferBindablePropertiesToWrapper<TPlatformView, TPlatformWrapper>(TPlatformView nativeView, TPlatformWrapper wrapper)
+		public static void TransferBindablePropertiesToWrapper<TPlatformView, TPlatformWrapper>(TPlatformView platformView, TPlatformWrapper wrapper)
 			where TPlatformView : class
 			where TPlatformWrapper : View
 		{
 			BindableObjectProxy<TPlatformView> proxy;
-			if (!BindableObjectProxy<TPlatformView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
+			if (!BindableObjectProxy<TPlatformView>.BindableObjectProxies.TryGetValue(platformView, out proxy))
 				return;
 			proxy.TransferAttachedPropertiesTo(wrapper);
 		}

@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnInitializeAccessibilityNodeInfo(host, info);
 
-			if (Handler?.PlatformView is PlatformView nativeView && Handler?.VirtualView != null)
-				nativeView.UpdateSemanticNodeInfo(Handler.VirtualView, info);
+			if (Handler?.PlatformView is PlatformView platformView && Handler?.VirtualView != null)
+				platformView.UpdateSemanticNodeInfo(Handler.VirtualView, info);
 		}
 	}
 }

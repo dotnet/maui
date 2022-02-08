@@ -147,26 +147,26 @@ namespace Microsoft.Maui.Controls.Platform
 			return source.Task.ContinueWith(task => NavAnimationInProgress = false);
 		}
 
-		void RestoreFocusability(AView nativeView)
+		void RestoreFocusability(AView platformView)
 		{
-			nativeView.ImportantForAccessibility = ImportantForAccessibility.Auto;
+			platformView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 
 			if (PlatformVersion.IsAtLeast(26))
-				nativeView.SetFocusable(ViewFocusability.FocusableAuto);
+				platformView.SetFocusable(ViewFocusability.FocusableAuto);
 
-			if (nativeView is ViewGroup vg)
+			if (platformView is ViewGroup vg)
 				vg.DescendantFocusability = DescendantFocusability.BeforeDescendants;
 		}
 
-		void RemoveFocusability(AView nativeView)
+		void RemoveFocusability(AView platformView)
 		{
-			nativeView.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+			platformView.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 
 			if (PlatformVersion.IsAtLeast(26))
-				nativeView.SetFocusable(ViewFocusability.NotFocusable);
+				platformView.SetFocusable(ViewFocusability.NotFocusable);
 
 			// Without setting this the keyboard will still navigate to components behind the modal page
-			if (nativeView is ViewGroup vg)
+			if (platformView is ViewGroup vg)
 				vg.DescendantFocusability = DescendantFocusability.BlockDescendants;
 		}
 

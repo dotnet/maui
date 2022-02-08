@@ -22,12 +22,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SelectedBackgroundView = selectedBackgroundView;
 		}
 
-		protected void InitializeContentConstraints(UIView nativeView)
+		protected void InitializeContentConstraints(UIView platformView)
 		{
 			ContentView.TranslatesAutoresizingMaskIntoConstraints = false;
-			nativeView.TranslatesAutoresizingMaskIntoConstraints = false;
+			platformView.TranslatesAutoresizingMaskIntoConstraints = false;
 
-			ContentView.AddSubview(nativeView);
+			ContentView.AddSubview(platformView);
 
 			// We want the cell to be the same size as the ContentView
 			ContentView.TopAnchor.ConstraintEqualTo(TopAnchor).Active = true;
@@ -36,10 +36,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ContentView.TrailingAnchor.ConstraintEqualTo(TrailingAnchor).Active = true;
 
 			// And we want the ContentView to be the same size as the root renderer for the Forms element
-			ContentView.TopAnchor.ConstraintEqualTo(nativeView.TopAnchor).Active = true;
-			ContentView.BottomAnchor.ConstraintEqualTo(nativeView.BottomAnchor).Active = true;
-			ContentView.LeadingAnchor.ConstraintEqualTo(nativeView.LeadingAnchor).Active = true;
-			ContentView.TrailingAnchor.ConstraintEqualTo(nativeView.TrailingAnchor).Active = true;
+			ContentView.TopAnchor.ConstraintEqualTo(platformView.TopAnchor).Active = true;
+			ContentView.BottomAnchor.ConstraintEqualTo(platformView.BottomAnchor).Active = true;
+			ContentView.LeadingAnchor.ConstraintEqualTo(platformView.LeadingAnchor).Active = true;
+			ContentView.TrailingAnchor.ConstraintEqualTo(platformView.TrailingAnchor).Active = true;
 		}
 
 		public abstract void ConstrainTo(nfloat constant);

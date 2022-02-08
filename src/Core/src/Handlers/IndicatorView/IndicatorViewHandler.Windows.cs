@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override ItemsControl CreatePlatformView() => new MauiPageControl();
 
-		protected override void ConnectHandler(ItemsControl nativeView)
+		protected override void ConnectHandler(ItemsControl platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			MauiPagerControl?.SetIndicatorView(VirtualView);
 			UpdateIndicator();
 		}

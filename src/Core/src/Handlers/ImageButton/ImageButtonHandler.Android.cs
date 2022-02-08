@@ -9,13 +9,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ShapeableImageView CreatePlatformView()
 		{
-			var nativeView = new ShapeableImageView(Context);
+			var platformView = new ShapeableImageView(Context);
 
 			// These set the defaults so visually it matches up with other platforms
-			nativeView.SetPadding(0, 0, 0, 0);
-			nativeView.SoundEffectsEnabled = false;
+			platformView.SetPadding(0, 0, 0, 0);
+			platformView.SoundEffectsEnabled = false;
 
-			return nativeView;
+			return platformView;
 		}
 
 		void OnSetImageSource(Drawable? obj)
@@ -23,22 +23,22 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.SetImageDrawable(obj);
 		}
 
-		protected override void DisconnectHandler(ShapeableImageView nativeView)
+		protected override void DisconnectHandler(ShapeableImageView platformView)
 		{
-			nativeView.Click -= OnClick;
-			nativeView.Touch -= OnTouch;
+			platformView.Click -= OnClick;
+			platformView.Touch -= OnTouch;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
 			SourceLoader.Reset();
 		}
 
-		protected override void ConnectHandler(ShapeableImageView nativeView)
+		protected override void ConnectHandler(ShapeableImageView platformView)
 		{
-			nativeView.Click += OnClick;
-			nativeView.Touch += OnTouch;
+			platformView.Click += OnClick;
+			platformView.Touch += OnTouch;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
 		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)

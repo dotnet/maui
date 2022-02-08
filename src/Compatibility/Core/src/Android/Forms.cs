@@ -136,11 +136,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
-		internal static void SendViewInitialized(this VisualElement self, global::Android.Views.View nativeView)
+		internal static void SendViewInitialized(this VisualElement self, global::Android.Views.View platformView)
 		{
 			EventHandler<ViewInitializedEventArgs> viewInitialized = ViewInitialized;
 			if (viewInitialized != null)
-				viewInitialized(self, new ViewInitializedEventArgs { View = self, PlatformView = nativeView });
+				viewInitialized(self, new ViewInitializedEventArgs { View = self, PlatformView = platformView });
 		}
 
 		static bool IsInitializedRenderers;

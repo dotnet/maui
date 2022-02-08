@@ -13,18 +13,18 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiTextView CreatePlatformView() => new MauiTextView();
 
-		protected override void ConnectHandler(MauiTextView nativeView)
+		protected override void ConnectHandler(MauiTextView platformView)
 		{
-			nativeView.ShouldChangeText += OnShouldChangeText;
-			nativeView.Ended += OnEnded;
-			nativeView.TextSetOrChanged += OnTextPropertySet;
+			platformView.ShouldChangeText += OnShouldChangeText;
+			platformView.Ended += OnEnded;
+			platformView.TextSetOrChanged += OnTextPropertySet;
 		}
 
-		protected override void DisconnectHandler(MauiTextView nativeView)
+		protected override void DisconnectHandler(MauiTextView platformView)
 		{
-			nativeView.ShouldChangeText -= OnShouldChangeText;
-			nativeView.Ended -= OnEnded;
-			nativeView.TextSetOrChanged -= OnTextPropertySet;
+			platformView.ShouldChangeText -= OnShouldChangeText;
+			platformView.Ended -= OnEnded;
+			platformView.TextSetOrChanged -= OnTextPropertySet;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>

@@ -242,15 +242,15 @@ namespace Microsoft.Maui.Handlers
 			LayoutViews();
 		}
 
-		protected override void ConnectHandler(View nativeView)
+		protected override void ConnectHandler(View platformView)
 		{
-			if (nativeView is DrawerLayout dl)
+			if (platformView is DrawerLayout dl)
 				dl.DrawerStateChanged += OnDrawerStateChanged;
 		}
 
-		protected override void DisconnectHandler(View nativeView)
+		protected override void DisconnectHandler(View platformView)
 		{
-			if (nativeView is DrawerLayout dl)
+			if (platformView is DrawerLayout dl)
 				dl.DrawerStateChanged -= OnDrawerStateChanged;
 		}
 

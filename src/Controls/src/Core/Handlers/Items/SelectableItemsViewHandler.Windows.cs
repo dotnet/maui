@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		bool _ignorePlatformSelectionChange;
 
-		protected override void ConnectHandler(ListViewBase nativeView)
+		protected override void ConnectHandler(ListViewBase platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
 			if (ItemsView != null)
 			{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdatePlatformSelection();
 		}
 
-		protected override void DisconnectHandler(ListViewBase nativeView)
+		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			var oldListViewBase = ListViewBase;
 			if (oldListViewBase != null)
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)

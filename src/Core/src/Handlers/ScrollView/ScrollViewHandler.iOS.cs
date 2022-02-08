@@ -15,27 +15,27 @@ namespace Microsoft.Maui.Handlers
 			return new UIScrollView();
 		}
 
-		protected override void ConnectHandler(UIScrollView nativeView)
+		protected override void ConnectHandler(UIScrollView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.Scrolled += Scrolled;
-			nativeView.ScrollAnimationEnded += ScrollAnimationEnded;
+			platformView.Scrolled += Scrolled;
+			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
 		}
 
-		protected override void DisconnectHandler(UIScrollView nativeView)
+		protected override void DisconnectHandler(UIScrollView platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.Scrolled -= Scrolled;
-			nativeView.ScrollAnimationEnded -= ScrollAnimationEnded;
+			platformView.Scrolled -= Scrolled;
+			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = this.ToPlatform();
+			var platformView = this.ToPlatform();
 
-			if (nativeView == null || VirtualView == null)
+			if (platformView == null || VirtualView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 			var hasExplicitWidth = explicitWidth >= 0;
 			var hasExplicitHeight = explicitHeight >= 0;
 
-			var sizeThatFits = nativeView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
+			var sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
 
 			var size = new Size(
 				sizeThatFits.Width > 0 ? sizeThatFits.Width : PlatformView.ContentSize.Width,

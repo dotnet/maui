@@ -9,10 +9,10 @@ namespace Microsoft.Maui
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
 			var Context = viewHandler.MauiContext?.Context;
-			var nativeView = viewHandler.ToPlatform();
+			var platformView = viewHandler.ToPlatform();
 			var VirtualView = viewHandler.VirtualView;
 
-			if (nativeView == null || VirtualView == null || Context == null)
+			if (platformView == null || VirtualView == null || Context == null)
 			{
 				return Size.Zero;
 			}
@@ -21,21 +21,21 @@ namespace Microsoft.Maui
 			var widthSpec = Context.CreateMeasureSpec(widthConstraint, VirtualView.Width, VirtualView.MaximumWidth);
 			var heightSpec = Context.CreateMeasureSpec(heightConstraint, VirtualView.Height, VirtualView.MaximumHeight);
 
-			nativeView.Measure(widthSpec, heightSpec);
+			platformView.Measure(widthSpec, heightSpec);
 
 			// Convert back to xplat sizes for the return value
-			return Context.FromPixels(nativeView.MeasuredWidth, nativeView.MeasuredHeight);
+			return Context.FromPixels(platformView.MeasuredWidth, platformView.MeasuredHeight);
 
 		}
 
 		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rectangle frame)
 		{
-			var nativeView = viewHandler.ToPlatform();
+			var platformView = viewHandler.ToPlatform();
 
 			var Context = viewHandler.MauiContext?.Context;
 			var MauiContext = viewHandler.MauiContext;
 
-			if (nativeView == null || MauiContext == null || Context == null)
+			if (platformView == null || MauiContext == null || Context == null)
 			{
 				return;
 			}
@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 			var bottom = Context.ToPixels(frame.Bottom);
 			var right = Context.ToPixels(frame.Right);
 
-			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
+			platformView.Layout((int)left, (int)top, (int)right, (int)bottom);
 
 			viewHandler.Invoke(nameof(IView.Frame), frame);
 		}

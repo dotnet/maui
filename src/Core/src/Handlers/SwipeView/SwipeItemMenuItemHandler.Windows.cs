@@ -31,15 +31,15 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.IconSource = view.Source?.ToIconSource(handler.MauiContext!);
 		}
 
-		protected override void ConnectHandler(WSwipeItem nativeView)
+		protected override void ConnectHandler(WSwipeItem platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			PlatformView.Invoked += OnSwipeItemInvoked;
 		}
 
-		protected override void DisconnectHandler(WSwipeItem nativeView)
+		protected override void DisconnectHandler(WSwipeItem platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			PlatformView.Invoked -= OnSwipeItemInvoked;
 		}
 

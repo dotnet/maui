@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 
 		public static UIViewController ToUIViewController(this IElement view, IMauiContext context)
 		{
-			var nativeView = view.ToPlatform(context);
+			var platformView = view.ToPlatform(context);
 			if (view?.Handler is IPlatformViewHandler nvh && nvh.ViewController != null)
 				return nvh.ViewController;
 

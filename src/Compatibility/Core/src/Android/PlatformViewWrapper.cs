@@ -4,15 +4,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	public class PlatformViewWrapper : View
 	{
-		public PlatformViewWrapper(global::Android.Views.View nativeView, GetDesiredSizeDelegate getDesiredSizeDelegate = null, OnLayoutDelegate onLayoutDelegate = null,
+		public PlatformViewWrapper(global::Android.Views.View platformView, GetDesiredSizeDelegate getDesiredSizeDelegate = null, OnLayoutDelegate onLayoutDelegate = null,
 								 OnMeasureDelegate onMeasureDelegate = null)
 		{
 			GetDesiredSizeDelegate = getDesiredSizeDelegate;
-			PlatformView = nativeView;
+			PlatformView = platformView;
 			OnLayoutDelegate = onLayoutDelegate;
 			OnMeasureDelegate = onMeasureDelegate;
 
-			nativeView.TransferBindablePropertiesToWrapper(this);
+			platformView.TransferBindablePropertiesToWrapper(this);
 		}
 
 		public GetDesiredSizeDelegate GetDesiredSizeDelegate { get; }

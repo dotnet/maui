@@ -95,16 +95,16 @@ namespace Microsoft.Maui.Handlers
 		object CreatePlatformElement() =>
 			OnCreatePlatformElement();
 
-		private protected abstract void OnConnectHandler(object nativeView);
+		private protected abstract void OnConnectHandler(object platformView);
 
-		void ConnectHandler(object nativeView) =>
-			OnConnectHandler(nativeView);
+		void ConnectHandler(object platformView) =>
+			OnConnectHandler(platformView);
 
-		private protected abstract void OnDisconnectHandler(object nativeView);
+		private protected abstract void OnDisconnectHandler(object platformView);
 
-		void DisconnectHandler(object nativeView)
+		void DisconnectHandler(object platformView)
 		{
-			OnDisconnectHandler(nativeView);
+			OnDisconnectHandler(platformView);
 
 			// VirtualView has already been changed over to a new handler
 			if (VirtualView != null && VirtualView.Handler == this)

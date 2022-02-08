@@ -18,20 +18,20 @@ namespace Microsoft.Maui.Handlers
 			return platformPicker;
 		}
 
-		protected override void ConnectHandler(MauiComboBox nativeView)
+		protected override void ConnectHandler(MauiComboBox platformView)
 		{
-			nativeView.SelectionChanged += OnControlSelectionChanged;
-			SetupDefaults(nativeView);
+			platformView.SelectionChanged += OnControlSelectionChanged;
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiComboBox nativeView)
+		protected override void DisconnectHandler(MauiComboBox platformView)
 		{
-			nativeView.SelectionChanged -= OnControlSelectionChanged;
+			platformView.SelectionChanged -= OnControlSelectionChanged;
 		}
 
-		void SetupDefaults(MauiComboBox nativeView)
+		void SetupDefaults(MauiComboBox platformView)
 		{
-			_defaultForeground = nativeView.Foreground;
+			_defaultForeground = platformView.Foreground;
 		}
 
 		void Reload()

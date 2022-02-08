@@ -15,18 +15,18 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(MauiCheckBox nativeView)
+		protected override void ConnectHandler(MauiCheckBox platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.CheckedChanged += OnCheckedChanged;
+			platformView.CheckedChanged += OnCheckedChanged;
 		}
 
-		protected override void DisconnectHandler(MauiCheckBox nativeView)
+		protected override void DisconnectHandler(MauiCheckBox platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.CheckedChanged -= OnCheckedChanged;
+			platformView.CheckedChanged -= OnCheckedChanged;
 		}
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCheckedChanged(object? sender, EventArgs e)
 		{
-			if (sender is MauiCheckBox nativeView && VirtualView != null)
+			if (sender is MauiCheckBox platformView && VirtualView != null)
 			{
-				VirtualView.IsChecked = nativeView.IsChecked;
+				VirtualView.IsChecked = platformView.IsChecked;
 			}
 		}
 	}

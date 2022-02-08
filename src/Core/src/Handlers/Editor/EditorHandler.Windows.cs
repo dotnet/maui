@@ -14,18 +14,18 @@ namespace Microsoft.Maui.Handlers
 				TextWrapping = TextWrapping.Wrap,
 			};
 
-		protected override void ConnectHandler(TextBox nativeView)
+		protected override void ConnectHandler(TextBox platformView)
 		{
-			nativeView.TextChanged += OnTextChanged;
-			nativeView.LostFocus += OnLostFocus;
-			nativeView.Loaded += OnNativeLoaded;
+			platformView.TextChanged += OnTextChanged;
+			platformView.LostFocus += OnLostFocus;
+			platformView.Loaded += OnNativeLoaded;
 		}
 
-		protected override void DisconnectHandler(TextBox nativeView)
+		protected override void DisconnectHandler(TextBox platformView)
 		{
-			nativeView.Loaded -= OnNativeLoaded;
-			nativeView.TextChanged -= OnTextChanged;
-			nativeView.LostFocus -= OnLostFocus;
+			platformView.Loaded -= OnNativeLoaded;
+			platformView.TextChanged -= OnTextChanged;
+			platformView.LostFocus -= OnLostFocus;
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor) =>

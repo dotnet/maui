@@ -16,15 +16,15 @@ namespace Microsoft.Maui.Handlers
 			return navigationView;
 		}
 
-		protected override void ConnectHandler(RootNavigationView nativeView)
+		protected override void ConnectHandler(RootNavigationView platformView)
 		{
 			_navigationRootManager = MauiContext?.GetNavigationRootManager();
-			nativeView.PaneOpened += OnPaneOepened;
+			platformView.PaneOpened += OnPaneOepened;
 		}
 
-		protected override void DisconnectHandler(RootNavigationView nativeView)
+		protected override void DisconnectHandler(RootNavigationView platformView)
 		{
-			nativeView.PaneOpened -= OnPaneOepened;
+			platformView.PaneOpened -= OnPaneOepened;
 		}
 
 		void OnPaneOepened(NavigationView sender, object args)
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView.Flyout.ToPlatform(MauiContext);
 
-			NativeView.ReplacePaneMenuItemsWithCustomContent(VirtualView.Flyout);
+			PlatformView.ReplacePaneMenuItemsWithCustomContent(VirtualView.Flyout);
 		}
 
 		public static void MapDetail(FlyoutViewHandler handler, IFlyoutView flyoutView)

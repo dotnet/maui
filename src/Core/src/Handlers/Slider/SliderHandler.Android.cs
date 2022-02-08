@@ -25,26 +25,26 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(SeekBar nativeView)
+		protected override void ConnectHandler(SeekBar platformView)
 		{
 			ChangeListener.Handler = this;
-			nativeView.SetOnSeekBarChangeListener(ChangeListener);
+			platformView.SetOnSeekBarChangeListener(ChangeListener);
 		}
 
-		protected override void DisconnectHandler(SeekBar nativeView)
+		protected override void DisconnectHandler(SeekBar platformView)
 		{
 			ChangeListener.Handler = null;
-			nativeView.SetOnSeekBarChangeListener(null);
+			platformView.SetOnSeekBarChangeListener(null);
 		}
 
-		void SetupDefaults(SeekBar nativeView)
+		void SetupDefaults(SeekBar platformView)
 		{
-			DefaultThumbColorFilter = nativeView.Thumb?.GetColorFilter();
-			DefaultProgressTintMode = nativeView.ProgressTintMode;
-			DefaultProgressBackgroundTintMode = nativeView.ProgressBackgroundTintMode;
-			DefaultProgressTintList = nativeView.ProgressTintList;
-			DefaultProgressBackgroundTintList = nativeView.ProgressBackgroundTintList;
-			DefaultThumb = nativeView.Thumb;
+			DefaultThumbColorFilter = platformView.Thumb?.GetColorFilter();
+			DefaultProgressTintMode = platformView.ProgressTintMode;
+			DefaultProgressBackgroundTintMode = platformView.ProgressBackgroundTintMode;
+			DefaultProgressTintList = platformView.ProgressTintList;
+			DefaultProgressBackgroundTintList = platformView.ProgressBackgroundTintList;
+			DefaultThumb = platformView.Thumb;
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)

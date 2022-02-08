@@ -16,13 +16,13 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(View nativeView)
+		protected override void ConnectHandler(View platformView)
 		{
 			if (PlatformRadioButton != null)
 				PlatformRadioButton.CheckedChange += OnCheckChanged;
 		}
 
-		protected override void DisconnectHandler(View nativeView)
+		protected override void DisconnectHandler(View platformView)
 		{
 			if (PlatformRadioButton != null)
 				PlatformRadioButton.CheckedChange -= OnCheckChanged;

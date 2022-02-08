@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			return _timePicker;
 		}
 
-		protected override void DisconnectHandler(MauiTimePicker nativeView)
+		protected override void DisconnectHandler(MauiTimePicker platformView)
 		{
 			if (_dialog != null)
 			{
@@ -82,10 +82,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColors);
 		}
 
-		static void SetupDefaults(MauiTimePicker nativeView)
+		static void SetupDefaults(MauiTimePicker platformView)
 		{
-			DefaultBackground = nativeView.Background;
-			DefaultTextColors = nativeView.TextColors;
+			DefaultBackground = platformView.Background;
+			DefaultTextColors = platformView.TextColors;
 		}
 
 		void ShowPickerDialog()

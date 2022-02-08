@@ -27,16 +27,16 @@ namespace Microsoft.Maui.Handlers
 			return editText;
 		}
 
-		protected override void ConnectHandler(AppCompatEditText nativeView)
+		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			nativeView.TextChanged += OnTextChanged;
-			nativeView.FocusChange += OnFocusedChange;
+			platformView.TextChanged += OnTextChanged;
+			platformView.FocusChange += OnFocusedChange;
 		}
 
-		protected override void DisconnectHandler(AppCompatEditText nativeView)
+		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
-			nativeView.TextChanged -= OnTextChanged;
-			nativeView.FocusChange -= OnFocusedChange;
+			platformView.TextChanged -= OnTextChanged;
+			platformView.FocusChange -= OnFocusedChange;
 		}
 
 		public static void MapBackground(EditorHandler handler, IEditor editor) =>

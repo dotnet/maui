@@ -43,28 +43,28 @@ namespace Microsoft.Maui.Handlers
 				}
 			};
 
-		protected override void ConnectHandler(Button nativeView)
+		protected override void ConnectHandler(Button platformView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
 
-			nativeView.Click += OnClick;
-			nativeView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
-			nativeView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
+			platformView.Click += OnClick;
+			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
+			platformView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Button nativeView)
+		protected override void DisconnectHandler(Button platformView)
 		{
-			nativeView.Click -= OnClick;
-			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
-			nativeView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
+			platformView.Click -= OnClick;
+			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
+			platformView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
 
 			_pointerPressedHandler = null;
 			_pointerReleasedHandler = null;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		// This is a Windows-specific mapping

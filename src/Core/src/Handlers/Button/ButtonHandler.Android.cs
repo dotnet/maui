@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Handlers
 		// not static and each button has a new instance
 		Drawable? DefaultBackground;
 
-		void SetupDefaults(MaterialButton nativeView)
+		void SetupDefaults(MaterialButton platformView)
 		{
-			DefaultBackground ??= nativeView.Background;
+			DefaultBackground ??= platformView.Background;
 		}
 
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
@@ -43,30 +43,30 @@ namespace Microsoft.Maui.Handlers
 			return platformButton;
 		}
 
-		protected override void ConnectHandler(MaterialButton nativeView)
+		protected override void ConnectHandler(MaterialButton platformView)
 		{
-			SetupDefaults(nativeView);
+			SetupDefaults(platformView);
 
 			ClickListener.Handler = this;
-			nativeView.SetOnClickListener(ClickListener);
+			platformView.SetOnClickListener(ClickListener);
 
 			TouchListener.Handler = this;
-			nativeView.SetOnTouchListener(TouchListener);
+			platformView.SetOnTouchListener(TouchListener);
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MaterialButton nativeView)
+		protected override void DisconnectHandler(MaterialButton platformView)
 		{
 			ClickListener.Handler = null;
-			nativeView.SetOnClickListener(null);
+			platformView.SetOnClickListener(null);
 
 			TouchListener.Handler = null;
-			nativeView.SetOnTouchListener(null);
+			platformView.SetOnTouchListener(null);
 
 			ImageSourceLoader.Reset();
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		// This is a Android-specific mapping
@@ -153,9 +153,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override void PlatformArrange(Rectangle frame)
 		{
-			var nativeView = this.ToPlatform();
+			var platformView = this.ToPlatform();
 
-			if (nativeView == null || Context == null)
+			if (platformView == null || Context == null)
 			{
 				return;
 			}
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Handlers
 			// in order to properly handle any TextAlignment properties.
 			if (NeedsExactMeasure())
 			{
-				nativeView.Measure(MakeMeasureSpecExact(frame.Width), MakeMeasureSpecExact(frame.Height));
+				platformView.Measure(MakeMeasureSpecExact(frame.Width), MakeMeasureSpecExact(frame.Height));
 			}
 
 			base.PlatformArrange(frame);

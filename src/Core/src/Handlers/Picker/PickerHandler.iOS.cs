@@ -58,17 +58,17 @@ namespace Microsoft.Maui.Handlers
 			return platformPicker;
 		}
 
-		protected override void ConnectHandler(MauiPicker nativeView)
+		protected override void ConnectHandler(MauiPicker platformView)
 		{
-			nativeView.EditingDidEnd += OnEnded;
-			nativeView.EditingChanged += OnEditing;
-			base.ConnectHandler(nativeView);
+			platformView.EditingDidEnd += OnEnded;
+			platformView.EditingChanged += OnEditing;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiPicker nativeView)
+		protected override void DisconnectHandler(MauiPicker platformView)
 		{
-			nativeView.EditingDidEnd -= OnEnded;
-			nativeView.EditingChanged -= OnEditing;
+			platformView.EditingDidEnd -= OnEnded;
+			platformView.EditingChanged -= OnEditing;
 
 			if (_pickerView != null)
 			{
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 				_pickerView = null;
 			}
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 		void Reload()
 		{

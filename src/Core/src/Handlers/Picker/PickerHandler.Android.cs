@@ -18,29 +18,29 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(Context);
 
-		protected override void ConnectHandler(MauiPicker nativeView)
+		protected override void ConnectHandler(MauiPicker platformView)
 		{
-			nativeView.FocusChange += OnFocusChange;
-			nativeView.Click += OnClick;
+			platformView.FocusChange += OnFocusChange;
+			platformView.Click += OnClick;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			SetupDefaults(nativeView);
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiPicker nativeView)
+		protected override void DisconnectHandler(MauiPicker platformView)
 		{
-			nativeView.FocusChange -= OnFocusChange;
-			nativeView.Click -= OnClick;
+			platformView.FocusChange -= OnFocusChange;
+			platformView.Click -= OnClick;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(MauiPicker nativeView)
+		void SetupDefaults(MauiPicker platformView)
 		{
-			s_defaultBackground = nativeView.Background;
-			s_defaultTitleColors = nativeView.HintTextColors;
-			s_defaultTextColors = nativeView.TextColors;
+			s_defaultBackground = platformView.Background;
+			s_defaultTitleColors = platformView.HintTextColors;
+			s_defaultTextColors = platformView.TextColors;
 		}
 
 		// This is a Android-specific mapping

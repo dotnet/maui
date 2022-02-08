@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IPlatformViewHandler _handler;
 
 		bool _disposed;
-		PlatformView? _nativeView;
+		PlatformView? _platformView;
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
 
@@ -40,9 +40,9 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new ArgumentNullException(nameof(handler));
 
 			_handler = (IPlatformViewHandler)handler;
-			_nativeView = _handler.PlatformView;
+			_platformView = _handler.PlatformView;
 
-			if (_nativeView == null)
+			if (_platformView == null)
 				throw new ArgumentNullException(nameof(handler.PlatformView));
 
 			_collectionChangedHandler = GestureRecognizersOnCollectionChanged;
@@ -81,8 +81,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (var kvp in _gestureRecognizers)
 			{
-				if (_nativeView != null)
-					_nativeView.RemoveGestureRecognizer(kvp.Value);
+				if (_platformView != null)
+					_platformView.RemoveGestureRecognizer(kvp.Value);
 #if __MOBILE__
 				kvp.Value.ShouldReceiveTouch = null;
 #endif
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Disconnect();
 
-			_nativeView = null;
+			_platformView = null;
 		}
 
 		static IList<GestureElement>? GetChildGestures(
@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Controls.Platform
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
 #if __MOBILE__
-						originPoint = window.ConvertPointToView(originPoint, eventTracker._nativeView);
+						originPoint = window.ConvertPointToView(originPoint, eventTracker._platformView);
 #else
 						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._handler.PlatformView);
 #endif
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls.Platform
 									return;
 								}
 #endif
-								var translationInView = r.TranslationInView(_nativeView);
+								var translationInView = r.TranslationInView(_platformView);
 								panGestureRecognizer.SendPan(view, translationInView.X, translationInView.Y, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case NativeGestureRecognizerState.Cancelled:
@@ -558,7 +558,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool? _previousUserInteractionEnabled;
 		void CalculateUserInteractionEnabled()
 		{
-			if (ElementGestureRecognizers == null || _nativeView == null || _handler?.VirtualView == null)
+			if (ElementGestureRecognizers == null || _platformView == null || _handler?.VirtualView == null)
 				return;
 
 			bool hasGestureRecognizers = ElementGestureRecognizers.Count > 0;
@@ -567,15 +567,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!hasGestureRecognizers && _previousUserInteractionEnabled == null)
 				return;
 
-			_previousUserInteractionEnabled ??= _nativeView.UserInteractionEnabled;
+			_previousUserInteractionEnabled ??= _platformView.UserInteractionEnabled;
 
 			if (hasGestureRecognizers)
 			{
-				_nativeView.UserInteractionEnabled = true;
+				_platformView.UserInteractionEnabled = true;
 			}
 			else
 			{
-				_nativeView.UserInteractionEnabled = _previousUserInteractionEnabled.Value;
+				_platformView.UserInteractionEnabled = _previousUserInteractionEnabled.Value;
 
 				// These are the known places where UserInteractionEnabled is modified inside Maui.Core
 				// Once we implement "InputTransparent" all of this should just get managed the "InputTransparent" mapper property
@@ -603,9 +603,9 @@ namespace Microsoft.Maui.Controls.Platform
 			UIDragInteraction? uIDragInteraction = null;
 			UIDropInteraction? uIDropInteraction = null;
 
-			if (_dragAndDropDelegate != null && _nativeView != null)
+			if (_dragAndDropDelegate != null && _platformView != null)
 			{
-				foreach (var interaction in _nativeView.Interactions)
+				foreach (var interaction in _platformView.Interactions)
 				{
 					if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
 						uIDragInteraction = uIDrag;
@@ -618,15 +618,15 @@ namespace Microsoft.Maui.Controls.Platform
 			bool dragFound = false;
 			bool dropFound = false;
 #endif
-			if (_nativeView != null &&
+			if (_platformView != null &&
 				_handler.VirtualView is View v &&
 				v.TapGestureRecognizerNeedsDelegate() &&
-				(_nativeView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
+				(_platformView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
 			{
-				_nativeView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+				_platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 				_addedFlags |= UIAccessibilityTrait.Button;
-				_defaultAccessibilityRespondsToUserInteraction = _nativeView.AccessibilityRespondsToUserInteraction;
-				_nativeView.AccessibilityRespondsToUserInteraction = true;
+				_defaultAccessibilityRespondsToUserInteraction = _platformView.AccessibilityRespondsToUserInteraction;
+				_platformView.AccessibilityRespondsToUserInteraction = true;
 			}
 
 			for (int i = 0; i < ElementGestureRecognizers.Count; i++)
@@ -638,12 +638,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var nativeRecognizer = GetPlatformRecognizer(recognizer);
 
-				if (nativeRecognizer != null && _nativeView != null)
+				if (nativeRecognizer != null && _platformView != null)
 				{
 #if __MOBILE__
 					nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
 #endif
-					_nativeView.AddGestureRecognizer(nativeRecognizer);
+					_platformView.AddGestureRecognizer(nativeRecognizer);
 
 					_gestureRecognizers[recognizer] = nativeRecognizer;
 				}
@@ -696,8 +696,8 @@ namespace Microsoft.Maui.Controls.Platform
 				var uiRecognizer = _gestureRecognizers[gestureRecognizer];
 				_gestureRecognizers.Remove(gestureRecognizer);
 
-				if (_nativeView != null)
-					_nativeView.RemoveGestureRecognizer(uiRecognizer);
+				if (_platformView != null)
+					_platformView.RemoveGestureRecognizer(uiRecognizer);
 
 				uiRecognizer.Dispose();
 			}
@@ -731,12 +731,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void GestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
-			if (_nativeView != null)
+			if (_platformView != null)
 			{
-				_nativeView.AccessibilityTraits &= ~_addedFlags;
+				_platformView.AccessibilityTraits &= ~_addedFlags;
 
 				if (_defaultAccessibilityRespondsToUserInteraction != null)
-					_nativeView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
+					_platformView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
 			}
 
 			_addedFlags = UIAccessibilityTrait.None;

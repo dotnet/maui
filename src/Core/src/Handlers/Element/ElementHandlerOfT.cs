@@ -34,21 +34,21 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract TPlatformView CreatePlatformElement();
 
-		protected virtual void ConnectHandler(TPlatformView nativeView)
+		protected virtual void ConnectHandler(TPlatformView platformView)
 		{
 		}
 
-		protected virtual void DisconnectHandler(TPlatformView nativeView)
+		protected virtual void DisconnectHandler(TPlatformView platformView)
 		{
 		}
 
 		private protected override object OnCreatePlatformElement() =>
 			CreatePlatformElement();
 
-		private protected override void OnConnectHandler(object nativeView) =>
-			ConnectHandler((TPlatformView)nativeView);
+		private protected override void OnConnectHandler(object platformView) =>
+			ConnectHandler((TPlatformView)platformView);
 
-		private protected override void OnDisconnectHandler(object nativeView) =>
-			DisconnectHandler((TPlatformView)nativeView);
+		private protected override void OnDisconnectHandler(object platformView) =>
+			DisconnectHandler((TPlatformView)platformView);
 	}
 }

@@ -10,19 +10,19 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TimePicker CreatePlatformView() => new TimePicker();
 
-		protected override void ConnectHandler(TimePicker nativeView)
+		protected override void ConnectHandler(TimePicker platformView)
 		{
-			nativeView.TimeChanged += OnControlTimeChanged;
+			platformView.TimeChanged += OnControlTimeChanged;
 		}
 
-		protected override void DisconnectHandler(TimePicker nativeView)
+		protected override void DisconnectHandler(TimePicker platformView)
 		{
-			nativeView.TimeChanged -= OnControlTimeChanged;
+			platformView.TimeChanged -= OnControlTimeChanged;
 		}
 
-		void SetupDefaults(TimePicker nativeView)
+		void SetupDefaults(TimePicker platformView)
 		{
-			_defaultForeground = nativeView.Foreground;
+			_defaultForeground = platformView.Foreground;
 		}
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)

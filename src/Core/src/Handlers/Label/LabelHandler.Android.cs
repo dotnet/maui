@@ -15,9 +15,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override void PlatformArrange(Rectangle frame)
 		{
-			var nativeView = this.ToPlatform();
+			var platformView = this.ToPlatform();
 
-			if (nativeView == null || Context == null)
+			if (platformView == null || Context == null)
 			{
 				return;
 			}
@@ -31,31 +31,31 @@ namespace Microsoft.Maui.Handlers
 			// in order to properly handle any TextAlignment properties.
 			if (NeedsExactMeasure())
 			{
-				nativeView.Measure(MakeMeasureSpecExact(frame.Width), MakeMeasureSpecExact(frame.Height));
+				platformView.Measure(MakeMeasureSpecExact(frame.Width), MakeMeasureSpecExact(frame.Height));
 			}
 
 			base.PlatformArrange(frame);
 		}
 
-		protected override void ConnectHandler(AppCompatTextView nativeView)
+		protected override void ConnectHandler(AppCompatTextView platformView)
 		{
-			base.ConnectHandler(nativeView);
-			SetupDefaults(nativeView);
+			base.ConnectHandler(platformView);
+			SetupDefaults(platformView);
 		}
 
-		void SetupDefaults(AppCompatTextView nativeView)
+		void SetupDefaults(AppCompatTextView platformView)
 		{
-			if (nativeView.TextColors == null)
+			if (platformView.TextColors == null)
 			{
 				DefaultTextColor = null;
 			}
 			else
 			{
-				DefaultTextColor = Color.FromUint((uint)nativeView.TextColors.DefaultColor);
+				DefaultTextColor = Color.FromUint((uint)platformView.TextColors.DefaultColor);
 			}
 
-			LineSpacingAddDefault = nativeView.LineSpacingExtra;
-			LineSpacingMultDefault = nativeView.LineSpacingMultiplier;
+			LineSpacingAddDefault = platformView.LineSpacingExtra;
+			LineSpacingMultDefault = platformView.LineSpacingMultiplier;
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label)

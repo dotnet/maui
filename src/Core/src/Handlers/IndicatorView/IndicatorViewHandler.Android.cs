@@ -9,15 +9,15 @@ namespace Microsoft.Maui.Handlers
 			return new MauiPageControl(Context);
 		}
 
-		private protected override void OnConnectHandler(AView nativeView)
+		private protected override void OnConnectHandler(AView platformView)
 		{
-			base.OnConnectHandler(nativeView);
+			base.OnConnectHandler(platformView);
 			PlatformView.SetIndicatorView(VirtualView);
 		}
 
-		private protected override void OnDisconnectHandler(AView nativeView)
+		private protected override void OnDisconnectHandler(AView platformView)
 		{
-			base.OnDisconnectHandler(nativeView);
+			base.OnDisconnectHandler(platformView);
 			PlatformView.SetIndicatorView(null);
 		}
 

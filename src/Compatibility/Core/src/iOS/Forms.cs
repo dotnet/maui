@@ -249,9 +249,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
-		internal static void SendViewInitialized(this VisualElement self, TPlatformView nativeView)
+		internal static void SendViewInitialized(this VisualElement self, TPlatformView platformView)
 		{
-			ViewInitialized?.Invoke(self, new ViewInitializedEventArgs { View = self, PlatformView = nativeView });
+			ViewInitialized?.Invoke(self, new ViewInitializedEventArgs { View = self, PlatformView = platformView });
 		}
 
 		class iOSExpressionSearch : ExpressionVisitor, IExpressionSearch

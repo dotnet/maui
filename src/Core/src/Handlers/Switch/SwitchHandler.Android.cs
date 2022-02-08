@@ -17,19 +17,19 @@ namespace Microsoft.Maui.Handlers
 			return new ASwitch(Context);
 		}
 
-		protected override void ConnectHandler(ASwitch nativeView)
+		protected override void ConnectHandler(ASwitch platformView)
 		{
 			ChangeListener.Handler = this;
-			nativeView.SetOnCheckedChangeListener(ChangeListener);
+			platformView.SetOnCheckedChangeListener(ChangeListener);
 
-			base.ConnectHandler(nativeView);
-			SetupDefaults(nativeView);
+			base.ConnectHandler(platformView);
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(ASwitch nativeView)
+		protected override void DisconnectHandler(ASwitch platformView)
 		{
 			ChangeListener.Handler = null;
-			nativeView.SetOnCheckedChangeListener(null);
+			platformView.SetOnCheckedChangeListener(null);
 
 			_defaultTrackDrawable?.Dispose();
 			_defaultTrackDrawable = null;
@@ -37,13 +37,13 @@ namespace Microsoft.Maui.Handlers
 			_defaultThumbDrawable?.Dispose();
 			_defaultThumbDrawable = null;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(ASwitch nativeView)
+		void SetupDefaults(ASwitch platformView)
 		{
-			_defaultTrackDrawable = nativeView.GetDefaultSwitchTrackDrawable();
-			_defaultThumbDrawable = nativeView.GetDefaultSwitchThumbDrawable();
+			_defaultTrackDrawable = platformView.GetDefaultSwitchTrackDrawable();
+			_defaultThumbDrawable = platformView.GetDefaultSwitchThumbDrawable();
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

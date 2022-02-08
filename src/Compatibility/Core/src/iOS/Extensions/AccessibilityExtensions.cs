@@ -12,16 +12,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 {
 	public static class AccessibilityExtensions
 	{
-		public static void SetAccessibilityProperties(this PlatformView nativeViewElement, Element element)
+		public static void SetAccessibilityProperties(this PlatformView platformViewElement, Element element)
 		{
 			if (element == null)
 				return;
 
-			nativeViewElement.AccessibilityIdentifier = element?.AutomationId;
-			SetAccessibilityLabel(nativeViewElement, element);
-			SetAccessibilityHint(nativeViewElement, element);
-			SetIsAccessibilityElement(nativeViewElement, element);
-			SetAccessibilityElementsHidden(nativeViewElement, element);
+			platformViewElement.AccessibilityIdentifier = element?.AutomationId;
+			SetAccessibilityLabel(platformViewElement, element);
+			SetAccessibilityHint(platformViewElement, element);
+			SetIsAccessibilityElement(platformViewElement, element);
+			SetAccessibilityElementsHidden(platformViewElement, element);
 		}
 
 		public static string SetAccessibilityHint(this PlatformView Control, Element Element, string _defaultAccessibilityHint = null)

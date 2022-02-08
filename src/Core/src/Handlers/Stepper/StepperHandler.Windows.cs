@@ -7,18 +7,18 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiStepper CreatePlatformView() => new MauiStepper();
 
-		protected override void ConnectHandler(MauiStepper nativeView)
+		protected override void ConnectHandler(MauiStepper platformView)
 		{
-			nativeView.ValueChanged += OnValueChanged;
+			platformView.ValueChanged += OnValueChanged;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiStepper nativeView)
+		protected override void DisconnectHandler(MauiStepper platformView)
 		{
-			nativeView.ValueChanged -= OnValueChanged;
+			platformView.ValueChanged -= OnValueChanged;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper) 

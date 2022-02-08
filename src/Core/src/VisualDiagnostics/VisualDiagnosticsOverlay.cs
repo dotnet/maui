@@ -148,8 +148,8 @@ namespace Microsoft.Maui
 			if (element is not IView view)
 				return;
 
-			var nativeView = view.GetPlatformViewBounds();
-			parentScrollView.RequestScrollTo(nativeView.X, nativeView.Y, true);
+			var platformView = view.GetPlatformViewBounds();
+			parentScrollView.RequestScrollTo(platformView.X, platformView.Y, true);
 		}
 
 		/// <inheritdoc/>

@@ -102,10 +102,10 @@ namespace Microsoft.Maui.Handlers
 			EnsureZIndexOrder(child);
 		}
 
-		protected override void DisconnectHandler(LayoutView nativeView)
+		protected override void DisconnectHandler(LayoutView platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.ClearSubviews();
+			base.DisconnectHandler(platformView);
+			platformView.ClearSubviews();
 		}
 
 		void EnsureZIndexOrder(IView child)

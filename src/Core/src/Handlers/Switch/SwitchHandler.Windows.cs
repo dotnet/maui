@@ -10,9 +10,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override ToggleSwitch CreatePlatformView() => new ToggleSwitch();
 
-		void SetupDefaults(ToggleSwitch nativeView)
+		void SetupDefaults(ToggleSwitch platformView)
 		{
-			_originalResources = nativeView?.CloneResources();
+			_originalResources = platformView?.CloneResources();
 		}
 
 		public static void MapIsOn(SwitchHandler handler, ISwitch view)
@@ -30,17 +30,17 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateThumbColor(view, handler._originalResources);
 		}
 
-		protected override void DisconnectHandler(ToggleSwitch nativeView)
+		protected override void DisconnectHandler(ToggleSwitch platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.Toggled -= OnToggled;
+			base.DisconnectHandler(platformView);
+			platformView.Toggled -= OnToggled;
 		}
 
-		protected override void ConnectHandler(ToggleSwitch nativeView)
+		protected override void ConnectHandler(ToggleSwitch platformView)
 		{
-			base.ConnectHandler(nativeView);
-			SetupDefaults(nativeView);
-			nativeView.Toggled += OnToggled;
+			base.ConnectHandler(platformView);
+			SetupDefaults(platformView);
+			platformView.Toggled += OnToggled;
 		}
 
 		void OnToggled(object sender, UI.Xaml.RoutedEventArgs e)

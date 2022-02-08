@@ -9,10 +9,10 @@ namespace Microsoft.Maui.Handlers
 			return new MauiSwipeRefreshLayout(Context);
 		}
 
-		protected override void ConnectHandler(MauiSwipeRefreshLayout nativeView)
+		protected override void ConnectHandler(MauiSwipeRefreshLayout platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.Refresh += OnSwipeRefresh;
+			base.ConnectHandler(platformView);
+			platformView.Refresh += OnSwipeRefresh;
 		}
 
 		void OnSwipeRefresh(object? sender, System.EventArgs e)
@@ -20,12 +20,12 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsRefreshing = true;
 		}
 
-		protected override void DisconnectHandler(MauiSwipeRefreshLayout nativeView)
+		protected override void DisconnectHandler(MauiSwipeRefreshLayout platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			nativeView.Refresh -= OnSwipeRefresh;
-			nativeView.UpdateContent(null, null);
-			base.DisconnectHandler(nativeView);
+			platformView.Refresh -= OnSwipeRefresh;
+			platformView.UpdateContent(null, null);
+			base.DisconnectHandler(platformView);
 		}
 
 		void UpdateContent() =>

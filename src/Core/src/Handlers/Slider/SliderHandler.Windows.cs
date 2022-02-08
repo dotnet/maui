@@ -26,39 +26,39 @@ namespace Microsoft.Maui.Handlers
 			return slider;
 		}
 
-		protected override void ConnectHandler(MauiSlider nativeView)
+		protected override void ConnectHandler(MauiSlider platformView)
 		{
 			SetupDefaults(PlatformView);
 
-			nativeView.ValueChanged += OnPlatformValueChanged;
-			nativeView.Ready += OnPlatformViewReady;
+			platformView.ValueChanged += OnPlatformValueChanged;
+			platformView.Ready += OnPlatformViewReady;
 
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
 
-			nativeView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
-			nativeView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
-			nativeView.AddHandler(UIElement.PointerCanceledEvent, _pointerReleasedHandler, true);
+			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
+			platformView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
+			platformView.AddHandler(UIElement.PointerCanceledEvent, _pointerReleasedHandler, true);
 		}
 
-		protected override void DisconnectHandler(MauiSlider nativeView)
+		protected override void DisconnectHandler(MauiSlider platformView)
 		{
-			nativeView.ValueChanged -= OnPlatformValueChanged;
-			nativeView.Ready -= OnPlatformViewReady;
+			platformView.ValueChanged -= OnPlatformValueChanged;
+			platformView.Ready -= OnPlatformViewReady;
 
-			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
-			nativeView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
-			nativeView.RemoveHandler(UIElement.PointerCanceledEvent, _pointerReleasedHandler);
+			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
+			platformView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
+			platformView.RemoveHandler(UIElement.PointerCanceledEvent, _pointerReleasedHandler);
 
 			_pointerPressedHandler = null;
 			_pointerReleasedHandler = null;
 		}
 
-		void SetupDefaults(MauiSlider nativeView)
+		void SetupDefaults(MauiSlider platformView)
 		{
-			DefaultForegroundColor = nativeView.Foreground;
-			DefaultBackgroundColor = nativeView.Background;
-			DefaultThumbColor = nativeView.Thumb?.Background;
+			DefaultForegroundColor = platformView.Foreground;
+			DefaultBackgroundColor = platformView.Background;
+			DefaultThumbColor = platformView.Thumb?.Background;
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)

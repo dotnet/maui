@@ -765,7 +765,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			_swipeItems.TryGetValue(item, out object view);
 
-			if (view != null && view is AView nativeView)
+			if (view != null && view is AView platformView)
 			{
 				bool hidden = false;
 
@@ -776,7 +776,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					hidden = !swipeItemView.IsVisible;
 
 				_swipeThreshold = 0;
-				nativeView.Visibility = hidden ? ViewStates.Gone : ViewStates.Visible;
+				platformView.Visibility = hidden ? ViewStates.Gone : ViewStates.Visible;
 				LayoutSwipeItems(GetNativeSwipeItems());
 				SwipeToThreshold(false);
 			}

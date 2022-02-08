@@ -25,18 +25,18 @@ namespace Microsoft.Maui.Handlers
 			Style = UI.Xaml.Application.Current.Resources["MauiAutoSuggestBoxStyle"] as UI.Xaml.Style
 		};
 
-		protected override void ConnectHandler(AutoSuggestBox nativeView)
+		protected override void ConnectHandler(AutoSuggestBox platformView)
 		{
-			nativeView.Loaded += OnLoaded;
-			nativeView.QuerySubmitted += OnQuerySubmitted;
-			nativeView.TextChanged += OnTextChanged;
+			platformView.Loaded += OnLoaded;
+			platformView.QuerySubmitted += OnQuerySubmitted;
+			platformView.TextChanged += OnTextChanged;
 		}
 
-		protected override void DisconnectHandler(AutoSuggestBox nativeView)
+		protected override void DisconnectHandler(AutoSuggestBox platformView)
 		{
-			nativeView.Loaded -= OnLoaded;
-			nativeView.QuerySubmitted -= OnQuerySubmitted;
-			nativeView.TextChanged -= OnTextChanged;
+			platformView.Loaded -= OnLoaded;
+			platformView.QuerySubmitted -= OnQuerySubmitted;
+			platformView.TextChanged -= OnTextChanged;
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)

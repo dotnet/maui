@@ -444,9 +444,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		}
 
-		internal virtual void SendVisualElementInitialized(VisualElement element, PlatformView nativeView)
+		internal virtual void SendVisualElementInitialized(VisualElement element, PlatformView platformView)
 		{
-			element.SendViewInitialized(nativeView);
+			element.SendViewInitialized(platformView);
 		}
 
 		void UpdateClipToBounds()

@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void Clear(LayoutViewGroup nativeView)
+		void Clear(LayoutViewGroup platformView)
 		{
-			nativeView.RemoveAllViews();
+			platformView.RemoveAllViews();
 		}
 
 		public void Clear()
@@ -105,11 +105,11 @@ namespace Microsoft.Maui.Handlers
 			EnsureZIndexOrder(child);
 		}
 
-		protected override void DisconnectHandler(LayoutViewGroup nativeView)
+		protected override void DisconnectHandler(LayoutViewGroup platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			Clear(nativeView);
-			base.DisconnectHandler(nativeView);
+			Clear(platformView);
+			base.DisconnectHandler(platformView);
 		}
 
 		void EnsureZIndexOrder(IView child)

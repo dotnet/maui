@@ -14,16 +14,16 @@ namespace Microsoft.Maui.Handlers
 			return new MauiRefreshView();
 		}
 
-		protected override void ConnectHandler(MauiRefreshView nativeView)
+		protected override void ConnectHandler(MauiRefreshView platformView)
 		{
-			nativeView.RefreshControl.ValueChanged += OnRefresh;
-			base.ConnectHandler(nativeView);
+			platformView.RefreshControl.ValueChanged += OnRefresh;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiRefreshView nativeView)
+		protected override void DisconnectHandler(MauiRefreshView platformView)
 		{
-			nativeView.RefreshControl.ValueChanged -= OnRefresh;
-			base.DisconnectHandler(nativeView);
+			platformView.RefreshControl.ValueChanged -= OnRefresh;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapBackground(RefreshViewHandler handler, IRefreshView view)

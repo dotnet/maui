@@ -108,16 +108,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 				throw new Exception($"{e.NewElement} must implement: {nameof(Microsoft.Maui.IView)}");
 		}
 
-		protected override void ConnectHandler(PlatformView nativeView)
+		protected override void ConnectHandler(PlatformView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			base.VirtualView.Handler = this;
 		}
 
-		protected override void DisconnectHandler(PlatformView nativeView)
+		protected override void DisconnectHandler(PlatformView platformView)
 		{
 			VisualElementRenderer?.Dispose();
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public override void SetVirtualView(IView view)

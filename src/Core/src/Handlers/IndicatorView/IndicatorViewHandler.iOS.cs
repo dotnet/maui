@@ -9,16 +9,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIPageControl CreatePlatformView() => new MauiPageControl();
 
-		protected override void ConnectHandler(UIPageControl nativeView)
+		protected override void ConnectHandler(UIPageControl platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			UIPager?.SetIndicatorView(VirtualView);
 			UpdateIndicator();
 		}
 
-		protected override void DisconnectHandler(UIPageControl nativeView)
+		protected override void DisconnectHandler(UIPageControl platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			UIPager?.SetIndicatorView(null);
 		}
 

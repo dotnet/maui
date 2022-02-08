@@ -10,19 +10,19 @@ namespace Microsoft.Maui.Handlers
 
 		protected override CalendarDatePicker CreatePlatformView() => new CalendarDatePicker();
 
-		protected override void ConnectHandler(CalendarDatePicker nativeView)
+		protected override void ConnectHandler(CalendarDatePicker platformView)
 		{
-			nativeView.DateChanged += DateChanged;
+			platformView.DateChanged += DateChanged;
 		}
 
-		protected override void DisconnectHandler(CalendarDatePicker nativeView)
+		protected override void DisconnectHandler(CalendarDatePicker platformView)
 		{
-			nativeView.DateChanged -= DateChanged;
+			platformView.DateChanged -= DateChanged;
 		}
 
-		void SetupDefaults(CalendarDatePicker nativeView)
+		void SetupDefaults(CalendarDatePicker platformView)
 		{
-			_defaultForeground = nativeView.Foreground;
+			_defaultForeground = platformView.Foreground;
 
 			
 		}

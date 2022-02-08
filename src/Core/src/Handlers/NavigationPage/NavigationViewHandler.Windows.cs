@@ -19,16 +19,16 @@ namespace Microsoft.Maui.Handlers
 			return new Frame();
 		}
 
-		protected override void ConnectHandler(Frame nativeView)
+		protected override void ConnectHandler(Frame platformView)
 		{
-			_navigationManager?.Connect(VirtualView, nativeView);
-			base.ConnectHandler(nativeView);
+			_navigationManager?.Connect(VirtualView, platformView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Frame nativeView)
+		protected override void DisconnectHandler(Frame platformView)
 		{
-			_navigationManager?.Disconnect(VirtualView, nativeView);
-			base.DisconnectHandler(nativeView);
+			_navigationManager?.Disconnect(VirtualView, platformView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)

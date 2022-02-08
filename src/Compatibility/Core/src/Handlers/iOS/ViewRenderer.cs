@@ -19,10 +19,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : View, IView
 		where TPlatformView : PlatformView
 	{
-		TPlatformView? _nativeView;
+		TPlatformView? _platformView;
 
-		public TPlatformView? Control => ((IElementHandler)this).PlatformView as TPlatformView ?? _nativeView;
-		object? IElementHandler.PlatformView => _nativeView;
+		public TPlatformView? Control => ((IElementHandler)this).PlatformView as TPlatformView ?? _platformView;
+		object? IElementHandler.PlatformView => _platformView;
 
 		public ViewRenderer() : this(VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 
-			_nativeView = control;
+			_platformView = control;
 
 			if (Control != null)
 				AddSubview(Control);
@@ -81,13 +81,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		private protected override void DisconnectHandlerCore()
 		{
-			if (_nativeView != null && Element != null)
+			if (_platformView != null && Element != null)
 			{
 				// We set the PlatformView to null so no one outside of this handler tries to access
 				// PlatformView. PlatformView access should be isolated to the instance passed into
 				// DisconnectHandler
-				var oldPlatformView = _nativeView;
-				_nativeView = null;
+				var oldPlatformView = _platformView;
+				_platformView = null;
 				DisconnectHandler(oldPlatformView);
 			}
 

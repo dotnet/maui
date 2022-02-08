@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 		}
 
-		private protected override void OnConnectHandler(object nativeView)
+		private protected override void OnConnectHandler(object platformView)
 		{
 		}
 
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return new object();
 		}
 
-		private protected override void OnDisconnectHandler(object nativeView)
+		private protected override void OnDisconnectHandler(object platformView)
 		{
 		}
 	}

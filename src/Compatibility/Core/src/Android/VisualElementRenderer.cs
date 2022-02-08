@@ -397,9 +397,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			this.UpdateBackground(background);
 		}
 
-		internal virtual void SendVisualElementInitialized(VisualElement element, AView nativeView)
+		internal virtual void SendVisualElementInitialized(VisualElement element, AView platformView)
 		{
-			element.SendViewInitialized(nativeView);
+			element.SendViewInitialized(platformView);
 		}
 
 		void IVisualElementRenderer.SetLabelFor(int? id)

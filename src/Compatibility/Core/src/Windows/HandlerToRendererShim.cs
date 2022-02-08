@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		bool _nativeViewLoaded;
+		bool _platformViewLoaded;
 
 		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		void PlatformViewLoaded(object sender, RoutedEventArgs e)
 		{
-			_nativeViewLoaded = true;
+			_platformViewLoaded = true;
 			((FrameworkElement)sender).Loaded -= PlatformViewLoaded;
 
 			// For old-school renderers on Windows, VisualElementRenderer watches for the Loaded event and 
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (!_nativeViewLoaded)
+			if (!_platformViewLoaded)
 			{
 				return new SizeRequest(Size.Zero);
 			}

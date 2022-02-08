@@ -19,16 +19,16 @@ namespace Microsoft.Maui.Handlers
 			return platformCheckBox;
 		}
 
-		protected override void ConnectHandler(AppCompatCheckBox nativeView)
+		protected override void ConnectHandler(AppCompatCheckBox platformView)
 		{
 			ChangeListener.Handler = this;
-			nativeView.SetOnCheckedChangeListener(ChangeListener);
+			platformView.SetOnCheckedChangeListener(ChangeListener);
 		}
 
-		protected override void DisconnectHandler(AppCompatCheckBox nativeView)
+		protected override void DisconnectHandler(AppCompatCheckBox platformView)
 		{
 			ChangeListener.Handler = null;
-			nativeView.SetOnCheckedChangeListener(null);
+			platformView.SetOnCheckedChangeListener(null);
 		}
 
 		// This is an Android-specific mapping

@@ -574,7 +574,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			_swipeItems.TryGetValue(item, out object view);
 
-			if (view != null && view is UIView nativeView)
+			if (view != null && view is UIView platformView)
 			{
 				bool hidden = false;
 
@@ -585,7 +585,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					hidden = !swipeItemView.IsVisible;
 
 				_swipeThreshold = 0;
-				nativeView.Hidden = hidden;
+				platformView.Hidden = hidden;
 				LayoutSwipeItems(GetNativeSwipeItems());
 				SwipeToThreshold(false);
 			}

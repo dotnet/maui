@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		internal override void SendVisualElementInitialized(VisualElement element, AView nativeView)
+		internal override void SendVisualElementInitialized(VisualElement element, AView platformView)
 		{
 			base.SendVisualElementInitialized(element, Control);
 		}

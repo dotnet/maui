@@ -129,23 +129,23 @@ namespace Microsoft.Maui.Platform
 				textView.PaintFlags |= PaintFlags.UnderlineText;
 		}
 
-		public static void UpdateFlowDirection(this TextView nativeView, IView view)
+		public static void UpdateFlowDirection(this TextView platformView, IView view)
 		{
 			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
 				view.FlowDirection == FlowDirection.MatchParent)
 			{
-				nativeView.LayoutDirection = ALayoutDirection.Inherit;
-				nativeView.TextDirection = ATextDirection.Inherit;
+				platformView.LayoutDirection = ALayoutDirection.Inherit;
+				platformView.TextDirection = ATextDirection.Inherit;
 			}
 			else if (view.FlowDirection == FlowDirection.RightToLeft)
 			{
-				nativeView.LayoutDirection = ALayoutDirection.Rtl;
-				nativeView.TextDirection = ATextDirection.Rtl;
+				platformView.LayoutDirection = ALayoutDirection.Rtl;
+				platformView.TextDirection = ATextDirection.Rtl;
 			}
 			else if (view.FlowDirection == FlowDirection.LeftToRight)
 			{
-				nativeView.LayoutDirection = ALayoutDirection.Ltr;
-				nativeView.TextDirection = ATextDirection.Ltr;
+				platformView.LayoutDirection = ALayoutDirection.Ltr;
+				platformView.TextDirection = ATextDirection.Ltr;
 			}
 		}
 

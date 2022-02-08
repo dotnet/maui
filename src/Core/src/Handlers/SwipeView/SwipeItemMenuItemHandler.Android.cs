@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, AView>
 	{
-		protected override void ConnectHandler(AView nativeView)
+		protected override void ConnectHandler(AView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			PlatformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 		}
 
@@ -23,10 +23,10 @@ namespace Microsoft.Maui.Handlers
 			UpdateSize();
 		}
 
-		protected override void DisconnectHandler(AView nativeView)
+		protected override void DisconnectHandler(AView platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.ViewAttachedToWindow -= OnViewAttachedToWindow;
+			base.DisconnectHandler(platformView);
+			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 		}
 
 		public static void MapTextColor(SwipeItemMenuItemHandler handler, ITextStyle view)

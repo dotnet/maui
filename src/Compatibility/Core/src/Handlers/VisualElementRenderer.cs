@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal static void SetVirtualView(
 			Maui.IElement view,
-			IPlatformViewHandler nativeViewHandler,
+			IPlatformViewHandler platformViewHandler,
 			Action<ElementChangedEventArgs<TElement>> onElementChanged,
 			ref TElement? currentVirtualView,
 			ref IPropertyMapper _mapper,
@@ -220,8 +220,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			currentVirtualView = (TElement)view;
 
-			if (currentVirtualView.Handler != nativeViewHandler)
-				currentVirtualView.Handler = nativeViewHandler;
+			if (currentVirtualView.Handler != platformViewHandler)
+				currentVirtualView.Handler = platformViewHandler;
 
 			_mapper = _defaultMapper;
 
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ProcessAutoPackage(view);
 			}
 
-			_mapper.UpdateProperties(nativeViewHandler, currentVirtualView);
+			_mapper.UpdateProperties(platformViewHandler, currentVirtualView);
 		}
 
 		static partial void ProcessAutoPackage(Maui.IElement element);

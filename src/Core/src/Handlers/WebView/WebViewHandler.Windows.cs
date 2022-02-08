@@ -9,18 +9,18 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override WebView2 CreatePlatformView() => new MauiWebView();
 
-		protected override void ConnectHandler(WebView2 nativeView)
+		protected override void ConnectHandler(WebView2 platformView)
 		{
-			nativeView.NavigationCompleted += OnNavigationCompleted;
+			platformView.NavigationCompleted += OnNavigationCompleted;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(WebView2 nativeView)
+		protected override void DisconnectHandler(WebView2 platformView)
 		{
-			nativeView.NavigationCompleted -= OnNavigationCompleted;
+			platformView.NavigationCompleted -= OnNavigationCompleted;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)

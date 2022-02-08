@@ -7,12 +7,12 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override UIButton CreatePlatformView()
 		{
-			var nativeView = new UIButton(UIButtonType.System)
+			var platformView = new UIButton(UIButtonType.System)
 			{
 				ClipsToBounds = true
 			};
 
-			return nativeView;
+			return platformView;
 		}
 
 		void OnSetImageSource(UIImage? obj)
@@ -22,22 +22,22 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.VerticalAlignment = UIControlContentVerticalAlignment.Fill;
 		}
 
-		protected override void ConnectHandler(UIButton nativeView)
+		protected override void ConnectHandler(UIButton platformView)
 		{
-			nativeView.TouchUpInside += OnButtonTouchUpInside;
-			nativeView.TouchUpOutside += OnButtonTouchUpOutside;
-			nativeView.TouchDown += OnButtonTouchDown;
+			platformView.TouchUpInside += OnButtonTouchUpInside;
+			platformView.TouchUpOutside += OnButtonTouchUpOutside;
+			platformView.TouchDown += OnButtonTouchDown;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(UIButton nativeView)
+		protected override void DisconnectHandler(UIButton platformView)
 		{
-			nativeView.TouchUpInside -= OnButtonTouchUpInside;
-			nativeView.TouchUpOutside -= OnButtonTouchUpOutside;
-			nativeView.TouchDown -= OnButtonTouchDown;
+			platformView.TouchUpInside -= OnButtonTouchUpInside;
+			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
+			platformView.TouchDown -= OnButtonTouchDown;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
 			SourceLoader.Reset();
 		}

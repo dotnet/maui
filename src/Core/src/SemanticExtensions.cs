@@ -19,13 +19,13 @@ namespace Microsoft.Maui
 	{
 		public static void SetSemanticFocus(this IView element)
 		{
-			if (element?.Handler?.PlatformView is not PlatformView nativeView)
+			if (element?.Handler?.PlatformView is not PlatformView platformView)
 				throw new NullReferenceException("Can't access view from a null handler");
 
 #if __ANDROID__
-			nativeView.SendAccessibilityEvent(EventTypes.ViewHoverEnter);
+			platformView.SendAccessibilityEvent(EventTypes.ViewHoverEnter);
 #elif __IOS__ || MACCATALYST
-			UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, nativeView);
+			UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, platformView);
 #endif
 		}
 	}

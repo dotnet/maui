@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		RootPanel? _rootPanel = null;
 
-		protected override void ConnectHandler(UI.Xaml.Window nativeView)
+		protected override void ConnectHandler(UI.Xaml.Window platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
 			if (_rootPanel == null)
 			{
@@ -23,19 +23,19 @@ namespace Microsoft.Maui.Handlers
 				};
 			}
 
-			nativeView.Content = _rootPanel;
+			platformView.Content = _rootPanel;
 		}
 
-		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
+		protected override void DisconnectHandler(UI.Xaml.Window platformView)
 		{			
 			MauiContext
 				?.GetNavigationRootManager()
 				?.Disconnect();			
 
 			_rootPanel?.Children?.Clear();
-			nativeView.Content = null;
+			platformView.Content = null;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>

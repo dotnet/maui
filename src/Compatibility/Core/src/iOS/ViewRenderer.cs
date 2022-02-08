@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				Control?.SetNeedsDisplay();
 		}
 
-		internal override void SendVisualElementInitialized(VisualElement element, PlatformView nativeView)
+		internal override void SendVisualElementInitialized(VisualElement element, PlatformView platformView)
 		{
 			base.SendVisualElementInitialized(element, Control);
 		}

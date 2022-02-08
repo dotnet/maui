@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ImageView CreatePlatformView() => new AppCompatImageView(Context);
 
-		protected override void DisconnectHandler(ImageView nativeView)
+		protected override void DisconnectHandler(ImageView platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			SourceLoader.Reset();
 		}
 

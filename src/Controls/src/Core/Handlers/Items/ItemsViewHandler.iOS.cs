@@ -12,15 +12,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		ItemsViewLayout _layout;
 
-		protected override void DisconnectHandler(UIView nativeView)
+		protected override void DisconnectHandler(UIView platformView)
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		protected override void ConnectHandler(UIView nativeView)
+		protected override void ConnectHandler(UIView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			Controller.CollectionView.BackgroundColor = UIColor.Clear;
 			ItemsView.ScrollToRequested += ScrollToRequested;
 		}

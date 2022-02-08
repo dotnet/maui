@@ -19,20 +19,20 @@ namespace Microsoft.Maui.Handlers
 				IsObfuscationDelayed = s_shouldBeDelayed
 			};
 
-		protected override void ConnectHandler(TextBox nativeView)
+		protected override void ConnectHandler(TextBox platformView)
 		{
-			nativeView.KeyUp += OnNativeKeyUp;
-			nativeView.TextChanged += OnNativeTextChanged;
-			nativeView.SelectionChanged += OnPlatformSelectionChanged;
-			nativeView.Loaded += OnNativeLoaded;
+			platformView.KeyUp += OnNativeKeyUp;
+			platformView.TextChanged += OnNativeTextChanged;
+			platformView.SelectionChanged += OnPlatformSelectionChanged;
+			platformView.Loaded += OnNativeLoaded;
 		}
 
-		protected override void DisconnectHandler(TextBox nativeView)
+		protected override void DisconnectHandler(TextBox platformView)
 		{
-			nativeView.Loaded -= OnNativeLoaded;
-			nativeView.KeyUp -= OnNativeKeyUp;
-			nativeView.TextChanged -= OnNativeTextChanged;
-			nativeView.SelectionChanged -= OnPlatformSelectionChanged;
+			platformView.Loaded -= OnNativeLoaded;
+			platformView.KeyUp -= OnNativeKeyUp;
+			platformView.TextChanged -= OnNativeTextChanged;
+			platformView.SelectionChanged -= OnPlatformSelectionChanged;
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry) =>

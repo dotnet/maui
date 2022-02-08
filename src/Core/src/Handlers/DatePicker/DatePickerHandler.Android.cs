@@ -29,20 +29,20 @@ namespace Microsoft.Maui.Handlers
 
 		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
 
-		protected override void ConnectHandler(MauiDatePicker nativeView)
+		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			SetupDefaults(nativeView);
+			SetupDefaults(platformView);
 		}
 
-		void SetupDefaults(MauiDatePicker nativeView)
+		void SetupDefaults(MauiDatePicker platformView)
 		{
-			_defaultBackground = nativeView.Background;
-			_defaultTextColors = nativeView.TextColors;
+			_defaultBackground = platformView.Background;
+			_defaultTextColors = platformView.TextColors;
 		}
 
-		protected override void DisconnectHandler(MauiDatePicker nativeView)
+		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			if (_dialog != null)
 			{
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		protected virtual DatePickerDialog CreateDatePickerDialog(int year, int month, int day)
