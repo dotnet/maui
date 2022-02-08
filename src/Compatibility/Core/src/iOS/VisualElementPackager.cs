@@ -157,11 +157,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (childRenderer == null)
 					continue;
 
-				var nativeControl = childRenderer.PlatformView;
+				var platformControl = childRenderer.PlatformView;
 #if __MOBILE__
-				Renderer.PlatformView.BringSubviewToFront(nativeControl);
+				Renderer.PlatformView.BringSubviewToFront(platformControl);
 #endif
-				nativeControl.Layer.ZPosition = z * 1000;
+				platformControl.Layer.ZPosition = z * 1000;
 			}
 		}
 

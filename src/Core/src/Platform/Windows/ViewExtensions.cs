@@ -150,20 +150,20 @@ namespace Microsoft.Maui.Platform
 			AutomationProperties.SetHeadingLevel(nativeView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
 		}
 
-		internal static void UpdateProperty(this FrameworkElement nativeControl, DependencyProperty property, Color color)
+		internal static void UpdateProperty(this FrameworkElement platformControl, DependencyProperty property, Color color)
 		{
 			if (color.IsDefault())
-				nativeControl.ClearValue(property);
+				platformControl.ClearValue(property);
 			else
-				nativeControl.SetValue(property, color.ToPlatform());
+				platformControl.SetValue(property, color.ToPlatform());
 		}
 
-		internal static void UpdateProperty(this FrameworkElement nativeControl, DependencyProperty property, object? value)
+		internal static void UpdateProperty(this FrameworkElement platformControl, DependencyProperty property, object? value)
 		{
 			if (value == null)
-				nativeControl.ClearValue(property);
+				platformControl.ClearValue(property);
 			else
-				nativeControl.SetValue(property, value);
+				platformControl.SetValue(property, value);
 		}
 
 		public static void InvalidateMeasure(this FrameworkElement nativeView, IView view)

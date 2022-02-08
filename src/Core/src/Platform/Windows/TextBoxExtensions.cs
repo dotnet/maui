@@ -6,25 +6,25 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextBoxExtensions
 	{
-		public static void UpdateIsPassword(this TextBox nativeControl, IEntry entry)
+		public static void UpdateIsPassword(this TextBox platformControl, IEntry entry)
 		{
-			if (nativeControl is MauiPasswordTextBox passwordTextBox)
+			if (platformControl is MauiPasswordTextBox passwordTextBox)
 				passwordTextBox.IsPassword = entry.IsPassword;
 		}
 
-		public static void UpdateText(this TextBox nativeControl, ITextInput textInput)
+		public static void UpdateText(this TextBox platformControl, ITextInput textInput)
 		{
 			var newText = textInput.Text;
 
-			if (nativeControl is MauiPasswordTextBox passwordTextBox && passwordTextBox.Password == newText)
+			if (platformControl is MauiPasswordTextBox passwordTextBox && passwordTextBox.Password == newText)
 				return;
-			if (nativeControl.Text == newText)
+			if (platformControl.Text == newText)
 				return;
 
-			nativeControl.Text = newText ?? string.Empty;
+			platformControl.Text = newText ?? string.Empty;
 
-			if (!string.IsNullOrEmpty(nativeControl.Text))
-				nativeControl.SelectionStart = nativeControl.Text.Length;
+			if (!string.IsNullOrEmpty(platformControl.Text))
+				platformControl.SelectionStart = platformControl.Text.Length;
 		}
 
 		public static void UpdateBackground(this TextBox textBox, IView view)
@@ -111,8 +111,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateFont(this TextBox nativeControl, IText text, IFontManager fontManager) =>
-			nativeControl.UpdateFont(text.Font, fontManager);
+		public static void UpdateFont(this TextBox platformControl, IText text, IFontManager fontManager) =>
+			platformControl.UpdateFont(text.Font, fontManager);
 
 		public static void UpdateIsReadOnly(this TextBox textBox, ITextInput textInput)
 		{

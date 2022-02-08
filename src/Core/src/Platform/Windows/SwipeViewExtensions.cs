@@ -9,15 +9,15 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SwipeViewExtensions
 	{
-		public static void UpdateBackground(this WSwipeItem nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateProperty(WSwipeItem.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
+		public static void UpdateBackground(this WSwipeItem platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			platformControl.UpdateProperty(WSwipeItem.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
-		internal static void UpdateProperty(this WSwipeItem nativeControl, DependencyProperty property, object? value)
+		internal static void UpdateProperty(this WSwipeItem platformControl, DependencyProperty property, object? value)
 		{
 			if (value == null)
-				nativeControl.ClearValue(property);
+				platformControl.ClearValue(property);
 			else
-				nativeControl.SetValue(property, value);
+				platformControl.SetValue(property, value);
 		}
 
 		public static WSwipeMode ToPlatform(this SwipeMode swipeMode)
@@ -33,12 +33,12 @@ namespace Microsoft.Maui.Platform
 			return WSwipeMode.Reveal;
 		}
 
-		public static void UpdateTextColor(this WSwipeItem nativeControl, ISwipeItemMenuItem view)
+		public static void UpdateTextColor(this WSwipeItem platformControl, ISwipeItemMenuItem view)
 		{
 			var textColor = view.TextColor ?? view.GetTextColor();
 
 			if (textColor != null)
-				nativeControl.Foreground = textColor.ToPlatform();
+				platformControl.Foreground = textColor.ToPlatform();
 		}
 
 		public static WSwipeBehaviorOnInvoked ToPlatform(this SwipeBehaviorOnInvoked swipeBehaviorOnInvoked)

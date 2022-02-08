@@ -24,12 +24,12 @@ namespace Microsoft.Maui.Platform
 				platformButton.CornerRadius = (int)platformButton.Context.ToPixels(buttonStroke.CornerRadius);
 		}
 
-		public static void UpdatePadding(this Button nativeControl, IPadding padding, Thickness? defaultPadding = null) =>
-			UpdatePadding(nativeControl, padding.Padding, defaultPadding);
+		public static void UpdatePadding(this Button platformControl, IPadding padding, Thickness? defaultPadding = null) =>
+			UpdatePadding(platformControl, padding.Padding, defaultPadding);
 
-		public static void UpdatePadding(this Button nativeControl, Thickness padding, Thickness? defaultPadding = null)
+		public static void UpdatePadding(this Button platformControl, Thickness padding, Thickness? defaultPadding = null)
 		{
-			var context = nativeControl.Context;
+			var context = platformControl.Context;
 			if (context == null)
 				return;
 
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Platform
 
 			padding = context.ToPixels(padding);
 
-			nativeControl.SetPadding(
+			platformControl.SetPadding(
 				(int)padding.Left,
 				(int)padding.Top,
 				(int)padding.Right,

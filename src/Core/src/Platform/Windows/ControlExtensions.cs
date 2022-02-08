@@ -9,39 +9,39 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFont(this Control platformButton, ITextStyle textStyle, IFontManager fontManager) =>
 			platformButton.UpdateFont(textStyle.Font, fontManager);
 
-		public static void UpdateFont(this Control nativeControl, Font font, IFontManager fontManager)
+		public static void UpdateFont(this Control platformControl, Font font, IFontManager fontManager)
 		{
-			nativeControl.FontSize = fontManager.GetFontSize(font);
-			nativeControl.FontFamily = fontManager.GetFontFamily(font);
-			nativeControl.FontStyle = font.ToFontStyle();
-			nativeControl.FontWeight = font.ToFontWeight();
-			nativeControl.IsTextScaleFactorEnabled = font.AutoScalingEnabled;
+			platformControl.FontSize = fontManager.GetFontSize(font);
+			platformControl.FontFamily = fontManager.GetFontFamily(font);
+			platformControl.FontStyle = font.ToFontStyle();
+			platformControl.FontWeight = font.ToFontWeight();
+			platformControl.IsTextScaleFactorEnabled = font.AutoScalingEnabled;
 		}
 
-		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled) =>
-			nativeControl.IsEnabled = isEnabled;
+		public static void UpdateIsEnabled(this Control platformControl, bool isEnabled) =>
+			platformControl.IsEnabled = isEnabled;
 
-		public static void UpdateBackground(this Control nativeControl, IView view, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateBackground(view.Background, defaultBrush);
+		public static void UpdateBackground(this Control platformControl, IView view, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			platformControl.UpdateBackground(view.Background, defaultBrush);
 
-		public static void UpdateBackground(this Control nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateProperty(Control.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
+		public static void UpdateBackground(this Control platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			platformControl.UpdateProperty(Control.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
-		public static void UpdateBackground(this Border nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateProperty(Border.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
+		public static void UpdateBackground(this Border platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			platformControl.UpdateProperty(Border.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
-		public static void UpdateBackground(this Panel nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
+		public static void UpdateBackground(this Panel platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			platformControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
-		public static void UpdateForegroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Foreground = color?.ToPlatform() ?? defaultBrush ?? nativeControl.Foreground;
+		public static void UpdateForegroundColor(this Control platformControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			platformControl.Foreground = color?.ToPlatform() ?? defaultBrush ?? platformControl.Foreground;
 
-		public static void UpdatePadding(this Control nativeControl, IPadding padding, UI.Xaml.Thickness? defaultThickness = null) =>
-			nativeControl.UpdatePadding(padding.Padding, defaultThickness);
+		public static void UpdatePadding(this Control platformControl, IPadding padding, UI.Xaml.Thickness? defaultThickness = null) =>
+			platformControl.UpdatePadding(padding.Padding, defaultThickness);
 
-		public static void UpdatePadding(this Control nativeControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null)
+		public static void UpdatePadding(this Control platformControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null)
 		{
-			nativeControl.Padding = padding.IsNaN
+			platformControl.Padding = padding.IsNaN
 				? defaultThickness ?? new UI.Xaml.Thickness()
 				: padding.ToPlatform();
 		}
