@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		internal string CacheDirectory = Path.Combine(Essentials.FileSystem.CacheDirectory, "com.microsoft.maui.sample", "MauiUriImages");
+		internal string CacheDirectory = Path.Combine(Essentials.FileSystem.CacheDirectory, "com.microsoft.maui", "MauiUriImages");
 
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync((IUriImageSource)imageSource, scale, cancellationToken);
