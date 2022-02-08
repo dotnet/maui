@@ -366,11 +366,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnPlatform Android=23, Default=20}", "Foo", 20)]
 		public void OnPlatformExtension(string markup, string platform, int expected)
 		{
-			var services = new MockPlatformServices
-			{
-				RuntimePlatform = platform
-			};
-			Device.PlatformServices = services;
+			mockDeviceInfo.RuntimePlatform = platform;
 
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{
@@ -394,6 +390,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void OnIdiomExtension(string markup, TargetIdiom idiom, int expected)
 		{
 			mockDeviceInfo.TargetIdiom = idiom;
+
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{
 				IXamlTypeResolver = typeResolver,

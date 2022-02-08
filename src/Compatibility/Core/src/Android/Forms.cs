@@ -422,8 +422,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			public string RuntimePlatform => Device.Android;
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				var handler = new Handler(Looper.MainLooper);

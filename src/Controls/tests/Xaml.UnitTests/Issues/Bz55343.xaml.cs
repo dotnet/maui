@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -19,16 +20,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
+			MockDeviceInfo mockDeviceInfo;
+
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
+				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
+				DeviceInfo.SetCurrent(null);
 			}
 
 			[Ignore("[Bug] Types that require conversion don't work in OnPlatform: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13830")]
@@ -36,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false)]
 			public void OnPlatformFontConversion(bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var layout = new Bz55343(useCompiledXaml);
 				Assert.That(layout.label0.FontSize, Is.EqualTo(16d));
 				Assert.That(layout.label1.FontSize, Is.EqualTo(64d));

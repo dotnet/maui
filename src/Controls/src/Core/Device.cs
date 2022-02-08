@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs" />
-		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
+		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetFlowDirection']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]

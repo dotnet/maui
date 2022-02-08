@@ -93,8 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return size.GetFontSize();
 		}
 
-		public string RuntimePlatform => Device.UWP;
-
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			var timerTick = 0L;

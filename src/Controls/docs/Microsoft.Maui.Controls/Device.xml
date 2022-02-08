@@ -698,26 +698,6 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="RuntimePlatform">
-      <MemberSignature Language="C#" Value="public static string RuntimePlatform { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property string RuntimePlatform" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Device.RuntimePlatform" />
-      <MemberSignature Language="F#" Value="member this.RuntimePlatform : string" Usage="Microsoft.Maui.Controls.Device.RuntimePlatform" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the kind of device that Microsoft.Maui.Controls is currently working on.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="SetFlowDirection">
       <MemberSignature Language="C#" Value="public static void SetFlowDirection (Microsoft.Maui.Controls.FlowDirection value);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetFlowDirection(valuetype Microsoft.Maui.Controls.FlowDirection value) cil managed" />

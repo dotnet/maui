@@ -27,13 +27,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
 				DispatcherProvider.SetCurrent(null);
 			}
 

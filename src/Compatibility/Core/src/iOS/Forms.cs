@@ -363,16 +363,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-#if MACCATALYST || __MACCATALYST__
-			public string RuntimePlatform => Device.MacCatalyst;
-#elif IOS || __IOS__
-			public string RuntimePlatform => Device.iOS;
-#elif TVOS || __TVOS__
-			public string RuntimePlatform => Device.tvOS;
-#else
-			public string RuntimePlatform => Device.macOS;
-#endif
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				NSTimer timer = NSTimer.CreateRepeatingTimer(interval, t =>
