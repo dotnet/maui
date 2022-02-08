@@ -270,7 +270,7 @@ stages:
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
                 env:
-                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-uri)
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
               - task: PublishBuildArtifacts@1
