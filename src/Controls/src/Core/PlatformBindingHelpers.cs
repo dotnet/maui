@@ -144,9 +144,9 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='TransferBindablePropertiesToWrapper']/Docs" />
-		public static void TransferBindablePropertiesToWrapper<TPlatformView, TNativeWrapper>(TPlatformView nativeView, TNativeWrapper wrapper)
+		public static void TransferBindablePropertiesToWrapper<TPlatformView, TPlatformWrapper>(TPlatformView nativeView, TPlatformWrapper wrapper)
 			where TPlatformView : class
-			where TNativeWrapper : View
+			where TPlatformWrapper : View
 		{
 			BindableObjectProxy<TPlatformView> proxy;
 			if (!BindableObjectProxy<TPlatformView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
