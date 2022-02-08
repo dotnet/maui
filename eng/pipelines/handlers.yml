@@ -352,7 +352,7 @@ stages:
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+            condition: ${{ variables.signingCondition }}
 
         - template: nuget-msi-convert/job/v2.yml@xamarin-templates
           parameters:
@@ -438,7 +438,4 @@ stages:
           packageName: 'Maui'
           packageFilter: '*.msi;*.nuget'
           GitHub.Token: $(GitHub.Token)
-
-
-
-
+          condition: ${{ variables.signingCondition }}
