@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 
 [assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
+[assembly: Dependency(typeof(MockFontNamedSizeService))]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -27,25 +29,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_dispatcher = dispatcher ?? new MockDispatcher();
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
-		}
-
-		public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes)
-		{
-			switch (size)
-			{
-				case NamedSize.Default:
-					return new MockFontManager().DefaultFontSize;
-				case NamedSize.Micro:
-					return 4;
-				case NamedSize.Small:
-					return 8;
-				case NamedSize.Medium:
-					return 12;
-				case NamedSize.Large:
-					return 16;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(size));
-			}
 		}
 
 		public string RuntimePlatform { get; set; }
@@ -133,6 +116,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dictionary[Device.Styles.ListItemDetailTextStyleKey] = style;
 
 			return dictionary;
+		}
+	}
+
+	public class MockFontNamedSizeService : IFontNamedSizeService
+	{
+		public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes)
+		{
+			switch (size)
+			{
+				case NamedSize.Default:
+					return new MockFontManager().DefaultFontSize;
+				case NamedSize.Micro:
+					return 4;
+				case NamedSize.Small:
+					return 8;
+				case NamedSize.Medium:
+					return 12;
+				case NamedSize.Large:
+					return 16;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(size));
+			}
 		}
 	}
 
