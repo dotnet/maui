@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			});
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs" />
-		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create("CommandParameter", typeof(object), typeof(TextCell), default(object),
+		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create("CommandParameter", typeof(object), typeof(TextCell), default,
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				var textCell = (TextCell)bindable;
