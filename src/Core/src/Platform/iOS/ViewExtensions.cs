@@ -25,6 +25,16 @@ namespace Microsoft.Maui.Platform
 			uiControl.Enabled = view.IsEnabled;
 		}
 
+		public static void Focus(this UIView nativeView, FocusRequest request)
+		{
+			// TODO: Implement Focus on iOS.
+		}
+
+		public static void Unfocus(this UIView nativeView, IView view)
+		{
+			// TODO: Implement Unfocus on iOS.
+		}
+
 		public static void UpdateVisibility(this UIView nativeView, IView view) =>
 			ViewExtensions.UpdateVisibility(nativeView, view.Visibility);
 
