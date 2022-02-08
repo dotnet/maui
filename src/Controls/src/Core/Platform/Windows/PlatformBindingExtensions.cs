@@ -7,7 +7,7 @@ using static System.String;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public static class NativeBindingExtensions
+	public static class PlatformBindingExtensions
 	{
 		// TODO MAUI
 		//public static void SetBinding(this FrameworkElement view, string propertyName, BindingBase bindingBase, string updateSourceEventName = null)
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 		//		if (bindingBase.Mode == BindingMode.TwoWay)
 		//			nativePropertyListener = new NativePropertyListener(view, propertyName);
 
-		//		NativeBindingHelpers.SetBinding(view, propertyName, bindingBase, nativePropertyListener as INotifyPropertyChanged);
+		//		PlatformBindingHelpers.SetBinding(view, propertyName, bindingBase, nativePropertyListener as INotifyPropertyChanged);
 		//		return;
 		//	}
 
@@ -29,27 +29,27 @@ namespace Microsoft.Maui.Controls.Platform
 		//	if (binding.Mode == BindingMode.TwoWay && !(view is INotifyPropertyChanged))
 		//		eventE = new NativeEventWrapper(view, propertyName, updateSourceEventName);
 
-		//	NativeBindingHelpers.SetBinding(view, propertyName, binding, eventE);
+		//	PlatformBindingHelpers.SetBinding(view, propertyName, binding, eventE);
 		//}
 
 		public static void SetBinding(this FrameworkElement view, BindableProperty targetProperty, BindingBase binding)
 		{
-			NativeBindingHelpers.SetBinding(view, targetProperty, binding);
+			PlatformBindingHelpers.SetBinding(view, targetProperty, binding);
 		}
 
 		public static void SetValue(this FrameworkElement target, BindableProperty targetProperty, object value)
 		{
-			NativeBindingHelpers.SetValue(target, targetProperty, value);
+			PlatformBindingHelpers.SetValue(target, targetProperty, value);
 		}
 
 		public static void SetBindingContext(this FrameworkElement target, object bindingContext, Func<FrameworkElement, IEnumerable<FrameworkElement>> getChildren = null)
 		{
-			NativeBindingHelpers.SetBindingContext(target, bindingContext, getChildren);
+			PlatformBindingHelpers.SetBindingContext(target, bindingContext, getChildren);
 		}
 
 		internal static void TransferbindablePropertiesToWrapper(this FrameworkElement target, View wrapper)
 		{
-			NativeBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
+			PlatformBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
 		}
 	}
 }

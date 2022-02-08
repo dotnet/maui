@@ -10,11 +10,11 @@ using static System.String;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NativeBindingHelpers']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PlatformBindingHelpers']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class NativeBindingHelpers
+	public static class PlatformBindingHelpers
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
 		public static void SetBinding<TPlatformView>(TPlatformView target, string targetProperty, BindingBase bindingBase, string updateSourceEventName = null) where TPlatformView : class
 		{
 			var binding = bindingBase as Binding;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Internals
 			SetBinding(target, targetProperty, bindingBase, eventWrapper);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
 		public static void SetBinding<TPlatformView>(TPlatformView target, string targetProperty, BindingBase bindingBase, INotifyPropertyChanged propertyChanged) where TPlatformView : class
 		{
 			if (target == null)
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Internals
 			bindable.SetValueCore(property, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
 		public static void SetBinding<TPlatformView>(TPlatformView target, BindableProperty targetProperty, BindingBase binding) where TPlatformView : class
 		{
 			if (target == null)
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Internals
 			proxy.BindingsBackpack.Add(new KeyValuePair<BindableProperty, BindingBase>(targetProperty, binding));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetValue']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='SetValue']/Docs" />
 		public static void SetValue<TPlatformView>(TPlatformView target, BindableProperty targetProperty, object value) where TPlatformView : class
 		{
 			if (target == null)
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Internals
 			proxy.ValuesBackpack.Add(new KeyValuePair<BindableProperty, object>(targetProperty, value));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBindingContext']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='SetBindingContext']/Docs" />
 		public static void SetBindingContext<TPlatformView>(TPlatformView target, object bindingContext, Func<TPlatformView, IEnumerable<TPlatformView>> getChild = null) where TPlatformView : class
 		{
 			if (target == null)
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Internals
 					SetBindingContext(child, bindingContext, getChild);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='TransferBindablePropertiesToWrapper']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='TransferBindablePropertiesToWrapper']/Docs" />
 		public static void TransferBindablePropertiesToWrapper<TPlatformView, TNativeWrapper>(TPlatformView nativeView, TNativeWrapper wrapper)
 			where TPlatformView : class
 			where TNativeWrapper : View

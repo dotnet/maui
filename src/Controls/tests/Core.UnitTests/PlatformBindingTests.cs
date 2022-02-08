@@ -94,32 +94,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public static void SetBinding(this MockPlatformView target, string targetProperty, BindingBase binding, string updateSourceEventName = null)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding, updateSourceEventName);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding, updateSourceEventName);
 		}
 
 		internal static void SetBinding(this MockPlatformView target, string targetProperty, BindingBase binding, INotifyPropertyChanged propertyChanged)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding, propertyChanged);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding, propertyChanged);
 		}
 
 		public static void SetBinding(this MockPlatformView target, BindableProperty targetProperty, BindingBase binding)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding);
 		}
 
 		public static void SetValue(this MockPlatformView target, BindableProperty targetProperty, object value)
 		{
-			NativeBindingHelpers.SetValue(target, targetProperty, value);
+			PlatformBindingHelpers.SetValue(target, targetProperty, value);
 		}
 
 		public static void SetBindingContext(this MockPlatformView target, object bindingContext, Func<MockPlatformView, IEnumerable<MockPlatformView>> getChild = null)
 		{
-			NativeBindingHelpers.SetBindingContext(target, bindingContext, getChild);
+			PlatformBindingHelpers.SetBindingContext(target, bindingContext, getChild);
 		}
 
 		internal static void TransferbindablePropertiesToWrapper(this MockPlatformView target, MockPlatformViewWrapper wrapper)
 		{
-			NativeBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
+			PlatformBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
 		}
 	}
 
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public event PropertyChangedEventHandler PropertyChanged;
 	}
 
-	class MockVMForNativeBinding : INotifyPropertyChanged
+	class MockVMForPlatformBinding : INotifyPropertyChanged
 	{
 		string fFoo;
 		public string FFoo
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	}
 
 	[TestFixture]
-	public class NativeBindingTests
+	public class PlatformBindingTests
 	{
 		[SetUp]
 		public void SetUp()
@@ -242,7 +242,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 
-			var vm = new MockVMForNativeBinding();
+			var vm = new MockVMForPlatformBinding();
 			nativeView.SetBindingContext(vm);
 			var inpc = new MockINPC();
 			nativeView.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.TwoWay), inpc);
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Baz);
 
-			var vm = new MockVMForNativeBinding();
+			var vm = new MockVMForPlatformBinding();
 			nativeView.SetBindingContext(vm);
 
 			nativeView.SetBinding("Baz", new Binding("FFoo", mode: BindingMode.TwoWay), "BazChanged");
@@ -298,7 +298,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Baz);
 
-			var vm = new MockVMForNativeBinding();
+			var vm = new MockVMForPlatformBinding();
 			nativeView.SetBindingContext(vm);
 
 			nativeView.SetBinding("Baz", new Binding("FFoo", mode: BindingMode.TwoWay) { UpdateSourceEventName = "BazChanged" });
@@ -367,8 +367,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				nativeView.SetBinding("fooBar", new Binding("Foo", BindingMode.TwoWay));
 				nativeView.SetBinding("Baz", new Binding("Qux", BindingMode.TwoWay), "BazChanged");
 
-				NativeBindingHelpers.BindableObjectProxy<MockPlatformView> proxy;
-				if (!NativeBindingHelpers.BindableObjectProxy<MockPlatformView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
+				PlatformBindingHelpers.BindableObjectProxy<MockPlatformView> proxy;
+				if (!PlatformBindingHelpers.BindableObjectProxy<MockPlatformView>.BindableObjectProxies.TryGetValue(nativeView, out proxy))
 					Assert.Fail();
 
 				wr = new WeakReference(proxy);
@@ -395,7 +395,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			nativeView.SubViews.Add(nativeViewChild);
 
-			var vm = new MockVMForNativeBinding();
+			var vm = new MockVMForPlatformBinding();
 			nativeView.SetBindingContext(vm, v => v.SubViews);
 
 			Assert.AreEqual(null, nativeViewChild.Foo);
@@ -412,7 +412,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
-			var vm = new MockVMForNativeBinding();
+			var vm = new MockVMForPlatformBinding();
 			var converter = new MockCustomColorConverter();
 			nativeView.SetBinding("SelectedColor", new Binding("CColor", converter: converter));
 			Assert.DoesNotThrow(() => nativeView.SetBindingContext(vm));
@@ -424,7 +424,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var nativeView = new MockPlatformView();
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
-			var vm = new MockVMForNativeBinding();
+			var vm = new MockVMForPlatformBinding();
 			vm.CColor = Colors.Red;
 			var converter = new MockCustomColorConverter();
 			nativeView.SetBinding("SelectedColor", new Binding("CColor", converter: converter));
@@ -439,7 +439,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 			var inpc = new MockINPC();
-			var vm = new MockVMForNativeBinding();
+			var vm = new MockVMForPlatformBinding();
 			vm.CColor = Colors.Red;
 			var converter = new MockCustomColorConverter();
 			nativeView.SetBinding("SelectedColor", new Binding("CColor", BindingMode.TwoWay, converter), inpc);
@@ -467,7 +467,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Assert.Fail("Probable loop detected");
 			};
 
-			var vm = new MockVMForNativeBinding { CColor = Colors.Red };
+			var vm = new MockVMForPlatformBinding { CColor = Colors.Red };
 
 			nativeView.SetBinding("SelectedColor", new Binding("CColor", BindingMode.TwoWay, new MockCustomColorConverter()), "SelectedColorChanged");
 			nativeView.SetBindingContext(vm);
@@ -495,7 +495,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var nativeView = new MockPlatformView { Foo = "foobar" };
 			nativeView.SetBinding("Foo", new Binding("FFoo", BindingMode.OneWayToSource));
-			var vm = new MockVMForNativeBinding { FFoo = "qux" };
+			var vm = new MockVMForPlatformBinding { FFoo = "qux" };
 			nativeView.SetBindingContext(vm);
 			Assert.AreEqual("foobar", vm.FFoo);
 		}

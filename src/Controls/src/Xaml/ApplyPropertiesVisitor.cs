@@ -519,7 +519,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (exception != null)
 				return false;
 
-			var nativeBindingService = DependencyService.Get<INativeBindingService>();
+			var nativeBindingService = DependencyService.Get<IPlatformBindingService>();
 
 			if (binding == null)
 				return false;
@@ -547,7 +547,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			exception = null;
 
 			var elementType = element.GetType();
-			var nativeBindingService = DependencyService.Get<INativeBindingService>();
+			var nativeBindingService = DependencyService.Get<IPlatformBindingService>();
 
 			if (property == null)
 				return false;

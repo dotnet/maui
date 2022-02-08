@@ -4,12 +4,12 @@ using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Xaml.Internals;
 
 
-[assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.NativeBindingService))]
+[assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.PlatformBindingService))]
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-    public class NativeBindingService : INativeBindingService
+    public class PlatformBindingService : IPlatformBindingService
     {
-        [UnconditionalSuppressMessage ("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
+        [UnconditionalSuppressMessage ("Trimming", "IL2075", Justification = TrimmerConstants.PlatformBindingService)]
         public bool TrySetBinding(object target, string propertyName, BindingBase binding)
         {
             var view = target as FrameworkElement;

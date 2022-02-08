@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
 			DependencyService.Register<Xaml.ResourcesLoader>();
-			DependencyService.Register<NativeBindingService>();
+			DependencyService.Register<PlatformBindingService>();
 			DependencyService.Register<NativeValueConverterService>();
 			DependencyService.Register<Deserializer>();
 			DependencyService.Register<ResourcesProvider>();
