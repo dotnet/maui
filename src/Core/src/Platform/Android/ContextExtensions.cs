@@ -264,13 +264,13 @@ namespace Microsoft.Maui.Platform
 
 		public static IWindow? GetWindow(this Context context)
 		{
-			var nativeWindow = context.GetActivity();
-			if (nativeWindow is null)
+			var platformWindow = context.GetActivity();
+			if (platformWindow is null)
 				return null;
 
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.PlatformView == nativeWindow)
+				if (window?.Handler?.PlatformView == platformWindow)
 					return window;
 			}
 

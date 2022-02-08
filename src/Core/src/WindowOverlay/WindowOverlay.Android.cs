@@ -22,8 +22,8 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var nativeWindow = Window?.Content?.ToPlatform();
-			if (nativeWindow == null)
+			var platformWindow = Window?.Content?.ToPlatform();
+			if (platformWindow == null)
 				return false;
 
 			var handler = Window?.Handler as WindowHandler;

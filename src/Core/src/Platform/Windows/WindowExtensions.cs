@@ -5,9 +5,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class WindowExtensions
 	{
-		public static void UpdateTitle(this UI.Xaml.Window nativeWindow, IWindow window)
+		public static void UpdateTitle(this UI.Xaml.Window platformWindow, IWindow window)
 		{
-			nativeWindow.Title = window.Title;
+			platformWindow.Title = window.Title;
 
 			var rootManager = window.Handler?.MauiContext?.GetNavigationRootManager();
 			if (rootManager != null)
@@ -16,11 +16,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static IWindow? GetWindow(this UI.Xaml.Window nativeWindow)
+		public static IWindow? GetWindow(this UI.Xaml.Window platformWindow)
 		{
 			foreach (var window in MauiWinUIApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.PlatformView is UI.Xaml.Window win && win == nativeWindow)
+				if (window?.Handler?.PlatformView is UI.Xaml.Window win && win == platformWindow)
 					return window;
 			}
 

@@ -41,17 +41,17 @@ namespace Microsoft.Maui
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, NativeWindow nativeWindow, out IServiceScope scope)
+		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, NativeWindow platformWindow, out IServiceScope scope)
 		{
 			scope = mauiContext.Services.CreateScope();
 
 #if __ANDROID__
-			var scopedContext = new MauiContext(scope.ServiceProvider, nativeWindow);
+			var scopedContext = new MauiContext(scope.ServiceProvider, platformWindow);
 #else
 			var scopedContext = new MauiContext(scope.ServiceProvider);
 #endif
 
-			scopedContext.AddWeakSpecific(nativeWindow);
+			scopedContext.AddWeakSpecific(platformWindow);
 
 #if WINDOWS || __ANDROID__
 			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));

@@ -162,8 +162,8 @@ namespace Microsoft.Maui.Platform
 		public static void SetApplicationHandler(this PlatformApplication platformApplication, IApplication application, IMauiContext context) =>
 			SetHandler(platformApplication, application, context);
 
-		public static void SetWindowHandler(this PlatformWindow nativeWindow, IWindow window, IMauiContext context) =>
-			SetHandler(nativeWindow, window, context);
+		public static void SetWindowHandler(this PlatformWindow platformWindow, IWindow window, IMauiContext context) =>
+			SetHandler(platformWindow, window, context);
 
 #if WINDOWS || IOS || ANDROID
 		internal static IWindow GetWindow(this IElement element) =>
