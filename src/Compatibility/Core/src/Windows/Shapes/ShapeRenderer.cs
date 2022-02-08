@@ -25,9 +25,9 @@ using WStretch = System.Windows.Media.Stretch;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
-	public class ShapeRenderer<TShape, TNativeShape> : ViewRenderer<TShape, TNativeShape>
+	public class ShapeRenderer<TShape, TPlatformShape> : ViewRenderer<TShape, TPlatformShape>
 		  where TShape : Shape
-		  where TNativeShape : WShape
+		  where TPlatformShape : WShape
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<TShape> args)
 		{

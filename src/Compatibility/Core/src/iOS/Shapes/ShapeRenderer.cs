@@ -18,9 +18,9 @@ using AppKit;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-	public class ShapeRenderer<TShape, TNativeShape> : ViewRenderer<TShape, TNativeShape>
+	public class ShapeRenderer<TShape, TPlatformShape> : ViewRenderer<TShape, TPlatformShape>
 		where TShape : Shape
-		where TNativeShape : ShapeView
+		where TPlatformShape : ShapeView
 	{
 		double _height;
 		double _width;
