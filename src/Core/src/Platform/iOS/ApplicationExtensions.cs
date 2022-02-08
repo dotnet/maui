@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
-		public static void RequestNewWindow(this IUIApplicationDelegate nativeApplication, IApplication application, OpenWindowRequest? args)
+		public static void RequestNewWindow(this IUIApplicationDelegate platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext || args is null)
 				return;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 				err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
 		}
 
-		public static void CreatePlatformWindow(this IUIApplicationDelegate nativeApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
+		public static void CreatePlatformWindow(this IUIApplicationDelegate platformApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Platform
 			var window = CreatePlatformWindow(application, null, dicts.ToArray());
 			if (window is not null)
 			{
-				nativeApplication.SetWindow(window);
-				nativeApplication.GetWindow()?.MakeKeyAndVisible();
+				platformApplication.SetWindow(window);
+				platformApplication.GetWindow()?.MakeKeyAndVisible();
 			}
 		}
 

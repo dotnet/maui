@@ -159,8 +159,8 @@ namespace Microsoft.Maui.Platform
 				handler.SetVirtualView(element);
 		}
 
-		public static void SetApplicationHandler(this PlatformApplication nativeApplication, IApplication application, IMauiContext context) =>
-			SetHandler(nativeApplication, application, context);
+		public static void SetApplicationHandler(this PlatformApplication platformApplication, IApplication application, IMauiContext context) =>
+			SetHandler(platformApplication, application, context);
 
 		public static void SetWindowHandler(this PlatformWindow nativeWindow, IWindow window, IMauiContext context) =>
 			SetHandler(nativeWindow, window, context);

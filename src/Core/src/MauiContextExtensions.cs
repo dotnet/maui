@@ -30,11 +30,11 @@ namespace Microsoft.Maui
 		public static IDispatcher? GetOptionalDispatcher(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<IDispatcher>();
 
-		public static IMauiContext MakeApplicationScope(this IMauiContext mauiContext, NativeApplication nativeApplication)
+		public static IMauiContext MakeApplicationScope(this IMauiContext mauiContext, NativeApplication platformApplication)
 		{
 			var scopedContext = new MauiContext(mauiContext.Services);
 
-			scopedContext.AddSpecific(nativeApplication);
+			scopedContext.AddSpecific(platformApplication);
 
 			scopedContext.InitializeScopedServices();
 

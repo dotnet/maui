@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
-		public static void RequestNewWindow(this Application nativeApplication, IApplication application, OpenWindowRequest? args)
+		public static void RequestNewWindow(this Application platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return;
@@ -17,15 +17,15 @@ namespace Microsoft.Maui.Platform
 			var state = args?.State;
 			var bundle = state.ToBundle();
 
-			var pm = nativeApplication.PackageManager!;
-			var intent = pm.GetLaunchIntentForPackage(nativeApplication.PackageName!)!;
+			var pm = platformApplication.PackageManager!;
+			var intent = pm.GetLaunchIntentForPackage(platformApplication.PackageName!)!;
 			intent.AddFlags(ActivityFlags.NewTask);
 			intent.AddFlags(ActivityFlags.MultipleTask);
 			if (PlatformVersion.Supports(PlatformApis.LaunchAdjacent))
 				intent.AddFlags(ActivityFlags.LaunchAdjacent);
 			intent.PutExtras(bundle);
 
-			nativeApplication.StartActivity(intent);
+			platformApplication.StartActivity(intent);
 		}
 
 		public static void CreatePlatformWindow(this Activity activity, IApplication application, Bundle? savedInstanceState = null)
