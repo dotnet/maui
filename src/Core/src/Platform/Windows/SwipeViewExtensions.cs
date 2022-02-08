@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Platform
 
 			if (textColor != null)
 				platformControl.Foreground = textColor.ToPlatform();
+		}
 
 		public static WSwipeBehaviorOnInvoked ToPlatform(this SwipeBehaviorOnInvoked swipeBehaviorOnInvoked)
 		{
