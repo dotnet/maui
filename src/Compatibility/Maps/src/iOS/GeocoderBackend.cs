@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			geocoder.ReverseGeocodeLocation(location, (placemarks, error) =>
 			{
 				if (placemarks == null)
-					placemarks = new CLPlacemark[0];
+					placemarks = System.Array.Empty<CLPlacemark>();
 				List<string> addresses = new List<string>();
 #if __MOBILE__ && !(MACCATALYST || MACOS || __MACCATALYST__)
 #pragma warning disable BI1234 // Type or member is obsolete
