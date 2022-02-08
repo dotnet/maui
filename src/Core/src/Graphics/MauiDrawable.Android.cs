@@ -499,30 +499,30 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
-		void SetBackground(APaint nativePaint)
+		void SetBackground(APaint platformPaint)
 		{
-			if (nativePaint != null)
+			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
-					nativePaint.Color = _backgroundColor.Value;
+					platformPaint.Color = _backgroundColor.Value;
 				else
 				{
 					if (_background != null)
-						SetPaint(nativePaint, _background);
+						SetPaint(platformPaint, _background);
 				}
 			}
 		}
 
-		void SetPaint(APaint nativePaint, GPaint paint)
+		void SetPaint(APaint platformPaint, GPaint paint)
 		{
 			if (paint is LinearGradientPaint linearGradientPaint)
-				SetLinearGradientPaint(nativePaint, linearGradientPaint);
+				SetLinearGradientPaint(platformPaint, linearGradientPaint);
 
 			if (paint is RadialGradientPaint radialGradientPaint)
-				SetRadialGradientPaint(nativePaint, radialGradientPaint);
+				SetRadialGradientPaint(platformPaint, radialGradientPaint);
 		}
 
-		void SetLinearGradientPaint(APaint nativePaint, LinearGradientPaint linearGradientPaint)
+		void SetLinearGradientPaint(APaint platformPaint, LinearGradientPaint linearGradientPaint)
 		{
 			var p1 = linearGradientPaint.StartPoint;
 			var x1 = (float)p1.X;
@@ -548,10 +548,10 @@ namespace Microsoft.Maui.Graphics
 				shader.Offsets,
 				Shader.TileMode.Clamp!);
 
-			nativePaint.SetShader(linearGradientShader);
+			platformPaint.SetShader(linearGradientShader);
 		}
 
-		public void SetRadialGradientPaint(APaint nativePaint, RadialGradientPaint radialGradientPaint)
+		public void SetRadialGradientPaint(APaint platformPaint, RadialGradientPaint radialGradientPaint)
 		{
 			var center = radialGradientPaint.Center;
 			float centerX = (float)center.X;
@@ -575,7 +575,7 @@ namespace Microsoft.Maui.Graphics
 				radialGradientData.Offsets,
 				Shader.TileMode.Clamp!);
 
-			nativePaint.SetShader(radialGradient);
+			platformPaint.SetShader(radialGradient);
 		}
 
 		GradientData GetGradientPaintData(GradientPaint gradientPaint)
