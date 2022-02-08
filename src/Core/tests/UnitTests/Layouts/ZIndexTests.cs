@@ -16,8 +16,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			public bool ClipsToBounds { get; set; }
 
-			#region IView stuff
 
+			#region IView stuff
+			
 			public string AutomationId { get; }
 			public FlowDirection FlowDirection { get; }
 			public LayoutAlignment HorizontalLayoutAlignment { get; }
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public IShape Clip { get; }
 			public IShadow Shadow { get; }
 			public bool IsEnabled { get; }
+			public bool IsFocused { get; set; }
 			public Visibility Visibility { get; }
 			public double Opacity { get; }
 			public Paint Background { get; }
@@ -66,6 +68,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 
 			public Size Measure(double widthConstraint, double heightConstraint)
+			{
+				throw new System.NotImplementedException();
+			}
+
+			public bool Focus()
+			{
+				throw new System.NotImplementedException();
+			}
+
+			public void Unfocus()
 			{
 				throw new System.NotImplementedException();
 			}
