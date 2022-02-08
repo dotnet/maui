@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 			_elementConfiguration = new Lazy<ElementConfiguration>(() => new ElementConfiguration(this));
 		}
 
-		EffectiveFlowDirection _effectiveFlowDirection = default(EffectiveFlowDirection);
+		EffectiveFlowDirection _effectiveFlowDirection = default;
 		EffectiveFlowDirection IFlowDirectionController.EffectiveFlowDirection
 		{
 			get { return _effectiveFlowDirection; }
@@ -64,7 +64,6 @@ namespace Microsoft.Maui.Controls
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 
-		IFlowDirectionController FlowController => this;
 		IPropertyPropagationController PropertyPropagationController => this;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='ContextActions']/Docs" />
@@ -120,12 +119,10 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				var table = RealParent as TableView;
-				if (table != null)
+				if (RealParent is TableView table)
 					return table.HasUnevenRows && Height > 0 ? Height : table.RowHeight;
 
-				var list = RealParent as ListView;
-				if (list != null)
+				if (RealParent is ListView list)
 					return list.HasUnevenRows && Height > 0 ? Height : list.RowHeight;
 
 				return DefaultCellHeight;
@@ -211,8 +208,7 @@ namespace Microsoft.Maui.Controls
 		{
 			OnAppearing();
 
-			var container = RealParent as ListView;
-			if (container != null)
+			if (RealParent is ListView container)
 				container.SendCellAppearing(this);
 		}
 
@@ -222,8 +218,7 @@ namespace Microsoft.Maui.Controls
 		{
 			OnDisappearing();
 
-			var container = RealParent as ListView;
-			if (container != null)
+			if (RealParent is ListView container)
 				container.SendCellDisappearing(this);
 		}
 
@@ -310,8 +305,6 @@ namespace Microsoft.Maui.Controls
 			{
 				return _platformConfigurationRegistry.Value.On<T>();
 			}
-
-			internal PlatformConfigurationRegistry<Cell> Registry => _platformConfigurationRegistry.Value;
 		}
 		#endregion
 
