@@ -9,9 +9,8 @@ steps:
     inputs:
       packageType: sdk
       version: 6.0.102
-      installationPath: /usr/local/share/dotnet/sdk   # Central .NET SDK install location
 
-  - pwsh: |
+  - powershell: |
       dotnet --version
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
