@@ -13,17 +13,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		static MapPool s_instance;
 		public static MapPool Instance => s_instance ?? (s_instance = new MapPool());
 
-		internal readonly ConcurrentQueue<MKMapView> Maps = new ConcurrentQueue<MKMapView>();
+		internal readonly ConcurrentQueue<MKMapView> _maps = new ConcurrentQueue<MKMapView>();
 
 		public static void Add(MKMapView mapView)
 		{
-			Instance.Maps.Enqueue(mapView);
+			Instance._maps.Enqueue(mapView);
 		}
 
 		public static MKMapView Get()
 		{
 			MKMapView mapView;
-			return Instance.Maps.TryDequeue(out mapView) ? mapView : null;
+			return Instance._maps.TryDequeue(out mapView) ? mapView : null;
 		}
 	}
 }
