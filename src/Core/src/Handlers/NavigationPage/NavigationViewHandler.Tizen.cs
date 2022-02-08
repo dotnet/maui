@@ -14,7 +14,7 @@ using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, Naviframe>, INativeViewHandler
+		ViewHandler<IStackNavigationView, Naviframe>, INativeViewHandler
 	{
 		readonly List<Widget> _naviItemContentPartList = new List<Widget>();
 		TaskCompletionSource<bool>? _currentTaskSource = null;
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigationView arg2, object? arg3)
 		{
 			arg1.NavigationStack = (arg3 as NavigationRequest)!.NavigationStack;
 			//if (arg3 is NavigationRequest args)

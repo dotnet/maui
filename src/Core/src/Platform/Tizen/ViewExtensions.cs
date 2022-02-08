@@ -194,5 +194,10 @@ namespace Microsoft.Maui.Platform
 
 			return nativeView.Geometry.ToDP();
 		}
+
+		internal static EvasObject? GetParent(this EvasObject? view)
+		{
+			return view?.Parent;
+		}
 	}
 }

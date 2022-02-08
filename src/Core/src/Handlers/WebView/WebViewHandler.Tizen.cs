@@ -40,6 +40,14 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.Eval(webView, script);
 		}
 
+		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
+				return;
+
+			handler.NativeView?.Eval(webView, script);
+		}
+
 		protected override MauiWebView CreateNativeView()
 		{
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
