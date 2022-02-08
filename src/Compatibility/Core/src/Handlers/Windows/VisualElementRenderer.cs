@@ -10,24 +10,24 @@ using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract partial class VisualElementRenderer<TElement, TNativeElement>
+	public abstract partial class VisualElementRenderer<TElement, TPlatformElement>
 		: Panel, IDisposable
 		where TElement : VisualElement
-		where TNativeElement : FrameworkElement
+		where TPlatformElement : FrameworkElement
 	{
-		TNativeElement? _nativeView;
+		TPlatformElement? _nativeView;
 		public FrameworkElement ContainerElement => this;
 
-		public TNativeElement? Control => ((IElementHandler)this).PlatformView as TNativeElement ?? _nativeView;
+		public TPlatformElement? Control => ((IElementHandler)this).PlatformView as TPlatformElement ?? _nativeView;
 		object? IElementHandler.PlatformView => _nativeView;
 
-		public UIElement? GetNativeElement() => Control;
+		public UIElement? GetPlatformElement() => Control;
 
 		protected virtual void UpdatePlatformControl() { }
 
-		protected void SetPlatformControl(TNativeElement control)
+		protected void SetPlatformControl(TPlatformElement control)
 		{
-			TNativeElement? oldControl = Control;
+			TPlatformElement? oldControl = Control;
 			_nativeView = control;
 
 			if (oldControl != null)
@@ -157,19 +157,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public static void MapAutomationPropertiesLabeledBy(IPlatformViewHandler handler, TElement view)
 		{
-			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+			if (handler is VisualElementRenderer<TElement, TPlatformElement> ver)
 				ver.SetAutomationPropertiesLabeledBy();
 		}
 
 		public static void MapAutomationPropertiesHelpText(IPlatformViewHandler handler, TElement view)
 		{
-			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+			if (handler is VisualElementRenderer<TElement, TPlatformElement> ver)
 				ver.SetAutomationPropertiesHelpText();
 		}
 
 		public static void MapAutomationPropertiesName(IPlatformViewHandler handler, TElement view)
 		{
-			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+			if (handler is VisualElementRenderer<TElement, TPlatformElement> ver)
 				ver.SetAutomationPropertiesName();
 		}
 	}

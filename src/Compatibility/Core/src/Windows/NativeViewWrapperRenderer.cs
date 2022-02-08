@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (e.OldElement == null)
 			{
-				SetPlatformControl(Element.NativeElement);
+				SetPlatformControl(Element.PlatformElement);
 				Control.SizeChanged += (sender, args) => { ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged); };
 			}
 		}

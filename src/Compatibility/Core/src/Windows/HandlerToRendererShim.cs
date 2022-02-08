@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new SizeRequest(size, size);
 		}
 
-		public UIElement GetNativeElement()
+		public UIElement GetPlatformElement()
 		{
 			return (FrameworkElement)ViewHandler.PlatformView;
 		}

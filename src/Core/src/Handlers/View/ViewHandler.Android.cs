@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView is not PlatformView nativeView)
 				return;
 
-			nativeView = nativeView.GetSemanticNativeElement();
+			nativeView = nativeView.GetSemanticPlatformElement();
 
 			var desc = view.Semantics?.Description;
 			var hint = view.Semantics?.Hint;

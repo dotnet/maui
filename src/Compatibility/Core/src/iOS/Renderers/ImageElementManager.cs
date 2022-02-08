@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			// makse sure things are good before we start
 			var element = bindable ?? renderer.Element;
 
-			var nativeRenderer = renderer as IVisualNativeElementRenderer;
+			var nativeRenderer = renderer as IVisualPlatformElementRenderer;
 
 			if (element == null || renderer.PlatformView == null || (nativeRenderer != null && nativeRenderer.Control == null))
 				return;

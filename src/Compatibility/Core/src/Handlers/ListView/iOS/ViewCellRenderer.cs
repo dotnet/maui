@@ -39,13 +39,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return cell;
 		}
 
-		internal class ViewTableCell : UITableViewCell, INativeElementView
+		internal class ViewTableCell : UITableViewCell, IPlatformElementView
 		{
 			IMauiContext MauiContext => _viewCell.FindMauiContext();
 			WeakReference<IPlatformViewHandler> _rendererRef;
 			ViewCell _viewCell;
 
-			Element INativeElementView.Element => ViewCell;
+			Element IPlatformElementView.Element => ViewCell;
 			internal bool SupressSeparator { get; set; }
 			bool _disposed;
 

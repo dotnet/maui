@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 	{
 	}
 
-	public abstract class ViewRenderer<TView, TPlatformView> : VisualElementRenderer<TView>, IVisualNativeElementRenderer, ITabStop where TView : View where TPlatformView : PlatformView
+	public abstract class ViewRenderer<TView, TPlatformView> : VisualElementRenderer<TView>, IVisualPlatformElementRenderer, ITabStop where TView : View where TPlatformView : PlatformView
 	{
 		string _defaultAccessibilityLabel;
 		string _defaultAccessibilityHint;
@@ -52,21 +52,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 		public TPlatformView Control { get; private set; }
-		PlatformView IVisualNativeElementRenderer.Control => Control;
+		PlatformView IVisualPlatformElementRenderer.Control => Control;
 
 
-		event EventHandler<PropertyChangedEventArgs> IVisualNativeElementRenderer.ElementPropertyChanged
+		event EventHandler<PropertyChangedEventArgs> IVisualPlatformElementRenderer.ElementPropertyChanged
 		{
 			add { _elementPropertyChanged += value; }
 			remove { _elementPropertyChanged -= value; }
 		}
 
-		event EventHandler IVisualNativeElementRenderer.ControlChanging
+		event EventHandler IVisualPlatformElementRenderer.ControlChanging
 		{
 			add { _controlChanging += value; }
 			remove { _controlChanging -= value; }
 		}
-		event EventHandler IVisualNativeElementRenderer.ControlChanged
+		event EventHandler IVisualPlatformElementRenderer.ControlChanged
 		{
 			add { _controlChanged += value; }
 			remove { _controlChanged -= value; }

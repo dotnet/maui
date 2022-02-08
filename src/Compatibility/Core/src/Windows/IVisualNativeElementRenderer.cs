@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public interface IVisualNativeElementRenderer : IVisualElementRenderer
+	public interface IVisualPlatformElementRenderer : IVisualElementRenderer
 	{
 		event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 		event EventHandler ControlChanging;

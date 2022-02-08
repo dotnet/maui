@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		static readonly UIControlState[] s_controlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 
-		public static void Init(IVisualNativeElementRenderer renderer)
+		public static void Init(IVisualPlatformElementRenderer renderer)
 		{
 			renderer.ElementPropertyChanged += OnElementPropertyChanged;
 			renderer.ControlChanged += OnControlChanged;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		static void OnControlChanged(object sender, EventArgs e)
 		{
-			var renderer = (IVisualNativeElementRenderer)sender;
+			var renderer = (IVisualPlatformElementRenderer)sender;
 			var control = (UIButton)renderer.Control;
 
 			foreach (UIControlState uiControlState in s_controlStates)
@@ -42,18 +42,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		static void TouchUpInside(object sender, EventArgs eventArgs)
 		{
 			var button = sender as UIButton;
-			var renderer = button.Superview as IVisualNativeElementRenderer;
+			var renderer = button.Superview as IVisualPlatformElementRenderer;
 			OnButtonTouchUpInside(renderer.Element as IButtonController);
 		}
 
 		static void TouchDown(object sender, EventArgs eventArgs)
 		{
 			var button = sender as UIButton;
-			var renderer = button.Superview as IVisualNativeElementRenderer;
+			var renderer = button.Superview as IVisualPlatformElementRenderer;
 			OnButtonTouchDown(renderer.Element as IButtonController);
 		}
 
-		public static void Dispose(IVisualNativeElementRenderer renderer)
+		public static void Dispose(IVisualPlatformElementRenderer renderer)
 		{
 			var control = (UIButton)renderer.Control;
 			renderer.ElementPropertyChanged -= OnElementPropertyChanged;

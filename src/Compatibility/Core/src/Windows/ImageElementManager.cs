@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static void UpdateAspect(IImageVisualElementRenderer renderer, IImageElement controller)
 		{
 			var Element = renderer.Element;
-			var Control = renderer.GetNativeElement();
+			var Control = renderer.GetPlatformElement();
 			var image = renderer.GetImage();
 
 			if (renderer.IsDisposed || Element == null || Control == null)
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static async Task UpdateSource(IImageVisualElementRenderer renderer)
 		{
 			var Element = renderer.Element;
-			var Control = renderer.GetNativeElement();
+			var Control = renderer.GetPlatformElement();
 			var imageElement = Element as IImageElement;
 
 			if (renderer.IsDisposed || Element == null || Control == null)

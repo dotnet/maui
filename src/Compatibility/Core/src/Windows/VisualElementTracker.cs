@@ -22,10 +22,10 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class VisualElementTracker<TElement, TNativeElement> : IDisposable where TElement : VisualElement where TNativeElement : FrameworkElement
+	public class VisualElementTracker<TElement, TPlatformElement> : IDisposable where TElement : VisualElement where TPlatformElement : FrameworkElement
 	{
 		FrameworkElement _container;
-		TNativeElement _control;
+		TPlatformElement _control;
 		TElement _element;
 		bool _invalidateArrangeNeeded;
 		bool _isDisposed;
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		public TNativeElement Control
+		public TPlatformElement Control
 		{
 			get { return _control; }
 			set

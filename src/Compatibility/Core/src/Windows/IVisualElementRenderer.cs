@@ -16,6 +16,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void SetElement(VisualElement element);
 
-		UIElement GetNativeElement();
+		UIElement GetPlatformElement();
 	}
 }

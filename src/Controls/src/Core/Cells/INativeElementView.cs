@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Controls
 {
-	public interface INativeElementView
+	public interface IPlatformElementView
 	{
 		Element Element { get; }
 	}

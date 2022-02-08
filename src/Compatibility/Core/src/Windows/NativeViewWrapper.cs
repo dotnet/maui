@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			GetDesiredSizeDelegate = getDesiredSizeDelegate;
 			ArrangeOverrideDelegate = arrangeOverrideDelegate;
 			MeasureOverrideDelegate = measureOverrideDelegate;
-			NativeElement = nativeElement;
+			PlatformElement = nativeElement;
 			nativeElement.TransferbindablePropertiesToWrapper(this);
 		}
 
@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public MeasureOverrideDelegate MeasureOverrideDelegate { get; set; }
 
-		public FrameworkElement NativeElement { get; }
+		public FrameworkElement PlatformElement { get; }
 
 		protected override void OnBindingContextChanged()
 		{
-			NativeElement.SetBindingContext(BindingContext,  nv =>  nv.GetChildren<FrameworkElement>());
+			PlatformElement.SetBindingContext(BindingContext,  nv =>  nv.GetChildren<FrameworkElement>());
 			base.OnBindingContextChanged();
 		}
 	}

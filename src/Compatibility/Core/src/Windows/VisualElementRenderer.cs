@@ -15,8 +15,8 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
-																																	  where TNativeElement : FrameworkElement
+	public class VisualElementRenderer<TElement, TPlatformElement> : Panel, IVisualPlatformElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
+																																	  where TPlatformElement : FrameworkElement
 	{
 		string _defaultAutomationPropertiesName;
 		AccessibilityView? _defaultAutomationPropertiesAccessibilityView;
@@ -27,13 +27,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 		event EventHandler _controlChanging;
 		event EventHandler _controlChanged;
-		VisualElementTracker<TElement, TNativeElement> _tracker;
+		VisualElementTracker<TElement, TPlatformElement> _tracker;
 		Microsoft.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
 		Control _control => Control as Control;
 
 		Canvas _backgroundLayer;
 
-		public TNativeElement Control { get; private set; }
+		public TPlatformElement Control { get; private set; }
 
 		public TElement Element { get; private set; }
 
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		IElementController ElementController => Element as IElementController;
 
-		protected VisualElementTracker<TElement, TNativeElement> Tracker
+		protected VisualElementTracker<TElement, TPlatformElement> Tracker
 		{
 			get { return _tracker; }
 			set
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return new SizeRequest();
 
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
-			TNativeElement child = Control;
+			TPlatformElement child = Control;
 
 			child.Measure(constraint);
 			var result = new Size(Math.Ceiling(child.DesiredSize.Width), Math.Ceiling(child.DesiredSize.Height));
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return new SizeRequest(result);
 		}
 
-		public UIElement GetNativeElement()
+		public UIElement GetPlatformElement()
 		{
 			return Control;
 		}
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				if (AutoTrack && Tracker == null)
 				{
-					Tracker = new VisualElementTracker<TElement, TNativeElement>();
+					Tracker = new VisualElementTracker<TElement, TPlatformElement>();
 				}
 
 				// Disabled until reason for crashes with unhandled exceptions is discovered
@@ -172,18 +172,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
-		event EventHandler<PropertyChangedEventArgs> IVisualNativeElementRenderer.ElementPropertyChanged
+		event EventHandler<PropertyChangedEventArgs> IVisualPlatformElementRenderer.ElementPropertyChanged
 		{
 			add => _elementPropertyChanged += value;
 			remove => _elementPropertyChanged -= value;
 		}
 
-		event EventHandler IVisualNativeElementRenderer.ControlChanging
+		event EventHandler IVisualPlatformElementRenderer.ControlChanging
 		{
 			add { _controlChanging += value; }
 			remove { _controlChanging -= value; }
 		}
-		event EventHandler IVisualNativeElementRenderer.ControlChanged
+		event EventHandler IVisualPlatformElementRenderer.ControlChanged
 		{
 			add { _controlChanged += value; }
 			remove { _controlChanged -= value; }
@@ -395,10 +395,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, null, _defaultAutomationPropertiesLabeledBy);
 		}
 
-		protected void SetPlatformControl(TNativeElement control)
+		protected void SetPlatformControl(TPlatformElement control)
 		{
 			_controlChanging?.Invoke(this, EventArgs.Empty);
-			TNativeElement oldControl = Control;
+			TPlatformElement oldControl = Control;
 			Control = control;
 
 			if (oldControl != null)

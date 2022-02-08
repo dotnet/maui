@@ -10,14 +10,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		static nfloat _defaultCornerRadius = 5;
 
-		public static void Init(IVisualNativeElementRenderer renderer)
+		public static void Init(IVisualPlatformElementRenderer renderer)
 		{
 			renderer.ElementPropertyChanged += OnElementPropertyChanged;
 			renderer.ElementChanged += OnElementChanged;
 			renderer.ControlChanged += OnControlChanged;
 		}
 
-		public static void Dispose(IVisualNativeElementRenderer renderer)
+		public static void Dispose(IVisualPlatformElementRenderer renderer)
 		{
 			renderer.ElementPropertyChanged -= OnElementPropertyChanged;
 			renderer.ElementChanged -= OnElementChanged;
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		static void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			IVisualNativeElementRenderer renderer = (IVisualNativeElementRenderer)sender;
+			IVisualPlatformElementRenderer renderer = (IVisualPlatformElementRenderer)sender;
 			IBorderElement backgroundView = (IBorderElement)renderer.Element;
 
 			if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.CornerRadiusProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName)
@@ -37,12 +37,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (e.NewElement != null)
 			{
-				UpdateBorder((IVisualNativeElementRenderer)sender, (IBorderElement)e.NewElement);
+				UpdateBorder((IVisualPlatformElementRenderer)sender, (IBorderElement)e.NewElement);
 			}
 		}
 
 		[PortHandler]
-		public static void UpdateBorder(IVisualNativeElementRenderer renderer, IBorderElement backgroundView)
+		public static void UpdateBorder(IVisualPlatformElementRenderer renderer, IBorderElement backgroundView)
 		{
 			var control = renderer.Control;
 			var ImageButton = backgroundView;
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		static void OnControlChanged(object sender, EventArgs e)
 		{
-			IVisualNativeElementRenderer renderer = (IVisualNativeElementRenderer)sender;
+			IVisualPlatformElementRenderer renderer = (IVisualPlatformElementRenderer)sender;
 			IBorderElement backgroundView = (IBorderElement)renderer.Element;
 			UpdateBorder(renderer, backgroundView);
 		}

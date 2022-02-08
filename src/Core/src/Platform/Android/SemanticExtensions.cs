@@ -100,9 +100,9 @@ namespace Microsoft.Maui.Platform
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 
-		internal static View GetSemanticNativeElement(this View nativeView)
+		internal static View GetSemanticPlatformElement(this View nativeView)
 		{
-			return ViewHelper.GetSemanticNativeElement(nativeView)!;
+			return ViewHelper.GetSemanticPlatformElement(nativeView)!;
 		}
 	}
 }

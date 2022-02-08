@@ -18,9 +18,9 @@ using PlatformView = UIKit.UIView;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 #if WINDOWS
-	public abstract partial class VisualElementRenderer<TElement, TNativeElement> : IPlatformViewHandler
+	public abstract partial class VisualElementRenderer<TElement, TPlatformElement> : IPlatformViewHandler
 		where TElement : VisualElement
-		where TNativeElement : PlatformView
+		where TPlatformElement : PlatformView
 #else
 	public abstract partial class VisualElementRenderer<TElement> : IPlatformViewHandler
 		where TElement : Element, IView
@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static void MapAutomationPropertiesIsInAccessibleTree(IPlatformViewHandler handler, TElement view)
 		{
 #if WINDOWS
-			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+			if (handler is VisualElementRenderer<TElement, TPlatformElement> ver)
 				ver.SetAutomationPropertiesAccessibilityView();
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static void MapAutomationId(IPlatformViewHandler handler, TElement view)
 		{
 #if WINDOWS
-			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+			if (handler is VisualElementRenderer<TElement, TPlatformElement> ver)
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif
@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static void MapBackgroundColor(IPlatformViewHandler handler, TElement view)
 		{
 #if WINDOWS
-			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+			if (handler is VisualElementRenderer<TElement, TPlatformElement> ver)
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif
@@ -313,7 +313,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static void MapBackground(IPlatformViewHandler handler, TElement view)
 		{
 #if WINDOWS
-			if (handler is VisualElementRenderer<TElement, TNativeElement> ver)
+			if (handler is VisualElementRenderer<TElement, TPlatformElement> ver)
 #else
 			if (handler is VisualElementRenderer<TElement> ver)
 #endif

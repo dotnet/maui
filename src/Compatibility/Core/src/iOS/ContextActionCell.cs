@@ -13,7 +13,7 @@ using SizeF = CoreGraphics.CGSize;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ContextActionsCell instead")]
-	internal class ContextActionsCell : UITableViewCell, INativeElementView
+	internal class ContextActionsCell : UITableViewCell, IPlatformElementView
 	{
 		public const string Key = "ContextActionsCell";
 
@@ -67,14 +67,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			get { return (ContextScrollViewDelegate)_scroller.Delegate; }
 		}
 
-		Element INativeElementView.Element
+		Element IPlatformElementView.Element
 		{
 			get
 			{
-				var boxedCell = ContentCell as INativeElementView;
+				var boxedCell = ContentCell as IPlatformElementView;
 				if (boxedCell == null)
 				{
-					throw new InvalidOperationException($"Implement {nameof(INativeElementView)} on cell renderer: {ContentCell.GetType().AssemblyQualifiedName}");
+					throw new InvalidOperationException($"Implement {nameof(IPlatformElementView)} on cell renderer: {ContentCell.GetType().AssemblyQualifiedName}");
 				}
 
 				return boxedCell.Element;

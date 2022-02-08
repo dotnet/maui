@@ -11,7 +11,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class BaseCellView : LinearLayout, INativeElementView
+	public class BaseCellView : LinearLayout, IPlatformElementView
 	{
 		public const double DefaultMinHeight = 44;
 
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		Element INativeElementView.Element
+		Element IPlatformElementView.Element
 		{
 			get { return _cell; }
 		}

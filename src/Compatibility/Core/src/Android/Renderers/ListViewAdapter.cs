@@ -250,10 +250,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (((cachingStrategy & ListViewCachingStrategy.RecycleElement) != 0) && convertView != null)
 			{
-				var boxedCell = convertView as INativeElementView;
+				var boxedCell = convertView as IPlatformElementView;
 				if (boxedCell == null)
 				{
-					throw new InvalidOperationException($"View for cell must implement {nameof(INativeElementView)} to enable recycling.");
+					throw new InvalidOperationException($"View for cell must implement {nameof(IPlatformElementView)} to enable recycling.");
 				}
 				cell = (Cell)boxedCell.Element;
 
@@ -474,7 +474,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var layout = cellOwner as Handlers.Compatibility.ConditionalFocusLayout;
 				if (layout != null)
 					cellOwner = layout.GetChildAt(0);
-				cell = (Cell)(cellOwner as INativeElementView)?.Element;
+				cell = (Cell)(cellOwner as IPlatformElementView)?.Element;
 			}
 
 			// All our ListView's have called AddHeaderView. This effectively becomes index 0, so our index 0 is index 1 to the listView.
@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var renderedView = layout?.GetChildAt(0);
 
-			var element = (renderedView as INativeElementView)?.Element;
+			var element = (renderedView as IPlatformElementView)?.Element;
 			var view = (element as ViewCell)?.View;
 
 			if (view != null)

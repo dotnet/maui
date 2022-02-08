@@ -8,7 +8,7 @@ using PlatformImageView = AppKit.NSImageView;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-	public interface IImageVisualElementRenderer : IVisualNativeElementRenderer
+	public interface IImageVisualElementRenderer : IVisualPlatformElementRenderer
 	{
 		void SetImage(PlatformImage image);
 		bool IsDisposed { get; }

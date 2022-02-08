@@ -40,12 +40,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return cell;
 		}
 
-		internal class ViewTableCell : UITableViewCell, INativeElementView
+		internal class ViewTableCell : UITableViewCell, IPlatformElementView
 		{
 			WeakReference<IVisualElementRenderer> _rendererRef;
 			ViewCell _viewCell;
 
-			Element INativeElementView.Element => ViewCell;
+			Element IPlatformElementView.Element => ViewCell;
 			internal bool SupressSeparator { get; set; }
 			bool _disposed;
 

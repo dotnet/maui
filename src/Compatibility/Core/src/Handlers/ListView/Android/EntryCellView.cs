@@ -11,7 +11,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public sealed class EntryCellView : LinearLayout, ITextWatcher, global::Android.Views.View.IOnFocusChangeListener, TextView.IOnEditorActionListener, INativeElementView
+	public sealed class EntryCellView : LinearLayout, ITextWatcher, global::Android.Views.View.IOnFocusChangeListener, TextView.IOnEditorActionListener, IPlatformElementView
 	{
 		public const double DefaultMinHeight = 55;
 

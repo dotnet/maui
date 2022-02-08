@@ -1,7 +1,7 @@
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public interface IImageVisualElementRenderer : IVisualNativeElementRenderer
+	public interface IImageVisualElementRenderer : IVisualPlatformElementRenderer
 	{
 		bool IsDisposed { get; }
 		void SetImage(Microsoft.UI.Xaml.Media.ImageSource image);

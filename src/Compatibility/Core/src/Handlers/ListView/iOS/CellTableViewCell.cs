@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class CellTableViewCell : UITableViewCell, INativeElementView
+	public class CellTableViewCell : UITableViewCell, IPlatformElementView
 	{
 		Cell _cell;
 

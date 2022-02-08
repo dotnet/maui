@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return c;
 		}
 
-		internal class ViewCellContainer : ViewGroup, INativeElementView
+		internal class ViewCellContainer : ViewGroup, IPlatformElementView
 		{
 			readonly View _parent;
 			readonly BindableProperty _rowHeight;

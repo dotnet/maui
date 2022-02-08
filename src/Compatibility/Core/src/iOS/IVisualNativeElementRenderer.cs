@@ -17,7 +17,7 @@ using PlatformControl = AppKit.NSControl;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-	public interface IVisualNativeElementRenderer : IVisualElementRenderer
+	public interface IVisualPlatformElementRenderer : IVisualElementRenderer
 	{
 		event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 		event EventHandler ControlChanging;

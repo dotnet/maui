@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class ViewRenderer<TElement, TNativeElement> : VisualElementRenderer<TElement, TNativeElement> where TElement : View where TNativeElement : FrameworkElement
+	public class ViewRenderer<TElement, TPlatformElement> : VisualElementRenderer<TElement, TPlatformElement> where TElement : View where TPlatformElement : FrameworkElement
 	{
 		string _defaultAutomationPropertiesName;
 		AccessibilityView? _defaultAutomationPropertiesAccessibilityView;
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
 			var renderer = elemValue?.GetOrCreateRenderer();
-			var nativeElement = renderer?.GetNativeElement();
+			var nativeElement = renderer?.GetPlatformElement();
 
 			if (nativeElement != null)
 				Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, nativeElement);

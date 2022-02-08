@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer.ViewCellContainer instead")]
-		internal class ViewCellContainer : ViewGroup, INativeElementView
+		internal class ViewCellContainer : ViewGroup, IPlatformElementView
 		{
 			readonly View _parent;
 			readonly BindableProperty _rowHeight;

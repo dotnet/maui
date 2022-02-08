@@ -6,7 +6,7 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.CellTableViewCell instead")]
-	public class CellTableViewCell : UITableViewCell, INativeElementView
+	public class CellTableViewCell : UITableViewCell, IPlatformElementView
 	{
 		Cell _cell;
 

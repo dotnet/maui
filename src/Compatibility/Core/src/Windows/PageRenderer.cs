@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		//	return new SizeRequest(result);
 		//}
 
-		//public UIElement GetNativeElement()
+		//public UIElement GetPlatformElement()
 		//{
 		//	return this;
 		//}

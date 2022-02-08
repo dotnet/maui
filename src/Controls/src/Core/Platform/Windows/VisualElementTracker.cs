@@ -26,12 +26,12 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Maui.Controls.Platform
 {
 	// TODO MAUI: can we convert this over to using IView
-	public class VisualElementTracker<TElement, TNativeElement> : IDisposable where TElement : VisualElement where TNativeElement : FrameworkElement
+	public class VisualElementTracker<TElement, TPlatformElement> : IDisposable where TElement : VisualElement where TPlatformElement : FrameworkElement
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 		readonly List<uint> _fingers = new List<uint>();
 		FrameworkElement? _container;
-		TNativeElement? _control;
+		TPlatformElement? _control;
 		TElement? _element;
 
 		bool _invalidateArrangeNeeded = false;
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public bool PreventGestureBubbling { get; set; }
 
-		public TNativeElement? Control
+		public TPlatformElement? Control
 		{
 			get { return _control; }
 			set
