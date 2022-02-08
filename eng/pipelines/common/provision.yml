@@ -10,12 +10,13 @@ steps:
       packageType: sdk
       version: 6.0.102
 
-  - powershell: |
+  - pwsh: |
       Write-Host "dotnet --version"
       dotnet --version
       Write-Host "dotnet --list-sdks"
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
+    workingDirectory: $(Agent.ToolsDirectory)/dotnet
 
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
