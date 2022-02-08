@@ -1,7 +1,7 @@
-using System;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class UIApplicationExtensions
 	{
@@ -19,16 +19,34 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static IWindow? GetWindow(this UIApplication application)
-		{
-			if (MauiUIApplicationDelegate.Current.VirtualWindow != null)
-				return MauiUIApplicationDelegate.Current.VirtualWindow;
+		public static IWindow? GetWindow(this UIApplication application) =>
+			application.GetKeyWindow().GetWindow();
 
-			var nativeWindow = application.GetKeyWindow();
+		public static IWindow? GetWindow(this UIWindow? nativeWindow)
+		{
+			if (nativeWindow is null)
+				return null;
+
 			foreach (var window in MauiUIApplicationDelegate.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView is UIWindow win && win == nativeWindow)
+				if (window?.Handler?.NativeView == nativeWindow)
 					return window;
+			}
+
+			return null;
+		}
+
+		public static IWindow? GetWindow(this UIWindowScene? windowScene)
+		{
+			if (windowScene is null)
+				return null;
+
+			foreach (var window in windowScene.Windows)
+			{
+				var managedWindow = window.GetWindow();
+
+				if (managedWindow is not null)
+					return managedWindow;
 			}
 
 			return null;

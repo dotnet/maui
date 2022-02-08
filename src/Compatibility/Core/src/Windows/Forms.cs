@@ -25,8 +25,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 	public static partial class Forms
 	{
-		const string LogFormat = "[{0}] {1}";
-
 		//TODO WINUI3 This is set by main page currently because
 		// it's only a single window
 		public static UI.Xaml.Window MainWindow { get; set; }
@@ -37,18 +35,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, state.Context.Window, maybeOptions: options);
+			SetupInit(state.Context, state.Context.GetOptionalNativeWindow(), maybeOptions: options);
 		}
-
-		public static void Init(
-			UI.Xaml.Window mainWindow,
-			IEnumerable<Assembly> rendererAssemblies = null)
-		{
-			SetupInit(new MauiContext(), mainWindow, rendererAssemblies);
-		}
-
-		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), null, null, options);
 
 		static void SetupInit(
 			IMauiContext mauiContext,
@@ -62,25 +50,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			KnownColor.SetAccent(accent.ToColor());
 
-			if (!IsInitialized)
-			{
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
-
-			}
-
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(mauiContext.GetFlowDirection());
-
-			Device.Info = new WindowsDeviceInfo();
-
-			//TODO WINUI3
-			//// use field and not property to avoid exception in getter
-			//if (Device.info != null)
-			//{
-			//	Device.info.Dispose();
-			//	Device.info = null;
-			//}
-			//Device.Info = new WindowsDeviceInfo();
 
 			//TODO WINUI3
 			//switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
@@ -107,9 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 
-			var dispatcher = mainWindow?.DispatcherQueue ?? UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-
-			var platformServices = new WindowsPlatformServices(dispatcher);
+			var platformServices = new WindowsPlatformServices();
 
 			Device.PlatformServices = platformServices;
 			Device.PlatformInvalidator = platformServices;

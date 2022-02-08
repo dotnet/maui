@@ -29,5 +29,15 @@ namespace Microsoft.Maui
 		/// Gets the maximum allowed length of input.
 		/// </summary>
 		int MaxLength { get; }
+
+		/// <summary>
+		/// Gets or sets the position of the cursor.
+		/// </summary>
+		int CursorPosition { get; set; }
+
+		/// <summary>
+		/// Gets the length of the selection.
+		/// </summary>
+		int SelectionLength { get; set; }
 	}
 }

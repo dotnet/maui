@@ -48,7 +48,7 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
     });
 
 Task("dotnet-build")
@@ -56,9 +56,9 @@ Task("dotnet-build")
     .Description("Build the solutions")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
-            RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
         else
             RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
     });
@@ -66,7 +66,7 @@ Task("dotnet-build")
 Task("dotnet-samples")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples-net6.slnf", new Dictionary<string, string> {
+        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = bool.TrueString,
         });
     });
@@ -79,30 +79,64 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        CleanDirectories("../templatesTest/");
+        var templatesTest = tempDirectory.Combine("templatesTest");
+
+        EnsureDirectoryExists(templatesTest);
+        CleanDirectories(templatesTest.FullPath);
 
         // Create empty Directory.Build.props/targets
-        EnsureDirectoryExists(Directory("../templatesTest/"));
-        FileWriteText(File("../templatesTest/Directory.Build.props"), "<Project/>");
-        FileWriteText(File("../templatesTest/Directory.Build.targets"), "<Project/>");
+        FileWriteText(templatesTest.CombineWithFilePath("Directory.Build.props"), "<Project/>");
+        FileWriteText(templatesTest.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+        CopyFileToDirectory(File("./NuGet.config"), templatesTest);
 
-        // Create an empty NuGet.config
-        StartProcess(dn, "new nugetconfig -o ../templatesTest/");
-        // NOTE: this should be temporary until 'library-packs' are working for .msi-based installs
-        StartProcess(dn, "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json --name dotnet6 --configfile ../templatesTest/nuget.config");
+        // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
+        var designTime = new Dictionary<string, string> {
+            { "DesignTimeBuild", "true" },
+            { "BuildingInsideVisualStudio", "true" },
+            { "SkipCompilerExecution", "true" },
+            // NOTE: this overrides a default setting that supports VS Mac
+            // See: https://github.com/xamarin/xamarin-android/blob/94c2a3d86a2e0e74863b57e3c5c61dbd29daa9ea/src/Xamarin.Android.Build.Tasks/Xamarin.Android.Common.props.in#L19
+            { "AndroidUseManagedDesignTimeResourceGenerator", "true" },
+        };
+
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
-            { "RestorePackagesPath", MakeAbsolute(File("../templatesTest/packages")).FullPath },
-            { "RestoreConfigFile", MakeAbsolute(File("../templatesTest/nuget.config")).FullPath },
+            { "RestorePackagesPath", MakeAbsolute(templatesTest.CombineWithFilePath("packages")).FullPath },
+            { "RestoreConfigFile", MakeAbsolute(templatesTest.CombineWithFilePath("nuget.config")).FullPath },
+
+            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+            { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
+        };
+
+        var frameworks = new [] {
+            "net6.0-android",
+            "net6.0-ios",
+            "net6.0-maccatalyst",
         };
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
-            var name = template.Replace("-", "") + " Space-Dash";
-            StartProcess(dn, $"new {template} -o \"../templatesTest/{name}\"");
+            var name = template.Replace("-", "_").Replace(" ", "_");
+            StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
 
-            RunMSBuildWithDotNet($"../templatesTest/{name}", properties);
+            // Design-time build without restore
+            foreach (var framework in frameworks)
+            {
+                RunMSBuildWithDotNet($"{templatesTest}{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
+            }
+
+            // Build
+            RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
+        }
+
+        try
+        {
+            CleanDirectories(templatesTest.FullPath);
+        }
+        catch
+        {
+            Information("Unable to clean up templates directory.");
         }
     });
 
@@ -113,11 +147,12 @@ Task("dotnet-test")
     {
         var tests = new []
         {
-            "**/Controls.Core.UnitTests-net6.csproj",
-            "**/Controls.Xaml.UnitTests-net6.csproj",
-            "**/Core.UnitTests-net6.csproj",
-            "**/Essentials.UnitTests-net6.csproj",
-            "**/Resizetizer.UnitTests-net6.csproj",
+            "**/Controls.Core.UnitTests.csproj",
+            "**/Controls.Xaml.UnitTests.csproj",
+            "**/Core.UnitTests.csproj",
+            "**/Essentials.UnitTests.csproj",
+            "**/Resizetizer.UnitTests.csproj",
+            "**/Controls.Sample.Tests.csproj"
         };
 
         var success = true;
@@ -148,15 +183,15 @@ Task("dotnet-pack")
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
         {
             DiagnosticOutput = true,
-            ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
+            ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
         });
 
         // Download some additional symbols that need to be archived along with the maui symbols:
         //  - _NativeAssets.windows
         //     - libSkiaSharp.pdb
         //     - libHarfBuzzSharp.pdb
-        var assetsDir = "./artifacts/additional-assets";
-        var nativeAssetsVersion = XmlPeek("./eng/Microsoft.Extensions.targets", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
+        var assetsDir = $"./artifacts/additional-assets";
+        var nativeAssetsVersion = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
         NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
         {
             Version = nativeAssetsVersion,
@@ -174,6 +209,91 @@ Task("dotnet-build-test")
     .IsDependentOn("dotnet-buildtasks")
     .IsDependentOn("dotnet-build")
     .IsDependentOn("dotnet-test");
+
+Task("dotnet-diff")
+    .Does(() =>
+    {
+        var nupkgs = GetFiles($"./artifacts/**/*.nupkg");
+        if (!nupkgs.Any())
+        {
+            Warning($"##vso[task.logissue type=warning]No NuGet packages were found.");
+        }
+        else
+        {
+            // clean all working folders
+            var diffCacheDir = tempDirectory.Combine("diffCache");
+            EnsureDirectoryExists(diffCacheDir);
+            CleanDirectories(diffCacheDir.FullPath);
+            EnsureDirectoryExists(diffDirectory);
+            CleanDirectories(diffDirectory.FullPath);
+
+            // run the diff
+            foreach (var nupkg in nupkgs)
+            {
+                DotNetCoreTool("api-tools", new DotNetCoreToolSettings
+                {
+                    DiagnosticOutput = true,
+                    ArgumentCustomization = builder => builder
+                        .Append("nuget-diff")
+                        .AppendQuoted(nupkg.FullPath)
+                        .Append("--latest")
+                        // .Append("--verbose")
+                        .Append("--prerelease")
+                        .Append("--group-ids")
+                        .Append("--ignore-unchanged")
+                        .AppendSwitchQuoted("--output", diffDirectory.FullPath)
+                        .AppendSwitchQuoted("--cache", diffCacheDir.FullPath)
+                });
+            }
+
+            // clean working folders
+            try
+            {
+                CleanDirectories(diffCacheDir.FullPath);
+            }
+            catch
+            {
+                Information("Unable to clean up diff cache directory.");
+            }
+
+            var diffs = GetFiles($"{diffDirectory}/**/*.md");
+            if (!diffs.Any())
+            {
+                Warning($"##vso[task.logissue type=warning]No NuGet diffs were found.");
+            }
+            else
+            {
+                // clean working folders
+                var temp = diffCacheDir.Combine("md-files");
+                EnsureDirectoryExists(diffCacheDir);
+                CleanDirectories(diffCacheDir.FullPath);
+
+                // copy and rename files for UI
+                foreach (var diff in diffs)
+                {
+                    var segments = diff.Segments.Reverse().ToArray();
+                    var nugetId = segments[2];
+                    var platform = segments[1];
+                    var assembly = ((FilePath)segments[0]).GetFilenameWithoutExtension().GetFilenameWithoutExtension();
+                    var breaking = segments[0].EndsWith(".breaking.md");
+
+                    // using non-breaking spaces
+                    var newName = breaking ? "[BREAKING]   " : "";
+                    newName += $"{nugetId}    {assembly} ({platform}).md";
+                    var newPath = diffCacheDir.CombineWithFilePath(newName);
+
+                    CopyFile(diff, newPath);
+                }
+
+                // push changes to UI
+                var temps = GetFiles($"{diffCacheDir}/**/*.md");
+                foreach (var t in temps.OrderBy(x => x.FullPath))
+                {
+                    Information($"##vso[task.uploadsummary]{t}");
+                }
+            }
+        }
+    });
 
 // Tasks for Local Development
 
@@ -195,8 +315,8 @@ Task("VS-NET6")
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
         
-        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj");
-        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility-net6.csproj");
+        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj");
+        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility.csproj");
         StartVisualStudioForDotNet6();
     });
 
@@ -213,14 +333,14 @@ Task("VS-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        DotNetCoreRestore("./Microsoft.Maui-net6.sln", new DotNetCoreRestoreSettings
+        DotNetCoreRestore("./Microsoft.Maui.sln", new DotNetCoreRestoreSettings
         {
             ToolPath = dotnetPath
         });
 
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj");
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
@@ -230,7 +350,7 @@ Task("SAMPLE-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid.csproj", target: "Run");
     });
 
 Task("SAMPLE-IOS")
@@ -239,7 +359,7 @@ Task("SAMPLE-IOS")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS.csproj", target: "Run");
     });
 
 Task("SAMPLE-MAC")
@@ -248,7 +368,7 @@ Task("SAMPLE-MAC")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst.csproj",  target: "Run");
     });
 
 
@@ -292,7 +412,7 @@ void StartVisualStudioForDotNet6(string sln = null)
     {
         if (IsRunningOnWindows())
         {
-            sln = "./Microsoft.Maui-net6.sln";
+            sln = "./Microsoft.Maui.sln";
         }
         else
         {
@@ -330,20 +450,34 @@ void StartVisualStudioForDotNet6(string sln = null)
 
 // NOTE: These methods work as long as the "dotnet" target has already run
 
-void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
+void RunMSBuildWithDotNet(
+    string sln,
+    Dictionary<string, string> properties = null,
+    string target = "Build",
+    bool warningsAsError = false,
+    bool restore = true,
+    string targetFramework = null)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
-    var binlog = $"\"{logDirectory}/{name}-{configuration}.binlog\"";
+    var binlog = string.IsNullOrEmpty(targetFramework) ?
+        $"\"{logDirectory}/{name}-{configuration}-{target}.binlog\"" :
+        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
     // If we're not on Windows, use ./bin/dotnet/dotnet
-    if (!IsRunningOnWindows() || deployAndRun)
+    if (!IsRunningOnWindows() || target == "Run")
     {
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)
+            .SetMaxCpuCount(0)
+            .WithTarget(target)
             .EnableBinaryLogger(binlog);
+        if (warningsAsError)
+        {
+            msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
+        }
 
         if (properties != null)
         {
@@ -353,12 +487,19 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
             }
         }
 
-        if (deployAndRun)
-            msbuildSettings.WithTarget("Run");
-
         var dotnetBuildSettings = new DotNetCoreBuildSettings
         {
             MSBuildSettings = msbuildSettings,
+        };
+        dotnetBuildSettings.ArgumentCustomization = args =>
+        {
+            if (!restore)
+                args.Append("--no-restore");
+
+            if (!string.IsNullOrEmpty(targetFramework))
+                args.Append($"-f {targetFramework}");
+
+            return args;
         };
 
         if (localDotnet)
@@ -372,9 +513,22 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
         var msbuild = FindMSBuild();
         Information("Using MSBuild: {0}", msbuild);
         var msbuildSettings = new MSBuildSettings { ToolPath = msbuild }
-            .WithRestore()
             .SetConfiguration(configuration)
+            .SetMaxCpuCount(0)
+            .WithTarget(target)
             .EnableBinaryLogger(binlog);
+        if (warningsAsError)
+        {
+            msbuildSettings.WarningsAsError = true;
+        }
+        if (restore)
+        {
+            msbuildSettings.WithRestore();
+        }
+        if (!string.IsNullOrEmpty(targetFramework))
+        {
+            msbuildSettings.WithProperty("TargetFramework", targetFramework);
+        }
 
         if (properties != null)
         {

@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Shapes;
+using ObjCRuntime;
 
 #if __MOBILE__
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

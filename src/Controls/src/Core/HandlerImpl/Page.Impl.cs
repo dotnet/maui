@@ -4,8 +4,28 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Page : IView, ITitledElement
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs" />
+	public partial class Page : IView, ITitledElement, IToolbarElement
 	{
+		Toolbar _toolbar;
+		IToolbar IToolbarElement.Toolbar
+		{
+			get => _toolbar;
+		}
+
+		internal Toolbar Toolbar
+		{
+			get => _toolbar;
+			set
+			{
+				_toolbar = value;
+				if (this is NavigationPage np && value is Toolbar ct)
+					ct.ApplyNavigationPage(np, HasAppeared);
+
+				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
+			}
+		}
+
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
 			NavigatedTo?.Invoke(this, args);
@@ -31,6 +51,10 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnNavigatedTo(NavigatedToEventArgs args) { }
 		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
 		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { }
+
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='GetParentWindow']/Docs" />
+		public virtual Window GetParentWindow()
+			=> this.FindParentOfType<Window>();
 	}
 
 	public sealed class NavigatingFromEventArgs : EventArgs

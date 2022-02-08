@@ -35,7 +35,7 @@
                     PlaceholderColor="{AppThemeBinding Light={StaticResource LightTextSecondaryColor}, Dark={StaticResource DarkTextSecondaryColor}}"
                     TextColor="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}"
                     FontSize="Medium"
-                    HorizontalOptions="FillAndExpand"
+                    HorizontalOptions="Fill"
                     VerticalOptions="Center"/>
             </Grid>
         </Frame>
@@ -56,8 +56,12 @@
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Frame     
+                    <Border     
                         Style="{StaticResource GalleryItemContainerStyle}">
+                        <Border.StrokeShape>
+                            <RoundRectangle                   
+                                CornerRadius="0" />
+                        </Border.StrokeShape>
                         <Grid>
                             <StackLayout>
                                 <Label
@@ -68,7 +72,7 @@
                                     Style="{StaticResource GalleryItemDescriptionStyle}"/>
                             </StackLayout>
                         </Grid>
-                    </Frame>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

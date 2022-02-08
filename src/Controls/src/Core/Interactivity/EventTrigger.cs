@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.EventTrigger']/Docs" />
 	[ContentProperty("Actions")]
 	public sealed class EventTrigger : TriggerBase
 	{
@@ -17,13 +19,16 @@ namespace Microsoft.Maui.Controls
 		string _eventname;
 		Delegate _handlerdelegate;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public EventTrigger() : base(typeof(BindableObject))
 		{
 			Actions = new SealedList<TriggerAction>();
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="//Member[@MemberName='Actions']/Docs" />
 		public IList<TriggerAction> Actions { get; }
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="//Member[@MemberName='Event']/Docs" />
 		public string Event
 		{
 			get { return _eventname; }
@@ -69,7 +74,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception)
 			{
-				Log.Warning("EventTrigger", "Cannot attach EventTrigger to {0}.{1}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
+				Application.Current?.FindMauiContext()?.CreateLogger<EventTrigger>()?.LogWarning("Cannot attach EventTrigger to {Type}.{Event}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
 			}
 			if (_eventinfo != null && _handlerdelegate != null)
 				_eventinfo.AddEventHandler(bindable, _handlerdelegate);

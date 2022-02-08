@@ -166,10 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		[PortHandler]
 		protected void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
+			EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		[PortHandler("Partially ported, still missing code related to TitleColor, etc.")]

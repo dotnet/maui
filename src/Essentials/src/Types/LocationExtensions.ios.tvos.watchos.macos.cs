@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Essentials
 				Accuracy = location.HorizontalAccuracy,
 				VerticalAccuracy = location.VerticalAccuracy,
 				Timestamp = location.Timestamp.ToDateTime(),
-#if __iOS__ || __WATCHOS__
+#if __IOS__ || __WATCHOS__
                 Course = location.Course < 0 ? default(double?) : location.Course,
                 Speed = location.Speed < 0 ? default(double?) : location.Speed,
 #endif

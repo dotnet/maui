@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform;
 using NativeView = UIKit.UIView;

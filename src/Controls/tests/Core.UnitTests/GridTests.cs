@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -2460,61 +2460,48 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			return !invalidated;
 		}
-	}
-
-	[TestFixture]
-	public class GridMeasureTests : BaseTestFixture
-	{
-		static List<Action> delayActions = new List<Action>();
-
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices(invokeOnMainThread: a => { delayActions.Add(a); });
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
 
 		[Test]
-		public void NestedInvalidateMeasureDoesNotCrash()
+		public Task NestedInvalidateMeasureDoesNotCrash()
 		{
-			var grid = new Grid
-			{
-				IsPlatformEnabled = true
-			};
+			var delayActions = new List<Action>();
 
-			var child = new Label
+			return DispatcherTest.Run(() =>
 			{
-				IsPlatformEnabled = true
-			};
-			grid.Children.Add(child);
+				DispatcherProviderStubOptions.InvokeOnMainThread = a => { delayActions.Add(a); };
 
-			var child2 = new Label
-			{
-				IsPlatformEnabled = true
-			};
-			grid.Children.Add(child2);
+				var grid = new Grid
+				{
+					IsPlatformEnabled = true
+				};
 
-			bool fire = true;
-			child.SizeChanged += (sender, args) =>
-			{
-				if (fire)
-					((IVisualElementController)child).InvalidateMeasure(InvalidationTrigger.Undefined);
-				fire = false;
-			};
+				var child = new Label
+				{
+					IsPlatformEnabled = true
+				};
+				grid.Children.Add(child);
 
-			grid.Layout(new Rectangle(0, 0, 100, 100));
+				var child2 = new Label
+				{
+					IsPlatformEnabled = true
+				};
+				grid.Children.Add(child2);
 
-			foreach (var delayAction in delayActions)
-			{
-				delayAction();
-			}
+				bool fire = true;
+				child.SizeChanged += (sender, args) =>
+				{
+					if (fire)
+						((IVisualElementController)child).InvalidateMeasure(InvalidationTrigger.Undefined);
+					fire = false;
+				};
+
+				grid.Layout(new Rectangle(0, 0, 100, 100));
+
+				foreach (var delayAction in delayActions)
+				{
+					delayAction();
+				}
+			});
 		}
 	}
 }

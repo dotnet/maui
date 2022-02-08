@@ -14,6 +14,30 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+		[Fact(DisplayName = "InputType Keeps MultiLine Flag")]
+		public async Task InputTypeKeepsMultiLineFlag()
+		{
+			var editor = new EditorStub();
+			var inputType = await GetValueAsync(editor, (handler) =>
+			{
+				return GetNativeEditor(handler).InputType;
+			});
+
+			Assert.True(inputType.HasFlag(InputTypes.TextFlagMultiLine));
+		}
+
+		[Fact(DisplayName = "ReadOnly Keeps MultiLine Flag")]
+		public async Task InputTypeInitializesWithMultiLineFlag()
+		{
+			var editor = new EditorStub() { IsReadOnly = true };
+			var inputType = await GetValueAsync(editor, (handler) =>
+			{
+				return GetNativeEditor(handler).InputType;
+			});
+
+			Assert.True(inputType.HasFlag(InputTypes.TextFlagMultiLine));
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -177,6 +201,16 @@ namespace Microsoft.Maui.DeviceTests
 			var inputTypes = textView.InputType;
 
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
+		int GetNativeCursorPosition(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+
+			if (textView != null)
+				return textView.SelectionEnd;
+
+			return -1;
 		}
 	}
 }

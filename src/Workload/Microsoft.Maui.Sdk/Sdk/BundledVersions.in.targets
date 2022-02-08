@@ -3,11 +3,13 @@
     <_MauiRuntimePackVersion>$(MauiVersion)</_MauiRuntimePackVersion>
     <_MauiRuntimePackVersion Condition=" '$(_MauiRuntimePackVersion)' == '' ">**FromWorkload**</_MauiRuntimePackVersion>
     <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
+    <MauiWorkloadTargetFramework>@TFM@</MauiWorkloadTargetFramework>
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
     <!-- $(_MauiPlatformName) is used as RIDs as well as a suffix to targeting pack names -->
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' != 'windows' ">$(TargetPlatformIdentifier.ToLowerInvariant())</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(_MauiPlatformName)' == '' ">any</_MauiPlatformName>
+    <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' ">true</_MauiRuntimePackAlwaysCopyLocal>
   </PropertyGroup>
 
   <!-- Framework references -->
@@ -16,7 +18,7 @@
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
-        TargetFramework="net6.0"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Core"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
@@ -25,11 +27,12 @@
         RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' "
         Include="Microsoft.Maui.Controls"
-        TargetFramework="net6.0"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Controls"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
@@ -38,11 +41,12 @@
         RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
         Include="Microsoft.Maui.Essentials"
-        TargetFramework="net6.0"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Essentials"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
@@ -51,6 +55,7 @@
         RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
   </ItemGroup>
 
@@ -60,12 +65,6 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Controls.Build.Tasks" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Resizetizer.Sdk" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" IsImplicitlyDefined="true" />

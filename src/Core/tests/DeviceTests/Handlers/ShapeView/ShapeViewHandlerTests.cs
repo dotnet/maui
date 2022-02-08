@@ -22,6 +22,20 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateNativeFill(rectangle, Colors.Red);
 		}
 
+		[Fact(DisplayName = "RoundRectangle Initializes Correctly")]
+		public async Task RoundRectangleInitializesCorrectly()
+		{
+			var rectangle = new ShapeViewStub()
+			{
+				Shape = new RoundRectangleStub(),
+				Fill = new SolidPaintStub(Colors.Orange),
+				Height = 50,
+				Width = 100
+			};
+
+			await ValidateNativeFill(rectangle, Colors.Orange);
+		}
+
 		[Fact(DisplayName = "Ellipse Initializes Correctly")]
 		public async Task EllipseInitializesCorrectly()
 		{

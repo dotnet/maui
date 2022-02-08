@@ -17,7 +17,7 @@
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
   </PropertyGroup>
 
-  <Target Name="ConvertStaticWebAssetsToMauiAssets" BeforeTargets="GetMauiItems;ResizetizeCollectItems" DependsOnTargets="StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+  <Target Name="ConvertStaticWebAssetsToMauiAssets" BeforeTargets="GetMauiItems;ResizetizeCollectItems" DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_MauiStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
@@ -29,22 +29,41 @@
     </ItemGroup>
   </Target>
 
-  <!-- Targets temporarily remove Content items in the wwwroot folder so that they don't conflict with iOS/MacCatalyst SDK tasks -->
-  <Target Name="HideContentFromBundleResources" BeforeTargets="_CollectBundleResources">
+  <!-- Targets temporarily remove Content items in various folders so that they don't conflict with iOS/MacCatalyst SDK tasks -->
+  <Target Name="HideContentFromiOSBundleResources" BeforeTargets="_CollectBundleResources;_CollectHotRestartBundleResources">
     <ItemGroup>
       <!-- Find all files outside the wwwroot folder -->
       <_NonWWWRootContent Include="@(Content)" Exclude="wwwroot/**/*" />
       <!-- Create a list of all content that *is* in the wwwroot folder (to preserve ItemGroup metadata) -->
-      <_TemporaryHiddenContent Include="@(Content)" Exclude="@(_NonWWWRootContent)"  />
+      <_TemporaryHiddenContent Include="@(Content)" Exclude="@(_NonWWWRootContent)" />
+      <!-- Add Scoped CSS files in the app to the list of hidden items -->
+      <_TemporaryHiddenContent Include="Pages\**\*.razor.css" />
+      <_TemporaryHiddenContent Include="Shared\**\*.razor.css" />
       <!-- Temporarily remove the items -->
       <Content Remove="@(_TemporaryHiddenContent)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="RestoreHiddenContent" AfterTargets="_CollectBundleResources" BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs">
+  <!-- Restore hidden Content items for iOS/MacCatalyst -->
+  <Target Name="RestoreHiddeniOSContent" AfterTargets="_CollectBundleResources;_CollectHotRestartBundleResources" BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs">
     <ItemGroup>
       <!-- Restore the previously removed Content items -->
       <Content Include="@(_TemporaryHiddenContent)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Targets temporarily remove Content items in various folders so that they don't conflict with Android SDK tasks -->
+  <Target Name="HideContentFromAndroidCheck" BeforeTargets="_CheckForContent">
+    <ItemGroup>
+      <_TemporaryAndroidHiddenContent Include="@(Content)" />
+      <Content Remove="@(Content)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Restore hidden Content items for Android -->
+  <Target Name="RestoreHiddenAndroidContent" AfterTargets="_CheckForContent">
+    <ItemGroup>
+      <Content Include="@(_TemporaryAndroidHiddenContent)" />
     </ItemGroup>
   </Target>
 

@@ -14,10 +14,9 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		readonly WeakReference _pageRenderer;
 		readonly IMauiContext _mauiContext;
-		Action<PageContainer> _onCreateCallback;
-		PageContainer _pageContainer;
+		Action<AView> _onCreateCallback;
+		AView _pageContainer;
 		INativeViewHandler _viewhandler;
-		//bool _isVisible = false;
 		AView NativeView => _viewhandler?.NativeView as AView;
 
 		public FragmentContainer(IMauiContext mauiContext)
@@ -33,31 +32,38 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public virtual Page Page => (Page)_pageRenderer?.Target;
 
-		IPageController PageController => Page as IPageController;
-
-		public static Fragment CreateInstance(Page page, IMauiContext mauiContext)
+		public static FragmentContainer CreateInstance(Page page, IMauiContext mauiContext)
 		{
 			return new FragmentContainer(page, mauiContext) { Arguments = new Bundle() };
 		}
 
-		public void SetOnCreateCallback(Action<PageContainer> callback)
+		public void SetOnCreateCallback(Action<AView> callback)
 		{
 			_onCreateCallback = callback;
 		}
 
-		protected virtual PageContainer CreatePageContainer(Context context, INativeViewHandler child, bool inFragment)
-		{
-			return new PageContainer(context, child, inFragment);
-		}
+		ViewGroup _parent;
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
+			_parent = container ?? _parent;
+
 			if (Page != null)
 			{
-				Page.ToNative(_mauiContext);
-				_viewhandler = (INativeViewHandler)Page.Handler;
+				_pageContainer = Page?.Handler?.NativeView as AView;
 
-				_pageContainer = CreatePageContainer(inflater.Context, _viewhandler, true);
+				if (_pageContainer == null)
+				{
+					var scopedContext =
+						_mauiContext.MakeScoped(inflater, ChildFragmentManager);
+
+					_pageContainer = Page.ToNative(scopedContext);
+					_viewhandler = (INativeViewHandler)Page.Handler;
+				}
+				else
+				{
+					_parent = _parent ?? (_pageContainer.Parent as ViewGroup);
+				}
 
 				_onCreateCallback?.Invoke(_pageContainer);
 
@@ -67,81 +73,22 @@ namespace Microsoft.Maui.Controls.Platform
 			return null;
 		}
 
-		protected virtual void RecyclePage()
+		public override void OnResume()
 		{
-			// Page.Handler = null;
-		}
+			if (_pageContainer == null)
+				return;
 
-		public override void OnDestroyView()
-		{
-			if (Page != null)
+			_parent = (_pageContainer.Parent as ViewGroup) ?? _parent;
+			if (_pageContainer.Parent == null && _parent != null)
 			{
-				if (_viewhandler != null)
-				{
-					if (NativeView.IsAlive())
-					{
-						NativeView.RemoveFromParent();
-					}
-
-					RecyclePage();
-				}
+				// Re-add the view to the container if Android removed it
+				// Because we are re-using views inside OnCreateView Android
+				// will remove the "previous" view from the parent but since our
+				// "previous" view and "current" view are the same we have to re-add it
+				_parent.AddView(_pageContainer);
 			}
 
-			_onCreateCallback = null;
-			_viewhandler = null;
-
-			base.OnDestroyView();
+			base.OnResume();
 		}
-
-		//public override void OnHiddenChanged(bool hidden)
-		//{
-		//	base.OnHiddenChanged(hidden);
-
-		//	if (Page == null)
-		//		return;
-
-		//	if (hidden)
-		//		PageController?.SendDisappearing();
-		//	else
-		//		PageController?.SendAppearing();
-		//}
-
-		// TODO MAUI
-		//public override void OnPause()
-		//{
-		//	_isVisible = false;
-
-		//	bool shouldSendEvent = Application.Current.OnThisPlatform().GetSendDisappearingEventOnPause();
-		//	if (shouldSendEvent)
-		//		SendLifecycleEvent(false);
-
-		//	base.OnPause();
-		//}
-
-		//public override void OnResume()
-		//{
-		//	_isVisible = true;
-
-		//	bool shouldSendEvent = Application.Current.OnThisPlatform().GetSendAppearingEventOnResume();
-		//	if (shouldSendEvent)
-		//		SendLifecycleEvent(true);
-
-		//	base.OnResume();
-		//}
-
-		//void SendLifecycleEvent(bool isAppearing)
-		//{
-		//	var flyoutPage = Application.Current.MainPage as FlyoutPage;
-		//	var pageContainer = (flyoutPage != null ? flyoutPage.Detail : Application.Current.MainPage) as IPageContainer<Page>;
-		//	Page currentPage = pageContainer?.CurrentPage;
-
-		//	if (!(currentPage == null || currentPage == PageController))
-		//		return;
-
-		//	if (isAppearing && _isVisible)
-		//		PageController?.SendAppearing();
-		//	else if (!isAppearing)
-		//		PageController?.SendDisappearing();
-		//}
 	}
 }

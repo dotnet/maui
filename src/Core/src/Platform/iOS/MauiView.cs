@@ -2,7 +2,7 @@
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiView : UIView
 	{

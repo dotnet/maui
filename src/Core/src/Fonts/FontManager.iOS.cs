@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -37,6 +38,9 @@ namespace Microsoft.Maui
 
 		public UIFont DefaultFont =>
 			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
+
+		static double? defaultFontSize;
+		public double DefaultFontSize => defaultFontSize ??= UIFont.SystemFontSize;
 
 		public UIFont GetFont(Font font, double defaultFontSize = 0) =>
 			GetFont(font, defaultFontSize, CreateFont);

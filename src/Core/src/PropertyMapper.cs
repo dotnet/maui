@@ -6,9 +6,9 @@ namespace Microsoft.Maui
 {
 	public abstract class PropertyMapper : IPropertyMapper
 	{
-		readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new();
+		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new();
 
-		IPropertyMapper? _chained;
+		IPropertyMapper[]? _chained;
 
 		// Keep a distinct list of the keys so we don't run any duplicate (overridden) updates more than once
 		// when we call UpdateProperties
@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 		{
 		}
 
-		public PropertyMapper(IPropertyMapper chained)
+		public PropertyMapper(params IPropertyMapper[]? chained)
 		{
 			Chained = chained;
 		}
@@ -40,9 +40,16 @@ namespace Microsoft.Maui
 			if (_mapper.TryGetValue(key, out var action))
 				return action;
 			else if (Chained is not null)
-				return Chained.GetProperty(key);
-			else
-				return null;
+			{
+				foreach (var ch in Chained)
+				{
+					var returnValue = ch.GetProperty(key);
+					if (returnValue != null)
+						return returnValue;
+				}
+			}
+
+			return null;
 		}
 
 		public void UpdateProperty(IElementHandler viewHandler, IElement? virtualView, string property)
@@ -64,7 +71,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public IPropertyMapper? Chained
+		public IPropertyMapper[]? Chained
 		{
 			get => _chained;
 			set
@@ -74,16 +81,14 @@ namespace Microsoft.Maui
 			}
 		}
 
-		protected HashSet<string> PopulateKeys(ref HashSet<string>? returnList)
+		private HashSet<string> PopulateKeys()
 		{
-			_updateKeys = new HashSet<string>();
-
+			var keys = new HashSet<string>(StringComparer.Ordinal);
 			foreach (var key in GetKeys())
 			{
-				_updateKeys.Add(key);
+				keys.Add(key);
 			}
-
-			return returnList ?? new HashSet<string>();
+			return keys;
 		}
 
 		protected virtual void ClearKeyCache()
@@ -91,18 +96,18 @@ namespace Microsoft.Maui
 			_updateKeys = null;
 		}
 
-		public virtual IReadOnlyCollection<string> UpdateKeys =>
-			_updateKeys ?? PopulateKeys(ref _updateKeys);
+		public virtual IReadOnlyCollection<string> UpdateKeys => _updateKeys ??= PopulateKeys();
 
-		public IEnumerable<string> GetKeys()
+		public virtual IEnumerable<string> GetKeys()
 		{
 			foreach (var key in _mapper.Keys)
 				yield return key;
 
 			if (Chained is not null)
 			{
-				foreach (var key in Chained.GetKeys())
-					yield return key;
+				foreach (var chain in Chained)
+					foreach (var key in chain.GetKeys())
+						yield return key;
 			}
 		}
 	}
@@ -133,7 +138,7 @@ namespace Microsoft.Maui
 		{
 		}
 
-		public PropertyMapper(IPropertyMapper chained)
+		public PropertyMapper(params IPropertyMapper[] chained)
 			: base(chained)
 		{
 		}
@@ -153,8 +158,17 @@ namespace Microsoft.Maui
 			{
 				if (v is TVirtualView vv)
 					action?.Invoke((TViewHandler)h, vv);
-				else
-					Chained?.UpdateProperty(h, v, key);
+				else if (Chained != null)
+				{
+					foreach (var chain in Chained)
+					{
+						if (chain.GetProperty(key) != null)
+						{
+							chain.UpdateProperty(h, v, key);
+							break;
+						}
+					}
+				}
 			});
 	}
 
@@ -165,7 +179,7 @@ namespace Microsoft.Maui
 		{
 		}
 
-		public PropertyMapper(PropertyMapper chained)
+		public PropertyMapper(params PropertyMapper[] chained)
 			: base(chained)
 		{
 		}

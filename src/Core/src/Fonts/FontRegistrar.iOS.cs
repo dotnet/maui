@@ -7,32 +7,52 @@ namespace Microsoft.Maui
 	{
 		string? LoadNativeAppFont(string font, string filename, string? alias)
 		{
-			using var stream = GetNativeFontStream(filename, alias);
+			var resolvedFilename = ResolveFileSystemFont(filename);
 
-			return LoadEmbeddedFont(font, filename, alias, stream);
+			if (!string.IsNullOrEmpty(resolvedFilename))
+				return LoadFileSystemFont(font, resolvedFilename, alias);
+
+			return LoadEmbeddedFont(font, filename, alias, GetNativeFontStream(filename, alias));
+		}
+
+		string? ResolveFileSystemFont(string filename)
+		{
+			var mainBundlePath = Foundation.NSBundle.MainBundle.BundlePath;
+
+#if MACCATALYST
+			// MacOS Apps have Contents folder in the bundle root, iOS does not
+			mainBundlePath = Path.Combine(mainBundlePath, "Contents");
+#endif
+
+			var fontBundlePath = Path.Combine(mainBundlePath, filename);
+			if (File.Exists(fontBundlePath))
+				return fontBundlePath;
+
+			fontBundlePath = Path.Combine(mainBundlePath, "Resources", filename);
+			if (File.Exists(fontBundlePath))
+				return fontBundlePath;
+
+			fontBundlePath = Path.Combine(mainBundlePath, "Fonts", filename);
+			if (File.Exists(fontBundlePath))
+				return fontBundlePath;
+
+			fontBundlePath = Path.Combine(mainBundlePath, "Resources", "Fonts", filename);
+			if (File.Exists(fontBundlePath))
+				return fontBundlePath;
+
+			// TODO: check other folders as well
+
+			return null;
 		}
 
 		Stream GetNativeFontStream(string filename, string? alias)
 		{
-			var mainBundlePath = Foundation.NSBundle.MainBundle.BundlePath;
+			var resolvedFilename = ResolveFileSystemFont(filename);
 
-			var fontBundlePath = Path.Combine(mainBundlePath, filename);
-			if (File.Exists(fontBundlePath))
-				return File.OpenRead(fontBundlePath);
-
-			fontBundlePath = Path.Combine(mainBundlePath, "Resources", filename);
-			if (File.Exists(fontBundlePath))
-				return File.OpenRead(fontBundlePath);
-
-			fontBundlePath = Path.Combine(mainBundlePath, "Fonts", filename);
-			if (File.Exists(fontBundlePath))
-				return File.OpenRead(fontBundlePath);
-
-			fontBundlePath = Path.Combine(mainBundlePath, "Resources", "Fonts", filename);
-			if (File.Exists(fontBundlePath))
-				return File.OpenRead(fontBundlePath);
-
-			// TODO: check other folders as well
+			if (!string.IsNullOrEmpty(resolvedFilename) && File.Exists(resolvedFilename))
+			{
+				return File.OpenRead(resolvedFilename);
+			}
 
 			throw new FileNotFoundException($"Native font with the name {filename} was not found.");
 		}

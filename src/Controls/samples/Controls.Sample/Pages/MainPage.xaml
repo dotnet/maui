@@ -5,6 +5,7 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     x:Name="HomePage"
     BackgroundColor="{DynamicResource BackgroundColor}"
+    NavigationPage.IconColor="White"
     Title="Gallery">
     <views:BasePage.Resources>
         <ResourceDictionary>
@@ -28,36 +29,29 @@
 
             <Color x:Key="SectionItemBorderColor">#C8C8C8</Color>
 
-            <Style x:Key="SectionItemContainerStyle" TargetType="Frame">
+            <Style x:Key="SectionItemContainerStyle" TargetType="Border">
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
-                <Setter Property="BorderColor" Value="{StaticResource SectionItemBorderColor}" />
-                <Setter Property="CornerRadius" Value="0" />
-                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="Stroke" Value="{StaticResource SectionItemBorderColor}" />
                 <Setter Property="HeightRequest" Value="120" />
                 <Setter Property="Padding" Value="12" />
                 <Setter Property="Margin" Value="0, 0, 12, 12" />
                 <Setter Property="FlexLayout.Basis" Value="50%"/>
                 <Setter Property="FlexLayout.Grow" Value="0"/>
             </Style>
-            
+
             <Style x:Key="FooterStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Small" />
                 <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="VerticalOptions" Value="End" />
-                <Setter Property="Margin" Value="0, 24" />
+                <Setter Property="Margin" Value="24" />
             </Style>
 
         </ResourceDictionary>
     </views:BasePage.Resources>
-    <views:BasePage.ToolbarItems>
-        <ToolbarItem
-            IconImageSource="settings.png"
-            Text="Settings" />
-    </views:BasePage.ToolbarItems>
     <ScrollView>
         <Grid
-            RowDefinitions="150, *, Auto"
+            RowDefinitions="150, *, Auto, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
@@ -66,11 +60,8 @@
                 Source="header_background"/>
             <Grid
                 RowSpacing="0"
-                Grid.Row="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                Grid.Row="0"
+                RowDefinitions="Auto,*">
                 <Label
                     Text=".NET MAUI"
                     Style="{StaticResource TitleStyle}"/>
@@ -100,8 +91,12 @@
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame
+                            <Border
                                Style="{StaticResource SectionItemContainerStyle}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle 
+                                        CornerRadius="0" />
+                                </Border.StrokeShape>
                                 <Grid
                                    RowSpacing="0"
                                    RowDefinitions="Auto, *">
@@ -113,7 +108,7 @@
                                        Text="{Binding Description}"
                                        Style="{StaticResource GalleryItemDescriptionStyle}"/>
                                 </Grid>
-                            </Frame>
+                            </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
@@ -123,6 +118,14 @@
                 Grid.Row="2"
                 Text="Microsoft Corporation © 2021"
                 Style="{StaticResource FooterStyle}" />
+            <StackLayout Orientation="Horizontal" Grid.Row="3" HorizontalOptions="Center">
+                <Label
+                    Text="{OnPlatform Default='Default Platform', Android='Android', iOS='iOS', macOS='macOS', MacCatalyst='MacCatalyst', Tizen='Tizen', UWP='UWP'}"
+                    Style="{StaticResource FooterStyle}" />
+                <Label
+                    Text="{OnIdiom Default='Default Idiom', Phone='Phone', Tablet='Tablet', Desktop='Desktop', TV='TV', Watch='Watch'}"
+                    Style="{StaticResource FooterStyle}" />
+            </StackLayout>
         </Grid>
     </ScrollView>
 </views:BasePage>

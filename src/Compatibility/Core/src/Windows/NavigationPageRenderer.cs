@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			IVisualElementRenderer childRenderer = Platform.GetRenderer(Element.CurrentPage);
 			FrameworkElement child = childRenderer.ContainerElement;
 
@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Element.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return Maui.ColorExtensions.ToNative(Element.BarBackgroundColor);
+			return Element.BarBackgroundColor.ToNative();
 		}
 
 		WBrush GetBarBackgroundBrush()
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault())
 				return (WBrush)defaultColor;
-			return Maui.ColorExtensions.ToNative(Element.BarTextColor);
+			return Element.BarTextColor.ToNative();
 		}
 
 		bool GetIsNavBarPossible()
@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (point == null)
 				return;
 
-			if (point.PointerDeviceType != PointerDeviceType.Mouse)
+			if (point.PointerDeviceType != Microsoft.UI.Input.PointerDeviceType.Mouse)
 				return;
 
 			if (point.Properties.IsXButton1Pressed)

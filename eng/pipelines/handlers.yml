@@ -120,10 +120,22 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 env:
@@ -156,14 +168,29 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
+            ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+              demands:
+                - macOS.Name -equals BigSur
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
           steps:
+            - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+              - template: agent-cleanser/v1.yml@xamarin-templates
+                parameters:
+                  UninstallMono: false
+                  UninstallXamarinMac: false
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
+                poolName: ${{ BuildPlatform.poolName }}
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
               env:
                 DOTNET_TOKEN: $(dotnetclimsrc-read-sas-token)
+            - ${{ if eq(BuildPlatform.name, 'Windows') }}:
+              - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
+                displayName: 'Diff .NET Maui artifacts with NuGet'
             - task: CopyFiles@2
               condition: always()
               displayName: 'Copy files to staging'
@@ -182,6 +209,7 @@ stages:
                 SourceFolder: artifacts
                 Contents: |
                   metadata/**
+                  api-diff/**
                 TargetFolder: $(build.artifactstagingdirectory)
             - task: CopyFiles@2
               displayName: 'Copy Log Files'
@@ -215,10 +243,22 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -257,10 +297,22 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:

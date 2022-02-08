@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
 	public static partial class Battery
 	{
 		static void StartBatteryListeners() =>

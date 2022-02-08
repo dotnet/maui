@@ -3,18 +3,23 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs" />
 	[ContentProperty(nameof(Detail))]
-	public class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
+	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsGestureEnabledProperty']/Docs" />
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsPresentedProperty']/Docs" />
 		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create(nameof(IsPresented), typeof(bool), typeof(FlyoutPage), default(bool),
 			propertyChanged: OnIsPresentedPropertyChanged, propertyChanging: OnIsPresentedPropertyChanging, defaultValueCreator: GetDefaultValue);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='FlyoutLayoutBehaviorProperty']/Docs" />
 		public static readonly BindableProperty FlyoutLayoutBehaviorProperty = BindableProperty.Create(nameof(FlyoutLayoutBehavior), typeof(FlyoutLayoutBehavior), typeof(FlyoutPage), default(FlyoutLayoutBehavior),
 			propertyChanged: OnFlyoutLayoutBehaviorPropertyChanged);
 
@@ -26,6 +31,9 @@ namespace Microsoft.Maui.Controls
 
 		Rectangle _flyoutBounds;
 
+		IFlyoutPageController FlyoutPageController => this;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='Detail']/Docs" />
 		public Page Detail
 		{
 			get { return _detail; }
@@ -51,23 +59,32 @@ namespace Microsoft.Maui.Controls
 				InternalChildren.Add(_detail);
 				OnPropertyChanged();
 
+				if (this.HasAppeared)
+				{
+					previousDetail?.SendDisappearing();
+					_detail?.SendAppearing();
+				}
+
 				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail));
 				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail));
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsGestureEnabled']/Docs" />
 		public bool IsGestureEnabled
 		{
 			get { return (bool)GetValue(IsGestureEnabledProperty); }
 			set { SetValue(IsGestureEnabledProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsPresented']/Docs" />
 		public bool IsPresented
 		{
 			get { return (bool)GetValue(IsPresentedProperty); }
 			set { SetValue(IsPresentedProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='Flyout']/Docs" />
 		public Page Flyout
 		{
 			get { return _flyout; }
@@ -97,22 +114,27 @@ namespace Microsoft.Maui.Controls
 				InternalChildren.Add(_flyout);
 				OnPropertyChanged();
 
+				if (this.HasAppeared)
+				{
+					previousFlyout?.SendDisappearing();
+					_flyout?.SendAppearing();
+				}
+
 				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout));
 				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='FlyoutLayoutBehavior']/Docs" />
 		public FlyoutLayoutBehavior FlyoutLayoutBehavior
 		{
 			get { return (FlyoutLayoutBehavior)GetValue(FlyoutLayoutBehaviorProperty); }
 			set { SetValue(FlyoutLayoutBehaviorProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool CanChangeIsPresented { get; set; } = true;
+		bool IFlyoutPageController.CanChangeIsPresented { get; set; } = true;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle DetailBounds
+		Rectangle IFlyoutPageController.DetailBounds
 		{
 			get { return _detailBounds; }
 			set
@@ -124,8 +146,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle FlyoutBounds
+		Rectangle IFlyoutPageController.FlyoutBounds
 		{
 			get { return _flyoutBounds; }
 			set
@@ -137,8 +158,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool ShouldShowSplitMode
+		bool IFlyoutPageController.ShouldShowSplitMode
 		{
 			get
 			{
@@ -146,7 +166,7 @@ namespace Microsoft.Maui.Controls
 					return false;
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
-				DeviceOrientation orientation = Device.Info.CurrentOrientation;
+				var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
 
 				bool isSplitOnLandscape = (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.Default) && orientation.IsLandscape();
 				bool isSplitOnPortrait = behavior == FlyoutLayoutBehavior.SplitOnPortrait && orientation.IsPortrait();
@@ -156,13 +176,14 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler IsPresentedChanged;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='ShouldShowToolbarButton']/Docs" />
 		public virtual bool ShouldShowToolbarButton()
 		{
 			if (Device.Idiom == TargetIdiom.Phone)
 				return true;
 
 			FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
-			DeviceOrientation orientation = Device.Info.CurrentOrientation;
+			var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
 
 			bool isSplitOnLandscape = (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.Default) && orientation.IsLandscape();
 			bool isSplitOnPortrait = behavior == FlyoutLayoutBehavior.SplitOnPortrait && orientation.IsPortrait();
@@ -173,13 +194,19 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Flyout == null || Detail == null)
 				throw new InvalidOperationException("Flyout and Detail must be set before using a FlyoutPage");
+
+#if !ANDROID
 			_flyout.Layout(_flyoutBounds);
 			_detail.Layout(_detailBounds);
+#endif
 		}
 
 		protected override void OnAppearing()
 		{
-			CanChangeIsPresented = true;
+			Flyout?.SendAppearing();
+			Detail?.SendAppearing();
+
+			FlyoutPageController.CanChangeIsPresented = true;
 			UpdateFlyoutLayoutBehavior(this);
 			base.OnAppearing();
 		}
@@ -219,6 +246,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<BackButtonPressedEventArgs> BackButtonPressed;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='UpdateFlyoutLayoutBehavior']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void UpdateFlyoutLayoutBehavior()
 		{
@@ -227,11 +255,11 @@ namespace Microsoft.Maui.Controls
 
 		internal static void UpdateFlyoutLayoutBehavior(FlyoutPage page)
 		{
-			if (page.ShouldShowSplitMode)
+			if (page is IFlyoutPageController fpc && fpc.ShouldShowSplitMode)
 			{
 				page.SetValueCore(IsPresentedProperty, true);
 				if (page.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default)
-					page.CanChangeIsPresented = false;
+					fpc.CanChangeIsPresented = false;
 			}
 		}
 
@@ -240,9 +268,18 @@ namespace Microsoft.Maui.Controls
 
 		static void OnIsPresentedPropertyChanging(BindableObject sender, object oldValue, object newValue)
 		{
-			var page = (FlyoutPage)sender;
-			if (!page.CanChangeIsPresented)
-				throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", page.FlyoutLayoutBehavior));
+			if (sender is Maui.IElement element && element.IsShimmed())
+			{
+				if (sender is FlyoutPage fp && fp is IFlyoutPageController fpc && !fpc.CanChangeIsPresented)
+					throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", fp.FlyoutLayoutBehavior));
+			}
+			else
+			{
+				if ((!(bool)newValue) && sender is IFlyoutPageController fpc && fpc.ShouldShowSplitMode && sender is FlyoutPage fp)
+				{
+					throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", fp.FlyoutLayoutBehavior));
+				}
+			}
 		}
 
 		static void OnFlyoutLayoutBehaviorPropertyChanged(BindableObject sender, object oldValue, object newValue)
@@ -256,6 +293,7 @@ namespace Microsoft.Maui.Controls
 			return Device.RuntimePlatform == Device.macOS;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public FlyoutPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));
@@ -263,6 +301,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<FlyoutPage>> _platformConfigurationRegistry;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='On']/Docs" />
 		public new IPlatformElementConfiguration<T, FlyoutPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

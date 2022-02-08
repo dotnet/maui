@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Children.Count == 0 || Control == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			TNativeElement child = Control;
 
 			child.Measure(constraint);
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			remove { _controlChanged -= value; }
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null || finalSize.Width * finalSize.Height == 0)
 				return finalSize;
@@ -271,15 +271,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			SetElement(null);
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element == null || availableSize.Width * availableSize.Height == 0)
-				return new Windows.Foundation.Size(0, 0);
-
-			if (Element is Layout layout)
-			{
-				layout.ResolveLayoutChanges();
-			}
+				return new global::Windows.Foundation.Size(0, 0);
 
 			Element.IsInNativeLayout = true;
 
@@ -297,7 +292,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			double width = Math.Max(0, Element.Width);
 			double height = Math.Max(0, Element.Height);
-			var result = new Windows.Foundation.Size(width, height);
+			var result = new global::Windows.Foundation.Size(width, height);
 			if (Control != null)
 			{
 				double w = Element.Width;
@@ -308,7 +303,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					h = availableSize.Height;
 				w = Math.Max(0, w);
 				h = Math.Max(0, h);
-				Control.Measure(new Windows.Foundation.Size(w, h));
+				Control.Measure(new global::Windows.Foundation.Size(w, h));
 			}
 
 			Element.IsInNativeLayout = false;
@@ -462,7 +457,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault())
 				{
-					_control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
+					_control.Background = backgroundColor.ToNative();
 				}
 				else
 				{
@@ -474,7 +469,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault())
 				{
-					backgroundLayer.Background = Maui.ColorExtensions.ToNative(backgroundColor);
+					backgroundLayer.Background = backgroundColor.ToNative();
 				}
 				else
 				{
@@ -502,7 +497,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					if (!backgroundColor.IsDefault())
-						_control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
+						_control.Background = backgroundColor.ToNative();
 					else
 					{
 						_control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
@@ -517,7 +512,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					if (!backgroundColor.IsDefault())
-						backgroundLayer.Background = Maui.ColorExtensions.ToNative(backgroundColor);
+						backgroundLayer.Background = backgroundColor.ToNative();
 					else
 						backgroundLayer.ClearValue(BackgroundProperty);
 				}

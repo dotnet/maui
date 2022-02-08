@@ -1,7 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public sealed class TextAlignmentToHorizontalAlignmentConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{

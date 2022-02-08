@@ -12,6 +12,7 @@ using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableProperty']/Docs" />
 	[DebuggerDisplay("{PropertyName}")]
 	[System.ComponentModel.TypeConverter(typeof(BindablePropertyConverter))]
 	public sealed class BindableProperty
@@ -64,6 +65,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(ulong), new[] { typeof(string), typeof(float), typeof(double), typeof(decimal) } },
 		};
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='UnsetValue']/Docs" />
 		public static readonly object UnsetValue = new object();
 
 		BindableProperty(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
@@ -105,16 +107,22 @@ namespace Microsoft.Maui.Controls
 			DefaultValueCreator = defaultValueCreator;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='DeclaringType']/Docs" />
 		public Type DeclaringType { get; private set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='DefaultBindingMode']/Docs" />
 		public BindingMode DefaultBindingMode { get; private set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='DefaultValue']/Docs" />
 		public object DefaultValue { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='IsReadOnly']/Docs" />
 		public bool IsReadOnly { get; private set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='PropertyName']/Docs" />
 		public string PropertyName { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='ReturnType']/Docs" />
 		public Type ReturnType { get; }
 
 		internal BindablePropertyBindingChanging BindingChanging { get; private set; }
@@ -131,6 +139,7 @@ namespace Microsoft.Maui.Controls
 
 		internal ValidateValueDelegate ValidateValue { get; private set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='Create']/Docs" />
 		public static BindableProperty Create(string propertyName, Type returnType, Type declaringType, object defaultValue = null, BindingMode defaultBindingMode = BindingMode.OneWay,
 											  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 											  CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -139,6 +148,7 @@ namespace Microsoft.Maui.Controls
 				defaultValueCreator: defaultValueCreator);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateAttached']/Docs" />
 		public static BindableProperty CreateAttached(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
 													  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 													  CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -146,6 +156,7 @@ namespace Microsoft.Maui.Controls
 			return CreateAttached(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValue, propertyChanged, propertyChanging, coerceValue, null, false, defaultValueCreator);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateAttachedReadOnly']/Docs" />
 		public static BindablePropertyKey CreateAttachedReadOnly(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
 																 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 																 CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -155,6 +166,7 @@ namespace Microsoft.Maui.Controls
 					defaultValueCreator));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateReadOnly']/Docs" />
 		public static BindablePropertyKey CreateReadOnly(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
 														 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 														 CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)

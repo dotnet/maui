@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,18 +11,21 @@ namespace Microsoft.Maui.Controls
 	// collection which are made off of the main thread remain invisible to consumers on the main thread
 	// until they have been processed by the main thread.
 
+	/// <include file="../../../docs/Microsoft.Maui.Controls/MarshalingObservableCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.MarshalingObservableCollection']/Docs" />
 	public class MarshalingObservableCollection : List<object>, INotifyCollectionChanged
 	{
 		readonly IList _internalCollection;
+		readonly IDispatcher _dispatcher;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/MarshalingObservableCollection.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public MarshalingObservableCollection(IList list)
 		{
 			if (!(list is INotifyCollectionChanged incc))
-			{
 				throw new ArgumentException($"{nameof(list)} must implement {nameof(INotifyCollectionChanged)}");
-			}
 
 			_internalCollection = list;
+			_dispatcher = Dispatcher.GetForCurrentThread();
+
 			incc.CollectionChanged += InternalCollectionChanged;
 
 			foreach (var item in _internalCollection)
@@ -57,14 +61,7 @@ namespace Microsoft.Maui.Controls
 				args = new ResetNotifyCollectionChangedEventArgs(items);
 			}
 
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => HandleCollectionChange(args));
-			}
-			else
-			{
-				HandleCollectionChange(args);
-			}
+			_dispatcher.DispatchIfRequired(() => HandleCollectionChange(args));
 		}
 
 		void HandleCollectionChange(NotifyCollectionChangedEventArgs args)

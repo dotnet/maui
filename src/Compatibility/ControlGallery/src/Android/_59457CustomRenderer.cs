@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 
 [assembly: ExportRenderer(typeof(Bugzilla59457.Bugzilla59457Entry), typeof(_59457CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android

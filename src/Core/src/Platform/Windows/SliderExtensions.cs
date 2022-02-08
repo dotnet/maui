@@ -3,7 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{

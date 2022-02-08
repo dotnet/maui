@@ -26,16 +26,16 @@ namespace Microsoft.Maui
 
 		private protected virtual void InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object? args)
 		{
-			var action = GetCommandCore(key);
+			var action = GetCommand(key);
 			action?.Invoke(viewHandler, virtualView, args);
 		}
 
-		private protected virtual Command? GetCommandCore(string key)
+		public virtual Command? GetCommand(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
 				return action;
 			else if (Chained is not null)
-				return Chained.GetCommandCore(key);
+				return Chained.GetCommand(key);
 			else
 				return null;
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-				var action = GetCommandCore(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
+				var action = GetCommand(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
 				return new Action<TViewHandler, TVirtualView, object?>((h, v, o) => action.Invoke(h, v, o));
 			}
 			set => Add(key, value);

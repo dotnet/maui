@@ -42,8 +42,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Title = "Select an Item",
 				TextColor = Colors.CadetBlue,
-				Items = new[] {"Item 1", "Item2", "Item3"},
-				SelectedIndex = 1	
+				Items = new[] { "Item 1", "Item2", "Item3" },
+				SelectedIndex = 1
 			};
 
 			await ValidatePropertyInitValue(picker, () => picker.TextColor, GetNativeTextColor, picker.TextColor);

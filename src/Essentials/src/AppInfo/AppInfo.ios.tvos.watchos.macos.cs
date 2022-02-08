@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Foundation;
 #if __IOS__ || __TVOS__
+using ObjCRuntime;
 using UIKit;
 #elif __MACOS__
 using AppKit;

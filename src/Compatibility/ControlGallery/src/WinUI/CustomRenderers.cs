@@ -45,8 +45,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 	}
 
-	public class SortableListViewRenderer : ListViewRenderer
+	public class SortableListViewRenderer : Controls.Handlers.Compatibility.ListViewRenderer
 	{
+		public SortableListViewRenderer() : base()
+		{
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
 			base.OnElementChanged(e);
@@ -142,7 +146,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			{
 				Width = 200,
 				Height = 200,
-				Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255)),
+				Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(global::Windows.UI.Color.FromArgb(0, 255, 255, 255)),
 				IsHitTestVisible = false
 			};
 
@@ -153,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			{
 				Width = 100,
 				Height = 100,
-				Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+				Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(global::Windows.UI.Color.FromArgb(255, 255, 0, 0)),
 
 			};
 			Canvas.SetLeft(ellipse, 0);
@@ -166,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				FontSize = 50,
 				FontWeight = Microsoft.UI.Text.FontWeights.Normal,
 				Text = "hello world",
-				Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0))
+				Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(global::Windows.UI.Color.FromArgb(255, 255, 0, 0))
 			};
 			Canvas.SetLeft(text, 0);
 			Canvas.SetTop(text, 150);
@@ -181,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			if (Children.Count == 0 || Control == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			FormsTextBox child = Control;
 
 			child.Measure(constraint);
@@ -216,7 +220,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		 * Both of these issues were fixed by just creating a static TextBox that is not part of the layout which let me just measure
 		 * the size of the text as it would fit into the TextBox unconstrained and then just return that Size from the GetDesiredSize call.
 		 * */
-		Size GetCopyOfSize(FormsTextBox control, Windows.Foundation.Size constraint)
+		Size GetCopyOfSize(FormsTextBox control, global::Windows.Foundation.Size constraint)
 		{
 			if (_copyOfTextBox == null)
 			{
@@ -250,7 +254,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 
 
-		SizeRequest CalculateDesiredSizes(FormsTextBox control, Windows.Foundation.Size constraint, EditorAutoSizeOption sizeOption)
+		SizeRequest CalculateDesiredSizes(FormsTextBox control, global::Windows.Foundation.Size constraint, EditorAutoSizeOption sizeOption)
 		{
 			if (sizeOption == EditorAutoSizeOption.TextChanges)
 			{
@@ -273,7 +277,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			if (Children.Count == 0 || child == null)
 				return new SizeRequest();
 
-			return CalculateDesiredSizes(child, new Windows.Foundation.Size(widthConstraint, heightConstraint), Element.AutoSize);
+			return CalculateDesiredSizes(child, new global::Windows.Foundation.Size(widthConstraint, heightConstraint), Element.AutoSize);
 		}
 	}
 }

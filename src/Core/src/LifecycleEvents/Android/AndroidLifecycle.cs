@@ -31,14 +31,11 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		// Events called by Activity overrides (calling base is optional)
 		public delegate void OnActivityResult(Activity activity, int requestCode, Result resultCode, Intent? data);
-		public delegate void OnBackPressed(Activity activity);
+		public delegate bool OnBackPressed(Activity activity);
 		public delegate void OnConfigurationChanged(Activity activity, Configuration newConfig);
 		public delegate void OnNewIntent(Activity activity, Intent? intent);
 		public delegate void OnRequestPermissionsResult(Activity activity, int requestCode, string[] permissions, Permission[] grantResults);
 		public delegate void OnRestoreInstanceState(Activity activity, Bundle savedInstanceState);
-
-		// Custom events
-		public delegate bool OnPressingBack(Activity activity);
 
 		// Internal events
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);

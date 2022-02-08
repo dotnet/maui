@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
@@ -411,9 +412,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 				tabBarTextColor = barTextColor.ToUIColor();
 
-
-			var attributes = new UITextAttributes();
-			attributes.TextColor = tabBarTextColor;
+			var attributes = new UIStringAttributes();
+			attributes.ForegroundColor = tabBarTextColor;
 
 			foreach (UITabBarItem item in TabBar.Items)
 			{

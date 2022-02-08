@@ -2,8 +2,9 @@ using System;
 using CoreGraphics;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class CoreGraphicsExtensions
 	{

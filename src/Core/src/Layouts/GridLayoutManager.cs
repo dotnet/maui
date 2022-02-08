@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Layouts
 				{
 					var current = definitions[n].Size;
 
-					if (current <= 0)
+					if (current <= 0 && !definitions[n].IsStar)
 					{
 						continue;
 					}
@@ -463,13 +463,13 @@ namespace Microsoft.Maui.Layouts
 			{
 				// Count up the total weight of star columns (e.g., "*, 3*, *" == 5)
 
-				var starCount = 0;
+				var starCount = 0.0;
 
 				foreach (var definition in defs)
 				{
 					if (definition.IsStar)
 					{
-						starCount += (int)definition.GridLength.Value;
+						starCount += definition.GridLength.Value;
 					}
 				}
 
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Layouts
 					if (definition.IsStar)
 					{
 						// Give the star row/column the appropriate portion of the space based on its weight
-						definition.Size = starSize * (int)definition.GridLength.Value;
+						definition.Size = starSize * definition.GridLength.Value;
 					}
 				}
 			}

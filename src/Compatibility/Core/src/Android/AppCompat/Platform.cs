@@ -7,7 +7,6 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -329,7 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					var mauiContext = Forms.MauiContext;
 
 					if (fragmentManager != null || layoutInflater != null)
-						mauiContext = new ScopedMauiContext(mauiContext, null, null, layoutInflater, fragmentManager);
+						mauiContext = mauiContext.MakeScoped(layoutInflater, fragmentManager);
 
 					handler = mauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(mauiContext);
@@ -696,23 +695,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		internal static int GenerateViewId()
-		{
-			// getting unique Id's is an art, and I consider myself the Jackson Pollock of the field
-			if ((int)Forms.SdkInt >= 17)
-				return global::Android.Views.View.GenerateViewId();
-
-			// Numbers higher than this range reserved for xml
-			// If we roll over, it can be exceptionally problematic for the user if they are still retaining things, android's internal implementation is
-			// basically identical to this except they do a lot of locking we don't have to because we know we only do this
-			// from the UI thread
-			if (s_id >= 0x00ffffff)
-				s_id = 0x00000400;
-
-			return s_id++;
-		}
-
-		static int s_id = 0x00000400;
+		internal static int GenerateViewId() => global::Android.Views.View.GenerateViewId();
 
 		#region Statics
 

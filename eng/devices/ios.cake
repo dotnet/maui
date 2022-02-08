@@ -91,6 +91,9 @@ Task("Build")
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
+			MSBuildSettings = new DotNetCoreMSBuildSettings {
+				MaxCpuCount = 0
+			},
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
 				.Append("/bl:" + binlog),
@@ -101,6 +104,7 @@ Task("Build")
 	{
 		MSBuild(PROJECT.FullPath, c => {
 			c.Configuration = CONFIGURATION;
+			c.MaxCpuCount = 0;
 			c.Restore = true;
 			c.Properties["Platform"] = new List<string> { PLATFORM };
 			c.Properties["BuildIpa"] = new List<string> { "true" };

@@ -1,11 +1,12 @@
 using System;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
-	internal static class FlowDirectionExtensions
+	public static class FlowDirectionExtensions
 	{
-		internal static FlowDirection ToFlowDirection(this UIUserInterfaceLayoutDirection direction)
+		public static FlowDirection ToFlowDirection(this UIUserInterfaceLayoutDirection direction)
 		{
 			switch (direction)
 			{

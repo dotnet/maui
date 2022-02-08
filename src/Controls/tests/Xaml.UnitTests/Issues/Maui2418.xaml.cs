@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var page = new Maui2418();
 				Assert.That(page, Is.Not.Null);
 				var label0 = page.label0;
-				var sourceInfo = Xaml.Diagnostics.VisualDiagnostics.GetXamlSourceInfo(label0);
+				var sourceInfo = VisualDiagnostics.GetSourceInfo(label0);
 				Assert.That(sourceInfo.SourceUri.OriginalString, Is.EqualTo($"Issues{System.IO.Path.DirectorySeparatorChar}Maui2418.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"));
 			}
 		}

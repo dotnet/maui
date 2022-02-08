@@ -24,8 +24,6 @@ variables:
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 # Common Agent Pools in use
-- name: HostedWinVS2019
-  value: Hosted Windows 2019 with VS2019
 - name: LogDirectory
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
@@ -37,7 +35,7 @@ variables:
 - name: provisionator.vs
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
 - name: provisionator.extraArguments
-  value: '--v'
+  value: '-vvvv'
 - name: DotNet.Dir
   value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
@@ -54,3 +52,4 @@ variables:
   - group: AzureDevOps-Artifact-Feeds-Pats
   # For dotnet-install.ps1/sh
   - group: DotNet-MSRC-Storage
+- group: Xamarin-Secrets

@@ -5,13 +5,17 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/StreamImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.StreamImageSource']/Docs" />
 	public partial class StreamImageSource : ImageSource, IStreamImageSource
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/StreamImageSource.xml" path="//Member[@MemberName='StreamProperty']/Docs" />
 		public static readonly BindableProperty StreamProperty = BindableProperty.Create("Stream", typeof(Func<CancellationToken, Task<Stream>>), typeof(StreamImageSource),
 			default(Func<CancellationToken, Task<Stream>>));
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/StreamImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs" />
 		public override bool IsEmpty => Stream == null;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/StreamImageSource.xml" path="//Member[@MemberName='Stream']/Docs" />
 		public virtual Func<CancellationToken, Task<Stream>> Stream
 		{
 			get { return (Func<CancellationToken, Task<Stream>>)GetValue(StreamProperty); }

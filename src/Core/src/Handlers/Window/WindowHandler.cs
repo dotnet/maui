@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIWindow;
 #elif MONOANDROID
@@ -15,6 +16,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IWindow.Title)] = MapTitle,
 			[nameof(IWindow.Content)] = MapContent,
+#if ANDROID || WINDOWS
+			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
+#endif
 		};
 
 		public WindowHandler()
@@ -29,11 +33,7 @@ namespace Microsoft.Maui.Handlers
 
 #if !NETSTANDARD
 		protected override NativeView CreateNativeElement() =>
-#if __ANDROID__
-			MauiContext?.Context as NativeView ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
-#else
-			MauiContext?.Window ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
-#endif
+			MauiContext?.Services.GetService<NativeView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
 #endif
 	}
 }

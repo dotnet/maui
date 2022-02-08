@@ -1,30 +1,11 @@
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Button : IButton, IText
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs" />
+	public partial class Button : IButton, ITextButton, IImageButton
 	{
-		public new static void RemapForControls()
-		{
-			// IButton does not include the ContentType property, so we map it here to handle Image Positioning
-
-			IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
-			{
-				[nameof(ContentLayout)] = MapContentLayout,
-#if __IOS__
-				[nameof(Padding)] = MapPadding,
-#endif
-			};
-
-			ButtonHandler.Mapper = ControlsButtonMapper;
-		}
-
-		public static void MapContentLayout(ButtonHandler handler, Button button)
-		{
-			handler.NativeView.UpdateContentLayout(button);
-		}
+		bool _wasImageLoading;
 
 		void IButton.Clicked()
 		{
@@ -41,13 +22,28 @@ namespace Microsoft.Maui.Controls
 			(this as IButtonController).SendReleased();
 		}
 
-		void IButton.ImageSourceLoaded()
+		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
-			Handler?.UpdateValue(nameof(ContentLayout));
+			if (!isLoading && _wasImageLoading)
+				Handler?.UpdateValue(nameof(ContentLayout));
+
+			_wasImageLoading = isLoading;
 		}
 
-		IImageSource IButton.ImageSource => ImageSource;
-
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+
+		Aspect IImage.Aspect => Aspect.Fill;
+
+		bool IImage.IsOpaque => true;
+
+		IImageSource IImageSourcePart.Source => ImageSource;
+
+		bool IImageSourcePart.IsAnimationPlaying => false;
+
+		double IButtonStroke.StrokeThickness => (double)GetValue(BorderWidthProperty);
+
+		Color IButtonStroke.StrokeColor => (Color)GetValue(BorderColorProperty);
+
+		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
 	}
 }

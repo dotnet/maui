@@ -80,9 +80,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
 		{
-			var nativePicker = handler.NativeView;
-			var hasRtlSupport = nativePicker?.Context!.HasRtlSupport() ?? false;
-			nativePicker?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment, hasRtlSupport);
+			handler.NativeView?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
 		}
 
 		public static void MapTextColor(PickerHandler handler, IPicker picker)
@@ -153,7 +151,7 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.DismissEvent += (sender, args) =>
 				{
-					_dialog.Dispose();
+					_dialog?.Dispose();
 					_dialog = null;
 				};
 

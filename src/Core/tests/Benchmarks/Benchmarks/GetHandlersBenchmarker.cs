@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[Benchmark]
 		public void GetHandlerUsingDI()
 		{
-			var handlers = _mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>();
+			var handlers = _mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
 			for (int i = 0; i < N; i++)
 			{
 				handlers.GetHandler<IButton>();

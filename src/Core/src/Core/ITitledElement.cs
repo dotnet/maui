@@ -1,5 +1,8 @@
 ﻿namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Represent the title content used in Navigation Views.
+	/// </summary>
 	public interface ITitledElement : IElement
 	{
 		/// <summary>

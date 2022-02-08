@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Essentials
 		{
 			var picker = new FileOpenPicker();
 
+			var hwnd = Platform.CurrentWindowHandle;
+			WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
 			var defaultTypes = photo ? FilePickerFileType.Images.Value : FilePickerFileType.Videos.Value;
 
 			// set picker properties

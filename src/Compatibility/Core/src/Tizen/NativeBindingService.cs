@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Compatibility.Internals;
 using Microsoft.Maui.Controls.Compatibility.Xaml.Internals;
 
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	class NativeBindingService : INativeBindingService
 	{
+		[UnconditionalSuppressMessage ("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
 			var view = target as EObject;

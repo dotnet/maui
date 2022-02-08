@@ -17,6 +17,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 
 [assembly: Dependency(typeof(CacheService))]

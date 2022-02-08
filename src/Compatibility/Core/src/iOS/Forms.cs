@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -17,8 +16,10 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Animations;
+using Microsoft.Extensions.DependencyInjection;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using TNativeView = UIKit.UIView;
@@ -48,6 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isiOS12OrNewer;
 		static bool? s_isiOS13OrNewer;
 		static bool? s_isiOS14OrNewer;
+		static bool? s_isiOS15OrNewer;
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
 		internal static bool IsiOS9OrNewer
@@ -111,6 +113,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		internal static bool IsiOS15OrNewer
+		{
+			get
+			{
+				if (!s_isiOS15OrNewer.HasValue)
+					s_isiOS15OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(15, 0);
+				return s_isiOS15OrNewer.Value;
+			}
+		}
+
 		// Once we get essentials/cg converted to using startup.cs
 		// we will delete all the renderer code inside this file
 		internal static void RenderersRegistered()
@@ -168,12 +180,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static bool IsInitializedRenderers { get; private set; }
 
-		public static void Init() =>
-			SetupInit(new MauiContext());
-
-		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), options);
-
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			SetupInit(activationState.Context, options);
 
@@ -185,13 +191,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-			}
-
-#if __MOBILE__
+#if MACCATALYST || __MACCATALYST__
+			Device.SetIdiom(TargetIdiom.Desktop);
+#elif __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #else
@@ -224,28 +226,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.PlatformServices = platformServices;
 
-			// use field and not property to avoid exception in getter
-			if (Device.info is IDisposable infoDisposable)
-			{
-				infoDisposable.Dispose();
-				Device.info = null;
-			}
-
 #if __MOBILE__
 			Device.PlatformInvalidator = platformServices;
-			Device.Info = new IOSDeviceInfo();
-#else
-			Device.Info = new Platform.macOS.MacDeviceInfo();
 #endif
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers();
+				RegisterCompatRenderers(context);
 
 			ExpressionSearch.Default = new iOSExpressionSearch();
 
 			IsInitialized = true;
 		}
 
-		internal static void RegisterCompatRenderers()
+		internal static void RegisterCompatRenderers(IMauiContext context)
 		{
 			if (!IsInitializedRenderers)
 			{
@@ -258,7 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					typeof(ExportCellAttribute),
 					typeof(ExportImageSourceHandlerAttribute),
 					typeof(ExportFontAttribute)
-				});
+				}, context?.Services?.GetService<IFontRegistrar>());
 			}
 		}
 
@@ -311,17 +303,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 			}
 
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
-			}
-
 			public Assembly[] GetAssemblies()
 			{
 				return AppDomain.CurrentDomain.GetAssemblies();
 			}
-
-			public string GetHash(string input) => Crc64.GetHash(input);
 
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
@@ -654,15 +639,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
-			}
-
-			public bool IsInvokeRequired => !NSThread.IsMain;
-
-#if __MOBILE__
+#if MACCATALYST || __MACCATALYST__
+			public string RuntimePlatform => Device.MacCatalyst;
+#elif IOS || __IOS__
 			public string RuntimePlatform => Device.iOS;
+#elif TVOS || __TVOS__
+			public string RuntimePlatform => Device.tvOS;
 #else
 			public string RuntimePlatform => Device.macOS;
 #endif
@@ -696,57 +678,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return 'a' + v - 10;
 			}
 
-			public class _IsolatedStorageFile : IIsolatedStorageFile
-			{
-				readonly IsolatedStorageFile _isolatedStorageFile;
-
-				public _IsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-				{
-					_isolatedStorageFile = isolatedStorageFile;
-				}
-
-				public Task CreateDirectoryAsync(string path)
-				{
-					_isolatedStorageFile.CreateDirectory(path);
-					return Task.FromResult(true);
-				}
-
-				public Task<bool> GetDirectoryExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.DirectoryExists(path));
-				}
-
-				public Task<bool> GetFileExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.FileExists(path));
-				}
-
-				public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
-					return Task.FromResult(stream);
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
-					return Task.FromResult(stream);
-				}
-			}
-
+#if !__MOBILE__
 			public void QuitApplication()
 			{
-#if __MOBILE__
-				Log.Warning(nameof(IOSPlatformServices), "Platform doesn't implement QuitApp");
-#else
 				NSApplication.SharedApplication.Terminate(new NSObject());
-#endif
 			}
+#endif
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{

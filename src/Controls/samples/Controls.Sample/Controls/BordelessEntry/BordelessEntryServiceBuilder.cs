@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
@@ -58,11 +57,14 @@ namespace Maui.Controls.Sample.Controls
 				}
 			}
 
-			BordelessEntryServiceBuilder.HandlersCollection ??= services.GetRequiredService<IMauiHandlersServiceProvider>().GetCollection();
+			BordelessEntryServiceBuilder.HandlersCollection ??= services.GetRequiredService<IMauiHandlersFactory>().GetCollection();
 
 			if (BordelessEntryServiceBuilder.PendingHandlers.Count > 0)
 			{
-				BordelessEntryServiceBuilder.HandlersCollection.TryAddHandlers(BordelessEntryServiceBuilder.PendingHandlers);
+				foreach (var pair in BordelessEntryServiceBuilder.PendingHandlers)
+				{
+					BordelessEntryServiceBuilder.HandlersCollection.TryAddHandler(pair.Key, pair.Value);
+				}
 				BordelessEntryServiceBuilder.PendingHandlers.Clear();
 			}
 		}

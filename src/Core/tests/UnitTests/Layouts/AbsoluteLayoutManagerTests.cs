@@ -405,5 +405,45 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(arrangedWidth, actual.Width);
 			Assert.Equal(arrangedHeight, actual.Height);
 		}
+
+		[Fact]
+		public void ChildMeasureRespectsAbsoluteBounds()
+		{
+			double expectedWidth = 115;
+			double expectedHeight = 230;
+
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, expectedWidth, expectedHeight);
+			SetLayoutBounds(abs, child, childBounds);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			child.Received().Measure(Arg.Is(expectedWidth), Arg.Is(expectedHeight));
+		}
+
+		[Fact]
+		public void ChildMeasureRespectsProportionalBounds()
+		{
+			double expectedWidth = 0.5;
+			double expectedHeight = 0.6;
+
+			double widthConstraint = 200;
+			double heightConstraint = 200;
+
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, expectedWidth, expectedHeight);
+			SetLayoutBounds(abs, child, childBounds);
+			SetLayoutFlags(abs, child, AbsoluteLayoutFlags.SizeProportional);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(widthConstraint, heightConstraint);
+
+			child.Received().Measure(Arg.Is(expectedWidth * widthConstraint), Arg.Is(expectedHeight * heightConstraint));
+		}
 	}
 }

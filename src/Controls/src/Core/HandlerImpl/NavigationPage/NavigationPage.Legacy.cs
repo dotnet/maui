@@ -4,11 +4,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
 	// This contains the messaging required to communicate with legacy renderers
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs" />
 	public partial class NavigationPage : INavigationPageController
 	{
 		internal async Task<Page> PopAsyncInner(
@@ -224,7 +226,7 @@ namespace Microsoft.Maui.Controls
 
 			if (page == CurrentPage)
 			{
-				Log.Warning("NavigationPage", "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 				PopAsync();
 				return;
 			}

@@ -1,49 +1,49 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.Fragment.App;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, NavigationLayout>
+		ViewHandler<INavigationView, View>
 	{
-		NavigationManager? _navigationManager;
+		StackNavigationManager? _stackNavigationManager;
+		internal StackNavigationManager? StackNavigationManager => _stackNavigationManager;
 
-		protected override NavigationLayout CreateNativeView()
+		protected override View CreateNativeView()
 		{
-			LayoutInflater? li = MauiContext?.GetLayoutInflater();
+			LayoutInflater? li = CreateNavigationManager().MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
-			var view = li.Inflate(Resource.Layout.navigationlayout, null).JavaCast<NavigationLayout>();
+			var view = li.Inflate(Resource.Layout.fragment_backstack, null).JavaCast<FragmentContainerView>();
 			_ = view ?? throw new InvalidOperationException($"Resource.Layout.navigationlayout view not found");
 
 			return view;
 		}
 
-		public override void SetVirtualView(IView view)
+		StackNavigationManager CreateNavigationManager()
 		{
-			_navigationManager ??= CreateNavigationManager();
-			base.SetVirtualView(view);
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			return _stackNavigationManager ??= new StackNavigationManager(MauiContext);
 		}
 
-		protected virtual NavigationManager CreateNavigationManager() =>
-			new NavigationManager(MauiContext!);
-
-		protected override void ConnectHandler(NavigationLayout nativeView)
+		protected override void ConnectHandler(View nativeView)
 		{
-			_navigationManager ??= CreateNavigationManager();
-			nativeView.NavigationManager = _navigationManager;
-
 			base.ConnectHandler(nativeView);
-			_navigationManager.Connect(VirtualView, nativeView);
+			_stackNavigationManager?.Connect(VirtualView);
+		}
+
+		private protected override void OnDisconnectHandler(View nativeView)
+		{
+			_stackNavigationManager?.Disconnect();
+			base.OnDisconnectHandler(nativeView);
 		}
 
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
 			if (arg3 is NavigationRequest ea)
-				arg1._navigationManager?.RequestNavigation(ea);
+				arg1._stackNavigationManager?.RequestNavigation(ea);
 		}
 	}
 }

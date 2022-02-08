@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		public static void UpdateBorder(IVisualNativeElementRenderer renderer, IBorderElement backgroundView)
 		{
 			var control = renderer.Control;

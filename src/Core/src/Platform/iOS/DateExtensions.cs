@@ -1,7 +1,7 @@
 ﻿using System;
 using Foundation;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class DateExtensions
 	{

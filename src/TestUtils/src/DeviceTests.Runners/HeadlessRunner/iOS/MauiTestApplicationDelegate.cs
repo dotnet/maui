@@ -1,11 +1,13 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Foundation;
 using Microsoft.DotNet.XHarness.iOS.Shared.Execution;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
@@ -92,12 +94,16 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
+			var tcs = new TaskCompletionSource();
+
 			Window = new UIWindow(UIScreen.MainScreen.Bounds)
 			{
-				RootViewController = new MauiTestViewController()
+				RootViewController = new MauiTestViewController(tcs.Task)
 			};
 
 			Window.MakeKeyAndVisible();
+
+			tcs.TrySetResult();
 
 			return true;
 		}

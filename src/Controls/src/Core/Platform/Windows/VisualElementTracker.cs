@@ -21,6 +21,7 @@ using WCompositeTransform = Microsoft.UI.Xaml.Media.CompositeTransform;
 using WScaleTransform = Microsoft.UI.Xaml.Media.ScaleTransform;
 using Microsoft.Maui.Graphics;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -139,7 +140,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (operationPriorToSend != dragEventArgs.AcceptedOperation)
 				{
 					var result = (int)dragEventArgs.AcceptedOperation;
-					e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+					e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
 				}
 			});
 		}
@@ -153,13 +154,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if(!rec.AllowDrop)
 				{
-					e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
+					e.AcceptedOperation = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
 					return;
 				}
 
 				rec.SendDragOver(dragEventArgs);
 				var result = (int)dragEventArgs.AcceptedOperation;
-				e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+				e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
 			});
 		}
 
@@ -185,7 +186,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				catch (Exception dropExc)
 				{
-					Internals.Log.Warning(nameof(DropGestureRecognizer), $"{dropExc}");
+					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending drop event");
 				}
 			});
 		}
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				e.Cancel = args.Cancel;
-				e.AllowedOperations = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+				e.AllowedOperations = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 			});
 		}
 
@@ -461,7 +462,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isPinching = true;
 
-			Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
+			global::Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
 
 			var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
@@ -783,7 +784,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			double anchorX = view.AnchorX;
 			double anchorY = view.AnchorY;
-			frameworkElement.RenderTransformOrigin = new Windows.Foundation.Point(anchorX, anchorY);
+			frameworkElement.RenderTransformOrigin = new global::Windows.Foundation.Point(anchorX, anchorY);
 			frameworkElement.RenderTransform = new WScaleTransform { ScaleX = view.Scale * view.ScaleX, ScaleY = view.Scale * view.ScaleY };
 
 			UpdateRotation(view, frameworkElement);
@@ -874,12 +875,14 @@ namespace Microsoft.Maui.Controls.Platform
 			//We can't handle ManipulationMode.Scale and System , so we don't support pinch/pan on a scrollview 
 			if (Element is ScrollView)
 			{
+				var logger = Application.Current?.FindMauiContext()?.CreateLogger<GestureManager>();
+
 				if (hasPinchGesture)
-					Log.Warning("Gestures", "PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.LogWarning("PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				if (hasPanGesture)
-					Log.Warning("Gestures", "PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.LogWarning("PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				if (hasSwipeGesture)
-					Log.Warning("Gestures", "SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.LogWarning("SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				return;
 			}
 

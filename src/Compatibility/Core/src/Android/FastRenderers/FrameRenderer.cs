@@ -14,6 +14,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer instead")]
 	public class FrameRenderer : CardView, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		float _defaultElevation = -1f;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		VisualElement IVisualElementRenderer.Element => Element;
 		AView IVisualElementRenderer.View => this;
 
-		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
+		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			Context context = Context;
 			return new SizeRequest(new Size(context.ToPixels(20), context.ToPixels(20)));

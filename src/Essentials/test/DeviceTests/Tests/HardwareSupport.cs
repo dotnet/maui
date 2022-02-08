@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, an accelerometer
-			Windows.Devices.Sensors.Accelerometer.GetDefault() != null;
+			global::Windows.Devices.Sensors.Accelerometer.GetDefault() != null;
 #endif
 
 		public static bool HasMagnetometer =>
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a magnetometer
-			Windows.Devices.Sensors.Magnetometer.GetDefault() != null;
+			global::Windows.Devices.Sensors.Magnetometer.GetDefault() != null;
 #endif
 
 		public static bool HasGyroscope =>
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a gyroscope
-			Windows.Devices.Sensors.Gyrometer.GetDefault() != null;
+			global::Windows.Devices.Sensors.Gyrometer.GetDefault() != null;
 #endif
 
 		public static bool HasCompass =>
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a compass
-			Windows.Devices.Sensors.Compass.GetDefault() != null;
+			global::Windows.Devices.Sensors.Compass.GetDefault() != null;
 #endif
 
 		public static bool HasBattery =>
