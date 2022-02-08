@@ -227,11 +227,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
-			var nativeValueConverterService = DependencyService.Get<IPlatformValueConverterService>();
+			var platformValueConverterService = DependencyService.Get<IPlatformValueConverterService>();
 
-			object nativeValue = null;
-			if (nativeValueConverterService != null && nativeValueConverterService.ConvertTo(value, toType, out nativeValue))
-				return nativeValue;
+			object platformValue = null;
+			if (platformValueConverterService != null && platformValueConverterService.ConvertTo(value, toType, out platformValue))
+				return platformValue;
 
 			return value;
 		}

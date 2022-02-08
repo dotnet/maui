@@ -18,12 +18,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 	[Preserve(AllMembers = true)]
 	class PlatformValueConverterService : IPlatformValueConverterService
 	{
-		public bool ConvertTo(object value, Type toType, out object nativeValue)
+		public bool ConvertTo(object value, Type toType, out object platformValue)
 		{
-			nativeValue = null;
+			platformValue = null;
 			if (typeof(UIView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
 			{
-				nativeValue = ((UIView)value).ToView();
+				platformValue = ((UIView)value).ToView();
 				return true;
 			}
 			return false;

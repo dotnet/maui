@@ -4,6 +4,6 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 {
 	public interface IPlatformValueConverterService
 	{
-		bool ConvertTo(object value, Type toType, out object nativeValue);
+		bool ConvertTo(object value, Type toType, out object platformValue);
 	}
 }

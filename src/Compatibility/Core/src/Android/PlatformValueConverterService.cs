@@ -7,12 +7,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	class PlatformValueConverterService : IPlatformValueConverterService
 	{
-		public bool ConvertTo(object value, Type toType, out object nativeValue)
+		public bool ConvertTo(object value, Type toType, out object platformValue)
 		{
-			nativeValue = null;
+			platformValue = null;
 			if (typeof(AView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
 			{
-				nativeValue = ((AView)value).ToView();
+				platformValue = ((AView)value).ToView();
 				return true;
 			}
 			return false;

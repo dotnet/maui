@@ -9,12 +9,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
     public class PlatformValueConverterService : IPlatformValueConverterService
     {
-        public bool ConvertTo(object value, Type toType, out object nativeValue)
+        public bool ConvertTo(object value, Type toType, out object platformValue)
         {
-            nativeValue = null;
+            platformValue = null;
             if (typeof(FrameworkElement).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
             {
-                nativeValue = ((FrameworkElement)value).ToView();
+                platformValue = ((FrameworkElement)value).ToView();
                 return true;
             }
             return false;
