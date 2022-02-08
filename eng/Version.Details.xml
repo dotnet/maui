@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.200-rtm.22078.8" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.200-rtm.22106.1" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>e950d071463b02978f13d5324aeadd0eb9a51cfc</Sha>
+      <Sha>9049a306f63b8cde045db941a3367c1b8efd076a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.200-preview.14.53">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.200-preview.14.57">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>4a71aa6217dabc75b8616ee72440d85352868118</Sha>
+      <Sha>4342afd8dc89202bb501d0552a7945fbed8101d3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.2.301-preview.13.2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -39,113 +39,113 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>4e7d976438b0fc17f435804e801d5d68d193ec33</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Hosting" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>4e7d976438b0fc17f435804e801d5d68d193ec33</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Options" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.1" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
@@ -183,33 +183,33 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
       <Sha>ef15b555537a90da229ce6474658ae1a9916a932</Sha>
     </Dependency>
-    <Dependency Name="System.CodeDom" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="System.CodeDom" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.EventLog" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="System.Diagnostics.EventLog" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="System.IO.Pipelines" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="System.Text.Encodings.Web" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="6.0.2-mauipre.1.22075.3" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="System.Text.Json" Version="6.0.2-mauipre.1.22102.15" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>059caa278b1e5a62d0d60c9d84bdd737b04e6da8</Sha>
+      <Sha>3da69c23c1f8f502ec2eb1d44ff2fe7522210282</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-preview.2.22102.8">
       <Uri>https://github.com/dotnet/templating</Uri>
