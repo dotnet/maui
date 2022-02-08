@@ -50,4 +50,5 @@ namespace Microsoft.Maui.Handlers
 
 		private protected override void OnDisconnectHandler(object platformView) =>
 			DisconnectHandler((TPlatformView)platformView);
+	}
 }
