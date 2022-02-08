@@ -99,7 +99,8 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/dev/bond/cleanse-agent-dotnet   # UNDONE: DO NOT MERGE TO MAIN
+      # ref: refs/heads/dev/bond/cleanse-agent-dotnet   # UNDONE: DO NOT MERGE TO MAIN
+      ref: refs/heads/main
     - repository: sdk-insertions
       type: github
       name: xamarin/sdk-insertions
