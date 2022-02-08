@@ -108,11 +108,13 @@ namespace Microsoft.Maui.Controls.Handlers
 				Element.Appearing -= OnTabbedPageAppearing;
 				Element.Disappearing -= OnTabbedPageDisappearing;
 				RemoveTabs();
+				_viewPager.LayoutChange -= OnLayoutChanged;
 			}
 
 			Element = tabbedPage;
 			if (Element != null)
 			{
+				_viewPager.LayoutChange += OnLayoutChanged;
 				Element.Appearing += OnTabbedPageAppearing;
 				Element.Disappearing += OnTabbedPageDisappearing;
 				_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
@@ -157,6 +159,11 @@ namespace Microsoft.Maui.Controls.Handlers
 				UpdateOffscreenPageLimit();
 				SetTabLayout();
 			}
+		}
+
+		void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
+		{
+			Element.Arrange(e);
 		}
 
 		void RemoveTabs()

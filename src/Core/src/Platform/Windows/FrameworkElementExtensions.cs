@@ -192,15 +192,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static Task LoadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		internal static void OnLoaded(this FrameworkElement frameworkElement, Action action)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-
 			if (frameworkElement.IsLoaded)
 			{
-				taskCompletionSource.SetResult(true);
-				return taskCompletionSource.Task;
+				action();
 			}
 
 			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
@@ -209,23 +205,28 @@ namespace Microsoft.Maui.Platform
 				if (routedEventHandler != null)
 					frameworkElement.Loaded -= routedEventHandler;
 
-				taskCompletionSource.SetResult(true);
+				action();
 			};
 
 			frameworkElement.Loaded += routedEventHandler;
+		}
 
+		internal static Task OnLoadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			frameworkElement.OnLoaded(() => taskCompletionSource.SetResult(true));
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
-		internal static Task UnloadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		internal static void OnUnloaded(this FrameworkElement frameworkElement, Action action)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
 			if (!frameworkElement.IsLoaded)
 			{
 				taskCompletionSource.SetResult(true);
-				return taskCompletionSource.Task;
+				action();
 			}
 
 			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
@@ -234,12 +235,24 @@ namespace Microsoft.Maui.Platform
 				if (routedEventHandler != null)
 					frameworkElement.Unloaded -= routedEventHandler;
 
-				taskCompletionSource.SetResult(true);
+				action();
 			};
+		}
 
-			frameworkElement.Unloaded += routedEventHandler;
-
+		internal static Task OnUnloadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			frameworkElement.OnUnloaded(() => taskCompletionSource.SetResult(true));
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+		}
+
+		internal static void Arrange(this IView view, FrameworkElement frameworkElement)
+		{
+			var rect = new Graphics.Rectangle(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
+
+			if (!view.Frame.Equals(rect))
+				view.Arrange(rect);
 		}
 
 
