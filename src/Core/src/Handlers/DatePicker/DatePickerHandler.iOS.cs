@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiDatePicker CreatePlatformView()
 		{
-			MauiDatePicker nativeDatePicker = new MauiDatePicker();
+			MauiDatePicker platformDatePicker = new MauiDatePicker();
 
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 
@@ -28,23 +28,23 @@ namespace Microsoft.Maui.Handlers
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
 			{
 				SetVirtualViewDate();
-				nativeDatePicker.ResignFirstResponder();
+				platformDatePicker.ResignFirstResponder();
 			});
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
 
-			nativeDatePicker.InputView = _picker;
-			nativeDatePicker.InputAccessoryView = toolbar;
+			platformDatePicker.InputView = _picker;
+			platformDatePicker.InputAccessoryView = toolbar;
 
-			nativeDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-			nativeDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 
-			nativeDatePicker.InputAssistantItem.LeadingBarButtonGroups = null;
-			nativeDatePicker.InputAssistantItem.TrailingBarButtonGroups = null;
+			platformDatePicker.InputAssistantItem.LeadingBarButtonGroups = null;
+			platformDatePicker.InputAssistantItem.TrailingBarButtonGroups = null;
 
-			nativeDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
+			platformDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
-			return nativeDatePicker;
+			return platformDatePicker;
 		}
 
 		internal UIDatePicker? DatePickerDialog { get { return _picker; } }

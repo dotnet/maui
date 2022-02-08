@@ -8,39 +8,39 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DatePickerExtensions
 	{
-		public static void UpdateDate(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			var date = datePicker.Date;
-			nativeDatePicker.UpdateDate(date);
+			platformDatePicker.UpdateDate(date);
 		}
 
-		public static void UpdateDate(this CalendarDatePicker nativeDatePicker, DateTime dateTime)
+		public static void UpdateDate(this CalendarDatePicker platformDatePicker, DateTime dateTime)
 		{
-			nativeDatePicker.Date = dateTime;
+			platformDatePicker.Date = dateTime;
 		}
 	
-		public static void UpdateMinimumDate(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateMinimumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			nativeDatePicker.MinDate = datePicker.MinimumDate;
+			platformDatePicker.MinDate = datePicker.MinimumDate;
 		}
 
-		public static void UpdateMaximumDate(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			nativeDatePicker.MaxDate = datePicker.MaximumDate;
+			platformDatePicker.MaxDate = datePicker.MaximumDate;
 		}
 
-		public static void UpdateCharacterSpacing(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			nativeDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
+			platformDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
 		}
 
-		public static void UpdateFont(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
-			nativeDatePicker.UpdateFont(datePicker.Font, fontManager);
+		public static void UpdateFont(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
+			platformDatePicker.UpdateFont(datePicker.Font, fontManager);
 
-		public static void UpdateTextColor(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker, WBrush? defaultForeground)
+		public static void UpdateTextColor(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, WBrush? defaultForeground)
 		{
 			Color textColor = datePicker.TextColor;
-			nativeDatePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToPlatform()) : textColor.ToPlatform();
+			platformDatePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToPlatform()) : textColor.ToPlatform();
 		}
 	}
 }
