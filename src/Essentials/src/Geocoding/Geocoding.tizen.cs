@@ -3,12 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Devices.Sensors
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	class GeocodingImplementation : IPlatformGeocoding, IGeocoding
+	public class GeocodingImplementation: IGeocoding
 	{
-		public string? MapServiceToken { get; set; }
-
 		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{
 			ValidateMapServiceToken();
