@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiComboBox CreatePlatformView()
 		{
-			var nativePicker = new MauiComboBox();
+			var platformPicker = new MauiComboBox();
 
 			if (VirtualView != null)
-				nativePicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
+				platformPicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
 
-			return nativePicker;
+			return platformPicker;
 		}
 
 		protected override void ConnectHandler(MauiComboBox nativeView)

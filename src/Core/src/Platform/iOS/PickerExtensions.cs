@@ -7,19 +7,19 @@ namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{
-		public static void UpdateTitle(this MauiPicker nativePicker, IPicker picker) =>
-			nativePicker.UpdatePicker(picker);
+		public static void UpdateTitle(this MauiPicker platformPicker, IPicker picker) =>
+			platformPicker.UpdatePicker(picker);
 
-		public static void UpdateTitleColor(this MauiPicker nativePicker, IPicker picker) =>
- 			nativePicker.SetTitleColor(picker);
+		public static void UpdateTitleColor(this MauiPicker platformPicker, IPicker picker) =>
+ 			platformPicker.SetTitleColor(picker);
 
-		public static void UpdateTextColor(this MauiPicker nativePicker, IPicker picker) =>
-			nativePicker.TextColor = picker.TextColor?.ToPlatform();
+		public static void UpdateTextColor(this MauiPicker platformPicker, IPicker picker) =>
+			platformPicker.TextColor = picker.TextColor?.ToPlatform();
 
-		public static void UpdateSelectedIndex(this MauiPicker nativePicker, IPicker picker) =>
-			nativePicker.SetSelectedIndex(picker, picker.SelectedIndex);
+		public static void UpdateSelectedIndex(this MauiPicker platformPicker, IPicker picker) =>
+			platformPicker.SetSelectedIndex(picker, picker.SelectedIndex);
 
-		internal static void SetTitleColor(this MauiPicker nativePicker, IPicker picker)
+		internal static void SetTitleColor(this MauiPicker platformPicker, IPicker picker)
 		{
 			var title = picker.Title;
 
@@ -31,34 +31,34 @@ namespace Microsoft.Maui.Platform
 			if (titleColor == null)
 				return;
 
-			nativePicker.UpdateAttributedPlaceholder(new NSAttributedString(title, null, titleColor.ToPlatform()));
+			platformPicker.UpdateAttributedPlaceholder(new NSAttributedString(title, null, titleColor.ToPlatform()));
 		}
 
-		internal static void UpdateAttributedPlaceholder(this MauiPicker nativePicker, NSAttributedString nsAttributedString)
+		internal static void UpdateAttributedPlaceholder(this MauiPicker platformPicker, NSAttributedString nsAttributedString)
 		{
-			nativePicker.AttributedPlaceholder = nsAttributedString;
+			platformPicker.AttributedPlaceholder = nsAttributedString;
 		}
 
-		internal static void UpdatePicker(this MauiPicker nativePicker, IPicker picker)
+		internal static void UpdatePicker(this MauiPicker platformPicker, IPicker picker)
 		{
 			var selectedIndex = picker.SelectedIndex;
 
-			nativePicker.Text = selectedIndex == -1 ? "" : picker.GetItem(selectedIndex);
+			platformPicker.Text = selectedIndex == -1 ? "" : picker.GetItem(selectedIndex);
 
-			var pickerView = nativePicker.UIPickerView;
+			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
 
 			if (picker.GetCount() == 0)
 				return;
 
-			nativePicker.SetSelectedIndex(picker, selectedIndex);
+			platformPicker.SetSelectedIndex(picker, selectedIndex);
 		}
 
-		internal static void SetSelectedIndex(this MauiPicker nativePicker, IPicker picker, int selectedIndex = 0)
+		internal static void SetSelectedIndex(this MauiPicker platformPicker, IPicker picker, int selectedIndex = 0)
 		{
 			picker.SelectedIndex = selectedIndex;
 
-			var pickerView = nativePicker.UIPickerView;
+			var pickerView = platformPicker.UIPickerView;
 
 			if (pickerView?.Model is PickerSource source)
 			{

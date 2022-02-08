@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_pickerView = new UIPickerView();
 
-			var nativePicker = new MauiPicker(_pickerView) { BorderStyle = UITextBorderStyle.RoundedRect };
+			var platformPicker = new MauiPicker(_pickerView) { BorderStyle = UITextBorderStyle.RoundedRect };
 
 			var width = UIScreen.MainScreen.Bounds.Width;
 			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
@@ -34,28 +34,28 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				UpdatePickerFromPickerSource(pickerSource);
-				nativePicker.ResignFirstResponder();
+				platformPicker.ResignFirstResponder();
 			});
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
 
-			nativePicker.InputView = _pickerView;
-			nativePicker.InputAccessoryView = toolbar;
+			platformPicker.InputView = _pickerView;
+			platformPicker.InputAccessoryView = toolbar;
 
-			nativePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-			nativePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformPicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformPicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 
 			if (UIDevice.CurrentDevice.CheckSystemVersion(9, 0))
 			{
-				nativePicker.InputAssistantItem.LeadingBarButtonGroups = null;
-				nativePicker.InputAssistantItem.TrailingBarButtonGroups = null;
+				platformPicker.InputAssistantItem.LeadingBarButtonGroups = null;
+				platformPicker.InputAssistantItem.TrailingBarButtonGroups = null;
 			}
 
-			nativePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
+			platformPicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
 			_pickerView.Model = new PickerSource(VirtualView);
 
-			return nativePicker;
+			return platformPicker;
 		}
 
 		protected override void ConnectHandler(MauiPicker nativeView)
