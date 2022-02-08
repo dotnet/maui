@@ -49,7 +49,5 @@ variables:
   - name: PrivateBuild
     value: true
   # For eng/common/SetupNugetSources.ps1
-  - group: AzureDevOps-Artifact-Feeds-Pats
-  # For dotnet-install.ps1/sh
-  - group: DotNet-MSRC-Storage
+  - group:DotNetBuilds storage account read tokens
 - group: Xamarin-Secrets
