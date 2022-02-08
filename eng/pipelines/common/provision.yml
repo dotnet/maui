@@ -7,7 +7,7 @@ steps:
   - ${{ if eq(parameters.platform, 'macos') }}:
     - pwsh: |
         $dotnetToolsPath = "$(Agent.ToolsDirectory)/dotnet"
-        if ([IO.Directory]::Exists($dotnetToolsPath))) {
+        if ([IO.Directory]::Exists($dotnetToolsPath)) {
           Write-Host "Deleting: ${dotnetToolsPath}"
           [IO.Directory]::Delete($dotnetToolsPath, $true)
         }
