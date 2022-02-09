@@ -150,6 +150,12 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
+		bool IView.IsFocused
+		{
+			get => (bool)GetValue(IsFocusedProperty);
+			set => SetValueCore(IsFocusedPropertyKey, value);
+		}
+
 		Maui.FlowDirection IView.FlowDirection
 			=> ((IFlowDirectionController)this).EffectiveFlowDirection.ToFlowDirection();
 

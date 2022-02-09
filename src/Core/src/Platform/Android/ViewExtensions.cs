@@ -65,6 +65,16 @@ namespace Microsoft.Maui.Platform
 			nativeView.Enabled = view.IsEnabled;
 		}
 
+		public static void Focus(this AView nativeView, FocusRequest request)
+		{
+			// TODO: Implement Focus on Android.
+		}
+
+		public static void Unfocus(this AView nativeView, IView view)
+		{
+			// TODO: Implement Unfocus on Android.
+		}
+
 		public static void UpdateVisibility(this AView nativeView, IView view)
 		{
 			nativeView.Visibility = view.Visibility.ToNativeVisibility();

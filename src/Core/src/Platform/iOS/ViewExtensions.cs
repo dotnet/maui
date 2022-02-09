@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
-using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -23,6 +21,16 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			uiControl.Enabled = view.IsEnabled;
+		}
+
+		public static void Focus(this UIView nativeView, FocusRequest request)
+		{
+			nativeView.BecomeFirstResponder();
+		}
+
+		public static void Unfocus(this UIView nativeView, IView view)
+		{
+			nativeView.ResignFirstResponder();
 		}
 
 		public static void UpdateVisibility(this UIView nativeView, IView view) =>

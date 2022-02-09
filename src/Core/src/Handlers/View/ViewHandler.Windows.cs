@@ -6,6 +6,21 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
+		partial void ConnectingHandler(NativeView? nativeView)
+		{
+			if (nativeView != null)
+			{
+				nativeView.GotFocus += NativeViewGotFocus;
+				nativeView.LostFocus += NativeViewLostFocus;
+			}
+		}
+
+		partial void DisconnectingHandler(NativeView nativeView)
+		{
+			nativeView.GotFocus -= NativeViewGotFocus;
+			nativeView.LostFocus -= NativeViewLostFocus;
+		}
+		
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
 			// Both Clip and Shadow depend on the Control size.
@@ -78,6 +93,18 @@ namespace Microsoft.Maui.Handlers
 				var toolBar = toolbarElement.Toolbar.ToPlatform(handler.MauiContext);
 				handler.MauiContext.GetNavigationRootManager().SetToolbar(toolBar);
 			}
+		}
+
+		void NativeViewGotFocus(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+		}
+
+		void NativeViewLostFocus(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 	}
 }
