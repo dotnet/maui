@@ -32,7 +32,7 @@
   </PropertyGroup>
 
   <Target Name="_ReadAllNuGetSources">
-    <XmlPeek XmlInputPath="../../NuGet.config" Query="configuration/packageSources/add[@key!='wasdk-internal']/@value">
+    <XmlPeek XmlInputPath="../../NuGet.config" Query="configuration/packageSources/add[@key!='wasdk-internal' and @key!='dotnet6-internal-transport']/@value">
       <Output TaskParameter="Result" ItemName="_AllNuGetSources" />
     </XmlPeek>
   </Target>
