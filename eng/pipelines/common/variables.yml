@@ -48,6 +48,9 @@ variables:
 - ${{ if eq(variables['Build.DefinitionName'], 'MAUI-private') }}:
   - name: PrivateBuild
     value: true
+- ${{ if ne(variables['Build.DefinitionName'], 'MAUI-private') }}:
+  - name: PrivateBuild
+    value: false
   # For eng/common/SetupNugetSources.ps1
   - group: DotNetBuilds storage account read tokens
   - group: AzureDevOps-Artifact-Feeds-Pats

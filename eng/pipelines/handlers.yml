@@ -140,6 +140,7 @@ stages:
                 displayName: 'Install .NET'
                 env:
                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -188,6 +189,7 @@ stages:
               displayName: 'Pack .NET Maui'
               env:
                 DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                PRIVATE_BUILD: $(PrivateBuild)
             - ${{ if eq(BuildPlatform.name, 'Windows') }}:
               - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
                 displayName: 'Diff .NET Maui artifacts with NuGet'
@@ -269,8 +271,10 @@ stages:
                 displayName: Move the downloaded artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
+                
                 env:
                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
               - task: PublishBuildArtifacts@1
@@ -325,6 +329,7 @@ stages:
                 displayName: 'Install .NET (Local Workloads)'
                 env:
                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Templates'
               - task: PublishBuildArtifacts@1
