@@ -33,7 +33,26 @@
                                 Height="48"
                                 Canvas.ZIndex="1" 
                                 Margin="0,0,0,0">
-                                <StackPanel Orientation="Horizontal" Margin="12, 0, 0, 0">
+                                <StackPanel Orientation="Horizontal" Margin="12, 0, 0, 0" x:Name="stackPanel">
+                                    <MenuBar>
+                                        <MenuBarItem Title="File">
+                                            <MenuFlyoutItem Text="New"/>
+                                            <MenuFlyoutItem Text="Open..."/>
+                                            <MenuFlyoutItem Text="Save"/>
+                                            <MenuFlyoutItem Text="Exit"/>
+                                        </MenuBarItem>
+
+                                        <MenuBarItem Title="Edit">
+                                            <MenuFlyoutItem Text="Undo"/>
+                                            <MenuFlyoutItem Text="Cut"/>
+                                            <MenuFlyoutItem Text="Copy"/>
+                                            <MenuFlyoutItem Text="Paste"/>
+                                        </MenuBarItem>
+
+                                        <MenuBarItem Title="Help">
+                                            <MenuFlyoutItem Text="About"/>
+                                        </MenuBarItem>
+                                    </MenuBar>
                                     <Image 
                                         x:Name="AppFontIcon"
                                         HorizontalAlignment="Left" 

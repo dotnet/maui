@@ -27,4 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Handlers\MenuBarItemFlyout\" />
+  </ItemGroup>
 </Project>
