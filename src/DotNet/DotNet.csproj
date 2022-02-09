@@ -80,12 +80,10 @@
       <_WorkloadSource Include="$(PackageOutputPath)" />
       <_WorkloadSource Include="@(_AllNuGetSources)" />
     </ItemGroup>
-    <Copy Files="$(MauiRootDirectory)NuGet.config" WorkloadDirectory="$(DotNetTempDirectory)" />
+    <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(PackageOutputPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec
-        Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;"
-        WorkingDirectory="$(MauiRootDirectory)"
-    />
+    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; 
+        --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)"/>
 
   </Target>
 
