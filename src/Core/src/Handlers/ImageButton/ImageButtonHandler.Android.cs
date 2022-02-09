@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ShapeableImageView nativeView)
 		{
+			nativeView.FocusChange -= OnFocusChange;
 			nativeView.Click -= OnClick;
 			nativeView.Touch -= OnTouch;
 
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(ShapeableImageView nativeView)
 		{
+			nativeView.FocusChange += OnFocusChange;
 			nativeView.Click += OnClick;
 			nativeView.Touch += OnTouch;
 
@@ -54,6 +56,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			(handler.NativeView as ShapeableImageView)?.UpdateCornerRadius(buttonStroke);
+		}
+
+		void OnFocusChange(object? sender, View.FocusChangeEventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = e.HasFocus;
 		}
 
 		void OnTouch(object? sender, View.TouchEventArgs e)

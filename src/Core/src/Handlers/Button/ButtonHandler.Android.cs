@@ -53,6 +53,8 @@ namespace Microsoft.Maui.Handlers
 			TouchListener.Handler = this;
 			nativeView.SetOnTouchListener(TouchListener);
 
+			nativeView.FocusChange += OnNativeViewFocusChange;
+
 			base.ConnectHandler(nativeView);
 		}
 
@@ -63,6 +65,8 @@ namespace Microsoft.Maui.Handlers
 
 			TouchListener.Handler = null;
 			nativeView.SetOnTouchListener(null);
+
+			nativeView.FocusChange -= OnNativeViewFocusChange;
 
 			ImageSourceLoader.Reset();
 
@@ -200,6 +204,12 @@ namespace Microsoft.Maui.Handlers
 		void OnClick(IButton? button, AView? v)
 		{
 			button?.Clicked();
+		}
+
+		void OnNativeViewFocusChange(object? sender, AView.FocusChangeEventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = e.HasFocus;
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
