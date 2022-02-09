@@ -133,5 +133,6 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
     <PackageReference Include="Tizen.UIExtensions.ElmSharp" Version="0.6.0-pre1" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
   </ItemGroup>
 </Project>
