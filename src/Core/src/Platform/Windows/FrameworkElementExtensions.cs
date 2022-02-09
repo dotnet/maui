@@ -211,14 +211,6 @@ namespace Microsoft.Maui.Platform
 			frameworkElement.Loaded += routedEventHandler;
 		}
 
-		internal static Task OnLoadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
-		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			frameworkElement.OnLoaded(() => taskCompletionSource.SetResult(true));
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
-		}
-
 		internal static void OnUnloaded(this FrameworkElement frameworkElement, Action action)
 		{
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
@@ -237,14 +229,6 @@ namespace Microsoft.Maui.Platform
 
 				action();
 			};
-		}
-
-		internal static Task OnUnloadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
-		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			frameworkElement.OnUnloaded(() => taskCompletionSource.SetResult(true));
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
 		internal static void Arrange(this IView view, FrameworkElement frameworkElement)

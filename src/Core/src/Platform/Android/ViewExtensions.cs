@@ -400,15 +400,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		internal static Task LoadedAsync(this AView frameworkElement, TimeSpan? timeOut = null)
+		internal static void OnLoaded(this View frameworkElement, Action action)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-
 			if (frameworkElement.IsAttachedToWindow)
 			{
-				taskCompletionSource.SetResult(true);
-				return taskCompletionSource.Task;
+				action();
 			}
 
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
@@ -417,23 +413,17 @@ namespace Microsoft.Maui.Platform
 				if (routedEventHandler != null)
 					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
 
-				taskCompletionSource.SetResult(true);
+				action();
 			};
 
 			frameworkElement.ViewAttachedToWindow += routedEventHandler;
-
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
-		internal static Task UnloadedAsync(this AView frameworkElement, TimeSpan? timeOut = null)
+		internal static void OnUnloaded(this View frameworkElement, Action action)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-
 			if (!frameworkElement.IsAttachedToWindow)
 			{
-				taskCompletionSource.SetResult(true);
-				return taskCompletionSource.Task;
+				action();
 			}
 
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
@@ -442,12 +432,10 @@ namespace Microsoft.Maui.Platform
 				if (routedEventHandler != null)
 					frameworkElement.ViewDetachedFromWindow -= routedEventHandler;
 
-				taskCompletionSource.SetResult(true);
+				action();
 			};
 
 			frameworkElement.ViewDetachedFromWindow += routedEventHandler;
-
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
 		internal static IViewParent? GetParent(this View? view)
