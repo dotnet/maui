@@ -9,16 +9,14 @@ using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer instead")]
-	public class PhoneFlyoutPageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
+	public class PhoneFlyoutPageRenderer : UIViewController, INativeViewHandler
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
 
 		bool _disposed;
-		EventTracker _events;
 
 		UIViewController _flyoutController;
 
@@ -27,16 +25,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		bool _presented;
 		UIGestureRecognizer _tapGesture;
 
-		VisualElementTracker _tracker;
 		bool _applyShadow;
 
 		Page Page => Element as Page;
 		IFlyoutPageController FlyoutPageController => FlyoutPage;
-
+		IMauiContext _mauiContext;
+		IMauiContext MauiContext => _mauiContext;
+		public static IPropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer> Mapper = new PropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewMapper);
+		public static CommandMapper<FlyoutPage, PhoneFlyoutPageRenderer> CommandMapper = new CommandMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewCommandMapper);
+		ViewHandlerDelegator<FlyoutPage> _viewHandlerWrapper;
 
 		[Preserve(Conditional = true)]
 		public PhoneFlyoutPageRenderer()
 		{
+			_viewHandlerWrapper = new ViewHandlerDelegator<FlyoutPage>(Mapper, CommandMapper, this);
 		}
 
 		FlyoutPage FlyoutPage => Element as FlyoutPage;
@@ -62,13 +64,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		public VisualElement Element { get; private set; }
+		public VisualElement Element => _viewHandlerWrapper.Element;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
-		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		public Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
+			return this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 		}
 
 		public UIView NativeView
@@ -78,24 +80,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElement(VisualElement element)
 		{
-			var oldElement = Element;
-			Element = element;
-			Element.SizeChanged += PageOnSizeChanged;
+			var flyoutPage = element as FlyoutPage;
 
 			_flyoutController = new ChildViewController();
 			_detailController = new ChildViewController();
 
 			_clickOffView = new UIView();
-			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToUIColor();
-
-			Presented = ((FlyoutPage)Element).IsPresented;
-
-			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
-
-			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
-
-			if (element != null)
-				element.SendViewInitialized(NativeView);
+			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToNative();
+			Presented = ((FlyoutPage)element).IsPresented;
+			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
+			Element.SizeChanged += PageOnSizeChanged;
 		}
 
 		public void SetElementSize(Size size)
@@ -127,7 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			// TODO MAUI: Is this correct?
 			if (Element.Width == -1 && Element.Height == -1)
-				Element.Layout(new Rectangle(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+				(Element as IView).Arrange(new Rectangle(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
 
 			LayoutChildren(false);
 		}
@@ -135,8 +129,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
-
-			_tracker = new VisualElementTracker(this);
 
 			((FlyoutPage)Element).PropertyChanged += HandlePropertyChanged;
 
@@ -171,18 +163,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				Element.SizeChanged -= PageOnSizeChanged;
 				Element.PropertyChanged -= HandlePropertyChanged;
-
-				if (_tracker != null)
-				{
-					_tracker.Dispose();
-					_tracker = null;
-				}
-
-				if (_events != null)
-				{
-					_events.Dispose();
-					_events = null;
-				}
 
 				if (_tapGesture != null)
 				{
@@ -256,11 +236,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void LayoutChildren(bool animated)
 		{
-			var frame = Element.Bounds.ToRectangleF();
+			var frame = Element.Bounds.ToCGRect();
 			var flyoutFrame = frame;
 			nfloat opacity = 1;
 			flyoutFrame.Width = (int)(Math.Min(flyoutFrame.Width, flyoutFrame.Height) * 0.8);
-			var detailRenderer = Platform.GetRenderer(FlyoutPage.Detail);
+			var detailRenderer = FlyoutPage.Detail.Handler as INativeViewHandler;
 			if (detailRenderer == null)
 				return;
 			var detailView = detailRenderer.ViewController.View;
@@ -272,6 +252,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			_flyoutController.View.Frame = flyoutFrame;
+
+			(FlyoutPage.Flyout as IView).Measure(flyoutFrame.Width, flyoutFrame.Height);
+			FlyoutPage.Flyout.Handler.NativeArrangeHandler(new Rectangle(0,0, flyoutFrame.Width, flyoutFrame.Height));
 
 			var target = frame;
 			if (Presented)
@@ -331,8 +314,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackground()
 		{
-			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
+			((Page)(Element)).BackgroundImageSource.LoadImage(MauiContext, result =>
 			{
+				var bgImage = result?.Value;
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
 				else
@@ -346,7 +330,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						if (Element.BackgroundColor == null)
 							View.BackgroundColor = UIColor.White;
 						else
-							View.BackgroundColor = Element.BackgroundColor.ToUIColor();
+							View.BackgroundColor = Element.BackgroundColor.ToNative();
 					}
 				}
 			});
@@ -358,32 +342,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			EmptyContainers();
 
-			if (Platform.GetRenderer(((FlyoutPage)Element).Flyout) == null)
-				Platform.SetRenderer(((FlyoutPage)Element).Flyout, Platform.CreateRenderer(((FlyoutPage)Element).Flyout));
-			if (Platform.GetRenderer(((FlyoutPage)Element).Detail) == null)
-				Platform.SetRenderer(((FlyoutPage)Element).Detail, Platform.CreateRenderer(((FlyoutPage)Element).Detail));
-
-			var flyoutRenderer = Platform.GetRenderer(((FlyoutPage)Element).Flyout);
-			var detailRenderer = Platform.GetRenderer(((FlyoutPage)Element).Detail);
+			var flyoutRenderer = ((FlyoutPage)Element).Flyout.ToHandler(MauiContext);
+			var detailRenderer = ((FlyoutPage)Element).Detail.ToHandler(MauiContext);
 
 			((FlyoutPage)Element).Flyout.PropertyChanged += HandleFlyoutPropertyChanged;
 
-			UIView flyoutView = flyoutRenderer.NativeView;
+			UIView flyoutView = flyoutRenderer.ViewController.View;
 
 			_flyoutController.View.AddSubview(flyoutView);
 			_flyoutController.AddChildViewController(flyoutRenderer.ViewController);
 
-			UIView detailView = detailRenderer.NativeView;
+			UIView detailView = detailRenderer.ViewController.View;
 
 			_detailController.View.AddSubview(detailView);
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (NativeVersion.Supports(NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (detailRenderer.ViewController.View.Superview != null)
-				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToUIColor();
+				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToNative();
 
 			ToggleAccessibilityElementsHidden();
 		}
@@ -394,13 +373,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!(FlyoutPage?.Detail is NavigationPage))
 				return;
 
-			var detailRenderer = Platform.GetRenderer(FlyoutPage.Detail) as UINavigationController;
+			var detailRenderer = 
+				(FlyoutPage.Detail?.Handler as INativeViewHandler)
+				?.ViewController as UINavigationController;
 
 			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
 			if (firstPage != null)
-#pragma warning disable CS0618 // Type or member is obsolete
 				NavigationRenderer.SetFlyoutLeftBarButton(firstPage, FlyoutPage);
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateApplyShadow(bool value)
@@ -410,8 +389,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
-			if (((FlyoutPage)Element).Detail != null)
-				return Platform.GetRenderer(((FlyoutPage)Element).Detail).ViewController;
+			if (((FlyoutPage)Element).Detail?.Handler is INativeViewHandler nvh)
+				return nvh.ViewController;
 			else
 				return base.ChildViewControllerForStatusBarHidden();
 		}
@@ -420,8 +399,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			get
 			{
-				if (((FlyoutPage)Element).Detail != null)
-					return Platform.GetRenderer(((FlyoutPage)Element).Detail).ViewController;
+				if (((FlyoutPage)Element).Detail?.Handler is INativeViewHandler nvh)
+					return nvh.ViewController;
 				else
 					return base.ChildViewControllerForStatusBarHidden();
 			}
@@ -524,7 +503,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (view == null)
 				return false;
 
-			if (view.Superview is SwipeViewRenderer)
+			if (view.Superview is MauiSwipeView)
 				return true;
 
 			return IsSwipeView(view.Superview);
@@ -539,16 +518,60 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		void IEffectControlProvider.RegisterEffect(Effect effect)
-		{
-			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
-		}
-
 		void ApplyDetailShadow(nfloat percent)
 		{
-			var detailView = Platform.GetRenderer(FlyoutPage.Detail).ViewController.View;
+			var detailView = ((INativeViewHandler)FlyoutPage.Detail.Handler).ViewController.View;
 			var opacity = (nfloat)(0.5 + (0.5 * (1 - percent)));
 			detailView.Layer.Opacity = (float)opacity;
 		}
+
+
+		#region INativeViewHandler
+		bool IViewHandler.HasContainer { get => false; set { } }
+
+		object IViewHandler.ContainerView => null;
+
+		IView IViewHandler.VirtualView => Element;
+
+		object IElementHandler.NativeView => NativeView;
+
+		Maui.IElement IElementHandler.VirtualView => Element;
+
+		IMauiContext IElementHandler.MauiContext => _mauiContext;
+
+		UIView INativeViewHandler.NativeView => NativeView;
+
+		UIView INativeViewHandler.ContainerView => null;
+
+		UIViewController INativeViewHandler.ViewController => this;
+
+		void IViewHandler.NativeArrange(Rectangle rect) =>
+			_viewHandlerWrapper.NativeArrange(rect);
+
+		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
+		{
+			_mauiContext = mauiContext;
+		}
+
+		void IElementHandler.SetVirtualView(Maui.IElement view)
+		{
+			SetElement((VisualElement)view);
+		}
+
+		void IElementHandler.UpdateValue(string property)
+		{
+			_viewHandlerWrapper.UpdateProperty(property);
+		}
+
+		void IElementHandler.Invoke(string command, object args)
+		{
+			_viewHandlerWrapper.Invoke(command, args);
+		}
+
+		void IElementHandler.DisconnectHandler()
+		{
+			_viewHandlerWrapper.DisconnectHandler();
+		}
+		#endregion
 	}
 }

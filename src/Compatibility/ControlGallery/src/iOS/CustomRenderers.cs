@@ -587,7 +587,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class TabbedPageWithCustomBarColorRenderer : TabbedRenderer
+	public class TabbedPageWithCustomBarColorRenderer : Handlers.Compatibility.TabbedRenderer
 	{
 		public TabbedPageWithCustomBarColorRenderer()
 		{
