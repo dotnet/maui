@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Essentials
 		void ShowSettingsUI();
 
 		AppTheme RequestedTheme { get; }
+
+		bool IsPackagedApp { get; }
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppInfo']/Docs" />
