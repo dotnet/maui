@@ -3,7 +3,7 @@ using Microsoft.Maui.HotReload;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class ContainerViewController : UIViewController, IReloadHandler
 	{
@@ -78,7 +78,7 @@ namespace Microsoft.Maui
 			_ = Context ?? throw new ArgumentNullException(nameof(Context));
 			_ = _view ?? throw new ArgumentNullException(nameof(view));
 
-			return _view.ToNative(Context);
+			return _view.ToPlatform(Context);
 		}
 
 		public override void ViewDidLayoutSubviews()

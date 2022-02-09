@@ -1,16 +1,17 @@
 ﻿using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : UIView
 	{
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _shadowLayer;
+		UIView? BorderView;
 
 		public WrapperView()
 		{
@@ -58,6 +59,9 @@ namespace Microsoft.Maui
 			if (Subviews.Length == 0)
 				return;
 
+			if (BorderView != null)
+				BringSubviewToFront(BorderView);
+
 			var child = Subviews[0];
 
 			child.Frame = Bounds;
@@ -68,8 +72,12 @@ namespace Microsoft.Maui
 			if (ShadowLayer != null)
 				ShadowLayer.Frame = Bounds;
 
+			if (BorderView != null)
+				BringSubviewToFront(BorderView);
+
 			SetClip();
 			SetShadow();
+			SetBorder();
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -98,6 +106,8 @@ namespace Microsoft.Maui
 		{
 			SetShadow();
 		}
+
+		partial void BorderChanged() => SetBorder();
 
 		void SetClip()
 		{
@@ -137,6 +147,21 @@ namespace Microsoft.Maui
 				shadowLayer.ClearShadow();
 			else
 				shadowLayer.SetShadow(Shadow);
+		}
+		void SetBorder()
+		{
+			if (Border == null)
+			{
+				BorderView?.RemoveFromSuperview();
+				return;
+			}
+
+			if (BorderView == null)
+			{
+				AddSubview(BorderView = new UIView(Bounds) { BackgroundColor = UIColor.Black });
+			}
+
+			BorderView.UpdateMauiCALayer(Border);
 		}
 
 		CALayer? GetLayer()

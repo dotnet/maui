@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel.Resources.Core;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static partial class MauiContextExtensions
 	{
@@ -25,11 +26,22 @@ namespace Microsoft.Maui
 		public static UI.Xaml.Window? GetOptionalNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<UI.Xaml.Window>();
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UI.Xaml.Window nativeWindow)
+		public static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
-			var scopedContext = new MauiContext(mauiContext);
-			scopedContext.AddSpecific(nativeWindow);
-			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
+			return MauiWinUIApplication.Current.Services
+				?? throw new InvalidOperationException("Unable to find Application Services");
+		}
+
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, bool registerNewNavigationRoot)
+		{
+			var scopedContext = new MauiContext(mauiContext.Services);
+
+			if (registerNewNavigationRoot)
+			{
+				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
+			}
+
 			return scopedContext;
 		}
 	}

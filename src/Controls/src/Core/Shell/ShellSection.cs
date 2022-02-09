@@ -5,18 +5,21 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Tab.xml" path="Type[@FullName='Microsoft.Maui.Controls.Tab']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class Tab : ShellSection
 	{
 	}
 
+	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement
+	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement
 	{
 		#region PropertyKeys
 
@@ -190,10 +193,12 @@ namespace Microsoft.Maui.Controls
 		}
 		#endregion
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='CurrentItemProperty']/Docs" />
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellContent), typeof(ShellSection), null, BindingMode.TwoWay,
 				propertyChanged: OnCurrentItemChanged);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='ItemsProperty']/Docs" />
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 
 		Page _displayedPage;
@@ -205,6 +210,7 @@ namespace Microsoft.Maui.Controls
 		internal bool IsPushingModalStack { get; private set; }
 		internal bool IsPoppingModalStack { get; private set; }
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public ShellSection()
 		{
 			((ShellElementCollection)Items).VisibleItemsChangedInternal += (_, args) =>
@@ -233,15 +239,18 @@ namespace Microsoft.Maui.Controls
 			Navigation = new NavigationImpl(this);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='CurrentItem']/Docs" />
 		public ShellContent CurrentItem
 		{
 			get { return (ShellContent)GetValue(CurrentItemProperty); }
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Items']/Docs" />
 		public IList<ShellContent> Items => (IList<ShellContent>)GetValue(ItemsProperty);
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Stack']/Docs" />
 		public IReadOnlyList<Page> Stack => _navStack;
 
 		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
@@ -306,7 +315,7 @@ namespace Microsoft.Maui.Controls
 			return (ShellSection)(ShellContent)page;
 		}
 
-		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, bool? animate, List<string> globalRoutes, bool isRelativePopping)
+		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, List<string> globalRoutes, bool isRelativePopping)
 		{
 			string route = "";
 			List<Page> navStack = null;
@@ -350,7 +359,7 @@ namespace Microsoft.Maui.Controls
 							continue;
 						}
 
-						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, i == globalRoutes.Count - 1, false);
+						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, services, i == globalRoutes.Count - 1, false);
 						if (IsModal(page))
 						{
 							await PushModalAsync(page, IsNavigationAnimated(page));
@@ -468,19 +477,19 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, bool isLast, bool isPopping)
+		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
-			var content = Routing.GetOrCreateContent(route) as Page;
+			var content = Routing.GetOrCreateContent(route, services) as Page;
 			if (content == null)
 			{
-				Internals.Log.Warning(nameof(Shell), $"Failed to Create Content For: {route}");
+				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
 			return content;
 		}
 
-		internal async Task GoToAsync(ShellNavigationRequest request, ShellRouteParameters queryData, bool? animate, bool isRelativePopping)
+		internal async Task GoToAsync(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, bool isRelativePopping)
 		{
 			List<string> globalRoutes = request.Request.GlobalRoutes;
 			if (globalRoutes == null || globalRoutes.Count == 0)
@@ -493,7 +502,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			await PrepareCurrentStackForBeingReplaced(request, queryData, animate, globalRoutes, isRelativePopping);
+			await PrepareCurrentStackForBeingReplaced(request, queryData, services, animate, globalRoutes, isRelativePopping);
 
 			List<Page> modalPageStacks = new List<Page>();
 			List<Page> nonModalPageStacks = new List<Page>();
@@ -511,7 +520,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
 			{
 				bool isLast = i == globalRoutes.Count - 1;
-				var content = GetOrCreateFromRoute(globalRoutes[i], queryData, isLast, false);
+				var content = GetOrCreateFromRoute(globalRoutes[i], queryData, services, isLast, false);
 				if (content == null)
 				{
 					break;
@@ -695,6 +704,12 @@ namespace Microsoft.Maui.Controls
 
 		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => Items;
 
+
+		void InvokeNavigationRequest(NavigationRequestedEventArgs args)
+		{
+			_navigationRequested?.Invoke(this, args);
+		}
+
 		protected virtual void OnInsertPageBefore(Page page, Page before)
 		{
 			var index = _navStack.IndexOf(before);
@@ -724,7 +739,7 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.Insert
 			};
 
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 		}
 
 		protected async virtual Task<Page> OnPopAsync(bool animated)
@@ -756,9 +771,13 @@ namespace Microsoft.Maui.Controls
 			_navStack.Remove(page);
 			PresentedPageAppearing();
 
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 			if (args.Task != null)
 				await args.Task;
+
+			if (_handlerBasedNavigationCompletionSource?.Task != null)
+				await _handlerBasedNavigationCompletionSource.Task;
+
 			RemovePage(page);
 
 			return page;
@@ -787,12 +806,15 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.PopToRoot
 			};
 
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
 
 			if (args.Task != null)
 				await args.Task;
+
+			if (_handlerBasedNavigationCompletionSource?.Task != null)
+				await _handlerBasedNavigationCompletionSource.Task;
 
 			for (int i = 1; i < oldStack.Count; i++)
 			{
@@ -828,11 +850,11 @@ namespace Microsoft.Maui.Controls
 			_navStack.Add(page);
 			PresentedPageAppearing();
 			AddPage(page);
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 
-			if (args.Task == null)
-				return Task.FromResult(true);
-			return args.Task;
+			return args.Task ??
+				_handlerBasedNavigationCompletionSource?.Task ??
+				Task.CompletedTask;
 		}
 
 		internal async Task PopModalStackToPage(Page page, bool? animated)
@@ -902,7 +924,7 @@ namespace Microsoft.Maui.Controls
 			{
 				RequestType = NavigationRequestType.Remove
 			};
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 		}
 
 		internal bool IsVisibleSection => Parent?.Parent is Shell shell && shell.CurrentItem?.CurrentItem == this;

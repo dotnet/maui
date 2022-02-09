@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
+		[PortHandler]
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -54,6 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.Dispose(disposing);
 		}
 
+		[PortHandler]
 		protected override void OnElementChanged(ElementChangedEventArgs<SearchBar> e)
 		{
 			if (e.NewElement != null)
@@ -329,13 +331,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var color = Element.IsEnabled && targetColor != null
 					? targetColor : ColorExtensions.PlaceholderColor.ToColor();
 
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
+				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 
 			}
 			else
 			{
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, targetColor == null
+				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: targetColor == null
 					? ColorExtensions.PlaceholderColor.ToColor() : targetColor);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 			}

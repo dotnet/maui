@@ -1,23 +1,30 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiWinUIApplication : UI.Xaml.Application
+	public abstract class MauiWinUIApplication : UI.Xaml.Application, IPlatformApplication
 	{
 		protected abstract MauiApp CreateMauiApp();
 
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
-			LaunchActivatedEventArgs = args;
+			// Windows running on a different thread will "launch" the app again
+			if (Application != null)
+			{
+				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+				return;
+			}
 
+			IPlatformApplication.Current = this;
 			var mauiApp = CreateMauiApp();
 
-			var applicationContext = new MauiContext(mauiApp.Services, this);
+			var rootContext = new MauiContext(mauiApp.Services);
+
+			var applicationContext = rootContext.MakeApplicationScope(this);
 
 			Services = applicationContext.Services;
 

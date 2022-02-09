@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using System;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -19,9 +20,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <inheritdoc/>
-		public virtual IFileProvider? CreateFileProvider(string contentRootDir)
+		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
-			return null;
+			// Call into the platform-specific code to get that platform's asset file provider
+			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 		}
 	}
 }

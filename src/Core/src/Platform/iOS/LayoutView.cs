@@ -1,10 +1,9 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class LayoutView : MauiView
 	{

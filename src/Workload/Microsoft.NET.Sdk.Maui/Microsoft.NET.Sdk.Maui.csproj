@@ -14,8 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- NOTE: Microsoft.Maui.Resizetizer.Sdk.csproj temporarily replaced by Resizetizer.csproj -->
-    <ProjectReference Include="../Microsoft.Maui.*/*.csproj" Exclude="../Microsoft.Maui.Resizetizer.Sdk/*" />
+    <ProjectReference Include="../Microsoft.Maui.*/*.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
   </ItemGroup>
 
@@ -25,7 +24,11 @@
     <_JsonInputFile Include="SdkInstaller.in.json" OutputPath="$(IntermediateOutputPath)SdkInstaller.json" Pack="false" />
   </ItemGroup>
 
-  <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);@(_JsonInputFile)" Outputs="@(_JsonInputFile->'%(OutputPath)')">
+  <Target Name="_GenerateWorkloadManifest"
+      BeforeTargets="Build;AssignTargetPaths"
+      DependsOnTargets="SetVersions"
+      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;@(_JsonInputFile)"
+      Outputs="@(_JsonInputFile->'%(OutputPath)')">
     <ItemGroup>
       <_VersionsToReplace Include="MicrosoftDotnetSdkInternalPackageVersion" />
       <_VersionsToReplace Include="MicrosoftNETCoreAppRefPackageVersion" />

@@ -1,6 +1,6 @@
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
-	static partial class ViewExtensions
+	public static partial class ViewExtensions
 	{
 		public static void UpdateIsEnabled(this object nativeView, IView view) { }
 
@@ -8,11 +8,14 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this object nativeView, IView view) { }
 
+		public static void UpdateClipsToBounds(this object nativeView, IView view) { }
+
 		public static void UpdateAutomationId(this object nativeView, IView view) { }
 
 		public static void UpdateClip(this object nativeView, IView view) { }
 
 		public static void UpdateShadow(this object nativeView, IView view) { }
+		public static void UpdateBorder(this object nativeView, IView view) { }
 
 		public static void UpdateOpacity(this object nativeView, IView view) { }
 
@@ -49,5 +52,21 @@ namespace Microsoft.Maui
 		public static void UpdateMinimumWidth(this object nativeView, IView view) { }
 
 		public static void UpdateMaximumWidth(this object nativeView, IView view) { }
+
+		public static System.Threading.Tasks.Task<byte[]?> RenderAsPNG(this IView view)
+			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
+
+		public static System.Threading.Tasks.Task<byte[]?> RenderAsJPEG(this IView view)
+			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
+		internal static Graphics.Rectangle GetNativeViewBounds(this IView view) => view.Frame;
+
+		internal static System.Numerics.Matrix4x4 GetViewTransform(this IView view) => new System.Numerics.Matrix4x4();
+
+		internal static Graphics.Rectangle GetBoundingBox(this IView view) => view.Frame;
+
+		internal static object? GetParent(this object? view)
+		{
+			return null;
+		}
 	}
 }

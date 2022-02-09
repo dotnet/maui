@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class CarouselPageRenderer : FlipView, IVisualElementRenderer
+	internal class CarouselPageRenderer : FlipView, IVisualElementRenderer
 	{
 		bool _fromUpdate;
 		bool _disposed;

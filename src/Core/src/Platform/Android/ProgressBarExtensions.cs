@@ -2,7 +2,7 @@
 using Microsoft.Maui.Graphics;
 using AProgressBar = Android.Widget.ProgressBar;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ProgressBarExtensions
 	{

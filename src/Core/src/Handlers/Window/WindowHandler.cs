@@ -10,21 +10,24 @@ using NativeView = Microsoft.UI.Xaml.Window;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WindowHandler
+	public partial class WindowHandler : IWindowHandler
 	{
-		public static IPropertyMapper<IWindow, WindowHandler> WindowMapper = new PropertyMapper<IWindow, WindowHandler>(ElementHandler.ElementMapper)
+		public static IPropertyMapper<IWindow, IWindowHandler> Mapper = new PropertyMapper<IWindow, IWindowHandler>(ElementHandler.ElementMapper)
 		{
 			[nameof(IWindow.Title)] = MapTitle,
 			[nameof(IWindow.Content)] = MapContent,
+#if ANDROID || WINDOWS
+			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
+#endif
 		};
 
 		public WindowHandler()
-			: base(WindowMapper)
+			: base(Mapper)
 		{
 		}
 
 		public WindowHandler(IPropertyMapper? mapper = null)
-			: base(mapper ?? WindowMapper)
+			: base(mapper ?? Mapper)
 		{
 		}
 

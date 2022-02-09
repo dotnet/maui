@@ -12,7 +12,7 @@ using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using AWebView = Android.Webkit.WebView;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiSwipeRefreshLayout : SwipeRefreshLayout
 	{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 
 			if (content != null && mauiContext != null)
 			{
-				_contentView = content.ToNative(mauiContext);
+				_contentView = content.ToPlatform(mauiContext);
 				var layoutParams = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
 				AddView(_contentView, layoutParams);
 			}

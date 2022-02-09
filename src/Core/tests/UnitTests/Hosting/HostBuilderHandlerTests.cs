@@ -25,9 +25,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			Assert.NotNull(mauiApp.Services);
-			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>();
+			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
 			Assert.NotNull(handlers);
-			Assert.IsType<Maui.Hosting.Internal.MauiHandlersServiceProvider>(handlers);
+			Assert.IsType<Maui.Hosting.Internal.MauiHandlersFactory>(handlers);
 		}
 
 		[Fact]
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, ViewHandlerStub>())
 				.Build();
 
-			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>().GetHandler(typeof(IViewStub));
+			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetHandler(typeof(IViewStub));
 
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, ViewHandlerStub>())
 				.Build();
 
-			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>().GetHandler<IViewStub>();
+			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetHandler<IViewStub>();
 
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
@@ -63,25 +63,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler(typeof(IViewStub), typeof(ViewHandlerStub)))
 				.Build();
 
-			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>().GetHandler(typeof(IViewStub));
-
-			Assert.NotNull(handler);
-			Assert.IsType<ViewHandlerStub>(handler);
-		}
-
-		[Fact]
-		public void CanRegisterAndGetHandlerWithDictionary()
-		{
-			var dic = new Dictionary<Type, Type>
-			{
-				{ typeof(IViewStub), typeof(ViewHandlerStub) }
-			};
-
-			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandlers(dic))
-				.Build();
-
-			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>().GetHandler(typeof(IViewStub));
+			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetHandler(typeof(IViewStub));
 
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
@@ -94,7 +76,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, ViewHandlerStub>())
 				.Build();
 
-			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>().GetHandler(typeof(ViewStub));
+			var handler = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetHandler(typeof(ViewStub));
 
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
@@ -107,12 +89,12 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ButtonStub, ButtonHandlerStub>())
 				.Build();
 
-			var specificHandler = mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>().GetHandler(typeof(ButtonStub));
+			var specificHandler = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetHandler(typeof(ButtonStub));
 			Assert.IsType<ButtonHandlerStub>(specificHandler);
 
-			mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>().GetCollection().AddHandler<ButtonStub, AlternateButtonHandlerStub>();
+			mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetCollection().AddHandler<ButtonStub, AlternateButtonHandlerStub>();
 
-			var alternateHandler = mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>().GetHandler(typeof(ButtonStub));
+			var alternateHandler = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>().GetHandler(typeof(ButtonStub));
 			Assert.IsType<AlternateButtonHandlerStub>(alternateHandler);
 		}
 	}

@@ -21,6 +21,7 @@ using WCompositeTransform = Microsoft.UI.Xaml.Media.CompositeTransform;
 using WScaleTransform = Microsoft.UI.Xaml.Media.ScaleTransform;
 using Microsoft.Maui.Graphics;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -185,7 +186,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				catch (Exception dropExc)
 				{
-					Internals.Log.Warning(nameof(DropGestureRecognizer), $"{dropExc}");
+					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending drop event");
 				}
 			});
 		}
@@ -874,12 +875,14 @@ namespace Microsoft.Maui.Controls.Platform
 			//We can't handle ManipulationMode.Scale and System , so we don't support pinch/pan on a scrollview 
 			if (Element is ScrollView)
 			{
+				var logger = Application.Current?.FindMauiContext()?.CreateLogger<GestureManager>();
+
 				if (hasPinchGesture)
-					Log.Warning("Gestures", "PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.LogWarning("PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				if (hasPanGesture)
-					Log.Warning("Gestures", "PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.LogWarning("PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				if (hasSwipeGesture)
-					Log.Warning("Gestures", "SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.LogWarning("SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				return;
 			}
 

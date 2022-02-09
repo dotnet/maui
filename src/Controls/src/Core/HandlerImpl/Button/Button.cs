@@ -6,27 +6,32 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs" />
 	public partial class Button
 	{
-		public new static void RemapForControls()
-		{
-			// IButton does not include the ContentType property, so we map it here to handle Image Positioning
+		// IButton does not include the ContentType property, so we map it here to handle Image Positioning
 
-			IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
-			{
-				[nameof(ContentLayout)] = MapContentLayout,
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='ControlsButtonMapper']/Docs" />
+		public static IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
+		{
+			[nameof(ContentLayout)] = MapContentLayout,
 #if __IOS__
-				[nameof(Padding)] = MapPadding,
+			[nameof(Padding)] = MapPadding,
 #endif
 #if WINDOWS
-				[nameof(IText.Text)] = MapText,
-				[nameof(ImageSource)] = MapImageSource
+			[nameof(IText.Text)] = MapText,
+			[nameof(ImageSource)] = MapImageSource,
 #endif
-			};
+			[nameof(TextTransform)] = MapText,
+			[nameof(Text)] = MapText,
+		};
 
+		internal new static void RemapForControls()
+		{
 			ButtonHandler.Mapper = ControlsButtonMapper;
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='MapContentLayout']/Docs" />
 		public static void MapContentLayout(ButtonHandler handler, Button button)
 		{
 			handler.NativeView.UpdateContentLayout(button);

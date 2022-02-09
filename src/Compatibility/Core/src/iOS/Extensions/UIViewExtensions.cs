@@ -15,24 +15,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 {
 	public static class UIViewExtensions
 	{
-		internal static T GetParentOfType<T>(this UIView view)
-			where T : class
-		{
-			if (view is T t)
-				return t;
-
-			while (view != null)
-			{
-				T parent = view.Superview as T;
-				if (parent != null)
-					return parent;
-
-				view = view.Superview;
-			}
-
-			return default(T);
-		}
-
 		public static IEnumerable<UIView> Descendants(this UIView self)
 		{
 			if (self.Subviews == null)
@@ -57,16 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static SizeRequest GetSizeRequest(this UIView self, double widthConstraint, double heightConstraint,
 			double minimumWidth = -1, double minimumHeight = -1)
 		{
-			CoreGraphics.CGSize s;
-#if __MOBILE__
-			s = self.SizeThatFits(new SizeF((float)widthConstraint, (float)heightConstraint));
-#else
-			var control = self as AppKit.NSControl;
-			if (control != null)
-				s = control.SizeThatFits(new CoreGraphics.CGSize(widthConstraint, heightConstraint));
-			else
-				s = self.FittingSize;
-#endif
+			var s = self.SizeThatFits(new SizeF((float)widthConstraint, (float)heightConstraint));
 			var request = new Size(s.Width == float.PositiveInfinity ? double.PositiveInfinity : s.Width,
 				s.Height == float.PositiveInfinity ? double.PositiveInfinity : s.Height);
 			var minimum = new Size(minimumWidth < 0 ? request.Width : minimumWidth,

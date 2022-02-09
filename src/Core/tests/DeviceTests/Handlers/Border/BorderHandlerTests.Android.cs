@@ -7,10 +7,10 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class BorderHandlerTests
 	{
-		ContentViewGroup GetNativeBorder(BorderHandler borderHandler) =>		  
+		ContentViewGroup GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.NativeView;
 
-		Task ValidateHasColor(IBorder border, Color color, Action action = null)
+		Task ValidateHasColor(IBorderView border, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{

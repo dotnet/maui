@@ -49,6 +49,7 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
+  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
   - name: BuildEverything
@@ -99,6 +100,11 @@ resources:
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main # still defaults to master even though main is the main branch
+    - repository: sdk-insertions
+      type: github
+      name: xamarin/sdk-insertions
+      ref: refs/heads/main
+      endpoint: xamarin
 
 stages:
 
@@ -120,10 +126,22 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -154,12 +172,27 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
+            ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+              demands:
+                - macOS.Name -equals BigSur
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
           steps:
+            - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+              - template: agent-cleanser/v1.yml@xamarin-templates
+                parameters:
+                  UninstallMono: false
+                  UninstallXamarinMac: false
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
+                poolName: ${{ BuildPlatform.poolName }}
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
+            - ${{ if eq(BuildPlatform.name, 'Windows') }}:
+              - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
+                displayName: 'Diff .NET Maui artifacts with NuGet'
             - task: CopyFiles@2
               condition: always()
               displayName: 'Copy files to staging'
@@ -178,6 +211,7 @@ stages:
                 SourceFolder: artifacts
                 Contents: |
                   metadata/**
+                  api-diff/**
                 TargetFolder: $(build.artifactstagingdirectory)
             - task: CopyFiles@2
               displayName: 'Copy Log Files'
@@ -211,10 +245,22 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -251,10 +297,22 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+                demands:
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -306,6 +364,53 @@ stages:
             artifactPath: signed
             propsArtifactName: nuget
             signType: Real
+
+        - job: create_artifact_statuses
+          displayName: Create GitHub Artifact Status
+          dependsOn: nuget_convert
+          timeoutInMinutes: 60
+          pool:
+            vmImage: windows-latest
+          steps:
+          - checkout: self
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: nuget
+              downloadPath: $(Build.StagingDirectory)\nuget
+              patterns: |
+                **/signed/*.nupkg
+                **/*.snupkg
+                **/additional-assets.zip
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: vs-msi-nugets
+              downloadPath: $(Build.StagingDirectory)\nuget
+
+          - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
+            parameters:
+              githubToken: $(github--pat--vs-mobiletools-engineering-service2)
+              githubContext: $(NupkgCommitStatusName)
+              blobName: $(NupkgCommitStatusName)
+              packagePrefix: maui
+              artifactsPath: $(Build.StagingDirectory)\nuget
+              yamlResourceName: xamarin-templates
+
+          - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
+            parameters:
+              githubToken: $(github--pat--vs-mobiletools-engineering-service2)
+              githubContext: $(VSDropCommitStatusName)
+              blobName: $(VSDropCommitStatusName)
+              packagePrefix: maui
+              artifactsPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
+              yamlResourceName: xamarin-templates
+              downloadSteps:
+              - task: DownloadPipelineArtifact@2
+                inputs:
+                  artifactName: vsdrop-signed
+                  downloadPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
+
 
     - template: vs-insertion/stage/v1.yml@xamarin-templates
       parameters:

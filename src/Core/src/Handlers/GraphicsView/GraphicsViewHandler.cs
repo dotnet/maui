@@ -5,7 +5,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IGraphicsView, GraphicsViewHandler> GraphicsViewMapper = new PropertyMapper<IGraphicsView, GraphicsViewHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(IGraphicsView.Drawable)] = MapDrawable
+			[nameof(IGraphicsView.Drawable)] = MapDrawable,
+			[nameof(IView.FlowDirection)] = MapFlowDirection
 		};
 
 		public static CommandMapper<IGraphicsView, GraphicsViewHandler> GraphicsViewCommandMapper = new(ViewCommandMapper)

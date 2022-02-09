@@ -1,5 +1,8 @@
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs" />
 	public partial class Button : IButton, ITextButton, IImageButton
 	{
 		bool _wasImageLoading;
@@ -36,5 +39,11 @@ namespace Microsoft.Maui.Controls
 		IImageSource IImageSourcePart.Source => ImageSource;
 
 		bool IImageSourcePart.IsAnimationPlaying => false;
+
+		double IButtonStroke.StrokeThickness => (double)GetValue(BorderWidthProperty);
+
+		Color IButtonStroke.StrokeColor => (Color)GetValue(BorderColorProperty);
+
+		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
 	}
 }

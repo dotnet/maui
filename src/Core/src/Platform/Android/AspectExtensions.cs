@@ -1,6 +1,6 @@
 ﻿using Android.Widget;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class AspectExtensions
 	{

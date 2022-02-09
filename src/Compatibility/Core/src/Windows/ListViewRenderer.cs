@@ -27,6 +27,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer instead")]
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
@@ -233,10 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				ReloadData();
 			}
 
-			if (Element.Dispatcher == null)
-				Device.BeginInvokeOnMainThread(() => List?.UpdateLayout());
-			else
-				Element.Dispatcher.BeginInvokeOnMainThread(() => List?.UpdateLayout());
+			Element.Dispatcher.DispatchIfRequired(() => List?.UpdateLayout());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

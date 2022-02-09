@@ -3,12 +3,35 @@
     "author": "Microsoft",
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Xaml", "Code" ],
     "identity": "Microsoft.Maui.XamlContentPage",
-    "name": ".NET MAUI ContentPage (Preview)",
+    "name": ".NET MAUI ContentPage (XAML) (Preview)",
     "shortName": "maui-page-xaml",
     "tags": {
       "language": "C#",
       "type": "item"
     },
+    "primaryOutputs": [
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+        "path": "NewPage1.xaml"
+      },
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+        "path": "NewPage1.xaml.cs"
+      }
+    ],
+    "postActions": [
+        {
+            "id": "openInEditor",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+            "description": "Opens NewPage1.xaml in the editor.",
+            "manualInstructions": [],
+            "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+            "args": {
+                "files": "0"
+            },
+            "continueOnError": true
+        }
+    ],
     "sourceName": "NewPage1",
     "defaultName": "NewPage1",
     "symbols": {

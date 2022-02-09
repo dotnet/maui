@@ -10,9 +10,11 @@ using static System.String;
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NativeBindingHelpers']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class NativeBindingHelpers
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
 		public static void SetBinding<TNativeView>(TNativeView target, string targetProperty, BindingBase bindingBase, string updateSourceEventName = null) where TNativeView : class
 		{
 			var binding = bindingBase as Binding;
@@ -26,6 +28,7 @@ namespace Microsoft.Maui.Controls.Internals
 			SetBinding(target, targetProperty, bindingBase, eventWrapper);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
 		public static void SetBinding<TNativeView>(TNativeView target, string targetProperty, BindingBase bindingBase, INotifyPropertyChanged propertyChanged) where TNativeView : class
 		{
 			if (target == null)
@@ -96,6 +99,7 @@ namespace Microsoft.Maui.Controls.Internals
 			bindable.SetValueCore(property, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
 		public static void SetBinding<TNativeView>(TNativeView target, BindableProperty targetProperty, BindingBase binding) where TNativeView : class
 		{
 			if (target == null)
@@ -109,6 +113,7 @@ namespace Microsoft.Maui.Controls.Internals
 			proxy.BindingsBackpack.Add(new KeyValuePair<BindableProperty, BindingBase>(targetProperty, binding));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetValue']/Docs" />
 		public static void SetValue<TNativeView>(TNativeView target, BindableProperty targetProperty, object value) where TNativeView : class
 		{
 			if (target == null)
@@ -120,6 +125,7 @@ namespace Microsoft.Maui.Controls.Internals
 			proxy.ValuesBackpack.Add(new KeyValuePair<BindableProperty, object>(targetProperty, value));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='SetBindingContext']/Docs" />
 		public static void SetBindingContext<TNativeView>(TNativeView target, object bindingContext, Func<TNativeView, IEnumerable<TNativeView>> getChild = null) where TNativeView : class
 		{
 			if (target == null)
@@ -137,6 +143,7 @@ namespace Microsoft.Maui.Controls.Internals
 					SetBindingContext(child, bindingContext, getChild);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NativeBindingHelpers.xml" path="//Member[@MemberName='TransferBindablePropertiesToWrapper']/Docs" />
 		public static void TransferBindablePropertiesToWrapper<TNativeView, TNativeWrapper>(TNativeView nativeView, TNativeWrapper wrapper)
 			where TNativeView : class
 			where TNativeWrapper : View

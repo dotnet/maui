@@ -23,8 +23,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 #if APP
-			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { "CollectionView_Experimental" });
-
 			PushAsync(new GalleryPages.CollectionViewGalleries.ScrollModeGalleries.ScrollModeTestGallery());
 #endif
 		}

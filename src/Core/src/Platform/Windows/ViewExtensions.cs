@@ -1,6 +1,10 @@
 #nullable enable
 using System;
+using System.Numerics;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
@@ -8,10 +12,14 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
+using WinPoint = Windows.Foundation.Point;
+using Microsoft.Maui.Primitives;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
@@ -67,13 +75,20 @@ namespace Microsoft.Maui
 				wrapper.Shadow = view.Shadow;
 			}
 		}
-		
+
+		public static void UpdateBorder(this FrameworkElement nativeView, IView view)
+		{
+			var border = (view as IBorder)?.Border;
+			if (nativeView is WrapperView wrapperView)
+				wrapperView.Border = border;
+		}
+
 		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 		}
 
-		public static void UpdateBackground(this ContentPanel nativeView, IBorder border) 
+		public static void UpdateBackground(this ContentPanel nativeView, IBorderStroke border) 
 		{
 			var hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -81,9 +96,9 @@ namespace Microsoft.Maui
 			{
 				nativeView?.UpdateBorderBackground(border);
 			}
-			else
+			else if(border is IView v)
 			{
-				nativeView?.UpdateNativeViewBackground(border);
+				nativeView?.UpdateNativeViewBackground(v);
 			}
 		}
 
@@ -172,12 +187,26 @@ namespace Microsoft.Maui
 
 		public static void UpdateMinimumHeight(this FrameworkElement nativeView, IView view)
 		{
-			nativeView.MinHeight = view.MinimumHeight;
+			var minHeight = view.MinimumHeight;
+
+			if (Dimension.IsMinimumSet(minHeight))
+			{
+				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
+				// because the platform/theme may have a minimum height for this control
+				nativeView.MinHeight = minHeight;
+			}
 		}
 
 		public static void UpdateMinimumWidth(this FrameworkElement nativeView, IView view)
 		{
-			nativeView.MinWidth = view.MinimumWidth;
+			var minWidth = view.MinimumWidth;
+
+			if (Dimension.IsMinimumSet(minWidth))
+			{
+				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
+				// because the platform/theme may have a minimum width for this control
+				nativeView.MinWidth = minWidth;
+			}
 		}
 
 		public static void UpdateMaximumHeight(this FrameworkElement nativeView, IView view)
@@ -190,14 +219,16 @@ namespace Microsoft.Maui
 			nativeView.MaxWidth = view.MaximumWidth;
 		}
 
-		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IView view)
+		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IBorderStroke border)
 		{
-			(nativeView as ContentPanel)?.UpdateBackground(view.Background);
+
+			if(border is IView v)
+			(nativeView as ContentPanel)?.UpdateBackground(v.Background);
 
 			if (nativeView is Control control)
 				control.UpdateBackground((Paint?)null);
-			else if (nativeView is Border border)
-				border.UpdateBackground(null);
+			else if (nativeView is Border b)
+				b.UpdateBackground(null);
 			else if (nativeView is Panel panel)
 				panel.UpdateBackground(null);
 		}
@@ -212,6 +243,120 @@ namespace Microsoft.Maui
 				border.UpdateBackground(view.Background);
 			else if (nativeView is Panel panel)
 				panel.UpdateBackground(view.Background);
+		}
+
+		public static async Task<byte[]?> RenderAsPNG(this IView view)
+		{
+			var nativeView = view?.ToPlatform();
+			if (nativeView == null)
+				return null;
+
+			return await nativeView.RenderAsPNG();
+		}
+
+		public static async Task<byte[]?> RenderAsJPEG(this IView view)
+		{
+			var nativeView = view?.ToPlatform();
+			if (nativeView == null)
+				return null;
+
+			return await nativeView.RenderAsJPEG();
+		}
+
+		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);
+
+		public static Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => view != null ? view.RenderAsJPEGAsync() : Task.FromResult<byte[]?>(null);
+
+		internal static Matrix4x4 GetViewTransform(this IView view)
+		{
+			var nativeView = view?.ToPlatform();
+			if (nativeView == null)
+				return new Matrix4x4();
+			return GetViewTransform(nativeView);
+		}
+
+		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
+		{
+			var root = element?.Parent as UIElement;
+			if (root == null)
+				return new Matrix4x4();
+			var offset = element?.TransformToVisual(root) as MatrixTransform;
+			if (offset == null)
+				return new Matrix4x4();
+			Matrix matrix = offset.Matrix;
+			return new Matrix4x4()
+			{
+				M11 = (float)matrix.M11,
+				M12 = (float)matrix.M12,
+				M21 = (float)matrix.M21,
+				M22 = (float)matrix.M22,
+				Translation = new Vector3((float)matrix.OffsetX, (float)matrix.OffsetY, 0)
+			};
+		}
+
+		internal static Rectangle GetNativeViewBounds(this IView view)
+		{
+			var nativeView = view?.ToPlatform();
+			if (nativeView != null)
+				return nativeView.GetNativeViewBounds();
+			return new Rectangle();
+		}
+
+		internal static Rectangle GetNativeViewBounds(this FrameworkElement nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			var root = nativeView.XamlRoot;
+			var offset = nativeView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
+			if (offset != null)
+				return new Rectangle(offset.Matrix.OffsetX, offset.Matrix.OffsetY, nativeView.ActualWidth, nativeView.ActualHeight);
+
+			return new Rectangle();
+		}
+
+		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+			=> view.ToPlatform().GetBoundingBox();
+
+		internal static Graphics.Rectangle GetBoundingBox(this FrameworkElement? nativeView)
+		{
+			if (nativeView == null)
+				return new Rectangle();
+
+			var rootView = nativeView.XamlRoot.Content;
+			if (nativeView == rootView)
+			{
+				if (rootView is not FrameworkElement el)
+					return new Rectangle();
+
+				return new Rectangle(0, 0, el.ActualWidth, el.ActualHeight);
+			}
+
+
+			var topLeft = nativeView.TransformToVisual(rootView).TransformPoint(new WinPoint());
+			var topRight = nativeView.TransformToVisual(rootView).TransformPoint(new WinPoint(nativeView.ActualWidth, 0));
+			var bottomLeft = nativeView.TransformToVisual(rootView).TransformPoint(new WinPoint(0, nativeView.ActualHeight));
+			var bottomRight = nativeView.TransformToVisual(rootView).TransformPoint(new WinPoint(nativeView.ActualWidth, nativeView.ActualHeight));
+
+
+			var x1 = new[] { topLeft.X, topRight.X, bottomLeft.X, bottomRight.X }.Min();
+			var x2 = new[] { topLeft.X, topRight.X, bottomLeft.X, bottomRight.X }.Max();
+			var y1 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Min();
+			var y2 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Max();
+			return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+		}
+
+		internal static DependencyObject? GetParent(this FrameworkElement? view)
+		{
+			return view?.Parent;
+		}
+
+		internal static DependencyObject? GetParent(this DependencyObject? view)
+		{
+			if (view is FrameworkElement pv)
+				return pv.Parent;
+
+			return null;
 		}
 	}
 }

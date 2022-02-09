@@ -11,6 +11,7 @@ using PointF = CoreGraphics.CGPoint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer instead")]
 	public class PhoneFlyoutPageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIView _clickOffView;
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		bool _applyShadow;
 
 		Page Page => Element as Page;
+		IFlyoutPageController FlyoutPageController => FlyoutPage;
 
 
 		[Preserve(Conditional = true)]
@@ -157,7 +159,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
-			if (!FlyoutPage.ShouldShowSplitMode && _presented)
+			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
 				Presented = false;
 
 			base.WillRotate(toInterfaceOrientation, duration);
@@ -300,8 +302,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				detailView.Layer.Opacity = (float)opacity;
 			}
 
-			FlyoutPage.FlyoutBounds = new Rectangle(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPage.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
+			FlyoutPageController.FlyoutBounds = new Rectangle(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
+			FlyoutPageController.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
 
 			if (Presented)
 				_clickOffView.Frame = _detailController.View.Frame;
@@ -396,7 +398,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
 			if (firstPage != null)
+#pragma warning disable CS0618 // Type or member is obsolete
 				NavigationRenderer.SetFlyoutLeftBarButton(firstPage, FlyoutPage);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateApplyShadow(bool value)
@@ -545,15 +549,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var detailView = Platform.GetRenderer(FlyoutPage.Detail).ViewController.View;
 			var opacity = (nfloat)(0.5 + (0.5 * (1 - percent)));
 			detailView.Layer.Opacity = (float)opacity;
-		}
-	}
-
-
-	public class PhoneMasterDetailRenderer : PhoneFlyoutPageRenderer
-	{
-		[Preserve(Conditional = true)]
-		public PhoneMasterDetailRenderer()
-		{
 		}
 	}
 }

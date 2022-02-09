@@ -118,5 +118,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			Assert.That(() => template.CreateContent(), Throws.InstanceOf<InvalidOperationException>());
 		}
+
+		[Test]
+		public void HotReloadTransitionDoesNotCrash()
+		{
+			// Hot Reload may need to create a template while the content portion isn't ready yet
+			// We need to make sure that a call to CreateContent during that time doesn't crash
+			var template = new DataTemplate();
+			Assert.DoesNotThrow(() => template.CreateContent());
+		}
 	}
 }

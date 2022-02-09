@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting.Internal;
 using Xunit;
 
@@ -76,10 +77,10 @@ namespace Microsoft.Maui.UnitTests
 			HandlerStub handlerStub = new HandlerStub();
 
 			var collection = new MauiServiceCollection();
-			collection.TryAddSingleton<IMauiHandlersServiceProvider>(new MauiHandlersServiceProvider(null));
+			collection.TryAddSingleton<IMauiHandlersFactory>(new MauiHandlersFactory(null));
 			collection.TryAddSingleton<IFooService, FooService>();
 
-			var provider = new MauiServiceProvider(collection, false);
+			var provider = new MauiFactory(collection, false);
 
 			handlerStub.SetMauiContext(new HandlersContextStub(provider));
 
@@ -106,7 +107,6 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void ChainingToLessTypedParentWorks()
 		{
-
 			bool wasMapper1Called = false;
 			bool wasMapper2Called = false;
 			var mapper1 = new PropertyMapper<IView, HandlerStub>

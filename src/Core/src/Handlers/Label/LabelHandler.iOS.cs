@@ -1,5 +1,3 @@
-using Microsoft.Maui.Platform.iOS;
-
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, MauiLabel>
@@ -14,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			handler.GetWrappedNativeView()?.UpdateBackground(label);
+			handler.ToPlatform().UpdateBackground(label);
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label)

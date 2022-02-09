@@ -6,7 +6,7 @@ using Android.Widget;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class PickerManager
 	{

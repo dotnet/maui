@@ -25,8 +25,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 	public static partial class Forms
 	{
-		const string LogFormat = "[{0}] {1}";
-
 		//TODO WINUI3 This is set by main page currently because
 		// it's only a single window
 		public static UI.Xaml.Window MainWindow { get; set; }
@@ -52,46 +50,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			KnownColor.SetAccent(accent.ToColor());
 
-			if (!IsInitialized)
-			{
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
-
-			}
-
-			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(mauiContext.GetFlowDirection());
-
-			//TODO WINUI3
-			//switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
-			//{
-			//	case "Windows.Desktop":
-			//		if (Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
-			//			Windows.UI.ViewManagement.UserInteractionMode.Touch)
-			//			Device.SetIdiom(TargetIdiom.Tablet);
-			//		else
-			//			Device.SetIdiom(TargetIdiom.Desktop);
-			//		break;
-			//	case "Windows.Mobile":
-			//		Device.SetIdiom(TargetIdiom.Phone);
-			//		break;
-			//	case "Windows.Xbox":
-			//		Device.SetIdiom(TargetIdiom.TV);
-			//		break;
-			//	default:
-			//		Device.SetIdiom(TargetIdiom.Unsupported);
-			//		break;
-			//}
 
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 
-			var dispatcher = mainWindow?.DispatcherQueue ?? UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-
-			var platformServices = new WindowsPlatformServices(dispatcher);
+			var platformServices = new WindowsPlatformServices();
 
 			Device.PlatformServices = platformServices;
-			Device.PlatformInvalidator = platformServices;
 
 			if (mainWindow != null)
 			{

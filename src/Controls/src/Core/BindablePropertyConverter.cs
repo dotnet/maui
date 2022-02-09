@@ -4,17 +4,21 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/BindablePropertyConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindablePropertyConverter']/Docs" />
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BindablePropertyConverter")]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindablePropertyConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindablePropertyConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
@@ -70,6 +74,7 @@ namespace Microsoft.Maui.Controls
 			throw new XamlParseException($"Can't resolve {value}. Syntax is [[prefix:]Type.]PropertyName.", lineinfo);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindablePropertyConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -78,13 +83,13 @@ namespace Microsoft.Maui.Controls
 				return null;
 			if (strValue.Contains(":"))
 			{
-				Log.Warning(null, "Can't resolve properties with xml namespace prefix.");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning("Can't resolve properties with xml namespace prefix.");
 				return null;
 			}
 			string[] parts = strValue.Split('.');
 			if (parts.Length != 2)
 			{
-				Log.Warning(null, $"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning($"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 				return null;
 			}
 			Type type = Type.GetType("Microsoft.Maui.Controls." + parts[0]);
@@ -144,6 +149,7 @@ namespace Microsoft.Maui.Controls
 			return style.TargetType;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindablePropertyConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not BindableProperty bp)

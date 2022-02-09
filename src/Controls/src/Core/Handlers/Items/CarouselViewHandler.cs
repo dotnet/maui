@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
-
 		};
 	}
 }

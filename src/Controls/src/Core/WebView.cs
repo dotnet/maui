@@ -2,15 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebView']/Docs" />
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='SourceProperty']/Docs" />
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(WebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
@@ -30,16 +31,20 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindablePropertyKey CanGoBackPropertyKey = BindableProperty.CreateReadOnly("CanGoBack", typeof(bool), typeof(WebView), false);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoBackProperty']/Docs" />
 		public static readonly BindableProperty CanGoBackProperty = CanGoBackPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey CanGoForwardPropertyKey = BindableProperty.CreateReadOnly("CanGoForward", typeof(bool), typeof(WebView), false);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoForwardProperty']/Docs" />
 		public static readonly BindableProperty CanGoForwardProperty = CanGoForwardPropertyKey.BindableProperty;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CookiesProperty']/Docs" />
 		public static readonly BindableProperty CookiesProperty = BindableProperty.Create(nameof(Cookies), typeof(CookieContainer), typeof(WebView), null);
 
 		readonly Lazy<PlatformConfigurationRegistry<WebView>> _platformConfigurationRegistry;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public WebView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<WebView>>(() => new PlatformConfigurationRegistry<WebView>(this));
@@ -52,6 +57,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CanGoBackPropertyKey, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoBack']/Docs" />
 		public bool CanGoBack
 		{
 			get { return (bool)GetValue(CanGoBackProperty); }
@@ -64,17 +70,20 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CanGoForwardPropertyKey, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoForward']/Docs" />
 		public bool CanGoForward
 		{
 			get { return (bool)GetValue(CanGoForwardProperty); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Cookies']/Docs" />
 		public CookieContainer Cookies
 		{
 			get { return (CookieContainer)GetValue(CookiesProperty); }
 			set { SetValue(CookiesProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Source']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(WebViewSourceTypeConverter))]
 		public WebViewSource Source
 		{
@@ -82,16 +91,16 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SourceProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Eval']/Docs" />
 		public void Eval(string script)
 		{
-			EventHandler<EvalRequested> handler = EvalRequested;
-			handler?.Invoke(this, new EvalRequested(script));
+			Handler?.Invoke(nameof(IWebView.Eval), script);
+			_evalRequested?.Invoke(this, new EvalRequested(script));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='EvaluateJavaScriptAsync']/Docs" />
 		public async Task<string> EvaluateJavaScriptAsync(string script)
 		{
-			EvaluateJavaScriptDelegate handler = EvaluateJavaScriptRequested;
-
 			if (script == null)
 				return null;
 
@@ -102,7 +111,20 @@ namespace Microsoft.Maui.Controls
 				script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
 			}
 
-			var result = await handler?.Invoke(script);
+			string result;
+
+			if (_evaluateJavaScriptRequested?.GetInvocationList().Length == 0)
+			{
+				// This is the WebViewRenderer subscribing to these requests; the handler stuff
+				// doesn't use them.
+				result = await _evaluateJavaScriptRequested?.Invoke(script);
+			}
+			else
+			{
+				// Use the handler command to evaluate the JS
+				result = await Handler.InvokeAsync(nameof(IWebView.EvaluateJavaScriptAsync),
+					new EvaluateJavaScriptAsyncRequest(script));
+			}
 
 			//if the js function errored or returned null/undefined treat it as null
 			if (result == "null")
@@ -116,14 +138,26 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='GoBack']/Docs" />
 		public void GoBack()
-			=> GoBackRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.GoBack));
+			_goBackRequested?.Invoke(this, EventArgs.Empty);
+		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='GoForward']/Docs" />
 		public void GoForward()
-			=> GoForwardRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.GoForward));
+			_goForwardRequested?.Invoke(this, EventArgs.Empty);
+		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Reload']/Docs" />
 		public void Reload()
-			=> ReloadRequested?.Invoke(this, EventArgs.Empty);
+		{
+			Handler?.Invoke(nameof(IWebView.Reload));
+			_reloadRequested?.Invoke(this, EventArgs.Empty);
+		}
 
 		public event EventHandler<WebNavigatedEventArgs> Navigated;
 
@@ -157,39 +191,52 @@ namespace Microsoft.Maui.Controls
 			OnPropertyChanged(SourceProperty.PropertyName);
 		}
 
+		event EventHandler<EvalRequested> _evalRequested;
 		event EventHandler<EvalRequested> IWebViewController.EvalRequested
 		{
-			add { EvalRequested += value; }
-			remove { EvalRequested -= value; }
+			add { _evalRequested += value; }
+			remove { _evalRequested -= value; }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler<EvalRequested> EvalRequested;
+		event EvaluateJavaScriptDelegate _evaluateJavaScriptRequested;
+		event EvaluateJavaScriptDelegate IWebViewController.EvaluateJavaScriptRequested
+		{
+			add { _evaluateJavaScriptRequested += value; }
+			remove { _evaluateJavaScriptRequested -= value; }
+		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EvaluateJavaScriptDelegate EvaluateJavaScriptRequested;
+		event EventHandler _goBackRequested;
+		event EventHandler IWebViewController.GoBackRequested
+		{
+			add { _goBackRequested += value; }
+			remove { _goBackRequested -= value; }
+		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler GoBackRequested;
+		event EventHandler _goForwardRequested;
+		event EventHandler IWebViewController.GoForwardRequested
+		{
+			add { _goForwardRequested += value; }
+			remove { _goForwardRequested -= value; }
+		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler GoForwardRequested;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendNavigated(WebNavigatedEventArgs args)
+		void IWebViewController.SendNavigated(WebNavigatedEventArgs args)
 		{
 			Navigated?.Invoke(this, args);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendNavigating(WebNavigatingEventArgs args)
+		void IWebViewController.SendNavigating(WebNavigatingEventArgs args)
 		{
 			Navigating?.Invoke(this, args);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler ReloadRequested;
+		event EventHandler _reloadRequested;
+		event EventHandler IWebViewController.ReloadRequested
+		{
+			add { _reloadRequested += value; }
+			remove { _reloadRequested -= value; }
+		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, WebView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

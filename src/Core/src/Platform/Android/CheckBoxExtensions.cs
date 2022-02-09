@@ -3,21 +3,12 @@ using Android.Graphics;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Graphics;
-using static Android.Resource;
 using AColor = Android.Graphics.Color;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{
-		static readonly int[][] CheckedStates = new int[][]
-		{
-			new int[] { Attribute.StateEnabled, Attribute.StateChecked },
-			new int[] { Attribute.StateEnabled, -Attribute.StateChecked },
-			new int[] { -Attribute.StateEnabled, Attribute.StateChecked },
-			new int[] { -Attribute.StateEnabled, -Attribute.StatePressed },
-		};
-
 		public static void UpdateBackground(this AppCompatCheckBox nativeCheckBox, ICheckBox check)
 		{
 			var paint = check.Background;
@@ -48,15 +39,7 @@ namespace Microsoft.Maui
 
 			var tintColor = targetColor.ToNative();
 
-			var tintList = new ColorStateList(
-				CheckedStates,
-				new int[]
-				{
- 					tintColor,
- 					tintColor,
- 					tintColor,
- 					tintColor
-				});
+			var tintList = ColorStateListExtensions.CreateCheckBox(tintColor);
 
 			var tintMode = PorterDuff.Mode.SrcIn;
 

@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Preserve(AllMembers = true)]
-		public class HolderCarouselPages : CarouselPage
+		internal class HolderCarouselPages : CarouselPage
 		{
 			public HolderCarouselPages()
 			{

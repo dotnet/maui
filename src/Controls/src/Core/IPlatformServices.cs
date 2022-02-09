@@ -13,19 +13,11 @@ namespace Microsoft.Maui.Controls.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IPlatformServices
 	{
-		bool IsInvokeRequired { get; }
-
-		void BeginInvokeOnMainThread(Action action);
-
 		double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes);
-
-		Color GetNamedColor(string name);
 
 		OSAppTheme RequestedTheme { get; }
 
 		void StartTimer(TimeSpan interval, Func<bool> callback);
-
-		string RuntimePlatform { get; }
 
 		SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint);
 	}

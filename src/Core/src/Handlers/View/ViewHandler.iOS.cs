@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Handlers
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
 			UpdateTransformation(handler, view);
+			handler.ToPlatform().UpdateBackgroundLayerFrame();
 		}
 
 		public static void MapTranslationX(IViewHandler handler, IView view)
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void UpdateTransformation(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateTransformation(view);
+			handler.ToPlatform().UpdateTransformation(view);
 		}
 	}
 }

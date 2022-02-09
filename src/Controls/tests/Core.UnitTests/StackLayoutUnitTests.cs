@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using NUnit.Framework;
 
 
@@ -353,6 +354,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
+			var handler = Substitute.For<IViewHandler>();
+			stack.Handler = handler;
+
 			stack.Layout(new Rectangle(0, 0, 100, 100));
 
 			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
@@ -361,11 +365,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(new Size(100, 46), size);
 
 			child1.IsVisible = false;
+
+			// Verify that the visibility change invalidated the layout, and simulate a native layout update 
+			AssertInvalidated(handler);
+			stack.ForceLayout();
+
 			Assert.False(child1.IsVisible);
 			Assert.AreEqual(new Rectangle(0, 0, 100, 20), child2.Bounds);
 			size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(100, 20), size);
-
 		}
 
 		[Test]
@@ -657,7 +665,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child }
 			};
 
-			var outterLayout = new StackLayout
+			var outerLayout = new StackLayout
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
@@ -665,9 +673,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { innerStack }
 			};
 
-			outterLayout.Layout(new Rectangle(0, 0, 100, 100));
+
+			var handler = Substitute.For<IViewHandler>();
+			outerLayout.Handler = handler;
+
+			outerLayout.Layout(new Rectangle(0, 0, 100, 100));
 			var beforeSize = innerStack.Bounds.Size;
 			innerStack.Padding = new Thickness(30);
+
+			// Verify that the Padding change invalidated the layout, and simulate a native layout update 
+			AssertInvalidated(handler);
+			outerLayout.ForceLayout();
+
 			var afterSize = innerStack.Bounds.Size;
 			Assert.AreNotEqual(beforeSize, afterSize, "Padding was grow, so Size should be bigger");
 		}
@@ -703,6 +720,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			innerStack.Padding = new Thickness(30);
 			var after = child.Bounds;
 			Assert.AreNotEqual(before, after, "child should be moved within padding size");
+		}
+
+		void AssertInvalidated(IViewHandler handler)
+		{
+			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
+			handler.ClearReceivedCalls();
 		}
 	}
 }

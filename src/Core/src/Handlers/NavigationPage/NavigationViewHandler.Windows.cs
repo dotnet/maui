@@ -10,9 +10,9 @@ using Microsoft.UI.Xaml.Media.Animation;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, Frame>
+		ViewHandler<IStackNavigationView, Frame>
 	{
-		NavigationManager? _navigationManager;
+		StackNavigationManager? _navigationManager;
 		protected override Frame CreateNativeView()
 		{
 			_navigationManager = CreateNavigationManager();
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
 			if (arg3 is NavigationRequest nr)
 			{
@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Handlers
 
 
 		// this should move to a factory method
-		protected virtual NavigationManager CreateNavigationManager() =>
-			_navigationManager ??= new NavigationManager(MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null"));
+		protected virtual StackNavigationManager CreateNavigationManager() =>
+			_navigationManager ??= new StackNavigationManager(MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null"));
 	}
 }
 

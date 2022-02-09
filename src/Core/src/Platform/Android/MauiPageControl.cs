@@ -9,7 +9,7 @@ using AShapes = Android.Graphics.Drawables.Shapes;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 
-namespace Microsoft.Maui.Platform.Android
+namespace Microsoft.Maui.Platform
 {
 	public class MauiPageControl : LinearLayout
 	{
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Platform.Android
 			if (layout == null || _indicatorView?.Handler?.MauiContext == null)
 				return;
 
-			AView? handler = layout.ToNative(_indicatorView.Handler.MauiContext);
+			AView? handler = layout.ToPlatform(_indicatorView.Handler.MauiContext);
 
 			RemoveAllViews();
 			AddView(handler);

@@ -6,7 +6,7 @@ using ObjCRuntime;
 using UIKit;
 using WebKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiRefreshView : UIView
 	{
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 
 			if (content != null && mauiContext != null)
 			{
-				_contentView = content.ToNative(mauiContext);
+				_contentView = content.ToPlatform(mauiContext);
 				this.AddSubview(_contentView);
 				TryInsertRefresh(_contentView);
 			}

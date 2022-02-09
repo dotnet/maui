@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Android.Content;
+﻿using Android.Content;
 using Android.Webkit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiWebView : WebView, IWebViewDelegate
 	{
