@@ -6,7 +6,7 @@ using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, View>
+	public partial class MenuFlyoutSubItemHandler : ElementHandler<IMenuFlyoutSubItem, View>
 	{
 		protected override View CreateNativeElement()
 		{

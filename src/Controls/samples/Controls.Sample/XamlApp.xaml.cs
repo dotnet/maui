@@ -48,6 +48,19 @@ namespace Maui.Controls.Sample
 		{
 			var window = new Window(Services.GetRequiredService<Page>());
 
+			var menuBarItem = new MenuBarItem();
+			menuBarItem.Text = "Bar Item";
+
+			menuBarItem.Add(new MenuFlyoutItem()
+			{
+				Text = "Flyout Item"
+			});
+
+			window.MenuBar = new MenuBar()
+			{
+				menuBarItem
+			};
+
 			window.Title = ".NET MAUI Samples Gallery";
 			return window;
 		}

@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	public interface IMenuBarItem : IList<IMenuFlyoutItemBase>, IElement
+	public interface IMenuBarElement
 	{
-		string Text { get; }
+		IMenuBar? MenuBar { get; }
 	}
 }

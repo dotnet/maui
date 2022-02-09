@@ -9,7 +9,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static IPropertyMapper<IMenuBarItem, IMenuBarItemHandler> Mapper = new PropertyMapper<IMenuBarItem, IMenuBarItemHandler>(ElementMapper)
 		{
+#if WINDOWS
+			[nameof(IMenuBarItem.Text)] = MapText,
+#endif
 		};
+
 		public static CommandMapper<IMenuBarItem, IMenuBarItemHandler> CommandMapper = new(ElementCommandMapper)
 		{
 			[nameof(IMenuBarItemHandler.Add)] = MapAdd,

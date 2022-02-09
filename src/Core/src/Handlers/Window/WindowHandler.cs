@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || WINDOWS
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
+#if WINDOWS
+			[nameof(IMenuBarElement.MenuBar)] = MapMenuBar,
+#endif
 		};
 
 		public WindowHandler()

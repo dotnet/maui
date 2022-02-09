@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Platform;
-using Android.Views;
+using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, View>
+	public partial class MenuFlyoutSubItemHandler : ElementHandler<IMenuFlyoutSubItem, UIView>
 	{
-		protected override View CreateNativeElement()
+		protected override UIView CreateNativeElement()
 		{
 			throw new NotImplementedException();
 		}

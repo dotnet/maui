@@ -6,5 +6,9 @@ namespace Microsoft.Maui
 {
 	public interface IMenuFlyoutItem : IMenuFlyoutItemBase
 	{
+		/// <summary>
+		/// Gets the text.
+		/// </summary>
+		string Text { get; }
 	}
 }

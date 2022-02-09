@@ -63,5 +63,15 @@ namespace Microsoft.Maui.Handlers
 			if (view is IToolbarElement tb)
 				ViewHandler.MapToolbar(handler, tb);
 		}
+
+		public static void MapMenuBar(IWindowHandler handler, IWindow view)
+		{
+			if (view is IMenuBarElement mb)
+			{
+				_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+				var windowManager = handler.MauiContext.GetNavigationRootManager();
+				windowManager.SetMenuBar(mb.MenuBar);
+			}
+		}
 	}
 }

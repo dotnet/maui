@@ -13,10 +13,13 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
+
+		public static readonly BindableProperty MenuBarProperty = BindableProperty.Create(
+			nameof(MenuBar), typeof(MenuBar), typeof(Window), default(MenuBar));
 
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
@@ -37,6 +40,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		
+
 		public IReadOnlyCollection<IWindowOverlay> Overlays => _overlays.ToList().AsReadOnly();
 
 		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
@@ -55,6 +60,13 @@ namespace Microsoft.Maui.Controls
 			: this()
 		{
 			Page = page;
+		}
+
+		IMenuBar? IMenuBarElement.MenuBar => MenuBar;
+		public MenuBar? MenuBar
+		{
+			get => (MenuBar?)GetValue(MenuBarProperty);
+			set => SetValue(MenuBarProperty, value);
 		}
 
 		public string? Title

@@ -6,21 +6,18 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, MenuBarItem>, IMenuBarItemHandler
+	public partial class MenuFlyoutSubItemHandler : 
+		MenuFlyoutItemBaseHandler<IMenuFlyoutSubItem, MenuFlyoutSubItem>
 	{
-		public MenuBarItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
+		protected override MenuFlyoutSubItem CreateNativeElement()
 		{
+			return new MenuFlyoutSubItem();
 		}
 
-		protected override MenuBarItem CreateNativeElement()
-		{
-			return new MenuBarItem();
-		}
-
-		public static void MapText(IMenuBarItemHandler handler, IMenuBarItem view)
+		public static void MapText(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
 			// TODO MAUI Fix the types on interfaces
-			((MenuBarItem)handler.NativeView!).Title = view.Text;
+			((MenuFlyoutSubItem)handler.NativeView!).Text = view.Text;
 		}
 
 		public override void SetVirtualView(IElement view)
@@ -28,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 			Clear();
 
-			foreach (var item in ((IMenuBarItem)view))
+			foreach (var item in ((IMenuFlyoutSubItem)view))
 			{
 				Add(item);
 			}
