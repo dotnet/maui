@@ -131,13 +131,6 @@ namespace Microsoft.Maui.Controls
 			PlatformServices.StartTimer(interval, callback);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetAssemblies']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)

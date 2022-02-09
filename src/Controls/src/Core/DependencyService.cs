@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls
 				if (s_initialized)
 					return;
 
-				Assembly[] assemblies = Device.GetAssemblies();
+				Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 				if (Internals.Registrar.ExtraAssemblies != null)
 				{
 					assemblies = assemblies.Union(Internals.Registrar.ExtraAssemblies).ToArray();

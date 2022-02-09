@@ -31,11 +31,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			return new WPFTicker();
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			switch (size)

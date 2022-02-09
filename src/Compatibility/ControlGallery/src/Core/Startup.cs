@@ -23,22 +23,22 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				.UseMauiApp<App>()
 				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddCompatibilityRenderers(Device.GetAssemblies());
+					handlers.AddCompatibilityRenderers(AppDomain.CurrentDomain.GetAssemblies());
 				})
 				.ConfigureImageSources(sources =>
 				{
-					sources.AddCompatibilityServices(Device.GetAssemblies());
+					sources.AddCompatibilityServices(AppDomain.CurrentDomain.GetAssemblies());
 				})
 				.ConfigureFonts(fonts =>
 				{
-					fonts.AddCompatibilityFonts(new FontRegistrar(new EmbeddedFontLoader()), Device.GetAssemblies());
+					fonts.AddCompatibilityFonts(new FontRegistrar(new EmbeddedFontLoader()), AppDomain.CurrentDomain.GetAssemblies());
 				})
 				.ConfigureEffects(effects =>
 				{
-					effects.AddCompatibilityEffects(Device.GetAssemblies());
+					effects.AddCompatibilityEffects(AppDomain.CurrentDomain.GetAssemblies());
 				});
 
-			DependencyService.Register(Device.GetAssemblies());
+			DependencyService.Register(AppDomain.CurrentDomain.GetAssemblies());
 
 			return builder;
 		}
