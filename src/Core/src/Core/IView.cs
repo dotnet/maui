@@ -150,7 +150,7 @@ namespace Microsoft.Maui
 		void InvalidateArrange();
 
 		/// <summary>
-		/// Attemps to set focus to this View.
+		/// Attempts to set focus to this View.
 		/// </summary>
 		/// <returns>true if the keyboard focus was set to this element; false if the call to this method did not force a focus change.</returns>
 		bool Focus();
