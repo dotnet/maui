@@ -138,7 +138,7 @@ stages:
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions and use only those provisioned by the pipeline
+                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -185,7 +185,7 @@ stages:
                 parameters:
                   UninstallMono: false
                   UninstallXamarinMac: false
-                  CleanseAgentToolsDotNet: true           # Cleanse all .NET versions and use only those provisioned by the pipeline
+                  CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
@@ -259,7 +259,7 @@ stages:
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions and use only those provisioned by the pipeline
+                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -312,7 +312,7 @@ stages:
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions and use only those provisioned by the pipeline
+                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
