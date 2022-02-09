@@ -32,6 +32,16 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
 
+		public static void Focus(this FrameworkElement nativeView, FocusRequest request)
+		{
+			// TODO: Implement Focus on Windows.
+		}
+
+		public static void Unfocus(this FrameworkElement nativeView, IView view)
+		{
+			// TODO: Implement Unfocus on Windows.
+		}
+
 		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
 		{
 			double opacity = view.Opacity;

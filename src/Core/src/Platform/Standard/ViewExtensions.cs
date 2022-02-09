@@ -4,6 +4,10 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsEnabled(this object nativeView, IView view) { }
 
+		public static void Focus(this object nativeView, FocusRequest request) { }
+
+		public static void Unfocus(this object nativeView, IView view) { }
+
 		public static void UpdateVisibility(this object nativeView, IView view) { }
 
 		public static void UpdateBackground(this object nativeView, IView view) { }
@@ -15,6 +19,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateClip(this object nativeView, IView view) { }
 
 		public static void UpdateShadow(this object nativeView, IView view) { }
+
 		public static void UpdateBorder(this object nativeView, IView view) { }
 
 		public static void UpdateOpacity(this object nativeView, IView view) { }
