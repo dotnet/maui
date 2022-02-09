@@ -160,7 +160,7 @@
       Outputs="$(DotNetPacksDirectory).stamp"
       DependsOnTargets="_ReadAllNuGetSources">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot;"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_AllNuGetSources->'--source &quot;%(Identity)&quot;', ' ')"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
