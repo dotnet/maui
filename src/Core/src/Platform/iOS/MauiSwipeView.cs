@@ -1036,7 +1036,7 @@ namespace Microsoft.Maui.Platform
 
 		UIViewController? GetViewController()
 		{
-			var window = Element?.Handler?.MauiContext?.GetNativeWindow() ??
+			var window = Element?.Handler?.MauiContext?.GetPlatformWindow() ??
 				throw new InvalidOperationException("Unable to retrieve Native Window");
 
 			var viewController = window.RootViewController;

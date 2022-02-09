@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Platform
 
 #if WINDOWS || IOS || ANDROID
 		internal static IWindow GetWindow(this IElement element) =>
-			element.Handler?.MauiContext?.GetNativeWindow()?.GetWindow() ??
+			element.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow() ??
 			throw new InvalidOperationException("IWindow not found");
 #endif
 	}
