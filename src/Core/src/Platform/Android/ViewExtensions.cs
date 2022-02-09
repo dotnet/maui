@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Views;
@@ -399,15 +400,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		internal static Task LoadedAsync(this AView frameworkElement, TimeSpan? timeOut = null)
+		internal static void OnLoaded(this View frameworkElement, Action action)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-
 			if (frameworkElement.IsAttachedToWindow)
 			{
-				taskCompletionSource.SetResult(true);
-				return taskCompletionSource.Task;
+				action();
 			}
 
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
@@ -416,23 +413,17 @@ namespace Microsoft.Maui.Platform
 				if (routedEventHandler != null)
 					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
 
-				taskCompletionSource.SetResult(true);
+				action();
 			};
 
 			frameworkElement.ViewAttachedToWindow += routedEventHandler;
-
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
-		internal static Task UnloadedAsync(this AView frameworkElement, TimeSpan? timeOut = null)
+		internal static void OnUnloaded(this View frameworkElement, Action action)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-
 			if (!frameworkElement.IsAttachedToWindow)
 			{
-				taskCompletionSource.SetResult(true);
-				return taskCompletionSource.Task;
+				action();
 			}
 
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
@@ -441,12 +432,10 @@ namespace Microsoft.Maui.Platform
 				if (routedEventHandler != null)
 					frameworkElement.ViewDetachedFromWindow -= routedEventHandler;
 
-				taskCompletionSource.SetResult(true);
+				action();
 			};
 
 			frameworkElement.ViewDetachedFromWindow += routedEventHandler;
-
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
 		internal static IViewParent? GetParent(this View? view)
@@ -457,6 +446,46 @@ namespace Microsoft.Maui.Platform
 		internal static IViewParent? GetParent(this IViewParent? view)
 		{
 			return view?.Parent;
+		}
+
+		internal static void Arrange(
+			this IView view, 
+			int left,
+			int top,
+			int right,
+			int bottom,
+			Context context)
+		{
+			var deviceIndependentLeft = context.FromPixels(left);
+			var deviceIndependentTop = context.FromPixels(top);
+			var deviceIndependentRight = context.FromPixels(right);
+			var deviceIndependentBottom = context.FromPixels(bottom);
+			var destination = Rectangle.FromLTRB(0, 0,
+				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
+
+			if (!view.Frame.Equals(destination))
+				view.Arrange(destination);
+		}
+
+		internal static void Arrange(this IView view, AView.LayoutChangeEventArgs e)
+		{
+			var context = view.Handler?.MauiContext?.Context ??
+				 throw new InvalidOperationException("View is Missing Handler");
+
+			view.Arrange(e.Left, e.Top, e.Right, e.Bottom, context);
+		}
+
+		internal static void Arrange(this IView view, View platformView)
+		{
+			var context = platformView.Context ??
+				 throw new InvalidOperationException("platformView is Missing Context");
+
+			view.Arrange(
+				platformView.Left, 
+				platformView.Top, 
+				platformView.Right, 
+				platformView.Left, 
+				context);
 		}
 	}
 }

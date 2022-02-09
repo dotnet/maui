@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -9,6 +10,12 @@ namespace Microsoft.Maui.Controls
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
+		}
+
+		protected override void LayoutChildren(double x, double y, double width, double height)
+		{
+			// We don't want forcelayout to call the legacy
+			// Page.LayoutChildren code
 		}
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
