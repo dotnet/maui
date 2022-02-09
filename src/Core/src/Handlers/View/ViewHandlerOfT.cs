@@ -1,5 +1,5 @@
 using System;
-#if __IOS__ || MACCATALYST
+#if IOS || MACCATALYST
 using NativeView = UIKit.UIView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;

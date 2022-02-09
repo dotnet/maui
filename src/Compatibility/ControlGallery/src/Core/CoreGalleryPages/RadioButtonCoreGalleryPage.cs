@@ -13,17 +13,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			element.Content = "RadioButton";
 		}
 
-		protected override void Initialize()
-		{
-			base.Initialize();
-		}
-
-		protected override void OnDisappearing()
-		{
-			Device.SetFlags(new List<string>());
-			base.OnDisappearing();
-		}
-
 		protected override void Build(StackLayout stackLayout)
 		{
 			base.Build(stackLayout);

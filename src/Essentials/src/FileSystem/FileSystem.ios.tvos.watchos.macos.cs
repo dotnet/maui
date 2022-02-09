@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Essentials
 			filename = NormalizePath(filename);
 
 			var root = NSBundle.MainBundle.BundlePath;
-#if __MACOS__
+#if MACCATALYST || MACOS
 			root = Path.Combine(root, "Contents", "Resources");
 #endif
 			return Path.Combine(root, filename);

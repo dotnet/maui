@@ -64,12 +64,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		readonly string[] _images =
 		{
 			"cover1.jpg",
-			"oasis.jpg",
-			"photo.jpg",
-			"Vegetables.jpg",
-			"Fruits.jpg",
-			"FlowerBuds.jpg",
-			"Legumes.jpg"
+			"vegetables.jpg",
+			"fruits.jpg",
+			"flowerbuds.jpg",
+			"legumes.jpg"
 		};
 
 		public void GenerateItems(ItemsSourceType itemsSourceType)

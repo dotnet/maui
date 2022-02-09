@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var page = value as Page;
 				if (page != null)
 				{
-					return page.ToNative(page.FindMauiContext()!);
+					return page.ToPlatform(page.FindMauiContext()!);
 				}
 			}
 
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_view = view;
 				_view.MeasureInvalidated += OnMeasureInvalidated;
 
-				FrameworkElement = view.ToNative(view.FindMauiContext()!);
+				FrameworkElement = view.ToPlatform(view.FindMauiContext()!);
 				Children.Add(FrameworkElement);
 
 				// make sure we re-measure once the template is applied
