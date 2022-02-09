@@ -723,7 +723,7 @@ namespace Microsoft.Maui.Controls
 			if (!Batched)
 			{
 				BatchCommitted?.Invoke(this, new EventArg<VisualElement>(this));
-				Device.Invalidate(this);
+				DependencyService.Get<IPlatformInvalidate>()?.Invalidate(this);
 			}
 		}
 

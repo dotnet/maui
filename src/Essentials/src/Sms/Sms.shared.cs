@@ -1,31 +1,47 @@
+#nullable enable
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface ISms
+	{
+		Task ComposeAsync(SmsMessage? message);
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
-	public static partial class Sms
+	public static class Sms
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="//Member[@MemberName='ComposeAsync'][0]/Docs" />
 		public static Task ComposeAsync()
-			=> ComposeAsync(null);
+			=> Current.ComposeAsync(null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="//Member[@MemberName='ComposeAsync'][1]/Docs" />
 		public static Task ComposeAsync(SmsMessage message)
 		{
-			if (!IsComposeSupported)
+			if (!SmsImplementation.IsComposeSupported)
 				throw new FeatureNotSupportedException();
 
-			if (message == null)
-				message = new SmsMessage();
+			message	??= new SmsMessage();
 
-			if (message?.Recipients == null)
-				message.Recipients = new List<string>();
+			message.Recipients ??= new List<string>();
 
-			return PlatformComposeAsync(message);
+			return Current.ComposeAsync(message);
 		}
+		static ISms? currentImplementation;
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static ISms Current =>
+			currentImplementation ??= new SmsImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetCurrent(ISms? implementation) =>
+			currentImplementation = implementation;
 	}
+#nullable restore
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SmsMessage']/Docs" />
 	public class SmsMessage

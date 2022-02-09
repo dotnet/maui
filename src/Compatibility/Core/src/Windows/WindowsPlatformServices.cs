@@ -18,7 +18,7 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	internal class WindowsPlatformServices : IPlatformServices, IPlatformInvalidate
+	internal class WindowsPlatformServices : IPlatformServices
 	{
 		readonly UISettings _uiSettings = new UISettings();
 
@@ -93,16 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return size.GetFontSize();
 		}
 
-		public Color GetNamedColor(string name)
-		{
-			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
-				return KnownColor.Default;
-
-			return ((global::Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
-		}
-
-		public string RuntimePlatform => Device.UWP;
-
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			var timerTick = 0L;
@@ -131,17 +121,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Application.Current.Dispatcher.DispatchIfRequired(() =>
 				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme)));
-		}
-
-		public void Invalidate(VisualElement visualElement)
-		{
-			var renderer = Platform.GetRenderer(visualElement);
-			if (renderer == null)
-			{
-				return;
-			}
-
-			renderer.ContainerElement.InvalidateMeasure();
 		}
 
 		public OSAppTheme RequestedTheme =>

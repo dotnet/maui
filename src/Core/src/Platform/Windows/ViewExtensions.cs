@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Platform
 {
@@ -186,12 +187,26 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumHeight(this FrameworkElement nativeView, IView view)
 		{
-			nativeView.MinHeight = view.MinimumHeight;
+			var minHeight = view.MinimumHeight;
+
+			if (Dimension.IsMinimumSet(minHeight))
+			{
+				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
+				// because the platform/theme may have a minimum height for this control
+				nativeView.MinHeight = minHeight;
+			}
 		}
 
 		public static void UpdateMinimumWidth(this FrameworkElement nativeView, IView view)
 		{
-			nativeView.MinWidth = view.MinimumWidth;
+			var minWidth = view.MinimumWidth;
+
+			if (Dimension.IsMinimumSet(minWidth))
+			{
+				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
+				// because the platform/theme may have a minimum width for this control
+				nativeView.MinWidth = minWidth;
+			}
 		}
 
 		public static void UpdateMaximumHeight(this FrameworkElement nativeView, IView view)
@@ -329,6 +344,19 @@ namespace Microsoft.Maui.Platform
 			var y1 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Min();
 			var y2 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Max();
 			return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+		}
+
+		internal static DependencyObject? GetParent(this FrameworkElement? view)
+		{
+			return view?.Parent;
+		}
+
+		internal static DependencyObject? GetParent(this DependencyObject? view)
+		{
+			if (view is FrameworkElement pv)
+				return pv.Parent;
+
+			return null;
 		}
 	}
 }

@@ -44,13 +44,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class TestNavigationHandler : ViewHandler<NavigationPage, object>
 	{
-		public static CommandMapper<INavigationView, TestNavigationHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IStackNavigationView, TestNavigationHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
 		{
-			[nameof(INavigationView.RequestNavigation)] = RequestNavigation
+			[nameof(IStackNavigation.RequestNavigation)] = RequestNavigation
 		};
 
-		public static PropertyMapper<INavigationView, TestNavigationHandler> NavigationViewMapper
-			   = new PropertyMapper<INavigationView, TestNavigationHandler>();
+		public static PropertyMapper<IStackNavigationView, TestNavigationHandler> NavigationViewMapper
+			   = new PropertyMapper<IStackNavigationView, TestNavigationHandler>();
 
 		public NavigationRequest CurrentNavigationRequest { get; private set; }
 
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var newStack = CurrentNavigationRequest.NavigationStack.ToList();
 			CurrentNavigationRequest = null;
-			(VirtualView as INavigationView)
+			(VirtualView as IStackNavigation)
 				.NavigationFinished(newStack);
 		}
 
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			CompleteCurrentNavigation();
 		}
 
-		public static void RequestNavigation(TestNavigationHandler arg1, INavigationView arg2, object arg3)
+		public static void RequestNavigation(TestNavigationHandler arg1, IStackNavigationView arg2, object arg3)
 		{
 			arg1.RequestNavigation((NavigationRequest)arg3);
 		}

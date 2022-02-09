@@ -7,16 +7,16 @@ using Android.Provider;
 
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Sms
+	public class SmsImplementation:ISms
 	{
 		static readonly string smsRecipientSeparator = ";";
 
 		internal static bool IsComposeSupported
 			=> Platform.IsIntentSupported(CreateIntent(null, new List<string> { "0000000000" }));
 
-		static Task PlatformComposeAsync(SmsMessage message)
+		public Task ComposeAsync(SmsMessage message)
 		{
 			var intent = CreateIntent(message?.Body, message?.Recipients);
 

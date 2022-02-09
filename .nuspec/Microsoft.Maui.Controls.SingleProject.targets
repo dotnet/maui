@@ -3,21 +3,33 @@
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
     <PlatformsProjectFolder Condition=" '$(PlatformsProjectFolder)' == '' ">Platforms\</PlatformsProjectFolder>
+    <PlatformsProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(PlatformsProjectFolder)'))</PlatformsProjectFolder>
     <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
     <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
     <!-- Android -->
     <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
     <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">$(PlatformsProjectFolder)Android\</AndroidProjectFolder>
+    <AndroidProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(AndroidProjectFolder)'))</AndroidProjectFolder>
     <!-- iOS -->
     <EnableDefaultiOSItems>false</EnableDefaultiOSItems>
-    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">$(PlatformsProjectFolder)\iOS\</iOSProjectFolder>
+    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">$(PlatformsProjectFolder)iOS\</iOSProjectFolder>
+    <iOSProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(iOSProjectFolder)'))</iOSProjectFolder>
     <!-- MacCatalyst -->
     <EnableDefaultMacCatalystItems>false</EnableDefaultMacCatalystItems>
-    <MacCatalystProjectFolder Condition=" '$(MacCatalystProjectFolder)' == '' ">$(PlatformsProjectFolder)\MacCatalyst\</MacCatalystProjectFolder>
+    <MacCatalystProjectFolder Condition=" '$(MacCatalystProjectFolder)' == '' ">$(PlatformsProjectFolder)MacCatalyst\</MacCatalystProjectFolder>
+    <MacCatalystProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(MacCatalystProjectFolder)'))</MacCatalystProjectFolder>
     <!-- Windows -->
     <EnableDefaultWindowsItems>false</EnableDefaultWindowsItems>
-    <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">$(PlatformsProjectFolder)\Windows\</WindowsProjectFolder>
+    <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">$(PlatformsProjectFolder)Windows\</WindowsProjectFolder>
+    <WindowsProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(WindowsProjectFolder)'))</WindowsProjectFolder>
   </PropertyGroup>
+
+  <ItemGroup>
+    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" />
+    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
+    <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" />
+    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
+  </ItemGroup>
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
     <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>

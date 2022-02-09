@@ -21,8 +21,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			get { return System.Windows.Application.Current == null ? false : !System.Windows.Application.Current.Dispatcher.CheckAccess(); }
 		}
 
-		public string RuntimePlatform => Device.WPF;
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			System.Windows.Application.Current?.Dispatcher.BeginInvoke(action);
@@ -69,12 +67,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 				default:
 					throw new ArgumentOutOfRangeException("size");
 			}
-		}
-
-		public Color GetNamedColor(string name)
-		{
-			// Not supported on this platform
-			return Color.Default;
 		}
 
 		public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
