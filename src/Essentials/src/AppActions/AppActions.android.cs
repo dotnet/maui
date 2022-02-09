@@ -5,9 +5,9 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Graphics.Drawables;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppActions
+	public static partial class AppActionsImplementations : IAppActions
 	{
 		internal static bool PlatformIsSupported
 			=> Platform.HasApiLevelNMr1;

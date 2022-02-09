@@ -1,9 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IAppActions
+	{
+		Task<IEnumerable<Maui.Essentials.AppAction>> GetAsync ();
+		Task SetAsync (IEnumerable<Xamarin.Essentials.AppAction> actions);	
+
+		Task SetAsync (params Maui.Essentials.AppAction[] actions);		
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs" />
 	public static partial class AppActions
 	{

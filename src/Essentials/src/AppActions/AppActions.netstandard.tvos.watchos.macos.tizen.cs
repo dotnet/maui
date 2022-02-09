@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs" />
-	public static partial class AppActions
+	public static partial class AppActionsImplementations : IAppActions
 	{
 		internal static bool PlatformIsSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;

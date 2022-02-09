@@ -11,9 +11,9 @@ using Windows.ApplicationModel.Activation;
 using Microsoft.UI.Xaml;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppActions
+	public static partial class AppActionsImplementations : IAppActions
 	{
 		const string appActionPrefix = "XE_APP_ACTIONS-";
 

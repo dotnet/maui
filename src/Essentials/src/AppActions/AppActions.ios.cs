@@ -5,9 +5,9 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppActions
+	public static partial class AppActionsImplementations : IAppActions
 	{
 		internal const string Type = "XE_APP_ACTION_TYPE";
 
