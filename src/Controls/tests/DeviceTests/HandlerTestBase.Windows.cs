@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					newWindowHandler = window.ToHandler(mauiContext);
 					var content = window.Content.Handler.ToPlatform();
-					await content.LoadedAsync();
+					await content.OnLoadedAsync();
 					await Task.Delay(10);
 
 					if (typeof(THandler).IsAssignableFrom(newWindowHandler.GetType()))
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 					if (testingRootPanel != null && MauiProgram.CurrentWindow.Content != testingRootPanel)
 					{
 						MauiProgram.CurrentWindow.Content = testingRootPanel;
-						await testingRootPanel.LoadedAsync();
+						await testingRootPanel.OnLoadedAsync();
 						await Task.Delay(10);
 					}
 				}
