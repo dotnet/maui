@@ -10,7 +10,7 @@ using ContactsUI;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class ContactsImplementation: IContacts
+	public class ContactsImplementation : IContacts
 	{
 #if __MACOS__
         static Task<Contact> PlatformPickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
