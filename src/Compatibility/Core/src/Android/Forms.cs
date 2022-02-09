@@ -336,11 +336,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				_context = context;
 			}
 
-			public Assembly[] GetAssemblies()
-			{
-				return AppDomain.CurrentDomain.GetAssemblies();
-			}
-
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
 				if (_smallSize == 0)

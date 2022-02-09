@@ -102,11 +102,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			return getStreamAsync(uri, cancellationToken);
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			if (getNativeSizeFunc != null)

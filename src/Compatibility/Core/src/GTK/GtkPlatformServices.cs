@@ -25,11 +25,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 			return new GtkTicker();
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			switch (size)
