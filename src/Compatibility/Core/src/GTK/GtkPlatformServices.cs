@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 	{
 		public bool IsInvokeRequired => Thread.CurrentThread.IsBackground;
 
-		public string RuntimePlatform => Device.GTK;
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			GLib.Idle.Add(delegate

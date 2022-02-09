@@ -146,8 +146,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public bool IsInvokeRequired => !EcoreMainloop.IsMainThread;
 
-		public string RuntimePlatform => Device.Tizen;
-
 		#endregion
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)

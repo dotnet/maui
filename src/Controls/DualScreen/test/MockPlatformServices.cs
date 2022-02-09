@@ -69,8 +69,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			get { return _isInvokeRequired; }
 		}
 
-		public string RuntimePlatform { get; set; }
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			if (invokeOnMainThread == null)

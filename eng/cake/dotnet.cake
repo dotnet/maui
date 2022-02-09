@@ -152,7 +152,6 @@ Task("dotnet-test")
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
-            "**/Controls.Sample.Tests.csproj"
         };
 
         var success = true;
