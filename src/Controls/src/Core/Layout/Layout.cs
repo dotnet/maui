@@ -137,8 +137,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (this[index] is Element element)
 				{
-					element.Parent = null;
-					VisualDiagnostics.OnChildRemoved(this, element, index);
+					OnChildRemoved(element, index);
 				}
 			}
 

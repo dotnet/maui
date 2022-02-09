@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Specialized;
+using Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 {
@@ -46,7 +46,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 			var spacingModifier = new SpacingModifier(collectionView.ItemsLayout, "Update_Spacing");
 
 			var reloadButton = new Button { Text = "Reload Current Source", AutomationId = "btnReload", HorizontalOptions = LayoutOptions.Start };
-			reloadButton.Clicked += (sender,e) => ReloadItemsSource(collectionView);
+			reloadButton.Clicked += (sender, e) => ReloadItemsSource(collectionView);
 
 			layout.Children.Add(generator);
 			layout.Children.Add(itemsSourceTypeSelector);

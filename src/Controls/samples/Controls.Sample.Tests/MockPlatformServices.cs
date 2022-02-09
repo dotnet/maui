@@ -11,8 +11,6 @@ public class MockPlatformServices : IPlatformServices
 
     public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes) => 0;
 
-    public Color GetNamedColor(string name) => Colors.Transparent;
-
     public void OpenUriAction(Uri uri)
     {
     }

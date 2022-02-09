@@ -277,28 +277,16 @@ namespace Microsoft.Maui.Controls.Handlers
 					handler._navigationView.MenuItemsSource = items;
 				}
 
-				// Sync up the number of items in the MenuItemsSource to our pages
-				// Then we update all the related properties
-				while (items.Count < handler.VirtualView.Children.Count)
-				{
-					items.Add(new NavigationViewItemViewModel());
-				}
-
-				while (handler.VirtualView.Children.Count < items.Count)
-				{
-					items.RemoveAt(0);
-				}
-
-				for (var i = 0; i < handler.VirtualView.Children.Count; i++)
-				{
-					Page page = handler.VirtualView.Children[i];
-					var vm = items[i];
-					vm.Content = page.Title;
-					vm.Data = page;
-					vm.Foreground = view.BarTextColor?.AsPaint()?.ToNative();
-					vm.SelectedBackground = view.SelectedTabColor?.AsPaint()?.ToNative();
-					vm.UnselectedBackground = view.UnselectedTabColor?.AsPaint()?.ToNative();
-				}
+				items.SyncItems(handler.VirtualView.Children,
+					(vm, page) =>
+					{
+						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
+						vm.Content = page.Title;
+						vm.Data = page;
+						vm.Foreground = view.BarTextColor?.AsPaint()?.ToNative();
+						vm.SelectedBackground = view.SelectedTabColor?.AsPaint()?.ToNative();
+						vm.UnselectedBackground = view.UnselectedTabColor?.AsPaint()?.ToNative();
+					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));
 			}

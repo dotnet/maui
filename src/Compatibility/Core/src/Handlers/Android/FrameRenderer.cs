@@ -43,28 +43,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		int _width;
 		readonly Controls.Compatibility.Platform.Android.MotionEventHelper _motionEventHelper = new Controls.Compatibility.Platform.Android.MotionEventHelper();
 		bool _disposed;
-		Frame? _element;
 		GradientDrawable? _backgroundDrawable;
 		private IMauiContext? _mauiContext;
-		protected IPropertyMapper _mapper;
-		protected CommandMapper? _commandMapper;
-		protected readonly IPropertyMapper _defaultMapper;
-
+		ViewHandlerDelegator<Frame> _viewHandlerWrapper;
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
 		public FrameRenderer(Context context) : base(context)
 		{
-			_defaultMapper = Mapper;
-			_mapper = _defaultMapper;
-			_commandMapper = CommandMapper;
+			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(Mapper, CommandMapper, this);
 		}
 
 		protected CardView Control => this;
 
 		protected Frame? Element
 		{
-			get { return _element; }
+			get { return _viewHandlerWrapper.Element; }
 			set
 			{
 				if (value != null)
@@ -74,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		Size IViewHandler.GetDesiredSize(double widthMeasureSpec, double heightMeasureSpec)
 		{
-			return VisualElementRenderer<Frame>.GetDesiredSize(this, heightMeasureSpec, widthMeasureSpec,
+			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthMeasureSpec, heightMeasureSpec,
 				new Size(20, 20));
 		}
 
@@ -186,7 +180,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (Element != null && e.PropertyName != null)
-				_mapper.UpdateProperty(this, Element, e.PropertyName);
+				_viewHandlerWrapper.UpdateProperty(e.PropertyName);
 
 			ElementPropertyChanged?.Invoke(this, e);
 			_motionEventHelper.UpdateElement(Element);
@@ -308,6 +302,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);
 		}
+
 		#region INativeViewHandler
 		bool IViewHandler.HasContainer { get => false; set { } }
 
@@ -332,7 +327,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_mauiContext = mauiContext;
 
 		void IElementHandler.SetVirtualView(Maui.IElement view) =>
-			VisualElementRenderer<Frame>.SetVirtualView(view, this, OnElementChanged, ref _element, ref _mapper, _defaultMapper, false);
+			_viewHandlerWrapper.SetVirtualView(view, OnElementChanged, false);
 
 		void IElementHandler.UpdateValue(string property)
 		{
@@ -344,15 +339,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.Invoke(string command, object? args)
 		{
-			_commandMapper?.Invoke(this, Element, command, args);
+			_viewHandlerWrapper.Invoke(command, args);
 		}
 
 		void IElementHandler.DisconnectHandler()
 		{
-			if (Element?.Handler == (INativeViewHandler)this)
-				Element.Handler = null;
-
-			_element = null;
+			_viewHandlerWrapper.DisconnectHandler();
 		}
 		#endregion
 	}
