@@ -79,7 +79,7 @@
       <_WorkloadSource Include="@(_AllNuGetSources)" />
     </ItemGroup>
     <Exec
-        Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot;"
+        Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot; --source &quot;$(PackageOutputPath)&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
     />
 
