@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			return new SizeRequest(new Size(Context.ToPixels(40), Context.ToPixels(40)));
 		}
 
-		protected override MapView CreateNativeControl()
+		protected override MapView CreatePlatformControl()
 		{
 			return new MapView(Context);
 		}
@@ -121,10 +121,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 			MapView oldMapView = Control;
 
-			MapView mapView = CreateNativeControl();
+			MapView mapView = CreatePlatformControl();
 			mapView.OnCreate(s_bundle);
 			mapView.OnResume();
-			SetNativeControl(mapView);
+			SetPlatformControl(mapView);
 
 			if (e.OldElement != null)
 			{

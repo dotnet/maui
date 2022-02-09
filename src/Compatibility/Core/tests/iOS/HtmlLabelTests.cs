@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var label = new Label { BackgroundColor = Colors.Red, Text = "<p>Hello</p>", TextType = TextType.Html };
 			var expected = Colors.Red.ToUIColor();
-			var actual = await GetRendererProperty(label, r => r.NativeView.BackgroundColor);
+			var actual = await GetRendererProperty(label, r => r.PlatformView.BackgroundColor);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 

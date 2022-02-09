@@ -49,9 +49,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			return element.GetOrCreateRenderer();
 		}
 
-		protected Control GetNativeControl(VisualElement element)
+		protected Control GetPlatformControl(VisualElement element)
 		{
-			return GetRenderer(element).GetNativeElement() as Control;
+			return GetRenderer(element).GetPlatformElement() as Control;
 		}
 
 		protected Panel GetPanel(VisualElement element)
@@ -62,37 +62,37 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		protected WBorder GetBorder(VisualElement element)
 		{
 			var renderer = GetRenderer(element);
-			var nativeElement = renderer.GetNativeElement();
+			var nativeElement = renderer.GetPlatformElement();
 			return nativeElement as WBorder;
 		}
 
-		protected TextBlock GetNativeControl(Label label)
+		protected TextBlock GetPlatformControl(Label label)
 		{
-			return GetRenderer(label).GetNativeElement() as TextBlock;
+			return GetRenderer(label).GetPlatformElement() as TextBlock;
 		}
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(Label label, Func<TextBlock, TProperty> getProperty)
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				var textBlock = GetNativeControl(label);
+				var textBlock = GetPlatformControl(label);
 				return getProperty(textBlock);
 			});
 		}
 
-		protected FormsButton GetNativeControl(Button button)
+		protected FormsButton GetPlatformControl(Button button)
 		{
-			return GetRenderer(button).GetNativeElement() as FormsButton;
+			return GetRenderer(button).GetPlatformElement() as FormsButton;
 		}
 
-		protected FormsTextBox GetNativeControl(Entry entry)
+		protected FormsTextBox GetPlatformControl(Entry entry)
 		{
-			return GetRenderer(entry).GetNativeElement() as FormsTextBox;
+			return GetRenderer(entry).GetPlatformElement() as FormsTextBox;
 		}
 
-		protected FormsTextBox GetNativeControl(Editor editor)
+		protected FormsTextBox GetPlatformControl(Editor editor)
 		{
-			return GetRenderer(editor).GetNativeElement() as FormsTextBox;
+			return GetRenderer(editor).GetPlatformElement() as FormsTextBox;
 		}
 
 		protected async Task<TProperty> GetRendererProperty<TProperty>(View view,

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers
 				new Switch { },
 				new TableView { },
 				new TimePicker { },
-				GetNativeView()
+				GetPlatformView()
 			};
 
 			return controls;
@@ -55,10 +55,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers
 			return controls;
 		}
 
-		public static View GetNativeView()
+		public static View GetPlatformView()
 		{
 			View view = null;
-			view = DependencyService.Get<ISampleNativeControl>().View;
+			view = DependencyService.Get<ISamplePlatformControl>().View;
 			return view;
 		}
 	}

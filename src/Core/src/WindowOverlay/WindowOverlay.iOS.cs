@@ -67,7 +67,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		void DeinitializeNativeDependencies()
+		void DeinitializePlatformDependencies()
 		{
 			_frameObserver?.Dispose();
 			_passthroughView?.RemoveFromSuperview();

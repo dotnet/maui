@@ -31,13 +31,13 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 
-			(var gravity, var textAlignment) = values.NativeViewValue;
+			(var gravity, var textAlignment) = values.PlatformViewValue;
 
 			// Device Tests runner has RTL support enabled, so we expect TextAlignment values
 			// (If it didn't, we'd have to fall back to gravity)
@@ -56,9 +56,9 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var (left, top, right, bottom) = GetNativePadding((TextView)handler.NativeView);
+			var (left, top, right, bottom) = GetNativePadding((TextView)handler.PlatformView);
 
-			var context = handler.NativeView.Context;
+			var context = handler.PlatformView.Context;
 
 			var expectedLeft = context.ToPixels(5);
 			var expectedTop = context.ToPixels(10);
@@ -86,18 +86,18 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelHandler.TextDecorations,
-					NativeViewValue = GetNativeTextDecorations(handler)
+					PlatformViewValue = GetNativeTextDecorations(handler)
 				};
 			});
 
 			PaintFlags expectedValue = PaintFlags.UnderlineText;
 
 			Assert.Equal(xplatTextDecorations, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
-			labelHandler.NativeView;
+			labelHandler.PlatformView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Text;
@@ -135,9 +135,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				var platformLabel = GetNativeLabel(CreateHandler(label));
 				action?.Invoke();
-				nativeLabel.AssertContainsColor(color);
+				platformLabel.AssertContainsColor(color);
 			});
 		}
 	}

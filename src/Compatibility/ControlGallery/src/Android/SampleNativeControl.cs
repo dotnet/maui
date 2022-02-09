@@ -5,14 +5,14 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
-[assembly: Dependency(typeof(SampleNativeControl))]
+[assembly: Dependency(typeof(SamplePlatformControl))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class SampleNativeControl : ISampleNativeControl
+	public class SamplePlatformControl : ISamplePlatformControl
 	{
 		readonly Context _context;
 
-		public SampleNativeControl()
+		public SamplePlatformControl()
 		{
 			_context = MainApplication.ActivityContext;
 		}

@@ -11,14 +11,14 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
 		{
-			var nativeView = ((UIView)viewHandler.NativeView);
-			return nativeView.IsAccessibilityElement;
+			var platformView = ((UIView)viewHandler.PlatformView);
+			return platformView.IsAccessibilityElement;
 		}
 
 		protected bool GetExcludedWithChildren(IViewHandler viewHandler)
 		{
-			var nativeView = ((UIView)viewHandler.NativeView);
-			return nativeView.AccessibilityElementsHidden;
+			var platformView = ((UIView)viewHandler.PlatformView);
+			return platformView.AccessibilityElementsHidden;
 		}
 		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
 		   where THandler : class, IElementHandler

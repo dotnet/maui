@@ -11,28 +11,28 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 	/// <summary>
 	///     This is a custom Android control which deliberately does some incorrect measuring
 	/// </summary>
-	internal class BrokenNativeControl : TextView
+	internal class BrokenPlatformControl : TextView
 	{
 		bool _on;
 
-		public BrokenNativeControl(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+		public BrokenPlatformControl(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 		}
 
-		public BrokenNativeControl(Context context) : base(context)
+		public BrokenPlatformControl(Context context) : base(context)
 		{
 		}
 
-		public BrokenNativeControl(Context context, IAttributeSet attrs) : base(context, attrs)
+		public BrokenPlatformControl(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 		}
 
-		public BrokenNativeControl(Context context, IAttributeSet attrs, int defStyleAttr)
+		public BrokenPlatformControl(Context context, IAttributeSet attrs, int defStyleAttr)
 			: base(context, attrs, defStyleAttr)
 		{
 		}
 
-		public BrokenNativeControl(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes)
+		public BrokenPlatformControl(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes)
 			: base(context, attrs, defStyleAttr, defStyleRes)
 		{
 		}

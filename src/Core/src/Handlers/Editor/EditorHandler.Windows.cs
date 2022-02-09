@@ -18,12 +18,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.TextChanged += OnTextChanged;
 			platformView.LostFocus += OnLostFocus;
-			platformView.Loaded += OnNativeLoaded;
+			platformView.Loaded += OnPlatformLoaded;
 		}
 
 		protected override void DisconnectHandler(TextBox platformView)
 		{
-			platformView.Loaded -= OnNativeLoaded;
+			platformView.Loaded -= OnPlatformLoaded;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.LostFocus -= OnLostFocus;
 		}
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Handlers
 		void OnLostFocus(object? sender, RoutedEventArgs e) =>
 			VirtualView?.Completed();
 
-		void OnNativeLoaded(object sender, RoutedEventArgs e) =>
+		void OnPlatformLoaded(object sender, RoutedEventArgs e) =>
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
 	}
 }

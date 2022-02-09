@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				var control = GetNativeControl(view);
+				var control = GetPlatformControl(view);
 
 				if (control != null)
 				{
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			var actualColor = await Device.InvokeOnMainThreadAsync(() =>
 			{
 				var renderer = GetRenderer(frame);
-				var nativeElement = renderer.GetNativeElement() as WBorder;
+				var nativeElement = renderer.GetPlatformElement() as WBorder;
 
 				var backgroundBrush = nativeElement.Background as WSolidColorBrush;
 				return backgroundBrush.Color;

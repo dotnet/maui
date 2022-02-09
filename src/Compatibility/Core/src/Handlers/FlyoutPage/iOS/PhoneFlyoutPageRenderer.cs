@@ -11,7 +11,7 @@ using PointF = CoreGraphics.CGPoint;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class PhoneFlyoutPageRenderer : UIViewController, INativeViewHandler
+	public class PhoneFlyoutPageRenderer : UIViewController, IPlatformViewHandler
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 		}
 
-		public UIView NativeView
+		public UIView PlatformView
 		{
 			get { return View; }
 		}
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_detailController = new ChildViewController();
 
 			_clickOffView = new UIView();
-			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToNative();
+			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 			Presented = ((FlyoutPage)element).IsPresented;
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
 			Element.SizeChanged += PageOnSizeChanged;
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var flyoutFrame = frame;
 			nfloat opacity = 1;
 			flyoutFrame.Width = (int)(Math.Min(flyoutFrame.Width, flyoutFrame.Height) * 0.8);
-			var detailRenderer = FlyoutPage.Detail.Handler as INativeViewHandler;
+			var detailRenderer = FlyoutPage.Detail.Handler as IPlatformViewHandler;
 			if (detailRenderer == null)
 				return;
 			var detailView = detailRenderer.ViewController.View;
@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_flyoutController.View.Frame = flyoutFrame;
 
 			(FlyoutPage.Flyout as IView).Measure(flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPage.Flyout.Handler.NativeArrangeHandler(new Rectangle(0, 0, flyoutFrame.Width, flyoutFrame.Height));
+			FlyoutPage.Flyout.Handler.PlatformArrangeHandler(new Rectangle(0, 0, flyoutFrame.Width, flyoutFrame.Height));
 
 			var target = frame;
 			if (Presented)
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						if (Element.BackgroundColor == null)
 							View.BackgroundColor = UIColor.White;
 						else
-							View.BackgroundColor = Element.BackgroundColor.ToNative();
+							View.BackgroundColor = Element.BackgroundColor.ToPlatform();
 					}
 				}
 			});
@@ -358,11 +358,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
-			if (NativeVersion.Supports(NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (detailRenderer.ViewController.View.Superview != null)
-				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToNative();
+				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToPlatform();
 
 			ToggleAccessibilityElementsHidden();
 		}
@@ -374,7 +374,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			var detailRenderer =
-				(FlyoutPage.Detail?.Handler as INativeViewHandler)
+				(FlyoutPage.Detail?.Handler as IPlatformViewHandler)
 				?.ViewController as UINavigationController;
 
 			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
-			if (((FlyoutPage)Element).Detail?.Handler is INativeViewHandler nvh)
+			if (((FlyoutPage)Element).Detail?.Handler is IPlatformViewHandler nvh)
 				return nvh.ViewController;
 			else
 				return base.ChildViewControllerForStatusBarHidden();
@@ -399,7 +399,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			get
 			{
-				if (((FlyoutPage)Element).Detail?.Handler is INativeViewHandler nvh)
+				if (((FlyoutPage)Element).Detail?.Handler is IPlatformViewHandler nvh)
 					return nvh.ViewController;
 				else
 					return base.ChildViewControllerForStatusBarHidden();
@@ -520,33 +520,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void ApplyDetailShadow(nfloat percent)
 		{
-			var detailView = ((INativeViewHandler)FlyoutPage.Detail.Handler).ViewController.View;
+			var detailView = ((IPlatformViewHandler)FlyoutPage.Detail.Handler).ViewController.View;
 			var opacity = (nfloat)(0.5 + (0.5 * (1 - percent)));
 			detailView.Layer.Opacity = (float)opacity;
 		}
 
 
-		#region INativeViewHandler
+		#region IPlatformViewHandler
 		bool IViewHandler.HasContainer { get => false; set { } }
 
 		object IViewHandler.ContainerView => null;
 
 		IView IViewHandler.VirtualView => Element;
 
-		object IElementHandler.NativeView => NativeView;
+		object IElementHandler.PlatformView => PlatformView;
 
 		Maui.IElement IElementHandler.VirtualView => Element;
 
 		IMauiContext IElementHandler.MauiContext => _mauiContext;
 
-		UIView INativeViewHandler.NativeView => NativeView;
+		UIView IPlatformViewHandler.PlatformView => PlatformView;
 
-		UIView INativeViewHandler.ContainerView => null;
+		UIView IPlatformViewHandler.ContainerView => null;
 
-		UIViewController INativeViewHandler.ViewController => this;
+		UIViewController IPlatformViewHandler.ViewController => this;
 
-		void IViewHandler.NativeArrange(Rectangle rect) =>
-			_viewHandlerWrapper.NativeArrange(rect);
+		void IViewHandler.PlatformArrange(Rectangle rect) =>
+			_viewHandlerWrapper.PlatformArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
 		{

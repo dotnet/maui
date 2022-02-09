@@ -70,17 +70,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			return await Device.InvokeOnMainThreadAsync<IVisualElementRenderer>(() => Platform.CreateRenderer(element));
 		}
 
-		protected UIView GetNativeControl(VisualElement visualElement)
+		protected UIView GetPlatformControl(VisualElement visualElement)
 		{
 			var renderer = GetRenderer(visualElement);
-			var viewRenderer = renderer as IVisualNativeElementRenderer;
+			var viewRenderer = renderer as IVisualPlatformElementRenderer;
 			return viewRenderer?.Control;
 		}
 
-		protected UILabel GetNativeControl(Label label)
+		protected UILabel GetPlatformControl(Label label)
 		{
 			var renderer = GetRenderer(label);
-			var viewRenderer = renderer.NativeView as LabelRenderer;
+			var viewRenderer = renderer.PlatformView as LabelRenderer;
 			return viewRenderer.Control;
 		}
 
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var uiLabel = GetNativeControl(label))
+				using (var uiLabel = GetPlatformControl(label))
 				{
 					return getProperty(uiLabel);
 				}
@@ -99,17 +99,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var renderer = GetNativeControl(view))
+				using (var renderer = GetPlatformControl(view))
 				{
 					return getProperty(renderer);
 				}
 			});
 		}
 
-		protected UITextField GetNativeControl(Entry entry)
+		protected UITextField GetPlatformControl(Entry entry)
 		{
 			var renderer = GetRenderer(entry);
-			var viewRenderer = renderer.NativeView as EntryRenderer;
+			var viewRenderer = renderer.PlatformView as EntryRenderer;
 			return viewRenderer.Control;
 		}
 
@@ -117,17 +117,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var uiTextField = GetNativeControl(entry))
+				using (var uiTextField = GetPlatformControl(entry))
 				{
 					return getProperty(uiTextField);
 				}
 			});
 		}
 
-		protected UITextView GetNativeControl(Editor editor)
+		protected UITextView GetPlatformControl(Editor editor)
 		{
 			var renderer = GetRenderer(editor);
-			var viewRenderer = renderer.NativeView as EditorRenderer;
+			var viewRenderer = renderer.PlatformView as EditorRenderer;
 			return viewRenderer.Control;
 		}
 
@@ -135,17 +135,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var uiTextView = GetNativeControl(editor))
+				using (var uiTextView = GetPlatformControl(editor))
 				{
 					return getProperty(uiTextView);
 				}
 			});
 		}
 
-		protected UIButton GetNativeControl(Button button)
+		protected UIButton GetPlatformControl(Button button)
 		{
 			var renderer = GetRenderer(button);
-			var viewRenderer = renderer.NativeView as ButtonRenderer;
+			var viewRenderer = renderer.PlatformView as ButtonRenderer;
 			return viewRenderer.Control;
 		}
 
@@ -153,17 +153,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var uiButton = GetNativeControl(button))
+				using (var uiButton = GetPlatformControl(button))
 				{
 					return getProperty(uiButton);
 				}
 			});
 		}
 
-		protected UIButton GetNativeControl(ImageButton button)
+		protected UIButton GetPlatformControl(ImageButton button)
 		{
 			var renderer = GetRenderer(button);
-			var viewRenderer = renderer.NativeView as ImageButtonRenderer;
+			var viewRenderer = renderer.PlatformView as ImageButtonRenderer;
 			return viewRenderer.Control;
 		}
 
@@ -171,24 +171,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var uiButton = GetNativeControl(button))
+				using (var uiButton = GetPlatformControl(button))
 				{
 					return getProperty(uiButton);
 				}
 			});
 		}
 
-		protected UITextField GetNativeControl(DatePicker datePicker)
+		protected UITextField GetPlatformControl(DatePicker datePicker)
 		{
 			var renderer = GetRenderer(datePicker);
-			var viewRenderer = renderer.NativeView as DatePickerRenderer;
+			var viewRenderer = renderer.PlatformView as DatePickerRenderer;
 			return viewRenderer.Control;
 		}
 
 		protected UIDatePicker GetPickerControl(DatePicker datePicker)
 		{
 			var renderer = GetRenderer(datePicker);
-			var viewRenderer = renderer.NativeView as DatePickerRenderer;
+			var viewRenderer = renderer.PlatformView as DatePickerRenderer;
 			return viewRenderer.Picker;
 		}
 
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var uiTextField = GetNativeControl(datePicker))
+				using (var uiTextField = GetPlatformControl(datePicker))
 				{
 					return getProperty(uiTextField);
 				}
@@ -214,17 +214,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			});
 		}
 
-		protected UITextField GetNativeControl(TimePicker timePicker)
+		protected UITextField GetPlatformControl(TimePicker timePicker)
 		{
 			var renderer = GetRenderer(timePicker);
-			var viewRenderer = renderer.NativeView as TimePickerRenderer;
+			var viewRenderer = renderer.PlatformView as TimePickerRenderer;
 			return viewRenderer.Control;
 		}
 
 		protected UIDatePicker GetPickerControl(TimePicker timePicker)
 		{
 			var renderer = GetRenderer(timePicker);
-			var viewRenderer = renderer.NativeView as TimePickerRenderer;
+			var viewRenderer = renderer.PlatformView as TimePickerRenderer;
 			return viewRenderer.Picker;
 		}
 
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var uiTextField = GetNativeControl(timePicker))
+				using (var uiTextField = GetPlatformControl(timePicker))
 				{
 					return getProperty(uiTextField);
 				}

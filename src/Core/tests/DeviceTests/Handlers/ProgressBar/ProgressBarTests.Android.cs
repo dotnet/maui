@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ProgressBarHandlerTests
 	{
 		AProgressBar GetNativeProgressBar(ProgressBarHandler progressBarHandler) =>
-			progressBarHandler.NativeView;
+			progressBarHandler.PlatformView;
 
 		double GetNativeProgress(ProgressBarHandler progressBarHandler) =>
 			(double)GetNativeProgressBar(progressBarHandler).Progress / ProgressBarExtensions.Maximum;
@@ -21,9 +21,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeProgressBar = GetNativeProgressBar(CreateHandler(progressBar));
+				var platformProgressBar = GetNativeProgressBar(CreateHandler(progressBar));
 				action?.Invoke();
-				nativeProgressBar.AssertContainsColor(color);
+				platformProgressBar.AssertContainsColor(color);
 			});
 		}
 	}

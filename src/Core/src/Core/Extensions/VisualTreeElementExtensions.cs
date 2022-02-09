@@ -59,7 +59,7 @@ namespace Microsoft.Maui
 		/// <param name="y1">The Y point.</param>
 		/// <param name="x2">The X point.</param>
 		/// <param name="y2">The Y point.</param>
-		/// <param name="usePlatformViewBounds">If true, use native view bounds for given elements. Else, use the Elements Frame.</param>
+		/// <param name="usePlatformViewBounds">If true, use platform view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
 		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x1, double y1, double x2, double y2, bool usePlatformViewBounds = true) =>
 			GetVisualTreeElements(visualElement, new Rectangle(x1, y1, x2 - x1, y2 - y1), usePlatformViewBounds);
@@ -69,7 +69,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <param name="rectangle">The rectangle.</param>
-		/// <param name="usePlatformViewBounds">If true, use native view bounds for given elements. Else, use the Elements Frame.</param>
+		/// <param name="usePlatformViewBounds">If true, use platform view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
 		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rectangle rectangle, bool usePlatformViewBounds = true) =>
 			GetVisualTreeElementsInternal(
@@ -89,7 +89,7 @@ namespace Microsoft.Maui
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <param name="x">The X point.</param>
 		/// <param name="y">The Y point.</param>
-		/// <param name="usePlatformViewBounds">If true, use native view bounds for given elements. Else, use the Elements Frame.</param>
+		/// <param name="usePlatformViewBounds">If true, use platform view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
 		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x, double y, bool usePlatformViewBounds = true) =>
 			GetVisualTreeElements(visualElement, new Point(x, y), usePlatformViewBounds);
@@ -99,7 +99,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <param name="point"><see cref="Point"/>.</param>
-		/// <param name="usePlatformViewBounds">If true, use native view bounds for given elements. Else, use the Element's Frame.</param>
+		/// <param name="usePlatformViewBounds">If true, use platform view bounds for given elements. Else, use the Element's Frame.</param>
 		/// <returns>List of Children Elements.</returns>
 		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Point point, bool usePlatformViewBounds = true) =>
 #if WINDOWS

@@ -48,11 +48,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 					frameRenderer.SetElement(frame2);
 
-					Assert.AreEqual(1, frameRenderer.NativeView.Subviews.Length);
-					Assert.AreEqual(1, frameRenderer.NativeView.Subviews[0].Subviews.Length);
+					Assert.AreEqual(1, frameRenderer.PlatformView.Subviews.Length);
+					Assert.AreEqual(1, frameRenderer.PlatformView.Subviews[0].Subviews.Length);
 
 					LabelRenderer labelRenderer = null;
-					var view = frameRenderer.NativeView;
+					var view = frameRenderer.PlatformView;
 					Assert.AreEqual(1, view.Subviews.Length);
 
 					while (labelRenderer == null)
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 						labelRenderer = view as LabelRenderer;
 					}
 
-					var uILabel = (UILabel)labelRenderer.NativeView.Subviews[0];
+					var uILabel = (UILabel)labelRenderer.PlatformView.Subviews[0];
 					Assert.AreEqual("I am frame 2", uILabel.Text);
 
 					Frame frameWithButton = new Frame()
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 					frameRenderer.SetElement(frameWithButton);
 
-					var uiButton = (UIButton)frameRenderer.NativeView.Subviews[0].Subviews[0].Subviews[0];
+					var uiButton = (UIButton)frameRenderer.PlatformView.Subviews[0].Subviews[0].Subviews[0];
 					Assert.AreEqual("I am a Button", uiButton.Title(UIControlState.Normal));
 				}
 			});

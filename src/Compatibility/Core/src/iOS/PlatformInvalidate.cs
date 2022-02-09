@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 			}
 
-			renderer.NativeView.SetNeedsLayout();
+			renderer.PlatformView.SetNeedsLayout();
 		}
 	}
 }

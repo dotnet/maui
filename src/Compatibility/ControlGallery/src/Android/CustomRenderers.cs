@@ -264,7 +264,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override global::Android.Widget.ListView CreateNativeControl()
+		protected override global::Android.Widget.ListView CreatePlatformControl()
 		{
 			return new global::Android.Widget.ListView(Context);
 		}
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			if (Control == null)
 			{
-				SetNativeControl(CreateNativeControl());
+				SetPlatformControl(CreatePlatformControl());
 			}
 
 			if (e.OldElement != null)
@@ -440,7 +440,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override global::Android.Widget.ListView CreateNativeControl()
+		protected override global::Android.Widget.ListView CreatePlatformControl()
 		{
 			// Disabled the warning so we have a test that this obsolete stuff still works
 			return new global::Android.Widget.ListView(Context);
@@ -452,7 +452,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			if (Control == null)
 			{
-				SetNativeControl(CreateNativeControl());
+				SetPlatformControl(CreatePlatformControl());
 			}
 
 			if (e.OldElement != null)
@@ -598,7 +598,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			AutoPackage = true;
 		}
 
-		protected override AView CreateNativeControl()
+		protected override AView CreatePlatformControl()
 		{
 			return new AView(Context);
 		}
@@ -630,7 +630,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override AppCompatButton CreateNativeControl()
+		protected override AppCompatButton CreatePlatformControl()
 		{
 			return new CustomNativeButton(Context);
 		}
@@ -639,8 +639,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			if (Control == null)
 			{
-				CustomNativeButton b = (CustomNativeButton)CreateNativeControl();
-				SetNativeControl(b);
+				CustomNativeButton b = (CustomNativeButton)CreatePlatformControl();
+				SetPlatformControl(b);
 			}
 
 			base.OnElementChanged(e);
@@ -825,7 +825,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override Issue4561CustomView CreateNativeControl() => new Issue4561CustomView(Context);
+		protected override Issue4561CustomView CreatePlatformControl() => new Issue4561CustomView(Context);
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Issue4561.CustomView> e)
 		{
@@ -834,8 +834,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			{
 				if (Control == null)
 				{
-					var view = CreateNativeControl();
-					SetNativeControl(view);
+					var view = CreatePlatformControl();
+					SetPlatformControl(view);
 				}
 			}
 		}

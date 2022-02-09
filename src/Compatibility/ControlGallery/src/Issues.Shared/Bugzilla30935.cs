@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 30935, "NullReferenceException in ViewRenderer<TView, TNativeView> (Microsoft.Maui.Controls.Platform.Android)")]
+	[Issue(IssueTracker.Bugzilla, 30935, "NullReferenceException in ViewRenderer<TView, TPlatformView> (Microsoft.Maui.Controls.Platform.Android)")]
 	public class Bugzilla30935 : TestContentPage
 	{
 		Entry _entry;

@@ -10,159 +10,159 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public abstract class MockNativeView
+	public abstract class MockPlatformView
 	{
 		public string Foo { get; set; }
 		public int Bar { get; set; }
 		public string Baz { get; set; }
 	}
 
-	public class MockUIView : MockNativeView
+	public class MockUIView : MockPlatformView
 	{
 		public IList<MockUIView> SubViews { get; set; }
 	}
 
 	class MockUIViewWrapper : View
 	{
-		public MockUIView NativeView { get; }
+		public MockUIView PlatformView { get; }
 
-		public MockUIViewWrapper(MockUIView nativeView)
+		public MockUIViewWrapper(MockUIView platformView)
 		{
-			NativeView = nativeView;
-			nativeView.TransferbindablePropertiesToWrapper(this);
+			PlatformView = platformView;
+			platformView.TransferbindablePropertiesToWrapper(this);
 		}
 
 		protected override void OnBindingContextChanged()
 		{
-			NativeView.SetBindingContext(BindingContext, nv => nv.SubViews);
+			PlatformView.SetBindingContext(BindingContext, nv => nv.SubViews);
 			base.OnBindingContextChanged();
 		}
 	}
 
-	public class MockAndroidView : MockNativeView
+	public class MockAndroidView : MockPlatformView
 	{
 		public IList<MockAndroidView> SubViews { get; set; }
 	}
 
 	class MockAndroidViewWrapper : View
 	{
-		public MockAndroidView NativeView { get; }
+		public MockAndroidView PlatformView { get; }
 
-		public MockAndroidViewWrapper(MockAndroidView nativeView)
+		public MockAndroidViewWrapper(MockAndroidView platformView)
 		{
-			NativeView = nativeView;
-			nativeView.TransferbindablePropertiesToWrapper(this);
+			PlatformView = platformView;
+			platformView.TransferbindablePropertiesToWrapper(this);
 		}
 
 		protected override void OnBindingContextChanged()
 		{
-			NativeView.SetBindingContext(BindingContext, nv => nv.SubViews);
+			PlatformView.SetBindingContext(BindingContext, nv => nv.SubViews);
 			base.OnBindingContextChanged();
 		}
 	}
 
-	public static class MockNativeViewExtensions
+	public static class MockPlatformViewExtensions
 	{
-		public static View ToView(this MockUIView nativeView)
+		public static View ToView(this MockUIView platformView)
 		{
-			return new MockUIViewWrapper(nativeView);
+			return new MockUIViewWrapper(platformView);
 		}
 
 		public static void SetBinding(this MockUIView target, string targetProperty, BindingBase binding, string updateSourceEventName = null)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding, updateSourceEventName);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding, updateSourceEventName);
 		}
 
 		internal static void SetBinding(this MockUIView target, string targetProperty, BindingBase binding, INotifyPropertyChanged propertyChanged)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding, propertyChanged);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding, propertyChanged);
 		}
 
 		public static void SetBinding(this MockUIView target, BindableProperty targetProperty, BindingBase binding)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding);
 		}
 
 		public static void SetValue(this MockUIView target, BindableProperty targetProperty, object value)
 		{
-			NativeBindingHelpers.SetValue(target, targetProperty, value);
+			PlatformBindingHelpers.SetValue(target, targetProperty, value);
 		}
 
 		public static void SetBindingContext(this MockUIView target, object bindingContext, Func<MockUIView, IEnumerable<MockUIView>> getChild = null)
 		{
-			NativeBindingHelpers.SetBindingContext(target, bindingContext, getChild);
+			PlatformBindingHelpers.SetBindingContext(target, bindingContext, getChild);
 		}
 
 		internal static void TransferbindablePropertiesToWrapper(this MockUIView target, MockUIViewWrapper wrapper)
 		{
-			NativeBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
+			PlatformBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
 		}
 
-		public static View ToView(this MockAndroidView nativeView)
+		public static View ToView(this MockAndroidView platformView)
 		{
-			return new MockAndroidViewWrapper(nativeView);
+			return new MockAndroidViewWrapper(platformView);
 		}
 
 		public static void SetBinding(this MockAndroidView target, string targetProperty, BindingBase binding, string updateSourceEventName = null)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding, updateSourceEventName);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding, updateSourceEventName);
 		}
 
 		internal static void SetBinding(this MockAndroidView target, string targetProperty, BindingBase binding, INotifyPropertyChanged propertyChanged)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding, propertyChanged);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding, propertyChanged);
 		}
 
 		public static void SetBinding(this MockAndroidView target, BindableProperty targetProperty, BindingBase binding)
 		{
-			NativeBindingHelpers.SetBinding(target, targetProperty, binding);
+			PlatformBindingHelpers.SetBinding(target, targetProperty, binding);
 		}
 
 		public static void SetValue(this MockAndroidView target, BindableProperty targetProperty, object value)
 		{
-			NativeBindingHelpers.SetValue(target, targetProperty, value);
+			PlatformBindingHelpers.SetValue(target, targetProperty, value);
 		}
 
 		public static void SetBindingContext(this MockAndroidView target, object bindingContext, Func<MockAndroidView, IEnumerable<MockAndroidView>> getChild = null)
 		{
-			NativeBindingHelpers.SetBindingContext(target, bindingContext, getChild);
+			PlatformBindingHelpers.SetBindingContext(target, bindingContext, getChild);
 		}
 
 		internal static void TransferbindablePropertiesToWrapper(this MockAndroidView target, MockAndroidViewWrapper wrapper)
 		{
-			NativeBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
+			PlatformBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
 		}
 	}
 
-	public class MockIosNativeValueConverterService : INativeValueConverterService
+	public class MockIosPlatformValueConverterService : IPlatformValueConverterService
 	{
-		public bool ConvertTo(object value, Type toType, out object nativeValue)
+		public bool ConvertTo(object value, Type toType, out object platformValue)
 		{
-			nativeValue = null;
+			platformValue = null;
 			if (typeof(MockUIView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
 			{
-				nativeValue = ((MockUIView)value).ToView();
+				platformValue = ((MockUIView)value).ToView();
 				return true;
 			}
 			return false;
 		}
 	}
 
-	public class MockAndroidNativeValueConverterService : INativeValueConverterService
+	public class MockAndroidPlatformValueConverterService : IPlatformValueConverterService
 	{
-		public bool ConvertTo(object value, Type toType, out object nativeValue)
+		public bool ConvertTo(object value, Type toType, out object platformValue)
 		{
-			nativeValue = null;
+			platformValue = null;
 			if (typeof(MockAndroidView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
 			{
-				nativeValue = ((MockAndroidView)value).ToView();
+				platformValue = ((MockAndroidView)value).ToView();
 				return true;
 			}
 			return false;
 		}
 	}
 
-	public class MockIosNativeBindingService : INativeBindingService
+	public class MockIosPlatformBindingService : IPlatformBindingService
 	{
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	public class MockAndroidNativeBindingService : INativeBindingService
+	public class MockAndroidPlatformBindingService : IPlatformBindingService
 	{
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
@@ -224,14 +224,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	public partial class NativeViewsAndBindings : ContentPage
+	public partial class PlatformViewsAndBindings : ContentPage
 	{
-		public NativeViewsAndBindings()
+		public PlatformViewsAndBindings()
 		{
 			InitializeComponent();
 		}
 
-		public NativeViewsAndBindings(bool useCompiledXaml)
+		public PlatformViewsAndBindings(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -258,23 +258,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				mockDeviceInfo.RuntimePlatform = platform;
 				if (platform == Device.iOS)
 				{
-					DependencyService.Register<INativeValueConverterService, MockIosNativeValueConverterService>();
-					DependencyService.Register<INativeBindingService, MockIosNativeBindingService>();
+					DependencyService.Register<IPlatformValueConverterService, MockIosPlatformValueConverterService>();
+					DependencyService.Register<IPlatformBindingService, MockIosPlatformBindingService>();
 				}
 				else if (platform == Device.Android)
 				{
-					DependencyService.Register<INativeValueConverterService, MockAndroidNativeValueConverterService>();
-					DependencyService.Register<INativeBindingService, MockAndroidNativeBindingService>();
+					DependencyService.Register<IPlatformValueConverterService, MockAndroidPlatformValueConverterService>();
+					DependencyService.Register<IPlatformBindingService, MockAndroidPlatformBindingService>();
 				}
 			}
 
 			[TestCase(false, Device.iOS)]
 			[TestCase(false, Device.Android)]
 			//[TestCase(true)]
-			public void NativeInContentView(bool useCompiledXaml, string platform)
+			public void PlatformInContentView(bool useCompiledXaml, string platform)
 			{
 				SetUpPlatform(platform);
-				var layout = new NativeViewsAndBindings(useCompiledXaml);
+				var layout = new PlatformViewsAndBindings(useCompiledXaml);
 				layout.BindingContext = new
 				{
 					Baz = "Bound Value",
@@ -282,23 +282,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				};
 				var view = layout.view0;
 				Assert.NotNull(view.Content);
-				MockNativeView nativeView = null;
+				MockPlatformView platformView = null;
 				if (platform == Device.iOS)
 				{
 					Assert.That(view.Content, Is.TypeOf<MockUIViewWrapper>());
-					Assert.That(((MockUIViewWrapper)view.Content).NativeView, Is.TypeOf<MockUIView>());
-					nativeView = ((MockUIViewWrapper)view.Content).NativeView;
+					Assert.That(((MockUIViewWrapper)view.Content).PlatformView, Is.TypeOf<MockUIView>());
+					platformView = ((MockUIViewWrapper)view.Content).PlatformView;
 				}
 				else if (platform == Device.Android)
 				{
 					Assert.That(view.Content, Is.TypeOf<MockAndroidViewWrapper>());
-					Assert.That(((MockAndroidViewWrapper)view.Content).NativeView, Is.TypeOf<MockAndroidView>());
-					nativeView = ((MockAndroidViewWrapper)view.Content).NativeView;
+					Assert.That(((MockAndroidViewWrapper)view.Content).PlatformView, Is.TypeOf<MockAndroidView>());
+					platformView = ((MockAndroidViewWrapper)view.Content).PlatformView;
 				}
 
-				Assert.AreEqual("foo", nativeView.Foo);
-				Assert.AreEqual(42, nativeView.Bar);
-				Assert.AreEqual("Bound Value", nativeView.Baz);
+				Assert.AreEqual("foo", platformView.Foo);
+				Assert.AreEqual(42, platformView.Bar);
+				Assert.AreEqual("Bound Value", platformView.Baz);
 				Assert.AreEqual(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty));
 				Assert.AreEqual(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty));
 			}

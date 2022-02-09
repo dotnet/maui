@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task FrameLinearGradientBrushConsistent()
 		{
 			var frame = new Frame { HeightRequest = 50, WidthRequest = 50, Background = LinearGradientBrush };
-			var screenshot = await GetRendererProperty(frame, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			var screenshot = await GetRendererProperty(frame, (ver) => ver.PlatformView.ToBitmap(), requiresLayout: true);
 
 			var screenshotHeight = (int)screenshot.Size.Height;
 			var screenshotWidth = (int)screenshot.Size.Width;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task BoxViewLinearGradientBrushConsistent()
 		{
 			var boxView = new BoxView { HeightRequest = 50, WidthRequest = 50, Background = LinearGradientBrush };
-			var screenshot = await GetRendererProperty(boxView, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			var screenshot = await GetRendererProperty(boxView, (ver) => ver.PlatformView.ToBitmap(), requiresLayout: true);
 
 			var screenshotHeight = (int)screenshot.Size.Height;
 			var screenshotWidth = (int)screenshot.Size.Width;

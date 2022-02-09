@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				await Device.InvokeOnMainThreadAsync(() =>
 				{
 					var entry1 = new Entry { Text = "foo", HorizontalTextAlignment = TextAlignment.Center };
-					using (var editText = GetNativeControl(entry1))
+					using (var editText = GetPlatformControl(entry1))
 					{
 						var centeredHorizontal =
 						(editText.Gravity & GravityFlags.HorizontalGravityMask) == GravityFlags.CenterHorizontal;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 					SetIsRTLSupported(true);
 
 					var entry2 = new Entry { Text = "foo", HorizontalTextAlignment = TextAlignment.Center };
-					using (var editText = GetNativeControl(entry2))
+					using (var editText = GetPlatformControl(entry2))
 					{
 						Assert.That(editText.TextAlignment, Is.EqualTo(global::Android.Views.TextAlignment.Center));
 					}

@@ -11,14 +11,14 @@ using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
-	public class _57114Renderer : VisualElementRenderer<Bugzilla57114._57114View, _57114NativeView>
+	public class _57114Renderer : VisualElementRenderer<Bugzilla57114._57114View, _57114PlatformView>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Bugzilla57114._57114View> e)
 		{
 			if (e.NewElement != null && Control == null)
 			{
-				var view = new _57114NativeView();
-				SetNativeControl(view);
+				var view = new _57114PlatformView();
+				SetPlatformControl(view);
 
 			}
 
@@ -36,9 +36,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 	}
 
-	public class _57114NativeView : Microsoft.UI.Xaml.Controls.Grid
+	public class _57114PlatformView : Microsoft.UI.Xaml.Controls.Grid
 	{
-		public _57114NativeView()
+		public _57114PlatformView()
 		{
 			Tapped += OnTapped;
 		}

@@ -10,9 +10,9 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 #if WINDOWS
-	class ViewHandlerDelegator<TElement, TNativeElement>
+	class ViewHandlerDelegator<TElement, TPlatformElement>
 		where TElement : VisualElement
-		where TNativeElement : Microsoft.UI.Xaml.FrameworkElement
+		where TPlatformElement : Microsoft.UI.Xaml.FrameworkElement
 #else
 	class ViewHandlerDelegator<TElement>
 		where TElement : Element, IView
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected readonly IPropertyMapper _defaultMapper;
 		protected IPropertyMapper _mapper;
 		protected CommandMapper _commandMapper;
-		INativeViewHandler _viewHandler;
+		IPlatformViewHandler _viewHandler;
 		TElement? _element;
 		public TElement? Element => _element;
 		bool _disposed;
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public ViewHandlerDelegator(
 			IPropertyMapper mapper,
 			CommandMapper commandMapper,
-			INativeViewHandler viewHandler)
+			IPlatformViewHandler viewHandler)
 		{
 			_defaultMapper = mapper;
 			_mapper = _defaultMapper;
@@ -67,13 +67,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public Size GetDesiredSize(double widthConstraint, double heightConstraint, Size? minimumSize = null) =>
 #if WINDOWS
-			VisualElementRenderer<TElement, TNativeElement>.GetDesiredSize(_viewHandler, widthConstraint, heightConstraint, minimumSize);
+			VisualElementRenderer<TElement, TPlatformElement>.GetDesiredSize(_viewHandler, widthConstraint, heightConstraint, minimumSize);
 #else
 			VisualElementRenderer<TElement>.GetDesiredSize(_viewHandler, widthConstraint, heightConstraint, minimumSize);
 #endif
 
-		public void NativeArrange(Rectangle rect) =>
-			_viewHandler.NativeArrangeHandler(rect);
+		public void PlatformArrange(Rectangle rect) =>
+			_viewHandler.PlatformArrangeHandler(rect);
 
 		public void SetVirtualView(
 			Maui.IElement view,
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			bool autoPackage)
 		{
 #if WINDOWS
-			VisualElementRenderer<TElement, TNativeElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
+			VisualElementRenderer<TElement, TPlatformElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
 #else
 			VisualElementRenderer<TElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
 #endif

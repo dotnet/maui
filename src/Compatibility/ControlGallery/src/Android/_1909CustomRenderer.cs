@@ -29,10 +29,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			if (this.Control != null && this.Element != null)
 			{
-				var nativeButton = (global::Android.Widget.Button)Control;
-				nativeButton.SetShadowLayer(0, 0, 0, global::Android.Graphics.Color.Transparent);
+				var platformButton = (global::Android.Widget.Button)Control;
+				platformButton.SetShadowLayer(0, 0, 0, global::Android.Graphics.Color.Transparent);
 
-				ElevationHelper.SetElevation(nativeButton, 0);
+				ElevationHelper.SetElevation(platformButton, 0);
 			}
 		}
 	}

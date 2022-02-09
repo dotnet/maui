@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("VisualElement X rotation should match renderer X rotation")]
 		public async Task RotationXConsistent(View view)
 		{
-			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
+			var transform = await GetRendererProperty(view, r => r.PlatformView.Layer.Transform, requiresLayout: true);
 			var actual = ParseCATransform3D(transform.ToString());
 			var expected = CalculateRotationMatrixForDegrees((float)view.RotationX, UITests.Axis.X);
 			Assert.That(actual, Is.EqualTo(expected));
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("VisualElement Y rotation should match renderer Y rotation")]
 		public async Task RotationYConsistent(View view)
 		{
-			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
+			var transform = await GetRendererProperty(view, r => r.PlatformView.Layer.Transform, requiresLayout: true);
 			var actual = ParseCATransform3D(transform.ToString());
 			var expected = CalculateRotationMatrixForDegrees((float)view.RotationY, UITests.Axis.Y);
 			Assert.That(actual, Is.EqualTo(expected));
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("VisualElement rotation should match renderer rotation")]
 		public async Task RotationConsistent(View view)
 		{
-			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
+			var transform = await GetRendererProperty(view, r => r.PlatformView.Layer.Transform, requiresLayout: true);
 			var actual = ParseCATransform3D(transform.ToString());
 			var expected = CalculateRotationMatrixForDegrees((float)view.Rotation, UITests.Axis.Z);
 			Assert.That(actual, Is.EqualTo(expected));

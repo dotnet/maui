@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var frame = new Frame { BackgroundColor = Colors.AliceBlue };
 			var expectedColor = frame.BackgroundColor.ToUIColor();
-			var screenshot = await GetRendererProperty(frame, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			var screenshot = await GetRendererProperty(frame, (ver) => ver.PlatformView.ToBitmap(), requiresLayout: true);
 			screenshot.AssertColorAtCenter(expectedColor);
 		}
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var label = new Label { Text = "foo", BackgroundColor = Colors.AliceBlue };
 			var expected = label.BackgroundColor.ToUIColor();
-			var actual = await GetRendererProperty(label, r => r.NativeView.BackgroundColor);
+			var actual = await GetRendererProperty(label, r => r.PlatformView.BackgroundColor);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var boxView = new BoxView { BackgroundColor = Colors.AliceBlue };
 			var expectedColor = boxView.BackgroundColor.ToUIColor();
-			var screenshot = await GetRendererProperty(boxView, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			var screenshot = await GetRendererProperty(boxView, (ver) => ver.PlatformView.ToBitmap(), requiresLayout: true);
 			screenshot.AssertColorAtCenter(expectedColor);
 		}
 	}

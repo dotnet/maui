@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	/// <summary>
 	///     This is a custom Android control which deliberately does some incorrect measuring/layout
 	/// </summary>
-	public class BrokenNativeControl : UILabel
+	public class BrokenPlatformControl : UILabel
 	{
 		public override string Text
 		{

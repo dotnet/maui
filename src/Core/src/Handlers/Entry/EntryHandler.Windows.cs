@@ -21,17 +21,17 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TextBox platformView)
 		{
-			platformView.KeyUp += OnNativeKeyUp;
-			platformView.TextChanged += OnNativeTextChanged;
+			platformView.KeyUp += OnPlatformKeyUp;
+			platformView.TextChanged += OnPlatformTextChanged;
 			platformView.SelectionChanged += OnPlatformSelectionChanged;
-			platformView.Loaded += OnNativeLoaded;
+			platformView.Loaded += OnPlatformLoaded;
 		}
 
 		protected override void DisconnectHandler(TextBox platformView)
 		{
-			platformView.Loaded -= OnNativeLoaded;
-			platformView.KeyUp -= OnNativeKeyUp;
-			platformView.TextChanged -= OnNativeTextChanged;
+			platformView.Loaded -= OnPlatformLoaded;
+			platformView.KeyUp -= OnPlatformKeyUp;
+			platformView.TextChanged -= OnPlatformTextChanged;
 			platformView.SelectionChanged -= OnPlatformSelectionChanged;
 		}
 
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(EntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateSelectionLength(entry);
 
-		void OnNativeTextChanged(object sender, TextChangedEventArgs args)
+		void OnPlatformTextChanged(object sender, TextChangedEventArgs args)
 		{
 			if (PlatformView is MauiPasswordTextBox passwordBox)
 				VirtualView?.UpdateText(passwordBox.Password);
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Handlers
 				VirtualView?.UpdateText(PlatformView.Text);
 		}
 
-		void OnNativeKeyUp(object? sender, KeyRoutedEventArgs args)
+		void OnPlatformKeyUp(object? sender, KeyRoutedEventArgs args)
 		{
 			if (args?.Key != VirtualKey.Enter)
 				return;
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.SelectionLength = PlatformView.SelectionLength;
 		}
 
-		void OnNativeLoaded(object sender, RoutedEventArgs e) =>
+		void OnPlatformLoaded(object sender, RoutedEventArgs e) =>
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
 	}
 }

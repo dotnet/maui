@@ -28,9 +28,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				Stroke = SolidColorBrush.Purple
 			};
 
-			var expected = await GetRendererProperty(view, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			var expected = await GetRendererProperty(view, (ver) => ver.PlatformView.ToBitmap(), requiresLayout: true);
 
-			var actual = await GetRendererProperty(view, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			var actual = await GetRendererProperty(view, (ver) => ver.PlatformView.ToBitmap(), requiresLayout: true);
 
 			await expected.AssertEqualsAsync(actual);
 		}

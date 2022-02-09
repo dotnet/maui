@@ -7,11 +7,11 @@ using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 
-[assembly: Dependency(typeof(SampleNativeControl))]
+[assembly: Dependency(typeof(SamplePlatformControl))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
 	[Preserve(AllMembers = true)]
-	public class SampleNativeControl : ISampleNativeControl
+	public class SamplePlatformControl : ISamplePlatformControl
 	{
 		public View View
 		{

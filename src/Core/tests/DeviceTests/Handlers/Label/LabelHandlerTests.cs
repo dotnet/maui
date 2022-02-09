@@ -258,19 +258,19 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode = xplatLineBreakMode
 			};
 
-			var expectedValue = xplatLineBreakMode.ToNative();
+			var expectedValue = xplatLineBreakMode.ToPlatform();
 
 			var values = await GetValueAsync(label, (handler) =>
 			{
 				return new
 				{
 					ViewValue = label.LineBreakMode,
-					NativeViewValue = GetNativeLineBreakMode(handler)
+					PlatformViewValue = GetNativeLineBreakMode(handler)
 				};
 			});
 
 			Assert.Equal(xplatLineBreakMode, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "LineBreakMode does not affect to MaxLines")]
@@ -284,18 +284,18 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var nativeLabel = GetNativeLabel(handler);
+			var platformLabel = GetNativeLabel(handler);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToNative(), GetNativeLineBreakMode(handler));
+				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetNativeLineBreakMode(handler));
 
 				label.LineBreakMode = LineBreakMode.CharacterWrap;
-				nativeLabel.UpdateLineBreakMode(label);
+				platformLabel.UpdateLineBreakMode(label);
 
 				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.CharacterWrap.ToNative(), GetNativeLineBreakMode(handler));
+				Assert.Equal(LineBreakMode.CharacterWrap.ToPlatform(), GetNativeLineBreakMode(handler));
 			});
 		}
 
@@ -310,18 +310,18 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var nativeLabel = GetNativeLabel(handler);
+			var platformLabel = GetNativeLabel(handler);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToNative(), GetNativeLineBreakMode(handler));
+				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetNativeLineBreakMode(handler));
 
 				label.LineBreakMode = LineBreakMode.HeadTruncation;
-				nativeLabel.UpdateLineBreakMode(label);
+				platformLabel.UpdateLineBreakMode(label);
 
 				Assert.Equal(1, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.HeadTruncation.ToNative(), GetNativeLineBreakMode(handler));
+				Assert.Equal(LineBreakMode.HeadTruncation.ToPlatform(), GetNativeLineBreakMode(handler));
 			});
 		}
 
@@ -338,24 +338,24 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var nativeLabel = GetNativeLabel(handler);
+			var platformLabel = GetNativeLabel(handler);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToNative(), GetNativeLineBreakMode(handler));
+				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetNativeLineBreakMode(handler));
 
 				label.LineBreakMode = newMode;
-				nativeLabel.UpdateLineBreakMode(label);
+				platformLabel.UpdateLineBreakMode(label);
 
 				Assert.Equal(1, GetNativeMaxLines(handler));
-				Assert.Equal(newMode.ToNative(), GetNativeLineBreakMode(handler));
+				Assert.Equal(newMode.ToPlatform(), GetNativeLineBreakMode(handler));
 
 				label.LineBreakMode = LineBreakMode.WordWrap;
-				nativeLabel.UpdateLineBreakMode(label);
+				platformLabel.UpdateLineBreakMode(label);
 
 				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToNative(), GetNativeLineBreakMode(handler));
+				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetNativeLineBreakMode(handler));
 			});
 		}
 
@@ -447,9 +447,9 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode = LineBreakMode.WordWrap
 			};
 
-			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
+			var platformValue = await GetValueAsync(label, GetNativeMaxLines);
 
-			Assert.Equal(expectedLines, nativeValue);
+			Assert.Equal(expectedLines, platformValue);
 		}
 
 		[Fact(DisplayName = "LineHeight Initializes Correctly")]
@@ -468,14 +468,14 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelHandler.LineHeight,
-					NativeViewValue = GetNativeLineHeight(handler)
+					PlatformViewValue = GetNativeLineHeight(handler)
 				};
 			});
 
 			float expectedValue = 1.5f;
 
 			Assert.Equal(xplatLineHeight, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 	}
 }

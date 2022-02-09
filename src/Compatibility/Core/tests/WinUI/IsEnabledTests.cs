@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 
 					// Check the actual control (if there is one; for some renderers, like Frame and BoxView, the 
 					// native control isn't a Microsoft.UI.Xaml.Controls.Control)
-					var control = GetNativeControl(element);
+					var control = GetPlatformControl(element);
 
 					if (control != null)
 					{

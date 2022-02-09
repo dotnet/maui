@@ -75,7 +75,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		void DeinitializeNativeDependencies()
+		void DeinitializePlatformDependencies()
 		{
 			if (_nativeActivity?.Window != null)
 				_nativeActivity.Window.DecorView.LayoutChange -= DecorViewLayoutChange;

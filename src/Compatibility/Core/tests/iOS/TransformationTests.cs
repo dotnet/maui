@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				M42 = 30f,
 				M44 = 1f,
 			};
-			var actual = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
+			var actual = await GetRendererProperty(view, r => r.PlatformView.Layer.Transform, requiresLayout: true);
 			AssertTransform3DEqual(actual, expected, 0.0001);
 		}
 

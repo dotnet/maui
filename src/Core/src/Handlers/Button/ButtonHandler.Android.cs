@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Handlers
 
 		int MakeMeasureSpecExact(double size)
 		{
-			// Convert to a native size to create the spec for measuring
+			// Convert to a platform size to create the spec for measuring
 			var deviceSize = (int)Context!.ToPixels(size);
 			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
 		}

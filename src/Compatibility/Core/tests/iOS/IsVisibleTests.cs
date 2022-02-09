@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task VisibleConsistent(View view)
 		{
 			var expected = !view.IsVisible;
-			var actual = await GetRendererProperty(view, (ver) => ver.NativeView.Layer.Hidden, requiresLayout: true);
+			var actual = await GetRendererProperty(view, (ver) => ver.PlatformView.Layer.Hidden, requiresLayout: true);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}

@@ -12,7 +12,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class _57114CustomRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ViewRenderer<Bugzilla57114._57114View, _57114NativeView>
+	public class _57114CustomRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ViewRenderer<Bugzilla57114._57114View, _57114PlatformView>
 	{
 		public _57114CustomRenderer(Context context) : base(context)
 		{
@@ -22,17 +22,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			if (e.NewElement != null && Control == null)
 			{
-				var view = new _57114NativeView(Context);
-				SetNativeControl(view);
+				var view = new _57114PlatformView(Context);
+				SetPlatformControl(view);
 			}
 
 			base.OnElementChanged(e);
 		}
 	}
 
-	public class _57114NativeView : global::Android.Views.View
+	public class _57114PlatformView : global::Android.Views.View
 	{
-		public _57114NativeView(Context context)
+		public _57114PlatformView(Context context)
 			: base(context)
 		{
 			Touch += OnTouch;

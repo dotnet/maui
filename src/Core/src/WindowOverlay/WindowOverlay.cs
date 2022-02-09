@@ -85,7 +85,7 @@ namespace Microsoft.Maui
 
 		public virtual bool Deinitialize()
 		{
-			DeinitializeNativeDependencies();
+			DeinitializePlatformDependencies();
 			return true;
 		}
 

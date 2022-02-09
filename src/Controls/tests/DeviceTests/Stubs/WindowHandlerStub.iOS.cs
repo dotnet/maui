@@ -16,9 +16,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		protected override void DisconnectHandler(UIWindow nativeView)
+		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public WindowHandlerStub()
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		protected override UIWindow CreateNativeElement()
+		protected override UIWindow CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}

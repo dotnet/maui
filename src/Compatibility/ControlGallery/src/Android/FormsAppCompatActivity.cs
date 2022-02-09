@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			ViewHandler.ViewMapper
 				.Add(nameof(IView.AutomationId), (h, v) =>
 				{
-					if (h.NativeView is global::Android.Views.View platformView)
+					if (h.PlatformView is global::Android.Views.View platformView)
 						platformView.ContentDescription = v.AutomationId;
 				});
 
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			Forms.ViewInitialized += (sender, e) =>
 			{
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
-				//					e.NativeView.ContentDescription = e.View.StyleId;
+				//					e.PlatformView.ContentDescription = e.View.StyleId;
 				//				}
 			};
 
@@ -86,10 +86,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			}
 
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
-			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
+			MessagingCenter.Subscribe<NestedPlatformControlGalleryPage>(this, NestedPlatformControlGalleryPage.ReadyForPlatformControlsMessage, AddPlatformControls);
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
-			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+			MessagingCenter.Subscribe<PlatformBindingGalleryPage>(this, PlatformBindingGalleryPage.ReadyForPlatformBindingsMessage, AddPlatformBindings);
 
 			// Listen for the message from the status bar color toggle test
 			MessagingCenter.Subscribe<AndroidStatusBarColor>(this, AndroidStatusBarColor.Message, color => SetStatusBarColor(global::Android.Graphics.Color.Red));

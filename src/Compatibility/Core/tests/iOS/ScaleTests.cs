@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("View scale should match renderer scale")]
 		public async Task ScaleConsistent(View view)
 		{
-			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
+			var transform = await GetRendererProperty(view, r => r.PlatformView.Layer.Transform, requiresLayout: true);
 			var actual = ParseCATransform3D(transform.ToString());
 			var expected = BuildScaleMatrix((float)view.Scale);
 			Assert.That(actual, Is.EqualTo(expected));

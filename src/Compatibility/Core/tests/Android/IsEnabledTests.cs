@@ -40,18 +40,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				using (var renderer = GetRenderer(element))
 				{
 					var expected = element.IsEnabled;
-					var nativeView = renderer.View;
+					var platformView = renderer.View;
 
-					ParentView(nativeView);
+					ParentView(platformView);
 
 					// Check the container control
 					Assert.That(renderer.View.Enabled, Is.EqualTo(expected));
 
 					// Check the actual control
-					var control = GetNativeControl(element);
+					var control = GetPlatformControl(element);
 					Assert.That(control.Enabled, Is.EqualTo(expected));
 
-					UnparentView(nativeView);
+					UnparentView(platformView);
 				}
 			});
 		}

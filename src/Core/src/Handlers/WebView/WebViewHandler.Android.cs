@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
-				handler.NativeView.EvaluateJavaScript(request);
+				handler.PlatformView.EvaluateJavaScript(request);
 			}
 		}
 	}

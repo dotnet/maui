@@ -4,25 +4,25 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
-	public class NativeBindingGalleryPage : ContentPage
+	public class PlatformBindingGalleryPage : ContentPage
 	{
 		public new StackLayout Layout { get; set; }
-		public bool NativeControlsAdded { get; set; }
+		public bool PlatformControlsAdded { get; set; }
 
-		NestedNativeViewModel ViewModel { get; set; }
+		NestedPlatformViewModel ViewModel { get; set; }
 
-		public const string ReadyForNativeBindingsMessage = "ReadyForNativeBindings";
+		public const string ReadyForPlatformBindingsMessage = "ReadyForPlatformBindings";
 
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			MessagingCenter.Send(this, ReadyForNativeBindingsMessage);
+			MessagingCenter.Send(this, ReadyForPlatformBindingsMessage);
 		}
 
-		public NativeBindingGalleryPage()
+		public PlatformBindingGalleryPage()
 		{
 
-			var vm = new NestedNativeViewModel();
+			var vm = new NestedPlatformViewModel();
 			vm.FormsLabel = "Forms Label Binding";
 			vm.NativeLabel = "Native Label Binding";
 			vm.NativeLabelColor = Colors.Red;
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var button = new Button { Text = "Change BindingContext " };
 			button.Clicked += (object sender, EventArgs e) =>
 			{
-				vm = new NestedNativeViewModel();
+				vm = new NestedPlatformViewModel();
 				vm.FormsLabel = "Forms Label Binding Changed";
 				vm.NativeLabel = "Native Label Binding Changed";
 				vm.NativeLabelColor = Colors.Pink;
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 
 	[Preserve(AllMembers = true)]
-	public class NestedNativeViewModel : ViewModelBase
+	public class NestedPlatformViewModel : ViewModelBase
 	{
 		string _formsLabel;
 		public string FormsLabel
@@ -81,18 +81,18 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			set { if (_formsLabel == value) return; _formsLabel = value; OnPropertyChanged(); }
 		}
 
-		string _nativeLabel;
+		string _platformLabel;
 		public string NativeLabel
 		{
-			get { return _nativeLabel; }
-			set { if (_nativeLabel == value) return; _nativeLabel = value; OnPropertyChanged(); }
+			get { return _platformLabel; }
+			set { if (_platformLabel == value) return; _platformLabel = value; OnPropertyChanged(); }
 		}
 
-		Color _nativeLabelColor;
+		Color _platformLabelColor;
 		public Color NativeLabelColor
 		{
-			get { return _nativeLabelColor; }
-			set { if (_nativeLabelColor == value) return; _nativeLabelColor = value; OnPropertyChanged(); }
+			get { return _platformLabelColor; }
+			set { if (_platformLabelColor == value) return; _platformLabelColor = value; OnPropertyChanged(); }
 		}
 
 		int _age;

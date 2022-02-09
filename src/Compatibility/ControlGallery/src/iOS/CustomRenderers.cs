@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 					_mapView = new MKMapView(UIScreen.MainScreen.Bounds);
 					_mapView.MapType = MKMapType.Standard;
 					_mapView.RotateEnabled = false;
-					SetNativeControl(_mapView);
+					SetPlatformControl(_mapView);
 				}
 
 			}
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			if (Control == null)
 			{
-				SetNativeControl(new UITableView());
+				SetPlatformControl(new UITableView());
 			}
 
 			if (e.OldElement != null)
@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			if (Control == null)
 			{
-				SetNativeControl(new UITableView());
+				SetPlatformControl(new UITableView());
 			}
 
 			if (e.OldElement != null)
@@ -515,7 +515,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
 				};
 				_controller = new CollectionViewController(flowLayout, ItemSelected);
-				SetNativeControl(_controller.CollectionView);
+				SetPlatformControl(_controller.CollectionView);
 			}
 
 			base.OnElementChanged(e);

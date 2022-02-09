@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task OpacityConsistent(View view)
 		{
 			var expected = view.Opacity;
-			var actual = await GetRendererProperty(view, r => r.NativeView.Alpha, requiresLayout: true);
+			var actual = await GetRendererProperty(view, r => r.PlatformView.Alpha, requiresLayout: true);
 
 			// Deliberately casting this to double because Within doesn't seem to grasp nfloat
 			// If you write this the other way around (casting expected to an nfloat), it fails

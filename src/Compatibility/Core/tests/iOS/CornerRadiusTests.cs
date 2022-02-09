@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			var page = new ContentPage() { Content = view };
 			var centerColor = view.BackgroundColor.ToUIColor();
 
-			var screenshot = await GetRendererProperty(view, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			var screenshot = await GetRendererProperty(view, (ver) => ver.PlatformView.ToBitmap(), requiresLayout: true);
 			screenshot.AssertColorAtCenter(centerColor)
 			.AssertColorAtBottomLeft(EmptyBackground)
 							.AssertColorAtBottomRight(EmptyBackground)

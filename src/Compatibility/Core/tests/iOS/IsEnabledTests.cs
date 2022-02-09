@@ -40,13 +40,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				using (var renderer = GetRenderer(view))
 				{
 					var expected = view.IsEnabled;
-					var nativeView = renderer.NativeView;
+					var platformView = renderer.PlatformView;
 
 					// Check the container
-					Assert.That(renderer.NativeView.UserInteractionEnabled, Is.EqualTo(expected));
+					Assert.That(renderer.PlatformView.UserInteractionEnabled, Is.EqualTo(expected));
 
 					// Check the actual control
-					var control = GetNativeControl(view);
+					var control = GetPlatformControl(view);
 
 					if (control is UIControl uiControl)
 					{

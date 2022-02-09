@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 	{
 		App _app;
 
-		void AddNativeControls(NestedNativeControlGalleryPage page)
+		void AddPlatformControls(NestedPlatformControlGalleryPage page)
 		{
-			if (page.NativeControlsAdded)
+			if (page.PlatformControlsAdded)
 			{
 				return;
 			}
@@ -53,11 +53,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			sl?.Children.Add(button.ToView());
 
 			// Create a control which we know doesn't behave correctly with regard to measurement
-			var difficultControl0 = new BrokenNativeControl(this)
+			var difficultControl0 = new BrokenPlatformControl(this)
 			{
 				Text = "This native control doesn't play nice with sizing, which is why it's all squished to one side."
 			};
-			var difficultControl1 = new BrokenNativeControl(this)
+			var difficultControl1 = new BrokenPlatformControl(this)
 			{
 				Text = "Same control, but with a custom GetDesiredSize delegate to accomodate it's sizing problems."
 			};
@@ -68,10 +68,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			// Add a misbehaving control with a custom delegate for GetDesiredSize
 			sl?.Children.Add(difficultControl1, SizeBrokenControl);
 
-			page.NativeControlsAdded = true;
+			page.PlatformControlsAdded = true;
 		}
 
-		static SizeRequest? SizeBrokenControl(NativeViewWrapperRenderer renderer,
+		static SizeRequest? SizeBrokenControl(PlatformViewWrapperRenderer renderer,
 			int widthConstraint, int heightConstraint)
 		{
 			global::Android.Views.View platformView = renderer.Control;
@@ -89,9 +89,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			return new SizeRequest(size);
 		}
 
-		void AddNativeBindings(NativeBindingGalleryPage page)
+		void AddPlatformBindings(PlatformBindingGalleryPage page)
 		{
-			if (page.NativeControlsAdded)
+			if (page.PlatformControlsAdded)
 				return;
 
 			StackLayout sl = page.Layout;
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			sl?.Children.Add(buttonColor.ToView());
 			sl?.Children.Add(colorPicker);
 
-			page.NativeControlsAdded = true;
+			page.PlatformControlsAdded = true;
 		}
 
 		public class ColorConverter : IValueConverter

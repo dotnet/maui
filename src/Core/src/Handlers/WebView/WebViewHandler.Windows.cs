@@ -65,13 +65,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
-				if (handler.NativeView == null)
+				if (handler.PlatformView == null)
 				{ 
 					request.SetCanceled();
 					return;
 				}
 
-				handler.NativeView.EvaluateJavaScript(request);
+				handler.PlatformView.EvaluateJavaScript(request);
 			}
 		}
 	}

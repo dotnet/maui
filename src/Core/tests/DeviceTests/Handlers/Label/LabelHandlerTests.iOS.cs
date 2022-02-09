@@ -32,12 +32,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "Padding Initializes Correctly")]
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var insets = ((MauiLabel)handler.NativeView).TextInsets;
+			var insets = ((MauiLabel)handler.PlatformView).TextInsets;
 
 			Assert.Equal(5, insets.Left);
 			Assert.Equal(10, insets.Top);
@@ -170,15 +170,15 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = label.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
-			Assert.Equal(expected, values.NativeViewValue);
+			Assert.Equal(expected, values.PlatformViewValue);
 		}
 
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
-			(UILabel)labelHandler.NativeView;
+			(UILabel)labelHandler.PlatformView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Text;
@@ -191,8 +191,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler)
 		{
-			var nativeLabel = GetNativeLabel(labelHandler);
-			var text = nativeLabel.AttributedText;
+			var platformLabel = GetNativeLabel(labelHandler);
+			var text = platformLabel.AttributedText;
 			return text.GetCharacterSpacing();
 		}
 
@@ -230,9 +230,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				var platformLabel = GetNativeLabel(CreateHandler(label));
 				action?.Invoke();
-				nativeLabel.AssertContainsColor(color);
+				platformLabel.AssertContainsColor(color);
 			});
 		}
 	}

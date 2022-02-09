@@ -39,13 +39,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			using (var renderer = GetRenderer(view))
 			{
 				var expected = getScale(view);
-				var nativeView = renderer.View;
+				var platformView = renderer.View;
 
-				ParentView(nativeView);
+				ParentView(platformView);
 
-				Assert.That(getNativeScale(nativeView), Is.EqualTo(expected).Within(0.01));
+				Assert.That(getNativeScale(platformView), Is.EqualTo(expected).Within(0.01));
 
-				UnparentView(nativeView);
+				UnparentView(platformView);
 			}
 		}
 

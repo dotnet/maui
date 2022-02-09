@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		public void Issue11703Test()
 		{
 			var button = new Button { Text = "foo" };
-			var buttonControl = GetNativeControl(button);
+			var buttonControl = GetPlatformControl(button);
 
 			var initialTextTransform = buttonControl.TransformationMethod;
 			Assert.IsNotNull(initialTextTransform);
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		public void TextTransformUpperCase()
 		{
 			var button = new Button { Text = "foo" };
-			var buttonControl = GetNativeControl(button);
+			var buttonControl = GetPlatformControl(button);
 			button.TextTransform = TextTransform.Uppercase;
 			Assert.AreEqual("FOO", buttonControl.Text);
 		}
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		public void TextTransformLowerCase()
 		{
 			var button = new Button { Text = "FOO" };
-			var buttonControl = GetNativeControl(button);
+			var buttonControl = GetPlatformControl(button);
 			button.TextTransform = TextTransform.Lowercase;
 			Assert.AreEqual("foo", buttonControl.Text);
 		}
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		public void StyleTextAllCapsSettingIsRespected()
 		{
 			var button = new ClearTextTransform { Text = "foo" };
-			var buttonControl = GetNativeControl(button);
+			var buttonControl = GetPlatformControl(button);
 			Assert.IsNull(buttonControl.TransformationMethod);
 			button.TextTransform = TextTransform.Uppercase;
 			Assert.IsNull(buttonControl.TransformationMethod);

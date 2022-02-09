@@ -125,56 +125,56 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			return renderer;
 		}
 
-		protected AView GetNativeControl(VisualElement element)
+		protected AView GetPlatformControl(VisualElement element)
 		{
 			switch (element)
 			{
 				case BoxView boxView:
-					return GetNativeControl(boxView);
+					return GetPlatformControl(boxView);
 				case Button button:
-					return GetNativeControl(button);
+					return GetPlatformControl(button);
 				case CheckBox checkBox:
-					return GetNativeControl(checkBox);
+					return GetPlatformControl(checkBox);
 				case DatePicker datePicker:
-					return GetNativeControl(datePicker);
+					return GetPlatformControl(datePicker);
 				case Editor editor:
-					return GetNativeControl(editor);
+					return GetPlatformControl(editor);
 				case Entry entry:
-					return GetNativeControl(entry);
+					return GetPlatformControl(entry);
 				case Image image:
-					return GetNativeControl(image);
+					return GetPlatformControl(image);
 				case ImageButton imageButton:
-					return GetNativeControl(imageButton);
+					return GetPlatformControl(imageButton);
 				case Frame frame:
-					return GetNativeControl(frame);
+					return GetPlatformControl(frame);
 				case Label label:
-					return GetNativeControl(label);
+					return GetPlatformControl(label);
 				case Picker picker:
-					return GetNativeControl(picker);
+					return GetPlatformControl(picker);
 				case ProgressBar progressBar:
-					return GetNativeControl(progressBar);
+					return GetPlatformControl(progressBar);
 				case SearchBar searchBar:
-					return GetNativeControl(searchBar);
+					return GetPlatformControl(searchBar);
 				case Slider slider:
-					return GetNativeControl(slider);
+					return GetPlatformControl(slider);
 				case Stepper stepper:
-					return GetNativeControl(stepper);
+					return GetPlatformControl(stepper);
 				case Switch @switch:
-					return GetNativeControl(@switch);
+					return GetPlatformControl(@switch);
 				case TimePicker timePicker:
-					return GetNativeControl(timePicker);
+					return GetPlatformControl(timePicker);
 			}
 
 			throw new NotImplementedException($"Don't know how to get the native control for {element}");
 		}
 
-		protected BoxRenderer GetNativeControl(BoxView boxView)
+		protected BoxRenderer GetPlatformControl(BoxView boxView)
 		{
 			var renderer = GetRenderer(boxView);
 			return renderer as BoxRenderer;
 		}
 
-		protected AppCompatButton GetNativeControl(Button button)
+		protected AppCompatButton GetPlatformControl(Button button)
 		{
 			var renderer = GetRenderer(button);
 
@@ -187,34 +187,34 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			return viewRenderer.Control;
 		}
 
-		protected AppCompatCheckBox GetNativeControl(CheckBox checkbox)
+		protected AppCompatCheckBox GetPlatformControl(CheckBox checkbox)
 		{
 			var renderer = GetRenderer(checkbox);
 			return renderer as AppCompatCheckBox;
 		}
 
-		protected EditText GetNativeControl(DatePicker datePicker)
+		protected EditText GetPlatformControl(DatePicker datePicker)
 		{
 			var renderer = GetRenderer(datePicker);
 			var viewRenderer = renderer.View as DatePickerRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected FormsEditText GetNativeControl(Editor editor)
+		protected FormsEditText GetPlatformControl(Editor editor)
 		{
 			var renderer = GetRenderer(editor);
 			var viewRenderer = renderer.View as EditorRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected FormsEditText GetNativeControl(Entry entry)
+		protected FormsEditText GetPlatformControl(Entry entry)
 		{
 			var renderer = GetRenderer(entry);
 			var viewRenderer = renderer.View as EntryRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected ImageView GetNativeControl(Image image)
+		protected ImageView GetPlatformControl(Image image)
 		{
 			var renderer = GetRenderer(image);
 
@@ -227,18 +227,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			return viewRenderer.Control;
 		}
 
-		protected AppCompatImageButton GetNativeControl(ImageButton imageButton)
+		protected AppCompatImageButton GetPlatformControl(ImageButton imageButton)
 		{
 			return GetRenderer(imageButton) as AppCompatImageButton;
 		}
 
-		protected CardView GetNativeControl(Frame frame)
+		protected CardView GetPlatformControl(Frame frame)
 		{
 			var renderer = GetRenderer(frame);
 			return renderer as CardView;
 		}
 
-		protected TextView GetNativeControl(Label label)
+		protected TextView GetPlatformControl(Label label)
 		{
 			var renderer = GetRenderer(label);
 			var viewRenderer = renderer.View as LabelRenderer;
@@ -253,56 +253,56 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			return fastRenderer;
 		}
 
-		protected EditText GetNativeControl(Picker picker)
+		protected EditText GetPlatformControl(Picker picker)
 		{
 			var renderer = GetRenderer(picker);
 			var viewRenderer = renderer.View as AppCompat.PickerRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected AProgressBar GetNativeControl(ProgressBar progressBar)
+		protected AProgressBar GetPlatformControl(ProgressBar progressBar)
 		{
 			var renderer = GetRenderer(progressBar);
 			var viewRenderer = renderer.View as ProgressBarRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected ASearchView GetNativeControl(SearchBar searchBar)
+		protected ASearchView GetPlatformControl(SearchBar searchBar)
 		{
 			var renderer = GetRenderer(searchBar);
 			var viewRenderer = renderer.View as SearchBarRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected SeekBar GetNativeControl(Slider slider)
+		protected SeekBar GetPlatformControl(Slider slider)
 		{
 			var renderer = GetRenderer(slider);
 			var viewRenderer = renderer.View as SliderRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected LinearLayout GetNativeControl(Stepper stepper)
+		protected LinearLayout GetPlatformControl(Stepper stepper)
 		{
 			var renderer = GetRenderer(stepper);
 			var viewRenderer = renderer.View as StepperRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected SwitchCompat GetNativeControl(Switch @switch)
+		protected SwitchCompat GetPlatformControl(Switch @switch)
 		{
 			var renderer = GetRenderer(@switch);
 			var viewRenderer = renderer.View as AppCompat.SwitchRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected EditText GetNativeControl(TimePicker timePicker)
+		protected EditText GetPlatformControl(TimePicker timePicker)
 		{
 			var renderer = GetRenderer(timePicker);
 			var viewRenderer = renderer.View as TimePickerRenderer;
 			return viewRenderer.Control;
 		}
 
-		protected void Layout(VisualElement element, AView nativeView)
+		protected void Layout(VisualElement element, AView platformView)
 		{
 			var size = element.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 			var width = size.Request.Width;
@@ -311,8 +311,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 			int widthSpec = AView.MeasureSpec.MakeMeasureSpec((int)width, MeasureSpecMode.Exactly);
 			int heightSpec = AView.MeasureSpec.MakeMeasureSpec((int)height, MeasureSpecMode.Exactly);
-			nativeView.Measure(widthSpec, heightSpec);
-			nativeView.Layout(0, 0, (int)width, (int)height);
+			platformView.Measure(widthSpec, heightSpec);
+			platformView.Layout(0, 0, (int)width, (int)height);
 		}
 
 		// Some of the renderer properties aren't set until the renderer is actually 
@@ -391,7 +391,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var control = GetNativeControl(imageButton))
+				using (var control = GetPlatformControl(imageButton))
 				{
 					if (requiresLayout)
 					{
@@ -408,7 +408,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var control = GetNativeControl(button))
+				using (var control = GetPlatformControl(button))
 				{
 					if (requiresLayout)
 					{
@@ -440,7 +440,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var control = GetNativeControl(editor))
+				using (var control = GetPlatformControl(editor))
 				{
 					if (requiresLayout)
 					{
@@ -457,7 +457,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var control = GetNativeControl(entry))
+				using (var control = GetPlatformControl(entry))
 				{
 					if (requiresLayout)
 					{
@@ -474,7 +474,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				using (var control = GetNativeControl(label))
+				using (var control = GetPlatformControl(label))
 				{
 					if (requiresLayout)
 					{

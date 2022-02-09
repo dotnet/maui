@@ -121,9 +121,9 @@ namespace Microsoft.Maui.Handlers
 				.UpdateImageSourceAsync()
 				.FireAndForget(handler);
 
-		void OnSetImageSource(ImageSource? nativeImageSource)
+		void OnSetImageSource(ImageSource? platformImageSource)
 		{
-			PlatformView.UpdateImageSource(nativeImageSource);
+			PlatformView.UpdateImageSource(platformImageSource);
 		}
 
 		void OnClick(object sender, RoutedEventArgs e)
