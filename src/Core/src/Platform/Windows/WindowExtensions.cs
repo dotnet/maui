@@ -1,5 +1,5 @@
 ﻿using System;
-using WinRT;
+using WinRT.Interop;
 
 namespace Microsoft.Maui.Platform
 {
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 
 		public static IntPtr GetWindowHandle(this UI.Xaml.Window nativeWindow)
 		{
-			var hwnd = nativeWindow.As<IWindowNative>().WindowHandle;
+			var hwnd = WindowNative.GetWindowHandle(nativeWindow);
 
 			if (hwnd == IntPtr.Zero)
 				throw new NullReferenceException("The Window Handle is null.");
