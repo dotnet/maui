@@ -33,12 +33,6 @@
     </_ProvisionDependsOn>
   </PropertyGroup>
 
-  <Target Name="_ReadAllNuGetSources">
-    <XmlPeek XmlInputPath="../../NuGet.config" Query="configuration/packageSources/add[@key!='wasdk-internal']/@value">
-      <Output TaskParameter="Result" ItemName="_AllNuGetSources" />
-    </XmlPeek>
-  </Target>
-
   <!-- Build target provisions ./bin/dotnet/ -->
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
 
@@ -47,7 +41,7 @@
     Running this with ./bin/dotnet/dotnet will work without elevation.
     For a system install, you will need to run this in an admin command-prompt on Windows, or use 'sudo' on Mac.
   -->
-  <Target Name="Install" DependsOnTargets="_ReadAllNuGetSources;SetVersions">
+  <Target Name="Install" DependsOnTargets="SetVersions">
 
     <Error
         Condition=" '$(MSBuildRuntimeType)' != 'Core' "
@@ -78,7 +72,6 @@
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
       <_WorkloadSource Include="$(PackageOutputPath)" />
-      <_WorkloadSource Include="@(_AllNuGetSources)" />
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(PackageOutputPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
@@ -158,10 +151,9 @@
   <Target Name="_InstallWorkloadPacks"
       Condition=" '$(InstallWorkloadPacks)' == 'true' "
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetPacksDirectory).stamp"
-      DependsOnTargets="_ReadAllNuGetSources">
+      Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot;"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
