@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using NUnit.Framework;
@@ -131,125 +130,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(((IConfigurationRoot)app.Configuration).Providers.OfType<TrackingConfigurationProvider>(), Has.One.Items);
 		}
 
-		[Test]
-		public void MauiAppCanObserveSourcesClearedInInnerBuild()
-		{
-			using var listener = new HostingListener(hostBuilder =>
-			{
-				hostBuilder.ConfigureHostConfiguration(config =>
-				{
-					// Clearing here would not remove the app config added via builder.Configuration.
-					config.AddInMemoryCollection(new Dictionary<string, string>()
-					{
-						{ "A", "A" },
-					});
-				});
-
-				hostBuilder.ConfigureAppConfiguration(config =>
-				{
-					// This clears both the chained host configuration and chained builder.Configuration.
-					config.Sources.Clear();
-					config.AddInMemoryCollection(new Dictionary<string, string>()
-					{
-						{ "B", "B" },
-					});
-				});
-			});
-
-			var builder = MauiApp.CreateBuilder();
-
-			builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>()
-			{
-				{ "C", "C" },
-			});
-
-			using var app = builder.Build();
-
-			Assert.True(string.IsNullOrEmpty(app.Configuration["A"]));
-			Assert.True(string.IsNullOrEmpty(app.Configuration["C"]));
-
-			Assert.AreEqual("B", app.Configuration["B"]);
-
-			Assert.AreSame(builder.Configuration, app.Configuration);
-		}
-
-		[Test]
-		public void MauiAppCanHandleStreamBackedConfigurationAddedInInnerBuild()
-		{
-			static Stream CreateStreamFromString(string data) => new MemoryStream(Encoding.UTF8.GetBytes(data));
-
-			using var jsonAStream = CreateStreamFromString(@"{ ""A"": ""A"" }");
-			using var jsonBStream = CreateStreamFromString(@"{ ""B"": ""B"" }");
-
-			using var listener = new HostingListener(hostBuilder =>
-			{
-				hostBuilder.ConfigureHostConfiguration(config => config.AddJsonStream(jsonAStream));
-				hostBuilder.ConfigureAppConfiguration(config => config.AddJsonStream(jsonBStream));
-			});
-
-			var builder = MauiApp.CreateBuilder();
-			using var app = builder.Build();
-
-			Assert.AreEqual("A", app.Configuration["A"]);
-			Assert.AreEqual("B", app.Configuration["B"]);
-
-			Assert.AreSame(builder.Configuration, app.Configuration);
-		}
-
-		[Test]
-		public void MauiAppDisposesConfigurationProvidersAddedInInnerBuild()
-		{
-			var hostConfigSource = new TrackingConfigurationSource();
-			var appConfigSource = new TrackingConfigurationSource();
-
-			using var listener = new HostingListener(hostBuilder =>
-			{
-				hostBuilder.ConfigureHostConfiguration(config => config.Add(hostConfigSource));
-				hostBuilder.ConfigureAppConfiguration(config => config.Add(appConfigSource));
-			});
-
-			var builder = MauiApp.CreateBuilder();
-
-			{
-				using var app = builder.Build();
-
-				Assert.AreEqual(1, hostConfigSource.ProvidersBuilt);
-				Assert.AreEqual(1, appConfigSource.ProvidersBuilt);
-				Assert.AreEqual(1, hostConfigSource.ProvidersLoaded);
-				Assert.AreEqual(1, appConfigSource.ProvidersLoaded);
-				Assert.AreEqual(0, hostConfigSource.ProvidersDisposed);
-				Assert.AreEqual(0, appConfigSource.ProvidersDisposed);
-			}
-
-			Assert.AreEqual(1, hostConfigSource.ProvidersBuilt);
-			Assert.AreEqual(1, appConfigSource.ProvidersBuilt);
-			Assert.AreEqual(1, hostConfigSource.ProvidersLoaded);
-			Assert.AreEqual(1, appConfigSource.ProvidersLoaded);
-			Assert.True(hostConfigSource.ProvidersDisposed > 0);
-			Assert.True(appConfigSource.ProvidersDisposed > 0);
-		}
-
-		[Test]
-		public void MauiAppMakesOriginalConfigurationProvidersAddedInBuildAccessable()
-		{
-			using var listener = new HostingListener(hostBuilder =>
-			{
-				hostBuilder.ConfigureAppConfiguration(config => config.Add(new TrackingConfigurationSource()));
-			});
-
-			var builder = MauiApp.CreateBuilder();
-			using var app = builder.Build();
-
-			var wrappedProviders = ((IConfigurationRoot)app.Configuration).Providers.OfType<IEnumerable<IConfigurationProvider>>();
-			var unwrappedProviders = wrappedProviders.Select(p =>
-			{
-				Assert.That(p, Has.One.Items);
-				return p.First();
-			});
-
-			Assert.That(unwrappedProviders.OfType<TrackingConfigurationProvider>(), Has.One.Items);
-		}
-
 		public class TrackingConfigurationSource : IConfigurationSource
 		{
 			public int ProvidersBuilt { get; set; }
@@ -278,65 +158,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			public void Dispose() => _source.ProvidersDisposed++;
-		}
-
-		private sealed class HostingListener : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>, IDisposable
-		{
-			private readonly Action<IHostBuilder> _configure;
-			private static readonly AsyncLocal<HostingListener> _currentListener = new();
-			private readonly IDisposable _subscription0;
-			private IDisposable _subscription1;
-
-			public HostingListener(Action<IHostBuilder> configure)
-			{
-				_configure = configure;
-
-				_subscription0 = DiagnosticListener.AllListeners.Subscribe(this);
-
-				_currentListener.Value = this;
-			}
-
-			public void OnCompleted()
-			{
-
-			}
-
-			public void OnError(Exception error)
-			{
-
-			}
-
-			public void OnNext(DiagnosticListener value)
-			{
-				if (_currentListener.Value != this)
-				{
-					// Ignore events that aren't for this listener
-					return;
-				}
-
-				if (value.Name == "Microsoft.Extensions.Hosting")
-				{
-					_subscription1 = value.Subscribe(this);
-				}
-			}
-
-			public void OnNext(KeyValuePair<string, object> value)
-			{
-				if (value.Key == "HostBuilding")
-				{
-					_configure?.Invoke((IHostBuilder)value.Value);
-				}
-			}
-
-			public void Dispose()
-			{
-				// Undo this here just in case the code unwinds synchronously since that doesn't revert
-				// the execution context to the original state. Only async methods do that on exit.
-				_currentListener.Value = null;
-
-				_subscription0.Dispose();
-				_subscription1?.Dispose();
-			}
 		}
 	}
 }

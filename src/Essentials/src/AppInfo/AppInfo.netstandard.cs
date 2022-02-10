@@ -1,18 +1,20 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppInfo']/Docs" />
-	public static partial class AppInfo
+	public class AppInfoImplementation : IAppInfo
 	{
-		static string PlatformGetPackageName() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string PackageName => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static string PlatformGetName() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string Name => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static string PlatformGetVersionString() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public System.Version Version => Utils.ParseVersion(VersionString);
 
-		static string PlatformGetBuild() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string VersionString => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformShowSettingsUI() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string BuildString => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static AppTheme PlatformRequestedTheme() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public void ShowSettingsUI() => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public AppTheme RequestedTheme => throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

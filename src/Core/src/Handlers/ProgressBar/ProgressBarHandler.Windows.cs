@@ -1,32 +1,17 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Microsoft.Maui.Handlers
 {
-	// To avoid an issue rendering the native ProgressBar on Windows, we wrap it into a Container.
-	public partial class ProgressBarHandler : ViewHandler<IProgress, Grid>
+	public partial class ProgressBarHandler : ViewHandler<IProgress, ProgressBar>
 	{
 		object? _foregroundDefault;
 
-		protected override Grid CreateNativeView() =>
-			new Grid();
+		protected override ProgressBar CreateNativeView() => new() { Minimum = 0, Maximum = 1 };
 
-		public ProgressBar? ProgressBar { get; internal set; }
-
-		protected override void ConnectHandler(Grid nativeView)
+		protected override void ConnectHandler(ProgressBar nativeView)
 		{
-			ProgressBar = new ProgressBar { Minimum = 0, Maximum = 1 };
-			nativeView.Children.Add(ProgressBar);
-			ProgressBar.ValueChanged += OnProgressBarValueChanged;
-
-			SetupDefaults(ProgressBar);
-		}
-
-		protected override void DisconnectHandler(Grid nativeView)
-		{
-			if (ProgressBar != null)
-				ProgressBar.ValueChanged -= OnProgressBarValueChanged;
+			SetupDefaults(nativeView);
 		}
 
 		void SetupDefaults(ProgressBar nativeView)
@@ -36,17 +21,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapProgress(ProgressBarHandler handler, IProgress progress)
 		{
-			handler.ProgressBar?.UpdateProgress(progress);
+			handler.NativeView?.UpdateProgress(progress);
 		}
 
 		public static void MapProgressColor(ProgressBarHandler handler, IProgress progress)
 		{
-			handler.ProgressBar?.UpdateProgressColor(progress, handler._foregroundDefault);
-		}
-
-		void OnProgressBarValueChanged(object? sender, RangeBaseValueChangedEventArgs rangeBaseValueChangedEventArgs)
-		{
-			VirtualView?.InvalidateMeasure();
+			handler.NativeView?.UpdateProgressColor(progress, handler._foregroundDefault);
 		}
 	}
 }

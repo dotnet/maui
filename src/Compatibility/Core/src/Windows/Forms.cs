@@ -98,7 +98,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var platformServices = new WindowsPlatformServices();
 
 			Device.PlatformServices = platformServices;
-			Device.PlatformInvalidator = platformServices;
 
 			if (mainWindow != null)
 			{

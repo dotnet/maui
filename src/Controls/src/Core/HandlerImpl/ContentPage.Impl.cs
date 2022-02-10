@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformArrange(Rectangle bounds)
 		{
+			Frame = bounds;
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}

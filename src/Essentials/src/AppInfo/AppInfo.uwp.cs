@@ -6,27 +6,32 @@ using Microsoft.UI.Xaml;
 using Windows.UI.Xaml;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppInfo
+	public class AppInfoImplementation : IAppInfo
 	{
-		static string PlatformGetPackageName() => Package.Current.Id.Name;
+		public string PackageName => Package.Current.Id.Name;
 
-		static string PlatformGetName() => Package.Current.DisplayName;
+		public string Name => Package.Current.DisplayName;
 
-		static string PlatformGetVersionString()
+		public System.Version Version => Utils.ParseVersion(VersionString);
+
+		public string VersionString
 		{
-			var version = Package.Current.Id.Version;
-			return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+			get
+			{
+				var version = Package.Current.Id.Version;
+				return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+			}
 		}
 
-		static string PlatformGetBuild() =>
+		public string BuildString =>
 			Package.Current.Id.Version.Build.ToString(CultureInfo.InvariantCulture);
 
-		static void PlatformShowSettingsUI() =>
+		public void ShowSettingsUI() =>
 			global::Windows.System.Launcher.LaunchUriAsync(new global::System.Uri("ms-settings:appsfeatures-app")).WatchForError();
 
-		static AppTheme PlatformRequestedTheme() =>
+		public AppTheme RequestedTheme =>
 			Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
 	}
 }
