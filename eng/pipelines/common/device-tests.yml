@@ -34,12 +34,6 @@ stages:
                   ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
                 REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
               steps:
-              
-                - template: agent-cleanser/v1.yml@xamarin-templates
-                  parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
                 - template: device-tests-steps.yml
                   parameters:
                     platform: android
