@@ -51,7 +51,10 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeColor(this RadioButton nativeRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.BorderBrush = radioButton.StrokeColor != null ? radioButton.StrokeColor.ToNative() : (WBrush)UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+			if (radioButton.StrokeColor == null)
+				return;
+
+			nativeRadioButton.BorderBrush =  radioButton.StrokeColor.ToNative();
 		}
 
 		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)

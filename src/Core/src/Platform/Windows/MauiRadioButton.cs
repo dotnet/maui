@@ -1,7 +1,7 @@
 ﻿#nullable disable
 using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
+using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 
 namespace Microsoft.Maui.Platform
 {
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 		public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register(nameof(BackgroundColor), typeof(WBrush), typeof(MauiRadioButton),
 			new PropertyMetadata(default(WBrush), OnBackgroundColorChanged));
 
-		WContentPresenter _contentPresenter;
+		WGrid _contentPresenter;
 
 		public WBrush BackgroundColor
 		{
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnApplyTemplate();
 
-			_contentPresenter = GetTemplateChild("ContentPresenter") as WContentPresenter;
+			_contentPresenter = GetTemplateChild("RootGrid") as WGrid;
 
 			UpdateBackgroundColor();
 			UpdateBorderRadius();
@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentPresenter != null)
 				_contentPresenter.Background = BackgroundColor;
+
 			Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
 		}
 
