@@ -47,7 +47,7 @@
         Condition=" '$(MauiPlatformName)' == 'tizen' "
         Include="net$(_MauiDotNetVersion)-tizen$(TizenTargetFrameworkVersion)"
         FullTfm="%(Identity)"
-        Tfm="net$(_MauiDotNetVersion)-tizen$(TizenTargetFrameworkVersion)"
+        Tfm="net$(_MauiDotNetVersion)-tizen"
         Profile="Tizen"
     />
   </ItemGroup>
