@@ -9,12 +9,32 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class ShellHandler
 	{
-		// TODO override all the viewmapper things for shell
-		public ShellHandler() : this(ViewHandler.ViewMapper)
-		{
-		}
+		public static PropertyMapper<Shell, ShellHandler> Mapper =
+				new PropertyMapper<Shell, ShellHandler>(ElementMapper)
+				{
+#if WINDOWS
+					[nameof(IToolbarElement.Toolbar)] = (handler, view) => ViewHandler.MapToolbar(handler, view),
+					[nameof(IFlyoutView.Flyout)] = MapFlyout,
+					[nameof(IFlyoutView.IsPresented)] = MapIsPresented,
+					[nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
+					[nameof(IFlyoutView.FlyoutWidth)] = MapFlyoutWidth,
+					[nameof(Shell.FlyoutBackground)] = MapFlyoutBackground,
+					[nameof(Shell.FlyoutBackgroundColor)] = MapFlyoutBackground,
+					[nameof(Shell.CurrentItem)] = MapCurrentItem,
+					[nameof(Shell.FlyoutBackdrop)] = MapFlyoutBackdrop,
+					[nameof(Shell.FlyoutFooter)] = MapFlyoutFooter,
+					[nameof(Shell.FlyoutFooterTemplate)] = MapFlyoutFooter,
+					[nameof(Shell.FlyoutHeader)] = MapFlyoutHeader,
+					[nameof(Shell.FlyoutHeaderTemplate)] = MapFlyoutHeader,
+					[nameof(Shell.Items)] = MapItems,
+					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
+#endif
+				};
 
-		public ShellHandler(IPropertyMapper mapper) : base(mapper)
+		public static CommandMapper<Shell, ShellHandler> CommandMapper =
+				new CommandMapper<Shell, ShellHandler>(ElementCommandMapper);
+
+		public ShellHandler() : base(Mapper, CommandMapper)
 		{
 		}
 	}

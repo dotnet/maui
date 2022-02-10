@@ -44,7 +44,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				switch (_type)
 				{
 					case CarouselXamlSampleType.Peek:
-						items.Add(new CarouselItem(i, "cardBackground.png"));
+						items.Add(new CarouselItem(i, "card_background.png"));
 						break;
 					default:
 						items.Add(new CarouselItem(i));

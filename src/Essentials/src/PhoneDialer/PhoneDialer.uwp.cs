@@ -1,14 +1,14 @@
 using Windows.ApplicationModel.Calls;
 using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class PhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
-		internal static bool IsSupported =>
-			 ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager");
+		public bool IsSupported =>
+			ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager");
 
-		static void PlatformOpen(string number)
+		public void Open(string number)
 		{
 			ValidateOpen(number);
 

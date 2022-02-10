@@ -12,12 +12,12 @@ using UIKit;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, UIView>, INativeViewHandler
+		ViewHandler<IStackNavigationView, UIView>, INativeViewHandler
 	{
 		ControlsNavigationController? _controlsNavigationController;
 		UIViewController? INativeViewHandler.ViewController => _controlsNavigationController;
 
-		public INavigationView NavigationView => ((INavigationView)VirtualView);
+		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
 
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 			return _controlsNavigationController.View;
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
 			arg1.NavigationStack = (arg3 as NavigationRequest)!.NavigationStack;
 			//if (arg3 is NavigationRequest args)

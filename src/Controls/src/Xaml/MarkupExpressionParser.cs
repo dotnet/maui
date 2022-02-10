@@ -9,7 +9,7 @@
 //   Stephane Delcroix (stephane@mi8.be)
 //
 // Copyright 2009 Novell, Inc.
-// Copyright 2013 Microsoft.Maui.Controls, Inc.
+// Copyright 2013 Xamarin, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the

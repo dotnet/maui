@@ -659,7 +659,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.IsInstanceOf<PageWithDependency>(page);
 				Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
 			}
-			
+
 			if (type == typeof(PageWithDependencyAndMultipleConstructors))
 			{
 				Assert.IsInstanceOf<PageWithDependencyAndMultipleConstructors>(page);

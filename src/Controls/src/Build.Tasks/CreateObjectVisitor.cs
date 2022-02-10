@@ -614,7 +614,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			yield return Create(Ldc_I4, lineInfo.LineNumber);               //lineNumber
 			yield return Create(Ldc_I4, lineInfo.LinePosition);             //linePosition
 
-			yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml.Diagnostics", "VisualDiagnostics"),
+			yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui", "Microsoft.Maui", "VisualDiagnostics"),
 																   methodName: "RegisterSourceInfo",
 																   parameterTypes: new[] {
 																	   ("mscorlib", "System", "Object"),

@@ -393,7 +393,7 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(
-				Device.GetAssemblies(),
+				AppDomain.CurrentDomain.GetAssemblies(),
 				Device.PlatformServices.GetType().GetTypeInfo().Assembly,
 				attrTypes,
 				flags,

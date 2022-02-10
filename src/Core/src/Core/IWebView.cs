@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using System.Threading.Tasks;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View that presents HTML content.
@@ -52,5 +54,7 @@
 		/// Raised after web navigation completes.
 		/// </summary>
 		void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result);
+
+		Task<string> EvaluateJavaScriptAsync(string script);
 	}
 }

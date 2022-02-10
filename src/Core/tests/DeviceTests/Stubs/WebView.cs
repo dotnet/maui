@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.DeviceTests.Stubs
+using System.Threading.Tasks;
+
+namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WebViewStub : StubBase, IWebView
 	{
@@ -12,5 +14,6 @@
 		public void Eval(string script) { }
 		public void Navigating(WebNavigationEvent evnt, string url) { }
 		public void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result) { }
+		public Task<string> EvaluateJavaScriptAsync(string script) { return null; }
 	}
 }

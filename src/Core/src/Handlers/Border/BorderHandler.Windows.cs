@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.EnsureBorderPath();
 
             if (VirtualView.PresentedContent is IView view)
-                NativeView.Children.Add(view.ToNative(MauiContext));
+                NativeView.Children.Add(view.ToPlatform(MauiContext));
         }
 
         protected override ContentPanel CreateNativeView()

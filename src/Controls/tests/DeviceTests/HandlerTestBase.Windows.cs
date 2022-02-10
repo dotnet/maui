@@ -41,8 +41,8 @@ namespace Microsoft.Maui.DeviceTests
 					navigationRootManager.UseCustomAppTitleBar = false;
 
 					newWindowHandler = window.ToHandler(mauiContext);
-					var content = window.Content.Handler.GetWrappedNativeView();
-					await content.LoadedAsync();
+					var content = window.Content.Handler.ToPlatform();
+					await content.OnLoadedAsync();
 					await Task.Delay(10);
 
 					if (typeof(THandler).IsAssignableFrom(newWindowHandler.GetType()))
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 					if (testingRootPanel != null && MauiProgram.CurrentWindow.Content != testingRootPanel)
 					{
 						MauiProgram.CurrentWindow.Content = testingRootPanel;
-						await testingRootPanel.LoadedAsync();
+						await testingRootPanel.OnLoadedAsync();
 						await Task.Delay(10);
 					}
 				}
@@ -102,30 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
 		{
 			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());
-		}
-
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
-			where THandler : class, IElementHandler
-		{
-			return InvokeOnMainThreadAsync(async () =>
-			{
-				IWindow window = null;
-
-				if (view is IWindow w)
-				{
-					window = w;
-				}
-				else if (view is Page page)
-				{
-					window = new Controls.Window(page);
-				}
-				else
-				{
-					window = new Controls.Window(new ContentPage() { Content = (View)view });
-				}
-
-				await RunWindowTest<THandler>(window, (handler) => action(handler as THandler));
-			});
 		}
 	}
 }
