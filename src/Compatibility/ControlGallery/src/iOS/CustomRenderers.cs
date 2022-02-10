@@ -31,17 +31,17 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Issue13390), typeof(Issue13390Renderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
-	public class Issue13390Renderer : ShellRenderer
+	public class Issue13390Renderer : Controls.Handlers.Compatibility.ShellRenderer
 	{
-		protected override IShellFlyoutRenderer CreateFlyoutRenderer()
+		protected override Controls.Platform.Compatibility.IShellFlyoutRenderer CreateFlyoutRenderer()
 		{
-			return new ShellFlyoutRenderer()
+			return new Controls.Platform.Compatibility.ShellFlyoutRenderer()
 			{
 				FlyoutTransition = new SlideFlyoutTransition2()
 			};
 		}
 
-		public class SlideFlyoutTransition2 : IShellFlyoutTransition
+		public class SlideFlyoutTransition2 : Controls.Platform.Compatibility.IShellFlyoutTransition
 		{
 			public void LayoutViews(CGRect bounds, nfloat openPercent, UIView flyout, UIView shell, FlyoutBehavior behavior)
 			{
