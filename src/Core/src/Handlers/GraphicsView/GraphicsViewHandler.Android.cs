@@ -12,14 +12,14 @@ namespace Microsoft.Maui.Handlers
 			return new PlatformGraphicsView(Context);
 		}
 
-		protected override void ConnectHandler(NativeGraphicsView nativeView)
+		protected override void ConnectHandler(PlatformGraphicsView nativeView)
 		{
 			base.ConnectHandler(nativeView);
 
 			nativeView.Touch += OnTouch;
 		}
 
-		protected override void DisconnectHandler(NativeGraphicsView nativeView)
+		protected override void DisconnectHandler(PlatformGraphicsView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 

@@ -2,12 +2,12 @@
 using System;
 using Foundation;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public class CustomNativeGraphicsView : NativeGraphicsView
+	public class CustomPlatformGraphicsView : PlatformGraphicsView
 	{
 		public event EventHandler<TouchEventArgs> Touch;
 
