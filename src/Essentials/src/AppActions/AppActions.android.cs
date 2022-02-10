@@ -54,20 +54,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 		const string extraAppActionIcon = "EXTRA_XE_APP_ACTION_ICON";
 
 		internal static AppAction ToAppAction(this Intent intent)
-		{
-			intent.GetStringExtra(extraAppActionId);
-			intent.GetStringExtra(extraAppActionTitle);
-			intent.GetStringExtra(extraAppActionSubtitle);
-			intent.GetStringExtra(extraAppActionIcon);
-
-			return new AppAction
-			(
-				extraAppActionId,
-				extraAppActionTitle,
-				extraAppActionSubtitle,
-				extraAppActionIcon
-			);
-		}
+			=> new AppAction(
+				intent.GetStringExtra(extraAppActionId),
+				intent.GetStringExtra(extraAppActionTitle),
+				intent.GetStringExtra(extraAppActionSubtitle),
+				intent.GetStringExtra(extraAppActionIcon));
+				
 		internal static ShortcutInfo ToShortcutInfo(this AppAction action)
 		{
 			var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.Id)
