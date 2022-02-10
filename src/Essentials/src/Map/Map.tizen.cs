@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using Tizen.Applications;
 using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.ApplicationModel
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	class MapImplementation : IMap
+	public class MapImplementation:IMap
 	{
-		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return Task.CompletedTask;
 		}
 
-		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)
 				throw new ArgumentNullException(nameof(placemark));
