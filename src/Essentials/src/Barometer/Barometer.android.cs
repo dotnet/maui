@@ -2,12 +2,22 @@ using System;
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Barometer
+	public class BarometerImplementation : IBarometer
 	{
-		internal static bool IsSupported =>
-			   DefaultBarometer != null;
+		public bool IsSupported
+		{
+			get 
+			{
+			   return DefaultBarometer != null;
+			}
+
+			set
+			{
+				throw ExceptionUtils.NotSupportedOrImplementedException;
+			}
+		}
 
 		static Sensor DefaultBarometer => Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
 
@@ -15,14 +25,17 @@ namespace Microsoft.Maui.Essentials
 
 		static BarometerListener listener;
 
-		static void PlatformStart(SensorSpeed sensorSpeed)
+
+		public bool IsMonitoring { get; set; }
+
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			listener = new BarometerListener();
 			barometer = DefaultBarometer;
 			Platform.SensorManager.RegisterListener(listener, barometer, sensorSpeed.ToPlatform());
 		}
 
-		static void PlatformStop()
+		public void Stop()
 		{
 			if (listener == null)
 				return;

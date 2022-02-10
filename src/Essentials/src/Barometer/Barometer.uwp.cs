@@ -2,18 +2,19 @@ using System;
 using Windows.Devices.Sensors;
 using WinBarometer = Windows.Devices.Sensors.Barometer;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Barometer
+	public class BarometerImplementation : IBarometer
 	{
 		static WinBarometer sensor;
 
 		static WinBarometer DefaultBarometer => WinBarometer.GetDefault();
 
-		internal static bool IsSupported =>
+
+		internal bool IsSupported =>
 			DefaultBarometer != null;
 
-		static void PlatformStart(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultBarometer;
 
@@ -23,10 +24,10 @@ namespace Microsoft.Maui.Essentials
 			sensor.ReadingChanged += BarometerReportedInterval;
 		}
 
-		static void BarometerReportedInterval(object sender, BarometerReadingChangedEventArgs e)
+		internal void BarometerReportedInterval(object sender, BarometerReadingChangedEventArgs e)
 			=> OnChanged(new BarometerData(e.Reading.StationPressureInHectopascals));
 
-		static void PlatformStop()
+		public void Stop()
 		{
 			sensor.ReadingChanged -= BarometerReportedInterval;
 			sensor.ReportInterval = 0;

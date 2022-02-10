@@ -1,7 +1,22 @@
 using System;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IBarometer
+	{
+		bool IsSupported { get; set; }
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		bool IsMonitoring { get; set; }
+
+		void Start(SensorSpeed sensorSpeed);
+
+		void Stop();
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs" />
 	public static partial class Barometer
 	{
@@ -9,16 +24,28 @@ namespace Microsoft.Maui.Essentials
 
 		public static event EventHandler<BarometerChangedEventArgs> ReadingChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring { get; private set; }
+		public static bool IsSupported => Current.IsSupported; 
+		
+		public static bool IsMonitoring 
+		{
+			get
+			{
+				return Current.IsMonitoring;
+			}
 
+ 			set
+			{
+				Current.IsMonitoring = value;
+			}
+		}
+		
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
 		{
-			if (!IsSupported)
+			if (!Current.IsSupported)
 				throw new FeatureNotSupportedException();
 
-			if (IsMonitoring)
+			if (Current.IsMonitoring)
 				throw new InvalidOperationException("Barometer has already been started.");
 
 			IsMonitoring = true;
@@ -26,11 +53,11 @@ namespace Microsoft.Maui.Essentials
 
 			try
 			{
-				PlatformStart(sensorSpeed);
+				Current.Start(sensorSpeed);
 			}
 			catch
 			{
-				IsMonitoring = false;
+				Current.IsMonitoring = false;
 				throw;
 			}
 		}
@@ -48,11 +75,11 @@ namespace Microsoft.Maui.Essentials
 
 			try
 			{
-				PlatformStop();
+				Current.Stop();
 			}
 			catch
 			{
-				IsMonitoring = true;
+				Current.IsMonitoring = true;
 				throw;
 			}
 		}
@@ -67,6 +94,20 @@ namespace Microsoft.Maui.Essentials
 			else
 				ReadingChanged?.Invoke(null, e);
 		}
+
+#nullable enable
+		static IBarometer? currentImplementation;
+#nullable disable
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IBarometer Current =>
+			currentImplementation ??= new BarometerImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(IBarometer? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BarometerChangedEventArgs']/Docs" />
