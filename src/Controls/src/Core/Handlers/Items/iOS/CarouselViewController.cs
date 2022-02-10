@@ -26,7 +26,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Carousel = itemsView;
 			CollectionView.AllowsSelection = false;
 			CollectionView.AllowsMultipleSelection = false;
-			Carousel.PropertyChanged += CarouselViewPropertyChanged;
 			Carousel.Scrolled += CarouselViewScrolled;
 			_oldViews = new List<View>();
 		}
@@ -165,7 +164,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void TearDown()
 		{
-			//Carousel.PropertyChanged -= CarouselViewPropertyChanged;
 			Carousel.Scrolled -= CarouselViewScrolled;
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			_carouselViewLoopManager?.Dispose();
@@ -291,17 +289,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				oldObservableItemsSource.CollectionViewUpdating -= CollectionViewUpdating;
 				oldObservableItemsSource.CollectionViewUpdated -= CollectionViewUpdated;
 			}
-		}
-
-		void CarouselViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs changedProperty)
-		{
-			System.Diagnostics.Debug.WriteLine($"PropertyChanged {changedProperty.PropertyName}");
-			//if (changedProperty.Is(CarouselView.PositionProperty))
-			//	UpdateFromPosition();
-			//else if (changedProperty.Is(CarouselView.CurrentItemProperty))
-			//	UpdateFromCurrentItem();
-			//	else if (changedProperty.Is(CarouselView.LoopProperty))
-			//		UpdateLoop();
 		}
 
 		internal void UpdateLoop()
