@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.SelectionChanged += OnControlSelectionChanged;
 
-			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged += OnRowsCollectionChanged;
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
 
 			SetupDefaults(nativeView);
 		}
@@ -33,7 +34,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.SelectionChanged -= OnControlSelectionChanged;
 
-			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged -= OnRowsCollectionChanged;
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 		}
 
 		void SetupDefaults(MauiComboBox nativeView)

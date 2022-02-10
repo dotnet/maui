@@ -62,7 +62,8 @@ namespace Microsoft.Maui.Handlers
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
 
-			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged += OnRowsCollectionChanged;
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
 
 			base.ConnectHandler(nativeView);
 		}
@@ -73,7 +74,8 @@ namespace Microsoft.Maui.Handlers
 			nativeView.EditingDidEnd -= OnEnded;
 			nativeView.EditingChanged -= OnEditing;
 
-			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged -= OnRowsCollectionChanged;
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 
 			if (_pickerView != null)
 			{

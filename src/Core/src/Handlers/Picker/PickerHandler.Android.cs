@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Handlers
 			nativeView.FocusChange += OnFocusChange;
 			nativeView.Click += OnClick;
 
-			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged += OnRowsCollectionChanged;
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
 
 			base.ConnectHandler(nativeView);
 
@@ -36,7 +37,8 @@ namespace Microsoft.Maui.Handlers
 			nativeView.FocusChange -= OnFocusChange;
 			nativeView.Click -= OnClick;
 
-			((INotifyCollectionChanged)VirtualView.Items).CollectionChanged -= OnRowsCollectionChanged;
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 
 			base.DisconnectHandler(nativeView);
 		}
