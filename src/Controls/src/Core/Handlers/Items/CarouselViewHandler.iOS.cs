@@ -4,14 +4,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
-		protected override ItemsViewController<CarouselView> CreateController(CarouselView newElement, ItemsViewLayout layout)
+		ItemsViewLayout _layout;
+
+		protected override CarouselViewController CreateController(CarouselView newElement, ItemsViewLayout layout)
+				=> new CarouselViewController(newElement, layout);
+
+		protected override ItemsViewLayout SelectLayout() =>
+				_layout ??= new CarouselViewLayout(VirtualView.ItemsLayout, VirtualView);
+
+		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
-			throw new NotImplementedException();
+			if (VirtualView?.Loop == true)
+			{
+				var goToIndexPath = (Controller as CarouselViewController).GetScrollToIndexPath(args.Index);
+
+				if (!IsIndexPathValid(goToIndexPath))
+				{
+					return;
+				}
+
+				Controller.CollectionView.ScrollToItem(goToIndexPath,
+					args.ScrollToPosition.ToCollectionViewScrollPosition(_layout.ScrollDirection),
+					args.IsAnimated);
+			}
+			else
+			{
+				base.ScrollToRequested(sender, args);
+			}
 		}
 
-		protected override ItemsViewLayout SelectLayout()
+		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			throw new NotImplementedException();
+			handler.Controller.CollectionView.ScrollEnabled = carouselView.IsSwipeEnabled;
+		}
+
+		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+		}
+
+		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.NativeView.Frame.Size);
+			handler.Controller.Layout.InvalidateLayout();
 		}
 
 		[MissingMapper]
@@ -19,15 +54,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		[MissingMapper]
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		[MissingMapper]
-		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		[MissingMapper]
-		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView) { }
-
-		[MissingMapper]
-		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView) { }
 
 		[MissingMapper]
 		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView) { }
