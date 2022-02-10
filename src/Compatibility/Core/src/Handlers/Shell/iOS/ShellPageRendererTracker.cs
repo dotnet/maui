@@ -9,6 +9,8 @@ using Foundation;
 using Microsoft.Extensions.Logging;
 using ObjCRuntime;
 using UIKit;
+using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
+using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -59,6 +61,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Page _page;
 		NSCache _nSCache;
 		SearchHandlerAppearanceTracker _searchHandlerAppearanceTracker;
+		IFontManager _fontManager;
 
 		BackButtonBehavior BackButtonBehavior { get; set; }
 		UINavigationItem NavigationItem { get; set; }
@@ -69,6 +72,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_context = context;
 			_nSCache = new NSCache();
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
+			_fontManager = context.Shell.RequireFontManager();
 		}
 
 		public async void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -613,7 +617,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			searchBar.ShowsBookmarkButton = SearchHandler.ClearPlaceholderEnabled;
 
-			_searchHandlerAppearanceTracker = new SearchHandlerAppearanceTracker(searchBar, SearchHandler);
+			_searchHandlerAppearanceTracker = new SearchHandlerAppearanceTracker(searchBar, SearchHandler, _fontManager);
 
 			UpdateFlowDirection();
 			UpdateAutomationId();

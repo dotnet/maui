@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (Content != null)
 			{
-				var oldRenderer = Platform.GetRenderer(Content);
+				var oldRenderer = (INativeViewHandler)Content.Handler;
 				var oldContentView = ContentView;
 				var oldContent = Content;
 
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Content = content;
 			if (Content != null)
 			{
-				var renderer = Platform.CreateRenderer(Content);
+				var renderer = Content.ToHandler(_context.Shell.FindMauiContext());
 				ContentView = renderer.NativeView;
 				ContentView.ClipsToBounds = true;
 
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (HeaderView != null)
 				ScrollView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
 			else
-				ScrollView.ContentInset = new UIEdgeInsets(Platform.SafeAreaInsetsForWindow.Top, 0, 0, 0);
+				ScrollView.ContentInset = new UIEdgeInsets(Controls.Compatibility.Platform.iOS.Platform.SafeAreaInsetsForWindow.Top, 0, 0, 0);
 
 			offset -= ScrollView.ContentInset.Top;
 
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else if (HeaderView == null)
 				{
-					topMargin = (float)Platform.SafeAreaInsetsForWindow.Top;
+					topMargin = (float)Controls.Compatibility.Platform.iOS.Platform.SafeAreaInsetsForWindow.Top;
 				}
 
 				ContentView.Frame =

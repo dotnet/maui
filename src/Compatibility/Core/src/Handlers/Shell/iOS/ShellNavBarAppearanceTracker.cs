@@ -4,7 +4,7 @@ using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellNavBarAppearanceTracker : IShellNavBarAppearanceTracker
 	{
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
 			}
 
-			if (Forms.IsiOS15OrNewer)
+			if (NativeVersion.IsAtLeast(15))
 				UpdateiOS15NavigationBarAppearance(controller, appearance);
 			else
 				UpdateNavigationBarAppearance(controller, appearance);
@@ -97,19 +97,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var foreground = appearance.ForegroundColor;
 
 			if (foreground != null)
-				navBar.TintColor = foreground.ToUIColor();
+				navBar.TintColor = foreground.ToNative();
 
 			// Set BackgroundColor
 			var background = appearance.BackgroundColor;
 
 			if (background != null)
-				navigationBarAppearance.BackgroundColor = background.ToUIColor();
+				navigationBarAppearance.BackgroundColor = background.ToNative();
 
 			// Set TitleColor
 			var titleColor = appearance.TitleColor;
 
 			if (titleColor != null)
-				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToUIColor() };
+				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToNative() };
 
 			navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
 		}
@@ -123,14 +123,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var navBar = controller.NavigationBar;
 
 			if (background != null)
-				navBar.BarTintColor = background.ToUIColor();
+				navBar.BarTintColor = background.ToNative();
 			if (foreground != null)
-				navBar.TintColor = foreground.ToUIColor();
+				navBar.TintColor = foreground.ToNative();
 			if (titleColor != null)
 			{
 				navBar.TitleTextAttributes = new UIStringAttributes
 				{
-					ForegroundColor = titleColor.ToUIColor()
+					ForegroundColor = titleColor.ToNative()
 				};
 			}
 		}

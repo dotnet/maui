@@ -6,6 +6,7 @@ using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
+using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetValues(Color backgroundColor, Color foregroundColor, Color unselectedColor)
 		{
-			CollectionView.BackgroundColor = new Color(backgroundColor.Red, backgroundColor.Green, backgroundColor.Blue, .863f).ToUIColor();
+			CollectionView.BackgroundColor = new Color(backgroundColor.Red, backgroundColor.Green, backgroundColor.Blue, .863f).ToNative();
 
 			bool reloadData = _selectedColor != foregroundColor || _unselectedColor != unselectedColor;
 
@@ -98,8 +99,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			headerCell.Label.Text = shellContent.Title;
 			headerCell.Label.SetNeedsDisplay();
 
-			headerCell.SelectedColor = _selectedColor.ToUIColor();
-			headerCell.UnSelectedColor = _unselectedColor.ToUIColor();
+			headerCell.SelectedColor = _selectedColor.ToNative();
+			headerCell.UnSelectedColor = _unselectedColor.ToNative();
 
 			if (selectedItems.Length > 0 && selectedItems[0].Row == indexPath.Row)
 				headerCell.Selected = true;
@@ -118,7 +119,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			if (CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
-				cell.Label.TextColor = _unselectedColor.ToUIColor();
+				cell.Label.TextColor = _unselectedColor.ToNative();
 		}
 
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, item);
 
 			if (CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
-				cell.Label.TextColor = _selectedColor.ToUIColor();
+				cell.Label.TextColor = _selectedColor.ToNative();
 		}
 
 		public override nint NumberOfSections(UICollectionView collectionView)
@@ -181,7 +182,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			CollectionView.AddSubview(_bar);
 
 			_bottomShadow = new UIView(new CGRect(0, 0, 10, 1));
-			_bottomShadow.BackgroundColor = Colors.Black.MultiplyAlpha(0.3f).ToUIColor();
+			_bottomShadow.BackgroundColor = Colors.Black.MultiplyAlpha(0.3f).ToNative();
 			_bottomShadow.Layer.ZPosition = 9002;
 			CollectionView.AddSubview(_bottomShadow);
 

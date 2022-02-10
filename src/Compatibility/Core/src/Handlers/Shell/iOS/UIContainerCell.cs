@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View.MeasureInvalidated += MeasureInvalidated;
 			SelectionStyle = UITableViewCellSelectionStyle.None;
 
-			_renderer = Platform.GetRenderer(view);
+			_renderer = (INativeViewHandler)view.Handler;
 
 			if (_renderer == null)
 			{
-				_renderer = Platform.CreateRenderer(view);
+				_renderer = (INativeViewHandler)view.ToHandler(shell.FindMauiContext());
 			}
 
 			ContentView.AddSubview(_renderer.NativeView);

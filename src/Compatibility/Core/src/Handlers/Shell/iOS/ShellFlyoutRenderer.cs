@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					TapoffView.BackgroundColor = ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f);
+					TapoffView.BackgroundColor = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f);
 				}
 			}
 		}

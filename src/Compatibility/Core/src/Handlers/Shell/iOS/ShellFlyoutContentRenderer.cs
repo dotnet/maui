@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			int previousIndex = GetPreviousIndex(_footerView);
 			if (_footer != null)
 			{
-				var oldRenderer = Platform.GetRenderer(_footer);
+				var oldRenderer = (INativeViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
 				_tableViewController.FooterView = null;
 				_footerView = null;
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_footer != null)
 			{
-				var renderer = Platform.CreateRenderer(_footer);
+				var renderer = (INativeViewHandler)_footer.ToHandler(_shellContext.Shell.FindMauiContext());
 				_footerView = renderer.NativeView;
 				_uIViews[FooterIndex] = _footerView;
 				AddViewInCorrectOrder(_footerView, previousIndex);

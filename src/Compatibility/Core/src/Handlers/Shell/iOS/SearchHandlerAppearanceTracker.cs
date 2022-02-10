@@ -7,7 +7,7 @@ using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class SearchHandlerAppearanceTracker : IDisposable
 	{
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			backgroundView.ClipsToBounds = true;
 			if (_defaultBackgroundColor == null)
 				_defaultBackgroundColor = backgroundView.BackgroundColor;
-			backgroundView.BackgroundColor = backGroundColor.ToUIColor();
+			backgroundView.BackgroundColor = backGroundColor.ToNative();
 		}
 
 		void UpdateCancelButtonColor(UIButton cancelButton)
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 			{
-				var cancelUIColor = cancelColor.ToUIColor();
+				var cancelUIColor = cancelColor.ToNative();
 				cancelButton.SetTitleColor(cancelUIColor, UIControlState.Normal);
 				cancelButton.SetTitleColor(cancelUIColor, UIControlState.Highlighted);
 				cancelButton.SetTitleColor(cancelUIColor, UIControlState.Disabled);
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var formatted = (FormattedString)_searchHandler.Placeholder ?? string.Empty;
 			var targetColor = _searchHandler.PlaceholderColor;
-			var placeHolderColor = targetColor ?? ColorExtensions.PlaceholderColor.ToColor();
+			var placeHolderColor = targetColor ?? Microsoft.Maui.Platform.ColorExtensions.PlaceholderColor.ToColor();
 			textField.AttributedPlaceholder = formatted.ToNSAttributedString(_fontManager, defaultHorizontalAlignment: _searchHandler.HorizontalTextAlignment, defaultColor: placeHolderColor);
 
 			//Center placeholder
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_defaultTextColor = _defaultTextColor ?? textField.TextColor;
 			var targetColor = _searchHandler.TextColor;
 
-			textField.TextColor = targetColor?.ToUIColor() ?? _defaultTextColor;
+			textField.TextColor = targetColor?.ToNative() ?? _defaultTextColor;
 			UpdateSearchBarTintColor(targetColor);
 			UpdateSearchButtonIconColor(targetColor);
 			UpdateClearPlaceholderIconColor(targetColor);
@@ -230,7 +230,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateSearchBarTintColor(Color targetColor)
 		{
-			_uiSearchBar.TintColor = targetColor?.ToUIColor() ?? _defaultTintColor;
+			_uiSearchBar.TintColor = targetColor?.ToNative() ?? _defaultTintColor;
 		}
 
 		void UpdateSearchButtonIconColor(Color targetColor)
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 
 			SetSearchBarIconColor(uiButton, targetColor, _defaultPlaceholderTintColor);
-			uiButton.TintColor = targetColor.ToUIColor() ?? _defaultPlaceholderTintColor;
+			uiButton.TintColor = targetColor.ToNative() ?? _defaultPlaceholderTintColor;
 		}
 
 		void UpdateClearIconColor(Color targetColor)
@@ -278,7 +278,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textField == null)
 				return;
 
-			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToNativeTextAlignment(EffectiveFlowDirection.Explicit);
+			textField.TextAlignment =
+				_searchHandler.HorizontalTextAlignment.ToNative(EffectiveFlowDirection.Explicit.ToFlowDirection() == FlowDirection.LeftToRight);
 		}
 
 		void UpdateSearchBarVerticalTextAlignment(UITextField textField)
@@ -286,7 +287,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textField == null)
 				return;
 
-			textField.VerticalAlignment = _searchHandler.VerticalTextAlignment.ToNativeTextAlignment();
+			textField.VerticalAlignment = _searchHandler.VerticalTextAlignment.ToNative();
 		}
 
 		void UpdateKeyboard()
@@ -352,7 +353,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			var newIcon = icon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-			imageView.TintColor = targetColor?.ToUIColor() ?? defaultTintColor;
+			imageView.TintColor = targetColor?.ToNative() ?? defaultTintColor;
 			imageView.Image = newIcon;
 		}
 
@@ -367,7 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			button.SetImage(newIcon, UIControlState.Normal);
 			button.SetImage(newIcon, UIControlState.Selected);
 			button.SetImage(newIcon, UIControlState.Highlighted);
-			button.TintColor = button.ImageView.TintColor = targetColor.ToUIColor() ?? defaultTintColor;
+			button.TintColor = button.ImageView.TintColor = targetColor.ToNative() ?? defaultTintColor;
 		}
 
 		protected virtual void Dispose(bool disposing)

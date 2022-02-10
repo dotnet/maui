@@ -329,7 +329,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_defaultMoreTextLabelTextColor == null)
 						_defaultMoreTextLabelTextColor = cell.TextLabel.TextColor;
 
-					cell.TextLabel.TextColor = Color.FromRgb(213, 213, 213).ToUIColor();
+					cell.TextLabel.TextColor = Color.FromRgb(213, 213, 213).ToNative();
 				}
 				else if (!cell.UserInteractionEnabled)
 				{

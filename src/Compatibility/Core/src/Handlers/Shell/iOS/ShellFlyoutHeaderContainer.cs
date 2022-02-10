@@ -1,5 +1,5 @@
 using System;
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	internal class ShellFlyoutHeaderContainer : UIContainerView
 	{
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (!View.IsSet(View.MarginProperty))
 				{
-					var newMargin = new Thickness(0, (float)Platform.SafeAreaInsetsForWindow.Top, 0, 0);
+					var newMargin = new Thickness(0, (float)Controls.Compatibility.Platform.iOS.Platform.SafeAreaInsetsForWindow.Top, 0, 0);
 
 					if (newMargin != View.Margin)
 					{

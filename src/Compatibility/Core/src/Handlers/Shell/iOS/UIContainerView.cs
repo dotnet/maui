@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_view = view;
 
-			_renderer = Platform.CreateRenderer(view);
+			_renderer = (INativeViewHandler)view.ToHandler(view.FindMauiContext());
 
 			AddSubview(_renderer.NativeView);
 			ClipsToBounds = true;

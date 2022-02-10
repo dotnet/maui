@@ -4,6 +4,7 @@ using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
+using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -230,7 +231,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_line = new UIView
 				{
-					BackgroundColor = ColorExtensions.OpaqueSeparatorColor,
+					BackgroundColor = Microsoft.Maui.Platform.ColorExtensions.OpaqueSeparatorColor,
 					TranslatesAutoresizingMaskIntoConstraints = true,
 					Alpha = 0.2f
 				};
