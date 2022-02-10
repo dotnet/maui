@@ -49,13 +49,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.Controller.Layout.InvalidateLayout();
 		}
 
-		[MissingMapper]
-		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView) { }
+		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateFromCurrentItem();
+		}
 
-		[MissingMapper]
-		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView) { }
+		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateFromPosition();
+		}
 
-		[MissingMapper]
-		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView) { }
+		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateLoop();
+		}
 	}
 }
