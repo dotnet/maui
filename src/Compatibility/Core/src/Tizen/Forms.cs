@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				UseFastLayout = options.UseFastLayout;
 			}
 
-			Application.AccentColor = GetAccentColor(profile);
+			Application.AccentColor = GetAccentColor();
 			ExpressionSearch.Default = new TizenExpressionSearch();
 
 			if (Context is WatchApplication)
@@ -443,21 +443,21 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Registrar.Registered.Register(typeof(Shapes.Rectangle), typeof(Platform.Tizen.SkiaSharp.RectangleRenderer));
 		}
 
-		static Color GetAccentColor(string profile)
+		static Color GetAccentColor()
 		{
 			// On Windows Phone, this is the complementary color chosen by the user.
 			// Good Windows Phone applications use this as part of their styling to provide a native look and feel.
 			// On iOS and Android this instance is set to a contrasting color that is visible on the default
 			// background but is not the same as the default text color.
 
-			switch (profile)
+			switch (Device.Idiom)
 			{
-				case "mobile":
+				case TargetIdiom.Phone:
 					// [Tizen_3.0]Basic_Interaction_GUI_[REF].xlsx Theme 001 (Default) 1st HSB: 188 70 80
 					return Color.FromRgba(61, 185, 204, 255);
-				case "tv":
+				case TargetIdiom.TV:
 					return Color.FromRgba(15, 15, 15, 230);
-				case "wearable":
+				case TargetIdiom.Watch:
 					// Theme A (Default) 1st HSB: 207 75 16
 					return Color.FromRgba(10, 27, 41, 255);
 				default:

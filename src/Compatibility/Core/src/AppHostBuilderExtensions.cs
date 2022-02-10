@@ -108,6 +108,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 
 #if TIZEN
 					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(LayoutRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(FlyoutPage), typeof(FlyoutPageRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
