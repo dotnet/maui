@@ -48,6 +48,14 @@ parameters:
     type: boolean
     default: false
 
+resources:
+  repositories:
+    - repository: xamarin-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main
+      
 stages:
 
   - template: common/device-tests.yml
