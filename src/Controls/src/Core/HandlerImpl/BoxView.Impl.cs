@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoxView']/Docs" />
 	public partial class BoxView : IShapeView, IShape
 	{
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)

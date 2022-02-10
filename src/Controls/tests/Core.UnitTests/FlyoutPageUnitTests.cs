@@ -9,20 +9,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class FlyoutPageUnitTests : BaseTestFixture
 	{
-		TestDeviceDisplay mockDeviceDisplay;
+		MockDeviceDisplay mockDeviceDisplay;
+		MockDeviceInfo mockDeviceInfo;
 
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			mockDeviceDisplay = new TestDeviceDisplay();
-			DeviceDisplay.SetCurrent(mockDeviceDisplay);
+			DeviceDisplay.SetCurrent(mockDeviceDisplay = new MockDeviceDisplay());
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
 		[Test]
 		public void TestConstructor()
 		{
-
 			FlyoutPage page = new FlyoutPage();
 
 			Assert.Null(page.Flyout);
@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThrowsInSetIsPresentOnSplitModeOnTablet()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			var page = new FlyoutPage
 			{
 				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
@@ -283,7 +283,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThorwsInSetIsPresentOnSplitPortraitModeOnTablet()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Portrait);
 
 			var page = new FlyoutPage

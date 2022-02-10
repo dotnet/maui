@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.TypedVirtualView.PresentedContent is not IView presentedView)
 				return;
 
-			handler.TypedNativeView.Content = presentedView.ToNative(handler.MauiContext);
+			handler.TypedNativeView.Content = presentedView.ToPlatform(handler.MauiContext);
 		}
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)

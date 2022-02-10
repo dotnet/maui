@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using System.Threading.Tasks;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View that presents HTML content.
@@ -34,5 +36,13 @@
 		/// Reload the current content.
 		/// </summary>
 		void Reload();
+
+		/// <summary>
+		/// Evaluates the script that is specified by script.
+		/// </summary>
+		/// <param name="script">A script to evaluate.</param>
+		void Eval(string script);
+
+		Task<string> EvaluateJavaScriptAsync(string script);
 	}
 }

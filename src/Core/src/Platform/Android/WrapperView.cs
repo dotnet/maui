@@ -3,7 +3,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using APath = Android.Graphics.Path;
 using AView = Android.Views.View;
 

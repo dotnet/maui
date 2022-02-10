@@ -1,4 +1,6 @@
-﻿using WebKit;
+﻿using System;
+using System.Threading.Tasks;
+using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -52,6 +54,22 @@ namespace Microsoft.Maui.Platform
 		{
 			webView.CanGoBack = nativeWebView.CanGoBack;
 			webView.CanGoForward = nativeWebView.CanGoForward;
+		}
+
+		public static void Eval(this WKWebView nativeWebView, IWebView webView, string script)
+		{
+			nativeWebView.EvaluateJavaScriptAsync(script);
+		}
+
+		public static void EvaluateJavaScript(this WKWebView webView, EvaluateJavaScriptAsyncRequest request)
+		{
+			request.RunAndReport(EvaluateJavaScript(webView, request.Script));
+		}
+
+		static async Task<string> EvaluateJavaScript(WKWebView webView, string script)
+		{
+			var result = await webView.EvaluateJavaScriptAsync(script);
+			return result?.ToString() ?? "null";
 		}
 	}
 }

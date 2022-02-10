@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
     <Title>.NET MAUI Templates</Title>
@@ -10,6 +10,7 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <LocalizeTemplates>true</LocalizeTemplates>
     <IncludeSymbols>false</IncludeSymbols>
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- This project has no .NET assemblies, so disable the warning for that -->
@@ -33,15 +34,22 @@
           Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
               .Replace('WINDOWSAPPSDK_VERSION_VALUE', '$(MicrosoftWindowsAppSDKPackageVersion)')
               .Replace('WIN2D_VERSION_VALUE', '$(MicrosoftGraphicsWin2DPackageVersion)'))" />
+      <_TemplateCsprojFile Include="templates\*\*.csproj" />
+      <_TemplateCsprojFileWithContent
+          Include="@(_TemplateCsprojFile)"
+          Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
+              .Replace('DOTNET_TFM_VALUE', '$(_MauiDotNetTfm)'))" />
+      <_TemplateReplacedFile Include="@(_TemplateJsonFile);@(_TemplateCsprojFile)" />
+      <_TemplateReplacedFileWithContent Include="@(_TemplateJsonFileWithContent);@(_TemplateCsprojFileWithContent)" />
     </ItemGroup>
     <WriteLinesToFile
-        File="@(_TemplateJsonFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"
+        File="@(_TemplateReplacedFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"
         Lines="%(Contents)"
         Overwrite="true" />
     <ItemGroup>
-      <FileWrites Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" />
-      <Content Remove="@(_TemplateJsonFile)" />
-      <Content Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
+      <FileWrites Include="@(_TemplateReplacedFile -> '$(IntermediateOutputPath)%(Identity)')" />
+      <Content Remove="@(_TemplateReplacedFile)" />
+      <Content Include="@(_TemplateReplacedFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
     </ItemGroup>
   </Target>
 
@@ -56,4 +64,7 @@
     />
   </Target>
 
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+    <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="$(MicrosoftTemplateEngineTasksVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
+  </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@ using static Microsoft.Maui.Layouts.LayoutManager;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Frame.xml" path="Type[@FullName='Microsoft.Maui.Controls.Frame']/Docs" />
 	public partial class Frame : IView
 	{
 		IShadow IView.Shadow

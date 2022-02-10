@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Gyroscope']/Docs" />
 	public static partial class Gyroscope
 	{
 		internal static bool IsSupported =>

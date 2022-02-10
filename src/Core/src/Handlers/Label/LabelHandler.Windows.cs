@@ -15,14 +15,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			handler.GetWrappedNativeView()?.UpdateBackground(label);
+			handler.ToPlatform().UpdateBackground(label);
 		}
 
 		public static void MapOpacity(LabelHandler handler, ILabel label)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			handler.NativeView.UpdateOpacity(label);
-			handler.GetWrappedNativeView()?.UpdateOpacity(label);
+			handler.ToPlatform().UpdateOpacity(label);
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label) =>

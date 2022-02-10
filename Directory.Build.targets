@@ -12,27 +12,33 @@
   </PropertyGroup>
 
   <!-- platform version number information -->
-  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework.Contains('-tvos'))">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIstvOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
     <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework.Contains('-macos'))">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.14</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
     <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>21.0</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows10'))">
+
+  <!-- 
+    NOTE: The Contains('-windows10') is a bit of a hack 
+    because we don't want to set these properties for WPF projects...
+    There's probably a better way we should find to infer this
+  -->
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True' AND $(TargetFramework.Contains('-windows10'))">
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
@@ -41,18 +47,18 @@
     Comment out this section if you need to update Resource.designer.cs files.
     See .github/DEVELOPMENT.md#Android for details.
   -->
-  <PropertyGroup Condition="($(TargetFramework.StartsWith('MonoAndroid')) or '$(TargetPlatformIdentifier)' == 'Android') and '$(AndroidApplication)' != 'true'">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true'">
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
     <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
   </ItemGroup>
 
   <!-- Until we get a new enough dotnet -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.18" TargetingPackVersion="10.0.18362.18" />
   </ItemGroup>
 

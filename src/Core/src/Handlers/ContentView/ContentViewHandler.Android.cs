@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.RemoveAllViews();
 
 			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddView(view.ToNative(MauiContext));
+				NativeView.AddView(view.ToPlatform(MauiContext));
 		}
 
 		public static void MapContent(ContentViewHandler handler, IContentView page)

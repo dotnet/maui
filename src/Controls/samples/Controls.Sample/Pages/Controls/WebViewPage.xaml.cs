@@ -34,5 +34,20 @@ namespace Maui.Controls.Sample.Pages
 		{
 			MauiWebView.Reload();
 		}
+
+		void OnEvalClicked(object sender, EventArgs args)
+		{
+			MauiWebView.Eval("alert('text')");
+		}
+
+		async void OnEvalAsyncClicked(object sender, EventArgs args)
+		{
+			MauiWebView.Eval("alert('text')");
+
+			var result = await MauiWebView.EvaluateJavaScriptAsync(
+				"var test = function(){ return 'This string came from Javascript!'; }; test();");
+
+			EvalResultLabel.Text = result;
+		}
 	}
 }

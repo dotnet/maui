@@ -54,7 +54,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.EditingDidEnd += OnEnded;
 
 			if (_picker != null)
+			{
+				_picker.EditingDidBegin += OnStarted;
+				_picker.EditingDidEnd += OnEnded;
 				_picker.ValueChanged += OnValueChanged;
+			}
 
 			base.ConnectHandler(nativeView);
 			SetupDefaults(nativeView);
@@ -66,7 +70,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.EditingDidEnd -= OnEnded;
 
 			if (_picker != null)
+			{
+				_picker.EditingDidBegin -= OnStarted;
+				_picker.EditingDidEnd -= OnEnded;
 				_picker.ValueChanged -= OnValueChanged;
+			}
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -112,12 +120,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColor);
 		}
-
+    
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.NativeView?.UpdateTextAlignment(datePicker);
 		}
-		
+
 		void OnValueChanged(object? sender, EventArgs? e)
 		{
 			SetVirtualViewDate();
@@ -125,12 +133,12 @@ namespace Microsoft.Maui.Handlers
 
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Focus.
+			// TODO: Update IsFocused property
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			// TODO: UnFocus.
+			// TODO: Update IsFocused property
 		}
 
 		void SetVirtualViewDate()

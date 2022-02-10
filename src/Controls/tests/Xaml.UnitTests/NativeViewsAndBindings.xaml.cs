@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -238,21 +239,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
+			MockDeviceInfo mockDeviceInfo;
+
 			[SetUp]
-			public void SetUp()
+			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
+				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
+				DeviceInfo.SetCurrent(null);
 			}
 
 			void SetUpPlatform(string platform)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = platform;
+				mockDeviceInfo.RuntimePlatform = platform;
 				if (platform == Device.iOS)
 				{
 					DependencyService.Register<INativeValueConverterService, MockIosNativeValueConverterService>();

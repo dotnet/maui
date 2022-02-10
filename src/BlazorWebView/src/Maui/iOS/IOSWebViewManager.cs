@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using UIKit;
 using WebKit;
+
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public class IOSWebViewManager : WebViewManager
@@ -59,8 +60,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal sealed class WebViewUIDelegate : WKUIDelegate
 		{
-            private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
-            private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
+			private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
+			private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
 			private readonly BlazorWebViewHandler _webView;
 
 			public WebViewUIDelegate(BlazorWebViewHandler webView)
@@ -182,10 +183,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
-				if (navigationAction.TargetFrame!.MainFrame)
+				// TargetFrame is null for navigation to a new window (`_blank`)
+				if (navigationAction.TargetFrame is null)
+				{
+					// Open in a new browser window
+					UIApplication.SharedApplication.OpenUrl(navigationAction.Request.Url);
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+
+				if (navigationAction.TargetFrame.MainFrame)
 				{
 					_currentUri = navigationAction.Request.Url;
 				}
+
 				decisionHandler(WKNavigationActionPolicy.Allow);
 			}
 

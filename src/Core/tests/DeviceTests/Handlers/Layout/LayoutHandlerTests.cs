@@ -194,6 +194,17 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			Assert.Same(addedSlider.Handler.ContainerView, children[1]);
 		}
 
+		[Fact]
+		public async Task ContainerViewDifferentThanNativeView()
+		{
+			var layout = new LayoutStub();
+			var containedButton = new ButtonWithContainerStub();
+			layout.Add(containedButton);
+			_ = await CreateHandlerAsync(layout);
+			var handler = containedButton.Handler as INativeViewHandler;
+			Assert.NotEqual(handler.NativeView, handler.ContainerView);
+		}
+
 		LabelStub CreateZTestLabel(int zIndex)
 		{
 			return new LabelStub() { Text = zIndex.ToString("000"), ZIndex = zIndex };

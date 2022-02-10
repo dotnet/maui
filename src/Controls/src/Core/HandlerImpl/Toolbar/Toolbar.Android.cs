@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls
 				_nativeTitleViewHandler.SetVirtualView(titleView);
 			else
 			{
-				titleView.ToNative(MauiContext);
+				titleView.ToPlatform(MauiContext);
 				_nativeTitleViewHandler = titleView.Handler;
 
 				if (_nativeTitleView == null)

@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -49,6 +51,28 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			sender.UpdateCanGoBackForward(VirtualView);
+		}
+
+		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
+				return;
+
+			handler.NativeView?.Eval(webView, script);
+		}
+
+		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 
+		{
+			if (arg is EvaluateJavaScriptAsyncRequest request)
+			{
+				if (handler.NativeView == null)
+				{ 
+					request.SetCanceled();
+					return;
+				}
+
+				handler.NativeView.EvaluateJavaScript(request);
+			}
 		}
 	}
 }

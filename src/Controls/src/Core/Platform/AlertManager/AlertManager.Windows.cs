@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				try
 				{
-					var pageParent = sender.ToNative(MauiContext).Parent as FrameworkElement;
+					var pageParent = sender.ToPlatform(MauiContext).Parent as FrameworkElement;
 
 					if (pageParent != null)
 						actionSheet.ShowAt(pageParent);

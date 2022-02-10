@@ -86,12 +86,12 @@ namespace Microsoft.Maui.Handlers
 
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Focus.
+			// TODO: Update IsFocused property
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			// TODO: UnFocus.
+			// TODO: Update IsFocused property
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)

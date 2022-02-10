@@ -8,7 +8,8 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	public class CollectionView : GroupableItemsView
+	/// <include file="../../../docs/Microsoft.Maui.Controls/CollectionView.xml" path="Type[@FullName='Microsoft.Maui.Controls.CollectionView']/Docs" />
+	public class CollectionView : ReorderableItemsView
 	{
 	}
 }

@@ -9,26 +9,28 @@ using UIKit;
 using AppKit;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppInfo
+	public class AppInfoImplementation : IAppInfo
 	{
-		static string PlatformGetPackageName() => GetBundleValue("CFBundleIdentifier");
+		public string PackageName => GetBundleValue("CFBundleIdentifier");
 
-		static string PlatformGetName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
+		public string Name => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
 
-		static string PlatformGetVersionString() => GetBundleValue("CFBundleShortVersionString");
+		public Version Version => Utils.ParseVersion(VersionString);
 
-		static string PlatformGetBuild() => GetBundleValue("CFBundleVersion");
+		public string VersionString => GetBundleValue("CFBundleShortVersionString");
 
-		static string GetBundleValue(string key)
+		public string BuildString => GetBundleValue("CFBundleVersion");
+
+		string GetBundleValue(string key)
 		   => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
 #if __IOS__ || __TVOS__
-		static async void PlatformShowSettingsUI()
+		public async void ShowSettingsUI()
 			=> await Launcher.OpenAsync(UIApplication.OpenSettingsUrlString);
 #elif __MACOS__
-        static void PlatformShowSettingsUI()
+        public void ShowSettingsUI()
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -38,47 +40,53 @@ namespace Microsoft.Maui.Essentials
             });
         }
 #else
-		static void PlatformShowSettingsUI() =>
+		public void ShowSettingsUI() =>
 			throw new FeatureNotSupportedException();
 #endif
 
 #if __IOS__ || __TVOS__
-		static AppTheme PlatformRequestedTheme()
+		public AppTheme RequestedTheme
 		{
-			if (!Platform.HasOSVersion(13, 0))
-				return AppTheme.Unspecified;
-
-			var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-				UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
-
-			return uiStyle switch
+			get
 			{
-				UIUserInterfaceStyle.Light => AppTheme.Light,
-				UIUserInterfaceStyle.Dark => AppTheme.Dark,
-				_ => AppTheme.Unspecified
-			};
+				if (!Platform.HasOSVersion(13, 0))
+					return AppTheme.Unspecified;
+
+				var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
+					UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
+
+				return uiStyle switch
+				{
+					UIUserInterfaceStyle.Light => AppTheme.Light,
+					UIUserInterfaceStyle.Dark => AppTheme.Dark,
+					_ => AppTheme.Unspecified
+				};
+			}
 		}
 #elif __MACOS__
-        static AppTheme PlatformRequestedTheme()
+        public AppTheme RequestedTheme
         {
-            if (DeviceInfo.Version >= new Version(10, 14))
-            {
-                var app = NSAppearance.CurrentAppearance?.FindBestMatch(new string[]
-                {
-                    NSAppearance.NameAqua,
-                    NSAppearance.NameDarkAqua
-                });
+			get
+			{
+				if (DeviceInfo.Version >= new Version(10, 14))
+				{
+					var app = NSAppearance.CurrentAppearance?.FindBestMatch(new string[]
+					{
+						NSAppearance.NameAqua,
+						NSAppearance.NameDarkAqua
+					});
 
-                if (string.IsNullOrEmpty(app))
-                    return AppTheme.Unspecified;
+					if (string.IsNullOrEmpty(app))
+						return AppTheme.Unspecified;
 
-                if (app == NSAppearance.NameDarkAqua)
-                    return AppTheme.Dark;
-            }
-            return AppTheme.Light;
+					if (app == NSAppearance.NameDarkAqua)
+						return AppTheme.Dark;
+				}
+				return AppTheme.Light;
+			}
         }
 #else
-		static AppTheme PlatformRequestedTheme() =>
+		public AppTheme RequestedTheme =>
 			AppTheme.Unspecified;
 #endif
 

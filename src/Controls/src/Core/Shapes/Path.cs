@@ -2,25 +2,31 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Path']/Docs" />
 	public sealed partial class Path : Shape
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public Path() : base()
 		{
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public Path(Geometry data) : this()
 		{
 			Data = data;
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='DataProperty']/Docs" />
 		public static readonly BindableProperty DataProperty =
 			 BindableProperty.Create(nameof(Data), typeof(Geometry), typeof(Path), null,
 				 propertyChanged: OnGeometryPropertyChanged);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='RenderTransformProperty']/Docs" />
 		public static readonly BindableProperty RenderTransformProperty =
 			BindableProperty.Create(nameof(RenderTransform), typeof(Transform), typeof(Path), null,
 				propertyChanged: OnTransformPropertyChanged);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='Data']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(PathGeometryConverter))]
 		public Geometry Data
 		{
@@ -28,6 +34,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Geometry)GetValue(DataProperty); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='RenderTransform']/Docs" />
 		public Transform RenderTransform
 		{
 			set { SetValue(RenderTransformProperty, value); }

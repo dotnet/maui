@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
@@ -52,6 +54,22 @@ namespace Microsoft.Maui.Platform
 		{
 			webView.CanGoBack = nativeWebView.CanGoBack;
 			webView.CanGoForward = nativeWebView.CanGoForward;
+		}
+
+		public static void Eval(this WebView2 nativeWebView, IWebView webView, string script)
+		{ 
+			if (nativeWebView == null)
+				return;
+
+			nativeWebView.DispatcherQueue.TryEnqueue(async () =>
+			{
+				await nativeWebView.ExecuteScriptAsync(script);
+			});
+		}
+
+		public static void EvaluateJavaScript(this WebView2 webView, EvaluateJavaScriptAsyncRequest request) 
+		{
+			request.RunAndReport(webView.ExecuteScriptAsync(request.Script));
 		}
 	}
 }

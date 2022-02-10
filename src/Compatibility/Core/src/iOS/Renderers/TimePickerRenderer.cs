@@ -157,11 +157,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateFlowDirection();
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);

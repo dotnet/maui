@@ -11,6 +11,7 @@ using PointF = CoreGraphics.CGPoint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer instead")]
 	public class PhoneFlyoutPageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIView _clickOffView;
@@ -397,7 +398,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
 			if (firstPage != null)
+#pragma warning disable CS0618 // Type or member is obsolete
 				NavigationRenderer.SetFlyoutLeftBarButton(firstPage, FlyoutPage);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateApplyShadow(bool value)
@@ -546,15 +549,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var detailView = Platform.GetRenderer(FlyoutPage.Detail).ViewController.View;
 			var opacity = (nfloat)(0.5 + (0.5 * (1 - percent)));
 			detailView.Layer.Opacity = (float)opacity;
-		}
-	}
-
-
-	public class PhoneMasterDetailRenderer : PhoneFlyoutPageRenderer
-	{
-		[Preserve(Conditional = true)]
-		public PhoneMasterDetailRenderer()
-		{
 		}
 	}
 }
