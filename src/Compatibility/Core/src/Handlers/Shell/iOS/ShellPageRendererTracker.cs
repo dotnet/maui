@@ -75,10 +75,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_fontManager = context.Shell.RequireFontManager();
 		}
 
-		public async void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
+		public void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
 			_flyoutBehavior = behavior;
-			await UpdateToolbarItems().ConfigureAwait(false);
+			UpdateToolbarItems().FireAndForget();
 		}
 
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -138,7 +138,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				NavigationItem.Title = Page.Title;
 		}
 
-		protected virtual async void OnPageSet(Page oldPage, Page newPage)
+		void UpdateShellToMyPage()
+		{
+			if (Page == null)
+				return;
+
+			SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+			SearchHandler = Shell.GetSearchHandler(Page);
+			UpdateTitleView();
+			UpdateTitle();
+			UpdateTabBarVisible();
+			UpdateToolbarItems()
+				.FireAndForget();
+		}
+
+		protected virtual void OnPageSet(Page oldPage, Page newPage)
 		{
 			if (oldPage != null)
 			{
@@ -152,30 +166,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				newPage.Appearing += PageAppearing;
 				newPage.PropertyChanged += OnPagePropertyChanged;
 				((INotifyCollectionChanged)newPage.ToolbarItems).CollectionChanged += OnToolbarItemsChanged;
-				SetBackButtonBehavior(Shell.GetBackButtonBehavior(newPage));
-				SearchHandler = Shell.GetSearchHandler(newPage);
-				UpdateTitleView();
-				UpdateTitle();
-				UpdateTabBarVisible();
+
+				UpdateShellToMyPage();
 
 				if (oldPage == null)
+				{
 					((IShellController)_context.Shell).AddFlyoutBehaviorObserver(this);
+				}
 			}
 			else if (newPage == null && _context?.Shell is IShellController shellController)
 			{
 				shellController.RemoveFlyoutBehaviorObserver(this);
-			}
-
-			if (newPage != null)
-			{
-				try
-				{
-					await UpdateToolbarItems().ConfigureAwait(false);
-				}
-				catch (Exception exc)
-				{
-					MauiContext?.CreateLogger<ShellPageRendererTracker>()?.LogWarning(exc, "Failed to update toolbar items");
-				}
 			}
 		}
 
@@ -243,10 +244,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var enabled = behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
 			var text = behavior.GetPropertyIfSet<string>(BackButtonBehavior.TextOverrideProperty, null);
 			var command = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandProperty, null);
+			var backButtonVisible = behavior.GetPropertyIfSet<bool>(BackButtonBehavior.IsVisibleProperty, true);
 
 			if (String.IsNullOrWhiteSpace(text) && image == null)
 			{
 				image = _context.Shell.FlyoutIcon;
+			}
+
+			if (!IsRootPage)
+			{
+				NavigationItem.HidesBackButton = !backButtonVisible;
 			}
 
 			image.LoadImage(MauiContext, result =>
@@ -677,6 +684,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
 			//Best way was to force them to be set again when page is Appearing / ViewDidLoad
 			_searchHandlerAppearanceTracker?.UpdateSearchBarColors();
+			UpdateShellToMyPage();
 		}
 
 		#endregion SearchHandler
