@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
-				NativeView.AddSubview(child.ToNative(MauiContext));
+				NativeView.AddSubview(child.ToPlatform(MauiContext));
 			}
 		}
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.InsertSubview(child.ToNative(MauiContext), targetIndex);
+			NativeView.InsertSubview(child.ToPlatform(MauiContext), targetIndex);
 		}
 
 		public void Remove(IView child)
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.ToNative() is NativeView childView)
+			if (child?.ToPlatform() is NativeView childView)
 			{
 				childView.RemoveFromSuperview();
 			}
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.InsertSubview(child.ToNative(MauiContext), targetIndex);
+			NativeView.InsertSubview(child.ToPlatform(MauiContext), targetIndex);
 		}
 
 		public void Update(int index, IView child)
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Handlers
 			var existing = NativeView.Subviews[index];
 			existing.RemoveFromSuperview();
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.InsertSubview(child.ToNative(MauiContext), targetIndex);
+			NativeView.InsertSubview(child.ToPlatform(MauiContext), targetIndex);
 			NativeView.SetNeedsLayout();
 		}
 
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			NativeView nativeChildView = child.ToNative(MauiContext!);
+			NativeView nativeChildView = child.ToPlatform(MauiContext!);
 			var currentIndex = NativeView.Subviews.IndexOf(nativeChildView);
 
 			if (currentIndex == -1)

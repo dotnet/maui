@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <Description>Build .NET MAUI applications with Blazor web UI in the BlazorWebView control.</Description>
     <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
@@ -25,8 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="$(MauiRootDirectory)src\Workload\Shared\LibraryPacks.targets" />

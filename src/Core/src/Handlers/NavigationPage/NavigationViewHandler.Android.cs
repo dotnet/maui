@@ -2,11 +2,12 @@
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, View>
+		ViewHandler<IStackNavigationView, View>
 	{
 		StackNavigationManager? _stackNavigationManager;
 		internal StackNavigationManager? StackNavigationManager => _stackNavigationManager;
@@ -22,6 +23,16 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
+		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
+		public override void NativeArrange(Graphics.Rectangle frame)
+		{
+			base.NativeArrange(frame);
+		}
+
 		StackNavigationManager CreateNavigationManager()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
@@ -32,15 +43,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 			_stackNavigationManager?.Connect(VirtualView);
+			NativeView.LayoutChange += OnLayoutChanged;
+		}
+
+		void OnLayoutChanged(object? sender, View.LayoutChangeEventArgs e)
+		{
+			VirtualView.Arrange(e);
 		}
 
 		private protected override void OnDisconnectHandler(View nativeView)
 		{
 			_stackNavigationManager?.Disconnect();
 			base.OnDisconnectHandler(nativeView);
+			nativeView.LayoutChange -= OnLayoutChanged;
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
 			if (arg3 is NavigationRequest ea)
 				arg1._stackNavigationManager?.RequestNavigation(ea);

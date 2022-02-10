@@ -10,6 +10,8 @@ using Microsoft.UI.Xaml.Media;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Microsoft.Maui.Platform
 {
@@ -187,6 +189,73 @@ namespace Microsoft.Maui.Platform
 					foreach (var subChild in child.GetChildren<T>())
 						yield return subChild;
 				}
+			}
+		}
+
+		internal static void OnLoaded(this FrameworkElement frameworkElement, Action action)
+		{
+			if (frameworkElement.IsLoaded)
+			{
+				action();
+			}
+
+			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Loaded -= routedEventHandler;
+
+				action();
+			};
+
+			frameworkElement.Loaded += routedEventHandler;
+		}
+
+		internal static void OnUnloaded(this FrameworkElement frameworkElement, Action action)
+		{
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			if (!frameworkElement.IsLoaded)
+			{
+				taskCompletionSource.SetResult(true);
+				action();
+			}
+
+			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Unloaded -= routedEventHandler;
+
+				action();
+			};
+		}
+
+		internal static void Arrange(this IView view, FrameworkElement frameworkElement)
+		{
+			var rect = new Graphics.Rectangle(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
+
+			if (!view.Frame.Equals(rect))
+				view.Arrange(rect);
+		}
+
+
+		internal static void SetApplicationResource(this FrameworkElement frameworkElement, string propertyKey, object? value)
+		{
+			if (value is null)
+			{
+				if (Application.Current.Resources.TryGetValue(propertyKey, out value))
+				{
+					frameworkElement.Resources[propertyKey] = value;
+				}
+				else
+				{
+					frameworkElement.Resources.Remove(propertyKey);
+				}
+			}
+			else
+			{
+				frameworkElement.Resources[propertyKey] = value;
 			}
 		}
 	}

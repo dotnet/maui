@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	// This contains the messaging required to communicate with legacy renderers
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs" />
 	public partial class NavigationPage : INavigationPageController
 	{
 		internal async Task<Page> PopAsyncInner(

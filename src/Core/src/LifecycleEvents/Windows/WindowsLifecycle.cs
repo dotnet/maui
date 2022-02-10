@@ -10,6 +10,7 @@
 		public delegate void OnNativeMessage(UI.Xaml.Window window, WindowsNativeMessageEventArgs args);
 		public delegate void OnWindowCreated(UI.Xaml.Window window);
 		public delegate void OnResumed(UI.Xaml.Window window);
+		public delegate void OnNativeWindowSubclassed(UI.Xaml.Window window, WindowsNativeWindowSubclassedEventArgs args);
 
 		// Internal events
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);

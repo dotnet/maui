@@ -63,5 +63,10 @@ namespace Microsoft.Maui.Platform
 		internal static System.Numerics.Matrix4x4 GetViewTransform(this IView view) => new System.Numerics.Matrix4x4();
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view) => view.Frame;
+
+		internal static object? GetParent(this object? view)
+		{
+			return null;
+		}
 	}
 }

@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			modal.ToNative(MauiContext);
+			modal.ToPlatform(MauiContext);
 			var wrapper = new ModalWrapper(modal.Handler as INativeViewHandler);
 
 			if (ModalStack.Count > 1)
