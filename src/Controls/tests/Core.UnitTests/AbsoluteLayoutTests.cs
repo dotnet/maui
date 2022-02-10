@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
+			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}
 
 

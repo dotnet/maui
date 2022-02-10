@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IBorder.Border)] = MapBorderView,
 #if ANDROID || WINDOWS
-			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
+				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 			};
 
