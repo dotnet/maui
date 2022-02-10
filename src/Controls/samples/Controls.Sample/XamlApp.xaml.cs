@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample
 {
@@ -49,6 +50,35 @@ namespace Maui.Controls.Sample
 			var window = new Window(Services.GetRequiredService<Page>());
 
 			window.Title = ".NET MAUI Samples Gallery";
+
+			window.HandlerChanged += (sender, e) =>
+			{
+				var nativeWindow = window.Handler.NativeView;
+
+#if WINDOWS
+
+				var win = nativeWindow as Microsoft.UI.Xaml.Window;
+
+				var hwnd = win.GetWindowHandle();
+
+				var width = 300;
+				var height = 300;
+
+				var dpi = NativeMethods.GetDpiForWindow(hwnd);
+				var scalingFactor = dpi / 96.0f;
+				width = (int)(width * scalingFactor);
+				height = (int)(height * scalingFactor);
+
+				NativeMethods.SetWindowPos(
+					hwnd,
+					NativeMethods.SpecialWindowHandles.HWND_TOP,
+					0, 0,
+					width, height,
+					NativeMethods.SetWindowPosFlags.SWP_NOMOVE);
+
+#endif
+			};
+
 			return window;
 		}
 
