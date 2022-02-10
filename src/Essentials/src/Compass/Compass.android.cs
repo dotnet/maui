@@ -2,19 +2,24 @@ using System;
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Compass
+	public partial class CompassImplementation : ICompass
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null &&
 			Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
 
-		static SensorListener listener;
-		static Sensor magnetometer;
-		static Sensor accelerometer;
+		public bool IsMonitoring { get; set; }
+		
+		SensorListener listener;
+		Sensor magnetometer;
+		Sensor accelerometer;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		public void Start(SensorSpeed sensorSpeed)
+			=> Start(sensorSpeed, false);
+
+		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			var delay = sensorSpeed.ToPlatform();
 			accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
@@ -24,7 +29,7 @@ namespace Microsoft.Maui.Essentials
 			Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
 		}
 
-		internal static void PlatformStop()
+		public void Stop()
 		{
 			if (listener == null)
 				return;

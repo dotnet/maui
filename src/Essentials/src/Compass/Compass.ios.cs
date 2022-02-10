@@ -1,8 +1,8 @@
 using CoreLocation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Compass
+	public partial class CompassImplementation : ICompass
 	{
 		// The angular distance is measured relative to the last delivered heading event. Align with UWP numbers
 		internal const double FastestFilter = .01;
@@ -10,14 +10,19 @@ namespace Microsoft.Maui.Essentials
 		internal const double NormalFilter = 1;
 		internal const double UIFilter = 2;
 
-		public static bool ShouldDisplayHeadingCalibration { get; set; } = false;
+		public bool ShouldDisplayHeadingCalibration { get; set; } = false;
 
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			CLLocationManager.HeadingAvailable;
 
-		static CLLocationManager locationManager;
+		public bool IsMonitoring { get; set; }
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		CLLocationManager locationManager;
+
+		public void Start(SensorSpeed sensorSpeed)
+			=> Start(sensorSpeed, false);
+
+		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			locationManager = new CLLocationManager();
 			locationManager.ShouldDisplayHeadingCalibration += LocationManagerShouldDisplayHeadingCalibration;
@@ -45,15 +50,15 @@ namespace Microsoft.Maui.Essentials
 			locationManager.StartUpdatingHeading();
 		}
 
-		static bool LocationManagerShouldDisplayHeadingCalibration(CLLocationManager manager) => ShouldDisplayHeadingCalibration;
+		bool LocationManagerShouldDisplayHeadingCalibration(CLLocationManager manager) => ShouldDisplayHeadingCalibration;
 
-		static void LocationManagerUpdatedHeading(object sender, CLHeadingUpdatedEventArgs e)
+		void LocationManagerUpdatedHeading(object sender, CLHeadingUpdatedEventArgs e)
 		{
 			var data = new CompassData(e.NewHeading.MagneticHeading);
-			OnChanged(data);
+			Compass.OnChanged(data);
 		}
 
-		internal static void PlatformStop()
+		public void Stop()
 		{
 			if (locationManager == null)
 				return;

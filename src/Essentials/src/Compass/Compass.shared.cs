@@ -1,7 +1,22 @@
 using System;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface ICompass
+	{
+		bool IsSupported { get; }
+
+		bool IsMonitoring { get; set; }
+
+		void Start(SensorSpeed sensorSpeed);
+
+		void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter);
+		void Stop();
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Compass']/Docs" />
 	public static partial class Compass
 	{
@@ -10,6 +25,8 @@ namespace Microsoft.Maui.Essentials
 		public static event EventHandler<CompassChangedEventArgs> ReadingChanged;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		public static bool IsSupported { get; private set; }
+
 		public static bool IsMonitoring { get; private set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][0]/Docs" />
@@ -18,22 +35,22 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][1]/Docs" />
 		public static void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
-			if (!IsSupported)
+			if (!Current.IsSupported)
 				throw new FeatureNotSupportedException();
 
-			if (IsMonitoring)
+			if (Current.IsMonitoring)
 				throw new InvalidOperationException("Compass has already been started.");
 
-			IsMonitoring = true;
+			Current.IsMonitoring = true;
 			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
 
 			try
 			{
-				PlatformStart(sensorSpeed, applyLowPassFilter);
+				Current.Start(sensorSpeed, applyLowPassFilter);
 			}
 			catch
 			{
-				IsMonitoring = false;
+				Current.IsMonitoring = false;
 				throw;
 			}
 		}
@@ -41,21 +58,21 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public static void Stop()
 		{
-			if (!IsSupported)
+			if (!Current.IsSupported)
 				throw new FeatureNotSupportedException();
 
-			if (!IsMonitoring)
+			if (!Current.IsMonitoring)
 				return;
 
-			IsMonitoring = false;
+			Current.IsMonitoring = false;
 
 			try
 			{
-				PlatformStop();
+				Current.Stop();
 			}
 			catch
 			{
-				IsMonitoring = true;
+				Current.IsMonitoring = true;
 				throw;
 			}
 		}
@@ -70,6 +87,20 @@ namespace Microsoft.Maui.Essentials
 			else
 				ReadingChanged?.Invoke(null, e);
 		}
+
+#nullable enable
+		static ICompass? currentImplementation;
+#nullable disable
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static ICompass Current =>
+			currentImplementation ??= new CompassImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(ICompass? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassChangedEventArgs']/Docs" />

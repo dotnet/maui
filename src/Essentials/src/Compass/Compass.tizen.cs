@@ -1,30 +1,30 @@
 using Tizen.Sensor;
 using TizenCompass = Tizen.Sensor.OrientationSensor;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Compass
+	public partial class CompassImplementation : ICompass
 	{
-		internal static TizenCompass DefaultSensor =>
+		public TizenCompass DefaultSensor =>
 			(TizenCompass)Platform.GetDefaultSensor(SensorType.Compass);
 
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			TizenCompass.IsSupported;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			DefaultSensor.Interval = sensorSpeed.ToPlatform();
 			DefaultSensor.DataUpdated += DataUpdated;
 			DefaultSensor.Start();
 		}
 
-		internal static void PlatformStop()
+		public void Stop()
 		{
 			DefaultSensor.DataUpdated -= DataUpdated;
 			DefaultSensor.Stop();
 		}
 
-		static void DataUpdated(object sender, OrientationSensorDataUpdatedEventArgs e)
+		void DataUpdated(object sender, OrientationSensorDataUpdatedEventArgs e)
 		{
 			OnChanged(new CompassData(e.Azimuth));
 		}
