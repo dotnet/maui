@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Views;
@@ -10,6 +11,7 @@ using AndroidX.Core.View;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Primitives;
 using AColor = Android.Graphics.Color;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
@@ -234,7 +236,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void InvalidateMeasure(this AView nativeView, IView view)
 		{
-			nativeView.RequestLayout();
+			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateWidth(this AView nativeView, IView view)
@@ -251,14 +253,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumHeight(this AView nativeView, IView view)
 		{
-			var value = (int)nativeView.Context!.ToPixels(view.MinimumHeight);
+			var min = Dimension.ResolveMinimum(view.MinimumHeight);
+
+			var value = (int)nativeView.Context!.ToPixels(min);
 			nativeView.SetMinimumHeight(value);
 			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
 
 		public static void UpdateMinimumWidth(this AView nativeView, IView view)
 		{
-			var value = (int)nativeView.Context!.ToPixels(view.MinimumWidth);
+			var min = Dimension.ResolveMinimum(view.MinimumWidth);
+
+			var value = (int)nativeView.Context!.ToPixels(min);
 			nativeView.SetMinimumWidth(value);
 			ViewHelper.RequestLayoutIfNeeded(nativeView);
 		}
@@ -283,7 +289,7 @@ namespace Microsoft.Maui.Platform
 
 		public static Task<byte[]?> RenderAsPNG(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
 				return Task.FromResult<byte[]?>(null);
 
@@ -292,7 +298,7 @@ namespace Microsoft.Maui.Platform
 
 		public static Task<byte[]?> RenderAsJPEG(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
 				return Task.FromResult<byte[]?>(null);
 
@@ -307,7 +313,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Rectangle GetNativeViewBounds(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView?.Context == null)
 			{
 				return new Rectangle();
@@ -332,7 +338,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.ToNative();
+			var nativeView = view?.ToPlatform();
 			if (nativeView == null)
 				return new Matrix4x4();
 			return nativeView.GetViewTransform();
@@ -381,7 +387,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view)
-			=> view.ToNative().GetBoundingBox();
+			=> view.ToPlatform().GetBoundingBox();
 
 		internal static Graphics.Rectangle GetBoundingBox(this View? nativeView)
 		{
@@ -393,48 +399,93 @@ namespace Microsoft.Maui.Platform
 			return new Rectangle(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
 		}
 
-		internal static IViewParent? FindParent(this IViewParent? view, Func<IViewParent?, bool> searchExpression)
+
+		internal static void OnLoaded(this View frameworkElement, Action action)
 		{
-			if (searchExpression(view))
-				return view;
-
-			while (view != null)
+			if (frameworkElement.IsAttachedToWindow)
 			{
-				var parent = view?.Parent;
-				if (searchExpression(parent))
-					return parent;
-
-				view = view?.Parent;
+				action();
 			}
 
-			return default;
+			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
+
+				action();
+			};
+
+			frameworkElement.ViewAttachedToWindow += routedEventHandler;
 		}
 
-		internal static T? GetParentOfType<T>(this IViewParent? view)
-			where T : class
+		internal static void OnUnloaded(this View frameworkElement, Action action)
 		{
-			if (view is T t)
-				return t;
-
-			while (view != null)
+			if (!frameworkElement.IsAttachedToWindow)
 			{
-				T? parent = view?.Parent as T;
-				if (parent != null)
-					return parent;
-
-				view = view?.Parent;
+				action();
 			}
 
-			return default;
+			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.ViewDetachedFromWindow -= routedEventHandler;
+
+				action();
+			};
+
+			frameworkElement.ViewDetachedFromWindow += routedEventHandler;
 		}
 
-		internal static T? GetParentOfType<T>(this AView view)
-			where T : class
+		internal static IViewParent? GetParent(this View? view)
 		{
-			if (view is T t)
-				return t;
+			return view?.Parent;
+		}
 
-			return view.Parent?.GetParentOfType<T>();
+		internal static IViewParent? GetParent(this IViewParent? view)
+		{
+			return view?.Parent;
+		}
+
+		internal static void Arrange(
+			this IView view, 
+			int left,
+			int top,
+			int right,
+			int bottom,
+			Context context)
+		{
+			var deviceIndependentLeft = context.FromPixels(left);
+			var deviceIndependentTop = context.FromPixels(top);
+			var deviceIndependentRight = context.FromPixels(right);
+			var deviceIndependentBottom = context.FromPixels(bottom);
+			var destination = Rectangle.FromLTRB(0, 0,
+				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
+
+			if (!view.Frame.Equals(destination))
+				view.Arrange(destination);
+		}
+
+		internal static void Arrange(this IView view, AView.LayoutChangeEventArgs e)
+		{
+			var context = view.Handler?.MauiContext?.Context ??
+				 throw new InvalidOperationException("View is Missing Handler");
+
+			view.Arrange(e.Left, e.Top, e.Right, e.Bottom, context);
+		}
+
+		internal static void Arrange(this IView view, View platformView)
+		{
+			var context = platformView.Context ??
+				 throw new InvalidOperationException("platformView is Missing Context");
+
+			view.Arrange(
+				platformView.Left, 
+				platformView.Top, 
+				platformView.Right, 
+				platformView.Left, 
+				context);
 		}
 	}
 }

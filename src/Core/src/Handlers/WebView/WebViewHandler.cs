@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IWebView.GoBack)] = MapGoBack,
 			[nameof(IWebView.GoForward)] = MapGoForward,
-			[nameof(IWebView.Reload)] = MapReload
+			[nameof(IWebView.Reload)] = MapReload,
+			[nameof(IWebView.Eval)] = MapEval,
+			[nameof(IWebView.EvaluateJavaScriptAsync)] = MapEvaluateJavaScriptAsync,
 		};
 
 		public WebViewHandler() : base(WebViewMapper, WebViewCommandMapper)

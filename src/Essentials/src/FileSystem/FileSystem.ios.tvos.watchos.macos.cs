@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Essentials
 
 			filename = filename.Replace('\\', Path.DirectorySeparatorChar);
 			var root = NSBundle.MainBundle.BundlePath;
-#if __MACOS__
+#if MACCATALYST || MACOS
             root = Path.Combine(root, "Contents", "Resources");
 #endif
 			var file = Path.Combine(root, filename);

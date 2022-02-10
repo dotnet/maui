@@ -4,11 +4,13 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="Type[@FullName='Microsoft.Maui.Controls.Grid']/Docs" />
 	[ContentProperty(nameof(Children))]
 	public class Grid : Layout, IGridLayout
 	{
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnDefinitionsProperty']/Docs" />
 		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
 			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
@@ -18,6 +20,7 @@ namespace Microsoft.Maui.Controls
 				return colDef;
 			});
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowDefinitionsProperty']/Docs" />
 		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
 			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
@@ -27,65 +30,79 @@ namespace Microsoft.Maui.Controls
 				return rowDef;
 			});
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowSpacingProperty']/Docs" />
 		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double),
 			typeof(Grid), 0d, propertyChanged: Invalidate);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnSpacingProperty']/Docs" />
 		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double),
 			typeof(Grid), 0d, propertyChanged: Invalidate);
 
 		#region Row/Column/Span Attached Properties
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowProperty']/Docs" />
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
 			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
 			propertyChanged: Invalidate);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowSpanProperty']/Docs" />
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnProperty']/Docs" />
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
 			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
 			propertyChanged: Invalidate);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnSpanProperty']/Docs" />
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetColumn']/Docs" />
 		public static int GetColumn(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(ColumnProperty);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetColumnSpan']/Docs" />
 		public static int GetColumnSpan(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(ColumnSpanProperty);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetRow']/Docs" />
 		public static int GetRow(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(RowProperty);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetRowSpan']/Docs" />
 		public static int GetRowSpan(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(RowSpanProperty);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetColumn']/Docs" />
 		public static void SetColumn(BindableObject bindable, int value)
 		{
 			bindable.SetValue(ColumnProperty, value);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetColumnSpan']/Docs" />
 		public static void SetColumnSpan(BindableObject bindable, int value)
 		{
 			bindable.SetValue(ColumnSpanProperty, value);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetRow']/Docs" />
 		public static void SetRow(BindableObject bindable, int value)
 		{
 			bindable.SetValue(RowProperty, value);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetRowSpan']/Docs" />
 		public static void SetRowSpan(BindableObject bindable, int value)
 		{
 			bindable.SetValue(RowSpanProperty, value);
@@ -98,6 +115,7 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => _rowDefs ??= new(RowDefinitions);
 		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => _colDefs ??= new(ColumnDefinitions);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnDefinitions']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{
@@ -105,6 +123,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ColumnDefinitionsProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowDefinitions']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
 		{
@@ -112,18 +131,21 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(RowDefinitionsProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowSpacing']/Docs" />
 		public double RowSpacing
 		{
 			get { return (double)GetValue(RowSpacingProperty); }
 			set { SetValue(RowSpacingProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnSpacing']/Docs" />
 		public double ColumnSpacing
 		{
 			get { return (double)GetValue(ColumnSpacingProperty); }
 			set { SetValue(ColumnSpacingProperty, value); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetColumn']/Docs" />
 		public int GetColumn(IView view)
 		{
 			return view switch
@@ -133,6 +155,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetColumnSpan']/Docs" />
 		public int GetColumnSpan(IView view)
 		{
 			return view switch
@@ -142,6 +165,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetRow']/Docs" />
 		public int GetRow(IView view)
 		{
 			return view switch
@@ -151,6 +175,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetRowSpan']/Docs" />
 		public int GetRowSpan(IView view)
 		{
 			return view switch
@@ -160,16 +185,19 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='AddRowDefinition']/Docs" />
 		public void AddRowDefinition(RowDefinition gridRowDefinition)
 		{
 			RowDefinitions.Add(gridRowDefinition);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='AddColumnDefinition']/Docs" />
 		public void AddColumnDefinition(ColumnDefinition gridColumnDefinition)
 		{
 			ColumnDefinitions.Add(gridColumnDefinition);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetRow']/Docs" />
 		public void SetRow(IView view, int row)
 		{
 			switch (view)
@@ -184,6 +212,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetRowSpan']/Docs" />
 		public void SetRowSpan(IView view, int span)
 		{
 			switch (view)
@@ -198,6 +227,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetColumn']/Docs" />
 		public void SetColumn(IView view, int col)
 		{
 			switch (view)
@@ -212,6 +242,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetColumnSpan']/Docs" />
 		public void SetColumnSpan(IView view, int span)
 		{
 			switch (view)

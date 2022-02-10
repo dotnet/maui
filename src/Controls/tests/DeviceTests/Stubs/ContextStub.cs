@@ -32,12 +32,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager(this);
-#elif __IOS__
+#elif IOS
 			if (serviceType == typeof(UIKit.UIWindow))
 				return UIKit.UIApplication.SharedApplication.KeyWindow;
 #elif WINDOWS
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager(this);
+
+			if (serviceType == typeof(UI.Xaml.Window))
+				return MauiProgram.CurrentWindow;
 #endif
 
 			if (serviceType == typeof(IDispatcher))

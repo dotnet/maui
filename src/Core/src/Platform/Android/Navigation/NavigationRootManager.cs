@@ -83,6 +83,11 @@ namespace Microsoft.Maui.Platform
 
 		}
 
+		public virtual void Disconnect()
+		{
+			SetContentView(null);
+		}
+
 		void SetContentView(AView? view)
 		{
 			if (view == null)

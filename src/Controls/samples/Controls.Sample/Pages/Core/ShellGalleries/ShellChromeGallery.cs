@@ -24,6 +24,8 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 				flyoutBehavior.SelectedIndex = (int)AppShell.FlyoutBehavior;
 			else
 				flyoutBehavior.SelectedIndex = 1;
+
+			AppShell.FlyoutBackdrop = SolidColorBrush.Pink;
 		}
 
 		async void OnPushPage(object sender, EventArgs e)

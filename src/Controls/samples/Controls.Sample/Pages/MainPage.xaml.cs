@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages

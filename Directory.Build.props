@@ -2,14 +2,22 @@
   <Import Project="eng\Versions.props" />
 
   <PropertyGroup>
+    <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">6.0</_MauiDotNetVersion>
+    <_MauiDotNetTfm Condition="'$(_MauiDotNetTfm)' == ''">net$(_MauiDotNetVersion)</_MauiDotNetTfm>
+    <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
+    <_MauiNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_MauiNoTargetPlatform>
+    <_MauiTargetPlatformIsAndroid Condition="'$(_MauiTargetPlatformIdentifier)' == 'android'">True</_MauiTargetPlatformIsAndroid>
+    <_MauiTargetPlatformIsiOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'ios'">True</_MauiTargetPlatformIsiOS>
+    <_MauiTargetPlatformIsMacCatalyst Condition="'$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">True</_MauiTargetPlatformIsMacCatalyst>
+    <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>
+    <_MauiTargetPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_MauiTargetPlatformIstvOS>
+    <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
+
     <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
-    <BuildForAndroidOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.Droid')) and '$(Packing)' == ''">true</BuildForAndroidOnly>
-    <BuildForiOSOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.iOS')) and '$(Packing)' == ''">true</BuildForiOSOnly>
-    <BuildForLegacy Condition="($(SolutionFileName.StartsWith('._')) or $(SolutionFileName.StartsWith('Comet'))) and !$(SolutionFileName.Contains('-net6')) and '$(Packing)' == ''">true</BuildForLegacy>
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants Condition="$(TargetFramework.Contains('-windows'))">$(DefineConstants);WINDOWS</DefineConstants>
+    <DefineConstants Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">$(DefineConstants);WINDOWS</DefineConstants>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <!-- <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles> -->
     <!-- HACK: WinUI seems to have issues without this -->
@@ -29,30 +37,15 @@
     <WindowsTargetFrameworkVersion>10.0.19041</WindowsTargetFrameworkVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildForLegacy)' != 'True'">
+  <PropertyGroup>
     <!-- the real TFMs -->
-    <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
-    <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net6.0-windows$(WindowsTargetFrameworkVersion)</WindowsMauiPlatforms>
+    <MauiPlatforms>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-maccatalyst;net$(_MauiDotNetVersion)-android</MauiPlatforms>
+    <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion)</WindowsMauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
 
     <!-- Work around the IDE not properly handling the NU1703 warning -->
-    <MauiPlatformsNoMacCat>net6.0-ios;net6.0-android</MauiPlatformsNoMacCat>
+    <MauiPlatformsNoMacCat>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-android</MauiPlatformsNoMacCat>
     <MauiPlatformsNoMacCat Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatformsNoMacCat);$(WindowsMauiPlatforms)</MauiPlatformsNoMacCat>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(BuildForLegacy)' == 'true'">
-    <!-- the legacy TFMs -->
-    <MauiPlatforms>Xamarin.iOS10;MonoAndroid10.0</MauiPlatforms>
-    <!-- UWP is no longer supported -->
-    <WindowsMauiPlatforms></WindowsMauiPlatforms>
-    <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
-    <MauiAdditionalPlatforms>MonoAndroid90;tizen40;Xamarin.Mac20</MauiAdditionalPlatforms>
-
-    <!-- This is used to easily build for a specific target to make the IDE work a bit better -->
-    <MauiPlatforms Condition="'$(BuildForiOSOnly)' == 'true'">Xamarin.iOS10</MauiPlatforms>
-    <MauiAdditionalPlatforms Condition="'$(BuildForiOSOnly)' == 'true'"></MauiAdditionalPlatforms>
-    <MauiPlatforms Condition="'$(BuildForAndroidOnly)' == 'true'">MonoAndroid10.0</MauiPlatforms>
-    <MauiAdditionalPlatforms Condition="'$(BuildForAndroidOnly)' == 'true'"></MauiAdditionalPlatforms>
   </PropertyGroup>
 
   <PropertyGroup>

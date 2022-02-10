@@ -4,6 +4,7 @@ using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs" />
 	public partial class View : IView, IPropertyMapperView, IHotReloadableView
 	{
 		Thickness IView.Margin => Margin;

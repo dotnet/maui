@@ -21,16 +21,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			await RunWindowTest(window, manager =>
 			{
-				var navView = GetMauiNavigationView(manager);
+				var navView = GetRootNavigationView(manager);
 				Assert.Equal(NavigationViewBackButtonVisible.Collapsed, navView.IsBackButtonVisible);
 				return Task.CompletedTask;
 			});
 		}
 
 
-		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
+		RootNavigationView GetRootNavigationView(NavigationRootManager navigationRootManager)
 		{
-			return (navigationRootManager.RootView as NavigationRootView).NavigationViewControl;
+			return (navigationRootManager.RootView as WindowRootView).NavigationViewControl;
 		}
 
 		Task RunWindowTest(IWindow window, Func<NavigationRootManager, Task> action)

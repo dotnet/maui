@@ -4,22 +4,27 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeItemView']/Docs" />
 	[ContentProperty(nameof(Content))]
 	public partial class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='CommandProperty']/Docs" />
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(SwipeItemView), null,
 			propertyChanging: (bo, o, n) => ((SwipeItemView)bo).OnCommandChanging(),
 			propertyChanged: (bo, o, n) => ((SwipeItemView)bo).OnCommandChanged());
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs" />
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SwipeItemView), null,
 			propertyChanged: (bo, o, n) => ((SwipeItemView)bo).OnCommandParameterChanged());
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='Command']/Docs" />
 		public ICommand Command
 		{
 			get => (ICommand)GetValue(CommandProperty);
 			set => SetValue(CommandProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='CommandParameter']/Docs" />
 		public object CommandParameter
 		{
 			get => GetValue(CommandParameterProperty);
@@ -28,6 +33,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<EventArgs> Invoked;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='OnInvoked']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void OnInvoked()
 		{
