@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using MessageUI;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Sms
+	public class SmsImplementation: ISms
 	{
 		internal static bool IsComposeSupported
 #if !(MACCATALYST || MACOS)
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Essentials
 			=> false;
 #endif
 
-		static Task PlatformComposeAsync(SmsMessage message)
+		public Task ComposeAsync(SmsMessage message)
 		{
 #if !(MACCATALYST || MACOS)
 			// do this first so we can throw as early as possible

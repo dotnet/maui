@@ -1,14 +1,16 @@
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class PhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
-		internal static bool IsSupported
+		public bool IsSupported
 			=> Platform.GetFeatureInfo<bool>("contact");
 
-		static void PlatformOpen(string number)
+		public void PlatformOpen(string number)
 		{
+			ValidateOpen(number);
+
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
 			var appControl = new AppControl

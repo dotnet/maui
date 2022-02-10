@@ -44,14 +44,14 @@
                 <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="VerticalOptions" Value="End" />
-                <Setter Property="Margin" Value="0, 24" />
+                <Setter Property="Margin" Value="24" />
             </Style>
 
         </ResourceDictionary>
     </views:BasePage.Resources>
     <ScrollView>
         <Grid
-            RowDefinitions="150, *, Auto"
+            RowDefinitions="150, *, Auto, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
@@ -118,6 +118,14 @@
                 Grid.Row="2"
                 Text="Microsoft Corporation © 2021"
                 Style="{StaticResource FooterStyle}" />
+            <StackLayout Orientation="Horizontal" Grid.Row="3" HorizontalOptions="Center">
+                <Label
+                    Text="{OnPlatform Default='Default Platform', Android='Android', iOS='iOS', macOS='macOS', MacCatalyst='MacCatalyst', Tizen='Tizen', UWP='UWP'}"
+                    Style="{StaticResource FooterStyle}" />
+                <Label
+                    Text="{OnIdiom Default='Default Idiom', Phone='Phone', Tablet='Tablet', Desktop='Desktop', TV='TV', Watch='Watch'}"
+                    Style="{StaticResource FooterStyle}" />
+            </StackLayout>
         </Grid>
     </ScrollView>
 </views:BasePage>

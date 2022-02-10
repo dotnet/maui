@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Platform
 			_rootView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 		}
 
+		internal bool UseCustomAppTitleBar { get; set; } = true;
+
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
 			if (_rootView.AppTitleBar != null)
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.Platform
 		public virtual void Connect(IView view)
 		{
 			bool firstConnect = _rootView.Content == null;
-			var nativeView = view.ToNative(_mauiContext);
+			var nativeView = view.ToPlatform(_mauiContext);
 
 			NavigationView rootNavigationView;
 			if (nativeView is NavigationView nv)
@@ -88,6 +90,9 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateAppTitleBar(bool isActive)
 		{
+			if (!UseCustomAppTitleBar)
+				return;
+
 			var nativeWindow = _mauiContext.GetNativeWindow();
 			if (_rootView.AppTitleBar != null)
 			{

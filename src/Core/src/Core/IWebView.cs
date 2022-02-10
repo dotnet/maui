@@ -1,4 +1,5 @@
 ﻿using System.Net;
+﻿using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
@@ -47,5 +48,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="script">A script to evaluate.</param>
 		void Eval(string script);
+
+		Task<string> EvaluateJavaScriptAsync(string script);
 	}
 }

@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(MinimumWidthRequestProperty))
 				{
-					return Primitives.Dimension.Minimum;
+					return Primitives.Dimension.Unset;
 				}
 
 				// Access once up front to avoid multiple GetValue calls
@@ -230,7 +230,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(MinimumHeightRequestProperty))
 				{
-					return Primitives.Dimension.Minimum;
+					return Primitives.Dimension.Unset;
 				}
 
 				// Access once up front to avoid multiple GetValue calls

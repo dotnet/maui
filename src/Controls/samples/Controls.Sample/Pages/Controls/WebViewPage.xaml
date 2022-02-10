@@ -40,6 +40,16 @@
                 <Button
                     Text="Eval"
                     Clicked="OnEvalClicked"/>
+				<Label
+                    Text="Eval Script (async)"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Eval Async"
+                    Clicked="OnEvalAsyncClicked"/>
+				<Label
+					x:Name="EvalResultLabel"
+                    Text="..."
+                    Style="{StaticResource Headline}"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

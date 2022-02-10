@@ -25,10 +25,10 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-For example, the "preview.12" branch:
+For example, the "preview.13" branch:
 ```
 dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/preview.12.json `
+   --from-rollback-file https://aka.ms/dotnet/maui/preview.13.json `
    --source https://aka.ms/dotnet6/nuget/index.json `
    --source https://api.nuget.org/v3/index.json
 ```

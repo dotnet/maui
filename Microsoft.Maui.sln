@@ -2,19 +2,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31410.414
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core-net6", "src\Core\src\Core.csproj", "{95BA42B5-B00E-4986-B9B5-517140378452}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\src\Core.csproj", "{95BA42B5-B00E-4986-B9B5-517140378452}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core-net6", "src\Controls\src\Core\Controls.Core.csproj", "{AF64451F-E2BD-41C2-B083-F60C26AE2A9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core", "src\Controls\src\Core\Controls.Core.csproj", "{AF64451F-E2BD-41C2-B083-F60C26AE2A9F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility-net6", "src\Compatibility\Core\src\Compatibility.csproj", "{00A11C2F-969F-4964-8557-91ADF4B1523D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility", "src\Compatibility\Core\src\Compatibility.csproj", "{00A11C2F-969F-4964-8557-91ADF4B1523D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{459BF674-83CB-46F6-881F-A2D2117DBF4D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E1082E26-D700-4127-9329-66D673FD2D55}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample-net6", "src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj", "{B8DC1324-977C-46F1-B697-9064ADE6099A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample", "src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj", "{B8DC1324-977C-46F1-B697-9064ADE6099A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.SingleProject", "src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj", "{CB495F62-CFE6-4975-AED8-F26B6C5D0113}"
 EndProject
@@ -22,17 +22,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compatibility", "Compatibil
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{09C264E9-E3F3-4586-9151-DCBB1F6DA7AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Build.Tasks-net6", "src\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj", "{75C380E0-CE53-4C01-B89F-CF685331DE18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Build.Tasks", "src\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj", "{75C380E0-CE53-4C01-B89F-CF685331DE18}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Essentials", "Essentials", "{94F3C036-A5F4-4ACC-A028-8506802ADB88}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials-net6", "src\Essentials\src\Essentials.csproj", "{39B47A3C-21CA-4B28-9250-14FD957EB0FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials", "src\Essentials\src\Essentials.csproj", "{39B47A3C-21CA-4B28-9250-14FD957EB0FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SingleProject", "SingleProject", "{D5478E0A-5D9C-4C1F-980C-7A9FC71F925E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer", "src\SingleProject\Resizetizer\src\Resizetizer.csproj", "{9909F93F-C085-4F76-B92A-5D8C516BF47D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml-net6", "src\Controls\src\Xaml\Controls.Xaml.csproj", "{CC3D4667-D94E-4276-9311-6439BFD075E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml", "src\Controls\src\Xaml\Controls.Xaml.csproj", "{CC3D4667-D94E-4276-9311-6439BFD075E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Templates", "src\Templates\src\Microsoft.Maui.Templates.csproj", "{DAAC2822-63B6-4DE0-83AE-04873CD2F364}"
 EndProject
@@ -40,7 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtils", "TestUtils", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\src\TestUtils\TestUtils.csproj", "{FBB3270F-1924-4A72-845E-A6DF39C402F6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.UnitTests-net6", "src\Core\tests\UnitTests\Core.UnitTests.csproj", "{92644F6F-5946-48FC-A21A-A3D6EE24E8B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.UnitTests", "src\Core\tests\UnitTests\Core.UnitTests.csproj", "{92644F6F-5946-48FC-A21A-A3D6EE24E8B3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8AD265B-3C67-4640-AC58-A522F9FB3361}"
 EndProject
@@ -54,9 +54,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWebView", "BlazorWebV
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.Maui", "src\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj", "{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.Design-net6", "src\Controls\src\Core.Design\Controls.Core.Design.csproj", "{F2A419ED-B18E-4075-9969-536C2EC67F82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.Design", "src\Controls\src\Core.Design\Controls.Core.Design.csproj", "{F2A419ED-B18E-4075-9969-536C2EC67F82}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.Design-net6", "src\Controls\src\Xaml.Design\Controls.Xaml.Design.csproj", "{F9AEE4C0-9E67-4B87-932E-26EDF0FC932A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.Design", "src\Controls\src\Xaml.Design\Controls.Xaml.Design.csproj", "{F9AEE4C0-9E67-4B87-932E-26EDF0FC932A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiRazorClassLibrarySample", "src\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj", "{4515DAA4-9801-401D-A7A0-38D019B3B19F}"
 EndProject
@@ -66,7 +66,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F3FFE2E4-E89
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E25E7929-2423-4C8A-9B03-DC4C8B19A2E5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer.UnitTests-net6", "src\SingleProject\Resizetizer\test\UnitTests\Resizetizer.UnitTests.csproj", "{05DB57B8-D0A5-499B-AD35-7093C2E9C9D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer.UnitTests", "src\SingleProject\Resizetizer\test\UnitTests\Resizetizer.UnitTests.csproj", "{05DB57B8-D0A5-499B-AD35-7093C2E9C9D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A8E9400E-70DD-421F-8609-1C2FA4AE8E71}"
 EndProject
@@ -118,15 +118,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{420BC8CC-E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.DeviceTests", "src\Essentials\test\DeviceTests\Essentials.DeviceTests.csproj", "{66528BE6-FF53-4A3B-8675-46C0B929C83B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.UnitTests-net6", "src\Essentials\test\UnitTests\Essentials.UnitTests.csproj", "{A9BAB840-A53E-405A-9458-CA0E02319FB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.UnitTests", "src\Essentials\test\UnitTests\Essentials.UnitTests.csproj", "{A9BAB840-A53E-405A-9458-CA0E02319FB4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Maps-net6", "src\Controls\Maps\src\Controls.Maps.csproj", "{5C40FA00-7D48-4F54-898C-01C8942E451D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Maps", "src\Controls\Maps\src\Controls.Maps.csproj", "{5C40FA00-7D48-4F54-898C-01C8942E451D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{25D0D27A-C5FE-443D-8B65-D6C987F4A80E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests-net6", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests.csproj", "{094FB109-1CBC-4B84-8CFB-072E7B3EC637}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests.csproj", "{094FB109-1CBC-4B84-8CFB-072E7B3EC637}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests-net6", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests.csproj", "{F7A258F6-F4CB-4209-9E63-AECDB2E1F4ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests.csproj", "{F7A258F6-F4CB-4209-9E63-AECDB2E1F4ED}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.CustomAttributes", "src\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj", "{F7B6C73A-6019-4EAE-9258-E08C0C57829F}"
 EndProject
@@ -134,7 +134,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Profil
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ControlGallery", "ControlGallery", "{FA181CD5-95AF-46B7-95D2-852F2398833C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core-net6", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj", "{772E2531-2270-429A-9AFB-4AA0104AEF27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj", "{772E2531-2270-429A-9AFB-4AA0104AEF27}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.ControlGallery.Issues.Shared", "src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
 EndProject

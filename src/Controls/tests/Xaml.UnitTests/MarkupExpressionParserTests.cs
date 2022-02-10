@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class MarkupExpressionParserTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
+		MockDeviceInfo mockDeviceInfo;
 
 		public static readonly string Foo = "Foo";
 
@@ -87,6 +89,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			var nsManager = new XmlNamespaceManager(new NameTable());
 			nsManager.AddNamespace("local", "clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests");
 			nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
@@ -363,11 +366,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnPlatform Android=23, Default=20}", "Foo", 20)]
 		public void OnPlatformExtension(string markup, string platform, int expected)
 		{
-			var services = new MockPlatformServices
-			{
-				RuntimePlatform = platform
-			};
-			Device.PlatformServices = services;
+			mockDeviceInfo.RuntimePlatform = platform;
 
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{
@@ -390,7 +389,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnIdiom Phone=23}", TargetIdiom.Desktop, default(int))]
 		public void OnIdiomExtension(string markup, TargetIdiom idiom, int expected)
 		{
-			Device.SetIdiom(idiom);
+			mockDeviceInfo.TargetIdiom = idiom;
+
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{
 				IXamlTypeResolver = typeResolver,

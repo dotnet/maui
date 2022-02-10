@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Web.Http;
@@ -230,6 +231,20 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return null;
+		}
+
+		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 
+		{
+			if (arg is EvaluateJavaScriptAsyncRequest request)
+			{
+				if (handler.NativeView == null)
+				{ 
+					request.SetCanceled();
+					return;
+				}
+
+				handler.NativeView.EvaluateJavaScript(request);
+			}
 		}
 	}
 }

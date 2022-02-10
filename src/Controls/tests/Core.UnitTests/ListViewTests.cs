@@ -15,12 +15,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ListViewTests : BaseTestFixture
 	{
+		MockDeviceInfo mockDeviceInfo;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
-			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
+			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
 		[Test]
@@ -1602,13 +1605,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase("Other", ListViewCachingStrategy.RetainElement)]
 		public void EnforcesCachingStrategy(string platform, ListViewCachingStrategy expected)
 		{
-			var oldOS = Device.RuntimePlatform;
 			// we need to do this because otherwise we cant set the caching strategy
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = platform;
+			mockDeviceInfo.RuntimePlatform = platform;
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 
 			Assert.AreEqual(expected, listView.CachingStrategy);
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = oldOS;
 		}
 
 		[Test]
@@ -1627,9 +1628,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"Bar"
 			};
 
-			var oldOS = Device.RuntimePlatform;
 			// we need to do this because otherwise we cant set the caching strategy
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+			mockDeviceInfo.Platform = DevicePlatform.Android;
 
 			var bindable = new ListView(ListViewCachingStrategy.RecycleElement);
 			bindable.ItemTemplate = new DataTemplate(typeof(TextCell))
@@ -1644,8 +1644,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var item2 = bindable.TemplatedItems[0];
 
 			Assert.False(ReferenceEquals(item1, item2));
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = oldOS;
 		}
 	}
 }

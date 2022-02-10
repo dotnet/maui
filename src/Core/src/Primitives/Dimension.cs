@@ -15,5 +15,20 @@
 		{
 			return !double.IsPositiveInfinity(value);
 		}
+
+		public static bool IsMinimumSet(double value)
+		{
+			return !double.IsNaN(value);
+		}
+
+		public static double ResolveMinimum(double value)
+		{
+			if (IsMinimumSet(value))
+			{
+				return value;
+			}
+
+			return Minimum;
+		}
 	}
 }
