@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
-using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Handlers
