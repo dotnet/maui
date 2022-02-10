@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void UpdateBackgroundColor()
 		{
-			var color = Shell.BackgroundColor.ToNative();
+			var color = Shell.BackgroundColor?.ToNative();
 			if (color == null)
 				color = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor;
 
@@ -358,8 +358,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		UIView INativeViewHandler.NativeView => NativeView;
 
 		UIView INativeViewHandler.ContainerView => null;
-
-		UIViewController INativeViewHandler.ViewController => this;
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) => new Size(100, 100);
 

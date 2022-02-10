@@ -100,8 +100,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
-			if (View != null)
-				View.Layout(Bounds.ToRectangle());
+			if (View is IView view)
+			{
+				_renderer.NativeView.Frame = Bounds;
+				view.Arrange(Bounds.ToRectangle());
+			}
 		}
 
 		void UpdateVisualState()

@@ -83,6 +83,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellFlyoutContentManager.ViewDidLoad();
 		}
 
+		public override void ViewSafeAreaInsetsDidChange()
+		{
+			ShellFlyoutContentManager.SetHeaderContentInset();
+			base.ViewSafeAreaInsetsDidChange();
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)

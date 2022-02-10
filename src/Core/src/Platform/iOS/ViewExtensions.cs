@@ -10,6 +10,7 @@ using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -242,7 +243,7 @@ namespace Microsoft.Maui.Platform
 			UpdateFrame(nativeView, view);
 		}
 
-		public static void UpdateFrame(UIView nativeView, IView view)
+		public static void UpdateFrame(this UIView nativeView, IView view)
 		{
 			if (!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
 			{
@@ -426,6 +427,28 @@ namespace Microsoft.Maui.Platform
 		internal static UIView? GetParent(this UIView? view)
 		{
 			return view?.Superview;
+		}
+
+		internal static void LayoutToSize(this IView view, double width, double height)
+		{
+			var platformFrame = new RectangleF(0, 0, width, height);
+
+			if (view.Handler is INativeViewHandler viewHandler && viewHandler.NativeView != null)
+				viewHandler.NativeView.Frame = platformFrame;
+
+			view.Arrange(platformFrame.ToRectangle());
+		}
+
+		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
+		{
+			var size = view.Measure(width, height);
+			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
+
+			if (view.Handler is INativeViewHandler viewHandler && viewHandler.NativeView != null)
+				viewHandler.NativeView.Frame = platformFrame;
+
+			view.Arrange(platformFrame.ToRectangle());
+			return size;
 		}
 	}
 }

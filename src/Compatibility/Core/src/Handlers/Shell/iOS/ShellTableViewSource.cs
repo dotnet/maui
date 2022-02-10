@@ -116,13 +116,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			nfloat height = -1;
 
 			if (view.View.HeightRequest >= 0)
+			{
 				height = (float)view.View.HeightRequest;
+				(view.View as IView).Measure(tableView.Bounds.Width, view.View.HeightRequest);
+				(view.View.Handler as INativeViewHandler)
+					.NativeView.Frame = new CoreGraphics.CGRect(0, 0, tableView.Bounds.Width, view.View.HeightRequest);
+
+			}
 			else
 			{
-				var request = view.View.Measure(tableView.Bounds.Width, double.PositiveInfinity, MeasureFlags.None);
+				var request = (view.View as IView).Measure(tableView.Bounds.Width, double.PositiveInfinity);
 
-				if (request.Request.Height > defaultHeight)
-					height = (float)request.Request.Height;
+				if (request.Height > defaultHeight)
+					height = (float)request.Height;
 				else
 					height = defaultHeight;
 			}

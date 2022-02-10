@@ -71,8 +71,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
-				var request = _view.Measure(Frame.Width, double.PositiveInfinity, MeasureFlags.None);
-				MeasuredHeight = request.Request.Height;
+				var request = (_view as IView).Measure(Frame.Width, double.PositiveInfinity);
+				MeasuredHeight = request.Height;
 			}
 
 			HeaderSizeChanged?.Invoke(this, EventArgs.Empty);
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void LayoutSubviews()
 		{
-			_view.Layout(new Rectangle(0, Margin.Top, Width ?? Frame.Width, Height ?? MeasuredHeight));
+			_view.LayoutToSize(Width ?? Frame.Width, Height ?? MeasuredHeight);
 		}
 
 		protected override void Dispose(bool disposing)

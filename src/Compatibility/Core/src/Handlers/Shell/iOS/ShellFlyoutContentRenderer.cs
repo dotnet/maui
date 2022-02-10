@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateFlowDirection()
 		{
 			_tableViewController.View.UpdateFlowDirection(_shellContext.Shell);
-			_headerView.UpdateFlowDirection(_shellContext.Shell);
+			_headerView?.UpdateFlowDirection(_shellContext.Shell);
 		}
 
 		void UpdateFlyoutHeader()
@@ -194,9 +194,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void ReMeasureFooter()
 		{
-			var request = _footer.Measure(View.Frame.Width, double.PositiveInfinity, MeasureFlags.None);
-			// TODO MAUI: check flyout footer
-			//Layout.LayoutChildIntoBoundingRegion(_footer, new Rectangle(0, 0, View.Frame.Width, request.Request.Height));
+			_footer?.LayoutToMeasuredSize(View.Frame.Width, double.PositiveInfinity);
 			UpdateFooterPosition(_footerView.Frame.Height);
 		}
 

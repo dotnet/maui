@@ -242,9 +242,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ContentView.Frame =
 							new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
 
-					//TODO MAUI
-					//if (Content != null)
-					//	Layout.LayoutChildIntoBoundingRegion(Content, new Rectangle(0, 0, ContentView.Frame.Width, ContentView.Frame.Height - contentViewYOffset));
+					Content?.LayoutToSize(ContentView.Frame.Width, ContentView.Frame.Height - contentViewYOffset);
 				}
 			}
 			else
@@ -262,11 +260,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ContentView.Frame =
 						new CGRect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
 
-				if (Content != null)
-				{
-					//TODO MAUI
-					//Layout.LayoutChildIntoBoundingRegion(Content, new Rectangle(0, 0, ContentView.Frame.Width, ContentView.Frame.Height));
-				}
+
+				Content?.LayoutToSize(ContentView.Frame.Width, ContentView.Frame.Height);
 			}
 
 			if (HeaderView != null && !double.IsNaN(HeaderSize))
@@ -352,7 +347,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 		double HeaderMax => HeaderView?.MeasuredHeight ?? 0;
-		double HeaderTopMargin => (HeaderView != null) ? HeaderView.Margin.Top - HeaderView.Margin.Bottom : 0;
+		double HeaderTopMargin => (HeaderView != null) ?
+			HeaderView.Margin.Top - HeaderView.Margin.Bottom : 0;
 
 		public void TearDown()
 		{
