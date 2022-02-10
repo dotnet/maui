@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitleView()
 		{
-			var titleView = Shell.GetTitleView(Page);
+			var titleView = _context.Shell.GetEffectiveValue<View>(Shell.TitleViewProperty, () => Shell.GetTitleView(_context.Shell), null, Page);
 
 			if (titleView == null)
 			{
