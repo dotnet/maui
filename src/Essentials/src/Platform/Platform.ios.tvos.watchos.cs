@@ -13,6 +13,8 @@ using CoreMotion;
 using UIDevice = WatchKit.WKInterfaceDevice;
 #endif
 
+using Microsoft.Maui.Essentials.Implementations;
+
 namespace Microsoft.Maui.Essentials
 {
 	public static partial class Platform

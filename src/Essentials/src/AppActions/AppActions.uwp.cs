@@ -13,15 +13,16 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppActionsImplementations : IAppActions
+	public class AppActionsImplementation : IAppActions
 	{
+		public string Type => "XE_APP_ACTION_TYPE";
 		const string appActionPrefix = "XE_APP_ACTIONS-";
 
 		public static string IconDirectory { get; set; } = "";
 
 		public static string IconExtension { get; set; } = "png";
 
-		internal static bool PlatformIsSupported
+		public bool IsSupported
 		   => true;
 
 		internal static async Task OnLaunched(LaunchActivatedEventArgs e)
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		static async Task<IEnumerable<AppAction>> PlatformGetAsync()
+		public async Task<IEnumerable<AppAction>> GetAsync()
 		{
 			// Load existing items
 			var jumpList = await JumpList.LoadCurrentAsync();
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return actions;
 		}
 
-		static async Task PlatformSetAsync(IEnumerable<AppAction> actions)
+		public async Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			// Load existing items
 			var jumpList = await JumpList.LoadCurrentAsync();
@@ -80,6 +81,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			// Save the changes
 			await jumpList.SaveAsync();
+		}
+
+		public Task SetAsync(params AppAction[] actions)
+		{	
+			return SetAsync(actions.AsEnumerable<AppAction>());
 		}
 
 		static AppAction ToAction(this JumpListItem item)

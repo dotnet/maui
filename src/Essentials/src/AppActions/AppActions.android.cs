@@ -4,15 +4,17 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppActionsImplementations : IAppActions
+	public partial class AppActionsImplementation : IAppActions
 	{
-		internal static bool PlatformIsSupported
+		public string Type => "XE_APP_ACTION_TYPE";
+		public bool IsSupported
 			=> Platform.HasApiLevelNMr1;
 
-		static Task<IEnumerable<AppAction>> PlatformGetAsync()
+		public Task<IEnumerable<AppAction>> GetAsync()
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -20,11 +22,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 #if __ANDROID_25__
 			return Task.FromResult(Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction()));
 #else
-			return Task.FromResult < IEnumerable < AppAction >>> (null);
+			return Task.FromResult < IEnumerable < AppAction >> (null);
 #endif
 		}
 
-		static Task PlatformSetAsync(IEnumerable<AppAction> actions)
+		public Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -35,7 +37,15 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return Task.CompletedTask;
 		}
 
-		static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
+		public Task SetAsync(params AppAction[] actions)
+		{	
+			return SetAsync(actions.AsEnumerable<AppAction>());
+		}
+	}
+
+	internal static partial class AppActionsExtensions
+	{
+		internal static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
 			new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);
 
 		const string extraAppActionId = "EXTRA_XE_APP_ACTION_ID";
@@ -44,13 +54,21 @@ namespace Microsoft.Maui.Essentials.Implementations
 		const string extraAppActionIcon = "EXTRA_XE_APP_ACTION_ICON";
 
 		internal static AppAction ToAppAction(this Intent intent)
-			=> new AppAction(
-				intent.GetStringExtra(extraAppActionId),
-				intent.GetStringExtra(extraAppActionTitle),
-				intent.GetStringExtra(extraAppActionSubtitle),
-				intent.GetStringExtra(extraAppActionIcon));
+		{
+			intent.GetStringExtra(extraAppActionId);
+			intent.GetStringExtra(extraAppActionTitle);
+			intent.GetStringExtra(extraAppActionSubtitle);
+			intent.GetStringExtra(extraAppActionIcon);
 
-		static ShortcutInfo ToShortcutInfo(this AppAction action)
+			return new AppAction
+			(
+				extraAppActionId,
+				extraAppActionTitle,
+				extraAppActionSubtitle,
+				extraAppActionIcon
+			);
+		}
+		internal static ShortcutInfo ToShortcutInfo(this AppAction action)
 		{
 			var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.Id)
 				.SetShortLabel(action.Title);
@@ -79,5 +97,5 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			return shortcut.Build();
 		}
-	}
+	}	
 }
