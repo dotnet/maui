@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Essentials
 	{
 		const string appActionPrefix = "XE_APP_ACTIONS-";
 
-		public static string IconDirectory { get; set; } = "Assets";
+		public static string IconDirectory { get; set; } = "";
 
 		public static string IconExtension { get; set; } = "png";
 
@@ -104,12 +104,14 @@ namespace Microsoft.Maui.Essentials
 			if (!string.IsNullOrEmpty(action.Icon))
 			{
 				var dir = IconDirectory.Trim('/', '\\').Replace('\\', '/');
+				if (!string.IsNullOrEmpty(dir))
+					dir += "/";
 
 				var ext = IconExtension;
 				if (!string.IsNullOrEmpty(ext) && !ext.StartsWith("."))
 					ext = "." + ext;
 
-				item.Logo = new Uri($"ms-appx:///{dir}/{action.Icon}{ext}");
+				item.Logo = new Uri($"ms-appx:///{dir}{action.Icon}{ext}");
 			}
 
 			return item;

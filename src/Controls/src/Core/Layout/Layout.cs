@@ -116,10 +116,6 @@ namespace Microsoft.Maui.Controls
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			foreach (var child in Children)
-			{
-				child.InvalidateMeasure();
-			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Add']/Docs" />
@@ -141,8 +137,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (this[index] is Element element)
 				{
-					element.Parent = null;
-					VisualDiagnostics.OnChildRemoved(this, element, index);
+					OnChildRemoved(element, index);
 				}
 			}
 

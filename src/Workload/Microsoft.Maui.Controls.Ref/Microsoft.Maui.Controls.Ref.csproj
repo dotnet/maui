@@ -10,11 +10,11 @@
 
   <!-- Android-only files -->
   <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/net6.0-android/ref/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.dll" />
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.aar" />
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.Compatibility.aar" />
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.aar" />
-    <None Include="@(_AndroidFiles)" FullTfm="net6.0-android30.0" Tfm="net6.0-android" Profile="Android" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/ref/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.dll" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.aar" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.aar" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.aar" />
+    <None Include="@(_AndroidFiles)" FullTfm="$(_MauiDotNetTfm)-android30.0" Tfm="$(_MauiDotNetTfm)-android" Profile="Android" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,12 +28,12 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(MauiPlatformName)' == '' ">
-    <ProjectReference Include="../../../src/Controls/src/Core/Controls.Core-net6.csproj" />
-    <ProjectReference Include="../../../src/Controls/src/Xaml/Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="../../../src/Controls/src/Core.Design/Controls.Core.Design-net6.csproj" />
-    <ProjectReference Include="../../../src/Controls/src/Xaml.Design/Controls.Xaml.Design-net6.csproj" />
-    <ProjectReference Include="../../../src/Compatibility/Core/src/Compatibility-net6.csproj" />
-    <ProjectReference Include="../../../src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj" />
+    <ProjectReference Include="../../../src/Controls/src/Core/Controls.Core.csproj" />
+    <ProjectReference Include="../../../src/Controls/src/Xaml/Controls.Xaml.csproj" />
+    <ProjectReference Include="../../../src/Controls/src/Core.Design/Controls.Core.Design.csproj" />
+    <ProjectReference Include="../../../src/Controls/src/Xaml.Design/Controls.Xaml.Design.csproj" />
+    <ProjectReference Include="../../../src/Compatibility/Core/src/Compatibility.csproj" />
+    <ProjectReference Include="../../../src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
 
 </Project>

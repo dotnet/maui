@@ -943,8 +943,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize("Assets/camera.scale-100.png", 1792, 1792);
-				AssertFileSize("Assets/camera.scale-200.png", 3584, 3584);
+				AssertFileSize("camera.scale-100.png", 1792, 1792);
+				AssertFileSize("camera.scale-200.png", 3584, 3584);
 			}
 
 			[Fact]
@@ -960,11 +960,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize("Assets/camera.scale-100.png", 1792, 1792);
-				AssertFileSize("Assets/camera_color.scale-100.png", 256, 256);
+				AssertFileSize("camera.scale-100.png", 1792, 1792);
+				AssertFileSize("camera_color.scale-100.png", 256, 256);
 
-				AssertFileSize("Assets/camera.scale-200.png", 3584, 3584);
-				AssertFileSize("Assets/camera_color.scale-200.png", 512, 512);
+				AssertFileSize("camera.scale-200.png", 3584, 3584);
+				AssertFileSize("camera_color.scale-200.png", 512, 512);
 			}
 
 			[Fact]
@@ -983,11 +983,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(items.Length * DpiPath.Windows.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
-				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
 
 				var xhdpi = GetCopiedResource(task, "camera.scale-200.png");
-				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
 			}
 
@@ -1008,19 +1008,19 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(items.Length * DpiPath.Windows.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
-				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
 
 				var xhdpi = GetCopiedResource(task, "camera.scale-200.png");
-				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
 
 				mdpi = GetCopiedResource(task, "camera_color.scale-100.png");
-				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
 
 				xhdpi = GetCopiedResource(task, "camera_color.scale-200.png");
-				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
 				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
 			}
 
@@ -1048,8 +1048,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize($"Assets/{outputName}.scale-100.png", 44, 44);
-				AssertFileSize($"Assets/{outputName}.scale-200.png", 88, 88);
+				AssertFileSize($"{outputName}.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}.scale-200.png", 88, 88);
 			}
 
 			[Theory]
@@ -1084,15 +1084,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize($"Assets/{outputName}Logo.scale-100.png", 44, 44);
-				AssertFileSize($"Assets/{outputName}Logo.scale-125.png", 55, 55);
-				AssertFileSize($"Assets/{outputName}Logo.scale-200.png", 88, 88);
+				AssertFileSize($"{outputName}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{outputName}Logo.scale-200.png", 88, 88);
 
-				AssertFileSize($"Assets/{outputName}StoreLogo.scale-100.png", 50, 50);
-				AssertFileSize($"Assets/{outputName}StoreLogo.scale-200.png", 100, 100);
+				AssertFileSize($"{outputName}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{outputName}StoreLogo.scale-200.png", 100, 100);
 
-				AssertFileSize($"Assets/{outputName}MediumTile.scale-100.png", 150, 150);
-				AssertFileSize($"Assets/{outputName}MediumTile.scale-150.png", 225, 225);
+				AssertFileSize($"{outputName}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{outputName}MediumTile.scale-150.png", 225, 225);
 			}
 
 			[Theory]
@@ -1135,15 +1135,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize($"Assets/{outputName}Logo.scale-100.png", 44, 44);
-				AssertFileSize($"Assets/{outputName}Logo.scale-125.png", 55, 55);
-				AssertFileSize($"Assets/{outputName}Logo.scale-200.png", 88, 88);
+				AssertFileSize($"{outputName}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{outputName}Logo.scale-200.png", 88, 88);
 
-				AssertFileSize($"Assets/{outputName}StoreLogo.scale-100.png", 50, 50);
-				AssertFileSize($"Assets/{outputName}StoreLogo.scale-200.png", 100, 100);
+				AssertFileSize($"{outputName}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{outputName}StoreLogo.scale-200.png", 100, 100);
 
-				AssertFileSize($"Assets/{outputName}MediumTile.scale-100.png", 150, 150);
-				AssertFileSize($"Assets/{outputName}MediumTile.scale-150.png", 225, 225);
+				AssertFileSize($"{outputName}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{outputName}MediumTile.scale-150.png", 225, 225);
 			}
 
 			[Theory]
@@ -1164,18 +1164,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success);
 
-				AssertFileSize($"Assets/{bg}Logo.scale-100.png", 44, 44);
-				AssertFileSize($"Assets/{bg}Logo.scale-125.png", 55, 55);
-				AssertFileSize($"Assets/{bg}Logo.scale-200.png", 88, 88);
+				AssertFileSize($"{bg}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{bg}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{bg}Logo.scale-200.png", 88, 88);
 
-				AssertFileSize($"Assets/{bg}StoreLogo.scale-100.png", 50, 50);
-				AssertFileSize($"Assets/{bg}StoreLogo.scale-200.png", 100, 100);
+				AssertFileSize($"{bg}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{bg}StoreLogo.scale-200.png", 100, 100);
 
-				AssertFileSize($"Assets/{bg}MediumTile.scale-100.png", 150, 150);
-				AssertFileSize($"Assets/{bg}MediumTile.scale-150.png", 225, 225);
+				AssertFileSize($"{bg}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{bg}MediumTile.scale-150.png", 225, 225);
 
-				AssertFileSize($"Assets/{bg}WideTile.scale-100.png", 310, 150);
-				AssertFileSize($"Assets/{bg}WideTile.scale-200.png", 620, 300);
+				AssertFileSize($"{bg}WideTile.scale-100.png", 310, 150);
+				AssertFileSize($"{bg}WideTile.scale-200.png", 620, 300);
 			}
 		}
 	}

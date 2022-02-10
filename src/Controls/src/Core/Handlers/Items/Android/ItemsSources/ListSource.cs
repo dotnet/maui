@@ -12,6 +12,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
+		public ListSource(IList list)
+		{
+			_itemsSource = list;
+		}
+
 		public ListSource(IEnumerable<object> enumerable)
 		{
 			_itemsSource = new List<object>(enumerable);

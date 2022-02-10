@@ -492,7 +492,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		public class PageWithDependencyAndMultipleConstructors : ContentPage
+		{
+			public Dependency TestDependency { get; set; }
+			public UnregisteredDependency OtherTestDependency { get; set; }
+
+			public PageWithDependencyAndMultipleConstructors(Dependency dependency)
+			{
+				TestDependency = dependency;
+			}
+
+			public PageWithDependencyAndMultipleConstructors(Dependency dependency, UnregisteredDependency unregisteredDependency)
+			{
+				OtherTestDependency = unregisteredDependency;
+			}
+
+			public PageWithDependencyAndMultipleConstructors()
+			{
+				// parameterless constructor
+			}
+		}
+
+		public class PageWithUnregisteredDependencyAndParameterlessConstructor : ContentPage
+		{
+			public PageWithUnregisteredDependencyAndParameterlessConstructor(UnregisteredDependency dependency)
+			{
+
+			}
+
+			public PageWithUnregisteredDependencyAndParameterlessConstructor()
+			{
+
+			}
+		}
+
 		public class Dependency
+		{
+			public int Test { get; set; }
+		}
+
+		public class UnregisteredDependency
 		{
 			public int Test { get; set; }
 		}

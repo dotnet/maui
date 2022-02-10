@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-using BasePlatformType = Foundation.NSObject;
+using BasePlatformType = ObjCRuntime.INativeObject;
 using PlatformWindow = UIKit.UIWindow;
-using PlatformApplication = UIKit.UIApplicationDelegate;
+using PlatformApplication = UIKit.IUIApplicationDelegate;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
 using BasePlatformType = Android.Content.Context;
@@ -96,33 +96,33 @@ namespace Microsoft.Maui.Platform
 			return handler;
 		}
 
-		internal static NativeView? ToNative(this IElement view)
+		internal static NativeView ToPlatform(this IElement view)
 		{
 			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
-				return replaceableView.ReplacedView.ToNative();
+				return replaceableView.ReplacedView.ToPlatform();
 
 			if (view.Handler == null)
 			{
 				var mauiContext = view.Parent?.Handler?.MauiContext ??
 					throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
 
-				return view.ToNative(mauiContext);
+				return view.ToPlatform(mauiContext);
 			}
 
-			if (view.Handler is IViewHandler nativeHandler)
+			if (view.Handler is IViewHandler viewHandler)
 			{
-				if (nativeHandler.ContainerView is NativeView containerView)
+				if (viewHandler.ContainerView is NativeView containerView)
 					return containerView;
 
-				if (nativeHandler.NativeView is NativeView nativeView)
+				if (viewHandler.NativeView is NativeView nativeView)
 					return nativeView;
 			}
 
-			return (view.Handler?.NativeView as NativeView);
+			return (view.Handler?.NativeView as NativeView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
 
 		}
 
-		public static NativeView ToNative(this IElement view, IMauiContext context)
+		public static NativeView ToPlatform(this IElement view, IMauiContext context)
 		{
 			var handler = view.ToHandler(context);
 
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Platform
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
 			}
 
-			return view.ToNative() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(NativeView)}");
 
 		}
 
