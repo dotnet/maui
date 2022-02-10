@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var mauiContext = view.FindMauiContext() ?? item.FindMauiContext();
 				item.ConvertView = convertView;
 
-				_ = item.ToNative(mauiContext);
+				_ = item.ToPlatform(mauiContext);
 				item.ConvertView = null;
 
 				renderer = CellRenderer.GetRenderer(item);

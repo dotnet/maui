@@ -30,13 +30,13 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public static IEnumerable<Run> ToRuns(this FormattedString formattedString, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		public static IEnumerable<Run> ToRuns(this FormattedString formattedString, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default, IFontManager? fontManager = null)
 		{
 			var runs = new List<Run>();
 
 			if (formattedString != null && formattedString.Spans != null)
 			{
-				var fontManager = formattedString.RequireFontManager();
+				fontManager = fontManager ?? formattedString.RequireFontManager();
 
 				for (var i = 0; i < formattedString.Spans.Count; i++)
 				{

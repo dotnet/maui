@@ -305,10 +305,9 @@ namespace Microsoft.Maui.Controls
 
 					Func<Task> navigationTask = () => GoToAsync(navArgs.Target, navArgs.Animate, false, navArgs);
 
-					if (Device.IsInvokeRequired)
-						await Device.InvokeOnMainThreadAsync(navigationTask);
-					else
-						await navigationTask();
+					await _shell
+						.FindDispatcher()
+						.DispatchIfRequiredAsync(navigationTask);
 				});
 			}
 

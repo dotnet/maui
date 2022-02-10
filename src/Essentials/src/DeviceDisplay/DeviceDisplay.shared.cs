@@ -1,9 +1,11 @@
 #nullable enable
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs" />
 	public static partial class DeviceDisplay
 	{
 		static readonly object locker = new object();
@@ -15,9 +17,11 @@ namespace Microsoft.Maui.Essentials
 			currentImplementation.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='Current']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IDeviceDisplay Current => currentImplementation;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrent(IDeviceDisplay? implementation)
 		{
@@ -60,12 +64,14 @@ namespace Microsoft.Maui.Essentials
 
 		static DisplayInfo currentMetrics;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='KeepScreenOn']/Docs" />
 		public static bool KeepScreenOn
 		{
 			get => Current.KeepScreenOn;
 			set => Current.KeepScreenOn = value;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfo']/Docs" />
 		public static DisplayInfo MainDisplayInfo => Current.GetMainDisplayInfo();
 
 		static void SetCurrent(DisplayInfo metrics) =>
@@ -110,11 +116,14 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs']/Docs" />
 	public class DisplayInfoChangedEventArgs : EventArgs
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public DisplayInfoChangedEventArgs(DisplayInfo displayInfo) =>
 			DisplayInfo = displayInfo;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="//Member[@MemberName='DisplayInfo']/Docs" />
 		public DisplayInfo DisplayInfo { get; }
 	}
 

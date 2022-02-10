@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = this.GetWrappedNativeView();
+			var nativeView = this.ToPlatform();
 
 			if (nativeView == null || VirtualView == null)
 			{
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.VerticalOffset = NativeView.ContentOffset.Y;
 		}
 
-		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			if (handler.NativeView == null || handler.MauiContext == null)
 				return;
@@ -76,27 +76,27 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView.UpdateContent(scrollView.PresentedContent, handler.MauiContext);
 		}
 
-		public static void MapContentSize(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapContentSize(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView.UpdateContentSize(scrollView.ContentSize);
 		}
 
-		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
 		}
 
-		public static void MapVerticalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateVerticalScrollBarVisibility(scrollView.VerticalScrollBarVisibility);
 		}
 
-		public static void MapOrientation(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			// Nothing to do here for now, but we might need to make adjustments for FlowDirection when the orientation is set to Horizontal
 		}
 
-		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args)
+		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (args is ScrollToRequest request)
 			{

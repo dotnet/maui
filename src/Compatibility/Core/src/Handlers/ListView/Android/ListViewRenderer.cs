@@ -380,7 +380,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_footerRenderer.SetVirtualView(footer);
 			else
 			{
-				_ = footer.ToNative(Element.FindMauiContext());
+				_ = footer.ToPlatform(Element.FindMauiContext());
 				if (_footerView != null)
 					_footerView.Child = (INativeViewHandler)footer.Handler;
 			}
@@ -409,7 +409,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_headerRenderer.SetVirtualView(header);
 			else
 			{
-				_ = header.ToNative(Element.FindMauiContext());
+				_ = header.ToPlatform(Element.FindMauiContext());
 				if (_headerView != null)
 					_headerView.Child = (INativeViewHandler)header.Handler;
 			}

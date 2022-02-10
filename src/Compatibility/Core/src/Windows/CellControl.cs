@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				? _defaultOnColor
 				: new WSolidColorBrush(switchCell.OnColor.ToWindowsColor());
 
-			var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
+			var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
 
 			// change fill color in switch rectangle
 			var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (_defaultOnColor == null && Cell is SwitchCell)
 			{
-				var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
+				var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
 				var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 				foreach (var rect in rects)
 					_defaultOnColor = rect.Fill;

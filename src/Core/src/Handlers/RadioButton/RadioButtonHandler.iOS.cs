@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.ClearSubviews();
 
 			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddSubview(view.ToNative(MauiContext));
+				NativeView.AddSubview(view.ToPlatform(MauiContext));
 		}
 
 		public static void MapContent(RadioButtonHandler handler, IContentView page)

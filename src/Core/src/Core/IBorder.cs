@@ -5,5 +5,8 @@
 /// </summary>
 public interface IBorder
 {
+	/// <summary>
+	///  Define how the Shape outline is painted.
+	/// </summary>
 	IBorderStroke Border { get; }
 }

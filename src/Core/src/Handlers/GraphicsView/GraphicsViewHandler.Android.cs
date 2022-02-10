@@ -1,15 +1,15 @@
-﻿using Android.Views;
+using Android.Views;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using APointF = Android.Graphics.PointF;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, NativeGraphicsView>
+	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, PlatformGraphicsView>
 	{
-		protected override NativeGraphicsView CreateNativeView()
+		protected override PlatformGraphicsView CreateNativeView()
 		{
-			return new NativeGraphicsView(Context);
+			return new PlatformGraphicsView(Context);
 		}
 
 		protected override void ConnectHandler(NativeGraphicsView nativeView)

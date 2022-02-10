@@ -4,5 +4,6 @@
   "microsoft.net.sdk.maccatalyst": "@MicrosoftMacCatalystSdkPackageVersion@",
   "microsoft.net.sdk.macos": "@MicrosoftmacOSSdkPackageVersion@",
   "microsoft.net.sdk.maui": "@VERSION@",
-  "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@"
+  "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@",
+  "microsoft.net.workload.mono.toolchain": "@MicrosoftNETCoreAppRefPackageVersion@"
 }

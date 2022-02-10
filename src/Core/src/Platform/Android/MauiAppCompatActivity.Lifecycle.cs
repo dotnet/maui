@@ -73,9 +73,9 @@ namespace Microsoft.Maui
 
 		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 		{
-			base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRequestPermissionsResult>(del => del(this, requestCode, permissions, grantResults));
+
+			base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 		}
 
 		protected override void OnRestoreInstanceState(Bundle savedInstanceState)
