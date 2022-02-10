@@ -352,16 +352,11 @@ namespace Microsoft.Maui.Controls
 					});
 				}
 
-				if (Device.RuntimePlatform == Device.UWP ||
-					Device.RuntimePlatform == Device.iOS ||
-					Device.RuntimePlatform == Device.MacCatalyst)
+				normalState.Setters.Add(new Setter
 				{
-					normalState.Setters.Add(new Setter
-					{
-						Property = VisualElement.BackgroundColorProperty,
-						Value = Colors.Transparent
-					});
-				}
+					Property = VisualElement.BackgroundColorProperty,
+					Value = Colors.Transparent
+				});
 
 				commonGroup.States.Add(selectedState);
 
