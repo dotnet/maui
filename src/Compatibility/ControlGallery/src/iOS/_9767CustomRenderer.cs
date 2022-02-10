@@ -5,12 +5,14 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportRenderer(typeof(Issue9767NavigationPage), typeof(_9767CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
-	public class _9767CustomRenderer : NavigationRenderer
+	public class _9767CustomRenderer : Handlers.Compatibility.NavigationRenderer
 	{
 		public _9767CustomRenderer() : base()
 		{

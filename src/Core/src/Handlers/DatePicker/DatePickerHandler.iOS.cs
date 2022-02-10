@@ -1,5 +1,6 @@
 ﻿using System;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -51,7 +52,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiDatePicker nativeView)
 		{
 			if (_picker != null)
+			{
+				_picker.EditingDidBegin += OnStarted;
+				_picker.EditingDidEnd += OnEnded;
 				_picker.ValueChanged += OnValueChanged;
+			}
 
 			base.ConnectHandler(nativeView);
 		}
@@ -59,7 +64,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiDatePicker nativeView)
 		{
 			if (_picker != null)
+			{
+				_picker.EditingDidBegin -= OnStarted;
+				_picker.EditingDidEnd -= OnEnded;
 				_picker.ValueChanged -= OnValueChanged;
+			}
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -104,6 +113,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColor);
+		}
+
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			// TODO: Update IsFocused property
+		}
+
+		void OnEnded(object? sender, EventArgs eventArgs)
+		{
+			// TODO: Update IsFocused property
 		}
 
 		void OnValueChanged(object? sender, EventArgs? e)

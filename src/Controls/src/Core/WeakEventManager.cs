@@ -1,17 +1,19 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using static System.String;
-
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="Type[@FullName='Microsoft.Maui.Controls.WeakEventManager']/Docs" />
 	public class WeakEventManager
 	{
 		readonly Dictionary<string, List<Subscription>> _eventHandlers = new Dictionary<string, List<Subscription>>();
 
-		public void AddEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = null)
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler']/Docs" />
+		public void AddEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = "")
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
@@ -23,7 +25,8 @@ namespace Microsoft.Maui.Controls
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		public void AddEventHandler(EventHandler handler, [CallerMemberName] string eventName = null)
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler']/Docs" />
+		public void AddEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
@@ -34,12 +37,13 @@ namespace Microsoft.Maui.Controls
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='HandleEvent']/Docs" />
 		public void HandleEvent(object sender, object args, string eventName)
 		{
-			var toRaise = new List<(object subscriber, MethodInfo handler)>();
+			var toRaise = new List<(object? subscriber, MethodInfo handler)>();
 			var toRemove = new List<Subscription>();
 
-			if (_eventHandlers.TryGetValue(eventName, out List<Subscription> target))
+			if (_eventHandlers.TryGetValue(eventName, out List<Subscription>? target))
 			{
 				for (int i = 0; i < target.Count; i++)
 				{
@@ -52,7 +56,7 @@ namespace Microsoft.Maui.Controls
 						continue;
 					}
 
-					object subscriber = subscription.Subscriber.Target;
+					object? subscriber = subscription.Subscriber?.Target;
 
 					if (subscriber == null)
 						// The subscriber was collected, so there's no need to keep this subscription around
@@ -75,7 +79,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public void RemoveEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = null)
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler']/Docs" />
+		public void RemoveEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = "")
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
@@ -87,7 +92,8 @@ namespace Microsoft.Maui.Controls
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		public void RemoveEventHandler(EventHandler handler, [CallerMemberName] string eventName = null)
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler']/Docs" />
+		public void RemoveEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
@@ -98,9 +104,9 @@ namespace Microsoft.Maui.Controls
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		void AddEventHandler(string eventName, object handlerTarget, MethodInfo methodInfo)
+		void AddEventHandler(string eventName, object? handlerTarget, MethodInfo methodInfo)
 		{
-			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription> targets))
+			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription>? targets))
 			{
 				targets = new List<Subscription>();
 				_eventHandlers.Add(eventName, targets);
@@ -116,9 +122,9 @@ namespace Microsoft.Maui.Controls
 			targets.Add(new Subscription(new WeakReference(handlerTarget), methodInfo));
 		}
 
-		void RemoveEventHandler(string eventName, object handlerTarget, MemberInfo methodInfo)
+		void RemoveEventHandler(string eventName, object? handlerTarget, MemberInfo methodInfo)
 		{
-			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription> subscriptions))
+			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription>? subscriptions))
 				return;
 
 			for (int n = subscriptions.Count; n > 0; n--)
@@ -135,13 +141,16 @@ namespace Microsoft.Maui.Controls
 
 		struct Subscription
 		{
-			public Subscription(WeakReference subscriber, MethodInfo handler)
+			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='.ctor']/Docs" />
+			public Subscription(WeakReference? subscriber, MethodInfo handler)
 			{
 				Subscriber = subscriber;
 				Handler = handler ?? throw new ArgumentNullException(nameof(handler));
 			}
 
-			public readonly WeakReference Subscriber;
+			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='Subscriber']/Docs" />
+			public readonly WeakReference? Subscriber;
+			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='Handler']/Docs" />
 			public readonly MethodInfo Handler;
 		}
 	}

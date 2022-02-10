@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public Issue4992()
 		{
 #if APP
-			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { "CollectionView_Experimental" });
-
 			InitializeComponent();
 
 			People = new List<string>

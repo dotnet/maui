@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
@@ -34,28 +35,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
 			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
-
-		[Fact(DisplayName = "Button Padding Initializing")]
-		public async Task PaddingInitializesCorrectly()
-		{
-			var button = new ButtonStub()
-			{
-				Text = "Test",
-				Padding = new Thickness(5, 10, 15, 20)
-			};
-
-			var handler = await CreateHandlerAsync(button);
-			var uiButton = (UIButton)handler.NativeView;
-
-			var insets = await InvokeOnMainThreadAsync(() => { return uiButton.ContentEdgeInsets; });
-
-			Assert.Equal(5, insets.Left);
-			Assert.Equal(10, insets.Top);
-			Assert.Equal(15, insets.Right);
-			Assert.Equal(20, insets.Bottom);
-		}
-
-
 
 		[Fact(DisplayName = "Default Accessibility Traits Don't Change")]
 		[InlineData()]
@@ -90,6 +69,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativeTextColor(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).CurrentTitleColor.ToColor();
+
+		UIEdgeInsets GetNativePadding(ButtonHandler buttonHandler) =>
+			GetNativeButton(buttonHandler).ContentEdgeInsets;
 
 		Task PerformClick(IButton button)
 		{

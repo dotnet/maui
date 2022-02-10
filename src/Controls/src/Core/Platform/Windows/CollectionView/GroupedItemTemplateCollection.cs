@@ -54,14 +54,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void GroupsChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (_container.Dispatcher.IsInvokeRequired)
-			{
-				_container.Dispatcher.BeginInvokeOnMainThread(() => GroupsChanged(args));
-			}
-			else
-			{
-				GroupsChanged(args);
-			}
+			_container.Dispatcher.DispatchIfRequired(() => GroupsChanged(args));
 		}
 
 		void GroupsChanged(NotifyCollectionChangedEventArgs args)

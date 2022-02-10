@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
@@ -19,6 +20,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer instead")]
 	public class NavigationRenderer : UINavigationController, IVisualElementRenderer, IEffectControlProvider
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
@@ -1516,7 +1518,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-			protected internal FormsNavigationBar(IntPtr handle) : base(handle)
+			protected internal FormsNavigationBar(NativeHandle handle) : base(handle)
 			{
 			}
 

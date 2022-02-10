@@ -9,6 +9,14 @@
     <DefineConstants>$(DefineConstants);__IOS__;UITEST;__SHELL__</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;0618</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;0618</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="System.Net.Http" />
   </ItemGroup>
@@ -23,10 +31,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
 
   <Target Name="AfterBuild">

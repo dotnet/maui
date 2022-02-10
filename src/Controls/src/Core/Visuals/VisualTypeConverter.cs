@@ -5,16 +5,20 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualTypeConverter']/Docs" />
 	public class VisualTypeConverter : TypeConverter
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
@@ -22,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		void InitMappings()
 		{
 			var mappings = new Dictionary<string, IVisual>(StringComparer.OrdinalIgnoreCase);
-			Assembly[] assemblies = Device.GetAssemblies();
+			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
 			// Check for IVisual Types
 			foreach (var assembly in assemblies)
@@ -73,15 +77,15 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (NotSupportedException)
 			{
-				Log.Warning("Visual", $"Cannot scan assembly {assembly.FullName} for Visual types.");
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Cannot scan assembly {assembly} for Visual types.", assembly.FullName);
 			}
 			catch (FileNotFoundException)
 			{
-				Log.Warning("Visual", $"Unable to load a dependent assembly for {assembly.FullName}. It cannot be scanned for Visual types.");
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. It cannot be scanned for Visual types.", assembly.FullName);
 			}
 			catch (ReflectionTypeLoadException)
 			{
-				Log.Warning("Visual", $"Unable to load a dependent assembly for {assembly.FullName}. Types cannot be loaded.");
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. Types cannot be loaded.", assembly.FullName);
 			}
 		}
 
@@ -114,12 +118,13 @@ namespace Microsoft.Maui.Controls
 			}
 			catch
 			{
-				Internals.Log.Warning("Visual", $"Unable to register {visualType} please add a public default constructor");
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to register {visualType} please add a public default constructor", visualType.ToString());
 			}
 
 			return null;
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -137,6 +142,7 @@ namespace Microsoft.Maui.Controls
 			throw new XamlParseException($"Cannot convert \"{strValue}\" into {typeof(IVisual)}");
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not IVisual visual)
@@ -153,12 +159,15 @@ namespace Microsoft.Maui.Controls
 			throw new NotSupportedException();
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='GetStandardValuesExclusive']/Docs" />
 		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
 			=> false;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='GetStandardValuesSupported']/Docs" />
 		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
 			=> true;
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='GetStandardValues']/Docs" />
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 			=> new(new[] { "Default", "Material" });
 	}

@@ -4,6 +4,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs" />
 	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
 		object IContentView.Content => Content;
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformArrange(Rectangle bounds)
 		{
+			Frame = bounds;
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}

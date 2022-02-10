@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-#if __IOS__
+#if !(MACCATALYST || MACOS)
 using CoreTelephony;
 #endif
 using CoreFoundation;
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Essentials
 			remoteHostReachability.SetNotification(OnChange);
 			remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
 
-#if __IOS__
+#if !(MACCATALYST || MACOS)
 #pragma warning disable BI1234
 			Connectivity.CellularData.RestrictionDidUpdateNotifier = new Action<CTCellularDataRestrictedState>(OnRestrictedStateChanged);
 #pragma warning restore BI1234
@@ -172,12 +172,12 @@ namespace Microsoft.Maui.Essentials
 			remoteHostReachability?.Dispose();
 			remoteHostReachability = null;
 
-#if __IOS__
+#if !(MACCATALYST || MACOS)
 			Connectivity.CellularData.RestrictionDidUpdateNotifier = null;
 #endif
 		}
 
-#if __IOS__
+#if !(MACCATALYST || MACOS)
 #pragma warning disable BI1234
 		void OnRestrictedStateChanged(CTCellularDataRestrictedState state)
 		{

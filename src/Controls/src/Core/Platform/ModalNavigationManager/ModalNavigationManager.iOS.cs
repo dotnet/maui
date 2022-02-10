@@ -6,13 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		UIViewController? _renderer
+		UIViewController? RootViewController
 		{
 			get
 			{
@@ -41,8 +42,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (ModalStack.Count >= 1 && controller != null)
 				await controller.DismissViewControllerAsync(animated);
-			else if (_renderer != null)
-				await _renderer.DismissViewControllerAsync(animated);
+			else if (RootViewController != null)
+				await RootViewController.DismissViewControllerAsync(animated);
 
 			// Yes?
 			//modal.DisposeModalAndChildRenderers();
@@ -62,8 +63,6 @@ namespace Microsoft.Maui.Controls.Platform
 					.ModalPresentationStyle()
 					.ToNativeModalPresentationStyle();
 
-			_window.Page?.GetCurrentPage()?.SendDisappearing();
-
 			_navModel.PushModal(modal);
 
 			modal.DescendantRemoved += HandleChildRemoved;
@@ -76,7 +75,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			modal.ToNative(MauiContext);
+			modal.ToPlatform(MauiContext);
 			var wrapper = new ModalWrapper(modal.Handler as INativeViewHandler);
 
 			if (ModalStack.Count > 1)
@@ -95,9 +94,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
 			// would be safe to dismiss the VC). Fortunately this is almost never an issue
 
-			if (_renderer != null)
+			if (RootViewController != null)
 			{
-				await _renderer.PresentViewControllerAsync(wrapper, animated);
+				await RootViewController.PresentViewControllerAsync(wrapper, animated);
 				await Task.Delay(5);
 			}
 		}

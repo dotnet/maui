@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-android</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-android</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.Maps.Android</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.Maps.Android</RootNamespace>
     <IsPackable>false</IsPackable>
@@ -17,11 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
 </Project>

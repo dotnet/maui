@@ -30,8 +30,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 							new AppThemeCodeGallery(), Navigation),
 						GalleryBuilder.NavButton("AppTheme XAML", () =>
 							new AppThemeXamlGallery(), Navigation),
-						GalleryBuilder.NavButton("GetNamedColor", () =>
-							new NamedPlatformColorGallery(), Navigation)
 					}
 				}
 			};

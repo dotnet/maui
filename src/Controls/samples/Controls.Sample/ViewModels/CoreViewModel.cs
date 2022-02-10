@@ -30,11 +30,17 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(EffectsPage), "Effects",
 				"Apply Effects to a View."),
 
+			new SectionModel(typeof(FlyoutPageGallery), "FlyoutPage",
+				"Demonstrates using a Flyout Page."),
+
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
 
 			new SectionModel(typeof(ModalPage), "Modal",
 				"Allows you to push and pop Modal Pages."),
+
+			new SectionModel(typeof(MultiWindowPage), "Multi-Window",
+				"Allows you to open a new Window in the App."),
 
 			new SectionModel(typeof(NavigationGallery), "Navigation Page",
 				"Play with the different Navigation APIs."),

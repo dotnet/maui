@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Internals
 {
 	//FIXME: need a better name for this, and share with Binding, so we can share more unittests
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TypedBindingBase']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class TypedBindingBase : BindingBase
 	{
@@ -17,6 +19,7 @@ namespace Microsoft.Maui.Controls.Internals
 		object _source;
 		string _updateSourceEventName;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Converter']/Docs" />
 		public IValueConverter Converter
 		{
 			get { return _converter; }
@@ -27,6 +30,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='ConverterParameter']/Docs" />
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -37,6 +41,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Source']/Docs" />
 		public object Source
 		{
 			get { return _source; }
@@ -285,7 +290,7 @@ namespace Microsoft.Maui.Controls.Internals
 					return;
 
 				IDispatcher dispatcher = (sender as BindableObject)?.Dispatcher;
-				dispatcher.Dispatch(() => _binding.Apply(false));
+				dispatcher.DispatchIfRequired(() => _binding.Apply(false));
 			}
 		}
 

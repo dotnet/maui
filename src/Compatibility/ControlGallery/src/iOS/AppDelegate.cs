@@ -14,6 +14,8 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 using IOPath = System.IO.Path;
 using Size = Microsoft.Maui.Graphics.Size;
@@ -113,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			App.IOSVersion = int.Parse(versionPart[0]);
 
 #if ENABLE_TEST_CLOUD
-			Xamarin.Calabash.Start();
+			//Xamarin.Calabash.Start();
 #endif
 
 			//Forms.Init();
@@ -181,7 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			// Create and add a native Button 
 			var uibutton = new UIButton(UIButtonType.System);
 			uibutton.SetTitle("Toggle Text Amount", UIControlState.Normal);
-			uibutton.Font = UIFont.FromName("Helvetica", 14f);
+			uibutton.TitleLabel.Font = UIFont.FromName("Helvetica", 14f);
 
 
 			uibutton.TouchUpInside += (sender, args) =>
@@ -280,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			var uibuttonColor = new UIButton(UIButtonType.System);
 			uibuttonColor.SetTitle("Toggle Text Color Binding", UIControlState.Normal);
-			uibuttonColor.Font = UIFont.FromName("Helvetica", 14f);
+			uibuttonColor.TitleLabel.Font = UIFont.FromName("Helvetica", 14f);
 			uibuttonColor.TouchUpInside += (sender, args) => uilabel.TextColor = UIColor.Blue;
 
 			var nativeColorConverter = new ColorConverter();
@@ -298,9 +300,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			uiView.Add(uilabel);
 			sl?.Children.Add(uiView);
 			sl?.Children.Add(uibuttonColor.ToView());
-			var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
-			colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
-			sl?.Children.Add(colorPicker);
+			// TODO: Replace with a new plugin or API
+			//var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
+			//colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
+			//sl?.Children.Add(colorPicker);
 			page.NativeControlsAdded = true;
 		}
 

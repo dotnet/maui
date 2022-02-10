@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.PinchGestureRecognizer']/Docs" />
 	public sealed class PinchGestureRecognizer : GestureRecognizer, IPinchGestureController
 	{
 		bool IPinchGestureController.IsPinching { get; set; }

@@ -4,12 +4,13 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportRenderer(typeof(CustomFrame9974), typeof(_9774CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers
 {
-	public class _9774CustomRenderer : FrameRenderer
+	public class _9774CustomRenderer : Handlers.Compatibility.FrameRenderer
 	{
 		public _9774CustomRenderer()
 		{

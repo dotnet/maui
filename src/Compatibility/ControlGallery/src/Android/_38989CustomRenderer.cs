@@ -13,13 +13,15 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Bugzilla38989._38989CustomViewCell), typeof(_38989CustomViewCellRenderer))]
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class _38989CustomViewCellRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.ViewCellRenderer
+	public class _38989CustomViewCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{

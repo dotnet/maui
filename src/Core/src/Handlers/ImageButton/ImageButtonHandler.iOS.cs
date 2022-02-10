@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -9,7 +7,12 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override UIButton CreateNativeView()
 		{
-			return new UIButton(UIButtonType.System);
+			var nativeView = new UIButton(UIButtonType.System)
+			{
+				ClipsToBounds = true
+			};
+
+			return nativeView;
 		}
 
 		void OnSetImageSource(UIImage? obj)
@@ -24,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TouchUpInside += OnButtonTouchUpInside;
 			nativeView.TouchUpOutside += OnButtonTouchUpOutside;
 			nativeView.TouchDown += OnButtonTouchDown;
+
 			base.ConnectHandler(nativeView);
 		}
 
@@ -32,8 +36,25 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TouchUpInside -= OnButtonTouchUpInside;
 			nativeView.TouchUpOutside -= OnButtonTouchUpOutside;
 			nativeView.TouchDown -= OnButtonTouchDown;
+
 			base.DisconnectHandler(nativeView);
+
 			SourceLoader.Reset();
+		}
+
+		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			(handler.NativeView as UIButton)?.UpdateStrokeColor(buttonStroke);
+		}
+
+		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			(handler.NativeView as UIButton)?.UpdateStrokeThickness(buttonStroke);
+		}
+
+		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			(handler.NativeView as UIButton)?.UpdateCornerRadius(buttonStroke);
 		}
 
 		void OnButtonTouchUpInside(object? sender, EventArgs e)

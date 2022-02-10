@@ -1,20 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.IsolatedStorage;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using FileAccess = System.IO.FileAccess;
-using FileMode = System.IO.FileMode;
-using FileShare = System.IO.FileShare;
-using Stream = System.IO.Stream;
 
 [assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
@@ -23,22 +16,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
-		Action<Action> invokeOnMainThread;
-		Func<Uri, CancellationToken, Task<Stream>> getStreamAsync;
+		readonly IDispatcher _dispatcher;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
-		readonly bool _isInvokeRequired;
 
-		public MockPlatformServices(Action<Action> invokeOnMainThread = null,
-			Func<Uri, CancellationToken, Task<Stream>> getStreamAsync = null,
+		public MockPlatformServices(
+			IDispatcher dispatcher = null,
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
-			bool useRealisticLabelMeasure = false, bool isInvokeRequired = false)
+			bool useRealisticLabelMeasure = false)
 		{
-			this.invokeOnMainThread = invokeOnMainThread;
-			this.getStreamAsync = getStreamAsync;
+			_dispatcher = dispatcher ?? new MockDispatcher();
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
-			_isInvokeRequired = isInvokeRequired;
 		}
 
 		public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes)
@@ -46,7 +35,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch (size)
 			{
 				case NamedSize.Default:
-					return 10;
+					return new MockFontManager().DefaultFontSize;
 				case NamedSize.Micro:
 					return 4;
 				case NamedSize.Small:
@@ -60,42 +49,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		public Color GetNamedColor(string name)
-		{
-			// Some mock values to test color type converter
-			switch (name)
-			{
-				case "SystemBlue":
-					return Color.FromRgb(0, 122, 255);
-				case "SystemChromeHighColor":
-					return Color.FromArgb("#FF767676");
-				case "HoloBlueBright":
-					return Color.FromArgb("#ff00ddff");
-				default:
-					return null;
-			}
-		}
-
-		public bool IsInvokeRequired
-		{
-			get { return _isInvokeRequired; }
-		}
-
-		public string RuntimePlatform { get; set; }
-
-		public void BeginInvokeOnMainThread(Action action)
-		{
-			if (invokeOnMainThread == null)
-				action();
-			else
-				invokeOnMainThread(action);
-		}
-
-
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			Timer timer = null;
-			TimerCallback onTimeout = o => BeginInvokeOnMainThread(() =>
+			TimerCallback onTimeout = o => _dispatcher.Dispatch(() =>
 			{
 				if (callback())
 					return;
@@ -103,65 +60,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				timer.Dispose();
 			});
 			timer = new Timer(onTimeout, null, interval, interval);
-		}
-
-		public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			if (getStreamAsync == null)
-				throw new NotImplementedException();
-			return getStreamAsync(uri, cancellationToken);
-		}
-
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
-		public Internals.IIsolatedStorageFile GetUserStoreForApplication()
-		{
-			return new MockIsolatedStorageFile(IsolatedStorageFile.GetUserStoreForAssembly());
-		}
-
-		public class MockIsolatedStorageFile : Internals.IIsolatedStorageFile
-		{
-			readonly IsolatedStorageFile isolatedStorageFile;
-			public MockIsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-			{
-				this.isolatedStorageFile = isolatedStorageFile;
-			}
-
-			public Task<bool> GetDirectoryExistsAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.DirectoryExists(path));
-			}
-
-			public Task CreateDirectoryAsync(string path)
-			{
-				isolatedStorageFile.CreateDirectory(path);
-				return Task.FromResult(true);
-			}
-
-			public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-			{
-				Stream stream = isolatedStorageFile.OpenFile(path, mode, access);
-				return Task.FromResult(stream);
-			}
-
-			public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-			{
-				Stream stream = isolatedStorageFile.OpenFile(path, mode, access, share);
-				return Task.FromResult(stream);
-			}
-
-			public Task<bool> GetFileExistsAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.FileExists(path));
-			}
-
-			public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.GetLastWriteTime(path));
-			}
 		}
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
@@ -239,6 +137,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MockApplication : Application
 	{
+		public static UnitTestLogger MockLogger;
+
 		public MockApplication()
 		{
 		}
@@ -261,5 +161,128 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			_enabled = false;
 		}
+	}
+
+	class MockDispatcher : IDispatcher
+	{
+		public bool IsDispatchRequired => false;
+
+		public bool Dispatch(Action action)
+		{
+			action();
+			return true;
+		}
+	}
+
+	class MockDeviceInfo : IDeviceInfo
+	{
+		DeviceIdiom _deviceIdiom;
+		TargetIdiom _targetIdiom;
+		DevicePlatform _devicePlatform;
+		string _runtimePlatform;
+
+		public MockDeviceInfo()
+		{
+			Platform = DevicePlatform.Unknown;
+			Idiom = DeviceIdiom.Unknown;
+			DeviceType = DeviceType.Unknown;
+		}
+
+		public MockDeviceInfo(DevicePlatform? platform = null, DeviceIdiom? idiom = null, DeviceType? deviceType = null)
+		{
+			Platform = platform ?? DevicePlatform.Unknown;
+			Idiom = idiom ?? DeviceIdiom.Unknown;
+			DeviceType = deviceType ?? DeviceType.Unknown;
+		}
+
+		public MockDeviceInfo(string platform = null, TargetIdiom idiom = TargetIdiom.Unsupported, DeviceType? deviceType = null)
+		{
+			RuntimePlatform = platform;
+			TargetIdiom = idiom;
+			DeviceType = deviceType ?? DeviceType.Unknown;
+		}
+
+		public string Model { get; set; }
+
+		public string Manufacturer { get; set; }
+
+		public string Name { get; set; }
+
+		public string VersionString { get; set; }
+
+		public Version Version { get; set; }
+
+		public DevicePlatform Platform
+		{
+			get => _devicePlatform;
+			set
+			{
+				if (_devicePlatform == value)
+					return;
+
+				_devicePlatform = value;
+				_runtimePlatform = value.ToString();
+			}
+		}
+
+		public string RuntimePlatform
+		{
+			get => _runtimePlatform;
+			set
+			{
+				if (_runtimePlatform == value)
+					return;
+
+				_runtimePlatform = value;
+				_devicePlatform = DevicePlatform.Create(value);
+			}
+		}
+
+		public DeviceIdiom Idiom
+		{
+			get => _deviceIdiom;
+			set
+			{
+				if (_deviceIdiom == value)
+					return;
+
+				_deviceIdiom = value;
+				if (value == DeviceIdiom.Tablet)
+					_targetIdiom = TargetIdiom.Tablet;
+				else if (value == DeviceIdiom.Phone)
+					_targetIdiom = TargetIdiom.Phone;
+				else if (value == DeviceIdiom.Desktop)
+					_targetIdiom = TargetIdiom.Desktop;
+				else if (value == DeviceIdiom.TV)
+					_targetIdiom = TargetIdiom.TV;
+				else if (value == DeviceIdiom.Watch)
+					_targetIdiom = TargetIdiom.Watch;
+				else
+					_targetIdiom = TargetIdiom.Unsupported;
+			}
+		}
+
+		public TargetIdiom TargetIdiom
+		{
+			get => _targetIdiom;
+			set
+			{
+				if (_targetIdiom == value)
+					return;
+
+				_targetIdiom = value;
+				_deviceIdiom = value switch
+				{
+					TargetIdiom.Phone => DeviceIdiom.Phone,
+					TargetIdiom.Tablet => DeviceIdiom.Tablet,
+					TargetIdiom.Desktop => DeviceIdiom.Desktop,
+					TargetIdiom.Watch => DeviceIdiom.Watch,
+					TargetIdiom.TV => DeviceIdiom.TV,
+					_ => DeviceIdiom.Unknown,
+				};
+			}
+		}
+
+		public DeviceType DeviceType { get; set; }
 	}
 }

@@ -1,10 +1,10 @@
 ﻿using Microsoft.Maui.Handlers;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class StrokeExtensions
 	{
-		public static void UpdateStrokeShape(this ContentPanel nativeView, IBorder border)
+		public static void UpdateStrokeShape(this ContentPanel nativeView, IBorderStroke border)
 		{
 			var shape = border.Shape;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 			nativeView.UpdateBorderShape(shape);
 		}
 
-		public static void UpdateStroke(this ContentPanel nativeView, IBorder border)
+		public static void UpdateStroke(this ContentPanel nativeView, IBorderStroke border)
 		{
 			var stroke = border.Stroke;
 
@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 			nativeView.UpdateStroke(stroke);
 		}
 
-		public static void UpdateStrokeThickness(this ContentPanel nativeView, IBorder border)
+		public static void UpdateStrokeThickness(this ContentPanel nativeView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 			nativeView.UpdateStrokeThickness(strokeThickness);
 		}
 
-		public static void UpdateStrokeDashPattern(this ContentPanel nativeView, IBorder border)
+		public static void UpdateStrokeDashPattern(this ContentPanel nativeView, IBorderStroke border)
 		{
 			var strokeDashPattern = border.StrokeDashPattern;
 
@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 			nativeView.UpdateStrokeDashPattern(strokeDashPattern);
 		}
 
-		public static void UpdateStrokeDashOffset(this ContentPanel nativeView, IBorder border)
+		public static void UpdateStrokeDashOffset(this ContentPanel nativeView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 			nativeView.UpdateBorderDashOffset(strokeDashOffset);
 		}
 
-		public static void UpdateStrokeMiterLimit(this ContentPanel nativeView, IBorder border)
+		public static void UpdateStrokeMiterLimit(this ContentPanel nativeView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui
 			nativeView.UpdateStrokeMiterLimit(strokeMiterLimit);
 		}
 
-		public static void UpdateStrokeLineCap(this ContentPanel nativeView, IBorder border) 
+		public static void UpdateStrokeLineCap(this ContentPanel nativeView, IBorderStroke border) 
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -78,7 +78,7 @@ namespace Microsoft.Maui
 			nativeView.UpdateStrokeLineCap(strokeLineCap);
 		}
 
-		public static void UpdateStrokeLineJoin(this ContentPanel nativeView, IBorder border)
+		public static void UpdateStrokeLineJoin(this ContentPanel nativeView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 

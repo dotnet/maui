@@ -21,8 +21,11 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(CheckBoxPage), "CheckBox",
 				"The CheckBox is a type of button that can either be checked or empty. When a checkbox is checked, it's considered to be on."),
 
+			new SectionModel(typeof(Pages.CollectionViewGalleries.CarouselViewGalleries.CarouselViewGallery), "CarouselView",
+				"CarouselView displays a scrollable list of data items."),
+
 			new SectionModel(typeof(Pages.CollectionViewGalleries.CollectionViewGallery), "CollectionView",
-				"CollectionView displays a scrollable list of selectable data items, using different layout specifications.It aims to provide a more flexible, and performant alternative to ListView. "),
+				"CollectionView displays a scrollable list of selectable data items, using different layout specifications. It aims to provide a more flexible, and performant alternative to ListView."),
 
 			new SectionModel(typeof(DatePickerPage), "DatePicker",
 				"A view that allows the user to select a date."),
@@ -36,6 +39,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ImagePage), "Image",
 				"Displays an image."),
 
+			new SectionModel(typeof(ImageButtonPage), "ImageButton",
+				"ImageButton is a rectangular object that displays an image, and which fires a Clicked event when it's been pressed."),
+
 			new SectionModel(typeof(IndicatorPage), "IndicatorView",
 				"IndicatorView displays indicators. It can also represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
 
@@ -48,6 +54,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ProgressBarPage), "ProgressBar",
 				"The ProgressBar control visually represents progress as a horizontal bar that is filled to a percentage represented by a float value."),
 
+			new SectionModel(typeof(Pages.RadioButtonGalleries.RadioButtonGalleries), "RadioButton",
+				"The Xamarin.Forms RadioButton is a type of button that allows users to select one option from a set. Each option is represented by one radio button, and you can only select one radio button in a group."),
+
 			new SectionModel(typeof(RefreshViewPage), "RefreshView",
 				"RefreshView is a container control that provides pull-to-refresh functionality for scrollable content."),
 
@@ -59,6 +68,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(SliderPage), "Slider",
 				"The Slider is a horizontal bar that can be manipulated by the user to select a double value from a continuous range."),
+
+			new SectionModel(typeof(Pages.SwipeViewGalleries.SwipeViewGallery), "SwipeView",
+				"The SwipeView is a container control that wraps around an item of content, and provides context menu items that are revealed by a swipe gesture. "),
 
 			new SectionModel(typeof(StepperPage), "Stepper",
 				"Use a Stepper for selecting a numeric value from a range of values."),

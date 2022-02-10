@@ -1,14 +1,17 @@
 using System;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public class SearchHandlerAppearanceTracker : IDisposable
 	{
+		IFontManager _fontManager;
 		UIColor _cancelButtonTextColorDefaultDisabled;
 		UIColor _cancelButtonTextColorDefaultHighlighted;
 		UIColor _cancelButtonTextColorDefaultNormal;
@@ -23,8 +26,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		UIToolbar _numericAccessoryView;
 		bool _disposed;
 
-		public SearchHandlerAppearanceTracker(UISearchBar searchBar, SearchHandler searchHandler)
+		public SearchHandlerAppearanceTracker(UISearchBar searchBar, SearchHandler searchHandler, IFontManager fontManager)
 		{
+			_fontManager = fontManager;
 			_searchHandler = searchHandler;
 			_searchHandler.PropertyChanged += SearchHandlerPropertyChanged;
 			_searchHandler.FocusChangeRequested += SearchHandlerFocusChangeRequested;
@@ -124,7 +128,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textField == null)
 				return;
 
-			textField.Font = _searchHandler.ToUIFont();
+
+			textField.Font = _searchHandler.ToFont().ToUIFont(_fontManager);
 		}
 
 		void UpdateSearchBarBackgroundColor(UITextField textField)
@@ -186,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var formatted = (FormattedString)_searchHandler.Placeholder ?? string.Empty;
 			var targetColor = _searchHandler.PlaceholderColor;
 			var placeHolderColor = targetColor ?? ColorExtensions.PlaceholderColor.ToColor();
-			textField.AttributedPlaceholder = formatted.ToAttributed(_searchHandler, placeHolderColor, _searchHandler.HorizontalTextAlignment);
+			textField.AttributedPlaceholder = formatted.ToNSAttributedString(_fontManager, defaultHorizontalAlignment: _searchHandler.HorizontalTextAlignment, defaultColor: placeHolderColor);
 
 			//Center placeholder
 			//var width = (_uiSearchBar.Frame.Width / 2) - textField.AttributedPlaceholder.Size.Width;
@@ -217,7 +222,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_defaultTextColor = _defaultTextColor ?? textField.TextColor;
 			var targetColor = _searchHandler.TextColor;
 
-			textField.TextColor = targetColor.ToUIColor() ?? _defaultTextColor;
+			textField.TextColor = targetColor?.ToUIColor() ?? _defaultTextColor;
 			UpdateSearchBarTintColor(targetColor);
 			UpdateSearchButtonIconColor(targetColor);
 			UpdateClearPlaceholderIconColor(targetColor);

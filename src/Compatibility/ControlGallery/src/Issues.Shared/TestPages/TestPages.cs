@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework.Interfaces;
 using IOPath = System.IO.Path;
 
@@ -425,15 +426,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		protected abstract void Init();
 	}
 
-	public abstract class TestCarouselPage : CarouselPage
+	internal abstract class TestCarouselPage : CarouselPage
 	{
 #if UITEST
 		public IApp RunningApp => AppSetup.RunningApp;
 
 		protected virtual bool Isolate => false;
-
-		IDispatcher _dispatcher = new FallbackDispatcher();
-		public override IDispatcher Dispatcher { get => _dispatcher; }
 #endif
 
 		protected TestCarouselPage()
@@ -536,9 +534,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public IApp RunningApp => AppSetup.RunningApp;
 
 		protected virtual bool Isolate => false;
-
-		IDispatcher _dispatcher = new FallbackDispatcher();
-		public override IDispatcher Dispatcher { get => _dispatcher; }
 #endif
 
 		protected TestTabbedPage()

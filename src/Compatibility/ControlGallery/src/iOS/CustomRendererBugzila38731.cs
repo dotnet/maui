@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportRenderer(typeof(Bugzilla38731), typeof(CustomRendererBugzila38731))]

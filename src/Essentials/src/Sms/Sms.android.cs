@@ -7,24 +7,22 @@ using Android.Provider;
 
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Sms
+	public class SmsImplementation:ISms
 	{
 		static readonly string smsRecipientSeparator = ";";
 
 		internal static bool IsComposeSupported
 			=> Platform.IsIntentSupported(CreateIntent(null, new List<string> { "0000000000" }));
 
-		static Task PlatformComposeAsync(SmsMessage message)
+		public Task ComposeAsync(SmsMessage message)
 		{
 			var intent = CreateIntent(message?.Body, message?.Recipients);
 
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-#if __ANDROID_24__
 			if (Platform.HasApiLevelN)
 				flags |= ActivityFlags.LaunchAdjacent;
-#endif
 			intent.SetFlags(flags);
 
 			Platform.AppContext.StartActivity(intent);
@@ -38,7 +36,7 @@ namespace Microsoft.Maui.Essentials
 
 			body = body ?? string.Empty;
 
-			if (Platform.HasApiLevel(BuildVersionCodes.Kitkat) && recipients.All(x => string.IsNullOrWhiteSpace(x)))
+			if (recipients.All(x => string.IsNullOrWhiteSpace(x)))
 			{
 				var packageName = Telephony.Sms.GetDefaultSmsPackage(Platform.AppContext);
 				if (!string.IsNullOrWhiteSpace(packageName))

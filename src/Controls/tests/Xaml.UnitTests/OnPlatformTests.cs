@@ -1,5 +1,5 @@
-using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -7,24 +7,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class OnPlatformTests : BaseTestFixture
 	{
+		MockDeviceInfo mockDeviceInfo;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			Device.PlatformServices = null;
-			base.TearDown();
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
 		[Test]
 		public void ApplyToProperty()
 		{
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var xaml = @"
 			<ContentPage 
 			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
@@ -64,15 +59,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			ContentPage layout;
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 20, 0, 0), layout.Padding);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+			mockDeviceInfo.Platform = DevicePlatform.Android;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 0, 10, 0), layout.Padding);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
+			mockDeviceInfo.Platform = DevicePlatform.UWP;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 20, 0, 20), layout.Padding);
 		}
@@ -95,7 +90,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Image image;
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			image = new Image().LoadFromXaml(xaml);
 			Assert.AreEqual("icon_twitter.png", (image.Source as FileImageSource).File);
 		}
@@ -104,6 +99,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class OnIdiomTests : BaseTestFixture
 	{
+		MockDeviceInfo mockDeviceInfo;
+
+		[SetUp]
+		public override void Setup()
+		{
+			base.Setup();
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		}
+
 		[Test]
 		public void StackLayoutOrientation()
 		{
@@ -120,11 +124,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<Label Text=""child0""/>
 				<Label Text=""child1""/>			
 			</StackLayout>";
-			Device.Idiom = TargetIdiom.Phone;
+
+			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Vertical, layout.Orientation);
 
-			Device.Idiom = TargetIdiom.Tablet;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
 		}

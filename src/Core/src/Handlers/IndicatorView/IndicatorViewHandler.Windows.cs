@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Platform.Windows;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -37,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 				if (MauiContext != null && indicatorsLayoutOverride != null)
 				{
 					ClearIndicators();
-					handler = indicatorsLayoutOverride.ToNative(MauiContext);
+					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
 					if (handler != null)
 						NativeView.ItemsSource = new ObservableCollection<FrameworkElement>() { handler };
 				}

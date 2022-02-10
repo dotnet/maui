@@ -6,10 +6,11 @@ using Foundation;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeLabel = UIKit.UILabel;
 #else
@@ -479,9 +480,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateFormattedText()
 		{
 #if __MOBILE__
-			Control.AttributedText = _formatted.ToAttributed(Element, Element.TextColor, Element.HorizontalTextAlignment, Element.LineHeight);
+			Control.AttributedText = _formatted.ToNSAttributedString(Element.RequireFontManager());
 #else
-			Control.AttributedStringValue = _formatted.ToAttributed(Element, Element.TextColor, Element.HorizontalTextAlignment, Element.LineHeight);
+			Control.AttributedStringValue = _formatted.ToNSAttributedString(Element.RequireFontManager(), Element.TextColor, Element.HorizontalTextAlignment, Element.LineHeight);
 #endif
 			_perfectSizeValid = false;
 

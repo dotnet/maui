@@ -24,6 +24,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			_windows.Add(window);
 		}
 
+		public void CloseWindow(IWindow window)
+		{
+			_windows.Remove(window);
+		}
+
 		public void ThemeChanged() { }
 	}
 }

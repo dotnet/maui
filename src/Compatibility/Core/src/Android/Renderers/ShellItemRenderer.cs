@@ -53,8 +53,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool _disposed;
 		public IShellItemController ShellItemController => ShellItem;
 
+		internal IFontManager FontManager { get; }
+
 		public ShellItemRenderer(IShellContext shellContext) : base(shellContext)
 		{
+			FontManager = shellContext.Shell.RequireFontManager();
 		}
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -218,7 +221,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					using (var text = new TextView(Context))
 					{
-						text.Typeface = "sans-serif-medium".ToTypeface();
+						text.Typeface = "sans-serif-medium".ToTypeface(FontManager);
 						text.SetTextColor(AColor.Black);
 						text.Text = shellContent.Title;
 						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)

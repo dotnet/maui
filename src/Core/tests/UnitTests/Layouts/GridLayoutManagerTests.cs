@@ -351,7 +351,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view2, 0, 100, 100, 100);
 		}
 
-		[Category(GridSpacing)]
+		[Category(GridSpacing, GridAutoSizing)]
 		[Fact(DisplayName = "Empty rows should not incur additional row spacing")]
 		public void RowSpacingForEmptyRows()
 		{
@@ -441,7 +441,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view2, 100, 0, 100, 100);
 		}
 
-		[Category(GridSpacing)]
+		[Category(GridSpacing, GridAutoSizing)]
 		[Fact(DisplayName = "Empty columns should not incur additional column spacing")]
 		public void ColumnSpacingForEmptyColumns()
 		{
@@ -456,8 +456,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			// Because the auto column has no content, we expect it to have height zero
-			// and we expect that it won't add more row spacing 
+			// Because the auto column has no content, we expect it to have width zero
+			// and we expect that it won't add more column spacing 
 			Assert.Equal(100 + 100 + 10, measure.Width);
 		}
 
@@ -1668,6 +1668,54 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, 0, 0, expectedWidth, expectedHeightRow0);
 			AssertArranged(view1, 0, expectedHeightRow0, expectedWidth, expectedHeightOther);
 			AssertArranged(view2, 0, expectedHeightRow0 + expectedHeightOther, expectedWidth, expectedHeightOther);
+		}
+
+		[Category(GridSpacing, GridStarSizing)]
+		[Fact("Star columns don't appropriate column spacing during measurement")]
+		public void StarColumnMeasureDoesNotIncludeSpacing()
+		{
+			var colSpacing = 10;
+
+			var grid = CreateGridLayout(columns: "100, *, 100", colSpacing: colSpacing);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 2);
+
+			var manager = new GridLayoutManager(grid);
+			var width = 100 + colSpacing + 100 + colSpacing + 100;
+			var measure = manager.Measure(width, double.PositiveInfinity);
+
+			Assert.Equal(width, measure.Width);
+
+			manager.ArrangeChildren(new Rectangle(0, 0, measure.Width, measure.Height));
+			AssertArranged(view0, new Rectangle(0, 0, 100, 100));
+			AssertArranged(view1, new Rectangle(220, 0, 100, 100));
+		}
+
+		[Category(GridSpacing, GridStarSizing)]
+		[Fact("Star rows don't appropriate row spacing during measurement")]
+		public void StarRowMeasureDoesNotIncludeSpacing()
+		{
+			var rowSpacing = 10;
+
+			var grid = CreateGridLayout(rows: "100, *, 100", rowSpacing: rowSpacing);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 2);
+
+			var manager = new GridLayoutManager(grid);
+			var height = 100 + rowSpacing + 100 + rowSpacing + 100;
+			var measure = manager.Measure(double.PositiveInfinity, height);
+
+			Assert.Equal(height, measure.Height);
+
+			manager.ArrangeChildren(new Rectangle(0, 0, measure.Width, measure.Height));
+			AssertArranged(view0, new Rectangle(0, 0, 100, 100));
+			AssertArranged(view1, new Rectangle(0, 220, 100, 100));
 		}
 	}
 }

@@ -38,21 +38,12 @@ namespace Microsoft.Maui.Handlers
 			NativeView.ClearSubviews();
 
 			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddSubview(view.ToNative(MauiContext));
+				NativeView.AddSubview(view.ToPlatform(MauiContext));
 		}
 
 		public static void MapContent(ContentViewHandler handler, IContentView page)
 		{
 			handler.UpdateContent();
-		}
-
-		public static void MapFrame(ContentViewHandler handler, IContentView view)
-		{
-			ViewHandler.MapFrame(handler, view, null);
-
-			// TODO MAUI: Currently the background layer frame is tied to the layout system
-			// which needs to be investigated more
-			handler.NativeView?.UpdateBackgroundLayerFrame();
 		}
 	}
 }

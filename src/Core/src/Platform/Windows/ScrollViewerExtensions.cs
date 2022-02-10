@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ScrollViewerExtensions
 	{
@@ -52,7 +52,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateContent(this ScrollViewer scrollViewer, IView? content, IMauiContext context)
 		{
-			scrollViewer.Content = content == null ? null : content.ToNative(context);
+			scrollViewer.Content = content == null ? null : content.ToPlatform(context);
 		}
 	}
 }

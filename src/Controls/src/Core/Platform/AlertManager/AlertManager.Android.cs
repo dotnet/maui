@@ -130,9 +130,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (dialog.Window != null)
 				{
 					if (arguments.FlowDirection == FlowDirection.MatchParent && sender is IView view)
-					{
-						// TODO: Update FlowDirection			
-					}
+						dialog.Window.DecorView.UpdateFlowDirection(view);
 					else if (arguments.FlowDirection == FlowDirection.LeftToRight)
 						dialog.Window.DecorView.LayoutDirection = LayoutDirection.Ltr;
 					else if (arguments.FlowDirection == FlowDirection.RightToLeft)
@@ -177,9 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (alert.Window != null)
 				{
 					if (arguments.FlowDirection == FlowDirection.MatchParent && sender is IView view)
-					{
-						// TODO: Update FlowDirection
-					}
+						alert.Window.DecorView.UpdateFlowDirection(view);
 					else if (arguments.FlowDirection == FlowDirection.LeftToRight)
 						alert.Window.DecorView.LayoutDirection = LayoutDirection.Ltr;
 					else if (arguments.FlowDirection == FlowDirection.RightToLeft)
@@ -301,14 +297,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool PageIsInThisContext(IView page)
 			{
-				var nativeView = page.ToNative(MauiContext);
+				var nativeView = page.ToPlatform(MauiContext);
 
 				if (nativeView.Context == null)
 				{
 					return false;
 				}
 
-				return nativeView.Context.Equals(Activity);
+				return nativeView.Context.GetActivity()?.Equals(Activity) ?? false;
 			}
 
 			// This is a proxy dialog builder class to support both pre-appcompat and appcompat dialogs for Alert,

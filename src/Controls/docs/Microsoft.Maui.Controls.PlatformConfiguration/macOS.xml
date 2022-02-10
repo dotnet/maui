@@ -1,0 +1,41 @@
+<Type Name="macOS" FullName="Microsoft.Maui.Controls.PlatformConfiguration.macOS">
+  <TypeSignature Language="C#" Value="public sealed class macOS : Microsoft.Maui.Controls.IConfigPlatform" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit macOS extends System.Object implements class Microsoft.Maui.Controls.IConfigPlatform" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.PlatformConfiguration.macOS" />
+  <TypeSignature Language="F#" Value="type macOS = class&#xA;    interface IConfigPlatform" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Microsoft.Maui.Controls.IConfigPlatform</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Docs>
+    <summary>Marker class that identifies the macOS platform.</summary>
+    <remarks>Developers specify the type name of this marker class to the <see cref="M:Microsoft.Maui.Controls.IElementConfiguration`1.On``1" /> method to specify the underlying iOS control on which to run a platform-specific effect.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public macOS ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.macOS.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new macOS marker class.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

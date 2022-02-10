@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		UIElement _defaultAutomationPropertiesLabeledBy;
 
 		VisualElementTracker<Page, FrameworkElement> _tracker;
+		IFlyoutPageController FlyoutPageController => Element;
 
 		public FlyoutPageControl Control { get; private set; }
 
@@ -303,8 +304,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			global::Windows.Foundation.Size masterSize = Control.FlyoutSize;
 			global::Windows.Foundation.Size detailSize = Control.DetailSize;
 
-			Element.FlyoutBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
-			Element.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
+			FlyoutPageController.FlyoutBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
+			FlyoutPageController.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
 		}
 
 		void UpdateDetail()
@@ -399,7 +400,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateDetailTitleView();
 			Control.CollapseStyle = Element.OnThisPlatform().GetCollapseStyle();
 			Control.CollapsedPaneWidth = Element.OnThisPlatform().CollapsedPaneWidth();
-			Control.ShouldShowSplitMode = Element.ShouldShowSplitMode;
+			Control.ShouldShowSplitMode = FlyoutPageController.ShouldShowSplitMode;
 		}
 
 		void UpdateToolbarPlacement()

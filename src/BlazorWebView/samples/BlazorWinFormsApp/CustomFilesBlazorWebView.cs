@@ -19,7 +19,8 @@ namespace BlazorWpfApp
 				},
 				// The contentRoot is ignored here because in WinForms it would include the absolute physical path to the app's content, which this provider doesn't care about
 				contentRoot: null);
-			return inMemoryFiles;
+
+			return new CompositeFileProvider(inMemoryFiles, base.CreateFileProvider(contentRootDir));
 		}
 	}
 }

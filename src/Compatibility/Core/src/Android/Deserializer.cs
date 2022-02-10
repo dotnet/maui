@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			catch (Exception e)
 			{
 				Debug.WriteLine("Could not deserialize properties: " + e.Message);
-				Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while reading Application properties: {e}");
+				Application.Current?.FindMauiContext()?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while reading Application properties");
 			}
 
 			return null;
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			catch (Exception e)
 			{
 				Debug.WriteLine("Could not serialize properties: " + e.Message);
-				Log.Warning("Microsoft.Maui.Controls.Compatibility PropertyStore", $"Exception while writing Application properties: {e}");
+				Application.Current?.FindMauiContext()?.CreateLogger<Deserializer>()?.LogWarning(e, "Exception while writing Application properties");
 				return;
 			}
 		}

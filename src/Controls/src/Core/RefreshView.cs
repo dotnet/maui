@@ -5,21 +5,25 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="Type[@FullName='Microsoft.Maui.Controls.RefreshView']/Docs" />
 	[ContentProperty(nameof(Content))]
 	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>
 	{
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;
 		public event EventHandler Refreshing;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public RefreshView()
 		{
 			IsClippedToBounds = true;
-			VerticalOptions = LayoutOptions.FillAndExpand;
-			HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning disable CS0618 // Type or member is obsolete
+			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RefreshView>>(() => new PlatformConfigurationRegistry<RefreshView>(this));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='IsRefreshingProperty']/Docs" />
 		public static readonly BindableProperty IsRefreshingProperty =
 			BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(RefreshView), false, BindingMode.TwoWay, coerceValue: OnIsRefreshingPropertyCoerced, propertyChanged: OnIsRefreshingPropertyChanged);
 
@@ -54,12 +58,14 @@ namespace Microsoft.Maui.Controls
 			return value;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='IsRefreshing']/Docs" />
 		public bool IsRefreshing
 		{
 			get { return (bool)GetValue(IsRefreshingProperty); }
 			set { SetValue(IsRefreshingProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='CommandProperty']/Docs" />
 		public static readonly BindableProperty CommandProperty =
 			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView), propertyChanged: OnCommandChanged);
 
@@ -75,12 +81,14 @@ namespace Microsoft.Maui.Controls
 			refreshView.RefreshCommandCanExecuteChanged(bindable, EventArgs.Empty);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='Command']/Docs" />
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs" />
 		public static readonly BindableProperty CommandParameterProperty =
 			BindableProperty.Create(nameof(CommandParameter),
 				typeof(object),
@@ -88,6 +96,7 @@ namespace Microsoft.Maui.Controls
 				null,
 				propertyChanged: (bindable, oldvalue, newvalue) => ((RefreshView)(bindable)).RefreshCommandCanExecuteChanged(((RefreshView)(bindable)).Command, EventArgs.Empty));
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='CommandParameter']/Docs" />
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
@@ -109,15 +118,18 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='RefreshColorProperty']/Docs" />
 		public static readonly BindableProperty RefreshColorProperty =
 			BindableProperty.Create(nameof(RefreshColor), typeof(Color), typeof(RefreshView), null);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='RefreshColor']/Docs" />
 		public Color RefreshColor
 		{
 			get { return (Color)GetValue(RefreshColorProperty); }
 			set { SetValue(RefreshColorProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, RefreshView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

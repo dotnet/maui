@@ -8,11 +8,11 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ActivityIndicatorHandlerTests
 	{
-		ProgressBar GetNativeActivityIndicator(ActivityIndicatorHandler activityIndicatorHandler) =>
+		MauiActivityIndicator GetNativeActivityIndicator(ActivityIndicatorHandler activityIndicatorHandler) =>
 			activityIndicatorHandler.NativeView;
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
-			GetNativeActivityIndicator(activityIndicatorHandler).Opacity == 1;
+			GetNativeActivityIndicator(activityIndicatorHandler).ElementOpacity == 1;
 
 		Task ValidateHasColor(IActivityIndicator activityIndicator, Color color, Action action = null)
 		{

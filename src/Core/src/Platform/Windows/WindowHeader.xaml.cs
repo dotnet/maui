@@ -14,27 +14,17 @@ using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using Microsoft.UI.Xaml.Media;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public partial class WindowHeader
 	{
-		internal TranslateTransform? ClipGeometryTransform { get; private set; }
-		internal RectangleGeometry? LayoutRootClip { get; private set; }
-		internal Grid? LayoutRoot { get; private set; }
+		public static readonly DependencyProperty IsBackButtonVisibleProperty
+			= DependencyProperty.Register(nameof(IsBackButtonVisible), typeof(NavigationViewBackButtonVisible), typeof(WindowHeader), 
+				new PropertyMetadata(NavigationViewBackButtonVisible.Collapsed, OnIsBackButtonVisiblePropertyChanged));
 
 		public WindowHeader()
 		{
 			InitializeComponent();
-		}
-
-		internal MauiNavigationView? NavigationView { get; set; }
-
-		protected override void OnApplyTemplate()
-		{
-			base.OnApplyTemplate();
-			ClipGeometryTransform = (TranslateTransform)GetTemplateChild("ClipGeometryTransform");
-			LayoutRoot = (Grid)GetTemplateChild("LayoutRoot");
-			LayoutRootClip = LayoutRoot.Clip;
 		}
 
 		internal string? Title
@@ -71,5 +61,15 @@ namespace Microsoft.Maui
 		internal WGrid ContentGrid => contentGrid;
 
 		internal Border TextBlockBorder => textBlockBorder;
+
+		public NavigationViewBackButtonVisible IsBackButtonVisible
+		{
+			get => (NavigationViewBackButtonVisible)GetValue(IsBackButtonVisibleProperty);
+			set => SetValue(IsBackButtonVisibleProperty, value);
+		}
+		static void OnIsBackButtonVisiblePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+		}
+
 	}
 }

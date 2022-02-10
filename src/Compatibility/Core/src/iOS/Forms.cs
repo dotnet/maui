@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -17,8 +16,10 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Animations;
+using Microsoft.Extensions.DependencyInjection;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using TNativeView = UIKit.UIView;
@@ -48,6 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isiOS12OrNewer;
 		static bool? s_isiOS13OrNewer;
 		static bool? s_isiOS14OrNewer;
+		static bool? s_isiOS15OrNewer;
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
 		internal static bool IsiOS9OrNewer
@@ -108,6 +110,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 				if (!s_isiOS14OrNewer.HasValue)
 					s_isiOS14OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(14, 0);
 				return s_isiOS14OrNewer.Value;
+			}
+		}
+
+		internal static bool IsiOS15OrNewer
+		{
+			get
+			{
+				if (!s_isiOS15OrNewer.HasValue)
+					s_isiOS15OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(15, 0);
+				return s_isiOS15OrNewer.Value;
 			}
 		}
 
@@ -179,14 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-			}
-
 #if __MOBILE__
-			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #else
 			if (!IsInitialized)
@@ -204,7 +209,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				});
 			}
 
-			Device.SetIdiom(TargetIdiom.Desktop);
 			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 
 			if (IsMojaveOrNewer)
@@ -218,18 +222,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.PlatformServices = platformServices;
 
-#if __MOBILE__
-			Device.PlatformInvalidator = platformServices;
-#endif
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers();
+				RegisterCompatRenderers(context);
 
 			ExpressionSearch.Default = new iOSExpressionSearch();
 
 			IsInitialized = true;
 		}
 
-		internal static void RegisterCompatRenderers()
+		internal static void RegisterCompatRenderers(IMauiContext context)
 		{
 			if (!IsInitializedRenderers)
 			{
@@ -242,7 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					typeof(ExportCellAttribute),
 					typeof(ExportImageSourceHandlerAttribute),
 					typeof(ExportFontAttribute)
-				});
+				}, context?.Services?.GetService<IFontRegistrar>());
 			}
 		}
 
@@ -281,9 +282,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		class IOSPlatformServices : IPlatformServices
-#if __MOBILE__
-			, IPlatformInvalidate
-#endif
 		{
 			readonly double _fontScalingFactor = 1;
 			public IOSPlatformServices()
@@ -293,16 +291,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				//close approximation to the new Size by multiplying by this scale factor
 				_fontScalingFactor = (double)UIFont.PreferredBody.PointSize / 17f;
 #endif
-			}
-
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
-			}
-
-			public Assembly[] GetAssemblies()
-			{
-				return AppDomain.CurrentDomain.GetAssemblies();
 			}
 
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
@@ -358,272 +346,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			public Color GetNamedColor(string name)
-			{
-#if __IOS__
-				UIColor resultColor = null;
-
-				// If not iOS 13, but 11+ we can only get the named colors
-				if (!IsiOS13OrNewer && IsiOS11OrNewer)
-					return (resultColor = UIColor.FromName(name)) == null ? null : resultColor.ToColor();
-
-				// If iOS 13+ check all dynamic colors too
-				switch (name)
-				{
-					case NamedPlatformColor.Label:
-						resultColor = UIColor.LabelColor;
-						break;
-					case NamedPlatformColor.Link:
-						resultColor = UIColor.LinkColor;
-						break;
-					case NamedPlatformColor.OpaqueSeparator:
-						resultColor = UIColor.OpaqueSeparatorColor;
-						break;
-					case NamedPlatformColor.PlaceholderText:
-						resultColor = UIColor.PlaceholderTextColor;
-						break;
-					case NamedPlatformColor.QuaternaryLabel:
-						resultColor = UIColor.QuaternaryLabelColor;
-						break;
-					case NamedPlatformColor.SecondaryLabel:
-						resultColor = UIColor.SecondaryLabelColor;
-						break;
-					case NamedPlatformColor.Separator:
-						resultColor = UIColor.SeparatorColor;
-						break;
-					case NamedPlatformColor.SystemBlue:
-						resultColor = UIColor.SystemBlueColor;
-						break;
-					case NamedPlatformColor.SystemGray:
-						resultColor = UIColor.SystemGrayColor;
-						break;
-					case NamedPlatformColor.SystemGray2:
-						resultColor = UIColor.SystemGray2Color;
-						break;
-					case NamedPlatformColor.SystemGray3:
-						resultColor = UIColor.SystemGray3Color;
-						break;
-					case NamedPlatformColor.SystemGray4:
-						resultColor = UIColor.SystemGray4Color;
-						break;
-					case NamedPlatformColor.SystemGray5:
-						resultColor = UIColor.SystemGray5Color;
-						break;
-					case NamedPlatformColor.SystemGray6:
-						resultColor = UIColor.SystemGray6Color;
-						break;
-					case NamedPlatformColor.SystemGreen:
-						resultColor = UIColor.SystemGreenColor;
-						break;
-					case NamedPlatformColor.SystemIndigo:
-						resultColor = UIColor.SystemIndigoColor;
-						break;
-					case NamedPlatformColor.SystemOrange:
-						resultColor = UIColor.SystemOrangeColor;
-						break;
-					case NamedPlatformColor.SystemPink:
-						resultColor = UIColor.SystemPinkColor;
-						break;
-					case NamedPlatformColor.SystemPurple:
-						resultColor = UIColor.SystemPurpleColor;
-						break;
-					case NamedPlatformColor.SystemRed:
-						resultColor = UIColor.SystemRedColor;
-						break;
-					case NamedPlatformColor.SystemTeal:
-						resultColor = UIColor.SystemTealColor;
-						break;
-					case NamedPlatformColor.SystemYellow:
-						resultColor = UIColor.SystemYellowColor;
-						break;
-					case NamedPlatformColor.TertiaryLabel:
-						resultColor = UIColor.TertiaryLabelColor;
-						break;
-					default:
-						resultColor = UIColor.FromName(name);
-						break;
-				}
-
-				if (resultColor == null)
-					return null;
-
-				return resultColor.ToColor();
-#elif __MACOS__
-
-				NSColor resultColor = null;
-
-				switch (name)
-				{
-					case NamedPlatformColor.AlternateSelectedControlTextColor:
-						resultColor = NSColor.AlternateSelectedControlText;
-							break;
-					case NamedPlatformColor.ControlAccent:
-						if (IsMojaveOrNewer)
-							resultColor = NSColor.ControlAccentColor;
-						break;
-					case NamedPlatformColor.ControlBackgroundColor:
-						resultColor = NSColor.ControlBackground;
-						break;
-					case NamedPlatformColor.ControlColor:
-						resultColor = NSColor.Control;
-						break;
-					case NamedPlatformColor.ControlTextColor:
-						resultColor = NSColor.ControlText;
-						break;
-					case NamedPlatformColor.DisabledControlTextColor:
-						resultColor = NSColor.DisabledControlText;
-						break;
-					case NamedPlatformColor.FindHighlightColor:
-						if (IsHighSierraOrNewer)
-							resultColor = NSColor.FindHighlightColor;
-						break;
-					case NamedPlatformColor.GridColor:
-						resultColor = NSColor.Grid;
-						break;
-					case NamedPlatformColor.HeaderTextColor:
-						resultColor = NSColor.HeaderText;
-						break;
-					case NamedPlatformColor.HighlightColor:
-						resultColor = NSColor.Highlight;
-						break;
-					case NamedPlatformColor.KeyboardFocusIndicatorColor:
-						resultColor = NSColor.KeyboardFocusIndicator;
-						break;
-					case NamedPlatformColor.LabelColor:
-						resultColor = NSColor.LabelColor;
-						break;
-					case NamedPlatformColor.LinkColor:
-						resultColor = NSColor.LinkColor;
-						break;
-					case NamedPlatformColor.PlaceholderTextColor:
-						resultColor = NSColor.PlaceholderTextColor;
-						break;
-					case NamedPlatformColor.QuaternaryLabelColor:
-						resultColor = NSColor.QuaternaryLabelColor;
-						break;
-					case NamedPlatformColor.SecondaryLabelColor:
-						resultColor = NSColor.SecondaryLabelColor;
-						break;
-					case NamedPlatformColor.SelectedContentBackgroundColor:
-						resultColor = NSColor.SelectedContentBackgroundColor;
-						break;
-					case NamedPlatformColor.SelectedControlColor:
-						resultColor = NSColor.SelectedControl;
-						break;
-					case NamedPlatformColor.SelectedControlTextColor:
-						resultColor = NSColor.SelectedControlText;
-						break;
-					case NamedPlatformColor.SelectedMenuItemTextColor:
-						resultColor = NSColor.SelectedMenuItemText;
-						break;
-					case NamedPlatformColor.SelectedTextBackgroundColor:
-						resultColor = NSColor.SelectedTextBackground;
-						break;
-					case NamedPlatformColor.SelectedTextColor:
-						resultColor = NSColor.SelectedText;
-						break;
-					case NamedPlatformColor.SeparatorColor:
-						resultColor = NSColor.SeparatorColor;
-						break;
-					case NamedPlatformColor.ShadowColor:
-						resultColor = NSColor.Shadow;
-						break;
-					case NamedPlatformColor.TertiaryLabelColor:
-						resultColor = NSColor.TertiaryLabelColor;
-						break;
-					case NamedPlatformColor.TextBackgroundColor:
-						resultColor = NSColor.TextBackground;
-						break;
-					case NamedPlatformColor.TextColor:
-						resultColor = NSColor.Text;
-						break;
-					case NamedPlatformColor.UnderPageBackgroundColor:
-						resultColor = NSColor.UnderPageBackgroundColor;
-						break;
-					case NamedPlatformColor.UnemphasizedSelectedContentBackgroundColor:
-						if (IsMojaveOrNewer)
-							resultColor = NSColor.UnemphasizedSelectedContentBackgroundColor;
-						break;
-					case NamedPlatformColor.UnemphasizedSelectedTextBackgroundColor:
-						if (IsMojaveOrNewer)
-							resultColor = NSColor.UnemphasizedSelectedTextBackgroundColor;
-						break;
-					case NamedPlatformColor.UnemphasizedSelectedTextColor:
-						if (IsMojaveOrNewer)
-							resultColor = NSColor.UnemphasizedSelectedTextColor;
-						break;
-					case NamedPlatformColor.WindowBackgroundColor:
-						resultColor = NSColor.WindowBackground;
-						break;
-					case NamedPlatformColor.WindowFrameTextColor:
-						resultColor = NSColor.WindowFrameText;
-						break;
-					case NamedPlatformColor.Label:
-						resultColor = NSColor.LabelColor;
-						break;
-					case NamedPlatformColor.Link:
-						resultColor = NSColor.LinkColor;
-						break;
-					case NamedPlatformColor.PlaceholderText:
-						resultColor = NSColor.PlaceholderTextColor;
-						break;
-					case NamedPlatformColor.QuaternaryLabel:
-						resultColor = NSColor.QuaternaryLabelColor;
-						break;
-					case NamedPlatformColor.SecondaryLabel:
-						resultColor = NSColor.SecondaryLabelColor;
-						break;
-					case NamedPlatformColor.Separator:
-						if (IsMojaveOrNewer)
-							resultColor = NSColor.SeparatorColor;
-						break;
-					case NamedPlatformColor.SystemBlue:
-						resultColor = NSColor.SystemBlueColor;
-						break;
-					case NamedPlatformColor.SystemGray:
-						resultColor = NSColor.SystemGrayColor;
-						break;
-					case NamedPlatformColor.SystemGreen:
-						resultColor = NSColor.SystemGreenColor;
-						break;
-					case NamedPlatformColor.SystemIndigo:
-						resultColor = NSColor.SystemIndigoColor;
-						break;
-					case NamedPlatformColor.SystemOrange:
-						resultColor = NSColor.SystemOrangeColor;
-						break;
-					case NamedPlatformColor.SystemPink:
-						resultColor = NSColor.SystemPinkColor;
-						break;
-					case NamedPlatformColor.SystemPurple:
-						resultColor = NSColor.SystemPurpleColor;
-						break;
-					case NamedPlatformColor.SystemRed:
-						resultColor = NSColor.SystemRedColor;
-						break;
-					case NamedPlatformColor.SystemTeal:
-						resultColor = NSColor.SystemTealColor;
-						break;
-					case NamedPlatformColor.SystemYellow:
-						resultColor = NSColor.SystemYellowColor;
-						break;
-					case NamedPlatformColor.TertiaryLabel:
-						resultColor = NSColor.TertiaryLabelColor;
-						break;
-					default:
-						resultColor = NSColor.FromName(name);
-						break;
-				}
-
-				if (resultColor == null)
-					return null;
-
-				return resultColor.ToColor(NSColorSpace.GenericRGBColorSpace);
-#else
-				return null;
-#endif
-			}
-
 			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 			{
 				using (var client = GetHttpClient())
@@ -635,19 +357,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					return result;
 				}
 			}
-
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
-			}
-
-			public bool IsInvokeRequired => !NSThread.IsMain;
-
-#if __MOBILE__
-			public string RuntimePlatform => Device.iOS;
-#else
-			public string RuntimePlatform => Device.macOS;
-#endif
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
@@ -676,49 +385,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				if (v < 10)
 					return '0' + v;
 				return 'a' + v - 10;
-			}
-
-			public class _IsolatedStorageFile : IIsolatedStorageFile
-			{
-				readonly IsolatedStorageFile _isolatedStorageFile;
-
-				public _IsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-				{
-					_isolatedStorageFile = isolatedStorageFile;
-				}
-
-				public Task CreateDirectoryAsync(string path)
-				{
-					_isolatedStorageFile.CreateDirectory(path);
-					return Task.FromResult(true);
-				}
-
-				public Task<bool> GetDirectoryExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.DirectoryExists(path));
-				}
-
-				public Task<bool> GetFileExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.FileExists(path));
-				}
-
-				public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
-					return Task.FromResult(stream);
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
-					return Task.FromResult(stream);
-				}
 			}
 
 #if !__MOBILE__
@@ -813,18 +479,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					throw new InvalidOperationException("Could not find current view controller.");
 
 				return viewController;
-			}
-
-			public void Invalidate(VisualElement visualElement)
-			{
-				var renderer = Platform.iOS.Platform.GetRenderer(visualElement);
-
-				if (renderer == null)
-				{
-					return;
-				}
-
-				renderer.NativeView.SetNeedsLayout();
 			}
 #endif
 		}

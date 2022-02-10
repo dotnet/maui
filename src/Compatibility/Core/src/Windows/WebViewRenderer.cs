@@ -13,11 +13,13 @@ using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using WWebView = Microsoft.UI.Xaml.Controls.WebView2;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public class WebViewRenderer : ViewRenderer<WebView, WebView2>, IWebViewDelegate
 	{
+		IWebViewController WebViewController => Element;
 		WebNavigationEvent _eventState;
 		bool _updating;
 		WebView2 _internalWebView;
@@ -90,7 +92,7 @@ if(bases.length == 0){
 				}
 				catch (Exception exc)
 				{
-					Internals.Log.Warning(nameof(WebViewRenderer), $"Failed to load: {uri} {exc}");
+					Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning(exc, "Failed to load: {uri}", uri);
 				}
 			}
 			else
@@ -102,7 +104,7 @@ if(bases.length == 0){
 				}
 				catch (Exception exc)
 				{
-					Internals.Log.Warning(nameof(WebViewRenderer), $"Failed to load: {uri} {exc}");
+					Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning(exc, "Failed to load: {uri}", uri);
 				}
 			}
 		}
@@ -141,11 +143,11 @@ if(bases.length == 0){
 				{
 					Control.NavigationStarting -= OnNavigationStarted;
 					Control.NavigationCompleted -= OnNavigationCompleted;
-					Element.EvalRequested -= OnEvalRequested;
-					Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
-					Element.GoBackRequested -= OnGoBackRequested;
-					Element.GoForwardRequested -= OnGoForwardRequested;
-					Element.ReloadRequested -= OnReloadRequested;
+					WebViewController.EvalRequested -= OnEvalRequested;
+					WebViewController.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
+					WebViewController.GoBackRequested -= OnGoBackRequested;
+					WebViewController.GoForwardRequested -= OnGoForwardRequested;
+					WebViewController.ReloadRequested -= OnReloadRequested;
 				}
 			}
 
@@ -185,7 +187,7 @@ if(bases.length == 0){
 
 			if (e.OldElement != null)
 			{
-				var oldElement = e.OldElement;
+				IWebViewController oldElement = e.OldElement;
 				oldElement.EvalRequested -= OnEvalRequested;
 				oldElement.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				oldElement.GoBackRequested -= OnGoBackRequested;
@@ -202,7 +204,7 @@ if(bases.length == 0){
 					SetNativeControl(webView);
 				}
 
-				var newElement = e.NewElement;
+				IWebViewController newElement = e.NewElement;
 				newElement.EvalRequested += OnEvalRequested;
 				newElement.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				newElement.GoForwardRequested += OnGoForwardRequested;
@@ -368,7 +370,7 @@ if(bases.length == 0){
 					}
 					catch (Exception exc)
 					{
-						Log.Warning(nameof(WebView), $"Eval of script failed: {exc} Script: {eventArg.Script}");
+						Application.Current?.FindMauiContext()?.CreateLogger<WebView>()?.LogWarning(exc, "Eval of script failed Script: {eventArg.Script}", eventArg.Script);
 					}
 				});
 		}
@@ -457,7 +459,7 @@ if(bases.length == 0){
 			{
 				var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = uri.AbsoluteUri }, uri.AbsoluteUri);
 
-				Element.SendNavigating(args);
+				WebViewController.SendNavigating(args);
 				e.Cancel = args.Cancel;
 
 				// reset in this case because this is the last event we will get
@@ -473,12 +475,13 @@ if(bases.length == 0){
 			_updating = false;
 
 			SyncNativeCookiesToElement(source.Url);
-			Element.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
+			WebViewController.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
 
 			UpdateCanGoBackForward();
 			_eventState = WebNavigationEvent.NewPage;
 		}
 
+		[PortHandler]
 		void UpdateCanGoBackForward()
 		{
 			((IWebViewController)Element).CanGoBack = Control.CanGoBack;

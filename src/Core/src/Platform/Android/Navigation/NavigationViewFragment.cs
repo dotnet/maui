@@ -7,7 +7,7 @@ using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class NavigationViewFragment : Fragment
 	{
@@ -62,7 +62,7 @@ namespace Microsoft.Maui
 			{
 				var scopedContext = NavigationManager.MauiContext.MakeScoped(inflater, ChildFragmentManager);
 
-				_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
+				_currentView = NavigationManager.CurrentPage.ToPlatform(scopedContext);
 			}
 
 			_currentView.RemoveFromParent();

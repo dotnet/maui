@@ -50,6 +50,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		internal TabLayout TabLayout => _tabLayout;
 		internal BottomNavigationView BottomNavigationView => _bottomNavigationView;
 		internal ViewPager2 ViewPager => _viewPager;
+		int _tabplacementId;
 		NavigationRootManager NavigationRootManager { get; }
 
 		public TabbedPageManager(IMauiContext context)
@@ -107,11 +108,13 @@ namespace Microsoft.Maui.Controls.Handlers
 				Element.Appearing -= OnTabbedPageAppearing;
 				Element.Disappearing -= OnTabbedPageDisappearing;
 				RemoveTabs();
+				_viewPager.LayoutChange -= OnLayoutChanged;
 			}
 
 			Element = tabbedPage;
 			if (Element != null)
 			{
+				_viewPager.LayoutChange += OnLayoutChanged;
 				Element.Appearing += OnTabbedPageAppearing;
 				Element.Disappearing += OnTabbedPageDisappearing;
 				_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
@@ -158,6 +161,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
+		{
+			Element.Arrange(e);
+		}
+
 		void RemoveTabs()
 		{
 			if (_tabLayoutFragment != null)
@@ -186,12 +194,24 @@ namespace Microsoft.Maui.Controls.Handlers
 			SetTabLayout();
 		}
 
-		int _tabplacementId;
 		internal void SetTabLayout()
 		{
 			int id;
 			var rootManager =
 				_context.GetNavigationRootManager();
+
+			if (rootManager.RootView == null)
+			{
+				rootManager.RootViewChanged += RootViewChanged;
+
+				void RootViewChanged(object sender, EventArgs e)
+				{
+					rootManager.RootViewChanged -= RootViewChanged;
+					SetTabLayout();
+				}
+
+				return;
+			}
 
 			if (IsBottomTabPlacement)
 			{
@@ -229,7 +249,6 @@ namespace Microsoft.Maui.Controls.Handlers
 					.SetReorderingAllowed(true)
 					.Commit();
 		}
-
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{

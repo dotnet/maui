@@ -276,11 +276,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null || availableSize.Width * availableSize.Height == 0)
 				return new global::Windows.Foundation.Size(0, 0);
 
-			if (Element is Layout layout)
-			{
-				layout.ResolveLayoutChanges();
-			}
-
 			Element.IsInNativeLayout = true;
 
 			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
@@ -462,7 +457,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault())
 				{
-					_control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
+					_control.Background = backgroundColor.ToNative();
 				}
 				else
 				{
@@ -474,7 +469,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault())
 				{
-					backgroundLayer.Background = Maui.ColorExtensions.ToNative(backgroundColor);
+					backgroundLayer.Background = backgroundColor.ToNative();
 				}
 				else
 				{
@@ -502,7 +497,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					if (!backgroundColor.IsDefault())
-						_control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
+						_control.Background = backgroundColor.ToNative();
 					else
 					{
 						_control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
@@ -517,7 +512,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					if (!backgroundColor.IsDefault())
-						backgroundLayer.Background = Maui.ColorExtensions.ToNative(backgroundColor);
+						backgroundLayer.Background = backgroundColor.ToNative();
 					else
 						backgroundLayer.ClearValue(BackgroundProperty);
 				}

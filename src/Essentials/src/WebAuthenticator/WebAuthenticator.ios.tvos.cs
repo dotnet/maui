@@ -8,8 +8,10 @@ using Foundation;
 #if __IOS__
 using SafariServices;
 #endif
+using ObjCRuntime;
 using UIKit;
 using WebKit;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -179,7 +181,7 @@ namespace Microsoft.Maui.Essentials
 			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
 				return true;
 
-			return AppInfo.VerifyHasUrlScheme(scheme);
+			return AppInfoImplementation.VerifyHasUrlScheme(scheme);
 		}
 
 #if __IOS__
