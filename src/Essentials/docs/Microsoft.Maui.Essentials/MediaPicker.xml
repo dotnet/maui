@@ -1,0 +1,125 @@
+<Type Name="MediaPicker" FullName="Microsoft.Maui.Essentials.MediaPicker">
+  <TypeSignature Language="C#" Value="public static class MediaPicker" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit MediaPicker extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Essentials.MediaPicker" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="CapturePhotoAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.FileResult&gt; CapturePhotoAsync (Microsoft.Maui.Essentials.MediaPickerOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Microsoft.Maui.Essentials.FileResult&gt; CapturePhotoAsync(class Microsoft.Maui.Essentials.MediaPickerOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.MediaPicker.CapturePhotoAsync(Microsoft.Maui.Essentials.MediaPickerOptions)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.FileResult&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="options" Type="Microsoft.Maui.Essentials.MediaPickerOptions" />
+      </Parameters>
+      <Docs>
+        <param name="options">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CaptureVideoAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.FileResult&gt; CaptureVideoAsync (Microsoft.Maui.Essentials.MediaPickerOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Microsoft.Maui.Essentials.FileResult&gt; CaptureVideoAsync(class Microsoft.Maui.Essentials.MediaPickerOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.MediaPicker.CaptureVideoAsync(Microsoft.Maui.Essentials.MediaPickerOptions)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.FileResult&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="options" Type="Microsoft.Maui.Essentials.MediaPickerOptions" />
+      </Parameters>
+      <Docs>
+        <param name="options">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsCaptureSupported">
+      <MemberSignature Language="C#" Value="public static bool IsCaptureSupported { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsCaptureSupported" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.MediaPicker.IsCaptureSupported" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PickPhotoAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.FileResult&gt; PickPhotoAsync (Microsoft.Maui.Essentials.MediaPickerOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Microsoft.Maui.Essentials.FileResult&gt; PickPhotoAsync(class Microsoft.Maui.Essentials.MediaPickerOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.MediaPicker.PickPhotoAsync(Microsoft.Maui.Essentials.MediaPickerOptions)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.FileResult&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="options" Type="Microsoft.Maui.Essentials.MediaPickerOptions" />
+      </Parameters>
+      <Docs>
+        <param name="options">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PickVideoAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.FileResult&gt; PickVideoAsync (Microsoft.Maui.Essentials.MediaPickerOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Microsoft.Maui.Essentials.FileResult&gt; PickVideoAsync(class Microsoft.Maui.Essentials.MediaPickerOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.MediaPicker.PickVideoAsync(Microsoft.Maui.Essentials.MediaPickerOptions)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.FileResult&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="options" Type="Microsoft.Maui.Essentials.MediaPickerOptions" />
+      </Parameters>
+      <Docs>
+        <param name="options">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

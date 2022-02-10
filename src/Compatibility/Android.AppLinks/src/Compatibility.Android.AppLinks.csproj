@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-android</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-android</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android.AppLinks</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.Android.AppLinks</RootNamespace>
     <IsPackable>false</IsPackable>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
   </ItemGroup>
 
 </Project>

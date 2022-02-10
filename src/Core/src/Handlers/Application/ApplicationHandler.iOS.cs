@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ApplicationHandler : ElementHandler<IApplication, UIApplicationDelegate>
+	public partial class ApplicationHandler : ElementHandler<IApplication, IUIApplicationDelegate>
 	{
 		public static void MapTerminate(ApplicationHandler handler, IApplication application, object? args)
 		{

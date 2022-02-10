@@ -8,14 +8,18 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs" />
 	[ContentProperty(nameof(Detail))]
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsGestureEnabledProperty']/Docs" />
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsPresentedProperty']/Docs" />
 		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create(nameof(IsPresented), typeof(bool), typeof(FlyoutPage), default(bool),
 			propertyChanged: OnIsPresentedPropertyChanged, propertyChanging: OnIsPresentedPropertyChanging, defaultValueCreator: GetDefaultValue);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='FlyoutLayoutBehaviorProperty']/Docs" />
 		public static readonly BindableProperty FlyoutLayoutBehaviorProperty = BindableProperty.Create(nameof(FlyoutLayoutBehavior), typeof(FlyoutLayoutBehavior), typeof(FlyoutPage), default(FlyoutLayoutBehavior),
 			propertyChanged: OnFlyoutLayoutBehaviorPropertyChanged);
 
@@ -29,6 +33,7 @@ namespace Microsoft.Maui.Controls
 
 		IFlyoutPageController FlyoutPageController => this;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='Detail']/Docs" />
 		public Page Detail
 		{
 			get { return _detail; }
@@ -65,18 +70,21 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsGestureEnabled']/Docs" />
 		public bool IsGestureEnabled
 		{
 			get { return (bool)GetValue(IsGestureEnabledProperty); }
 			set { SetValue(IsGestureEnabledProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsPresented']/Docs" />
 		public bool IsPresented
 		{
 			get { return (bool)GetValue(IsPresentedProperty); }
 			set { SetValue(IsPresentedProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='Flyout']/Docs" />
 		public Page Flyout
 		{
 			get { return _flyout; }
@@ -117,6 +125,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='FlyoutLayoutBehavior']/Docs" />
 		public FlyoutLayoutBehavior FlyoutLayoutBehavior
 		{
 			get { return (FlyoutLayoutBehavior)GetValue(FlyoutLayoutBehaviorProperty); }
@@ -167,6 +176,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler IsPresentedChanged;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='ShouldShowToolbarButton']/Docs" />
 		public virtual bool ShouldShowToolbarButton()
 		{
 			if (Device.Idiom == TargetIdiom.Phone)
@@ -236,6 +246,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<BackButtonPressedEventArgs> BackButtonPressed;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='UpdateFlyoutLayoutBehavior']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void UpdateFlyoutLayoutBehavior()
 		{
@@ -282,6 +293,7 @@ namespace Microsoft.Maui.Controls
 			return Device.RuntimePlatform == Device.macOS;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public FlyoutPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));
@@ -289,6 +301,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<FlyoutPage>> _platformConfigurationRegistry;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='On']/Docs" />
 		public new IPlatformElementConfiguration<T, FlyoutPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

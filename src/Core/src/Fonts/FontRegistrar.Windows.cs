@@ -9,7 +9,11 @@ namespace Microsoft.Maui
 		{
 			var root = global::Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
 
-			var packagePath = Path.Combine(root, "Assets", filename);
+			var packagePath = Path.Combine(root, filename);
+			if (File.Exists(packagePath))
+				return $"ms-appx:///{filename}";
+
+			packagePath = Path.Combine(root, "Assets", filename);
 			if (File.Exists(packagePath))
 				return $"ms-appx:///Assets/{filename}";
 

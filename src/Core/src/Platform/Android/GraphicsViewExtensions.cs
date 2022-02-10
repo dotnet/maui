@@ -1,12 +1,12 @@
-﻿using Microsoft.Maui.Graphics.Native;
+﻿using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class GraphicsViewExtensions
 	{
-		public static void UpdateDrawable(this NativeGraphicsView nativeGraphicsView, IGraphicsView graphicsView)
+		public static void UpdateDrawable(this PlatformGraphicsView PlatformGraphicsView, IGraphicsView graphicsView)
 		{
-			nativeGraphicsView.Drawable = graphicsView.Drawable;
+			PlatformGraphicsView.Drawable = graphicsView.Drawable;
 		}
 	}
 }

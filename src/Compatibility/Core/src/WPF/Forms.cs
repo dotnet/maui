@@ -38,7 +38,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
 
 			Ticker.SetDefault(new WPFTicker());
-			Device.SetIdiom(TargetIdiom.Desktop);
 
 			IsInitialized = true;
 		}

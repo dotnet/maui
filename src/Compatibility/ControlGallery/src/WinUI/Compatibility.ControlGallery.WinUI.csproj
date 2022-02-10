@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.19041</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-windows10.0.19041</TargetFramework>
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -21,12 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\..\Compatibility\Core\tests\WinUI\Compatibility.Windows.UnitTests.csproj" />
   </ItemGroup>
 
