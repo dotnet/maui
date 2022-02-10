@@ -14,42 +14,47 @@ using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WWindow = Microsoft.UI.Xaml.Window;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.FlyoutPage)]
 	public partial class FlyoutPageTests : HandlerTestBase
 	{
-		void SetupBuilder()
+		[Fact(DisplayName = "FlyoutPage Initializes with PaneFooter Set")]
+		public async Task FlyoutPageInitializesWithPaneFooterSet()
 		{
-			EnsureHandlerCreated(builder =>
+			SetupBuilder();
+			var flyoutPage = CreateBasicFlyoutPage();
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				builder.ConfigureMauiHandlers(handlers =>
+				await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
 				{
-					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandler));
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
-					handlers.AddHandler<Page, PageHandler>();
+					Assert.NotNull(handler.NativeView.PaneFooter);
+					return Task.CompletedTask;
 				});
 			});
 		}
 
-		[Fact(DisplayName = "FlyoutPage Initializes with PaneFooter Set")]
-		public async Task FlyoutPageInitializesWithPaneFooterSet()
+
+		[Fact(DisplayName = "FlyoutPage Initializes with Header Set")]
+		public async Task FlyoutPageInitializesWithHeaderSet()
 		{
 			SetupBuilder();
 			var flyoutPage = CreateBasicFlyoutPage();
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await CreateHandlerAndAddToWindow<WindowHandler>(new Window(flyoutPage), (handler) =>
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), (handler) =>
 				{
-					Assert.NotNull(((FlyoutViewHandler)flyoutPage.Handler).NativeView.PaneFooter);
+					var navView = GetMauiNavigationView(handler.MauiContext);
+					Assert.NotNull(navView.Header);
 					return Task.CompletedTask;
 				});
 			});
 		}
+		NavigationView FindPlatformFlyoutView(WFrameworkElement aView) =>
+			aView.GetParentOfType<NavigationView>();
 
 		FlyoutPage CreateBasicFlyoutPage()
 		{

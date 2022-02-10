@@ -15,6 +15,7 @@ using TranslucencyMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecif
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer instead")]
 	public class TabbedRenderer : UITabBarController, IVisualElementRenderer, IEffectControlProvider
 	{
 		bool _barBackgroundColorWasSet;

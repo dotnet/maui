@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 
 			if (content != null && mauiContext != null)
 			{
-				_contentView = content.ToNative(mauiContext);
+				_contentView = content.ToPlatform(mauiContext);
 				this.AddSubview(_contentView);
 				TryInsertRefresh(_contentView);
 			}

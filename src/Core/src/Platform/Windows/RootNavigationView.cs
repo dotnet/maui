@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -12,18 +13,17 @@ namespace Microsoft.Maui.Platform
 	public class RootNavigationView : MauiNavigationView
 	{
 		double _paneHeaderContentHeight;
-		UIElement? _headerControl;
+		WindowHeader? _headerControl;
 
-		internal event EventHandler? FlyoutPaneSizeChanged;
 		internal Size FlyoutPaneSize { get; private set; }
-		internal UIElement? HeaderControl 
+		internal WindowHeader? HeaderControl
 		{
-			get => _headerControl; 
+			get => _headerControl;
 			set
 			{
 				_headerControl = value;
 				UpdateTopNavAreaMargin();
-			} 
+			}
 		}
 
 		public RootNavigationView()
@@ -57,16 +57,36 @@ namespace Microsoft.Maui.Platform
 					TopNavArea.Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
 					Header = null;
 					PaneFooter = HeaderControl;
+
+					if (HeaderControl != null)
+					{
+						HeaderControl.ContentGrid.Margin = new UI.Xaml.Thickness(0, 0, 4, 0);
+						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Center;
+					}
 				}
-				else if(PaneFooter == HeaderControl)
+				else if (PaneFooter == HeaderControl || Header == null)
 				{
 					TopNavArea.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
-					PaneFooter = null;
+
+					// We only null out the PaneFooter if we're moving the HeaderControl from the
+					// Footer to the Header. Which means we're popping off a TabbedPage and
+					// moving to a ContentPage
+					// If the RootView is a FlyoutPage then the Header will be part of the FlyoutPage
+					// And the PaneFooter will be the Flyout Content
+					if (PaneFooter == HeaderControl)
+						PaneFooter = null;
+
 					Header = HeaderControl;
+
+					if (HeaderControl != null)
+					{
+						HeaderControl.ContentGrid.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
+						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Top;
+					}
 				}
 			}
-
 		}
+
 		void HeaderPropertyChanged(DependencyObject sender, DependencyProperty dp) =>
 			UpdateHeaderPropertyBinding();
 
@@ -78,6 +98,25 @@ namespace Microsoft.Maui.Platform
 			isBackButtonVisible.Mode = BindingMode.OneWay;
 			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
+
+			var HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
+
+			if (HeaderContent != null)
+			{
+				Binding visibilityBinding = new Binding();
+				visibilityBinding.Source = HeaderControl;
+				visibilityBinding.Path = new PropertyPath("Visibility");
+				visibilityBinding.Mode = BindingMode.OneWay;
+				visibilityBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+				BindingOperations.SetBinding(HeaderContent, ContentControl.VisibilityProperty, visibilityBinding);
+
+				Binding backgroundBinding = new Binding();
+				backgroundBinding.Source = HeaderControl;
+				backgroundBinding.Path = new PropertyPath("Background");
+				backgroundBinding.Mode = BindingMode.OneWay;
+				backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+				BindingOperations.SetBinding(HeaderContent, ContentControl.BackgroundProperty, backgroundBinding);
+			}
 		}
 
 		void PaneLengthPropertyChanged(DependencyObject sender, DependencyProperty dp)
@@ -91,6 +130,7 @@ namespace Microsoft.Maui.Platform
 				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 
 			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible);
+			UpdateFlyoutPanelMargin();
 		}
 
 
@@ -112,20 +152,6 @@ namespace Microsoft.Maui.Platform
 			if (GetTemplateChild("ContentLeftPadding") is Grid g)
 				g.Visibility = UI.Xaml.Visibility.Collapsed;
 
-			var HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
-			Binding visibilityBinding = new Binding();
-			visibilityBinding.Source = this;
-			visibilityBinding.Path = new PropertyPath("Header.Visibility");
-			visibilityBinding.Mode = BindingMode.TwoWay;
-			visibilityBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-			BindingOperations.SetBinding(HeaderContent, VisibilityProperty, visibilityBinding);
-
-			Binding backgroundBinding = new Binding();
-			backgroundBinding.Source = this;
-			backgroundBinding.Path = new PropertyPath("Header.Background");
-			backgroundBinding.Mode = BindingMode.TwoWay;
-			backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-			BindingOperations.SetBinding(HeaderContent, BackgroundProperty, backgroundBinding);
 
 			if (HeaderControl != null)
 				UpdateHeaderPropertyBinding();
@@ -155,7 +181,89 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			FlyoutPaneSize = new Size(OpenPaneLength, PaneContentGrid.ActualHeight - _paneHeaderContentHeight);
-			FlyoutPaneSizeChanged?.Invoke(this, EventArgs.Empty);
+			_flyoutPanel.Height = FlyoutPaneSize.Height;
+			_flyoutPanel.Width = FlyoutPaneSize.Width;
+			UpdateFlyoutPanelMargin();
+		}
+
+
+		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
+
+		internal void ReplacePaneMenuItemsWithCustomContent(IView? customContent)
+		{
+			_flyoutPanel.Children.Clear();
+
+			if (customContent == null)
+			{
+				PaneFooter = null;
+			}
+			else
+			{
+				if (customContent.ToPlatform() is UIElement element)
+					_flyoutPanel.Children.Add(element);
+
+				PaneFooter = _flyoutPanel;
+			}
+		}
+
+		internal void UpdateFlyoutPanelMargin()
+		{
+			// The left pane on NavigationView currently doesn't account for a custom title bar
+			// If you hide the backbutton and pane toggle button it will shift content up into the custom title
+			// bar. There currently isn't a property associated with this padding it's just set inside the
+			// source code on the PaneContentGrid
+			if (IsBackButtonVisible == NavigationViewBackButtonVisible.Collapsed &&
+				PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+			{
+				_flyoutPanel.Margin = new UI.Xaml.Thickness(
+					_flyoutPanel.Margin.Left,
+					40,
+					_flyoutPanel.Margin.Right,
+					_flyoutPanel.Margin.Bottom);
+			}
+			else
+			{
+				_flyoutPanel.Margin = new UI.Xaml.Thickness(
+					_flyoutPanel.Margin.Left,
+					0,
+					_flyoutPanel.Margin.Right,
+					_flyoutPanel.Margin.Bottom);
+			}
+		}
+
+
+
+		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
+		// The measure call passes in PositiveInfinity for the measurements which causes the layout system
+		// to crash. So we use this Panel to facilitate more constrained measuring values
+		class FlyoutPanel : Panel
+		{
+			public FlyoutPanel()
+			{
+				Height = 0;
+				Width = 0;
+			}
+
+			FrameworkElement? FlyoutContent =>
+				Children.Count > 0 ? (FrameworkElement?)Children[0] : null;
+
+			protected override Size MeasureOverride(Size availableSize)
+			{
+				if (FlyoutContent == null)
+					return new Size(0, 0);
+
+				FlyoutContent.Measure(availableSize);
+				return FlyoutContent.DesiredSize;
+			}
+
+			protected override Size ArrangeOverride(Size finalSize)
+			{
+				if (FlyoutContent == null)
+					return new Size(0, 0);
+
+				FlyoutContent.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+				return new Size(FlyoutContent.ActualWidth, FlyoutContent.ActualHeight);
+			}
 		}
 	}
 }

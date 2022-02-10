@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = toolbar.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(toolbar.Handler.MauiContext));
 
-			nativeToolbar.TitleView = toolbar.TitleView?.ToNative(toolbar.Handler.MauiContext);
+			nativeToolbar.TitleView = toolbar.TitleView?.ToPlatform(toolbar.Handler.MauiContext);
 		}
 
 		public static void UpdateIconColor(this WindowHeader nativeToolbar, Toolbar toolbar)

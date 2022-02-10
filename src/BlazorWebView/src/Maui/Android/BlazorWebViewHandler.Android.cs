@@ -11,45 +11,44 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Maui.Handlers;
 using static Android.Views.ViewGroup;
-using AWebView = Android.Webkit.WebView;
 using Path = System.IO.Path;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, AWebView>
+	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, BlazorAndroidWebView>
 	{
 		private WebViewClient? _webViewClient;
 		private WebChromeClient? _webChromeClient;
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
 
-		protected override AWebView CreateNativeView()
+		protected override BlazorAndroidWebView CreateNativeView()
 		{
-			var aWebView = new AWebView(Context!)
+			var blazorAndroidWebView = new BlazorAndroidWebView(Context!)
 			{
 #pragma warning disable 618 // This can probably be replaced with LinearLayout(LayoutParams.MatchParent, LayoutParams.MatchParent); just need to test that theory
 				LayoutParameters = new Android.Widget.AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0)
 #pragma warning restore 618
 			};
 
-			AWebView.SetWebContentsDebuggingEnabled(enabled: true);
+			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: true);
 
-			if (aWebView.Settings != null)
+			if (blazorAndroidWebView.Settings != null)
 			{
-				aWebView.Settings.JavaScriptEnabled = true;
-				aWebView.Settings.DomStorageEnabled = true;
+				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
+				blazorAndroidWebView.Settings.DomStorageEnabled = true;
 			}
 
 			_webViewClient = GetWebViewClient();
-			aWebView.SetWebViewClient(_webViewClient);
+			blazorAndroidWebView.SetWebViewClient(_webViewClient);
 
 			_webChromeClient = GetWebChromeClient();
-			aWebView.SetWebChromeClient(_webChromeClient);
+			blazorAndroidWebView.SetWebChromeClient(_webChromeClient);
 
-			return aWebView;
+			return blazorAndroidWebView;
 		}
 
-		protected override void DisconnectHandler(AWebView nativeView)
+		protected override void DisconnectHandler(BlazorAndroidWebView nativeView)
 		{
 			nativeView.StopLoading();
 

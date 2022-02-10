@@ -87,12 +87,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return Forms.ConvertToDPFont(pt);
 		}
 
-		public Color GetNamedColor(string name)
-		{
-			// Not supported on this platform
-			return Color.Default;
-		}
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			s_context.Post((o) => action(), null);
@@ -135,11 +129,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				return await response.Content.ReadAsStreamAsync();
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		public IIsolatedStorageFile GetUserStoreForApplication()
 		{
 			return new TizenIsolatedStorageFile();
@@ -151,8 +140,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 
 		public bool IsInvokeRequired => !EcoreMainloop.IsMainThread;
-
-		public string RuntimePlatform => Device.Tizen;
 
 		#endregion
 

@@ -108,17 +108,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 
-		internal static Size GetDesiredSize(INativeViewHandler handler, double widthConstraint, double heightConstraint, Size minimumSize)
+		internal static Size GetDesiredSize(INativeViewHandler handler, double widthConstraint, double heightConstraint, Size? minimumSize)
 		{
 			var size = handler.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
-			var minSize = minimumSize;
 
-			if (size.Height < minSize.Height || size.Width < minSize.Width)
+			if (minimumSize != null)
 			{
-				return new Size(
-						size.Width < minSize.Width ? minSize.Width : size.Width,
-						size.Height < minSize.Height ? minSize.Height : size.Height
-					);
+				var minSize = minimumSize.Value;
+
+				if (size.Height < minSize.Height || size.Width < minSize.Width)
+				{
+					return new Size(
+							size.Width < minSize.Width ? minSize.Width : size.Width,
+							size.Height < minSize.Height ? minSize.Height : size.Height
+						);
+				}
 			}
 
 			return size;
