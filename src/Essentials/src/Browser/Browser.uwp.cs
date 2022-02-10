@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class BrowserImplementation : IBrowser
 	{
-		static Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options) =>
+		public Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options) =>
 			global::Windows.System.Launcher.LaunchUriAsync(uri).AsTask();
 
 		public Task OpenAsync(string uri)
