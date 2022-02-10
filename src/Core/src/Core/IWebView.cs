@@ -44,6 +44,13 @@ namespace Microsoft.Maui
 		void Eval(string script);
 
 		/// <summary>
+		/// On platforms that support JavaScript evaluation, evaluates script.
+		/// </summary>
+		/// <param name="script">The script to evaluate.</param>
+		/// <returns>A task that contains the result of the evaluation as a string.</returns>
+		Task<string> EvaluateJavaScriptAsync(string script);
+
+		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// Raised after web navigation begins.
 		/// </summary>
@@ -54,7 +61,5 @@ namespace Microsoft.Maui
 		/// Raised after web navigation completes.
 		/// </summary>
 		void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result);
-
-		Task<string> EvaluateJavaScriptAsync(string script);
 	}
 }
