@@ -3,11 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Geolocation
+	public partial class GeolocationImplementation : IGeolocation
 	{
-		static async Task<Location> PlatformLastKnownLocationAsync()
+		public async Task<Location> LastKnownLocationAsync()
 		{
 			// no need for permissions as AllowFallbackToConsentlessPositions
 			// will allow the device to return a location regardless
@@ -23,13 +23,19 @@ namespace Microsoft.Maui.Essentials
 			return location?.Coordinate?.ToLocation();
 		}
 
-		static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> LocationAsync()
+			=> await LocationAsync(new GeolocationRequest(), default);
+
+		public async Task<Location> LocationAsync(GeolocationRequest request)
+			=> await LocationAsync(request ?? new GeolocationRequest(), default);
+
+		public async Task<Location> LocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
 			var geolocator = new Geolocator
 			{
-				DesiredAccuracyInMeters = request.PlatformDesiredAccuracy
+				DesiredAccuracyInMeters = request.DesiredAccuracy
 			};
 
 			CheckStatus(geolocator.LocationStatus);

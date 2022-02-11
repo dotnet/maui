@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Geolocation
+	public partial class GeolocationImplementation : IGeolocation
 	{
-		static async Task<Location> PlatformLastKnownLocationAsync()
+		public async Task<Location> LastKnownLocationAsync()
 		{
 			if (!CLLocationManager.LocationServicesEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
@@ -22,7 +22,13 @@ namespace Microsoft.Maui.Essentials
 			return location?.ToLocation();
 		}
 
-		static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> LocationAsync()
+			=> await LocationAsync(new GeolocationRequest(), default);
+
+		public async Task<Location> LocationAsync(GeolocationRequest request)
+			=> await LocationAsync(request ?? new GeolocationRequest(), default);
+
+		public async Task<Location> LocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			if (!CLLocationManager.LocationServicesEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");

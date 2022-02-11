@@ -2,15 +2,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tizen.Location;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Geolocation
+	public partial class GeolocationImplementation : IGeolocation
 	{
 		static Location lastKnownLocation = new Location();
 
-		static Task<Location> PlatformLastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
+		static Task<Location> LastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
 
-		static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		static async Task<Location> LocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 

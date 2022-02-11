@@ -10,14 +10,14 @@ using Android.Runtime;
 using AndroidLocation = Android.Locations.Location;
 using LocationPower = Android.Locations.Power;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Geolocation
+	public partial class GeolocationImplementation : IGeolocation
 	{
 		const long twoMinutes = 120000;
 		static readonly string[] ignoredProviders = new string[] { LocationManager.PassiveProvider, "local_database" };
 
-		static async Task<Location> PlatformLastKnownLocationAsync()
+		public async Task<Location> LastKnownLocationAsync()
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
@@ -35,7 +35,13 @@ namespace Microsoft.Maui.Essentials
 			return bestLocation?.ToLocation();
 		}
 
-		static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> LocationAsync()
+			=> await LocationAsync(new GeolocationRequest(), default);
+
+		public async Task<Location> LocationAsync(GeolocationRequest request)
+			=> await LocationAsync(request ?? new GeolocationRequest(), default);
+
+		public async Task<Location> LocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
@@ -53,7 +59,7 @@ namespace Microsoft.Maui.Essentials
 			// if no providers exist, we can't get a location
 			// let's punt and try to get the last known location
 			if (string.IsNullOrEmpty(providerInfo.Provider))
-				return await GetLastKnownLocationAsync();
+				return await LastKnownLocationAsync();
 
 			var tcs = new TaskCompletionSource<AndroidLocation>();
 
@@ -220,7 +226,7 @@ namespace Microsoft.Maui.Essentials
 			foreach (var provider in activeProviders)
 			{
 				var location = manager.GetLastKnownLocation(provider);
-				if (location != null && Geolocation.IsBetterLocation(location, BestLocation))
+				if (location != null && GeolocationImplementation.IsBetterLocation(location, BestLocation))
 					BestLocation = location;
 			}
 		}
@@ -240,7 +246,7 @@ namespace Microsoft.Maui.Essentials
 
 			lock (locationSync)
 			{
-				if (Geolocation.IsBetterLocation(location, BestLocation))
+				if (GeolocationImplementation.IsBetterLocation(location, BestLocation))
 					BestLocation = location;
 			}
 		}
