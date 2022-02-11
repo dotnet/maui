@@ -104,6 +104,9 @@ namespace Tests
 		}
 
 		long GetShakeTime(DateTime now, double seconds) =>
-			now.AddSeconds(seconds).Nanoseconds();
+			Nanoseconds(now.AddSeconds(seconds));
+
+		static long Nanoseconds(DateTime time) =>
+				(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
 	}
 }

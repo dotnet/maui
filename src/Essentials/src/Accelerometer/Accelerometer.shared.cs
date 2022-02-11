@@ -118,6 +118,8 @@ namespace Microsoft.Maui.Essentials
 			remove => Current.ShakeDetected -= value;
 		}
 
+		internal static bool IsSupported => Current.IsSupported;
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring => Current.IsMonitoring;
 
