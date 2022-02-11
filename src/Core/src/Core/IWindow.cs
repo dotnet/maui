@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using System.Collections.Generic;
 
 namespace Microsoft.Maui
@@ -21,6 +22,21 @@ namespace Microsoft.Maui
 		/// Gets the read only collection of Window Overlays on top of the Window.
 		/// </summary>
 		IReadOnlyCollection<IWindowOverlay> Overlays { get; }
+
+		/// <summary>
+		/// Gets the bounds of the IWindow within its monitor.
+		/// </summary>
+		Rectangle Frame { get; set; }
+
+		/// <summary>
+		/// Gets the specified width of the IWindow.
+		/// </summary>
+		double Width { get; }
+
+		/// <summary>
+		/// Gets the specified height of the IWindow.
+		/// </summary>
+		double Height { get; }
 
 		/// <summary>
 		/// Adds a Window Overlay to the current Window.
