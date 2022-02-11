@@ -77,13 +77,8 @@ stages:
           desc: Controls
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-  - template: common/device-tests.yml
-    parameters:
-      ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
-        androidApiLevels: [ 30, 29, 28  ]
-        iosVersions: [ 'latest', '14.5', '13.7', '12.4', '11.4' ]
-      projects:
         - name: blazorwebview
           desc: BlazorWebView
+          androidApiLevels: [ 30, 29, 28 ] # BlazorWebView requires a recent version of Chrome
           android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
