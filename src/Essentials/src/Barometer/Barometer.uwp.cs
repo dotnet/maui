@@ -10,8 +10,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		static WinBarometer DefaultBarometer => WinBarometer.GetDefault();
 
+		public bool IsMonitoring { get; set; }
 
-		internal bool IsSupported =>
+		public bool IsSupported =>
 			DefaultBarometer != null;
 
 		public void Start(SensorSpeed sensorSpeed)
