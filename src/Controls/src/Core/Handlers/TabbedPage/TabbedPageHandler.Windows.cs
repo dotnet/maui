@@ -92,7 +92,10 @@ namespace Microsoft.Maui.Controls.Handlers
 		private protected override void OnDisconnectHandler(FrameworkElement nativeView)
 		{
 			if (_navigationView != null)
+			{
 				_navigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
+			}
 
 			((WFrame)nativeView).Navigated -= OnNavigated;
 			VirtualView.Appearing -= OnTabbedPageAppearing;
@@ -140,6 +143,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			UpdateValuesWaitingForNavigationView();
 		}
 
+		void OnNavigationViewSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (_navigationView != null)
+				VirtualView.Arrange(_navigationView);
+		}
+
 		void SetupNavigationView()
 		{
 			if (_navigationView == null)
@@ -153,7 +162,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_navigationView.TopNavArea != null)
 				UpdateValuesWaitingForNavigationView();
 			else
+			{
 				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+				_navigationView.SizeChanged += OnNavigationViewSizeChanged;
+			}
 		}
 
 		void UpdateValuesWaitingForNavigationView()

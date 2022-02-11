@@ -191,10 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-#if MACCATALYST || __MACCATALYST__
-			Device.SetIdiom(TargetIdiom.Desktop);
-#elif __MOBILE__
-			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
+#if __MOBILE__
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #else
 			if (!IsInitialized)
@@ -212,7 +209,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				});
 			}
 
-			Device.SetIdiom(TargetIdiom.Desktop);
 			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 
 			if (IsMojaveOrNewer)
@@ -297,11 +293,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 			}
 
-			public Assembly[] GetAssemblies()
-			{
-				return AppDomain.CurrentDomain.GetAssemblies();
-			}
-
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
 				// We make these up anyway, so new sizes didn't really change
@@ -366,16 +357,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					return result;
 				}
 			}
-
-#if MACCATALYST || __MACCATALYST__
-			public string RuntimePlatform => Device.MacCatalyst;
-#elif IOS || __IOS__
-			public string RuntimePlatform => Device.iOS;
-#elif TVOS || __TVOS__
-			public string RuntimePlatform => Device.tvOS;
-#else
-			public string RuntimePlatform => Device.macOS;
-#endif
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{

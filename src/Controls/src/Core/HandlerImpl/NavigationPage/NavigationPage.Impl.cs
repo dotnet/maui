@@ -33,26 +33,10 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IView.Margin => Thickness.Zero;
 
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
-			if (Content is IView view)
-			{
-				_ = view.Measure(widthConstraint, heightConstraint);
-			}
-
-			return new Size(widthConstraint, heightConstraint);
-		}
-
-		protected override Size ArrangeOverride(Rectangle bounds)
-		{
-			Frame = this.ComputeFrame(bounds);
-
-			if (Content is IView view)
-			{
-				_ = view.Arrange(Frame);
-			}
-
-			return Frame.Size;
+			// We don't want forcelayout to call the legacy
+			// Page.LayoutChildren code
 		}
 
 		void IStackNavigation.RequestNavigation(NavigationRequest eventArgs)
