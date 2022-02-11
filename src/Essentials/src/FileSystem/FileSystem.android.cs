@@ -6,9 +6,9 @@ using Android.Provider;
 using Android.Webkit;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class FileSystem
+	public partial class FileSystemImplementation : IFileSystem
 	{
 		internal const string EssentialsFolderHash = "2203693cc04e0be7f4f024d5f9499e13";
 
@@ -31,13 +31,13 @@ namespace Microsoft.Maui.Essentials
 		internal const string UriAuthorityDownloads = "com.android.providers.downloads.documents";
 		internal const string UriAuthorityMedia = "com.android.providers.media.documents";
 
-		static string PlatformCacheDirectory
+		static string CacheDirectory
 			=> Platform.AppContext.CacheDir.AbsolutePath;
 
-		static string PlatformAppDataDirectory
+		static string AppDataDirectory
 			=> Platform.AppContext.FilesDir.AbsolutePath;
 
-		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+		public Task<Stream> OpenAppPackageFileAsync(string filename)
 		{
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
@@ -370,14 +370,14 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
-		internal static string PlatformGetContentType(string extension) =>
+		internal static string GetContentType(string extension) =>
 			MimeTypeMap.Singleton.GetMimeTypeFromExtension(extension.TrimStart('.'));
 
-		internal void PlatformInit(FileBase file)
+		internal void Init(FileBase file)
 		{
 		}
 
-		internal virtual Task<Stream> PlatformOpenReadAsync()
+		internal virtual Task<Stream> OpenReadAsync()
 		{
 			var stream = File.OpenRead(FullPath);
 			return Task.FromResult<Stream>(stream);

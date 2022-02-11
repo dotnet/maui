@@ -1,23 +1,35 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IFileSystem	
+	{
+		string CacheDirectory { get; }
+
+		string AppDataDirectory { get;}
+
+		Task<Stream> OpenAppPackageFileAsync(string filename);		
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
 	public static partial class FileSystem
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='CacheDirectory']/Docs" />
 		public static string CacheDirectory
-			=> PlatformCacheDirectory;
+			=> Current.CacheDirectory;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='AppDataDirectory']/Docs" />
 		public static string AppDataDirectory
-			=> PlatformAppDataDirectory;
+			=> Current.AppDataDirectory;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='OpenAppPackageFileAsync']/Docs" />
 		public static Task<Stream> OpenAppPackageFileAsync(string filename)
-			=> PlatformOpenAppPackageFileAsync(filename);
+			=> Current.OpenAppPackageFileAsync(filename);
 
 		internal static class MimeTypes
 		{
@@ -84,6 +96,20 @@ namespace Microsoft.Maui.Essentials
 				return extension;
 			}
 		}
+
+#nullable enable
+		static IFileSystem? currentImplementation;
+#nullable disable
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IFileSystem Current =>
+			currentImplementation ??= new FileSystemImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(IFileSystem? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />
@@ -116,7 +142,7 @@ namespace Microsoft.Maui.Essentials
 			FullPath = file.FullPath;
 			ContentType = file.ContentType;
 			FileName = file.FileName;
-			PlatformInit(file);
+			Init(file);
 		}
 
 		internal FileBase(string fullPath, string contentType)
@@ -146,7 +172,7 @@ namespace Microsoft.Maui.Essentials
 			var ext = Path.GetExtension(FullPath);
 			if (!string.IsNullOrWhiteSpace(ext))
 			{
-				var content = PlatformGetContentType(ext);
+				var content = GetContentType(ext);
 				if (!string.IsNullOrWhiteSpace(content))
 					return content;
 			}
@@ -179,7 +205,7 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
 		public Task<Stream> OpenReadAsync()
-			=> PlatformOpenReadAsync();
+			=> Current.OpenReadAsync();
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ReadOnlyFile']/Docs" />

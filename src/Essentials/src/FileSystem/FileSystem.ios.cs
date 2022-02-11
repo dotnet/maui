@@ -8,9 +8,9 @@ using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class FileSystem
+	public partial class FileSystemImplementation : IFileSystem
 	{
 		internal static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
 		{
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Essentials
 			FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
 		}
 
-		internal override Task<Stream> PlatformOpenReadAsync()
+		internal override Task<Stream> OpenReadAsync()
 		{
 			var url = NSUrl.FromBookmarkData(bookmark, 0, null, out var isStale, out var error);
 
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Essentials
 			FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
 		}
 
-		internal override Task<Stream> PlatformOpenReadAsync()
+		internal override Task<Stream> OpenReadAsync()
 		{
 			Stream fileStream = File.OpenRead(FullPath);
 
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Essentials
 			FileName = FullPath;
 		}
 
-		internal override Task<Stream> PlatformOpenReadAsync()
+		internal override Task<Stream> OpenReadAsync()
 		{
 			data ??= uiImage.AsPNG();
 
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Essentials
 			FileName = originalFilename;
 		}
 
-		internal override Task<Stream> PlatformOpenReadAsync()
+		internal override Task<Stream> OpenReadAsync()
 		{
 			var tcsStream = new TaskCompletionSource<Stream>();
 

@@ -3,17 +3,17 @@ using System.IO;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class FileSystem
+	public partial class FileSystemImplementation : IFileSystem
 	{
-		static string PlatformCacheDirectory
+		string CacheDirectory
 			=> Application.Current.DirectoryInfo.Cache;
 
-		static string PlatformAppDataDirectory
+		string AppDataDirectory
 			=> Application.Current.DirectoryInfo.Data;
 
-		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+		public Task<Stream> OpenAppPackageFileAsync(string filename)
 		{
 			if (string.IsNullOrWhiteSpace(filename))
 				throw new ArgumentNullException(nameof(filename));
@@ -26,17 +26,17 @@ namespace Microsoft.Maui.Essentials
 
 	public partial class FileBase
 	{
-		static string PlatformGetContentType(string extension)
+		static string GetContentType(string extension)
 		{
 			extension = extension.TrimStart('.');
 			return Tizen.Content.MimeType.MimeUtil.GetMimeType(extension);
 		}
 
-		internal void PlatformInit(FileBase file)
+		internal void Init(FileBase file)
 		{
 		}
 
-		internal virtual async Task<Stream> PlatformOpenReadAsync()
+		internal virtual async Task<Stream> OpenReadAsync()
 		{
 			await Permissions.RequestAsync<Permissions.StorageRead>();
 
