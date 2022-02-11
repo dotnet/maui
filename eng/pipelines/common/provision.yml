@@ -2,6 +2,7 @@ parameters:
   platform : ''
   skipXcode: false
   poolName: ''
+  provisionatorChannel: 'latest'
 
 steps:
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
@@ -26,7 +27,7 @@ steps:
           provisioning_script: $(provisionator.xcode)
           provisioning_extra_args: $(provisionator.extraArguments)
         env:
-          PROVISIONATOR_CHANNEL: $(PROVISIONATOR_CHANNEL)
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
           AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
@@ -36,7 +37,7 @@ steps:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
       env:
-        PROVISIONATOR_CHANNEL: $(PROVISIONATOR_CHANNEL)
+        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
     # Setup SDK Paths
@@ -98,7 +99,7 @@ steps:
       inputs:
         provisioning_script: $(provisionator.vs)
       env:
-        PROVISIONATOR_CHANNEL: $(PROVISIONATOR_CHANNEL)
+        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
 
     - pwsh: |
         $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"

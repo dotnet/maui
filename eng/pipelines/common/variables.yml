@@ -30,8 +30,6 @@ variables:
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
   value: $(Build.ArtifactStagingDirectory)/test-results
-- name: PROVISIONATOR_CHANNEL
-  value: ${{ parameters.provisionatorChannel }}
 - name: provisionator.xcode
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path
