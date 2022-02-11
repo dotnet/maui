@@ -27,7 +27,7 @@ stages:
               pool:
                 name: ${{ parameters.androidVmPool }}
                 vmImage: ${{ parameters.androidVmImage }}
-                ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+                ${{ if startsWith(parameters.androidVmPool, 'VSEng-VSMac-Xamarin-Shared') }}:
                   demands:
                     - macOS.Name -equals BigSur
                     - macOS.Architecture -equals x64
@@ -58,7 +58,7 @@ stages:
               pool:
                 name: ${{ parameters.iosVmPool }}
                 vmImage: ${{ parameters.iosVmImage }}
-                ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+                ${{ if startsWith(parameters.iosVmPool, 'VSEng-VSMac-Xamarin-Shared') }}:
                   demands:
                     - macOS.Name -equals BigSur
                     - macOS.Architecture -equals x64
