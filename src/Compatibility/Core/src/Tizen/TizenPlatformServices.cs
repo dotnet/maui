@@ -129,11 +129,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				return await response.Content.ReadAsStreamAsync();
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		public IIsolatedStorageFile GetUserStoreForApplication()
 		{
 			return new TizenIsolatedStorageFile();
@@ -145,8 +140,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 
 		public bool IsInvokeRequired => !EcoreMainloop.IsMainThread;
-
-		public string RuntimePlatform => Device.Tizen;
 
 		#endregion
 

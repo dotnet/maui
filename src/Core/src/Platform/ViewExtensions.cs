@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using Microsoft.Maui.Graphics;
+using System.Threading.Tasks;
 #if NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using INativeViewHandler = Microsoft.Maui.IViewHandler;
 #endif
@@ -79,6 +80,22 @@ namespace Microsoft.Maui
 				return t;
 
 			return view.GetParent()?.GetParentOfType<T>();
+		}
+
+		internal static Task OnUnloadedAsync(this PlatformView platformView, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			platformView.OnUnloaded(() => taskCompletionSource.SetResult(true));
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+		}
+
+		internal static Task OnLoadedAsync(this PlatformView platformView, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			platformView.OnLoaded(() => taskCompletionSource.SetResult(true));
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 #endif
 

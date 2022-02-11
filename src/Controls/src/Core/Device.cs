@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
@@ -33,19 +31,28 @@ namespace Microsoft.Maui.Controls
 
 		static IPlatformServices s_platformServices;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetIdiom']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetIdiom(TargetIdiom value) => Idiom = value;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Idiom']/Docs" />
-		public static TargetIdiom Idiom { get; internal set; }
-
-		//TODO: Why are there two of these? This is never used...?
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetTargetIdiom']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
+		public static TargetIdiom Idiom
+		{
+			get
+			{
+				var idiom = DeviceInfo.Idiom;
+				if (idiom == DeviceIdiom.Tablet)
+					return TargetIdiom.Tablet;
+				if (idiom == DeviceIdiom.Phone)
+					return TargetIdiom.Phone;
+				if (idiom == DeviceIdiom.Desktop)
+					return TargetIdiom.Desktop;
+				if (idiom == DeviceIdiom.TV)
+					return TargetIdiom.TV;
+				if (idiom == DeviceIdiom.Watch)
+					return TargetIdiom.Watch;
+				return TargetIdiom.Unsupported;
+			}
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs" />
-		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
+		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetFlowDirection']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -122,13 +129,6 @@ namespace Microsoft.Maui.Controls
 		public static void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			PlatformServices.StartTimer(interval, callback);
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetAssemblies']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs" />

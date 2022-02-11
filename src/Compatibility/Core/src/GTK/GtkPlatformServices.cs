@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 	{
 		public bool IsInvokeRequired => Thread.CurrentThread.IsBackground;
 
-		public string RuntimePlatform => Device.GTK;
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			GLib.Idle.Add(delegate
@@ -25,11 +23,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 		public Ticker CreateTicker()
 		{
 			return new GtkTicker();
-		}
-
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
 		}
 
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override CarouselViewController CreateController(CarouselView newElement, ItemsViewLayout layout)
 				=> new CarouselViewController(newElement, layout);
-		
+
 		protected override ItemsViewLayout SelectLayout() =>
 				_layout ??= new CarouselViewLayout(VirtualView.ItemsLayout, VirtualView);
 
@@ -53,6 +53,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.NativeView.Frame.Size);
 			handler.Controller.Layout.InvalidateLayout();
 		}
-		
+
 	}
 }

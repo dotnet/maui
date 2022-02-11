@@ -70,38 +70,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			double width = Bounds.Width;
 			if (_headerRenderer != null)
 			{
-				// Time for another story with Jason. Gather round children because the following Math.Ceiling will look like it's completely useless.
-				// You will remove it and test and find everything is fiiiiiine, but it is not fine, no it is far from fine. See iOS, or at least iOS 8
-				// has an issue where-by if the TableHeaderView happens to NOT be an integer height, it will add padding to the space between the content
-				// of the UITableView and the TableHeaderView to the tune of the difference between Math.Ceiling (height) - height. Now this seems fine
-				// and when you test it will be, EXCEPT that it does this every time you toggle the visibility of the UITableView causing the spacing to
-				// grow a little each time, which you weren't testing at all were you? So there you have it, the stupid reason we integer align here.
-				//
-				// The same technically applies to the footer, though that could hardly matter less. We just do it for fun.
-				var e = _headerRenderer.VirtualView;
-				var request = e.Measure(width, double.PositiveInfinity);
-				e.Frame = new Rectangle(0, 0, request.Width, request.Height);
-				e.Arrange(e.Frame);
-
-				Device.BeginInvokeOnMainThread(() =>
-				{
-					if (_headerRenderer != null)
-						Control.TableHeaderView = _headerRenderer.NativeView;
-				});
+				UpdateHeaderMeasure();
 			}
 
 			if (_footerRenderer != null)
 			{
-				var e = _footerRenderer.VirtualView;
-				var request = e.Measure(width, height);
-				e.Frame = new Rectangle(0, 0, request.Width, request.Height);
-				e.Arrange(e.Frame);
-
-				Device.BeginInvokeOnMainThread(() =>
-				{
-					if (_footerRenderer != null)
-						Control.TableFooterView = _footerRenderer.NativeView;
-				});
+				UpdateFooterMeasure();
 			}
 
 			if (_requestedScroll != null && Superview != null)
@@ -155,92 +129,71 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		//void DisposeSubviews(UIView view)
-		//{
-		//	var ver = view as IVisualElementRenderer;
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
 
-		//	if (ver == null)
-		//	{
-		//		// VisualElementRenderers should implement their own dispose methods that will appropriately dispose and remove their child views.
-		//		// Attempting to do this work twice could cause a SIGSEGV (only observed in iOS8), so don't do this work here.
-		//		// Non-renderer views, such as separator lines, etc., can be removed here.
-		//		foreach (UIView subView in view.Subviews)
-		//			DisposeSubviews(subView);
+			if (disposing)
+			{
+				if (_insetTracker != null)
+				{
+					_insetTracker.Dispose();
+					_insetTracker = null;
+				}
 
-		//		view.RemoveFromSuperview();
-		//	}
+				if (Element != null)
+				{
+					var templatedItems = TemplatedItemsView.TemplatedItems;
+					templatedItems.CollectionChanged -= OnCollectionChanged;
+					templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
+				}
 
-		//	view.Dispose();
-		//}
+				if (_dataSource != null)
+				{
+					_dataSource.Dispose();
+					_dataSource = null;
+				}
 
-		//protected override void Dispose(bool disposing)
-		//{
-		//	if (_disposed)
-		//		return;
+				if (_tableViewController != null)
+				{
+					_tableViewController.Dispose();
+					_tableViewController = null;
+				}
 
-		//	if (disposing)
-		//	{
-		//		if (_insetTracker != null)
-		//		{
-		//			_insetTracker.Dispose();
-		//			_insetTracker = null;
-		//		}
+				if (_headerRenderer != null)
+				{
+					_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
+					_headerRenderer = null;
+				}
+				if (_footerRenderer != null)
+				{
+					_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
+					_footerRenderer = null;
+				}
 
-		//		foreach (UIView subview in Subviews)
-		//			DisposeSubviews(subview);
+				if (_backgroundUIView != null)
+				{
+					_backgroundUIView.Dispose();
+					_backgroundUIView = null;
+				}
 
-		//		if (Element != null)
-		//		{
-		//			var templatedItems = TemplatedItemsView.TemplatedItems;
-		//			templatedItems.CollectionChanged -= OnCollectionChanged;
-		//			templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
-		//		}
+				var headerView = ListView?.HeaderElement as VisualElement;
+				if (headerView != null)
+					headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+				Control?.TableHeaderView?.Dispose();
 
-		//		if (_dataSource != null)
-		//		{
-		//			_dataSource.Dispose();
-		//			_dataSource = null;
-		//		}
+				var footerView = ListView?.FooterElement as VisualElement;
+				if (footerView != null)
+					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
+				Control?.TableFooterView?.Dispose();
+			}
 
-		//		if (_tableViewController != null)
-		//		{
-		//			_tableViewController.Dispose();
-		//			_tableViewController = null;
-		//		}
+			_disposed = true;
 
-		//		if (_headerRenderer != null)
-		//		{
-		//			_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
-		//			_headerRenderer = null;
-		//		}
-		//		if (_footerRenderer != null)
-		//		{
-		//			_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
-		//			_footerRenderer = null;
-		//		}
-
-		//		if (_backgroundUIView != null)
-		//		{
-		//			_backgroundUIView.Dispose();
-		//			_backgroundUIView = null;
-		//		}
-
-		//		var headerView = ListView?.HeaderElement as VisualElement;
-		//		if (headerView != null)
-		//			headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
-		//		Control?.TableHeaderView?.Dispose();
-
-		//		var footerView = ListView?.FooterElement as VisualElement;
-		//		if (footerView != null)
-		//			footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
-		//		Control?.TableFooterView?.Dispose();
-		//	}
-
-		//	_disposed = true;
-
-		//	base.Dispose(disposing);
-		//}
-
+			base.Dispose(disposing);
+		}
+		bool _disposed = false;
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
 			_requestedScroll = null;
@@ -390,18 +343,54 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateItems(e, 0, true);
 		}
 
-		void OnFooterMeasureInvalidated(object sender, EventArgs eventArgs)
+		void UpdateFooterMeasure()
 		{
-			double width = Bounds.Width;
-			if (width == 0)
+			Control.TableFooterView = null;
+			if (Bounds.Width * Bounds.Height == 0)
 				return;
 
-			var footerView = (IView)sender;
-			var request = footerView.Measure(width, double.PositiveInfinity);
-			// Todo MAUI
-			//Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+			var size = _footerRenderer.VirtualView.Measure(Bounds.Width, double.PositiveInfinity);
+			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
+			_footerRenderer.NativeView.Frame = platformFrame;
+			_footerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
+			Device.BeginInvokeOnMainThread(() =>
+			{
+				if (_headerRenderer != null)
+					Control.TableFooterView = _footerRenderer.NativeView;
+			});
+		}
 
-			Control.TableFooterView = _footerRenderer.NativeView;
+		void UpdateHeaderMeasure()
+		{
+			Control.TableHeaderView = null;
+
+			if (Bounds.Width * Bounds.Height == 0)
+				return;
+
+			var size = _headerRenderer.VirtualView.Measure(Bounds.Width, double.PositiveInfinity);
+			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
+			_headerRenderer.NativeView.Frame = platformFrame;
+			_headerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
+			Control.TableHeaderView = _headerRenderer.NativeView;
+
+			// Time for another story with Jason. Gather round children because the following Math.Ceiling will look like it's completely useless.
+			// You will remove it and test and find everything is fiiiiiine, but it is not fine, no it is far from fine. See iOS, or at least iOS 8
+			// has an issue where-by if the TableHeaderView happens to NOT be an integer height, it will add padding to the space between the content
+			// of the UITableView and the TableHeaderView to the tune of the difference between Math.Ceiling (height) - height. Now this seems fine
+			// and when you test it will be, EXCEPT that it does this every time you toggle the visibility of the UITableView causing the spacing to
+			// grow a little each time, which you weren't testing at all were you? So there you have it, the stupid reason we integer align here.
+			//
+			// The same technically applies to the footer, though that could hardly matter less. We just do it for fun.
+			Device.BeginInvokeOnMainThread(() =>
+			{
+				if (_headerRenderer != null)
+					Control.TableHeaderView = _headerRenderer.NativeView;
+			});
+		}
+
+		void OnFooterMeasureInvalidated(object sender, EventArgs eventArgs)
+		{
+			UpdateFooterMeasure();
 		}
 
 		void OnGroupedCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -415,17 +404,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void OnHeaderMeasureInvalidated(object sender, EventArgs eventArgs)
 		{
-			double width = Bounds.Width;
-			if (width == 0)
-				return;
-
-			var headerView = (IView)sender;
-			var request = headerView.Measure(width, double.PositiveInfinity);
-
-			// TODO MAUI
-			//Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
-
-			Control.TableHeaderView = _headerRenderer.NativeView;
+			UpdateHeaderMeasure();
 		}
 
 		void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
@@ -489,14 +468,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_footerRenderer = footerView.ToHandler(MauiContext);
-
-				double width = Bounds.Width;
-				// TODO MAUI
-				//var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				//Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
-
-				Control.TableFooterView = _footerRenderer.NativeView;
 				footerView.MeasureInvalidated += OnFooterMeasureInvalidated;
+				UpdateFooterMeasure();
 			}
 			else if (_footerRenderer != null)
 			{
@@ -532,17 +505,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_headerRenderer?.DisconnectHandler();
 				}
 
-				// This will force measure to invalidate, which we haven't hooked up to yet because we are smarter!
 				_headerRenderer = headerView.ToHandler(MauiContext);
-
-				double width = Bounds.Width;
-
-				// TODO MAUI
-				//var request = headerView.Measure(width, double.PositiveInfinity);
-				//Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
-
-				Control.TableHeaderView = _headerRenderer.NativeView;
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
+				UpdateHeaderMeasure();
 			}
 			else if (_headerRenderer != null)
 			{

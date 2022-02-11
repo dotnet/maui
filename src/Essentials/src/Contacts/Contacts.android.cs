@@ -10,7 +10,7 @@ using StructuredName = Android.Provider.ContactsContract.CommonDataKinds.Structu
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class ContactsImplementation:IContacts
+	public class ContactsImplementation : IContacts
 	{
 		const string idCol = ContactsContract.Contacts.InterfaceConsts.Id;
 		const string displayNameCol = ContactsContract.Contacts.InterfaceConsts.DisplayName;

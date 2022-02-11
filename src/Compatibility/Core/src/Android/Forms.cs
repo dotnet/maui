@@ -238,48 +238,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("Epilog");
 
-			var currentIdiom = TargetIdiom.Unsupported;
-
-			// First try UIModeManager
-			using (var uiModeManager = UiModeManager.FromContext(ApplicationContext))
-			{
-				try
-				{
-					var uiMode = uiModeManager?.CurrentModeType ?? UiMode.TypeUndefined;
-					currentIdiom = DetectIdiom(uiMode);
-				}
-				catch (Exception ex)
-				{
-					System.Diagnostics.Debug.WriteLine($"Unable to detect using UiModeManager: {ex.Message}");
-				}
-			}
-
-			// Then try Configuration
-			if (TargetIdiom.Unsupported == currentIdiom)
-			{
-				var configuration = activity.Resources.Configuration;
-
-				if (configuration != null)
-				{
-					var minWidth = configuration.SmallestScreenWidthDp;
-					var isWide = minWidth >= TabletCrossover;
-					currentIdiom = isWide ? TargetIdiom.Tablet : TargetIdiom.Phone;
-				}
-				else
-				{
-					// Start clutching at straws
-					var metrics = activity.Resources?.DisplayMetrics;
-
-					if (metrics != null)
-					{
-						var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
-						var isWide = minSize * metrics.Density >= TabletCrossover;
-						currentIdiom = isWide ? TargetIdiom.Tablet : TargetIdiom.Phone;
-					}
-				}
-			}
-
-			Device.SetIdiom(currentIdiom);
 			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
@@ -287,22 +245,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			IsInitialized = true;
 			Profile.FrameEnd();
-		}
-
-		static TargetIdiom DetectIdiom(UiMode uiMode)
-		{
-			var returnValue = TargetIdiom.Unsupported;
-			if (uiMode == UiMode.TypeNormal)
-				returnValue = TargetIdiom.Unsupported;
-			else if (uiMode == UiMode.TypeTelevision)
-				returnValue = TargetIdiom.TV;
-			else if (uiMode == UiMode.TypeDesk)
-				returnValue = TargetIdiom.Desktop;
-			else if (uiMode == UiMode.TypeWatch)
-				returnValue = TargetIdiom.Watch;
-
-			Device.SetIdiom(returnValue);
-			return returnValue;
 		}
 
 		static Color GetAccentColor(Context context)
@@ -394,11 +336,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				_context = context;
 			}
 
-			public Assembly[] GetAssemblies()
-			{
-				return AppDomain.CurrentDomain.GetAssemblies();
-			}
-
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
 				if (_smallSize == 0)
@@ -479,8 +416,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 						throw new ArgumentOutOfRangeException("size");
 				}
 			}
-
-			public string RuntimePlatform => Device.Android;
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
