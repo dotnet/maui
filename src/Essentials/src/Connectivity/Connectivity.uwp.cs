@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.Networking.Connectivity;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Connectivity
+	public partial class ConnectivityImplementation : IConnectivity
 	{
 		static void StartListeners() =>
 			 NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;

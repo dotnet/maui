@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Tizen.Network.Connection;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Connectivity
+	public partial class ConnectivityImplementation : IConnectivity
 	{
 		static IList<ConnectionProfile> profiles = new List<ConnectionProfile>();
 
