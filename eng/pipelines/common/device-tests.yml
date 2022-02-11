@@ -21,6 +21,7 @@ stages:
         - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevels }}:
             - job: android_device_tests_${{ project.name }}_${{ api }}
+              condition: ${{ or(eq(project.androidApiLevels, ''), containsValue(project.androidApiLevels, api)) }}
               workspace:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
@@ -52,6 +53,7 @@ stages:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - job: ios_device_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+              condition: ${{ or(eq(project.iosVersions, ''), containsValue(project.iosVersions, version)) }}
               workspace:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
