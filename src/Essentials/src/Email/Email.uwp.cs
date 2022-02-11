@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class EmailImplementation : IEmail
 	{
-		internal static bool IsComposeSupported
+		public bool IsComposeSupported
 			=> ApiInformation.IsTypePresent("Windows.ApplicationModel.Email.EmailManager");
 
 		public async Task ComposeAsync(EmailMessage message)
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public async Task ComposeAsync()
 			=> await ComposeAsync(null);
 
-		static void Sync(List<string> recipients, IList<EmailRecipient> nativeRecipients)
+		void Sync(List<string> recipients, IList<EmailRecipient> nativeRecipients)
 		{
 			if (recipients == null)
 				return;
