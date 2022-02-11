@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static void Arrange(
-			this IView view, 
+			this IView view,
 			int left,
 			int top,
 			int right,
@@ -481,10 +481,10 @@ namespace Microsoft.Maui.Platform
 				 throw new InvalidOperationException("platformView is Missing Context");
 
 			view.Arrange(
-				platformView.Left, 
-				platformView.Top, 
-				platformView.Right, 
-				platformView.Left, 
+				platformView.Left,
+				platformView.Top,
+				platformView.Right,
+				platformView.Left,
 				context);
 		}
 	}
