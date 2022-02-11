@@ -88,8 +88,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return SetAsync(actions.AsEnumerable<AppAction>());
 		}
 
-		static AppAction ToAction(this JumpListItem item)
-			=> new AppAction(ArgumentsToId(item.Arguments), item.DisplayName, item.Description);
 
 		static string ArgumentsToId(string arguments)
 		{
@@ -98,6 +96,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			return default;
 		}
+	}
+
+	internal static class AppActionsExtensions
+	{
+		static AppAction ToAction(this JumpListItem item)
+			=> new AppAction(ArgumentsToId(item.Arguments), item.DisplayName, item.Description);
 
 		static JumpListItem ToJumpListItem(this AppAction action)
 		{
