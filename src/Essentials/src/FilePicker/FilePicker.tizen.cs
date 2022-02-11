@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Tizen;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class FilePicker
+	public partial class FilePickerImplementation : IFilePicker
 	{
-		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		public async Task<IEnumerable<FileResult>> PickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 			await Permissions.EnsureGrantedAsync<Permissions.StorageRead>();
@@ -44,36 +44,41 @@ namespace Microsoft.Maui.Essentials
 
 			return await tcs.Task;
 		}
+
+		public async Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions options)
+		{
+			return await PickAsync(options, true);
+		}
 	}
 
-	public partial class FilePickerFileType
+	public partial class FilePickerFileTypeImplementation : IFilePickerFileType
 	{
-		static FilePickerFileType PlatformImageFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation ImageFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.ImageAll } },
 			});
 
-		static FilePickerFileType PlatformPngFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation PngFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.ImagePng } }
 			});
 
-		static FilePickerFileType PlatformJpegFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation JpegFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.ImageJpg } }
 			});
 
-		static FilePickerFileType PlatformVideoFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation VideoFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.VideoAll } }
 			});
 
-		static FilePickerFileType PlatformPdfFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation PdfFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.Pdf } }
 			});

@@ -5,11 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class FilePicker
+	public partial class FilePickerImplementation : IFilePicker
 	{
-		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		public async Task<IEnumerable<FileResult>> PickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			// we only need the permission when accessing the file, but it's more natural
 			// to ask the user first, then show the picker.
@@ -62,36 +62,46 @@ namespace Microsoft.Maui.Essentials
 				return null;
 			}
 		}
+
+		public async Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions options)
+		{
+			return await PickAsync(options, true);
+		}
 	}
 
-	public partial class FilePickerFileType
+	public partial class FilePickerFileTypeImplementation : IFilePickerFileType
 	{
-		static FilePickerFileType PlatformImageFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		readonly IDictionary<DevicePlatform, IEnumerable<string>> fileTypes;
+
+		public FilePickerFileTypeImplementation(IDictionary<DevicePlatform, IEnumerable<string>> fileTypes) =>
+			this.fileTypes = fileTypes;
+
+		public IFilePickerFileType ImageFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.ImagePng, FileSystem.MimeTypes.ImageJpg } }
 			});
 
-		static FilePickerFileType PlatformPngFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		public IFilePickerFileType PngFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.ImagePng } }
 			});
 
-		static FilePickerFileType PlatformJpegFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		public IFilePickerFileType JpegFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.ImageJpg } }
 			});
 
-		static FilePickerFileType PlatformVideoFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		public IFilePickerFileType VideoFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.VideoAll } }
 			});
 
-		static FilePickerFileType PlatformPdfFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		public IFilePickerFileType PdfFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.Pdf } }
 			});

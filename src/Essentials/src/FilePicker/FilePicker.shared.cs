@@ -3,34 +3,71 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IFilePicker
+	{
+		Task<IEnumerable<FileResult>> PickAsync(PickOptions options, bool allowMultiple);
+
+		Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions options);
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FilePicker.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FilePicker']/Docs" />
 	public static partial class FilePicker
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePicker.xml" path="//Member[@MemberName='PickAsync']/Docs" />
 		public static async Task<FileResult> PickAsync(PickOptions options = null) =>
-			(await PlatformPickAsync(options))?.FirstOrDefault();
+			(await Current.PickAsync(options, false))?.FirstOrDefault();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePicker.xml" path="//Member[@MemberName='PickMultipleAsync']/Docs" />
 		public static Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions options = null) =>
-			PlatformPickAsync(options ?? PickOptions.Default, true);
+			Current.PickAsync(options ?? PickOptions.Default, true);
+
+#nullable enable
+		static IFilePicker? currentImplementation;
+#nullable disable
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IFilePicker Current =>
+			currentImplementation ??= new FilePickerImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(IFilePicker? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
+	}
+
+	public interface IFilePickerFileType
+	{
+		IFilePickerFileType ImageFileType();
+
+		IFilePickerFileType PngFileType();
+
+		IFilePickerFileType JpegFileType();
+
+		IFilePickerFileType VideoFileType();
+
+		IFilePickerFileType PdfFileType();
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FilePickerFileType']/Docs" />
 	public partial class FilePickerFileType
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Images']/Docs" />
-		public static readonly FilePickerFileType Images = PlatformImageFileType();
+		public static readonly IFilePickerFileType Images = Current.ImageFileType();
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Png']/Docs" />
-		public static readonly FilePickerFileType Png = PlatformPngFileType();
+		public static readonly IFilePickerFileType Png = Current.PngFileType();
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Jpeg']/Docs" />
-		public static readonly FilePickerFileType Jpeg = PlatformJpegFileType();
+		public static readonly IFilePickerFileType Jpeg = Current.JpegFileType();
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Videos']/Docs" />
-		public static readonly FilePickerFileType Videos = PlatformVideoFileType();
+		public static readonly IFilePickerFileType Videos = Current.VideoFileType();
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Pdf']/Docs" />
-		public static readonly FilePickerFileType Pdf = PlatformPdfFileType();
+		public static readonly IFilePickerFileType Pdf = Current.PdfFileType();
 
 		readonly IDictionary<DevicePlatform, IEnumerable<string>> fileTypes;
 
@@ -52,6 +89,20 @@ namespace Microsoft.Maui.Essentials
 
 			throw new PlatformNotSupportedException("This platform does not support this file type.");
 		}
+
+#nullable enable
+		static IFilePickerFileType? currentImplementation;
+#nullable disable
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IFilePickerFileType Current =>
+			currentImplementation ??= new FilePickerFileTypeImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(IFilePickerFileType? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/PickOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PickOptions']/Docs" />
@@ -75,6 +126,6 @@ namespace Microsoft.Maui.Essentials
 		public string PickerTitle { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/PickOptions.xml" path="//Member[@MemberName='FileTypes']/Docs" />
-		public FilePickerFileType FileTypes { get; set; }
+		public IFilePickerFileType FileTypes { get; set; }
 	}
 }

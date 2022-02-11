@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using AppKit;
 using MobileCoreServices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class FilePicker
+	public partial class FilePickerImplementation : IFilePicker
 	{
-		static Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		public Task<IEnumerable<FileResult>> PickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			var openPanel = new NSOpenPanel
 			{
@@ -33,7 +33,12 @@ namespace Microsoft.Maui.Essentials
 			return Task.FromResult<IEnumerable<FileResult>>(resultList);
 		}
 
-		static void SetFileTypes(PickOptions options, NSOpenPanel panel)
+		public async Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions options)
+		{
+			return await PickAsync(options, true);
+		}
+
+	 	void SetFileTypes(PickOptions options, NSOpenPanel panel)
 		{
 			var allowedFileTypes = new List<string>();
 
@@ -49,34 +54,34 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	public partial class FilePickerFileType
+	public partial class FilePickerFileTypeImplementation : IFilePickerFileType
 	{
-		static FilePickerFileType PlatformImageFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation ImageFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.macOS, new string[] { UTType.PNG, UTType.JPEG, "jpeg" } }
 			});
 
-		static FilePickerFileType PlatformPngFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation PngFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.macOS, new string[] { UTType.PNG } }
 			});
 
-		static FilePickerFileType PlatformJpegFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation JpegFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.macOS, new string[] { UTType.JPEG } }
 			});
 
-		static FilePickerFileType PlatformVideoFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation VideoFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.macOS, new string[] { UTType.MPEG4, UTType.Video, UTType.AVIMovie, UTType.AppleProtectedMPEG4Video, "mp4", "m4v", "mpg", "mpeg", "mp2", "mov", "avi", "mkv", "flv", "gifv", "qt" } }
 			});
 
-		static FilePickerFileType PlatformPdfFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileTypeImplementation PdfFileType() =>
+			new FilePickerFileTypeImplementation(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.macOS, new string[] { UTType.PDF } }
 			});
