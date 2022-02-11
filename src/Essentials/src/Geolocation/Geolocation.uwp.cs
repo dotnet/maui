@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			var geolocator = new Geolocator
 			{
-				DesiredAccuracyInMeters = request.DesiredAccuracy
+				DesiredAccuracyInMeters = request.PlatformDesiredAccuracy
 			};
 
 			CheckStatus(geolocator.LocationStatus);
