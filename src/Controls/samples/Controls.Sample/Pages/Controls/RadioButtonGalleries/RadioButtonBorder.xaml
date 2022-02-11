@@ -8,18 +8,18 @@
         <StackLayout>
             <Label Text="RadioButton with Border" />
             <RadioButton 
-                Content="Cat" 
+                Content="Option 1" 
                 BackgroundColor="Yellow"
                 BorderColor="Red" 
                 BorderWidth="4" 
                 CornerRadius="12" />
             <RadioButton 
-                Content="Dog"
+                Content="Option 2"
                 BackgroundColor="Yellow" />
             <RadioButton 
-                Content="Elephant" />
+                Content="Option 3" />
             <RadioButton 
-                Content="Monkey"
+                Content="Option 4"
                 BorderColor="Green"
                 BorderWidth="4" 
                 CornerRadius="12"
