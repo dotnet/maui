@@ -5,6 +5,7 @@ parameters:
   iosVmImage: '$(iosTestsVmImage)'
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
+  provisionatorChannel: 'latest'
   projects:
     - name: name
       desc: Human Description
@@ -44,6 +45,7 @@ stages:
                       platform: android
                       path: ${{ project.android }}
                       device: android-emulator-32_${{ api }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -75,3 +77,4 @@ stages:
                         device: ios-simulator-64
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
