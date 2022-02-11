@@ -31,11 +31,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			return new WPFTicker();
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
 			var tcs = new TaskCompletionSource<Stream>();

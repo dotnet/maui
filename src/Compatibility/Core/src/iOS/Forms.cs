@@ -283,11 +283,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		class IOSPlatformServices : IPlatformServices
 		{
-			public Assembly[] GetAssemblies()
-			{
-				return AppDomain.CurrentDomain.GetAssemblies();
-			}
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				NSTimer timer = NSTimer.CreateRepeatingTimer(interval, t =>

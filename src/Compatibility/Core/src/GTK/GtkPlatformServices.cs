@@ -25,11 +25,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 			return new GtkTicker();
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
 			using (var client = new HttpClient())

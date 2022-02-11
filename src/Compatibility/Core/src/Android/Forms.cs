@@ -327,11 +327,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				_context = context;
 			}
 
-			public Assembly[] GetAssemblies()
-			{
-				return AppDomain.CurrentDomain.GetAssemblies();
-			}
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				var handler = new Handler(Looper.MainLooper);

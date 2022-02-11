@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_flyoutController.View.Frame = flyoutFrame;
 
 			(FlyoutPage.Flyout as IView).Measure(flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPage.Flyout.Handler.NativeArrangeHandler(new Rectangle(0,0, flyoutFrame.Width, flyoutFrame.Height));
+			FlyoutPage.Flyout.Handler.NativeArrangeHandler(new Rectangle(0, 0, flyoutFrame.Width, flyoutFrame.Height));
 
 			var target = frame;
 			if (Presented)
@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!(FlyoutPage?.Detail is NavigationPage))
 				return;
 
-			var detailRenderer = 
+			var detailRenderer =
 				(FlyoutPage.Detail?.Handler as INativeViewHandler)
 				?.ViewController as UINavigationController;
 
