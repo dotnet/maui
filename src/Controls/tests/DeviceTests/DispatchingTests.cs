@@ -32,11 +32,12 @@ namespace Microsoft.Maui.DeviceTests
 					.FindDispatcher()
 					.DispatchAsync(async () =>
 				{
-					await Task.Delay(0);
+					await Task.Delay(500);
 					dispatched = true;
 				});
 			});
 
+			await Task.Delay(500);
 			Assert.True(dispatched);
 		}
 
