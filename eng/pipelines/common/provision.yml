@@ -26,6 +26,7 @@ steps:
           provisioning_script: $(provisionator.xcode)
           provisioning_extra_args: $(provisionator.extraArguments)
         env:
+          PROVISIONATOR_CHANNEL: $(PROVISIONATOR_CHANNEL)
           AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
@@ -35,7 +36,9 @@ steps:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
       env:
+        PROVISIONATOR_CHANNEL: $(PROVISIONATOR_CHANNEL)
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+
     # Setup SDK Paths
     - bash: |
         echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
@@ -94,6 +97,9 @@ steps:
       condition: eq(variables['provisioningVS'], 'true')
       inputs:
         provisioning_script: $(provisionator.vs)
+      env:
+        PROVISIONATOR_CHANNEL: $(PROVISIONATOR_CHANNEL)
+
     - pwsh: |
         $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
