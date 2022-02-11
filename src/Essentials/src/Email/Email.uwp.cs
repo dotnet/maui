@@ -9,14 +9,14 @@ using Windows.Storage.Streams;
 using NativeEmailAttachment = Windows.ApplicationModel.Email.EmailAttachment;
 using NativeEmailMessage = Windows.ApplicationModel.Email.EmailMessage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Email
+	public partial class EmailImplementation : IEmail
 	{
 		internal static bool IsComposeSupported
 			=> ApiInformation.IsTypePresent("Windows.ApplicationModel.Email.EmailManager");
 
-		static async Task PlatformComposeAsync(EmailMessage message)
+		public async Task ComposeAsync(EmailMessage message)
 		{
 			if (message != null && message.BodyFormat != EmailBodyFormat.PlainText)
 				throw new FeatureNotSupportedException("UWP can only compose plain text email messages.");
@@ -51,6 +51,22 @@ namespace Microsoft.Maui.Essentials
 
 			await EmailManager.ShowComposeNewEmailAsync(nativeMessage);
 		}
+
+		public async Task ComposeAsync(string subject, string body, params string[] to)
+		{
+			return await ComposeAsync
+							(
+								new EmailMessage()
+								{
+									Subject = subject,
+									Body = body,
+									To = to.List<string>()
+								}
+							);
+		}
+
+		public async Task ComposeAsync()
+			=> await ComposeAsync(null);
 
 		static void Sync(List<string> recipients, IList<EmailRecipient> nativeRecipients)
 		{
