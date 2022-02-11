@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 					.FindDispatcher()
 					.DispatchAsync(async () =>
 				{
-					await Task.Delay(500);
+					await Task.Delay(0);
 					dispatched = true;
 				});
 			});
