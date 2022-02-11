@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -21,6 +21,34 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanged: OnPageChanged);
+
+		public static readonly BindableProperty WidthRequestProperty = BindableProperty.Create(
+			nameof(WidthRequest), typeof(double), typeof(Window), -1d, propertyChanged: OnRequestChanged);
+
+		public static readonly BindableProperty HeightRequestProperty = BindableProperty.Create(
+			nameof(HeightRequest), typeof(double), typeof(Window), -1d, propertyChanged: OnRequestChanged);
+
+		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly(
+			nameof(X), typeof(double), typeof(Window), default(double));
+
+		public static readonly BindableProperty XProperty = XPropertyKey.BindableProperty;
+
+		static readonly BindablePropertyKey YPropertyKey = BindableProperty.CreateReadOnly(
+			nameof(Y), typeof(double), typeof(Window), default(double));
+
+		public static readonly BindableProperty YProperty = YPropertyKey.BindableProperty;
+
+		static readonly BindablePropertyKey WidthPropertyKey = BindableProperty.CreateReadOnly(
+			nameof(Width), typeof(double), typeof(Window), -1d,
+			coerceValue: (bindable, value) => double.IsNaN((double)value) ? 0d : value);
+
+		public static readonly BindableProperty WidthProperty = WidthPropertyKey.BindableProperty;
+
+		static readonly BindablePropertyKey HeightPropertyKey = BindableProperty.CreateReadOnly(
+			nameof(Height), typeof(double), typeof(Window), -1d,
+			coerceValue: (bindable, value) => double.IsNaN((double)value) ? 0d : value);
+
+		public static readonly BindableProperty HeightProperty = HeightPropertyKey.BindableProperty;
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -69,6 +97,79 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PageProperty, value);
 		}
 
+		public double WidthRequest
+		{
+			get => (double)GetValue(WidthRequestProperty);
+			set => SetValue(WidthRequestProperty, value);
+		}
+
+		public double HeightRequest
+		{
+			get => (double)GetValue(HeightRequestProperty);
+			set => SetValue(HeightRequestProperty, value);
+		}
+
+		public double X
+		{
+			get => (double)GetValue(XProperty);
+			private set => SetValue(XPropertyKey, value);
+		}
+
+		public double Y
+		{
+			get => (double)GetValue(YProperty);
+			private set => SetValue(YPropertyKey, value);
+		}
+
+		public double Width
+		{
+			get => (double)GetValue(WidthProperty);
+			private set => SetValue(WidthPropertyKey, value);
+		}
+
+		double IWindow.Width
+		{
+			get
+			{
+				if (!IsSet(WidthRequestProperty))
+					return Primitives.Dimension.Unset;
+				return ValidatePositive(WidthRequest);
+			}
+		}
+
+		public double Height
+		{
+			get => (double)GetValue(HeightProperty);
+			private set => SetValue(HeightPropertyKey, value);
+		}
+
+		double IWindow.Height
+		{
+			get
+			{
+				if (!IsSet(HeightRequestProperty))
+					return Primitives.Dimension.Unset;
+				return ValidatePositive(HeightRequest);
+			}
+		}
+
+		public Rectangle Frame
+		{
+			get => new Rectangle(X, Y, Width, Height);
+			set
+			{
+				X = value.X;
+				Y = value.Y;
+				Width = value.Width;
+				Height = value.Height;
+
+				//if (WidthRequest != value.Width)
+				//	WidthRequest = value.Width;
+				//if (HeightRequest != value.Height)
+				//	HeightRequest = value.Height;
+			}
+		}
+
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
 		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
@@ -93,6 +194,10 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
+			// do not trigger a resizeof the window when the actual bounds are changing
+			if (propertyName == nameof(IWindow.Width) || propertyName == nameof(IWindow.Height))
+				return;
+
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == nameof(Page))
@@ -329,6 +434,20 @@ namespace Microsoft.Maui.Controls
 
 			return this.Page?.SendBackButtonPressed() ?? false;
 		}
+
+		static void OnRequestChanged(BindableObject bindable, object oldvalue, object newvalue)
+		{
+			if (bindable is not IWindow window)
+				return;
+
+			window.Handler?.UpdateValue(nameof(IWindow.Width));
+			window.Handler?.UpdateValue(nameof(IWindow.Height));
+		}
+
+		static double ValidatePositive(double value, [CallerMemberName] string? name = null) =>
+			value >= 0
+				? value
+				: throw new InvalidOperationException($"{name} cannot be less than zero.");
 
 		class NavigationImpl : NavigationProxy
 		{

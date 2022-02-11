@@ -1,6 +1,7 @@
 using System;
+using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -24,16 +25,22 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			nativeView.Content = _rootPanel;
+
+			var b = nativeView.Bounds;
+			VirtualView.Frame = new Rectangle(b.Left, b.Top, b.Width, b.Height);
+
+			nativeView.SizeChanged += OnWindowSizeChanged;
 		}
 
 		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
-		{			
+		{
 			MauiContext
 				?.GetNavigationRootManager()
-				?.Disconnect();			
+				?.Disconnect();
 
 			_rootPanel?.Children?.Clear();
 			nativeView.Content = null;
+			nativeView.SizeChanged -= OnWindowSizeChanged;
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -58,10 +65,23 @@ namespace Microsoft.Maui.Handlers
 				window.VisualDiagnosticsOverlay.Initialize();
 		}
 
+		public static void MapWidth(IWindowHandler handler, IWindow view) =>
+			handler.NativeView?.UpdateWidth(view);
+
+		public static void MapHeight(IWindowHandler handler, IWindow view) =>
+			handler.NativeView?.UpdateHeight(view);
+
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
 			if (view is IToolbarElement tb)
 				ViewHandler.MapToolbar(handler, tb);
+		}
+
+		void OnWindowSizeChanged(object sender, WindowSizeChangedEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine($"OnWindowSizeChanged: {NativeView.Bounds} {e.Size}");
+
+			VirtualView.Frame = new Rectangle(0, 0, e.Size.Width, e.Size.Height);
 		}
 	}
 }

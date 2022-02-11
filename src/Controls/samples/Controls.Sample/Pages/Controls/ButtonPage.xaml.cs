@@ -15,7 +15,11 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnButtonClicked(object sender, System.EventArgs e)
 		{
-			Debug.WriteLine("Clicked");
+			var window=this.GetParentWindow();
+
+			window.WidthRequest = 800;
+			window.HeightRequest = 600;
+
 		}
 
 		void OnPositionChange(object sender, System.EventArgs e)
