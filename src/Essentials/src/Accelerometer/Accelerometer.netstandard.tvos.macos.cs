@@ -1,15 +1,15 @@
 namespace Microsoft.Maui.Essentials
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Accelerometer']/Docs" />
-	public static partial class Accelerometer
+	public partial class AccelerometerImpl
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformStart(SensorSpeed sensorSpeed) =>
+		private void PlatformStart(SensorSpeed sensorSpeed) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformStop() =>
+		private void PlatformStop() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

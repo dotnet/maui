@@ -3,19 +3,19 @@ using Foundation;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class Accelerometer
+	public partial class AccelerometerImpl
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			Platform.MotionManager?.AccelerometerAvailable ?? false;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		private void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var manager = Platform.MotionManager;
 			manager.AccelerometerUpdateInterval = sensorSpeed.ToPlatform();
 			manager.StartAccelerometerUpdates(Platform.GetCurrentQueue(), DataUpdated);
 		}
 
-		static void DataUpdated(CMAccelerometerData data, NSError error)
+		private void DataUpdated(CMAccelerometerData data, NSError error)
 		{
 			if (data == null)
 				return;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Essentials
 			OnChanged(accelData);
 		}
 
-		internal static void PlatformStop() =>
+		private void PlatformStop() =>
 			Platform.MotionManager?.StopAccelerometerUpdates();
 	}
 }
