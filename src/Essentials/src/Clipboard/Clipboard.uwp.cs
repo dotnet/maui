@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return Task.CompletedTask;
 		}
 
-		public bool PlatformHasText
+		public bool HasText
 			=> WindowsClipboard.GetContent().Contains(StandardDataFormats.Text);
 
 		public Task<string> GetTextAsync()
