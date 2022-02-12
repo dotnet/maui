@@ -50,6 +50,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public AppTheme RequestedTheme =>
 			Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
 
-		public bool IsPackagedApp => _isPackagedAppLazy.Value;
+		public AppPackagingModel PackagingModel => _isPackagedAppLazy.Value
+			? AppPackagingModel.Packaged
+			: AppPackagingModel.Unpackaged;
 	}
 }

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public class AppInfoImplementation : IAppInfo
 	{
-		public bool IsPackagedApp => true;
+		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 
 		public string PackageName => GetBundleValue("CFBundleIdentifier");
 

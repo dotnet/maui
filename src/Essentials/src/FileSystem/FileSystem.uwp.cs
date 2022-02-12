@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			if (AppInfo.IsPackagedApp)
+			if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
 			{
 				filename = NormalizePath(filename);
 
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Essentials
 			filename = NormalizePath(filename);
 
 			string root;
-			if (AppInfo.IsPackagedApp)
+			if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
 				root = Package.Current.InstalledLocation.Path;
 			else
 				root = AppContext.BaseDirectory;

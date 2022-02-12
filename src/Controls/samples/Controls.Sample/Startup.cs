@@ -153,7 +153,7 @@ namespace Maui.Controls.Sample
 						});
 
 					// TODO: Unpackaged apps need to know the package ID and local data locations
-					if (AppInfo.IsPackagedApp)
+					if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
 						essentials.UseVersionTracking();
 				})
 				.ConfigureLifecycleEvents(events =>

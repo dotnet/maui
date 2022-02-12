@@ -83,6 +83,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 				_ => AppTheme.Unspecified
 			};
 
-		public bool IsPackagedApp => true;
+		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 	}
 }
