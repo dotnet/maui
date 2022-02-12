@@ -1,9 +1,9 @@
 using Windows.Devices.Sensors;
 using WindowsGyro = Windows.Devices.Sensors.Gyrometer;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Gyroscope
+	public partial class GyroscopeImplementation : IGyroscope
 	{
 		// keep around a reference so we can stop this same instance
 		static WindowsGyro sensor;
@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Essentials
 		internal static WindowsGyro DefaultSensor =>
 			WindowsGyro.GetDefault();
 
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			DefaultSensor != null;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		internal static void Start(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultSensor;
 
@@ -28,10 +28,10 @@ namespace Microsoft.Maui.Essentials
 		{
 			var reading = e.Reading;
 			var data = new GyroscopeData(reading.AngularVelocityX, reading.AngularVelocityY, reading.AngularVelocityZ);
-			OnChanged(data);
+			Gyroscope.OnChanged(data);
 		}
 
-		internal static void PlatformStop()
+		public void Stop()
 		{
 			sensor.ReadingChanged -= DataUpdated;
 			sensor.ReportInterval = 0;

@@ -1,14 +1,14 @@
 using CoreMotion;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Gyroscope
+	public partial class GyroscopeImplementation : IGyroscope
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			Platform.MotionManager?.GyroAvailable ?? false;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			var manager = Platform.MotionManager;
 			manager.GyroUpdateInterval = sensorSpeed.ToPlatform();
@@ -22,10 +22,10 @@ namespace Microsoft.Maui.Essentials
 
 			var field = data.RotationRate;
 			var gyroData = new GyroscopeData(field.x, field.y, field.z);
-			OnChanged(gyroData);
+			Gyroscope.OnChanged(gyroData);
 		}
 
-		internal static void PlatformStop() =>
+		public void Stop() =>
 			Platform.MotionManager?.StopGyroUpdates();
 	}
 }

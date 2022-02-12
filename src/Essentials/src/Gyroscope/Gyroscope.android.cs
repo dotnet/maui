@@ -1,17 +1,17 @@
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Gyroscope
+	public partial class GyroscopeImplementation : IGyroscope
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			   Platform.SensorManager?.GetDefaultSensor(SensorType.Gyroscope) != null;
 
 		static GyroscopeListener listener;
 		static Sensor gyroscope;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Essentials
 			Platform.SensorManager.RegisterListener(listener, gyroscope, delay);
 		}
 
-		internal static void PlatformStop()
+		public void Stop()
 		{
 			if (listener == null || gyroscope == null)
 				return;
