@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		string? HostPage { get; set; }
 		RootComponentsCollection RootComponents { get; }
 		JSComponentConfigurationStore JSComponents { get; }
+		ExternalLinkMode ExternalLinkMode { get; set; }
 
 		/// <summary>
 		/// Creates a file provider for static assets used in the <see cref="BlazorWebView"/>. The default implementation

@@ -1,14 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using Android.Webkit;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Maui.Handlers;
 using static Android.Views.ViewGroup;
 using Path = System.IO.Path;
@@ -30,6 +22,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				LayoutParameters = new Android.Widget.AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0)
 #pragma warning restore 618
 			};
+
+			// To allow overriding ExternalLinkMode.OpenInWebView and open links in browser with a _blank target
+			blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
 
 			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: true);
 
@@ -116,6 +111,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			new WebKitWebViewClient(this);
 
 		protected virtual WebChromeClient GetWebChromeClient() =>
-			new WebChromeClient();
+			new BlazorWebChromeClient();
 	}
 }

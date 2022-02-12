@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public partial class BlazorWebViewHandler
 	{
-		public static PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewHandler.ViewMapper)
+		public static PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 #if !NETSTANDARD
 			handler.HostPage = webView.HostPage;
+			handler.ExternalLinkMode = webView.ExternalLinkMode;
 			handler.StartWebViewCoreIfPossible();
 #endif
 		}
@@ -36,12 +37,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 #if !NETSTANDARD
 			handler.RootComponents = webView.RootComponents;
+			handler.ExternalLinkMode = webView.ExternalLinkMode;
 			handler.StartWebViewCoreIfPossible();
 #endif
 		}
 
 #if !NETSTANDARD
 		private string? HostPage { get; set; }
+		internal ExternalLinkMode ExternalLinkMode { get; private set; }
 
 		private RootComponentsCollection? _rootComponents;
 		private RootComponentsCollection? RootComponents

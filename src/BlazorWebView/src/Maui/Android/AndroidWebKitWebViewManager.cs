@@ -5,6 +5,7 @@ using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using AWebView = Android.Webkit.WebView;
+using AUri = Android.Net.Uri;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
 		private const string AppOrigin = "https://0.0.0.0/";
-		private static readonly Android.Net.Uri AndroidAppOriginUri = Android.Net.Uri.Parse(AppOrigin)!;
+		private static readonly AUri AndroidAppOriginUri = AUri.Parse(AppOrigin)!;
 		private readonly BlazorWebViewHandler _blazorWebViewHandler;
 		private readonly AWebView _webview;
 

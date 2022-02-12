@@ -1,7 +1,9 @@
 ﻿using System;
+using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
+using AUri = Android.Net.Uri;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -20,25 +22,37 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			// This constructor is called whenever the .NET proxy was disposed, and it was recreated by Java. It also
 			// happens when overridden methods are called between execution of this constructor and the one above.
-			// because of these facts, we have to check
-			// all methods below for null field references and properties.
+			// because of these facts, we have to check all methods below for null field references and properties.
 		}
 
 		public override bool ShouldOverrideUrlLoading(AWebView? view, IWebResourceRequest? request)
 		{
-			// handle redirects to the app custom scheme by reloading the url in the view.
-			// otherwise they will be blocked by Android.
+			// Handle redirects to the app custom scheme by reloading the URL in the view.
+			// Handle navigation to external URLs using the system browser, unless overriden.
 			var requestUri = request?.Url?.ToString();
-			if (requestUri != null && view != null &&
-				request != null && request.IsRedirect && request.IsForMainFrame)
+			if (requestUri != null)
 			{
 				var uri = new Uri(requestUri);
-				if (uri.Host == "0.0.0.0")
+
+				if (uri.Host == "0.0.0.0" &&
+					view is not null && 
+					request is not null && 
+					request.IsRedirect && 
+					request.IsForMainFrame)
 				{
 					view.LoadUrl(uri.ToString());
 					return true;
 				}
+				else if (uri.Host != "0.0.0.0" && 
+					_webViewHandler is not null &&
+					_webViewHandler.ExternalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
+				{
+					var intent = new Intent(Intent.ActionView, AUri.Parse(requestUri));
+					_webViewHandler.Context.StartActivity(intent);
+					return true;
+				}
 			}
+
 			return base.ShouldOverrideUrlLoading(view, request);
 		}
 

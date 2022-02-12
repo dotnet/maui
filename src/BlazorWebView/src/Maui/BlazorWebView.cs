@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		public RootComponentsCollection RootComponents { get; }
 
+		public ExternalLinkMode ExternalLinkMode { get; set; } = ExternalLinkMode.OpenInExternalBrowser;
+
 		/// <inheritdoc/>
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
