@@ -1,15 +1,15 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Magnetometer']/Docs" />
-	public static partial class Magnetometer
+	public partial class MagnetometerImplementation : IMagnetometer
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed) =>
+		public void Start(SensorSpeed sensorSpeed) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal static void PlatformStop() =>
+		public void Stop() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

@@ -1,17 +1,17 @@
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Magnetometer
+	public partial class MagnetometerImplementation : IMagnetometer
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			   Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
 
 		static MagnetometerListener listener;
 		static Sensor magnetometer;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Essentials
 			Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
 		}
 
-		internal static void PlatformStop()
+		public void Stop()
 		{
 			if (listener == null || magnetometer == null)
 				return;
