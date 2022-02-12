@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			PowerManager.EnergySaverStatusChanged -= ReportEnergySaverUpdated;
 
 		void ReportEnergySaverUpdated(object sender, object e)
-			=> MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
+			=> MainThread.BeginInvokeOnMainThread(Battery.OnEnergySaverChanged);
 
 		public void StartBatteryListeners() =>
 			DefaultBattery.ReportUpdated += ReportUpdated;
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			DefaultBattery.ReportUpdated -= ReportUpdated;
 
 	 	void ReportUpdated(object sender, object e)
-			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
+			=> MainThread.BeginInvokeOnMainThread(Battery.OnBatteryInfoChanged);
 
 		global::Windows.Devices.Power.Battery DefaultBattery =>
 			global::Windows.Devices.Power.Battery.AggregateBattery;
