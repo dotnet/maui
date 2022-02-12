@@ -1,17 +1,20 @@
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Accelerometer
+	public class AccelerometerImplementation : IAccelerometer
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null;
 
+		public bool IsMonitoring { get; set; }
+
 		static AccelerometerListener listener;
+
 		static Sensor accelerometer;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 			listener = new AccelerometerListener();
@@ -19,7 +22,7 @@ namespace Microsoft.Maui.Essentials
 			Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
 		}
 
-		internal static void PlatformStop()
+		public void Stop()
 		{
 			if (listener == null || accelerometer == null)
 				return;

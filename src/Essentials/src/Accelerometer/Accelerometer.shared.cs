@@ -1,10 +1,25 @@
 using System;
 using System.Numerics;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IAccelerometer
+	{
+		bool IsSupported { get; }
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		bool IsMonitoring { get; set; }
+
+		void Start (SensorSpeed sensorSpeed);
+
+		void Stop ();
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Accelerometer']/Docs" />
-	public static partial class Accelerometer
+	public static class Accelerometer
 	{
 		const double accelerationThreshold = 169;
 
@@ -14,20 +29,21 @@ namespace Microsoft.Maui.Essentials
 
 		static bool useSyncContext;
 
+		public static bool IsMonitoring { get; set; }
+
+		public static bool IsSupported { get; }
+
 		public static event EventHandler<AccelerometerChangedEventArgs> ReadingChanged;
 
 		public static event EventHandler ShakeDetected;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring { get; private set; }
-
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
 		{
-			if (!IsSupported)
+			if (!Current.IsSupported)
 				throw new FeatureNotSupportedException();
 
-			if (IsMonitoring)
+			if (Current.IsMonitoring)
 				throw new InvalidOperationException("Accelerometer has already been started.");
 
 			IsMonitoring = true;
@@ -35,11 +51,11 @@ namespace Microsoft.Maui.Essentials
 
 			try
 			{
-				PlatformStart(sensorSpeed);
+				Current.Start(sensorSpeed);
 			}
 			catch
 			{
-				IsMonitoring = false;
+				Current.IsMonitoring = false;
 				throw;
 			}
 		}
@@ -47,21 +63,21 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public static void Stop()
 		{
-			if (!IsSupported)
+			if (!Current.IsSupported)
 				throw new FeatureNotSupportedException();
 
-			if (!IsMonitoring)
+			if (!Current.IsMonitoring)
 				return;
 
-			IsMonitoring = false;
+			Current.IsMonitoring = false;
 
 			try
 			{
-				PlatformStop();
+				Current.Stop();
 			}
 			catch
 			{
-				IsMonitoring = true;
+				Current.IsMonitoring = true;
 				throw;
 			}
 		}
@@ -107,6 +123,20 @@ namespace Microsoft.Maui.Essentials
 
 		internal static long Nanoseconds(this DateTime time) =>
 			(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
+
+#nullable enable
+		static IAccelerometer? currentImplementation;
+#nullable disable
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IAccelerometer Current =>
+			currentImplementation ??= new AccelerometerImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(IAccelerometer? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AccelerometerChangedEventArgs']/Docs" />
