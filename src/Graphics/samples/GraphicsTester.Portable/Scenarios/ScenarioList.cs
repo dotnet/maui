@@ -24,6 +24,7 @@ namespace GraphicsTester.Scenarios
 						new ArcScenario1(true),
 						new ArcScenario2(),
 						new DrawPaths(),
+						new DrawPathsScaled(),
 						new DrawFlattenedPaths(),
 						new DrawImages(),
 						new DrawTextAtPoint(),
@@ -60,6 +61,7 @@ namespace GraphicsTester.Scenarios
 						new ClipRect(),
 						new SubtractFromClip(),
 						new DimensionTest(),
+						new ScaleCanvas(),
 					};
 				}
 

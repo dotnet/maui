@@ -175,19 +175,19 @@ namespace Microsoft.Maui.Graphics
 
 		public void DrawPath(PathF path)
 		{
-			var scaledPath = path.AsScaledPath(_scaleX);
+			var scaledPath = path.AsScaledPath(_scaleX, _scaleY);
 			_canvas.DrawPath(scaledPath);
 		}
 
 		public void FillPath(PathF path, WindingMode windingMode)
 		{
-			var scaledPath = path.AsScaledPath(_scaleX);
+			var scaledPath = path.AsScaledPath(_scaleX, _scaleY);
 			_canvas.FillPath(scaledPath, windingMode);
 		}
 
 		public void ClipPath(PathF path, WindingMode windingMode = WindingMode.NonZero)
 		{
-			var scaledPath = path.AsScaledPath(_scaleX);
+			var scaledPath = path.AsScaledPath(_scaleX, _scaleY);
 			_canvas.ClipPath(scaledPath, windingMode);
 		}
 

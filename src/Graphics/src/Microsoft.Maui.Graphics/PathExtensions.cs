@@ -72,5 +72,16 @@ namespace Microsoft.Maui.Graphics
 			scaledPath.Transform(transform);
 			return scaledPath;
 		}
+
+		public static PathF AsScaledPath(
+			this PathF target,
+			float xScale,
+			float yScale)
+		{
+			var scaledPath = new PathF(target);
+			var transform = Matrix3x2.CreateScale(xScale, yScale);
+			scaledPath.Transform(transform);
+			return scaledPath;
+		}
 	}
 }
