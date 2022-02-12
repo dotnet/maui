@@ -55,7 +55,7 @@ namespace Maui.Controls.Sample.ViewModels
 				"The ProgressBar control visually represents progress as a horizontal bar that is filled to a percentage represented by a float value."),
 
 			new SectionModel(typeof(Pages.RadioButtonGalleries.RadioButtonGalleries), "RadioButton",
-				"The Xamarin.Forms RadioButton is a type of button that allows users to select one option from a set. Each option is represented by one radio button, and you can only select one radio button in a group."),
+				"The RadioButton is a type of button that allows users to select one option from a set. Each option is represented by one radio button, and you can only select one radio button in a group."),
 
 			new SectionModel(typeof(RefreshViewPage), "RefreshView",
 				"RefreshView is a container control that provides pull-to-refresh functionality for scrollable content."),
