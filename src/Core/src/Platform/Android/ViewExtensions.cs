@@ -439,9 +439,10 @@ namespace Microsoft.Maui.Platform
 				{
 					var q = Looper.MyLooper();
 					if (q != null)
+					{
 						new Handler(q).Post(action);
-
-					return;
+						return;
+					}
 				}
 
 				action();
