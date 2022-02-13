@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 	{
 		IMauiContext _mauiContext;
 		WindowRootView _rootView;
-		WindowHeader? _windowHeader;
+		MauiToolbar? _windowHeader;
 
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetToolbar(FrameworkElement toolBar)
 		{
-			_windowHeader = toolBar as WindowHeader;
+			_windowHeader = toolBar as MauiToolbar;
 			if (_rootView.NavigationViewControl != null)
 			{
 				_rootView.NavigationViewControl.HeaderControl = _windowHeader;

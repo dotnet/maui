@@ -97,6 +97,22 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
+
+		[Fact(DisplayName = "Toolbar Title")]
+		public async Task ToolbarTitle()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				string title = GetToolbarTitle(handler);
+				Assert.Equal("Page Title", title);
+			});
+		}
 	}
 }
 #endif

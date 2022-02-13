@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 			params ToolbarItem[] toolbarItems)
 		{
 			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
-			WindowHeader windowHeader = (WindowHeader)navView.Header;
+			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
 
 			Assert.Equal(toolbarItems.Length, windowHeader.CommandBar.PrimaryCommands.Count);
 			for (var i = 0; i < toolbarItems.Length; i++)
@@ -57,5 +57,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			return true;
 		}
+
+		MauiToolbar GetPlatformToolbar(IElementHandler handler)
+		{
+			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
+			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
+			return windowHeader;
+		}
+
+		string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
 	}
 }

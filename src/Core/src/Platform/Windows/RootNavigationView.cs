@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Platform
 	public class RootNavigationView : MauiNavigationView
 	{
 		double _paneHeaderContentHeight;
-		WindowHeader? _headerControl;
+		MauiToolbar? _headerControl;
 
 		internal Size FlyoutPaneSize { get; private set; }
-		internal WindowHeader? HeaderControl
+		internal MauiToolbar? HeaderControl
 		{
 			get => _headerControl;
 			set

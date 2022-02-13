@@ -60,5 +60,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			return true;
 		}
+
+		string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
 	}
 }
