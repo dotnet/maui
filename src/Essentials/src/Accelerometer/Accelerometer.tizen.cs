@@ -3,7 +3,7 @@ using TizenAccelerometer = Tizen.Sensor.Accelerometer;
 
 namespace Microsoft.Maui.Essentials
 {
-	public partial class AccelerometerImpl
+	public partial class AccelerometerImplementation
 	{
 		internal static TizenAccelerometer DefaultSensor =>
 			(TizenAccelerometer)Platform.GetDefaultSensor(SensorType.Accelerometer);

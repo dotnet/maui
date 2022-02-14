@@ -3,7 +3,7 @@ using Foundation;
 
 namespace Microsoft.Maui.Essentials
 {
-	public partial class AccelerometerImpl
+	public partial class AccelerometerImplementation
 	{
 		public bool IsSupported =>
 			Platform.MotionManager?.AccelerometerAvailable ?? false;

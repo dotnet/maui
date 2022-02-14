@@ -3,7 +3,7 @@ using WindowsAccelerometer = Windows.Devices.Sensors.Accelerometer;
 
 namespace Microsoft.Maui.Essentials
 {
-	public partial class AccelerometerImpl
+	public partial class AccelerometerImplementation
 	{
 		// keep around a reference so we can stop this same instance
 		WindowsAccelerometer sensor;

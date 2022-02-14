@@ -3,7 +3,7 @@ using Android.Runtime;
 
 namespace Microsoft.Maui.Essentials
 {
-	public partial class AccelerometerImpl
+	public partial class AccelerometerImplementation
 	{
 		public bool IsSupported =>
 			Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null;
@@ -35,9 +35,9 @@ namespace Microsoft.Maui.Essentials
 		// acceleration due to gravity
 		const double gravity = 9.81;
 
-		AccelerometerImpl _accelerometer;
+		AccelerometerImplementation _accelerometer;
 
-		internal AccelerometerListener(AccelerometerImpl accelerometer)
+		internal AccelerometerListener(AccelerometerImplementation accelerometer)
 		{
 			_accelerometer = accelerometer;
 		}

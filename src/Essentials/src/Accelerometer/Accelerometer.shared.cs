@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Essentials
 		void Stop();
 	}
 
-	public partial class AccelerometerImpl : IAccelerometer
+	public partial class AccelerometerImplementation : IAccelerometer
 	{
 		const double accelerationThreshold = 169;
 
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Essentials
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IAccelerometer Current =>
-			currentImplementation ??= new AccelerometerImpl();
+			currentImplementation ??= new AccelerometerImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrent(IAccelerometer? implementation) =>
