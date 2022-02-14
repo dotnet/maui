@@ -117,10 +117,15 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
+		public static void MapLineBreakMode(IButtonHandler handler, IButton button)
+		{
+			handler.NativeView?.UpdateLineBreakMode(button);
+		}
+
+		public static void MapImageSource(IButtonHandler handler, IImage image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IImage image)
 		{
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}

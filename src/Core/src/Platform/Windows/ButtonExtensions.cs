@@ -130,6 +130,15 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePadding(this Button nativeButton, IPadding padding) =>
 			nativeButton.UpdatePadding(padding, nativeButton.GetResource<UI.Xaml.Thickness>("ButtonPadding"));
 
+
+		public static void UpdateLineBreakMode(this Button nativeButton, IButton button)
+		{
+			if (nativeButton.GetContent<TextBlock>() is TextBlock textBlock)
+			{
+				textBlock?.UpdateLineBreakMode(button);
+			}
+		}
+	
 		public static void UpdateCharacterSpacing(this ButtonBase nativeButton, ITextStyle button)
 		{
 			var characterSpacing = button.CharacterSpacing.ToEm();

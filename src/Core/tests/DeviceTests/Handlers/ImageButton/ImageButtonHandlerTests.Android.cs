@@ -15,7 +15,7 @@ namespace Microsoft.Maui.DeviceTests
 		Google.Android.Material.ImageView.ShapeableImageView GetNativeImageButton(ImageButtonHandler buttonHandler) =>
 			buttonHandler.NativeView;
 
-		Task PerformClick(IButton button)
+		Task PerformClick(IImageButton button)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{

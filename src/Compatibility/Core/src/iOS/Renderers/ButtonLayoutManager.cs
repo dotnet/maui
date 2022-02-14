@@ -104,6 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateLineBreakMode();
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			var control = Control;

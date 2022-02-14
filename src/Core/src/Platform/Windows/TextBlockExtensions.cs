@@ -133,9 +133,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateLineBreakMode(this TextBlock nativeControl, ILabel label)
+		public static void UpdateLineBreakMode(this TextBlock nativeControl, ILineBreakMode breakMode)
 		{
-			var lineBreakMode = label.LineBreakMode;
+			var lineBreakMode = breakMode.LineBreakMode;
 
 			switch (lineBreakMode)
 			{

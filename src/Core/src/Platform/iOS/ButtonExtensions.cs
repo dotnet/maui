@@ -84,5 +84,19 @@ namespace Microsoft.Maui.Platform
 				(float)bottom,
 				(float)padding.Right);
 		}
+
+		public static void UpdateLineBreakMode(this UIButton nativeButton, IButton button)
+		{
+			nativeButton.TitleLabel.LineBreakMode = button.LineBreakMode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException()
+			};
+		}
 	}
 }

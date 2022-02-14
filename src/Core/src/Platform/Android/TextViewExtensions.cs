@@ -1,3 +1,4 @@
+using System;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
@@ -90,12 +91,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
 		{
-			textView.SetLineBreakMode(label);
+			textView.SetLineBreakMode(label, label.MaxLines);
 		}
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
 		{
-			textView.SetLineBreakMode(label);
+			textView.SetLineBreakMode(label, label.MaxLines);
 		}
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
@@ -154,12 +155,11 @@ namespace Microsoft.Maui.Platform
 			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
-
-		internal static void SetLineBreakMode(this TextView textView, ILabel label)
+			
+		internal static void SetLineBreakMode(this TextView textView, ILineBreakMode breakMode, int maxLines = 0)
 		{
-			var lineBreakMode = label.LineBreakMode;
-
-			int maxLines = label.MaxLines;
+			var lineBreakMode = breakMode.LineBreakMode;
+				
 			if (maxLines <= 0)
 				maxLines = int.MaxValue;
 

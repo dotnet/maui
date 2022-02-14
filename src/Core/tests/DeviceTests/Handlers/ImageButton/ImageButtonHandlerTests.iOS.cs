@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 			return UIColor.Clear;
 		}
 
-		Task PerformClick(IButton button)
+		Task PerformClick(IImageButton button)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{

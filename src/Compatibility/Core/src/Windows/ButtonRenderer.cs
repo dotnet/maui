@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateLineBreakMode();
 		}
 
-
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			_textBlock = Control.GetTextBlock(Control.Content);

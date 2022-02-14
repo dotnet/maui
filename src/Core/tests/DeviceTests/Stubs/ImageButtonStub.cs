@@ -51,8 +51,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public event EventHandler Released;
 		public event EventHandler Clicked;
 
-		void IButton.Pressed() => Pressed?.Invoke(this, EventArgs.Empty);
-		void IButton.Released() => Released?.Invoke(this, EventArgs.Empty);
-		void IButton.Clicked() => Clicked?.Invoke(this, EventArgs.Empty);
+		void IImageButton.Pressed() => Pressed?.Invoke(this, EventArgs.Empty);
+		void IImageButton.Released() => Released?.Invoke(this, EventArgs.Empty);
+		void IImageButton.Clicked() => Clicked?.Invoke(this, EventArgs.Empty);
 	}
 }

@@ -3,13 +3,8 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a View that displays text.
 	/// </summary>
-	public interface ILabel : IView, IText, ITextAlignment, IPadding
+	public interface ILabel : IView, IText, ITextAlignment, IPadding, ILineBreakMode
 	{
-		/// <summary>
-		/// Gets the option for line breaking.
-		/// </summary>
-		LineBreakMode LineBreakMode { get; }
-
 		/// <summary>
 		/// Gets the maximum number of lines allowed in the Label.
 		/// </summary>
