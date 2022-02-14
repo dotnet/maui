@@ -8,14 +8,14 @@ namespace Microsoft.Maui.Essentials
 		public bool IsSupported =>
 			Platform.MotionManager?.AccelerometerAvailable ?? false;
 
-		private void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var manager = Platform.MotionManager;
 			manager.AccelerometerUpdateInterval = sensorSpeed.ToPlatform();
 			manager.StartAccelerometerUpdates(Platform.GetCurrentQueue(), DataUpdated);
 		}
 
-		private void DataUpdated(CMAccelerometerData data, NSError error)
+		void DataUpdated(CMAccelerometerData data, NSError error)
 		{
 			if (data == null)
 				return;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Essentials
 			OnChanged(accelData);
 		}
 
-		private void PlatformStop() =>
+		void PlatformStop() =>
 			Platform.MotionManager?.StopAccelerometerUpdates();
 	}
 }

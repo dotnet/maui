@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials
 		AccelerometerListener listener;
 		Sensor accelerometer;
 
-		private void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 			listener = new AccelerometerListener(this);
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 			Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
 		}
 
-		private void PlatformStop()
+		void PlatformStop()
 		{
 			if (listener == null || accelerometer == null)
 				return;

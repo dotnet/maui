@@ -11,20 +11,20 @@ namespace Microsoft.Maui.Essentials
 		internal static bool IsSupported =>
 			TizenAccelerometer.IsSupported;
 
-		private void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			DefaultSensor.Interval = sensorSpeed.ToPlatform();
 			DefaultSensor.DataUpdated += DataUpdated;
 			DefaultSensor.Start();
 		}
 
-		private void PlatformStop()
+		void PlatformStop()
 		{
 			DefaultSensor.DataUpdated -= DataUpdated;
 			DefaultSensor.Stop();
 		}
 
-		private void DataUpdated(object sender, AccelerometerDataUpdatedEventArgs e)
+		void DataUpdated(object sender, AccelerometerDataUpdatedEventArgs e)
 		{
 			OnChanged(new AccelerometerData(e.X, e.Y, e.Z));
 		}

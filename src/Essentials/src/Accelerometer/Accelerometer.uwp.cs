@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Essentials
 		public bool IsSupported =>
 			DefaultSensor != null;
 
-		private void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultSensor;
 
@@ -24,14 +24,14 @@ namespace Microsoft.Maui.Essentials
 			sensor.ReadingChanged += DataUpdated;
 		}
 
-		private void DataUpdated(object sender, AccelerometerReadingChangedEventArgs e)
+		void DataUpdated(object sender, AccelerometerReadingChangedEventArgs e)
 		{
 			var reading = e.Reading;
 			var data = new AccelerometerData(reading.AccelerationX * -1, reading.AccelerationY * -1, reading.AccelerationZ * -1);
 			OnChanged(data);
 		}
 
-		private void PlatformStop()
+		void PlatformStop()
 		{
 			sensor.ReadingChanged -= DataUpdated;
 			sensor.ReportInterval = 0;

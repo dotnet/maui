@@ -6,10 +6,10 @@ namespace Microsoft.Maui.Essentials
 		public bool IsSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		private void PlatformStart(SensorSpeed sensorSpeed) =>
+		void PlatformStart(SensorSpeed sensorSpeed) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		private void PlatformStop() =>
+		void PlatformStop() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

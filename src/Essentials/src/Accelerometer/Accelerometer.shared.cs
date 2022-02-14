@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Essentials
 				ProcessShakeEvent(e.Reading.Acceleration);
 		}
 
-		private void ProcessShakeEvent(Vector3 acceleration)
+		void ProcessShakeEvent(Vector3 acceleration)
 		{
 			var now = Nanoseconds(DateTime.UtcNow);
 
