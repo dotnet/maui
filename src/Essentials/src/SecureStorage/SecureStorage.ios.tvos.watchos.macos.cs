@@ -7,14 +7,25 @@ using Security;
 
 namespace Microsoft.Maui.Essentials
 {
+	public static partial class SecureStorage
+	{
+		public static SecAccessible DefaultAccessible
+		{
+			get { return SecureStorageImplementation.DefaultAccessible; }
+			set { SecureStorageImplementation.DefaultAccessible = value; }
+		}
+
+		public static Task SetAsync(string key, string value, SecAccessible accessible) =>
+			SecureStorageImplementation.SetAsync(key, value, accessible);
+	}
+
 	public partial class SecureStorageImplementation : ISecureStorage
 	{
 		static string Alias => SecureStorage.Alias;
 
-		public static SecAccessible DefaultAccessible { get; set; } =
-			SecAccessible.AfterFirstUnlock;
+		public static SecAccessible DefaultAccessible { get; set; }
 
-		public Task SetAsync(string key, string value, SecAccessible accessible)
+		public static Task SetAsync(string key, string value, SecAccessible accessible)
 		{
 			if (string.IsNullOrWhiteSpace(key))
 				throw new ArgumentNullException(nameof(key));
