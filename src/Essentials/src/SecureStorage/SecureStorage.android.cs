@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Essentials
 {
 	public partial class SecureStorageImplementation : ISecureStorage
 	{
-		readonly object locker = new object();
+		static readonly object locker = new object();
 		static string Alias => SecureStorage.Alias;
 
 		public Task<string> GetAsync(string key)
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		private ISharedPreferences GetEncryptedSharedPreferences()
+		ISharedPreferences GetEncryptedSharedPreferences()
 		{
 			var context = Application.Context;
 
