@@ -7,9 +7,11 @@ using Windows.Storage;
 
 namespace Microsoft.Maui.Essentials
 {
-	public partial class SecureStorage
+	public partial class SecureStorageImplementation : ISecureStorage
 	{
-		static async Task<string> PlatformGetAsync(string key)
+		static string Alias => SecureStorage.Alias;
+
+		public async Task<string> GetAsync(string key)
 		{
 			var settings = GetSettings(Alias);
 
@@ -25,7 +27,7 @@ namespace Microsoft.Maui.Essentials
 			return Encoding.UTF8.GetString(buffer.ToArray());
 		}
 
-		static async Task PlatformSetAsync(string key, string data)
+		public async Task SetAsync(string key, string data)
 		{
 			var settings = GetSettings(Alias);
 
@@ -41,7 +43,7 @@ namespace Microsoft.Maui.Essentials
 			settings.Values[key] = encBytes;
 		}
 
-		static bool PlatformRemove(string key)
+		public bool Remove(string key)
 		{
 			var settings = GetSettings(Alias);
 
@@ -54,7 +56,7 @@ namespace Microsoft.Maui.Essentials
 			return false;
 		}
 
-		static void PlatformRemoveAll()
+		public void RemoveAll()
 		{
 			var settings = GetSettings(Alias);
 

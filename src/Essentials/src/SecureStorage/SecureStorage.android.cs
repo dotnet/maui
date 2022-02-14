@@ -7,12 +7,12 @@ using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class SecureStorage
+	public partial class SecureStorageImplementation : ISecureStorage
 	{
+		readonly object locker = new object();
+		static string Alias => SecureStorage.Alias;
 
-		static readonly object locker = new object();
-
-		static Task<string> PlatformGetAsync(string key)
+		public Task<string> GetAsync(string key)
 		{
 			return Task.Run(() =>
 			{
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static Task PlatformSetAsync(string key, string data)
+		public Task SetAsync(string key, string data)
 		{
 			return Task.Run(() =>
 			{
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static bool PlatformRemove(string key)
+		public bool Remove(string key)
 		{
 			lock (locker)
 			{
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Essentials
 			return true;
 		}
 
-		static void PlatformRemoveAll()
+		public void RemoveAll()
 		{
 			lock (locker)
 			{
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static ISharedPreferences GetEncryptedSharedPreferences()
+		private ISharedPreferences GetEncryptedSharedPreferences()
 		{
 			var context = Application.Context;
 

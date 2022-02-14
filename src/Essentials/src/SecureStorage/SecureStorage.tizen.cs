@@ -4,9 +4,9 @@ using Tizen.Security.SecureRepository;
 
 namespace Microsoft.Maui.Essentials
 {
-	public partial class SecureStorage
+	public partial class SecureStorageImplementation : ISecureStorage
 	{
-		static Task<string> PlatformGetAsync(string key)
+		public Task<string> GetAsync(string key)
 		{
 			try
 			{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static Task PlatformSetAsync(string key, string data)
+		public Task SetAsync(string key, string data)
 		{
 			try
 			{
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void PlatformRemoveAll()
+		public void RemoveAll()
 		{
 			try
 			{
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static bool PlatformRemove(string key)
+		public bool Remove(string key)
 		{
 			try
 			{

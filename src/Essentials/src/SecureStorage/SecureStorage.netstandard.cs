@@ -3,18 +3,18 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Essentials
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SecureStorage']/Docs" />
-	public partial class SecureStorage
+	public partial class SecureStorageImplementation : ISecureStorage
 	{
-		static Task<string> PlatformGetAsync(string key) =>
+		public Task<string> GetAsync(string key) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task PlatformSetAsync(string key, string data) =>
+		public Task SetAsync(string key, string data) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static bool PlatformRemove(string key) =>
+		public bool Remove(string key) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformRemoveAll() =>
+		public void RemoveAll() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
