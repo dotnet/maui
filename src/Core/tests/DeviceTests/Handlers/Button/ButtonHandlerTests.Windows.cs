@@ -67,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).GetContent<Image>()?.Source != null;
 
-		TextTrimming GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
+		UI.Xaml.TextTrimming GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).GetContent<TextBlock>()?.TextTrimming;
 	}
 }

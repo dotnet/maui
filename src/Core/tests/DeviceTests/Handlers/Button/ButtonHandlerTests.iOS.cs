@@ -90,6 +90,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UILineBreakMode GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).LineBreakMode;
+			GetNativeButton(buttonHandler).TitleLabel.LineBreakMode;
 	}
 }
