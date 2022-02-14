@@ -23,12 +23,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Unchecked -= OnChecked;
 		}
 
-		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
+		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateIsChecked(check);
 		}
 
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateForeground(check);
 		}

@@ -32,17 +32,17 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// This is an Android-specific mapping
-		public static void MapBackground(CheckBoxHandler handler, ICheckBox check)
+		public static void MapBackground(ICheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateBackground(check);
 		}
 
-		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
+		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateIsChecked(check);
 		}
 
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateForeground(check);
 		}
