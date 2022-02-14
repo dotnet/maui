@@ -439,6 +439,14 @@ namespace Microsoft.Maui.Platform
 			view.Arrange(platformFrame.ToRectangle());
 			return size;
 		}
+		
+		public static void UpdateInputTransparent(this UIView nativeView, IViewHandler handler, IView view)
+		{
+			if (nativeView is not UIView uiView)
+				return;
+
+			uiView.UserInteractionEnabled = !view.InputTransparent;
+		}
     
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);

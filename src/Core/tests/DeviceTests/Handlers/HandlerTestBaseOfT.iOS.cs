@@ -107,6 +107,22 @@ namespace Microsoft.Maui.DeviceTests
 			expected.AssertEqual(transform);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task InputTransparencyInitializesCorrectly(bool inputTransparent) 
+		{
+			var view = new TStub()
+			{
+				InputTransparent = inputTransparent
+			};
+
+			var uie = await GetValueAsync(view, handler => GetUserInteractionEnabled(handler));
+
+			// UserInteractionEnabled should be the opposite value of InputTransparent 
+			Assert.NotEqual(inputTransparent, uie);
+		}
+
 		// TODO: this is all kinds of wrong
 		protected Task<CATransform3D> GetLayerTransformAsync(TStub view)
 		{
@@ -193,6 +209,12 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return Visibility.Visible;
+		}
+
+		protected bool GetUserInteractionEnabled(IViewHandler viewHandler) 
+		{
+			var nativeView = (UIView)viewHandler.NativeView;
+			return nativeView.UserInteractionEnabled;
 		}
 	}
 }
