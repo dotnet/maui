@@ -8,6 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
+using Launcher = Windows.System.Launcher;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -21,13 +22,25 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly WebView2Control _webview;
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
+		private readonly ExternalLinkMode _externalLinkMode;
 
-		public WinUIWebViewManager(WebView2Control webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath, string contentRootDir)
+		public WinUIWebViewManager(
+			WebView2Control webview,
+			IServiceProvider services,
+			Dispatcher dispatcher,
+			IFileProvider fileProvider,
+			JSComponentConfigurationStore jsComponents,
+			string hostPageRelativePath,
+			string contentRootDir,
+			ExternalLinkMode externalLinkMode)
 			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_webview = webview;
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
+			_externalLinkMode = externalLinkMode;
+
+			_webview.CoreWebView2Initialized += Webview_CoreWebView2Initialized;
 		}
 
 		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
@@ -101,6 +114,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					Blazor.start();
 					");
 			};
+		}
+
+		private void Webview_CoreWebView2Initialized(WebView2Control sender, UI.Xaml.Controls.CoreWebView2InitializedEventArgs args)
+		{
+			_webview.CoreWebView2.NavigationStarting += CoreWebView2_NavigationStarting;
+			_webview.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+		}
+
+		private void CoreWebView2_NavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+		{
+			var uri = new Uri(args.Uri);
+			if (uri.Host != "0.0.0.0" && _externalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
+			{
+				_ = Launcher.LaunchUriAsync(uri);
+				args.Cancel = true;
+			}
+		}
+
+		private void CoreWebView2_NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+		{
+			// Intercept _blank target <a> tags to always open in device browser
+			// regardless of ExternalLinkMode.OpenInWebview
+			var uri = new Uri(args.Uri);
+			_ = Launcher.LaunchUriAsync(uri);
+			args.Handled = true;
 		}
 	}
 }
