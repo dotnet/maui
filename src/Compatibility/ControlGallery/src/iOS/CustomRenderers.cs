@@ -17,7 +17,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 [assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
-[assembly: ExportRenderer(typeof(NativeCell), typeof(NativeiOSCellRenderer))]
+[assembly: ExportRenderer(typeof(PlatformCell), typeof(NativeiOSCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla39987.CustomMapView), typeof(CustomIOSMapRenderer))]
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 	public class NativeiOSCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
-		static NSString s_rid = new NSString("NativeCell");
+		static NSString s_rid = new NSString("PlatformCell");
 
 		public NativeiOSCellRenderer()
 		{
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			var x = (NativeCell)item;
+			var x = (PlatformCell)item;
 			Console.WriteLine(x);
 
 			NativeiOSCell c = reusableCell as NativeiOSCell;

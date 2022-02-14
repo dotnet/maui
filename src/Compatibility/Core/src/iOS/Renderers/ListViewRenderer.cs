@@ -1093,7 +1093,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (cachingStrategy == ListViewCachingStrategy.RetainElement)
 				{
 					cell = GetCellForPath(indexPath);
-					platformCell = CellTableViewCell.GetNativeCell(tableView, cell);
+					platformCell = CellTableViewCell.GetPlatformCell(tableView, cell);
 				}
 				else if ((cachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 				{
@@ -1103,7 +1103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					{
 						cell = GetCellForPath(indexPath);
 
-						platformCell = CellTableViewCell.GetNativeCell(tableView, cell, true, id.ToString());
+						platformCell = CellTableViewCell.GetPlatformCell(tableView, cell, true, id.ToString());
 					}
 					else
 					{

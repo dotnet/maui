@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Children.Add(new NativeListPage { Title = "DEMOB", IconImageSource = "bank.png" });
 
 			// built in Xamarin.Forms list, but with a native cell custom-renderer
-			Children.Add(new XamarinFormsNativeCellPage { Title = "DEMOC", IconImageSource = "bank.png" });
+			Children.Add(new XamarinFormsPlatformCellPage { Title = "DEMOC", IconImageSource = "bank.png" });
 
 			// custom renderer for the list, using a native cell that has been custom-defined in native code
 			Children.Add(new NativeListViewPage2 { Title = "DEMOD", IconImageSource = "bank.png" });
@@ -171,17 +171,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	/// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 	/// </summary>
 	[Preserve(AllMembers = true)]
-	public class XamarinFormsNativeCellPage : ContentPage
+	public class XamarinFormsPlatformCellPage : ContentPage
 	{
-		public XamarinFormsNativeCellPage()
+		public XamarinFormsPlatformCellPage()
 		{
 			var listView = new ListView();
 			listView.ItemsSource = DataSource.GetList();
-			listView.ItemTemplate = new DataTemplate(typeof(NativeCell));
+			listView.ItemTemplate = new DataTemplate(typeof(PlatformCell));
 
-			listView.ItemTemplate.SetBinding(NativeCell.NameProperty, "Name");
-			listView.ItemTemplate.SetBinding(NativeCell.CategoryProperty, "Category");
-			listView.ItemTemplate.SetBinding(NativeCell.ImageFilenameProperty, "ImageFilename");
+			listView.ItemTemplate.SetBinding(PlatformCell.NameProperty, "Name");
+			listView.ItemTemplate.SetBinding(PlatformCell.CategoryProperty, "Category");
+			listView.ItemTemplate.SetBinding(PlatformCell.ImageFilenameProperty, "ImageFilename");
 
 			listView.ItemSelected += async (sender, e) =>
 			{
@@ -207,15 +207,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	}
 
 	[Preserve(AllMembers = true)]
-	public class NativeCell : ViewCell
+	public class PlatformCell : ViewCell
 	{
-		public NativeCell()
+		public PlatformCell()
 		{
 			//View = new ContentView ();
 		}
 
 		public static readonly BindableProperty NameProperty =
-			BindableProperty.Create("Name", typeof(string), typeof(NativeCell), "");
+			BindableProperty.Create("Name", typeof(string), typeof(PlatformCell), "");
 		public string Name
 		{
 			get { return (string)GetValue(NameProperty); }
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 
 		public static readonly BindableProperty CategoryProperty =
-			BindableProperty.Create("Category", typeof(string), typeof(NativeCell), "");
+			BindableProperty.Create("Category", typeof(string), typeof(PlatformCell), "");
 		public string Category
 		{
 			get { return (string)GetValue(CategoryProperty); }
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 
 		public static readonly BindableProperty ImageFilenameProperty =
-			BindableProperty.Create("ImageFilename", typeof(string), typeof(NativeCell), "");
+			BindableProperty.Create("ImageFilename", typeof(string), typeof(PlatformCell), "");
 		public string ImageFilename
 		{
 			get { return (string)GetValue(ImageFilenameProperty); }

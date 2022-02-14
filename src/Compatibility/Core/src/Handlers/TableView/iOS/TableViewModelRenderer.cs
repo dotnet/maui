@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
 			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
-			var platformCell = CellTableViewCell.GetNativeCell(tableView, cell);
+			var platformCell = CellTableViewCell.GetPlatformCell(tableView, cell);
 
 			return platformCell;
 		}

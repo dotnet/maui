@@ -37,7 +37,7 @@ using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeAndroidListViewRenderer))]
-[assembly: ExportRenderer(typeof(NativeCell), typeof(NativeAndroidCellRenderer))]
+[assembly: ExportRenderer(typeof(PlatformCell), typeof(NativeAndroidCellRenderer))]
 
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoDecimal), typeof(EntryRendererNoDecimal))]
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoNegative), typeof(EntryRendererNoNegative))]
@@ -376,7 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		protected override global::Android.Views.View GetCellCore(Cell item, global::Android.Views.View convertView, ViewGroup parent, Context context)
 		{
-			var x = (NativeCell)item;
+			var x = (PlatformCell)item;
 
 			var view = convertView;
 
