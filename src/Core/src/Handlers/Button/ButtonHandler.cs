@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader ImageSourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => (VirtualView as IImageButton), OnSetImageSource);
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
 
 		public static IPropertyMapper<IImage, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImage, IButtonHandler>()
 		{

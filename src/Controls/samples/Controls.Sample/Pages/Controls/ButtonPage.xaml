@@ -140,6 +140,15 @@
                     HorizontalOptions="Start"
                     Background="LightGrey"
                     Padding="{Binding Text, Source={Reference paddingEntry}, Converter={StaticResource ThicknessConverter}}"/>
+                <Label
+                    Text="LineBreakMode"
+                    Style="{StaticResource Headline}"/>
+                <Button 
+                    x:Name="LineBreakModeButton"
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>  
+                <Button
+                    Text="Update LineBreakMode"
+                    Clicked="OnLineBreakModeButtonClicked"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

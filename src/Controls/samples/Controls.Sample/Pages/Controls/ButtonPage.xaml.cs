@@ -1,11 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Windows.Input;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class ButtonPage
 	{
+		int count;
+
 		public ButtonPage()
 		{
 			InitializeComponent();
@@ -42,6 +45,32 @@ namespace Maui.Controls.Sample.Pages
 			positionChange.ContentLayout =
 				new Button.ButtonContentLayout(positionChange.ContentLayout.Position,
 					positionChange.ContentLayout.Spacing + 1);
+		}
+
+		void OnLineBreakModeButtonClicked(object sender, System.EventArgs e)
+		{
+			LineBreakModeButton.LineBreakMode = SelectLineBreakMode();
+		}
+
+		LineBreakMode SelectLineBreakMode()
+		{
+			count++;
+			switch (count)
+			{
+				case 1:
+					return LineBreakMode.CharacterWrap;
+				case 2:
+					return LineBreakMode.HeadTruncation;
+				case 3:
+					return LineBreakMode.MiddleTruncation;
+				case 4:
+					return LineBreakMode.NoWrap;
+				case 5:
+					return LineBreakMode.TailTruncation;
+				default:
+					count = 0;
+					return LineBreakMode.WordWrap;
+			}
 		}
 	}
 
