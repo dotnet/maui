@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	public partial class ScreenshotResult
+	internal partial class ScreenshotResult
 	{
 		readonly UIImage uiImage;
 
