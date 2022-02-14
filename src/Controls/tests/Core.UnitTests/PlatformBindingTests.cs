@@ -38,8 +38,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public event EventHandler SelectedColorChanged;
 
-		MockNativeColor _selectedColor;
-		public MockNativeColor SelectedColor
+		MockPlatformColor _selectedColor;
+		public MockPlatformColor SelectedColor
 		{
 			get { return _selectedColor; }
 			set
@@ -70,10 +70,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	public class MockNativeColor
+	public class MockPlatformColor
 	{
 
-		public MockNativeColor(Color color)
+		public MockPlatformColor(Color color)
 		{
 			FormsColor = color;
 		}
@@ -128,14 +128,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			if (value is Color)
-				return new MockNativeColor((Color)value);
+				return new MockPlatformColor((Color)value);
 			return value;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (value is MockNativeColor)
-				return ((MockNativeColor)value).FormsColor;
+			if (value is MockPlatformColor)
+				return ((MockPlatformColor)value).FormsColor;
 			return value;
 		}
 	}
@@ -447,7 +447,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(vm.CColor, platformView.SelectedColor.FormsColor);
 
 			var newFormsColor = Colors.Blue;
-			var newColor = new MockNativeColor(newFormsColor);
+			var newColor = new MockPlatformColor(newFormsColor);
 			platformView.SelectedColor = newColor;
 			inpc.FireINPC(platformView, nameof(platformView.SelectedColor));
 

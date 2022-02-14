@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				try
 				{
-					var color = DependencyService.Get<INativeColorService>()?.GetConvertedColor(true);
+					var color = DependencyService.Get<IPlatformColorService>()?.GetConvertedColor(true);
 
 					boxView.BackgroundColor = color ?? Colors.Black;
 
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				try
 				{
-					var color = DependencyService.Get<INativeColorService>()?.GetConvertedColor(false);
+					var color = DependencyService.Get<IPlatformColorService>()?.GetConvertedColor(false);
 
 					debugLabel.Text = color?.ToString();
 					boxView.BackgroundColor = color ?? Colors.Black;

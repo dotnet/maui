@@ -9,14 +9,14 @@ using Microsoft.Maui.Controls.Platform;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using NativeColor = UIKit.UIColor;
+using PlatformColor = UIKit.UIColor;
 using PlatformControl = UIKit.UIControl;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using PlatformView = AppKit.NSView;
-using NativeColor = CoreGraphics.CGColor;
+using PlatformColor = CoreGraphics.CGColor;
 using PlatformControl = AppKit.NSControl;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		bool? _defaultIsAccessibilityElement;
 		bool? _defaultAccessibilityElementsHidden;
 
-		NativeColor _defaultColor;
+		PlatformColor _defaultColor;
 
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 		event EventHandler _controlChanging;

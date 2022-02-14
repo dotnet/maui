@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
-	public interface INativeColorService
+	public interface IPlatformColorService
 	{
 		Color GetConvertedColor(bool shouldCrash);
 	}

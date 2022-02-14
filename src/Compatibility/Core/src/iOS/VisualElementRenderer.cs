@@ -14,14 +14,14 @@ using ObjCRuntime;
 using UIKit;
 using PlatformView = UIKit.UIView;
 using PlatformViewController = UIKit.UIViewController;
-using NativeColor = UIKit.UIColor;
+using PlatformColor = UIKit.UIColor;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using AppKit;
 using PlatformView = AppKit.NSView;
 using PlatformViewController = AppKit.NSViewController;
-using NativeColor = AppKit.NSColor;
+using PlatformColor = AppKit.NSColor;
 using Microsoft.Maui.Controls.Compatibility.Platform.macOS.Extensions;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 	public class VisualElementRenderer<TElement> : PlatformView, IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
 	{
-		readonly NativeColor _defaultColor = NativeColor.Clear;
+		readonly PlatformColor _defaultColor = PlatformColor.Clear;
 
 		readonly List<EventHandler<VisualElementChangedEventArgs>> _elementChangedHandlers = new List<EventHandler<VisualElementChangedEventArgs>>();
 
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 		// prevent possible crashes in overrides
-		public sealed override NativeColor BackgroundColor
+		public sealed override PlatformColor BackgroundColor
 		{
 			get { return base.BackgroundColor; }
 			set { base.BackgroundColor = value; }
