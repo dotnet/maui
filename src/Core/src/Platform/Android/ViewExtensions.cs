@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
@@ -419,9 +420,9 @@ namespace Microsoft.Maui.Platform
 			frameworkElement.ViewAttachedToWindow += routedEventHandler;
 		}
 
-		internal static void OnUnloaded(this View frameworkElement, Action action)
+		internal static void OnUnloaded(this View view, Action action)
 		{
-			if (!frameworkElement.IsAttachedToWindow)
+			if (!view.IsAttachedToWindow)
 			{
 				action();
 			}
@@ -430,12 +431,24 @@ namespace Microsoft.Maui.Platform
 			routedEventHandler = (_, __) =>
 			{
 				if (routedEventHandler != null)
-					frameworkElement.ViewDetachedFromWindow -= routedEventHandler;
+					view.ViewDetachedFromWindow -= routedEventHandler;
+
+				// This event seems to fire prior to the view actually being
+				// detached from the window
+				if (view.IsAttachedToWindow)
+				{
+					var q = Looper.MyLooper();
+					if (q != null)
+					{
+						new Handler(q).Post(action);
+						return;
+					}
+				}
 
 				action();
 			};
 
-			frameworkElement.ViewDetachedFromWindow += routedEventHandler;
+			view.ViewDetachedFromWindow += routedEventHandler;
 		}
 
 		internal static IViewParent? GetParent(this View? view)

@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal bool UseCustomAppTitleBar { get; set; } = true;
+		internal FrameworkElement? AppTitleBar => _rootView.AppTitleBar;
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{

@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 				.RemapForControls()
 				.ConfigureLifecycleEvents(lifecycle =>
 				{
-#if __IOS__
+#if IOS
 					lifecycle
 						.AddiOS(iOS => iOS
 							.OpenUrl((app, url, options) =>
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-#if WINDOWS
+#if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
 #endif
 				});
