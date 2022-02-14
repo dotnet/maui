@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class SemanticScreenReader
+	public partial class SemanticScreenReaderImplementation : ISemanticScreenReader
 	{
-		static void PlatformAnnounce(string text) =>
+		public void Announce(string text) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
