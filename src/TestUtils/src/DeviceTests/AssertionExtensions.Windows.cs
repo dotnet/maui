@@ -204,7 +204,7 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode.CharacterWrap => TextTrimming.WordEllipsis,
 				LineBreakMode.HeadTruncation => TextTrimming.WordEllipsis,
 				LineBreakMode.TailTruncation => TextTrimming.CharacterEllipsis,
-				LineBreakMode.MiddleTruncation => TextTrimming.Middle,
+				LineBreakMode.MiddleTruncation => TextTrimming.WordEllipsis,
 				_ => throw new ArgumentOutOfRangeException(nameof(mode))
 			};
 
