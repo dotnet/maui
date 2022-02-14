@@ -287,8 +287,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			var nativeColorConverter = new ColorConverter();
 
-			uilabel.SetBinding("Text", new Binding("NativeLabel"));
-			uilabel.SetBinding(nameof(uilabel.TextColor), new Binding("NativeLabelColor", converter: nativeColorConverter));
+			uilabel.SetBinding("Text", new Binding("PlatformLabel"));
+			uilabel.SetBinding(nameof(uilabel.TextColor), new Binding("PlatformLabelColor", converter: nativeColorConverter));
 
 			var kvoSlider = new KVOUISlider();
 			kvoSlider.MaxValue = 100;
@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			sl?.Children.Add(uibuttonColor.ToView());
 			// TODO: Replace with a new plugin or API
 			//var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
-			//colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
+			//colorPicker.SetBinding("SelectedColor", new Binding("PlatformLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
 			//sl?.Children.Add(colorPicker);
 			page.PlatformControlsAdded = true;
 		}

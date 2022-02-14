@@ -110,10 +110,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			var colorPicker = new ColorPickerView(this, 200, 200);
 
-			textView.SetBinding(nameof(textView.Text), new Binding("NativeLabel"));
+			textView.SetBinding(nameof(textView.Text), new Binding("PlatformLabel"));
 			//this doesn't work because there's not TextColor property
-			//textView.SetBinding("TextColor", new Binding("NativeLabelColor", converter: new ColorConverter()));
-			colorPicker.SetBinding(nameof(colorPicker.SelectedColor), new Binding("NativeLabelColor", BindingMode.TwoWay, new ColorConverter()), "ColorPicked");
+			//textView.SetBinding("TextColor", new Binding("PlatformLabelColor", converter: new ColorConverter()));
+			colorPicker.SetBinding(nameof(colorPicker.SelectedColor), new Binding("PlatformLabelColor", BindingMode.TwoWay, new ColorConverter()), "ColorPicked");
 
 			sl?.Children.Add(viewGroup);
 			sl?.Children.Add(buttonColor.ToView());

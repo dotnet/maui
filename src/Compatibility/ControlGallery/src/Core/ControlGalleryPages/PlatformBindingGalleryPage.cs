@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var vm = new NestedPlatformViewModel();
 			vm.FormsLabel = "Forms Label Binding";
-			vm.NativeLabel = "Native Label Binding";
-			vm.NativeLabelColor = Colors.Red;
+			vm.PlatformLabel = "Native Label Binding";
+			vm.PlatformLabelColor = Colors.Red;
 			vm.Age = 45;
 
 			Layout = new StackLayout { Padding = 20, VerticalOptions = LayoutOptions.FillAndExpand };
@@ -41,8 +41,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				vm = new NestedPlatformViewModel();
 				vm.FormsLabel = "Forms Label Binding Changed";
-				vm.NativeLabel = "Native Label Binding Changed";
-				vm.NativeLabelColor = Colors.Pink;
+				vm.PlatformLabel = "Native Label Binding Changed";
+				vm.PlatformLabelColor = Colors.Pink;
 				vm.Age = 10;
 
 				BindingContext = ViewModel = vm;
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			};
 
 			var boxView = new BoxView { HeightRequest = 50 };
-			boxView.SetBinding(BoxView.BackgroundColorProperty, "NativeLabelColor");
+			boxView.SetBinding(BoxView.BackgroundColorProperty, "PlatformLabelColor");
 
 			var label = new Label();
 			label.SetBinding(Label.TextProperty, "FormsLabel");
@@ -82,14 +82,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		}
 
 		string _platformLabel;
-		public string NativeLabel
+		public string PlatformLabel
 		{
 			get { return _platformLabel; }
 			set { if (_platformLabel == value) return; _platformLabel = value; OnPropertyChanged(); }
 		}
 
 		Color _platformLabelColor;
-		public Color NativeLabelColor
+		public Color PlatformLabelColor
 		{
 			get { return _platformLabelColor; }
 			set { if (_platformLabelColor == value) return; _platformLabelColor = value; OnPropertyChanged(); }

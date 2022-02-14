@@ -12,10 +12,10 @@ using Microsoft.Maui.Controls.Platform;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using NativeLabel = UIKit.UILabel;
+using PlatformLabel = UIKit.UILabel;
 #else
 using AppKit;
-using NativeLabel = AppKit.NSTextField;
+using PlatformLabel = AppKit.NSTextField;
 #endif
 
 #if __MOBILE__
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-	public class LabelRenderer : ViewRenderer<Label, NativeLabel>
+	public class LabelRenderer : ViewRenderer<Label, PlatformLabel>
 	{
 		SizeRequest _perfectSize;
 
@@ -238,12 +238,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				UpdateText();
 		}
 
-		protected override NativeLabel CreatePlatformControl()
+		protected override PlatformLabel CreatePlatformControl()
 		{
 #if __MOBILE__
-			return Element.Padding.IsEmpty ? new NativeLabel(RectangleF.Empty) : new FormsLabel(RectangleF.Empty);
+			return Element.Padding.IsEmpty ? new PlatformLabel(RectangleF.Empty) : new FormsLabel(RectangleF.Empty);
 #else
-			return new NativeLabel(RectangleF.Empty);
+			return new PlatformLabel(RectangleF.Empty);
 #endif
 		}
 
@@ -691,7 +691,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 #if __MOBILE__
-		class FormsLabel : NativeLabel
+		class FormsLabel : PlatformLabel
 		{
 			public UIEdgeInsets TextInsets { get; set; }
 

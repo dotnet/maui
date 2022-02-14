@@ -96,23 +96,23 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
-		TextView GetNativeLabel(LabelHandler labelHandler) =>
+		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Text;
+			GetPlatformLabel(labelHandler).Text;
 
 		Color GetNativeTextColor(LabelHandler labelHandler) =>
-			((uint)GetNativeLabel(labelHandler).CurrentTextColor).ToColor();
+			((uint)GetPlatformLabel(labelHandler).CurrentTextColor).ToColor();
 
 		(GravityFlags gravity, ATextAlignemnt alignment) GetNativeHorizontalTextAlignment(LabelHandler labelHandler)
 		{
-			var textView = GetNativeLabel(labelHandler);
+			var textView = GetPlatformLabel(labelHandler);
 			return (textView.Gravity, textView.TextAlignment);
 		}
 
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).MaxLines;
+			GetPlatformLabel(labelHandler).MaxLines;
 
 		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view)
 		{
@@ -120,22 +120,22 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
-			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, EmCoefficientPrecision);
+			Math.Round(GetPlatformLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, EmCoefficientPrecision);
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Ellipsize;
+			GetPlatformLabel(labelHandler).Ellipsize;
 
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).PaintFlags;
+			GetPlatformLabel(labelHandler).PaintFlags;
 
 		float GetNativeLineHeight(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).LineSpacingMultiplier;
+			GetPlatformLabel(labelHandler).LineSpacingMultiplier;
 
 		Task ValidateHasColor(ILabel label, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var platformLabel = GetNativeLabel(CreateHandler(label));
+				var platformLabel = GetPlatformLabel(CreateHandler(label));
 				action?.Invoke();
 				platformLabel.AssertContainsColor(color);
 			});

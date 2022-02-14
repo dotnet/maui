@@ -188,9 +188,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			var btnTextBox = new global::Microsoft.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
 			btnTextBox.Click += (sender, args) => txbBox.Text = "Hello 2 way native";
 
-			txbLabel.SetBinding("Text", new Binding("NativeLabel"));
-			txbBox.SetBinding("Text", new Binding("NativeLabel", BindingMode.TwoWay), "TextChanged");
-			txbLabel.SetBinding("Foreground", new Binding("NativeLabelColor", BindingMode.TwoWay, new ColorToBrushPlatformBindingConverter()));
+			txbLabel.SetBinding("Text", new Binding("PlatformLabel"));
+			txbBox.SetBinding("Text", new Binding("PlatformLabel", BindingMode.TwoWay), "TextChanged");
+			txbLabel.SetBinding("Foreground", new Binding("PlatformLabelColor", BindingMode.TwoWay, new ColorToBrushPlatformBindingConverter()));
 
 			var grd = new StackPanel();
 			grd.Children.Add(txbLabel);

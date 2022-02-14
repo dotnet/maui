@@ -284,7 +284,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var platformLabel = GetNativeLabel(handler);
+			var platformLabel = GetPlatformLabel(handler);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -310,7 +310,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var platformLabel = GetNativeLabel(handler);
+			var platformLabel = GetPlatformLabel(handler);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -338,7 +338,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var platformLabel = GetNativeLabel(handler);
+			var platformLabel = GetPlatformLabel(handler);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
