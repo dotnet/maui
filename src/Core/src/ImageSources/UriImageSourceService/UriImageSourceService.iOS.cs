@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 
 				NSData? imageData;
 
-				if (IsImageCached(pathToImageCache))
+				if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
 				{
 					imageData = GetCachedImage(pathToImageCache);
 				}
@@ -48,7 +48,8 @@ namespace Microsoft.Maui
 					if (imageData == null)
 						throw new InvalidOperationException("Unable to load image stream data.");
 
-					CacheImage(imageData, pathToImageCache);
+					if (imageSource.CachingEnabled)
+						CacheImage(imageData, pathToImageCache);
 			}
 
 				var image = UIImage.LoadFromData(imageData, scale);
