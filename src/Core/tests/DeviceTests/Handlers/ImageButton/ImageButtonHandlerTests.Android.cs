@@ -22,5 +22,16 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeImageButton(CreateHandler(button)).PerformClick();
 			});
 		}
+
+		Thickness GetNativePadding(ImageButtonHandler imageButtonHandler)
+		{
+			var shapeableImageView = GetNativeImageButton(imageButtonHandler);
+
+			return new Thickness(
+				shapeableImageView.ContentPaddingLeft,
+				shapeableImageView.ContentPaddingTop,
+				shapeableImageView.ContentPaddingRight,
+				shapeableImageView.ContentPaddingBottom);
+		}
 	}
 }

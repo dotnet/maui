@@ -60,5 +60,8 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeImageButton(CreateHandler(button)).SendActionForControlEvents(UIControlEvent.TouchUpInside);
 			});
 		}
+
+		UIEdgeInsets GetNativePadding(ImageButtonHandler imageButtonHandler) =>
+			GetNativeImageButton(imageButtonHandler).ContentEdgeInsets;
 	}
 }
