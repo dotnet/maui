@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			DefaultSensor.Start();
 		}
 
-		publicvoid Stop()
+		public void Stop()
 		{
 			DefaultSensor.DataUpdated -= DataUpdated;
 			DefaultSensor.Stop();
