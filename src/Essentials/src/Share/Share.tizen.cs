@@ -4,9 +4,9 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class Share
+	public class ShareImplementation : IShare
 	{
-		static Task PlatformRequestAsync(ShareTextRequest request)
+		public Task RequestAsync(ShareTextRequest request)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
-		static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
+		public Task RequestAsync(ShareMultipleFilesRequest request)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 

@@ -6,9 +6,9 @@ using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class Share
+	public class ShareImplementation : IShare
 	{
-		static Task PlatformRequestAsync(ShareTextRequest request)
+		public Task RequestAsync(ShareTextRequest request)
 		{
 			var items = new List<NSObject>();
 			if (!string.IsNullOrWhiteSpace(request.Title))
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Essentials
 			return PlatformShowRequestAsync(request, items);
 		}
 
-		static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
+		public Task RequestAsync(ShareMultipleFilesRequest request)
 		{
 			var items = new List<NSObject>();
 
