@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Android.Text;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
@@ -91,5 +92,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			return image != null;
 		}
+
+		TextUtils.TruncateAt GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
+			GetNativeButton(buttonHandler).Ellipsize;
 	}
 }
