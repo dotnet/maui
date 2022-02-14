@@ -30,8 +30,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public partial class Activity1
 	{
-		App _app;
-
 		void AddNativeControls(NestedNativeControlGalleryPage page)
 		{
 			if (page.NativeControlsAdded)

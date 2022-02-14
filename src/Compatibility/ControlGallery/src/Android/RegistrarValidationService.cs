@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Platform;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
@@ -28,8 +29,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{
+				var activity = 
+					DependencyService.Resolve<global::Android.Content.Context>() as MauiAppCompatActivity;
+
+				var mc = activity.GetWindow().Handler.MauiContext;
 				var sp = MauiApplication.Current.Services.GetRequiredService<IMauiHandlersFactory>();
-				renderer = sp.GetHandler(element.GetType());
+				renderer = (element as IElement).ToHandler(mc);
 			}
 
 			if (renderer == null

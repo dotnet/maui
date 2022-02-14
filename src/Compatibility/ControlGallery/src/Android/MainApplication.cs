@@ -4,6 +4,7 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Microsoft.Maui.Controls.DualScreen;
+using Microsoft.Maui.Hosting;
 using Plugin.CurrentActivity;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
@@ -70,7 +71,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			ActivityContext = activity;
 		}
 
-		protected override IStartup OnCreateStartup() =>
-			new Startup();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

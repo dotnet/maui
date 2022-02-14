@@ -341,7 +341,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 				catch (Exception e)
 				{
-					Internals.Log.Warning(nameof(Platform), $"{e}");
+					Microsoft.Extensions.Logging.LoggerExtensions
+						.LogWarning(Forms.MauiContext.CreateLogger<Platform>(), $"{e}");
+
 					// TODO define better catch response or define if this is needed?
 				}
 
