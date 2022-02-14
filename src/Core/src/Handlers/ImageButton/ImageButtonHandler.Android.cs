@@ -56,6 +56,11 @@ namespace Microsoft.Maui.Handlers
 			(handler.NativeView as ShapeableImageView)?.UpdateCornerRadius(buttonStroke);
 		}
 
+		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
+		{
+			(handler.NativeView as ShapeableImageView)?.UpdatePadding(imageButton);
+		}
+		
 		void OnTouch(object? sender, View.TouchEventArgs e)
 		{
 			var motionEvent = e.Event;

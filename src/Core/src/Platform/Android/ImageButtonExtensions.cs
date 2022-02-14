@@ -29,5 +29,22 @@ namespace Microsoft.Maui.Platform
 				.SetBottomRightCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
 				.Build();
 		}
+
+		public static void UpdatePadding(this ShapeableImageView nativeButton, IImageButton imageButton)
+		{
+			var context = nativeButton.Context;
+
+			if (context == null)
+			{
+				return;
+			}
+
+			nativeButton.SetContentPadding(		
+				(int)context.ToPixels(imageButton.Padding.Left),
+				(int)context.ToPixels(imageButton.Padding.Top),
+				(int)context.ToPixels(imageButton.Padding.Right),
+				(int)context.ToPixels(imageButton.Padding.Bottom)
+				);
+		}
 	}
 }
