@@ -1,17 +1,17 @@
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class OrientationSensor
+	public partial class OrientationSensorImplementation : IOrientationSensor
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			Platform.SensorManager?.GetDefaultSensor(SensorType.RotationVector) != null;
 
 		static OrientationSensorListener listener;
 		static Sensor orientationSensor;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Essentials
 			Platform.SensorManager.RegisterListener(listener, orientationSensor, delay);
 		}
 
-		internal static void PlatformStop()
+		public void Stop()
 		{
 			if (listener == null || orientationSensor == null)
 				return;

@@ -1,15 +1,15 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensor']/Docs" />
-	public static partial class OrientationSensor
+	public partial class OrientationSensorImplementation : IOrientationSensor
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformStart(SensorSpeed sensorSpeed) =>
+		public void Start(SensorSpeed sensorSpeed) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformStop() =>
+		public void Stop() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
