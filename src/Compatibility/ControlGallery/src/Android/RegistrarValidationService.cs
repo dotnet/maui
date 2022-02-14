@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using AndroidX.Fragment.App;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
@@ -29,12 +30,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{
-				var activity = 
+				var activity =
 					DependencyService.Resolve<global::Android.Content.Context>() as MauiAppCompatActivity;
-
 				var mc = activity.GetWindow().Handler.MauiContext;
-				var sp = MauiApplication.Current.Services.GetRequiredService<IMauiHandlersFactory>();
+
 				renderer = (element as IElement).ToHandler(mc);
+				if (renderer is IElementHandler vh)
+					vh.DisconnectHandler();
 			}
 
 			if (renderer == null
