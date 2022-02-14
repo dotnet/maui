@@ -351,12 +351,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var size = _footerRenderer.VirtualView.Measure(Bounds.Width, double.PositiveInfinity);
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
-			_footerRenderer.NativeView.Frame = platformFrame;
+			_footerRenderer.PlatformView.Frame = platformFrame;
 			_footerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
 			Device.BeginInvokeOnMainThread(() =>
 			{
 				if (_headerRenderer != null)
-					Control.TableFooterView = _footerRenderer.NativeView;
+					Control.TableFooterView = _footerRenderer.PlatformView;
 			});
 		}
 
@@ -369,9 +369,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var size = _headerRenderer.VirtualView.Measure(Bounds.Width, double.PositiveInfinity);
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
-			_headerRenderer.NativeView.Frame = platformFrame;
+			_headerRenderer.PlatformView.Frame = platformFrame;
 			_headerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
-			Control.TableHeaderView = _headerRenderer.NativeView;
+			Control.TableHeaderView = _headerRenderer.PlatformView;
 
 			// Time for another story with Jason. Gather round children because the following Math.Ceiling will look like it's completely useless.
 			// You will remove it and test and find everything is fiiiiiine, but it is not fine, no it is far from fine. See iOS, or at least iOS 8
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Device.BeginInvokeOnMainThread(() =>
 			{
 				if (_headerRenderer != null)
-					Control.TableHeaderView = _headerRenderer.NativeView;
+					Control.TableHeaderView = _headerRenderer.PlatformView;
 			});
 		}
 

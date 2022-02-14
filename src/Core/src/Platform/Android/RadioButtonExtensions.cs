@@ -20,30 +20,30 @@ namespace Microsoft.Maui
 			platformRadioButton.Text = $"{radioButton.Content}";
 		}
 
-		public static void UpdateStrokeColor(this AppCompatRadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateStrokeColor(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.UpdateBorderDrawable(radioButton);
+			platformRadioButton.UpdateBorderDrawable(radioButton);
 		}
 
-		public static void UpdateStrokeThickness(this AppCompatRadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateStrokeThickness(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.UpdateBorderDrawable(radioButton);
+			platformRadioButton.UpdateBorderDrawable(radioButton);
 		}
 
-		public static void UpdateCornerRadius(this AppCompatRadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateCornerRadius(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.UpdateBorderDrawable(radioButton);
+			platformRadioButton.UpdateBorderDrawable(radioButton);
 		}
 
-		internal static void UpdateBorderDrawable(this AppCompatRadioButton nativeView, IRadioButton radioButton)
+		internal static void UpdateBorderDrawable(this AppCompatRadioButton platformView, IRadioButton radioButton)
 		{
-			BorderDrawable? mauiDrawable = nativeView.Background as BorderDrawable;
+			BorderDrawable? mauiDrawable = platformView.Background as BorderDrawable;
 
 			if (mauiDrawable == null)
 			{
-				mauiDrawable = new BorderDrawable(nativeView.Context);
+				mauiDrawable = new BorderDrawable(platformView.Context);
 
-				nativeView.Background = mauiDrawable;
+				platformView.Background = mauiDrawable;
 			}
 
 			mauiDrawable.SetBackground(radioButton.Background);

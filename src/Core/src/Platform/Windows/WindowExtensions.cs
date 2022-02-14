@@ -27,9 +27,9 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		public static IntPtr GetWindowHandle(this UI.Xaml.Window nativeWindow)
+		public static IntPtr GetWindowHandle(this UI.Xaml.Window platformWindow)
 		{
-			var hwnd = WindowNative.GetWindowHandle(nativeWindow);
+			var hwnd = WindowNative.GetWindowHandle(platformWindow);
 
 			if (hwnd == IntPtr.Zero)
 				throw new NullReferenceException("The Window Handle is null.");

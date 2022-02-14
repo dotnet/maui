@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// so we just reuse the layout already created for the cell
 				// This only ever happens if the ListView is forced to measure itself because
 				// it has infinite height
-				if (convertView == null && cell.Handler?.NativeView is AView aView &&
+				if (convertView == null && cell.Handler?.PlatformView is AView aView &&
 					aView.Parent is ConditionalFocusLayout cfl)
 				{
 					layout = cfl;

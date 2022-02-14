@@ -28,9 +28,9 @@ namespace Microsoft.Maui.Handlers
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-		public override void NativeArrange(Graphics.Rectangle frame)
+		public override void PlatformArrange(Graphics.Rectangle frame)
 		{
-			base.NativeArrange(frame);
+			base.PlatformArrange(frame);
 		}
 
 		StackNavigationManager CreateNavigationManager()
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			_stackNavigationManager?.Connect(VirtualView);
-			NativeView.LayoutChange += OnLayoutChanged;
+			PlatformView.LayoutChange += OnLayoutChanged;
 		}
 
 		void OnLayoutChanged(object? sender, View.LayoutChangeEventArgs e)

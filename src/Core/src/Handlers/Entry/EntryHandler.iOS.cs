@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || PlatformView == null)
 				return;
 
-			NativeView?.UpdateSelectionLength(VirtualView);
+			PlatformView?.UpdateSelectionLength(VirtualView);
 
 			// TODO: Update IsFocused property
 		}

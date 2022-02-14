@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						// an additional ConditionalFocusLayout
 						// We're basically faking re-use to the GetView call
 						AView currentParent = null;
-						if(cell.Handler?.NativeView is AView aView)
+						if(cell.Handler?.PlatformView is AView aView)
 							currentParent = aView.Parent as AView;
 							
 						AView listItem = _adapter.GetView(i, currentParent, Control);
