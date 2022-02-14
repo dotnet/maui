@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		partial void DisconnectingHandler(PlatformView platformView
+		partial void DisconnectingHandler(PlatformView platformView)
 		{
 			if (platformView.IsAlive()
 				&& ViewCompat.GetAccessibilityDelegate(platformView) is MauiAccessibilityDelegateCompat ad)
