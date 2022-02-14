@@ -35,11 +35,11 @@ namespace Microsoft.Maui.Essentials
 		// acceleration due to gravity
 		const double gravity = 9.81;
 
-		private AccelerometerImpl accelerometer;
+		AccelerometerImpl _accelerometer;
 
 		internal AccelerometerListener(AccelerometerImpl accelerometer)
 		{
-			this.accelerometer = accelerometer;
+			_accelerometer = accelerometer;
 		}
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Essentials
 				return;
 
 			var data = new AccelerometerData(e.Values[0] / gravity, e.Values[1] / gravity, e.Values[2] / gravity);
-			accelerometer.OnChanged(data);
+			_accelerometer.OnChanged(data);
 		}
 	}
 }
