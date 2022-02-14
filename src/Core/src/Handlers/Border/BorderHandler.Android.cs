@@ -46,9 +46,9 @@ namespace Microsoft.Maui.Handlers
 				NativeView.AddView(view.ToPlatform(MauiContext));
 		}
 
-		public static void MapContent(BorderHandler handler, IBorderView border)
+		public static void MapContent(IBorderHandler handler, IBorderView border)
 		{
-			handler.UpdateContent();
+			(handler as BorderHandler)?.UpdateContent();
 		}
 
 		protected override void DisconnectHandler(ContentViewGroup nativeView)

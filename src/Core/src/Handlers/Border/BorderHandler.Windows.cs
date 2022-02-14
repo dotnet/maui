@@ -46,9 +46,9 @@ namespace Microsoft.Maui.Handlers
             return view;
         }
 
-        public static void MapContent(BorderHandler handler, IBorderView border)
-        {
-            handler.UpdateContent();
-        }
-    }
+		public static void MapContent(IBorderHandler handler, IBorderView border)
+		{
+			(handler as BorderHandler)?.UpdateContent();
+		}
+	}
 }
