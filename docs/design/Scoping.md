@@ -1,4 +1,4 @@
-Handler Resolution
+.NET MAUI Scopes
 ===
 
 # Introduction
