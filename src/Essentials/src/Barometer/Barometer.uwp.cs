@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		}
 
 		internal void BarometerReportedInterval(object sender, BarometerReadingChangedEventArgs e)
-			=> OnChanged(new BarometerData(e.Reading.StationPressureInHectopascals));
+			=> Barometer.OnChanged(new BarometerData(e.Reading.StationPressureInHectopascals));
 
 		public void Stop()
 		{
