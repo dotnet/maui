@@ -105,9 +105,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
 				{
-					if (!UIDevice.CurrentDevice.CheckSystemVersion(7, 0))
-						return;
-
 					uiBgColor = Controls.Compatibility.Platform.iOS.ColorExtensions.GroupedBackground;
 				}
 				else

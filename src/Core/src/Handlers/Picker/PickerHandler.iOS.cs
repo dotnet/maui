@@ -44,13 +44,8 @@ namespace Microsoft.Maui.Handlers
 
 			platformPicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			platformPicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-
-			if (UIDevice.CurrentDevice.CheckSystemVersion(9, 0))
-			{
-				platformPicker.InputAssistantItem.LeadingBarButtonGroups = null;
-				platformPicker.InputAssistantItem.TrailingBarButtonGroups = null;
-			}
-
+			platformPicker.InputAssistantItem.LeadingBarButtonGroups = null;
+			platformPicker.InputAssistantItem.TrailingBarButtonGroups = null;
 			platformPicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
 			_pickerView.Model = new PickerSource(VirtualView);

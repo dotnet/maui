@@ -1,3 +1,5 @@
+using System;
+
 using ObjCRuntime;
 using UIKit;
 
@@ -7,7 +9,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static bool IsAtLeast(int version)
 		{
-			return UIDevice.CurrentDevice.CheckSystemVersion(version, 0);
+			return OperatingSystem.IsIOSVersionAtLeast(version);
 		}
 
 		private static bool? SetNeedsUpdateOfHomeIndicatorAutoHidden;

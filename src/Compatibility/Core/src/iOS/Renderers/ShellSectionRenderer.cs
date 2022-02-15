@@ -715,10 +715,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (coordinator != null && coordinator.IsInteractive)
 				{
 					// handle swipe to dismiss gesture 
-					if (Forms.IsiOS10OrNewer)
-						coordinator.NotifyWhenInteractionChanges(OnInteractionChanged);
-					else
-						coordinator.NotifyWhenInteractionEndsUsingBlock(OnInteractionChanged);
+					coordinator.NotifyWhenInteractionChanges(OnInteractionChanged);
 				}
 			}
 

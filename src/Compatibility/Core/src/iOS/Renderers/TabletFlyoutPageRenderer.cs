@@ -124,7 +124,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		bool _disposed;
 		EventTracker _events;
-		InnerDelegate _innerDelegate;
 		nfloat _flyoutWidth = 0;
 		EventedViewController _flyoutController;
 		FlyoutPage _flyoutPage;
@@ -213,9 +212,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Element = element;
 
 			ViewControllers = new[] { _flyoutController = new EventedViewController(), _detailController = new ChildViewController() };
-
-			if (!Forms.IsiOS9OrNewer)
-				Delegate = _innerDelegate = new InnerDelegate(FlyoutPage.FlyoutLayoutBehavior);
 
 			UpdateControllers();
 
@@ -380,27 +376,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.ViewWillLayoutSubviews();
 			_flyoutController.View.BackgroundColor = ColorExtensions.BackgroundColor;
-		}
-
-		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
-		{
-			// I tested this code on iOS9+ and it's never called
-			if (!Forms.IsiOS9OrNewer)
-			{
-				if (!FlyoutPageController.ShouldShowSplitMode && IsFlyoutVisible)
-				{
-					FlyoutPageController.CanChangeIsPresented = true;
-					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
-					PreferredDisplayMode = UISplitViewControllerDisplayMode.Automatic;
-				}
-
-				FlyoutPage.UpdateFlyoutLayoutBehavior();
-#pragma warning disable CS0618 // Type or member is obsolete
-				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
-
-			base.WillRotate(toInterfaceOrientation, duration);
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
