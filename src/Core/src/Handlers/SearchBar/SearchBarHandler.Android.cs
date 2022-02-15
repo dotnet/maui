@@ -101,8 +101,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateMaxLength(searchBar, handler.QueryEditor);
 		}
 
-		[MissingMapper]
-		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapIsReadOnly(SearchBarHandler handler, ISearchBar searchBar)
+		{ 
+			handler.QueryEditor?.UpdateIsReadOnly(searchBar);
+		}
 
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
