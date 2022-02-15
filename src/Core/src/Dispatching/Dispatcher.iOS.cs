@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Dispatching
 	{
 		static IDispatcher? GetForCurrentThreadImplementation()
 		{
-			var q = DispatchQueue.DefaultGlobalQueue;
+#pragma warning disable BI1234 // Type or member is obsolete
+			var q = DispatchQueue.CurrentQueue;
+#pragma warning restore BI1234 // Type or member is obsolete
 			if (q != DispatchQueue.MainQueue)
 				return null;
 
