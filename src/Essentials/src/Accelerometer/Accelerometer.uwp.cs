@@ -1,7 +1,7 @@
 using Windows.Devices.Sensors;
 using WindowsAccelerometer = Windows.Devices.Sensors.Accelerometer;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class AccelerometerImplementation
 	{

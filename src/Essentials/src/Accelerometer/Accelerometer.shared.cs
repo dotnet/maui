@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Numerics;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -13,94 +14,6 @@ namespace Microsoft.Maui.Essentials
 		bool IsMonitoring { get; }
 		void Start(SensorSpeed sensorSpeed);
 		void Stop();
-	}
-
-	public partial class AccelerometerImplementation : IAccelerometer
-	{
-		const double accelerationThreshold = 169;
-
-		const double gravity = 9.81;
-
-		static readonly AccelerometerQueue queue = new AccelerometerQueue();
-
-		static bool useSyncContext;
-
-		public event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
-
-		public event EventHandler? ShakeDetected;
-
-		public bool IsMonitoring { get; private set; }
-
-		public void Start(SensorSpeed sensorSpeed)
-		{
-			IsMonitoring = true;
-			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
-
-			try
-			{
-				PlatformStart(sensorSpeed);
-			}
-			catch
-			{
-				IsMonitoring = false;
-				throw;
-			}
-		}
-
-		public void Stop()
-		{
-			IsMonitoring = false;
-
-			try
-			{
-				PlatformStop();
-			}
-			catch
-			{
-				IsMonitoring = true;
-				throw;
-			}
-		}
-
-		internal void OnChanged(AccelerometerData reading) =>
-			OnChanged(new AccelerometerChangedEventArgs(reading));
-
-		internal void OnChanged(AccelerometerChangedEventArgs e)
-		{
-			if (useSyncContext)
-				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
-			else
-				ReadingChanged?.Invoke(null, e);
-
-			if (ShakeDetected != null)
-				ProcessShakeEvent(e.Reading.Acceleration);
-		}
-
-		void ProcessShakeEvent(Vector3 acceleration)
-		{
-			var now = Nanoseconds(DateTime.UtcNow);
-
-			var x = acceleration.X * gravity;
-			var y = acceleration.Y * gravity;
-			var z = acceleration.Z * gravity;
-
-			var g = x * x + y * y + z * z;
-			queue.Add(now, g > accelerationThreshold);
-
-			if (queue.IsShaking)
-			{
-				queue.Clear();
-				var args = new EventArgs();
-
-				if (useSyncContext)
-					MainThread.BeginInvokeOnMainThread(() => ShakeDetected?.Invoke(null, args));
-				else
-					ShakeDetected?.Invoke(null, args);
-			}
-
-			static long Nanoseconds(DateTime time) =>
-				(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
-		}
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Accelerometer']/Docs" />
@@ -207,5 +120,96 @@ namespace Microsoft.Maui.Essentials
 			$"{nameof(Acceleration.X)}: {Acceleration.X}, " +
 			$"{nameof(Acceleration.Y)}: {Acceleration.Y}, " +
 			$"{nameof(Acceleration.Z)}: {Acceleration.Z}";
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class AccelerometerImplementation : IAccelerometer
+	{
+		const double accelerationThreshold = 169;
+
+		const double gravity = 9.81;
+
+		static readonly AccelerometerQueue queue = new AccelerometerQueue();
+
+		static bool useSyncContext;
+
+		public event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
+
+		public event EventHandler? ShakeDetected;
+
+		public bool IsMonitoring { get; private set; }
+
+		public void Start(SensorSpeed sensorSpeed)
+		{
+			IsMonitoring = true;
+			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
+
+			try
+			{
+				PlatformStart(sensorSpeed);
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
+		}
+
+		public void Stop()
+		{
+			IsMonitoring = false;
+
+			try
+			{
+				PlatformStop();
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
+		}
+
+		internal void OnChanged(AccelerometerData reading) =>
+			OnChanged(new AccelerometerChangedEventArgs(reading));
+
+		internal void OnChanged(AccelerometerChangedEventArgs e)
+		{
+			if (useSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
+			else
+				ReadingChanged?.Invoke(null, e);
+
+			if (ShakeDetected != null)
+				ProcessShakeEvent(e.Reading.Acceleration);
+		}
+
+		void ProcessShakeEvent(Vector3 acceleration)
+		{
+			var now = Nanoseconds(DateTime.UtcNow);
+
+			var x = acceleration.X * gravity;
+			var y = acceleration.Y * gravity;
+			var z = acceleration.Z * gravity;
+
+			var g = x * x + y * y + z * z;
+			queue.Add(now, g > accelerationThreshold);
+
+			if (queue.IsShaking)
+			{
+				queue.Clear();
+				var args = new EventArgs();
+
+				if (useSyncContext)
+					MainThread.BeginInvokeOnMainThread(() => ShakeDetected?.Invoke(null, args));
+				else
+					ShakeDetected?.Invoke(null, args);
+			}
+
+			static long Nanoseconds(DateTime time) =>
+				(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
+		}
 	}
 }
