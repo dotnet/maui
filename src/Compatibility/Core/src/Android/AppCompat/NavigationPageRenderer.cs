@@ -917,7 +917,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
 		{
-			ToolbarExtensions.UpdateMenuItemIcon(Element.FindMauiContext(), menuItem, toolBarItem, null);
+			Element.FindMauiContext().UpdateMenuItemIcon(menuItem, toolBarItem, null);
 		}
 
 		void UpdateToolbar()

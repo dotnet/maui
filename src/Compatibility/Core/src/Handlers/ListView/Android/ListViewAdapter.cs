@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void DisposeCells()
 		{
-			foreach(var key in _layoutsCreated)
+			foreach (var key in _layoutsCreated)
 			{
 				var layout = key.Value;
 
