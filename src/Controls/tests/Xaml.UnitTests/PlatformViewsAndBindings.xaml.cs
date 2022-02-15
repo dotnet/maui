@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	public class MockIosPlatformValueConverterService : IPlatformValueConverterService
+	public class MockIosPlatformValueConverterService : INativeValueConverterService
 	{
 		public bool ConvertTo(object value, Type toType, out object platformValue)
 		{
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	public class MockAndroidPlatformValueConverterService : IPlatformValueConverterService
+	public class MockAndroidPlatformValueConverterService : INativeValueConverterService
 	{
 		public bool ConvertTo(object value, Type toType, out object platformValue)
 		{
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	public class MockIosPlatformBindingService : IPlatformBindingService
+	public class MockIosPlatformBindingService : INativeBindingService
 	{
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	public class MockAndroidPlatformBindingService : IPlatformBindingService
+	public class MockAndroidPlatformBindingService : INativeBindingService
 	{
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{

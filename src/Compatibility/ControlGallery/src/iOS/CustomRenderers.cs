@@ -31,17 +31,17 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Issue13390), typeof(Issue13390Renderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
-	public class Issue13390Renderer : Controls.Handlers.Compatibility.ShellRenderer
+	public class Issue13390Renderer : ShellRenderer
 	{
-		protected override Controls.Platform.Compatibility.IShellFlyoutRenderer CreateFlyoutRenderer()
+		protected override IShellFlyoutRenderer CreateFlyoutRenderer()
 		{
-			return new Controls.Platform.Compatibility.ShellFlyoutRenderer()
+			return new ShellFlyoutRenderer()
 			{
 				FlyoutTransition = new SlideFlyoutTransition2()
 			};
 		}
 
-		public class SlideFlyoutTransition2 : Controls.Platform.Compatibility.IShellFlyoutTransition
+		public class SlideFlyoutTransition2 : IShellFlyoutTransition
 		{
 			public void LayoutViews(CGRect bounds, nfloat openPercent, UIView flyout, UIView shell, FlyoutBehavior behavior)
 			{
@@ -511,8 +511,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				{
 					SectionInset = new UIEdgeInsets(20, 20, 20, 20),
 					ScrollDirection = UICollectionViewScrollDirection.Vertical,
-					MinimumInteritemSpacing = 5, // minimum spacing between cells 
-					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
+					MinimumInteritemSpacing = 5, // minimum spacing between cells 
+					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
 				};
 				_controller = new CollectionViewController(flowLayout, ItemSelected);
 				SetNativeControl(_controller.CollectionView);
