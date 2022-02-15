@@ -102,12 +102,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 					entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-
-					if (Forms.IsiOS9OrNewer)
-					{
-						entry.InputAssistantItem.LeadingBarButtonGroups = null;
-						entry.InputAssistantItem.TrailingBarButtonGroups = null;
-					}
+					entry.InputAssistantItem.LeadingBarButtonGroups = null;
+					entry.InputAssistantItem.TrailingBarButtonGroups = null;
 
 					_defaultTextColor = entry.TextColor;
 

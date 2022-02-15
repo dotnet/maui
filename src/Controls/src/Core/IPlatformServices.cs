@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Controls.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IPlatformServices
 	{
-		double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes);
-
 		OSAppTheme RequestedTheme { get; }
 
 		void StartTimer(TimeSpan interval, Func<bool> callback);

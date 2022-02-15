@@ -44,13 +44,8 @@ namespace Microsoft.Maui.Handlers
 
 			nativePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			nativePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-
-			if (UIDevice.CurrentDevice.CheckSystemVersion(9, 0))
-			{
-				nativePicker.InputAssistantItem.LeadingBarButtonGroups = null;
-				nativePicker.InputAssistantItem.TrailingBarButtonGroups = null;
-			}
-
+			nativePicker.InputAssistantItem.LeadingBarButtonGroups = null;
+			nativePicker.InputAssistantItem.TrailingBarButtonGroups = null;
 			nativePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
 			_pickerView.Model = new PickerSource(VirtualView);

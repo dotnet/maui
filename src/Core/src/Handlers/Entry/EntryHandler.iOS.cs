@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ShouldReturn = OnShouldReturn;
 			nativeView.EditingDidBegin += OnEditingBegan;
 			nativeView.EditingChanged += OnEditingChanged;
+			nativeView.EditingDidBegin += OnEditingBegan;
 			nativeView.EditingDidEnd += OnEditingEnded;
 			nativeView.TextPropertySet += OnTextPropertySet;
 			nativeView.ShouldChangeCharacters += OnShouldChangeCharacters;
@@ -29,6 +30,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.EditingDidBegin -= OnEditingBegan;
 			nativeView.EditingChanged -= OnEditingChanged;
+			nativeView.EditingDidBegin -= OnEditingBegan;
 			nativeView.EditingDidEnd -= OnEditingEnded;
 			nativeView.TextPropertySet -= OnTextPropertySet;
 			nativeView.ShouldChangeCharacters -= OnShouldChangeCharacters;
@@ -122,14 +124,23 @@ namespace Microsoft.Maui.Handlers
 		void OnEditingChanged(object? sender, EventArgs e) =>
 			VirtualView.UpdateText(NativeView.Text);
 
+		void OnEditingBegan(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
+			NativeView?.UpdateSelectionLength(VirtualView);
+
+			VirtualView.IsFocused = true;
+		}
+
 		void OnEditingEnded(object? sender, EventArgs e)
 		{
-			if (VirtualView != null)
-			{
-				VirtualView.IsFocused = false;
+			if (VirtualView == null || NativeView == null)
+				return;
 
-				VirtualView.UpdateText(NativeView.Text);
-			}
+			VirtualView.UpdateText(NativeView.Text);
+      VirtualView.IsFocused = false;
 		}
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>

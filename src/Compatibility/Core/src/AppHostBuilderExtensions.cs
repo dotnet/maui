@@ -65,6 +65,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<ResourcesProvider>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<PlatformInvalidate>();
+			DependencyService.Register<FontNamedSizeService>();
 #endif
 
 			builder.ConfigureCompatibilityLifecycleEvents();
@@ -127,6 +128,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(RefreshView), typeof(RefreshViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
 
+					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.Layout<View>), typeof(DefaultRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.RelativeLayout), typeof(DefaultRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.AbsoluteLayout), typeof(DefaultRenderer));
 

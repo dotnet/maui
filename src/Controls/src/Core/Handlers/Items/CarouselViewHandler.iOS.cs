@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foundation;
-using Microsoft.Maui.Handlers;
-using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -13,7 +8,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override CarouselViewController CreateController(CarouselView newElement, ItemsViewLayout layout)
 				=> new CarouselViewController(newElement, layout);
-		
+
 		protected override ItemsViewLayout SelectLayout() =>
 				_layout ??= new CarouselViewLayout(VirtualView.ItemsLayout, VirtualView);
 
@@ -53,6 +48,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.NativeView.Frame.Size);
 			handler.Controller.Layout.InvalidateLayout();
 		}
-		
+
+		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateFromCurrentItem();
+		}
+
+		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateFromPosition();
+		}
+
+		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateLoop();
+		}
 	}
 }
