@@ -4,7 +4,7 @@ using AppKit;
 using Foundation;
 using Microsoft.Maui.Graphics.Platform;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	public class ShareImplementation : IShare
 	{
