@@ -108,7 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 				window.Page = CreateBasicTabbedPage();
 
 				// wait for new handler to finish loading
-				await ((IPlatformViewHandler)window.Page.Handler).PlatformView.LoadedAsync();
+				await ((IPlatformViewHandler)window.Page.Handler).PlatformView.OnLoadedAsync();
 				var navView = GetMauiNavigationView(window.Page.Handler.MauiContext);
 
 				// make sure root view is displaying as top tabs
