@@ -17,8 +17,10 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SecureStorage']/Docs" />
 	public static partial class SecureStorage
 	{
+#if !NETSTANDARD
 		// Special Alias that is only used for Secure Storage. All others should use: Preferences.GetPrivatePreferencesSharedName
 		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
+#endif
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='GetAsync']/Docs" />
 		public static Task<string> GetAsync(string key)
