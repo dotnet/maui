@@ -392,7 +392,6 @@ namespace Microsoft.Maui.Platform
 			return new Rectangle(X, Y, Width, Height);
 		}
 
-
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
 			var nativeView = view?.ToPlatform();
@@ -419,22 +418,9 @@ namespace Microsoft.Maui.Platform
 			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
 		}
 
-		internal static T? GetParentOfType<T>(this UIView view)
-			where T : class
+		internal static UIView? GetParent(this UIView? view)
 		{
-			if (view is T t)
-				return t;
-
-			while (view != null)
-			{
-				T? parent = view.Superview as T;
-				if (parent != null)
-					return parent;
-
-				view = view.Superview;
-			}
-
-			return default(T);
+			return view?.Superview;
 		}
 	}
 }

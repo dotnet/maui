@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
@@ -33,19 +31,28 @@ namespace Microsoft.Maui.Controls
 
 		static IPlatformServices s_platformServices;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetIdiom']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetIdiom(TargetIdiom value) => Idiom = value;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Idiom']/Docs" />
-		public static TargetIdiom Idiom { get; internal set; }
-
-		//TODO: Why are there two of these? This is never used...?
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetTargetIdiom']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
+		public static TargetIdiom Idiom
+		{
+			get
+			{
+				var idiom = DeviceInfo.Idiom;
+				if (idiom == DeviceIdiom.Tablet)
+					return TargetIdiom.Tablet;
+				if (idiom == DeviceIdiom.Phone)
+					return TargetIdiom.Phone;
+				if (idiom == DeviceIdiom.Desktop)
+					return TargetIdiom.Desktop;
+				if (idiom == DeviceIdiom.TV)
+					return TargetIdiom.TV;
+				if (idiom == DeviceIdiom.Watch)
+					return TargetIdiom.Watch;
+				return TargetIdiom.Unsupported;
+			}
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs" />
-		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
+		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetFlowDirection']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -70,9 +77,6 @@ namespace Microsoft.Maui.Controls
 					Application.Current?.PlatformServicesSet();
 			}
 		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='PlatformInvalidator']/Docs" />
-		public static IPlatformInvalidate PlatformInvalidator { get; set; }
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='IsInvokeRequired']/Docs" />
@@ -127,19 +131,11 @@ namespace Microsoft.Maui.Controls
 			PlatformServices.StartTimer(interval, callback);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetAssemblies']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-		{
-			return PlatformServices.GetNamedSize(size, targetElementType, useOldSizes);
-		}
+		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes) =>
+			DependencyService.Get<IFontNamedSizeService>()?.GetNamedSize(size, targetElementType, useOldSizes) ??
+			throw new NotImplementedException("The current platform does not implement the IFontNamedSizeService dependency service.");
 
 		public static class Styles
 		{
@@ -166,12 +162,6 @@ namespace Microsoft.Maui.Controls
 			public static readonly Style ListItemDetailTextStyle = new Style(typeof(Label)) { BaseResourceKey = ListItemDetailTextStyleKey };
 
 			public static readonly Style CaptionStyle = new Style(typeof(Label)) { BaseResourceKey = CaptionStyleKey };
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Invalidate']/Docs" />
-		public static void Invalidate(VisualElement visualElement)
-		{
-			PlatformInvalidator?.Invalidate(visualElement);
 		}
 	}
 }

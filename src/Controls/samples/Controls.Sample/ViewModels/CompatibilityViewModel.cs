@@ -9,9 +9,6 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
-			new SectionModel(typeof(CarouselViewPage), "CarouselView",
-				"CarouselView displays a scrollable list of data items."),
-
 			new SectionModel(typeof(FramePage), "Frame",
 				"The Frame class derives from ContentView and displays a border, or frame, around its child."),
 

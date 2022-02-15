@@ -18,7 +18,7 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	internal class WindowsPlatformServices : IPlatformServices, IPlatformInvalidate
+	internal class WindowsPlatformServices : IPlatformServices
 	{
 		readonly UISettings _uiSettings = new UISettings();
 
@@ -26,74 +26,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			_uiSettings.ColorValuesChanged += UISettingsColorValuesChanged;
 		}
-
-		public virtual Assembly[] GetAssemblies()
-		{
-			var options = new QueryOptions { FileTypeFilter = { ".exe", ".dll" } };
-
-			StorageFileQueryResult query = Package.Current.InstalledLocation.CreateFileQueryWithOptions(options);
-			IReadOnlyList<StorageFile> files = query.GetFilesAsync().AsTask().Result;
-
-			var assemblies = new List<Assembly>(files.Count);
-
-			LoadAllAssemblies(AppDomain.CurrentDomain.GetAssemblies(), assemblies);
-
-			Assembly thisAssembly = GetType().GetTypeInfo().Assembly;
-			// this happens with .NET Native
-			if (!assemblies.Contains(thisAssembly))
-				assemblies.Add(thisAssembly);
-
-			Assembly coreAssembly = typeof(Microsoft.Maui.Controls.Label).GetTypeInfo().Assembly;
-			if (!assemblies.Contains(coreAssembly))
-				assemblies.Add(coreAssembly);
-
-			Assembly xamlAssembly = typeof(Microsoft.Maui.Controls.Xaml.Extensions).GetTypeInfo().Assembly;
-			if (!assemblies.Contains(xamlAssembly))
-				assemblies.Add(xamlAssembly);
-
-			return assemblies.ToArray();
-		}
-
-		void LoadAllAssemblies(Assembly[] files, List<Assembly> loaded)
-		{
-			for (var i = 0; i < files.Length; i++)
-			{
-				var asm = files[i];
-				if (!loaded.Contains(asm))
-				{
-					loaded.Add(asm);
-				}
-			}
-		}
-
-		void LoadAllAssemblies(AssemblyName[] files, List<Assembly> loaded)
-		{
-			for (var i = 0; i < files.Length; i++)
-			{
-				try
-				{
-					var asm = Assembly.Load(files[i]);
-					if (!loaded.Contains(asm))
-					{
-						loaded.Add(asm);
-						LoadAllAssemblies(asm.GetReferencedAssemblies(), loaded);
-					}
-				}
-				catch (IOException)
-				{
-				}
-				catch (BadImageFormatException)
-				{
-				}
-			}
-		}
-
-		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-		{
-			return size.GetFontSize();
-		}
-
-		public string RuntimePlatform => Device.UWP;
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
@@ -123,17 +55,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Application.Current.Dispatcher.DispatchIfRequired(() =>
 				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme)));
-		}
-
-		public void Invalidate(VisualElement visualElement)
-		{
-			var renderer = Platform.GetRenderer(visualElement);
-			if (renderer == null)
-			{
-				return;
-			}
-
-			renderer.ContainerElement.InvalidateMeasure();
 		}
 
 		public OSAppTheme RequestedTheme =>

@@ -43,13 +43,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers
 		{
 			var controls = new List<Page>
 			{
-				new FlyoutPage { Flyout = new Page { Title = "Flyout" }, Detail = new Page() },
-				new NavigationPage(new Page()),
-				new Page(),
+				// TODO MAUI: These can come back when we have nested navigation
+				//new FlyoutPage { Flyout = new ContentPage { Title = "Flyout" }, Detail = new ContentPage() },
+				//new NavigationPage(new ContentPage()),
+				// TODO MAUI: These can come back with we get a defaultrenderer
+				//new FlyoutPage { Flyout = new Page { Title = "Flyout" }, Detail = new Page() },
+				//new Page(),
+				//new TemplatedPage(),
 				new ContentPage(),
-				new CarouselPage(),
 				new TabbedPage(),
-				new TemplatedPage(),
 			};
 
 			return controls;

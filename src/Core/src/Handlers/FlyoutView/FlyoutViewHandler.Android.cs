@@ -183,8 +183,9 @@ namespace Microsoft.Maui.Handlers
 						LinearLayoutCompat.LayoutParams.MatchParent);
 
 				DrawerLayout.AddView(_navigationRoot, 0, layoutParameters);
-				UpdateDetailsFragmentView();
 			}
+
+			UpdateDetailsFragmentView();
 
 			if (flyoutView.Parent != NativeView)
 			{

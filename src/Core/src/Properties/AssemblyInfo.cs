@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.iOS")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Windows")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.Android")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.Forms")]

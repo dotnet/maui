@@ -43,8 +43,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static bool IsInitialized { get; private set; }
 
 #if __MOBILE__
-		static bool? s_isiOS9OrNewer;
-		static bool? s_isiOS10OrNewer;
 		static bool? s_isiOS11OrNewer;
 		static bool? s_isiOS12OrNewer;
 		static bool? s_isiOS13OrNewer;
@@ -52,33 +50,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isiOS15OrNewer;
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
-		internal static bool IsiOS9OrNewer
-		{
-			get
-			{
-				if (!s_isiOS9OrNewer.HasValue)
-					s_isiOS9OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(9, 0);
-				return s_isiOS9OrNewer.Value;
-			}
-		}
-
-
-		internal static bool IsiOS10OrNewer
-		{
-			get
-			{
-				if (!s_isiOS10OrNewer.HasValue)
-					s_isiOS10OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(10, 0);
-				return s_isiOS10OrNewer.Value;
-			}
-		}
-
 		internal static bool IsiOS11OrNewer
 		{
 			get
 			{
 				if (!s_isiOS11OrNewer.HasValue)
-					s_isiOS11OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(11, 0);
+					s_isiOS11OrNewer = OperatingSystem.IsIOSVersionAtLeast(11, 0);
 				return s_isiOS11OrNewer.Value;
 			}
 		}
@@ -88,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS12OrNewer.HasValue)
-					s_isiOS12OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(12, 0);
+					s_isiOS12OrNewer = OperatingSystem.IsIOSVersionAtLeast(12, 0);
 				return s_isiOS12OrNewer.Value;
 			}
 		}
@@ -98,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS13OrNewer.HasValue)
-					s_isiOS13OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(13, 0);
+					s_isiOS13OrNewer = OperatingSystem.IsIOSVersionAtLeast(13, 0);
 				return s_isiOS13OrNewer.Value;
 			}
 		}
@@ -108,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS14OrNewer.HasValue)
-					s_isiOS14OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(14, 0);
+					s_isiOS14OrNewer = OperatingSystem.IsIOSVersionAtLeast(14, 0);
 				return s_isiOS14OrNewer.Value;
 			}
 		}
@@ -118,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS15OrNewer.HasValue)
-					s_isiOS15OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(15, 0);
+					s_isiOS15OrNewer = OperatingSystem.IsIOSVersionAtLeast(15, 0);
 				return s_isiOS15OrNewer.Value;
 			}
 		}
@@ -191,10 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-#if MACCATALYST || __MACCATALYST__
-			Device.SetIdiom(TargetIdiom.Desktop);
-#elif __MOBILE__
-			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
+#if __MOBILE__
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #else
 			if (!IsInitialized)
@@ -212,7 +186,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				});
 			}
 
-			Device.SetIdiom(TargetIdiom.Desktop);
 			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 
 			if (IsMojaveOrNewer)
@@ -226,9 +199,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.PlatformServices = platformServices;
 
-#if __MOBILE__
-			Device.PlatformInvalidator = platformServices;
-#endif
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers(context);
 
@@ -289,100 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		class IOSPlatformServices : IPlatformServices
-#if __MOBILE__
-			, IPlatformInvalidate
-#endif
 		{
-			readonly double _fontScalingFactor = 1;
-			public IOSPlatformServices()
-			{
-#if __MOBILE__
-				//The standard accessibility size for a font is 17, we can get a
-				//close approximation to the new Size by multiplying by this scale factor
-				_fontScalingFactor = (double)UIFont.PreferredBody.PointSize / 17f;
-#endif
-			}
-
-			public Assembly[] GetAssemblies()
-			{
-				return AppDomain.CurrentDomain.GetAssemblies();
-			}
-
-			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-			{
-				// We make these up anyway, so new sizes didn't really change
-				// iOS docs say default button font size is 15, default label font size is 17 so we use those as the defaults.
-				var scalingFactor = _fontScalingFactor;
-
-				if (Application.Current?.On<PlatformConfiguration.iOS>().GetEnableAccessibilityScalingForNamedFontSizes() == false)
-				{
-					scalingFactor = 1;
-				}
-
-				switch (size)
-				{
-					//We multiply the fonts by the scale factor, and cast to an int, to make them whole numbers.
-					case NamedSize.Default:
-						return (int)((typeof(Button).IsAssignableFrom(targetElementType) ? 15 : 17) * scalingFactor);
-					case NamedSize.Micro:
-						return (int)(12 * scalingFactor);
-					case NamedSize.Small:
-						return (int)(14 * scalingFactor);
-					case NamedSize.Medium:
-						return (int)(17 * scalingFactor);
-					case NamedSize.Large:
-						return (int)(22 * scalingFactor);
-#if __IOS__
-					case NamedSize.Body:
-						return (double)UIFont.PreferredBody.PointSize;
-					case NamedSize.Caption:
-						return (double)UIFont.PreferredCaption1.PointSize;
-					case NamedSize.Header:
-						return (double)UIFont.PreferredHeadline.PointSize;
-					case NamedSize.Subtitle:
-						return (double)UIFont.PreferredTitle2.PointSize;
-					case NamedSize.Title:
-						return (double)UIFont.PreferredTitle1.PointSize;
-#else
-					case NamedSize.Body:
-						return 23;
-					case NamedSize.Caption:
-						return 18;
-					case NamedSize.Header:
-						return 23;
-					case NamedSize.Subtitle:
-						return 28;
-					case NamedSize.Title:
-						return 34;
-
-#endif
-					default:
-						throw new ArgumentOutOfRangeException("size");
-				}
-			}
-
-			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-			{
-				using (var client = GetHttpClient())
-				{
-					// Do not remove this await otherwise the client will dispose before
-					// the stream even starts
-					var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
-
-					return result;
-				}
-			}
-
-#if MACCATALYST || __MACCATALYST__
-			public string RuntimePlatform => Device.MacCatalyst;
-#elif IOS || __IOS__
-			public string RuntimePlatform => Device.iOS;
-#elif TVOS || __TVOS__
-			public string RuntimePlatform => Device.tvOS;
-#else
-			public string RuntimePlatform => Device.macOS;
-#endif
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				NSTimer timer = NSTimer.CreateRepeatingTimer(interval, t =>
@@ -403,13 +280,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					handler.UseProxy = true;
 				}
 				return new HttpClient(handler);
-			}
-
-			static int Hex(int v)
-			{
-				if (v < 10)
-					return '0' + v;
-				return 'a' + v - 10;
 			}
 
 #if !__MOBILE__
@@ -504,18 +374,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					throw new InvalidOperationException("Could not find current view controller.");
 
 				return viewController;
-			}
-
-			public void Invalidate(VisualElement visualElement)
-			{
-				var renderer = Platform.iOS.Platform.GetRenderer(visualElement);
-
-				if (renderer == null)
-				{
-					return;
-				}
-
-				renderer.NativeView.SetNeedsLayout();
 			}
 #endif
 		}
