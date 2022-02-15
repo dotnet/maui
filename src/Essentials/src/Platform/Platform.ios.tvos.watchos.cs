@@ -10,7 +10,6 @@ using UIKit;
 using CoreMotion;
 #elif __WATCHOS__
 using CoreMotion;
-using UIDevice = WatchKit.WKInterfaceDevice;
 #endif
 
 namespace Microsoft.Maui.Essentials
@@ -69,7 +68,7 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		internal static bool HasOSVersion(int major, int minor) =>
-			UIDevice.CurrentDevice.CheckSystemVersion(major, minor);
+			OperatingSystem.IsIOSVersionAtLeast(major, minor);
 
 #if __IOS__ || __TVOS__
 

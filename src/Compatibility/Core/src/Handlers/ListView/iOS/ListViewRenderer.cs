@@ -504,7 +504,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
 					_headerRenderer?.DisconnectHandler();
 				}
-				
+
 				_headerRenderer = headerView.ToHandler(MauiContext);
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
 				UpdateHeaderMeasure();

@@ -9,7 +9,7 @@ using AndroidUri = Android.Net.Uri;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class SmsImplementation:ISms
+	public class SmsImplementation : ISms
 	{
 		static readonly string smsRecipientSeparator = ";";
 

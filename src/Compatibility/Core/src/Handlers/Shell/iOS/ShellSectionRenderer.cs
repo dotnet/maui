@@ -713,10 +713,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (coordinator != null && coordinator.IsInteractive)
 				{
 					// handle swipe to dismiss gesture 
-					if (NativeVersion.IsAtLeast(10))
-						coordinator.NotifyWhenInteractionChanges(OnInteractionChanged);
-					else
-						coordinator.NotifyWhenInteractionEndsUsingBlock(OnInteractionChanged);
+					coordinator.NotifyWhenInteractionChanges(OnInteractionChanged);
 				}
 			}
 
