@@ -13,6 +13,6 @@ namespace Microsoft.Maui.Handlers
 	public partial interface IToolbarHandler : IElementHandler
 	{
 		new IToolbar VirtualView { get; }
-		new PlatformView NativeView { get; }
+		new PlatformView PlatformView { get; }
 	}
 }

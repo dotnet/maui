@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
 		{
-			arg1.NativeView.UpdateTitle(arg2);
+			arg1.PlatformView.UpdateTitle(arg2);
 		}
 
 		DrawerLayout? _drawerLayout;
