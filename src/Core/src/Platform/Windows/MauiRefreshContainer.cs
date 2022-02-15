@@ -8,8 +8,9 @@ namespace Microsoft.Maui
 		{
 			if (content != null && mauiContext != null)
 			{
-				var contentView = content.ToNative(mauiContext);
-				Content = contentView;
+				var contentRenderer = content.ToHandler(mauiContext);
+
+				Content = contentRenderer.ToPlatform();
 			}
 		}
 	}
