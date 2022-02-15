@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Platform
 		internal event EventHandler? OnApplyTemplateFinished;
 		internal SplitView? RootSplitView { get; private set; }
 		internal ScrollViewer? MenuItemsScrollViewer { get; private set; }
+		internal Grid? ContentPaneTopPadding { get; private set; }
+		internal Grid? PaneToggleButtonGrid { get; private set; }
+		internal Grid? ButtonHolderGrid { get; private set; }
 
 		public MauiNavigationView()
 		{
@@ -36,6 +39,9 @@ namespace Microsoft.Maui.Platform
 			RootSplitView = (SplitView)GetTemplateChild("RootSplitView");
 			TopNavArea = ((StackPanel)GetTemplateChild("TopNavArea"));
 			TopNavMenuItemsHost = ((ItemsRepeater)GetTemplateChild("TopNavMenuItemsHost"));
+			ContentPaneTopPadding = (Grid)GetTemplateChild("ContentPaneTopPadding");
+			PaneToggleButtonGrid = (Grid)GetTemplateChild("PaneToggleButtonGrid");
+			ButtonHolderGrid = (Grid)GetTemplateChild("ButtonHolderGrid");
 			OnApplyTemplateCore();
 			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 		}

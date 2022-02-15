@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 	{
 		double _paneHeaderContentHeight;
 		WindowHeader? _headerControl;
+		int _appBarTitleHeight = 48;
 
 		internal Size FlyoutPaneSize { get; private set; }
 		internal WindowHeader? HeaderControl
@@ -44,6 +45,7 @@ namespace Microsoft.Maui.Platform
 		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			UpdateTopNavAreaMargin();
+			UpdateFlyoutPanelMargin();
 		}
 
 		void UpdateTopNavAreaMargin()
@@ -54,7 +56,7 @@ namespace Microsoft.Maui.Platform
 				{
 					// The TopNavArea has a background set which makes the window action buttons unclickable
 					// So this offsets the TopNavArea by the size of the AppTitleBar
-					TopNavArea.Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
+					TopNavArea.Margin = new UI.Xaml.Thickness(0, _appBarTitleHeight, 0, 0);
 					Header = null;
 					PaneFooter = HeaderControl;
 
@@ -131,6 +133,7 @@ namespace Microsoft.Maui.Platform
 
 			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible);
 			UpdateFlyoutPanelMargin();
+			UpdateTopNavAreaMargin();
 		}
 
 
@@ -152,7 +155,6 @@ namespace Microsoft.Maui.Platform
 			if (GetTemplateChild("ContentLeftPadding") is Grid g)
 				g.Visibility = UI.Xaml.Visibility.Collapsed;
 
-
 			if (HeaderControl != null)
 				UpdateHeaderPropertyBinding();
 
@@ -161,6 +163,7 @@ namespace Microsoft.Maui.Platform
 			// This is the height taken up by the backbutton/pane toggle button
 			// we use this to offset the height of our flyout content
 			((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
+
 			UpdateTopNavAreaMargin();
 		}
 
@@ -185,7 +188,6 @@ namespace Microsoft.Maui.Platform
 			_flyoutPanel.Width = FlyoutPaneSize.Width;
 			UpdateFlyoutPanelMargin();
 		}
-
 
 		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
 
@@ -212,26 +214,27 @@ namespace Microsoft.Maui.Platform
 			// If you hide the backbutton and pane toggle button it will shift content up into the custom title
 			// bar. There currently isn't a property associated with this padding it's just set inside the
 			// source code on the PaneContentGrid
-			if (IsBackButtonVisible == NavigationViewBackButtonVisible.Collapsed &&
-				PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+
+			if (ContentPaneTopPadding != null &&
+				ButtonHolderGrid != null && 
+				PaneContentGrid != null)
 			{
-				_flyoutPanel.Margin = new UI.Xaml.Thickness(
-					_flyoutPanel.Margin.Left,
-					40,
-					_flyoutPanel.Margin.Right,
-					_flyoutPanel.Margin.Bottom);
-			}
-			else
-			{
-				_flyoutPanel.Margin = new UI.Xaml.Thickness(
-					_flyoutPanel.Margin.Left,
-					0,
-					_flyoutPanel.Margin.Right,
-					_flyoutPanel.Margin.Bottom);
+				// PaneContentGrid is the top most container on the SplitView
+				// This tells us the spacing that's been placed around it so that we
+				// can offset our content relative to the AppTitleBar
+				var leftPaneMarginHeight = PaneContentGrid.Margin.Top;
+
+				if (ButtonHolderGrid.ActualHeight == 0)
+				{
+					ContentPaneTopPadding.Height = _appBarTitleHeight - leftPaneMarginHeight;
+				}
+				else
+				{
+					ContentPaneTopPadding.Height = ButtonHolderGrid.Margin.Top +
+						ButtonHolderGrid.Margin.Bottom - leftPaneMarginHeight;
+				}
 			}
 		}
-
-
 
 		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
 		// The measure call passes in PositiveInfinity for the measurements which causes the layout system

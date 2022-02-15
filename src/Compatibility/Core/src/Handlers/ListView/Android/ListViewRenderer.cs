@@ -241,7 +241,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							continue;
 						}
 
-						AView listItem = _adapter.GetView(i, null, Control);
+						// If the parent is already set then we'll just pass
+						// that in as the convert view so that GetView doesn't create
+						// an additional ConditionalFocusLayout
+						// We're basically faking re-use to the GetView call
+						AView currentParent = null;
+						if(cell.Handler?.NativeView is AView aView)
+							currentParent = aView.Parent as AView;
+							
+						AView listItem = _adapter.GetView(i, currentParent, Control);
 						int widthSpec;
 
 						if (double.IsInfinity(widthConstraint))
