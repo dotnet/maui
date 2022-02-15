@@ -37,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
+			await Task.Delay(500);
 			Assert.True(dispatched);
 		}
 
