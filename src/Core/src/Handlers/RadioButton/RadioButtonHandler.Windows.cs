@@ -25,5 +25,14 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 			handler.NativeView?.UpdateFont(button, fontManager);
 		}
+
+		[MissingMapper]
+		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
 	}
 }

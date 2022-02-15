@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -21,16 +22,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
+			MockDeviceInfo mockDeviceInfo;
+
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
+				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
+				DeviceInfo.SetCurrent(null);
 			}
 
 			[TestCase(true, true)]
@@ -39,7 +42,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false, false)]
 			public void Bz59818(bool useCompiledXaml, bool xamlDoubleImplicitOpHack)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
 
 				StaticResourceExtension.XamlDoubleImplicitOperation = xamlDoubleImplicitOpHack;
 

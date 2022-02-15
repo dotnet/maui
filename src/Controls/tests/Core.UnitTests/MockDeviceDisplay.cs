@@ -4,7 +4,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class TestDeviceDisplay : IDeviceDisplay
+	internal class MockDeviceDisplay : IDeviceDisplay
 	{
 		DisplayInfo _mainDisplayInfo = new(
 			100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation0);

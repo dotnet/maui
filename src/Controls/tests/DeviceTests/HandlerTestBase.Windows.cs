@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					newWindowHandler = window.ToHandler(mauiContext);
 					var content = window.Content.Handler.ToPlatform();
-					await content.LoadedAsync();
+					await content.OnLoadedAsync();
 					await Task.Delay(10);
 
 					if (typeof(THandler).IsAssignableFrom(newWindowHandler.GetType()))
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 					if (testingRootPanel != null && MauiProgram.CurrentWindow.Content != testingRootPanel)
 					{
 						MauiProgram.CurrentWindow.Content = testingRootPanel;
-						await testingRootPanel.LoadedAsync();
+						await testingRootPanel.OnLoadedAsync();
 						await Task.Delay(10);
 					}
 				}
@@ -93,6 +94,14 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		protected double DistanceYFromTheBottomOfTheAppTitleBar(IElement element)
+		{
+			var handler = element.Handler;
+			var rootManager = handler.MauiContext.GetNavigationRootManager();
+			var position = element.GetLocationRelativeTo(rootManager.AppTitleBar);
+			var distance = rootManager.AppTitleBar.Height - position.Value.Y;
+			return distance;
+		}
 
 		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
 		{

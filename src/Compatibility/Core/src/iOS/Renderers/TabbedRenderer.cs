@@ -15,6 +15,7 @@ using TranslucencyMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecif
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer instead")]
 	public class TabbedRenderer : UITabBarController, IVisualElementRenderer, IEffectControlProvider
 	{
 		bool _barBackgroundColorWasSet;
@@ -191,17 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			// Setting TabBarItem.Title in iOS 10 causes rendering bugs
 			// Work around this by creating a new UITabBarItem on each change
-			if (e.PropertyName == Page.TitleProperty.PropertyName && !Forms.IsiOS10OrNewer)
-			{
-				var page = (Page)sender;
-				var renderer = Platform.GetRenderer(page);
-				if (renderer == null)
-					return;
-
-				if (renderer.ViewController.TabBarItem != null)
-					renderer.ViewController.TabBarItem.Title = page.Title;
-			}
-			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && Forms.IsiOS10OrNewer)
+			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
 			{
 				var page = (Page)sender;
 
@@ -493,22 +484,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != null)
 			{
-				if (Forms.IsiOS10OrNewer)
-					TabBar.TintColor = Tabbed.SelectedTabColor.ToUIColor();
-				else
-					TabBar.SelectedImageTintColor = Tabbed.SelectedTabColor.ToUIColor();
-
+				TabBar.TintColor = Tabbed.SelectedTabColor.ToUIColor();
 			}
 			else
 			{
-				if (Forms.IsiOS10OrNewer)
-					TabBar.TintColor = UITabBar.Appearance.TintColor;
-				else
-					TabBar.SelectedImageTintColor = UITabBar.Appearance.SelectedImageTintColor;
+				TabBar.TintColor = UITabBar.Appearance.TintColor;
 			}
-
-			if (!Forms.IsiOS10OrNewer)
-				return;
 
 			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
 				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToUIColor();

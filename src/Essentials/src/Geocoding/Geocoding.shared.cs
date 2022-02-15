@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetLocationsAsync']/Docs" />
 		public static Task<IEnumerable<Location>> GetLocationsAsync(string address)
 			=> Current.GetLocationsAsync(address);
-		
+
 		static IGeocoding? currentImplementation;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

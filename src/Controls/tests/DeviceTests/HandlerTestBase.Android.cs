@@ -60,7 +60,9 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					if (window.Handler != null)
+					{
 						window.Handler.DisconnectHandler();
+					}
 
 					rootView.RemoveView(linearLayoutCompat);
 
@@ -68,6 +70,10 @@ namespace Microsoft.Maui.DeviceTests
 						.BeginTransaction()
 						.Remove(viewFragment)
 						.Commit();
+
+					await linearLayoutCompat.OnUnloadedAsync();
+					if (viewFragment.View != null)
+						await viewFragment.View.OnUnloadedAsync();
 				}
 			});
 		}
