@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	public class ShareImplementation : IShare
 	{

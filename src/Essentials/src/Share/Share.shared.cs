@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials.Implementations;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Essentials
