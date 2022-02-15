@@ -1,6 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+#if IOS || MACCATALYST
+using PlatformView = UIKit.IUIMenuBuilder;
+#elif MONOANDROID
+using PlatformView = Android.Views.View;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.MenuBar;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
 
 namespace Microsoft.Maui.Handlers
 {
@@ -51,5 +60,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.Clear();
 		}
+
+		IMenuBar IMenuBarHandler.VirtualView => VirtualView;
+
+		PlatformView IMenuBarHandler.NativeView => NativeView;
 	}
 }

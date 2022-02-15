@@ -6,9 +6,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuBarHandler : ElementHandler<IMenuBar, UIView>, IMenuBarHandler
+	public partial class MenuBarHandler : ElementHandler<IMenuBar, IUIMenuBuilder>, IMenuBarHandler
 	{
-		protected override UIView CreateNativeElement()
+		protected override IUIMenuBuilder CreateNativeElement()
 		{
 			throw new NotImplementedException();
 		}

@@ -1,10 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+#if IOS || MACCATALYST
+using PlatformView = UIKit.UIMenu;
+#elif MONOANDROID
+using PlatformView = Android.Views.View;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.MenuFlyoutSubItem;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutSubItemHandler
+	public partial class MenuFlyoutSubItemHandler : IMenuFlyoutSubItemHandler
 	{
 		public static IPropertyMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler> Mapper = new PropertyMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler>(ElementMapper)
 		{
@@ -54,5 +63,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.Clear();
 		}
+
+		IMenuFlyoutSubItem IMenuFlyoutSubItemHandler.VirtualView => VirtualView;
+
+		PlatformView IMenuFlyoutSubItemHandler.NativeView => NativeView;
 	}
 }

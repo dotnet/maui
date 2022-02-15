@@ -6,9 +6,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutSubItemHandler : ElementHandler<IMenuFlyoutSubItem, UIView>
+	public partial class MenuFlyoutSubItemHandler : ElementHandler<IMenuFlyoutSubItem, UIMenu>
 	{
-		protected override UIView CreateNativeElement()
+		protected override UIMenu CreateNativeElement()
 		{
 			throw new NotImplementedException();
 		}

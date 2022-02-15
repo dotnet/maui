@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MenuFlyoutItem nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			nativeView.Click -= OnClicked;
+			nativeView.Click -= OnClicked;			
 		}
 
 		void OnClicked(object sender, UI.Xaml.RoutedEventArgs e)
@@ -32,13 +32,17 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
 			handler.NativeView.Icon =
-				view.Source?.ToIconSource(handler.MauiContext!)?.CreateIconElement()
+				view.Source?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
 		}
 
 		public static void MapText(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			// TODO MAUI Fix the types on interfaces
 			((MenuFlyoutItem)handler.NativeView!).Text = view.Text;
+		}
+
+		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			handler.NativeView.IsEnabled = view.IsEnabled;
 		}
 	}
 }
