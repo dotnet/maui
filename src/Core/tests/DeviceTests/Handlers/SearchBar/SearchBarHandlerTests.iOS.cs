@@ -168,12 +168,8 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
 		{
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
-			var textField = uiSearchBar.FindDescendantView<UITextField>();
-
-			if (textField == null)
-				return false;
-			
-			return !textField.UserInteractionEnabled;
+				
+			return !uiSearchBar.UserInteractionEnabled;
 		}
 
 		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
