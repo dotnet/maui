@@ -10,6 +10,8 @@ using Microsoft.UI.Xaml.Media;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using System.Threading.Tasks;
+using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.Platform
 {
@@ -188,6 +190,108 @@ namespace Microsoft.Maui.Platform
 						yield return subChild;
 				}
 			}
+		}
+
+		internal static void OnLoaded(this FrameworkElement frameworkElement, Action action)
+		{
+			if (frameworkElement.IsLoaded)
+			{
+				action();
+			}
+
+			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Loaded -= routedEventHandler;
+
+				action();
+			};
+
+			frameworkElement.Loaded += routedEventHandler;
+		}
+
+		internal static void OnUnloaded(this FrameworkElement frameworkElement, Action action)
+		{
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			if (!frameworkElement.IsLoaded)
+			{
+				taskCompletionSource.SetResult(true);
+				action();
+			}
+
+			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			routedEventHandler = (_, __) =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Unloaded -= routedEventHandler;
+
+				action();
+			};
+		}
+
+		internal static void Arrange(this IView view, FrameworkElement frameworkElement)
+		{
+			var rect = new Graphics.Rectangle(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
+
+			if (!view.Frame.Equals(rect))
+				view.Arrange(rect);
+		}
+
+
+		internal static void SetApplicationResource(this FrameworkElement frameworkElement, string propertyKey, object? value)
+		{
+			if (value is null)
+			{
+				if (Application.Current.Resources.TryGetValue(propertyKey, out value))
+				{
+					frameworkElement.Resources[propertyKey] = value;
+				}
+				else
+				{
+					frameworkElement.Resources.Remove(propertyKey);
+				}
+			}
+			else
+			{
+				frameworkElement.Resources[propertyKey] = value;
+			}
+		}
+
+		internal static WPoint? GetLocationOnScreen(this UIElement element)
+		{
+			var ttv = element.TransformToVisual(element.XamlRoot.Content);
+			WPoint screenCoords = ttv.TransformPoint(new WPoint(0, 0));
+			return new WPoint(screenCoords.X, screenCoords.Y);
+		}
+
+		internal static WPoint? GetLocationOnScreen(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			var view = element.ToPlatform();
+			return
+				view.GetLocationRelativeTo(view.XamlRoot.Content);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this UIElement element, UIElement relativeTo)
+		{
+			var ttv = element.TransformToVisual(relativeTo);
+			WPoint screenCoords = ttv.TransformPoint(new WPoint(0, 0));
+			return new WPoint(screenCoords.X, screenCoords.Y);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this IElement element, UIElement relativeTo)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return
+				element
+					.ToPlatform()
+					.GetLocationRelativeTo(relativeTo);
 		}
 	}
 }

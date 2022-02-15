@@ -3,7 +3,7 @@ using Android.App;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 	public partial class WindowOverlay
 	{
 		Activity? _nativeActivity;
-		NativeGraphicsView? _graphicsView;
+		PlatformGraphicsView? _graphicsView;
 		ViewGroup? _nativeLayer;
 
 		public virtual bool Initialize()
@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var nativeWindow = Window?.Content?.ToNative();
+			var nativeWindow = Window?.Content?.ToPlatform();
 			if (nativeWindow == null)
 				return false;
 
@@ -54,7 +54,7 @@ namespace Microsoft.Maui
 			if (_nativeActivity?.Resources?.DisplayMetrics != null)
 				Density = _nativeActivity.Resources.DisplayMetrics.Density;
 
-			_graphicsView = new NativeGraphicsView(_nativeLayer.Context, this);
+			_graphicsView = new PlatformGraphicsView(_nativeLayer.Context, this);
 			if (_graphicsView == null)
 				return false;
 

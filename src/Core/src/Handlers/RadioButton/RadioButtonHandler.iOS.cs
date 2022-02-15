@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.ClearSubviews();
 
 			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddSubview(view.ToNative(MauiContext));
+				NativeView.AddSubview(view.ToPlatform(MauiContext));
 		}
 
 		public static void MapContent(RadioButtonHandler handler, IContentView page)
@@ -46,20 +46,25 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateContent();
 		}
 
-		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
-		{
-		}
+		[MissingMapper]
+		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton) { }
 
-		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle)
-		{
-		}
+		[MissingMapper]
+		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle) { }
 
-		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle)
-		{
-		}
+		[MissingMapper]
+		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle) { }
 
-		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle)
-		{
-		}
+		[MissingMapper]
+		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle) { }
+
+		[MissingMapper]
+		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
 	}
 }

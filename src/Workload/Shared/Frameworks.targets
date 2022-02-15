@@ -11,36 +11,36 @@
   <ItemGroup>
     <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'any' "
-        Include="net6.0"
+        Include="net$(_MauiDotNetVersion)"
         FullTfm="%(Identity)"
-        Tfm="net6.0"
+        Tfm="net$(_MauiDotNetVersion)"
     />
     <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'android' "
-        Include="net6.0-android$(AndroidTargetFrameworkVersion)"
+        Include="net$(_MauiDotNetVersion)-android$(AndroidTargetFrameworkVersion)"
         FullTfm="%(Identity)"
-        Tfm="net6.0-android"
+        Tfm="net$(_MauiDotNetVersion)-android"
         Profile="Android"
     />
     <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'ios' "
-        Include="net6.0-ios$(IosTargetFrameworkVersion)"
+        Include="net$(_MauiDotNetVersion)-ios$(IosTargetFrameworkVersion)"
         FullTfm="%(Identity)"
-        Tfm="net6.0-ios"
+        Tfm="net$(_MauiDotNetVersion)-ios"
         Profile="iOS"
     />
     <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'maccatalyst' "
-        Include="net6.0-maccatalyst$(MacCatalystTargetFrameworkVersion)"
+        Include="net$(_MauiDotNetVersion)-maccatalyst$(MacCatalystTargetFrameworkVersion)"
         FullTfm="%(Identity)"
-        Tfm="net6.0-maccatalyst"
+        Tfm="net$(_MauiDotNetVersion)-maccatalyst"
         Profile="MacCatalyst"
     />
     <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'win' "
-        Include="net6.0-windows$(WindowsTargetFrameworkVersion)"
+        Include="net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion)"
         FullTfm="%(Identity)"
-        Tfm="net6.0-windows$(WindowsTargetFrameworkVersion)"
+        Tfm="net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion)"
         Profile="Windows"
     />
   </ItemGroup>

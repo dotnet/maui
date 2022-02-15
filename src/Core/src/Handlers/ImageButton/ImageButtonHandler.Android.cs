@@ -1,18 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Graphics.Drawables;
 using Android.Views;
-using Android.Widget;
-using AndroidX.AppCompat.Widget;
+using Google.Android.Material.ImageView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageButtonHandler : ViewHandler<IImageButton, AppCompatImageButton>
+	public partial class ImageButtonHandler : ViewHandler<IImageButton, ShapeableImageView>
 	{
-		protected override AppCompatImageButton CreateNativeView()
+		protected override ShapeableImageView CreateNativeView()
 		{
-			return new AppCompatImageButton(Context);
+			var nativeView = new ShapeableImageView(Context);
+
+			// These set the defaults so visually it matches up with other platforms
+			nativeView.SetPadding(0, 0, 0, 0);
+			nativeView.SoundEffectsEnabled = false;
+
+			return nativeView;
 		}
 
 		void OnSetImageSource(Drawable? obj)
@@ -20,20 +23,37 @@ namespace Microsoft.Maui.Handlers
 			NativeView.SetImageDrawable(obj);
 		}
 
-		protected override void DisconnectHandler(AppCompatImageButton nativeView)
+		protected override void DisconnectHandler(ShapeableImageView nativeView)
 		{
 			nativeView.Click -= OnClick;
 			nativeView.Touch -= OnTouch;
+
 			base.DisconnectHandler(nativeView);
 
 			SourceLoader.Reset();
 		}
 
-		protected override void ConnectHandler(AppCompatImageButton nativeView)
+		protected override void ConnectHandler(ShapeableImageView nativeView)
 		{
 			nativeView.Click += OnClick;
 			nativeView.Touch += OnTouch;
+
 			base.ConnectHandler(nativeView);
+		}
+
+		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			(handler.NativeView as ShapeableImageView)?.UpdateStrokeColor(buttonStroke);
+		}
+
+		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			(handler.NativeView as ShapeableImageView)?.UpdateStrokeThickness(buttonStroke);
+		}
+
+		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			(handler.NativeView as ShapeableImageView)?.UpdateCornerRadius(buttonStroke);
 		}
 
 		void OnTouch(object? sender, View.TouchEventArgs e)

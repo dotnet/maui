@@ -4,6 +4,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs" />
 	public partial class FlyoutPage : IFlyoutView
 	{
 		IView IFlyoutView.Flyout => this.Flyout;

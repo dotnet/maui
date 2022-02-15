@@ -9,7 +9,8 @@ This page contains steps to build and run the .NET MAUI repository from source. 
 In most cases, when you have Visual Studio installed with the .NET workloads checked, these steps are not required.
 
 1. Install the latest .NET 6:  
-   - [Win (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-win-x64.exe)   
+   <!--- [Win (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-win-x64.exe)   -->
+   - [Install the latest Public Preview of Visual Studio](https://docs.microsoft.com/en-us/dotnet/maui/get-started/installation/)
    - [macOS (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-osx-x64.pkg)  
    - [macOS (arm64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-osx-arm64.pkg)
 2. Clear your nuget cache:  
@@ -25,10 +26,10 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-For example, the "preview.12" branch:
+For example, the "preview.13" branch:
 ```
 dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/preview.12.json `
+   --from-rollback-file https://aka.ms/dotnet/maui/preview.13.json `
    --source https://aka.ms/dotnet6/nuget/index.json `
    --source https://api.nuget.org/v3/index.json
 ```
@@ -94,17 +95,17 @@ dotnet tool restore
 # Provision .NET 6 in bin\dotnet
 dotnet build src\DotNet\DotNet.csproj
 # Builds Maui MSBuild tasks
-.\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks-net6.sln
+.\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks.sln
 # Builds the rest of Maui
-.\bin\dotnet\dotnet build Microsoft.Maui-net6.sln
+.\bin\dotnet\dotnet build Microsoft.Maui.sln
 # (Windows-only) to launch Visual Studio
 dotnet cake --target=VS-DOGFOOD
 ```
 
 To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet` or just `dotnet` if you've installed the workloads globally:
 ```dotnetcli
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid-net6.csproj -t:Run
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj -t:Run
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid.csproj -t:Run
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS.csproj -t:Run
 ```
 
 Try out a "single project", you will need the `-f` switch to choose the platform:

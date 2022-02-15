@@ -23,15 +23,13 @@ variables:
   value: $[startsWith(variables['System.PullRequest.SourceBranch'], 'loc-hb')]
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
+- name: signingCondition
+  value: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
 # Common Agent Pools in use
-- name: HostedWinVS2019
-  value: Hosted Windows 2019 with VS2019
 - name: LogDirectory
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
   value: $(Build.ArtifactStagingDirectory)/test-results
-- name: provisioningVS
-  value: true
 - name: provisionator.xcode
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path
@@ -48,4 +46,14 @@ variables:
   value: Maui
 - name: POWERSHELL_VERSION
   value: 7.1.3
+- ${{ if ne(variables['Build.DefinitionName'], 'MAUI-private') }}:
+  - name: PrivateBuild
+    value: false
+# Variable groups required for private builds
+- ${{ if eq(variables['Build.DefinitionName'], 'MAUI-private') }}:
+  - name: PrivateBuild
+    value: true
+  # For eng/common/SetupNugetSources.ps1
+  - group: DotNetBuilds storage account read tokens
+  - group: AzureDevOps-Artifact-Feeds-Pats
 - group: Xamarin-Secrets

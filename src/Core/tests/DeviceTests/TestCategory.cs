@@ -4,6 +4,7 @@
 	{
 		public const string MauiContext = "MauiContext";
 
+		public const string Application = "Application";
 		public const string ActivityIndicator = "ActivityIndicator";
 		public const string Border = "Border";
 		public const string BoxView = "BoxView";
@@ -12,6 +13,7 @@
 		public const string DatePicker = "DatePicker";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
+		public const string FlyoutView = "FlyoutView";
 		public const string GraphicsView = "GraphicsView";
 		public const string Image = "Image";
 		public const string ImageButton = "ImageButton";

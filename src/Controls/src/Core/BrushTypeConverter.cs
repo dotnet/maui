@@ -8,23 +8,33 @@ using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.BrushTypeConverter']/Docs" />
 	public class BrushTypeConverter : TypeConverter
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='LinearGradient']/Docs" />
 		public const string LinearGradient = "linear-gradient";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='RadialGradient']/Docs" />
 		public const string RadialGradient = "radial-gradient";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Rgb']/Docs" />
 		public const string Rgb = "rgb";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Rgba']/Docs" />
 		public const string Rgba = "rgba";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Hsl']/Docs" />
 		public const string Hsl = "hsl";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Hsla']/Docs" />
 		public const string Hsla = "hsla";
 
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> false;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -61,6 +71,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 			=> throw new NotSupportedException();
 

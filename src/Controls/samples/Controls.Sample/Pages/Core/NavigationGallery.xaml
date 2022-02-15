@@ -16,6 +16,7 @@
             <Button Text="Swap Root"  Clicked="SwapRoot" />
             <Button Text="Toggle Navigation Bar"  Clicked="ToggleNavigationBar" />
             <Button Text="Toggle Back Button"  Clicked="ToggleBackButton" />
+            <Button Text="Toggle Secondary Toolbar Item"  Clicked="ToggleSecondaryToolbarItem" />
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			handler.GetWrappedNativeView()?.UpdateBackground(image);
+			handler.ToPlatform().UpdateBackground(image);
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>

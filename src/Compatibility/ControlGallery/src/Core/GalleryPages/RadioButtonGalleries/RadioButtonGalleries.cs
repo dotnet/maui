@@ -28,8 +28,10 @@
 							new RadioButtonContentGallery(), Navigation),
 						GalleryBuilder.NavButton("RadioButton Content Properties", () =>
 							new ContentProperties(), Navigation),
-							GalleryBuilder.NavButton("RadioButton Template from Style", () =>
+						GalleryBuilder.NavButton("RadioButton Template from Style", () =>
 							new TemplateFromStyle(), Navigation),
+						GalleryBuilder.NavButton("RadioButton Border", () =>
+							new RadioButtonBorder(), Navigation),
 					}
 				}
 			};

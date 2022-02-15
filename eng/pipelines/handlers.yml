@@ -49,8 +49,14 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
+  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
+  - name: provisionatorChannel
+    displayName: 'Provisionator channel'
+    type: string
+    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+
   - name: BuildEverything
     type: boolean
     default: false
@@ -98,7 +104,12 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main # still defaults to master even though main is the main branch
+      ref: refs/heads/main
+    - repository: sdk-insertions
+      type: github
+      name: xamarin/sdk-insertions
+      ref: refs/heads/main
+      endpoint: xamarin
 
 stages:
 
@@ -120,16 +131,29 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
-                  - Agent.OSArchitecture -equals X64
-                  - Agent.OSVersionFamily -equals 11.3
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
+                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
+                env:
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -158,16 +182,32 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if eq(BuildPlatform.name, 'macos') }} :
+            ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
               demands:
-                - Agent.OSArchitecture -equals X64
-                - Agent.OSVersionFamily -equals 11.3
+                - macOS.Name -equals BigSur
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
           steps:
+            - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+              - template: agent-cleanser/v1.yml@xamarin-templates
+                parameters:
+                  UninstallMono: false
+                  UninstallXamarinMac: false
+                  CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
+                poolName: ${{ BuildPlatform.poolName }}
+                provisionatorChannel: ${{ parameters.provisionatorChannel }}
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
+              env:
+                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                PRIVATE_BUILD: $(PrivateBuild)
+            - ${{ if eq(BuildPlatform.name, 'Windows') }}:
+              - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
+                displayName: 'Diff .NET Maui artifacts with NuGet'
             - task: CopyFiles@2
               condition: always()
               displayName: 'Copy files to staging'
@@ -186,6 +226,7 @@ stages:
                 SourceFolder: artifacts
                 Contents: |
                   metadata/**
+                  api-diff/**
                 TargetFolder: $(build.artifactstagingdirectory)
             - task: CopyFiles@2
               displayName: 'Copy Log Files'
@@ -219,14 +260,24 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
-                  - Agent.OSArchitecture -equals X64
-                  - Agent.OSVersionFamily -equals 11.3
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
+                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -237,6 +288,10 @@ stages:
                 displayName: Move the downloaded artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
+                
+                env:
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
               - task: PublishBuildArtifacts@1
@@ -263,14 +318,24 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
-                  - Agent.OSArchitecture -equals X64
-                  - Agent.OSVersionFamily -equals 11.3
+                  - macOS.Name -equals BigSur
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@xamarin-templates
+                  parameters:
+                    UninstallMono: false
+                    UninstallXamarinMac: false
+                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
+                  poolName: ${{ BuildPlatform.poolName }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -281,6 +346,9 @@ stages:
                 displayName: Move the downloaded artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
+                env:
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Templates'
               - task: PublishBuildArtifacts@1
@@ -310,7 +378,7 @@ stages:
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+            condition: ${{ variables.signingCondition }}
 
         - template: nuget-msi-convert/job/v2.yml@xamarin-templates
           parameters:
@@ -322,6 +390,52 @@ stages:
             artifactPath: signed
             propsArtifactName: nuget
             signType: Real
+
+        - job: create_artifact_statuses
+          displayName: Create GitHub Artifact Status
+          dependsOn: nuget_convert
+          timeoutInMinutes: 60
+          pool:
+            vmImage: windows-latest
+          steps:
+          - checkout: self
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: nuget
+              downloadPath: $(Build.StagingDirectory)\nuget
+              patterns: |
+                **/signed/*.nupkg
+                **/*.snupkg
+                **/additional-assets.zip
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: vs-msi-nugets
+              downloadPath: $(Build.StagingDirectory)\nuget
+
+          - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
+            parameters:
+              githubToken: $(github--pat--vs-mobiletools-engineering-service2)
+              githubContext: $(NupkgCommitStatusName)
+              blobName: $(NupkgCommitStatusName)
+              packagePrefix: maui
+              artifactsPath: $(Build.StagingDirectory)\nuget
+              yamlResourceName: xamarin-templates
+
+          - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
+            parameters:
+              githubToken: $(github--pat--vs-mobiletools-engineering-service2)
+              githubContext: $(VSDropCommitStatusName)
+              blobName: $(VSDropCommitStatusName)
+              packagePrefix: maui
+              artifactsPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
+              yamlResourceName: xamarin-templates
+              downloadSteps:
+              - task: DownloadPipelineArtifact@2
+                inputs:
+                  artifactName: vsdrop-signed
+                  downloadPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
 
     - template: vs-insertion/stage/v1.yml@xamarin-templates
       parameters:
@@ -337,3 +451,15 @@ stages:
         nupkgArtifactPatterns: |
           **/signed/*.nupkg
         msiNupkgArtifactName: vs-msi-nugets
+
+    - stage: sbom
+      displayName: 'Software Bill of Materials'
+      dependsOn: nuget_signing
+      jobs:
+      - template: compliance/sbom/job.v1.yml@xamarin-templates
+        parameters:
+          artifactNames: [ nuget, vs-msi-nugets, vsdrop-signed ]
+          artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact
+          packageName: 'Microsoft Maui'
+          packageFilter: '*.msi;*.nupkg'
+          condition: ${{ variables.signingCondition }}

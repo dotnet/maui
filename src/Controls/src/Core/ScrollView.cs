@@ -7,11 +7,13 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs" />
 	[ContentProperty(nameof(Content))]
 	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Rectangle LayoutAreaOverride
 		{
@@ -29,6 +31,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='GetScrollPositionForElement']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Point GetScrollPositionForElement(VisualElement item, ScrollToPosition pos)
 		{
@@ -69,6 +72,7 @@ namespace Microsoft.Maui.Controls
 			return new Point(x, y);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='SendScrollFinished']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendScrollFinished()
 		{
@@ -76,6 +80,7 @@ namespace Microsoft.Maui.Controls
 				_scrollCompletionSource.TrySetResult(true);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='SetScrolledPosition']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetScrolledPosition(double x, double y)
 		{
@@ -90,30 +95,37 @@ namespace Microsoft.Maui.Controls
 
 		#endregion IScrollViewController
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='OrientationProperty']/Docs" />
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create("Orientation", typeof(ScrollOrientation), typeof(ScrollView), ScrollOrientation.Vertical);
 
 		static readonly BindablePropertyKey ScrollXPropertyKey = BindableProperty.CreateReadOnly("ScrollX", typeof(double), typeof(ScrollView), 0d);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollXProperty']/Docs" />
 		public static readonly BindableProperty ScrollXProperty = ScrollXPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey ScrollYPropertyKey = BindableProperty.CreateReadOnly("ScrollY", typeof(double), typeof(ScrollView), 0d);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollYProperty']/Docs" />
 		public static readonly BindableProperty ScrollYProperty = ScrollYPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey ContentSizePropertyKey = BindableProperty.CreateReadOnly("ContentSize", typeof(Size), typeof(ScrollView), default(Size));
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ContentSizeProperty']/Docs" />
 		public static readonly BindableProperty ContentSizeProperty = ContentSizePropertyKey.BindableProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<ScrollView>> _platformConfigurationRegistry;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibilityProperty']/Docs" />
 		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='VerticalScrollBarVisibilityProperty']/Docs" />
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
 
 		View _content;
 		TaskCompletionSource<bool> _scrollCompletionSource;
 		Rectangle _layoutAreaOverride;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='Content']/Docs" />
 		public View Content
 		{
 			get { return _content; }
@@ -134,42 +146,49 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ContentSize']/Docs" />
 		public Size ContentSize
 		{
 			get { return (Size)GetValue(ContentSizeProperty); }
 			private set { SetValue(ContentSizePropertyKey, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='Orientation']/Docs" />
 		public ScrollOrientation Orientation
 		{
 			get { return (ScrollOrientation)GetValue(OrientationProperty); }
 			set { SetValue(OrientationProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollX']/Docs" />
 		public double ScrollX
 		{
 			get { return (double)GetValue(ScrollXProperty); }
 			private set { SetValue(ScrollXPropertyKey, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollY']/Docs" />
 		public double ScrollY
 		{
 			get { return (double)GetValue(ScrollYProperty); }
 			private set { SetValue(ScrollYPropertyKey, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibility']/Docs" />
 		public ScrollBarVisibility HorizontalScrollBarVisibility
 		{
 			get { return (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty); }
 			set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='VerticalScrollBarVisibility']/Docs" />
 		public ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
 			set { SetValue(VerticalScrollBarVisibilityProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public ScrollView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ScrollView>>(() => new PlatformConfigurationRegistry<ScrollView>(this));
@@ -177,11 +196,13 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<ScrolledEventArgs> Scrolled;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, ScrollView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollToAsync'][0]/Docs" />
 		public Task ScrollToAsync(double x, double y, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)
@@ -192,6 +213,7 @@ namespace Microsoft.Maui.Controls
 			return _scrollCompletionSource.Task;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollToAsync'][1]/Docs" />
 		public Task ScrollToAsync(Element element, ScrollToPosition position, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)

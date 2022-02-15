@@ -70,49 +70,49 @@ namespace Microsoft.Maui.Handlers
 		// This is a Windows-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateBackground(button);
+			handler.NativeView?.UpdateBackground(button);
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateStrokeColor(buttonStroke);
+			handler.NativeView?.UpdateStrokeColor(buttonStroke);
 		}
 
 		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateStrokeThickness(buttonStroke);
+			handler.NativeView?.UpdateStrokeThickness(buttonStroke);
 		}
 
 		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.TypedNativeView?.UpdateCornerRadius(buttonStroke);
+			handler.NativeView?.UpdateCornerRadius(buttonStroke);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{
-			handler.TypedNativeView?.UpdateText(button);
+			handler.NativeView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.TypedNativeView?.UpdateTextColor(button);
+			handler.NativeView?.UpdateTextColor(button);
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(button);
+			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(button, fontManager);
+			handler.NativeView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button);
+			handler.NativeView?.UpdatePadding(button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IButton image) =>

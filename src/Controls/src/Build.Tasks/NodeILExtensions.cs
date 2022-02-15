@@ -177,8 +177,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var str = (string)node.Value;
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
 			Type compiledConverterType;
-			if (   typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType(compiledConverterName)) != null
-			    || (typeConverter!= null && CompiledTypeConverters.TryGetValue(typeConverter, out compiledConverterType)))
+			if (typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType(compiledConverterName)) != null
+				|| (typeConverter != null && CompiledTypeConverters.TryGetValue(typeConverter, out compiledConverterType)))
 			{
 				var compiledConverter = Activator.CreateInstance(compiledConverterType);
 				var converter = typeof(ICompiledTypeConverter).GetMethods().FirstOrDefault(md => md.Name == "ConvertFromString");

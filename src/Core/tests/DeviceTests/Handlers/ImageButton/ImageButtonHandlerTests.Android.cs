@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
-		AppCompatImageButton GetNativeImageButton(ImageButtonHandler buttonHandler) =>
+		Google.Android.Material.ImageView.ShapeableImageView GetNativeImageButton(ImageButtonHandler buttonHandler) =>
 			buttonHandler.NativeView;
 
 		Task PerformClick(IButton button)
