@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFlowDirection(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateFlowDirection(datePicker);
+			handler.NativeView?.UpdateFlowDirection(timePicker);
 			handler.NativeView?.UpdateTextAlignment(timePicker);
 		}
 
