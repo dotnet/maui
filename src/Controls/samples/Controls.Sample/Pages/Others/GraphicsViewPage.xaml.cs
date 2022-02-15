@@ -453,7 +453,7 @@ namespace Maui.Controls.Sample.Pages
 					var vHorizontalAlignment = (HorizontalAlignment)x;
 					var vVerticalAlignment = (VerticalAlignment)y;
 
-					canvas.Font = new Font("Arial");
+					canvas.Font = new Microsoft.Maui.Graphics.Font("Arial");
 					canvas.FontSize = 12f;
 					canvas.DrawString(vTextLong, dx, dy, 190, 140, vHorizontalAlignment, vVerticalAlignment);
 				}
@@ -474,7 +474,7 @@ namespace Maui.Controls.Sample.Pages
 					var vHorizontalAlignment = (HorizontalAlignment)x;
 					var vVerticalAlignment = (VerticalAlignment)y;
 
-					canvas.Font = new Font("Arial");
+					canvas.Font = new Microsoft.Maui.Graphics.Font("Arial");
 					canvas.FontSize = 12f;
 					canvas.DrawString(vTextShort, dx, dy, 190, 140, vHorizontalAlignment, vVerticalAlignment);
 				}
@@ -492,7 +492,7 @@ namespace Maui.Controls.Sample.Pages
 				const HorizontalAlignment vHorizontalAlignment = HorizontalAlignment.Left;
 				var vVerticalAlignment = (VerticalAlignment)y;
 
-				canvas.Font = new Font("Arial");
+				canvas.Font = new Microsoft.Maui.Graphics.Font("Arial");
 				canvas.FontSize = 12f;
 				canvas.DrawString(
 					vTextLong,
@@ -539,7 +539,7 @@ namespace Maui.Controls.Sample.Pages
 				canvas.FontSize = 12 + i * 6;
 				canvas.DrawString("Test String Length", 650, 400 + (100 * i), HorizontalAlignment.Left);
 
-				var size = canvas.GetStringSize("Test String Length", new Font("Arial"), 12 + i * 6);
+				var size = canvas.GetStringSize("Test String Length", new Microsoft.Maui.Graphics.Font("Arial"), 12 + i * 6);
 				canvas.DrawRectangle(650, 400 + (100 * i), size.Width, size.Height);
 			}
 
