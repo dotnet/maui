@@ -3,9 +3,8 @@ using Android.App;
 using Android.Content;
 using AndroidX.Security.Crypto;
 using Javax.Crypto;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class SecureStorageImplementation : ISecureStorage
 	{

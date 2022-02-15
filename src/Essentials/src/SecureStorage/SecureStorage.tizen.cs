@@ -2,7 +2,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tizen.Security.SecureRepository;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class SecureStorageImplementation : ISecureStorage
 	{

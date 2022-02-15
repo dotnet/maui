@@ -11,14 +11,17 @@ namespace Microsoft.Maui.Essentials
 	{
 		public static SecAccessible DefaultAccessible
 		{
-			get { return SecureStorageImplementation.DefaultAccessible; }
-			set { SecureStorageImplementation.DefaultAccessible = value; }
+			get { return Implementations.SecureStorageImplementation.DefaultAccessible; }
+			set { Implementations.SecureStorageImplementation.DefaultAccessible = value; }
 		}
 
 		public static Task SetAsync(string key, string value, SecAccessible accessible) =>
-			SecureStorageImplementation.SetAsync(key, value, accessible);
+			Implementations.SecureStorageImplementation.SetAsync(key, value, accessible);
 	}
+}
 
+namespace Microsoft.Maui.Essentials.Implementations
+{
 	public partial class SecureStorageImplementation : ISecureStorage
 	{
 		static string Alias => SecureStorage.Alias;

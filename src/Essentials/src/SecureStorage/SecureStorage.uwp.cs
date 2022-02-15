@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Windows.Security.Cryptography.DataProtection;
 using Windows.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class SecureStorageImplementation : ISecureStorage
 	{
