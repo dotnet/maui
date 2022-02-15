@@ -258,13 +258,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				mockDeviceInfo.RuntimePlatform = platform;
 				if (platform == Device.iOS)
 				{
-					DependencyService.Register<IPlatformValueConverterService, MockIosPlatformValueConverterService>();
-					DependencyService.Register<IPlatformBindingService, MockIosPlatformBindingService>();
+					DependencyService.Register<INativeValueConverterService, MockIosPlatformValueConverterService>();
+					DependencyService.Register<INativeBindingService, MockIosPlatformBindingService>();
 				}
 				else if (platform == Device.Android)
 				{
-					DependencyService.Register<IPlatformValueConverterService, MockAndroidPlatformValueConverterService>();
-					DependencyService.Register<IPlatformBindingService, MockAndroidPlatformBindingService>();
+					DependencyService.Register<INativeValueConverterService, MockAndroidPlatformValueConverterService>();
+					DependencyService.Register<INativeBindingService, MockAndroidPlatformBindingService>();
 				}
 			}
 
