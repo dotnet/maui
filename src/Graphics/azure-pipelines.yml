@@ -6,6 +6,7 @@ variables:
   provisionator.path: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
   provisionator.vs: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
   provisionator.extraArguments: '--v'
+  signingCondition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
 
 parameters:
   - name: BuildConfigurations
@@ -196,4 +197,19 @@ stages:
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+            condition: ${{ variables['signingCondition'] }}
+
+    - stage: sbom
+      displayName: 'Software Bill of Materials'
+      ${{ if not(variables['signingCondition']) }}:
+        dependsOn: [ 'windows' ]
+      ${{ if variables['signingCondition'] }}:
+        dependsOn: [ 'nuget_signing' ]
+      jobs:
+      - template: compliance/sbom/job.v1.yml@internal-templates
+        parameters:
+          artifactNames: ['nuget']
+          ${{ if variables['signingCondition'] }}:
+            artifactMap: ['nuget/signed']
+          packageName: 'Microsoft Maui Graphics'
+          packageFilter: '*.nupkg'
