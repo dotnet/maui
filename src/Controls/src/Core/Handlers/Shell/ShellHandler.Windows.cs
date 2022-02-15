@@ -71,7 +71,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyoutBackground(ShellHandler handler, Shell view)
 		{
-			handler.NativeView.UpdatePaneBackground(view.FlyoutBackground ?? view.FlyoutBackgroundColor?.AsPaint());
+			handler.NativeView.UpdatePaneBackground(
+				!Brush.IsNullOrEmpty(view.FlyoutBackground) ?
+					view.FlyoutBackground :
+					view.FlyoutBackgroundColor?.AsPaint());
 		}
 
 		public static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell view)
