@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Essentials
 			if (!SmsImplementation.IsComposeSupported)
 				throw new FeatureNotSupportedException();
 
-			message	??= new SmsMessage();
+			message ??= new SmsMessage();
 
 			message.Recipients ??= new List<string>();
 

@@ -8,7 +8,7 @@ using MapKit;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class MapImplementation:IMap
+	public class MapImplementation : IMap
 	{
 		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
 		{

@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.ShouldReturn = OnShouldReturn;
 			nativeView.EditingChanged += OnEditingChanged;
+			nativeView.EditingDidBegin += OnEditingBegan;
 			nativeView.EditingDidEnd += OnEditingEnded;
 			nativeView.TextPropertySet += OnTextPropertySet;
 			nativeView.ShouldChangeCharacters += OnShouldChangeCharacters;
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiTextField nativeView)
 		{
 			nativeView.EditingChanged -= OnEditingChanged;
+			nativeView.EditingDidBegin -= OnEditingBegan;
 			nativeView.EditingDidEnd -= OnEditingEnded;
 			nativeView.TextPropertySet -= OnTextPropertySet;
 			nativeView.ShouldChangeCharacters -= OnShouldChangeCharacters;
@@ -114,8 +116,25 @@ namespace Microsoft.Maui.Handlers
 		void OnEditingChanged(object? sender, EventArgs e) =>
 			VirtualView.UpdateText(NativeView.Text);
 
-		void OnEditingEnded(object? sender, EventArgs e) =>
+		void OnEditingBegan(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
+			NativeView?.UpdateSelectionLength(VirtualView);
+
+			// TODO: Update IsFocused property
+		}
+
+		void OnEditingEnded(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
 			VirtualView.UpdateText(NativeView.Text);
+
+			// TODO: Update IsFocused property
+		}
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>
 			VirtualView.UpdateText(NativeView.Text);
