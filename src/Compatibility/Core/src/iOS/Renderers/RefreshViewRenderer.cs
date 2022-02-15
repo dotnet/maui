@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		bool CanUseRefreshControlProperty()
 		{
-			return Forms.IsiOS10OrNewer && !_usingLargeTitles;
+			return !_usingLargeTitles;
 		}
 
 		void OnRefresh(object sender, EventArgs e)

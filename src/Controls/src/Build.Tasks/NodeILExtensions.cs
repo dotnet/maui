@@ -172,6 +172,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				CompiledTypeConverters = new Dictionary<TypeReference, Type>();
 				CompiledTypeConverters.Add(module.ImportReference(("Microsoft.Maui", "Microsoft.Maui", "Thickness")), typeof(ThicknessTypeConverter));
+				CompiledTypeConverters.Add(module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Color")), typeof(ColorTypeConverter));
 			}
 
 			var str = (string)node.Value;
