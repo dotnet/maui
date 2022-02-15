@@ -25,54 +25,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void SetMenuOnMenuItem()
-		{
-			var item = new MenuItem();
-			var menu = new Menu { Text = "Hello" };
-			MenuItem.SetMenu(item, menu);
-
-			Assert.AreEqual(menu, MenuItem.GetMenu(item));
-		}
-
-		[Test]
-		public void AddSubMenuOnMenu()
-		{
-			var item = new MenuItem();
-			var menu = new Menu { Text = "Hello" };
-			var submenu = new Menu { Text = "SubMenu Hello" };
-			menu.Add(submenu);
-
-			MenuItem.SetMenu(item, menu);
-
-			Assert.AreEqual(MenuItem.GetMenu(item), menu);
-			Assert.AreEqual(MenuItem.GetMenu(item)[0], submenu);
-			Assert.AreEqual(MenuItem.GetMenu(item)[0].Text, submenu.Text);
-		}
-
-		[Test]
-		public void SetMenuOnApplicationMainMenu()
-		{
-			var item = new MenuItem();
-			var menu = new Menu { Text = "Hello" };
-			Element.SetMenu(Application.Current, menu);
-			Assert.GreaterOrEqual(1, Element.GetMenu(Application.Current).Count);
-		}
-
-		[Test]
-		public void MenuText()
-		{
-			string text = "hello";
-			var menu = new Menu { Text = text };
-
-			Assert.AreEqual(text, menu.Text);
-		}
-
-		[Test]
 		public void MenuInvalidateFiresPropertyChanged()
 		{
 			string text = "hello";
 			int count = 0;
-			var menu = new Menu { Text = text };
+			var menu = new TestMenu();
 
 			menu.PropertyChanged += (s, e) =>
 			{
@@ -89,14 +46,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			string text = "hello";
 			int count = 0;
-			var menu = new Menu { Text = text };
+			var menu = new TestMenu();
 
 			menu.PropertyChanged += (s, e) =>
 			{
 				count = count + 1;
 			};
 
-			menu.Add(new Menu());
+			menu.Add(new MenuItem());
 
 			Assert.AreEqual(1, count);
 		}
@@ -106,14 +63,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			string text = "hello";
 			int count = 0;
-			var menu = new Menu { Text = text };
+			var menu = new TestMenu();
 
 			menu.PropertyChanged += (s, e) =>
 			{
 				count = count + 1;
 			};
 
-			menu.Add(new Menu());
+			menu.Add(new MenuItem());
 			menu.Clear();
 
 			Assert.AreEqual(2, count);
@@ -124,14 +81,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			string text = "hello";
 			int count = 0;
-			var menu = new Menu { Text = text };
+			var menu = new TestMenu();
 
 			menu.PropertyChanged += (s, e) =>
 			{
 				count = count + 1;
 			};
 
-			menu.Insert(0, new Menu());
+			menu.Insert(0, new MenuItem());
 
 			Assert.AreEqual(1, count);
 
@@ -140,22 +97,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(2, count);
 		}
 
-
-		[Test]
-		public void MenuFiresPropertyChangedOnAddItems()
+		class TestMenu : Menu<MenuItem>
 		{
-			string text = "hello";
-			int count = 0;
-			var menu = new Menu { Text = text };
 
-			menu.PropertyChanged += (s, e) =>
-			{
-				count = count + 1;
-			};
-
-			menu.Items.Add(new MenuItem());
-			Assert.AreEqual(1, count);
 		}
-
 	}
 }
