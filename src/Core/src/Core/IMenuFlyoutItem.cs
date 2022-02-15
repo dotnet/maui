@@ -4,11 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	public interface IMenuFlyoutItem : IMenuFlyoutItemBase
+	public interface IMenuFlyoutItem : IMenuFlyoutItemBase, IMenuElement
 	{
-		/// <summary>
-		/// Gets the text.
-		/// </summary>
-		string Text { get; }
 	}
 }

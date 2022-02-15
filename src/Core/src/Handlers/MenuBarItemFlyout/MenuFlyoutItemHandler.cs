@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 #if IOS || MACCATALYST
-using PlatformView = UIKit.UIView;
+using PlatformView = UIKit.UIAction;
 #elif MONOANDROID
 using PlatformView = Android.Views.View;
 #elif WINDOWS
@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
+			[nameof(IMenuElement.Source)] = MapSource,
 #endif
 		};
 
@@ -32,13 +33,15 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
+#if !WINDOWS
 		protected override PlatformView CreateNativeElement()
 		{
-#if WINDOWS
-			return new PlatformView();
-#else
 			throw new NotImplementedException();
-#endif
 		}
+#endif
+
+		IMenuFlyoutItem IMenuFlyoutItemHandler.VirtualView => VirtualView;
+
+		PlatformView IMenuFlyoutItemHandler.NativeView => NativeView;
 	}
 }

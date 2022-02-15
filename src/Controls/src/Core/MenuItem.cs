@@ -121,7 +121,6 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnClicked() => Clicked?.Invoke(this, EventArgs.Empty);
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		void IMenuItemController.Activate()
 		{
 			if (IsEnabled)

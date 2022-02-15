@@ -118,15 +118,21 @@ namespace Microsoft.Maui.Platform
 		internal void SetMenuBar(IMenuBar? menuBar)
 		{
 			_menuBar = menuBar;
+
+			if (_windowHeader == null)
+				return;
+
 			if (menuBar != null)
-				_rootView.SetMenuBar((MenuBar)menuBar.ToPlatform(_mauiContext));
+				_windowHeader.SetMenuBar((MenuBar)menuBar.ToPlatform(_mauiContext));
 			else
-				_rootView.SetMenuBar(null);
+				_windowHeader.SetMenuBar(null);
 		}
 
 		internal void SetToolbar(FrameworkElement toolBar)
 		{
 			_windowHeader = toolBar as MauiToolbar;
+			SetMenuBar(_menuBar);
+
 			if (_rootView.NavigationViewControl != null)
 			{
 				_rootView.NavigationViewControl.HeaderControl = _windowHeader;

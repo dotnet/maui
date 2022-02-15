@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Platform
 		internal event EventHandler? OnApplyTemplateFinished;
 		internal event EventHandler? ContentChanged;
 		string? _windowTitle;
-		MenuBar? _menuBar;
 
 		protected override void OnApplyTemplate()
 		{
@@ -41,8 +40,6 @@ namespace Microsoft.Maui.Platform
 			AppFontIcon.ImageOpened += OnImageOpened;
 			AppFontIcon.ImageFailed += OnImageFailed;
 			SetWindowTitle(_windowTitle);
-
-			UpdateMenuBar();
 		}
 
 		protected override void OnContentChanged(object oldContent, object newContent)
@@ -154,27 +151,6 @@ namespace Microsoft.Maui.Platform
 
 				if (AppFontIcon != null)
 					AppFontIcon.Visibility = UI.Xaml.Visibility.Collapsed;
-			}
-		}
-
-		internal void SetMenuBar(MenuBar? menuBar)
-		{
-			_menuBar = menuBar;
-			UpdateMenuBar();
-		}
-
-		void UpdateMenuBar()
-		{
-			if (RootStackPanel == null)
-				return;
-
-
-			if (RootStackPanel.Children[0] is MenuBar menuBar)
-				RootStackPanel.Children.Remove(menuBar);
-
-			if (_menuBar != null)
-			{
-				RootStackPanel.Children.Insert(0, _menuBar);
 			}
 		}
 	}
