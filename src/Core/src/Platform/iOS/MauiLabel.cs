@@ -52,24 +52,32 @@ namespace Microsoft.Maui.Platform
 			if (_label == null)
 				return;
 
+
+			if (_label.Frame == Graphics.Rectangle.Zero)
+				return;
+
 			SizeF fitSize;
-			nfloat labelHeight;
+
+			nfloat labelX = (nfloat)Math.Max(0, _label.Frame.X);
+			nfloat labelY = (nfloat)Math.Max(0, _label.Frame.Y);
+			nfloat labelHeight = (nfloat)Math.Max(0, _label.Frame.Size.Height);
+			nfloat labelWidth = (nfloat)Math.Max(0, _label.Frame.Size.Width);
 
 			switch (_label.VerticalTextAlignment)
 			{
 				case Maui.TextAlignment.Start:
 					fitSize = SizeThatFits(_label.Frame.Size.ToCGSize());
 					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
-					Frame = new RectangleF(0, 0, (nfloat)_label.Width, labelHeight);
+					Frame = new RectangleF(labelX, labelY, labelWidth, labelHeight);
 					break;
 				case Maui.TextAlignment.Center:
-					Frame = new RectangleF(0, 0, (nfloat)_label.Width, (nfloat)_label.Height);
+					Frame = new RectangleF(labelX, labelY, labelWidth, labelHeight);
 					break;
 				case Maui.TextAlignment.End:
 					fitSize = SizeThatFits(_label.Frame.Size.ToCGSize());
 					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
 					nfloat yOffset = (nfloat)(_label.Height - labelHeight);
-					Frame = new RectangleF(0, yOffset, (nfloat)_label.Width, labelHeight);
+					Frame = new RectangleF(labelX, yOffset, labelWidth, labelHeight);
 					break;
 			}
 		}
