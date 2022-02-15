@@ -20,10 +20,6 @@ namespace Microsoft.Maui.Essentials
 
 		static async Task<FileResult> PlatformPickAsync(MediaPickerOptions options, bool photo)
 		{
-			// We only need the permission when accessing the file, but it's more natural
-			// to ask the user first, then show the picker.
-			await Permissions.EnsureGrantedAsync<Permissions.StorageRead>();
-
 			var intent = new Intent(Intent.ActionGetContent);
 			intent.SetType(photo ? FileSystem.MimeTypes.ImageAll : FileSystem.MimeTypes.VideoAll);
 
