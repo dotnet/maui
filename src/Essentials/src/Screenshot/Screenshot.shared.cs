@@ -42,13 +42,25 @@ namespace Microsoft.Maui.Essentials
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IScreenshot Current =>
-			currentImplementation ??= new ScreenshotImplementation();
+			currentImplementation ??= new Implementations.ScreenshotImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrent(IScreenshot? implementation) =>
 			currentImplementation = implementation;
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotFormat']/Docs" />
+	public enum ScreenshotFormat
+	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Png']/Docs" />
+		Png,
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Jpeg']/Docs" />
+		Jpeg
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotResult']/Docs" />
 	internal partial class ScreenshotResult : IScreenshotResult
 	{
@@ -61,14 +73,5 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
 		public Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png)
 			=> PlatformOpenReadAsync(format);
-	}
-
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotFormat']/Docs" />
-	public enum ScreenshotFormat
-	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Png']/Docs" />
-		Png,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Jpeg']/Docs" />
-		Jpeg
 	}
 }
