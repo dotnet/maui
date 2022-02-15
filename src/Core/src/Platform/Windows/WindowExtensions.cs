@@ -3,7 +3,7 @@ using WinRT.Interop;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class WindowExtensions
+	public static partial class WindowExtensions
 	{
 		public static void UpdateTitle(this UI.Xaml.Window nativeWindow, IWindow window)
 		{

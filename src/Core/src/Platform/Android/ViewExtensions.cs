@@ -500,5 +500,29 @@ namespace Microsoft.Maui.Platform
 				platformView.Left,
 				context);
 		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.NativeView as View);
+
+		internal static IWindow? GetHostedWindow(this View? view)
+			=> GetWindowFromActivity(view?.Context?.GetActivity());
+
+		internal static IWindow? GetWindowFromActivity(this Android.App.Activity? activity)
+		{
+			if (activity is null)
+				return null;
+
+			var windows = WindowExtensions.GetWindows();
+			foreach (var window in windows)
+			{
+				if (window.Handler?.NativeView is Android.App.Activity active)
+				{
+					if (active == activity)
+						return window;
+				}
+			}
+
+			return null;
+		}
 	}
 }

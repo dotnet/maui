@@ -68,5 +68,8 @@ namespace Microsoft.Maui.Platform
 		{
 			return null;
 		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> null;
 	}
 }
