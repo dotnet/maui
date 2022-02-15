@@ -39,13 +39,17 @@ namespace Microsoft.Maui.Platform
 			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
 
-			// Can't use Element.Format because it won't display the correct format if the region and language are set differently
-			if (picker != null && string.IsNullOrWhiteSpace(datePicker.Format) || datePicker.Format.Equals("d") || datePicker.Format.Equals("D"))
-			{
-				NSDateFormatter dateFormatter = new NSDateFormatter();
-				dateFormatter.TimeZone = NSTimeZone.FromGMT(0);
+			string format = (datePicker.Format == null) ? string.Empty : datePicker.Format;
 
-				if (datePicker.Format?.Equals("D") == true)
+			// Can't use VirtualView.Format because it won't display the correct format if the region and language are set differently
+			if (picker != null && string.IsNullOrWhiteSpace(format) || format.Equals("d") || format.Equals("D"))
+			{
+				NSDateFormatter dateFormatter = new NSDateFormatter
+				{
+					TimeZone = NSTimeZone.FromGMT(0)
+				};
+
+				if (format.Equals("D") == true)
 				{
 					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
 					var strDate = dateFormatter.StringFor(picker?.Date);
@@ -58,14 +62,15 @@ namespace Microsoft.Maui.Platform
 					nativeDatePicker.Text = strDate;
 				}
 			}
-			else if (datePicker.Format.Contains("/"))
+			else if (format.Contains('/'))
 			{
-				nativeDatePicker.Text = datePicker.Date.ToString(datePicker.Format, CultureInfo.InvariantCulture);
+				nativeDatePicker.Text = datePicker.Date.ToString(format, CultureInfo.InvariantCulture);
 			}
 			else
 			{
-				nativeDatePicker.Text = datePicker.Date.ToString(datePicker.Format);
+				nativeDatePicker.Text = datePicker.Date.ToString(format);
 			}
+			
 
 			nativeDatePicker.UpdateCharacterSpacing(datePicker);
 		}

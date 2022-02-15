@@ -123,6 +123,7 @@ namespace Microsoft.Maui.Handlers
     
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
 		{
+			handler.NativeView?.UpdateFlowDirection(datePicker);
 			handler.NativeView?.UpdateTextAlignment(datePicker);
 		}
 
