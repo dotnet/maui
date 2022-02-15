@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foundation;
-using Microsoft.Maui.Handlers;
-using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -54,5 +49,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.Controller.Layout.InvalidateLayout();
 		}
 
+		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateFromCurrentItem();
+		}
+
+		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateFromPosition();
+		}
+
+		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.Controller as CarouselViewController)?.UpdateLoop();
+		}
 	}
 }

@@ -277,6 +277,10 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			VirtualView = null;
+			NavigationView = null;
+			_navHost = null;
+			_fragmentNavigator = null;
 		}
 
 		public virtual void Connect(IView navigationView)
@@ -409,6 +413,9 @@ namespace Microsoft.Maui.Platform
 			#region FragmentLifecycleCallbacks
 			public override void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f)
 			{
+				if (_stackNavigationManager.VirtualView == null)
+					return;
+
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);
 
