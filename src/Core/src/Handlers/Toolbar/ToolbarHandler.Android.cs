@@ -40,6 +40,11 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
+		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
+		{
+			arg1.NativeView.UpdateTitle(arg2);
+		}
+
 		DrawerLayout? _drawerLayout;
 		NavController? _navController;
 		StackNavigationManager? _stackNavigationManager;

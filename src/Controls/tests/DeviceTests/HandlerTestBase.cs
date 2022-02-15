@@ -121,6 +121,15 @@ namespace Microsoft.Maui.DeviceTests
 				return func(handler);
 			});
 		}
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
+			where THandler : class, IElementHandler
+		{
+			return CreateHandlerAndAddToWindow<THandler>(view, handler =>
+			{
+				action(handler);
+				return Task.CompletedTask;
+			});
+		}
 
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
 			where THandler : class, IElementHandler

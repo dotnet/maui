@@ -165,6 +165,13 @@ namespace Microsoft.Maui.DeviceTests
 			return textField.Font.PointSize;
 		}
 
+		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+				
+			return !uiSearchBar.UserInteractionEnabled;
+		}
+
 		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>

@@ -80,7 +80,13 @@ namespace Microsoft.Maui.Platform
 			if (currentControlText.Length > searchBar.MaxLength)
 				platformControl.Text = currentControlText.Substring(0, searchBar.MaxLength);
 		}
-
+		
+		public static void UpdateIsReadOnly(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
+		{
+			if (queryTextBox == null)
+				return;
+		}
+		
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)

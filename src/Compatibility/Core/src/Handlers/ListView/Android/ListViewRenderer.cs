@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						AView currentParent = null;
 						if(cell.Handler?.PlatformView is AView aView)
 							currentParent = aView.Parent as AView;
-							
+
 						AView listItem = _adapter.GetView(i, currentParent, Control);
 						int widthSpec;
 

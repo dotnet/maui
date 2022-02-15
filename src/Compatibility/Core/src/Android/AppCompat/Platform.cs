@@ -323,6 +323,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				IViewHandler handler = null;
 
 				//TODO: Handle this with AppBuilderHost
+
+				if (Forms.MauiContext?.Handlers == null)
+				{
+					throw new InvalidOperationException("Forms.MauiContext.Handlers cannot be null here");
+				}
+
 				try
 				{
 					var mauiContext = Forms.MauiContext;
@@ -333,8 +339,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					handler = mauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(mauiContext);
 				}
-				catch
+				catch (Exception e)
 				{
+					Microsoft.Extensions.Logging.LoggerExtensions
+						.LogWarning(Forms.MauiContext.CreateLogger<Platform>(), $"{e}");
+
 					// TODO define better catch response or define if this is needed?
 				}
 

@@ -64,10 +64,16 @@ namespace Microsoft.Maui
 			if (nativeActivity.Resources == null || nativeActivity.Resources.DisplayMetrics == null)
 				return new Point();
 
-			float dpi = nativeActivity.Resources.DisplayMetrics.Density;
-			float heightPixels = nativeActivity.Resources.DisplayMetrics.HeightPixels;
+			var decorView = nativeActivity.Window?.DecorView;
+			var rectangle = new Android.Graphics.Rect();
 
-			return new Point(0, -(heightPixels - graphicsView.MeasuredHeight) / dpi);
+			if (decorView is not null)
+			{
+				decorView.GetWindowVisibleDisplayFrame(rectangle);
+			}
+
+			float dpi = nativeActivity.Resources.DisplayMetrics.Density;
+			return new Point(0, -(rectangle.Top / dpi));
 		}
 	}
 }

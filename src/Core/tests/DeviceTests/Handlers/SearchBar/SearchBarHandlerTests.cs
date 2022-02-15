@@ -121,6 +121,20 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(searchBar);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsReadOnlyInitializesCorrectly(bool isReadOnly)
+		{
+			var searchBar = new SearchBarStub()
+			{
+				IsReadOnly = isReadOnly,
+				Text = "Test"
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsReadOnly, GetNativeIsReadOnly, searchBar.IsReadOnly);
+		}
+
 		[Category(TestCategory.SearchBar)]
 		public class SearchBarTextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
 		{

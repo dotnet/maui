@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateMenu()
 		{
-			if (Handler.PlatformView is not WindowHeader wh)
+			if (Handler.PlatformView is not MauiToolbar wh)
 				return;
 
 			var commandBar = wh.CommandBar;
@@ -108,12 +108,7 @@ namespace Microsoft.Maui.Controls
 		{
 			arg2.UpdateMenu();
 		}
-
-		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2)
-		{
-			arg1.PlatformView.UpdateTitle(arg2);
-		}
-
+    
 		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateIconColor(arg2);

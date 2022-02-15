@@ -215,5 +215,16 @@ namespace Microsoft.Maui.DeviceTests
 				nativeSearchBar.AssertContainsColor(color);
 			});
 		}
+
+		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText == null)
+				return false;
+
+			return !editText.Focusable && !editText.FocusableInTouchMode;
+		}
 	}
 }

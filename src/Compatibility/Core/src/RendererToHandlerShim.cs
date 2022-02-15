@@ -99,7 +99,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (e.NewElement is IView newView)
 			{
+				var currentContext = newView.Handler?.MauiContext;
 				newView.Handler = this;
+				if (this.MauiContext == null && currentContext != null)
+				{
+					this.SetMauiContext(currentContext);
+				}
 
 				if (VirtualView != newView)
 					this.SetVirtualView(newView);

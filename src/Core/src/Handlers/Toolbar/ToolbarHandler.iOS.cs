@@ -9,5 +9,8 @@ namespace Microsoft.Maui.Handlers
 			throw new System.NotImplementedException();
 		}
 
+		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
+		{
+		}
 	}
 }

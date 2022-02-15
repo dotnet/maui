@@ -6,7 +6,6 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-#nullable enable
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
@@ -134,11 +133,6 @@ namespace Microsoft.Maui.Controls.Platform
 			var navIconColor = toolbar.IconColor;
 			if (navIconColor != null && nativeToolbar.NavigationIcon != null)
 				nativeToolbar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
-		}
-
-		public static void UpdateTitle(this AToolbar nativeToolbar, Toolbar toolbar)
-		{
-			nativeToolbar.Title = toolbar?.Title ?? string.Empty;
 		}
 
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -317,7 +311,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void UpdateMenuItemIcon(IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
+		internal static void UpdateMenuItemIcon(this IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
 		{
 			toolBarItem.IconImageSource.LoadImage(mauiContext, result =>
 			{
