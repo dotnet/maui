@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		NavGraph? _navGraph;
 		IView? _currentPage;
 		internal IView? VirtualView { get; private set; }
-		internal INavigationView? NavigationView { get; private set; }
+		internal IStackNavigation? NavigationView { get; private set; }
 		internal bool IsNavigating => ActiveRequestedArgs != null;
 		internal bool IsInitialNavigation { get; private set; }
 		internal bool? IsPopping { get; private set; }
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Platform
 
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page
-			if (NavigationView is INavigationView te && te.Toolbar?.Handler != null)
+			if (NavigationView is IStackNavigation te && te.Toolbar?.Handler != null)
 			{
 				te.Toolbar.Handler.UpdateValue(nameof(IToolbar.BackButtonVisible));
 			}
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Platform
 			return destination;
 		}
 
-		internal void NavigationFinished(INavigationView? navigationView)
+		internal void NavigationFinished(IStackNavigation? navigationView)
 		{
 			IsInitialNavigation = false;
 			IsPopping = null;
@@ -277,12 +277,16 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			VirtualView = null;
+			NavigationView = null;
+			_navHost = null;
+			_fragmentNavigator = null;
 		}
 
 		public virtual void Connect(IView navigationView)
 		{
 			VirtualView = navigationView;
-			NavigationView = (INavigationView)navigationView;
+			NavigationView = (IStackNavigation)navigationView;
 
 			var fragmentManager = MauiContext?.GetFragmentManager();
 			_ = fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
@@ -409,6 +413,9 @@ namespace Microsoft.Maui.Platform
 			#region FragmentLifecycleCallbacks
 			public override void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f)
 			{
+				if (_stackNavigationManager.VirtualView == null)
+					return;
+
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);
 

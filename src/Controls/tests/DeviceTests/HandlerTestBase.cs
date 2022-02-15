@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 				.RemapForControls()
 				.ConfigureLifecycleEvents(lifecycle =>
 				{
-#if __IOS__
+#if IOS
 					lifecycle
 						.AddiOS(iOS => iOS
 							.OpenUrl((app, url, options) =>
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-#if WINDOWS
+#if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
 #endif
 				});
@@ -119,6 +119,30 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<THandler>(view);
 				return func(handler);
+			});
+		}
+
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
+			where THandler : class, IElementHandler
+		{
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				IWindow window = null;
+
+				if (view is IWindow w)
+				{
+					window = w;
+				}
+				else if (view is Page page)
+				{
+					window = new Controls.Window(page);
+				}
+				else
+				{
+					window = new Controls.Window(new ContentPage() { Content = (View)view });
+				}
+
+				await RunWindowTest<THandler>(window, (handler) => action(handler as THandler));
 			});
 		}
 	}

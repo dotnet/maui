@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Platform
 	{
 		double _paneHeaderContentHeight;
 		WindowHeader? _headerControl;
+		int _appBarTitleHeight = 48;
 
-		internal event EventHandler? FlyoutPaneSizeChanged;
 		internal Size FlyoutPaneSize { get; private set; }
 		internal WindowHeader? HeaderControl
 		{
@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Platform
 		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			UpdateTopNavAreaMargin();
+			UpdateFlyoutPanelMargin();
 		}
 
 		void UpdateTopNavAreaMargin()
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Platform
 				{
 					// The TopNavArea has a background set which makes the window action buttons unclickable
 					// So this offsets the TopNavArea by the size of the AppTitleBar
-					TopNavArea.Margin = new UI.Xaml.Thickness(0, 48, 0, 0);
+					TopNavArea.Margin = new UI.Xaml.Thickness(0, _appBarTitleHeight, 0, 0);
 					Header = null;
 					PaneFooter = HeaderControl;
 
@@ -131,6 +132,8 @@ namespace Microsoft.Maui.Platform
 				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 
 			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible);
+			UpdateFlyoutPanelMargin();
+			UpdateTopNavAreaMargin();
 		}
 
 
@@ -152,7 +155,6 @@ namespace Microsoft.Maui.Platform
 			if (GetTemplateChild("ContentLeftPadding") is Grid g)
 				g.Visibility = UI.Xaml.Visibility.Collapsed;
 
-
 			if (HeaderControl != null)
 				UpdateHeaderPropertyBinding();
 
@@ -161,6 +163,7 @@ namespace Microsoft.Maui.Platform
 			// This is the height taken up by the backbutton/pane toggle button
 			// we use this to offset the height of our flyout content
 			((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
+
 			UpdateTopNavAreaMargin();
 		}
 
@@ -181,7 +184,89 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			FlyoutPaneSize = new Size(OpenPaneLength, PaneContentGrid.ActualHeight - _paneHeaderContentHeight);
-			FlyoutPaneSizeChanged?.Invoke(this, EventArgs.Empty);
+			_flyoutPanel.Height = FlyoutPaneSize.Height;
+			_flyoutPanel.Width = FlyoutPaneSize.Width;
+			UpdateFlyoutPanelMargin();
+		}
+
+		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
+
+		internal void ReplacePaneMenuItemsWithCustomContent(IView? customContent)
+		{
+			_flyoutPanel.Children.Clear();
+
+			if (customContent == null)
+			{
+				PaneFooter = null;
+			}
+			else
+			{
+				if (customContent.ToPlatform() is UIElement element)
+					_flyoutPanel.Children.Add(element);
+
+				PaneFooter = _flyoutPanel;
+			}
+		}
+
+		internal void UpdateFlyoutPanelMargin()
+		{
+			// The left pane on NavigationView currently doesn't account for a custom title bar
+			// If you hide the backbutton and pane toggle button it will shift content up into the custom title
+			// bar. There currently isn't a property associated with this padding it's just set inside the
+			// source code on the PaneContentGrid
+
+			if (ContentPaneTopPadding != null &&
+				ButtonHolderGrid != null && 
+				PaneContentGrid != null)
+			{
+				// PaneContentGrid is the top most container on the SplitView
+				// This tells us the spacing that's been placed around it so that we
+				// can offset our content relative to the AppTitleBar
+				var leftPaneMarginHeight = PaneContentGrid.Margin.Top;
+
+				if (ButtonHolderGrid.ActualHeight == 0)
+				{
+					ContentPaneTopPadding.Height = _appBarTitleHeight - leftPaneMarginHeight;
+				}
+				else
+				{
+					ContentPaneTopPadding.Height = ButtonHolderGrid.Margin.Top +
+						ButtonHolderGrid.Margin.Bottom - leftPaneMarginHeight;
+				}
+			}
+		}
+
+		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
+		// The measure call passes in PositiveInfinity for the measurements which causes the layout system
+		// to crash. So we use this Panel to facilitate more constrained measuring values
+		class FlyoutPanel : Panel
+		{
+			public FlyoutPanel()
+			{
+				Height = 0;
+				Width = 0;
+			}
+
+			FrameworkElement? FlyoutContent =>
+				Children.Count > 0 ? (FrameworkElement?)Children[0] : null;
+
+			protected override Size MeasureOverride(Size availableSize)
+			{
+				if (FlyoutContent == null)
+					return new Size(0, 0);
+
+				FlyoutContent.Measure(availableSize);
+				return FlyoutContent.DesiredSize;
+			}
+
+			protected override Size ArrangeOverride(Size finalSize)
+			{
+				if (FlyoutContent == null)
+					return new Size(0, 0);
+
+				FlyoutContent.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+				return new Size(FlyoutContent.ActualWidth, FlyoutContent.ActualHeight);
+			}
 		}
 	}
 }

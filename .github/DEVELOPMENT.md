@@ -9,7 +9,8 @@ This page contains steps to build and run the .NET MAUI repository from source. 
 In most cases, when you have Visual Studio installed with the .NET workloads checked, these steps are not required.
 
 1. Install the latest .NET 6:  
-   - [Win (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-win-x64.exe)   
+   <!--- [Win (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-win-x64.exe)   -->
+   - [Install the latest Public Preview of Visual Studio](https://docs.microsoft.com/en-us/dotnet/maui/get-started/installation/)
    - [macOS (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-osx-x64.pkg)  
    - [macOS (arm64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-osx-arm64.pkg)
 2. Clear your nuget cache:  
@@ -25,10 +26,10 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-For example, the "preview.12" branch:
+For example, the "preview.13" branch:
 ```
 dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/preview.12.json `
+   --from-rollback-file https://aka.ms/dotnet/maui/preview.13.json `
    --source https://aka.ms/dotnet6/nuget/index.json `
    --source https://api.nuget.org/v3/index.json
 ```

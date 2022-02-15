@@ -14,6 +14,7 @@
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.targets" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
+    <_Files Include="$(MauiNuSpecDirectory)maui.aotprofile" />
     <_Files Include="$(PkgMicrosoft_Maui_Graphics)\lib\netstandard2.0\Microsoft.Maui.Graphics.dll" />
     <_Files Include="$(PkgMicrosoft_Maui_Graphics)\lib\netstandard2.0\Microsoft.Maui.Graphics.pdb" />
     <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.dll" />

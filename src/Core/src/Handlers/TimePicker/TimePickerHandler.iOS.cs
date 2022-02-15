@@ -22,7 +22,11 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 
 			if (nativeView != null)
+			{
+				nativeView.EditingDidBegin += OnStarted;
+				nativeView.EditingDidEnd += OnEnded;
 				nativeView.ValueChanged += OnValueChanged;
+			}
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker nativeView)
@@ -32,6 +36,8 @@ namespace Microsoft.Maui.Handlers
 			if (nativeView != null)
 			{
 				nativeView.RemoveFromSuperview();
+				nativeView.EditingDidBegin -= OnStarted;
+				nativeView.EditingDidEnd -= OnEnded;
 				nativeView.ValueChanged -= OnValueChanged;
 				nativeView.Dispose();
 			}
@@ -67,6 +73,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.NativeView?.UpdateTextColor(timePicker, DefaultTextColor);
+		}
+
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			// TODO: Update IsFocused property
+		}
+
+		void OnEnded(object? sender, EventArgs eventArgs)
+		{
+			// TODO: Update IsFocused property
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)
