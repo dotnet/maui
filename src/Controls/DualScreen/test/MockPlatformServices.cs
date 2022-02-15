@@ -69,8 +69,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			get { return _isInvokeRequired; }
 		}
 
-		public string RuntimePlatform { get; set; }
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			if (invokeOnMainThread == null)
@@ -102,11 +100,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			if (getStreamAsync == null)
 				throw new NotImplementedException();
 			return getStreamAsync(uri, cancellationToken);
-		}
-
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
 		}
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)

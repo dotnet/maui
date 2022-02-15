@@ -4,7 +4,7 @@ using CoreLocation;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class GeocodingImplementation:IGeocoding
+	public class GeocodingImplementation : IGeocoding
 	{
 		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{

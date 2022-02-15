@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Controls
 				   [nameof(Toolbar.TitleIcon)] = MapTitleIcon,
 				   [nameof(Toolbar.TitleView)] = MapTitleView,
 				   [nameof(Toolbar.IconColor)] = MapIconColor,
-				   [nameof(Toolbar.Title)] = MapTitle,
 				   [nameof(Toolbar.ToolbarItems)] = MapToolbarItems,
 				   [nameof(Toolbar.BackButtonTitle)] = MapBackButtonTitle,
 				   [nameof(Toolbar.BarBackgroundColor)] = MapBarBackgroundColor,

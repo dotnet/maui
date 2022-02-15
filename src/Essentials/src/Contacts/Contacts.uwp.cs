@@ -5,18 +5,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Contacts
+	public class ContactsImplementation:IContacts
 	{
-		static async Task<Contact> PlatformPickContactAsync()
+		public async Task<Contact> PickContactAsync()
 		{
 			var contactPicker = new ContactPicker();
 			var contactSelected = await contactPicker.PickContactAsync();
 			return ConvertContact(contactSelected);
 		}
 
-		static async Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
+		public async Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			var contactStore = await ContactManager.RequestStoreAsync()
 				.AsTask(cancellationToken).ConfigureAwait(false);

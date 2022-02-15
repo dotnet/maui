@@ -21,6 +21,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 					Children =
 					{
 						descriptionLabel,
+						GalleryBuilder.NavButton("CarouselView", () =>
+							new CarouselViewPage(), Navigation),
 						GalleryBuilder.NavButton("CarouselView (Code, Horizontal)", () =>
 							new CarouselCodeGallery(ItemsLayoutOrientation.Horizontal), Navigation),
 						GalleryBuilder.NavButton("CarouselView (Code, Vertical)", () =>
