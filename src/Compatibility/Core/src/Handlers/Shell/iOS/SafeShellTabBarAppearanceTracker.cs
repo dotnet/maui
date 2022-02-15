@@ -140,9 +140,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (backgroundColor != null)
 				tabBar.BarTintColor = backgroundColor.ToNative();
 			if (titleColor.IsDefault != null)
-				tabBar.TintColor = titleColor.ToUIColor();
+				tabBar.TintColor = titleColor.ToNative();
 			if (unselectedColor.IsDefault != null)
-				tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
+				tabBar.UnselectedItemTintColor = unselectedColor.ToNative();
 		}
 	}
 }
