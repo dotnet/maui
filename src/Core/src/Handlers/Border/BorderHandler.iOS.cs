@@ -29,23 +29,23 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
-		void UpdateContent()
+		static void UpdateContent(IBorderHandler handler)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = handler.NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			//Cleanup the old view when reused
-			var oldChildren = NativeView.Subviews.ToList();
+			var oldChildren = handler.NativeView.Subviews.ToList();
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
-			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddSubview(view.ToPlatform(MauiContext));
+			if (handler.VirtualView.PresentedContent is IView view)
+				handler.NativeView.AddSubview(view.ToPlatform(handler.MauiContext));
 		}
 
 		public static void MapContent(IBorderHandler handler, IBorderView border)
 		{
-			(handler as BorderHandler)?.UpdateContent();
+			UpdateContent(handler);
 		}
 	}
 }
