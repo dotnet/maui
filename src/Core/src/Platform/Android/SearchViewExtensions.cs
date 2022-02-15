@@ -89,6 +89,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateIsReadOnly(this EditText editText, ISearchBar searchBar)
+		{
+			bool isReadOnly = !searchBar.IsReadOnly;
+
+			editText.FocusableInTouchMode = isReadOnly;
+			editText.Focusable = isReadOnly;
+			editText.SetCursorVisible(isReadOnly);
+		}
+
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
 		{
 			if (searchView.Resources == null)

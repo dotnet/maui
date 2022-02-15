@@ -45,12 +45,12 @@ namespace Microsoft.Maui
 
 				nativeView.Background = mauiDrawable;
 			}
-			
+
 			mauiDrawable.SetBackground(radioButton.Background);
 
 			if (radioButton.StrokeColor != null)
 				mauiDrawable.SetBorderBrush(new SolidPaint { Color = radioButton.StrokeColor });
-			
+
 			if (radioButton.StrokeThickness > 0)
 				mauiDrawable.SetBorderWidth(radioButton.StrokeThickness);
 

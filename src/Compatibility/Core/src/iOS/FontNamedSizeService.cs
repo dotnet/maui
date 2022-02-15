@@ -55,16 +55,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				case NamedSize.Title:
 					return (double)UIFont.PreferredTitle1.PointSize;
 #else
-					case NamedSize.Body:
-						return 23;
-					case NamedSize.Caption:
-						return 18;
-					case NamedSize.Header:
-						return 23;
-					case NamedSize.Subtitle:
-						return 28;
-					case NamedSize.Title:
-						return 34;
+				case NamedSize.Body:
+					return 23;
+				case NamedSize.Caption:
+					return 18;
+				case NamedSize.Header:
+					return 23;
+				case NamedSize.Subtitle:
+					return 28;
+				case NamedSize.Title:
+					return 34;
 
 #endif
 				default:

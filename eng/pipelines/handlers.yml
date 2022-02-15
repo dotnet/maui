@@ -52,6 +52,11 @@ variables:
   - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
+  - name: provisionatorChannel
+    displayName: 'Provisionator channel'
+    type: string
+    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+
   - name: BuildEverything
     type: boolean
     default: false
@@ -143,6 +148,7 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 env:
@@ -193,6 +199,7 @@ stages:
               parameters:
                 platform: ${{ BuildPlatform.name }}
                 poolName: ${{ BuildPlatform.poolName }}
+                provisionatorChannel: ${{ parameters.provisionatorChannel }}
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
               env:
@@ -270,6 +277,7 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -327,6 +335,7 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -451,7 +460,6 @@ stages:
         parameters:
           artifactNames: [ nuget, vs-msi-nugets, vsdrop-signed ]
           artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact
-          packageName: 'Maui'
+          packageName: 'Microsoft Maui'
           packageFilter: '*.msi;*.nupkg'
-          GitHub.Token: $(GitHub.Token)
           condition: ${{ variables.signingCondition }}

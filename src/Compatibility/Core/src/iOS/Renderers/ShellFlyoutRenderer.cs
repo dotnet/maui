@@ -378,76 +378,46 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_flyoutAnimation = null;
 			}
 
-			if (Forms.IsiOS10OrNewer)
+			if (IsOpen)
+				UpdateTapoffView();
+
+			if (animate && TapoffView != null)
 			{
-				if (IsOpen)
-					UpdateTapoffView();
+				var tapOffViewAnimation = CABasicAnimation.FromKeyPath(@"opacity");
+				tapOffViewAnimation.BeginTime = 0;
+				tapOffViewAnimation.Duration = AnimationDurationInSeconds;
+				tapOffViewAnimation.SetFrom(NSNumber.FromFloat(TapoffView.Layer.Opacity));
+				tapOffViewAnimation.SetTo(NSNumber.FromFloat(IsOpen ? 1 : 0));
+				tapOffViewAnimation.FillMode = CAFillMode.Forwards;
+				tapOffViewAnimation.RemovedOnCompletion = false;
 
-				if (animate && TapoffView != null)
-				{
-					var tapOffViewAnimation = CABasicAnimation.FromKeyPath(@"opacity");
-					tapOffViewAnimation.BeginTime = 0;
-					tapOffViewAnimation.Duration = AnimationDurationInSeconds;
-					tapOffViewAnimation.SetFrom(NSNumber.FromFloat(TapoffView.Layer.Opacity));
-					tapOffViewAnimation.SetTo(NSNumber.FromFloat(IsOpen ? 1 : 0));
-					tapOffViewAnimation.FillMode = CAFillMode.Forwards;
-					tapOffViewAnimation.RemovedOnCompletion = false;
-
-					_flyoutAnimation = new UIViewPropertyAnimator(AnimationDurationInSeconds, UIViewAnimationCurve.EaseOut, () =>
-					{
-						FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
-
-						if (TapoffView != null)
-						{
-							TapoffView.Layer.AddAnimation(tapOffViewAnimation, "opacity");
-						}
-					});
-
-					_flyoutAnimation.AddCompletion((p) =>
-					{
-						if (p == UIViewAnimatingPosition.End)
-						{
-							if (TapoffView != null)
-							{
-								TapoffView.Layer.Opacity = IsOpen ? 1 : 0;
-								TapoffView.Layer.RemoveAllAnimations();
-							}
-
-							UpdateTapoffView();
-							_flyoutAnimation = null;
-						}
-					});
-
-					_flyoutAnimation.StartAnimation();
-					View.LayoutIfNeeded();
-				}
-				else if (_flyoutAnimation == null)
+				_flyoutAnimation = new UIViewPropertyAnimator(AnimationDurationInSeconds, UIViewAnimationCurve.EaseOut, () =>
 				{
 					FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
-					UpdateTapoffView();
 
 					if (TapoffView != null)
 					{
-						TapoffView.Layer.Opacity = IsOpen ? 1 : 0;
+						TapoffView.Layer.AddAnimation(tapOffViewAnimation, "opacity");
 					}
-				}
-			}
-			else
-			{
+				});
 
-				if (animate)
-					UIView.BeginAnimations(FlyoutAnimationName);
-
-				FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
-
-				if (animate)
+				_flyoutAnimation.AddCompletion((p) =>
 				{
-					UIView.SetAnimationCurve(AnimationCurve);
-					UIView.SetAnimationDuration(AnimationDurationInSeconds);
-					UIView.CommitAnimations();
-					View.LayoutIfNeeded();
-				}
-				UpdateTapoffView();
+					if (p == UIViewAnimatingPosition.End)
+					{
+						if (TapoffView != null)
+						{
+							TapoffView.Layer.Opacity = IsOpen ? 1 : 0;
+							TapoffView.Layer.RemoveAllAnimations();
+						}
+
+						UpdateTapoffView();
+						_flyoutAnimation = null;
+					}
+				});
+
+				_flyoutAnimation.StartAnimation();
+				View.LayoutIfNeeded();
 			}
 
 			void UpdateTapoffView()

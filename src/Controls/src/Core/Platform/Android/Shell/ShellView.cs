@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected Context AndroidContext { get; }
 		protected Shell Element { get; private set; }
-		FragmentManager FragmentManager => 
+		FragmentManager FragmentManager =>
 			Element.FindMauiContext().GetFragmentManager();
 
 		protected virtual IShellObservableFragment CreateFragmentForPage(Page page)

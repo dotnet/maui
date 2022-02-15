@@ -60,7 +60,9 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					if (window.Handler != null)
+					{
 						window.Handler.DisconnectHandler();
+					}
 
 					rootView.RemoveView(linearLayoutCompat);
 
