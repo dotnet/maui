@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly ExternalLinkMode _externalLinkMode;
 
 		public WinUIWebViewManager(
-			WebView2Control webview,
+			WebView2Control webview!!,
 			IServiceProvider services,
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
@@ -124,8 +124,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void CoreWebView2_NavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
 		{
-			var uri = new Uri(args.Uri);
-			if (uri.Host != "0.0.0.0" && _externalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) &&
+				uri.Host != "0.0.0.0" && 
+				_externalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
 			{
 				_ = Launcher.LaunchUriAsync(uri);
 				args.Cancel = true;
@@ -136,9 +137,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			// Intercept _blank target <a> tags to always open in device browser
 			// regardless of ExternalLinkMode.OpenInWebview
-			var uri = new Uri(args.Uri);
-			_ = Launcher.LaunchUriAsync(uri);
-			args.Handled = true;
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
+			{
+				_ = Launcher.LaunchUriAsync(uri);
+				args.Handled = true;
+			}
 		}
 	}
 }
