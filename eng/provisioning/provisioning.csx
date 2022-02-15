@@ -108,8 +108,9 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
     	.VirtualDevice(
         	"Android_API30",
         	AndroidApiLevel.R,
-        	AndroidSystemImageApi.Google,
-        	AndroidSystemImageAbi.x86)
+        	AndroidSystemImageApi.GooglePlayStore,
+        	AndroidSystemImageAbi.x86,
+			AndroidVirtualDevice.NEXUS_5X)
 		.SdkManagerPackage ("build-tools;29.0.3");
 }
 else{
