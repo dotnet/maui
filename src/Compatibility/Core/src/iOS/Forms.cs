@@ -43,8 +43,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static bool IsInitialized { get; private set; }
 
 #if __MOBILE__
-		static bool? s_isiOS9OrNewer;
-		static bool? s_isiOS10OrNewer;
 		static bool? s_isiOS11OrNewer;
 		static bool? s_isiOS12OrNewer;
 		static bool? s_isiOS13OrNewer;
@@ -52,33 +50,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isiOS15OrNewer;
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
-		internal static bool IsiOS9OrNewer
-		{
-			get
-			{
-				if (!s_isiOS9OrNewer.HasValue)
-					s_isiOS9OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(9, 0);
-				return s_isiOS9OrNewer.Value;
-			}
-		}
-
-
-		internal static bool IsiOS10OrNewer
-		{
-			get
-			{
-				if (!s_isiOS10OrNewer.HasValue)
-					s_isiOS10OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(10, 0);
-				return s_isiOS10OrNewer.Value;
-			}
-		}
-
 		internal static bool IsiOS11OrNewer
 		{
 			get
 			{
 				if (!s_isiOS11OrNewer.HasValue)
-					s_isiOS11OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(11, 0);
+					s_isiOS11OrNewer = OperatingSystem.IsIOSVersionAtLeast(11, 0);
 				return s_isiOS11OrNewer.Value;
 			}
 		}
@@ -88,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS12OrNewer.HasValue)
-					s_isiOS12OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(12, 0);
+					s_isiOS12OrNewer = OperatingSystem.IsIOSVersionAtLeast(12, 0);
 				return s_isiOS12OrNewer.Value;
 			}
 		}
@@ -98,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS13OrNewer.HasValue)
-					s_isiOS13OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(13, 0);
+					s_isiOS13OrNewer = OperatingSystem.IsIOSVersionAtLeast(13, 0);
 				return s_isiOS13OrNewer.Value;
 			}
 		}
@@ -108,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS14OrNewer.HasValue)
-					s_isiOS14OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(14, 0);
+					s_isiOS14OrNewer = OperatingSystem.IsIOSVersionAtLeast(14, 0);
 				return s_isiOS14OrNewer.Value;
 			}
 		}
@@ -118,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS15OrNewer.HasValue)
-					s_isiOS15OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(15, 0);
+					s_isiOS15OrNewer = OperatingSystem.IsIOSVersionAtLeast(15, 0);
 				return s_isiOS15OrNewer.Value;
 			}
 		}
