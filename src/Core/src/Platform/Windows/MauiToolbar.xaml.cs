@@ -1,28 +1,19 @@
-#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
-using WVisibility = Microsoft.UI.Xaml.Visibility;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
-using Microsoft.UI.Xaml.Media;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WindowHeader
+	public partial class MauiToolbar
 	{
 		public static readonly DependencyProperty IsBackButtonVisibleProperty
-			= DependencyProperty.Register(nameof(IsBackButtonVisible), typeof(NavigationViewBackButtonVisible), typeof(WindowHeader), 
+			= DependencyProperty.Register(nameof(IsBackButtonVisible), typeof(NavigationViewBackButtonVisible), typeof(MauiToolbar), 
 				new PropertyMetadata(NavigationViewBackButtonVisible.Collapsed, OnIsBackButtonVisiblePropertyChanged));
 
-		public WindowHeader()
+		public MauiToolbar()
 		{
 			InitializeComponent();
 		}

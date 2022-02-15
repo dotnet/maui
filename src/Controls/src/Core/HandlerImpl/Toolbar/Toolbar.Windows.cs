@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateMenu()
 		{
-			if (Handler.NativeView is not WindowHeader wh)
+			if (Handler.NativeView is not MauiToolbar wh)
 				return;
 
 			var commandBar = wh.CommandBar;
@@ -107,11 +107,6 @@ namespace Microsoft.Maui.Controls
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
 		{
 			arg2.UpdateMenu();
-		}
-
-		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2)
-		{
-			arg1.NativeView.UpdateTitle(arg2);
 		}
 
 		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2)
