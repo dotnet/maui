@@ -5,20 +5,20 @@ using Android.Content.PM;
 using Android.Provider;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class MediaPicker
+	public partial class MediaPickerImplementation : IMediaPicker
 	{
-		static bool PlatformIsCaptureSupported
+		public bool IsCaptureSupported
 			=> Platform.AppContext.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
 
-		static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
-			=> PlatformPickAsync(options, true);
+		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
+			=> PickAsync(options, true);
 
-		static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
-			=> PlatformPickAsync(options, false);
+		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
+			=> PickAsync(options, false);
 
-		static async Task<FileResult> PlatformPickAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
 		{
 			// We only need the permission when accessing the file, but it's more natural
 			// to ask the user first, then show the picker.
@@ -51,13 +51,13 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
-			=> PlatformCaptureAsync(options, true);
+		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
+			=> CaptureAsync(options, true);
 
-		static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
-			=> PlatformCaptureAsync(options, false);
+		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
+			=> CaptureAsync(options, false);
 
-		static async Task<FileResult> PlatformCaptureAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
 			await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
