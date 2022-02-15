@@ -1,12 +1,11 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/PhoneDialer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PhoneDialer']/Docs" />
-	public static partial class PhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformOpen(string number) =>
+		public void Open(string number) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

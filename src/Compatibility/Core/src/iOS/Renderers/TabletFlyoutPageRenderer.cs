@@ -9,6 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete]
 	internal class ChildViewController : UIViewController
 	{
 		public override void ViewDidLayoutSubviews()
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[Obsolete]
 	internal class EventedViewController : ChildViewController
 	{
 		FlyoutView _flyoutView;
@@ -114,13 +116,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer instead")]
 	public class TabletFlyoutPageRenderer : UISplitViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIViewController _detailController;
 
 		bool _disposed;
 		EventTracker _events;
-		InnerDelegate _innerDelegate;
 		nfloat _flyoutWidth = 0;
 		EventedViewController _flyoutController;
 		FlyoutPage _flyoutPage;
@@ -209,9 +212,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Element = element;
 
 			ViewControllers = new[] { _flyoutController = new EventedViewController(), _detailController = new ChildViewController() };
-
-			if (!Forms.IsiOS9OrNewer)
-				Delegate = _innerDelegate = new InnerDelegate(FlyoutPage.FlyoutLayoutBehavior);
 
 			UpdateControllers();
 
@@ -378,25 +378,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_flyoutController.View.BackgroundColor = ColorExtensions.BackgroundColor;
 		}
 
-		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
-		{
-			// I tested this code on iOS9+ and it's never called
-			if (!Forms.IsiOS9OrNewer)
-			{
-				if (!FlyoutPageController.ShouldShowSplitMode && IsFlyoutVisible)
-				{
-					FlyoutPageController.CanChangeIsPresented = true;
-					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
-					PreferredDisplayMode = UISplitViewControllerDisplayMode.Automatic;
-				}
-
-				FlyoutPage.UpdateFlyoutLayoutBehavior();
-				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
-			}
-
-			base.WillRotate(toInterfaceOrientation, duration);
-		}
-
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			if (((FlyoutPage)Element).Detail != null)
@@ -449,7 +430,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
+#pragma warning disable CS0618 // Type or member is obsolete
 				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -470,7 +453,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else if (e.Is(Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty))
 				UpdateFlyoutLayoutBehavior(base.View.Bounds.Size);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)

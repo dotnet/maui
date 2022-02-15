@@ -4,9 +4,9 @@ using AppKit;
 using CoreVideo;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		uint keepScreenOnId = 0;
 		NSObject? screenMetricsObserver;

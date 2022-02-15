@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Platform
 
 		internal DrawerLayout? DrawerLayout { get; private set; }
 
+		internal IToolbarElement? ToolbarElement => _toolbarElement;
+
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
@@ -81,6 +83,11 @@ namespace Microsoft.Maui.Platform
 			// the AppBarLayout that's part of the RootView
 			_toolbarElement?.Toolbar?.Parent?.Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 
+		}
+
+		public virtual void Disconnect()
+		{
+			SetContentView(null);
 		}
 
 		void SetContentView(AView? view)

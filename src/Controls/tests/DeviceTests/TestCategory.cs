@@ -11,6 +11,7 @@
 		public const string Label = "Label";
 		public const string NavigationPage = "NavigationPage";
 		public const string SearchBar = "SearchBar";
+		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
 		public const string VisualElement = "VisualElement";
 	}
