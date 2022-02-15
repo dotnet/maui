@@ -105,6 +105,11 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 		.ApiLevel((AndroidApiLevel)29)
 		.ApiLevel((AndroidApiLevel)30)
 		.ApiLevel((AndroidApiLevel)31)
+    	.VirtualDevice(
+        	"Android_API30",
+        	AndroidApiLevel.R,
+        	AndroidSystemImageApi.Google,
+        	AndroidSystemImageAbi.x86)
 		.SdkManagerPackage ("build-tools;29.0.3");
 }
 else{
