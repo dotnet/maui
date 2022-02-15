@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected readonly ListView _listView;
 		readonly AListView _realListView;
 		readonly Dictionary<DataTemplate, int> _templateToId = new Dictionary<DataTemplate, int>();
-		readonly List<ConditionalFocusLayout> _layoutsCreated = new List<ConditionalFocusLayout>();
+		readonly Dictionary<int, ConditionalFocusLayout> _layoutsCreated = new Dictionary<int, ConditionalFocusLayout>();
 		int _dataTemplateIncrementer = 2; // lets start at not 0 because ... 
 
 		// We will use _dataTemplateIncrementer to get the proper ViewType key for the item's DataTemplate and store these keys in  _templateToId.
@@ -244,9 +244,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				layout = new ConditionalFocusLayout(_context) { Orientation = Orientation.Vertical };
-				_layoutsCreated.Add(layout);
+				// This means the cell was already created during the measuring phase
+				// so we just reuse the layout already created for the cell
+				// This only ever happens if the ListView is forced to measure itself because
+				// it has infinite height
+				if (convertView == null && cell.Handler?.NativeView is AView aView &&
+					aView.Parent is ConditionalFocusLayout cfl)
+				{
+					layout = cfl;
+				}
+				else
+				{
+					layout = new ConditionalFocusLayout(_context) { Orientation = Orientation.Vertical };
+					_layoutsCreated[position] = layout;
+				}
 			}
+
 
 			if (((cachingStrategy & ListViewCachingStrategy.RecycleElement) != 0) && convertView != null)
 			{
@@ -310,7 +323,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 			else
-				layout.AddView(view, 0);
+			{
+				if (view.Parent != layout)
+				{
+					layout.AddView(view, 0);
+				}
+			}
 
 			Performance.Stop(reference, "AddView");
 
@@ -493,11 +511,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void DisposeCells()
 		{
-			var cellCount = _layoutsCreated.Count;
-
-			for (int i = 0; i < cellCount; i++)
+			foreach(var key in _layoutsCreated)
 			{
-				var layout = _layoutsCreated[i];
+				var layout = key.Value;
 
 				if (layout.IsDisposed())
 					continue;

@@ -1,12 +1,12 @@
 using Windows.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Preferences
+	public class PreferencesImplementation:IPreferences
 	{
 		static readonly object locker = new object();
 
-		static bool PlatformContainsKey(string key, string sharedName)
+		public bool ContainsKey(string key, string sharedName)
 		{
 			lock (locker)
 			{
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void PlatformRemove(string key, string sharedName)
+		public void Remove(string key, string sharedName)
 		{
 			lock (locker)
 			{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void PlatformClear(string sharedName)
+		public void Clear(string sharedName)
 		{
 			lock (locker)
 			{
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void PlatformSet<T>(string key, T value, string sharedName)
+		public void Set<T>(string key, T value, string sharedName)
 		{
 			lock (locker)
 			{
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static T PlatformGet<T>(string key, T defaultValue, string sharedName)
+		public T Get<T>(string key, T defaultValue, string sharedName)
 		{
 			lock (locker)
 			{

@@ -4,14 +4,15 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Microsoft.Maui.Controls.DualScreen;
+using Microsoft.Maui.Hosting;
 using Plugin.CurrentActivity;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	//You can specify additional application information in this attribute
-	[Application]
-	public class MainApplication : global::Android.App.Application, global::Android.App.Application.IActivityLifecycleCallbacks
-	{
+    [Application]
+    public class MainApplication : MauiApplication, global::Android.App.Application.IActivityLifecycleCallbacks
+    {
 		internal static Context ActivityContext { get; private set; }
 
 		public MainApplication(IntPtr handle, JniHandleOwnership transer)
@@ -69,5 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			ActivityContext = activity;
 		}
+
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }
