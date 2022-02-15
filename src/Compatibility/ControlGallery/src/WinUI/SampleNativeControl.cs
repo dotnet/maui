@@ -6,10 +6,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
-[assembly: Dependency(typeof(SamplePlatformControl))]
+[assembly: Dependency(typeof(SampleNativeControl))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
-	public class SamplePlatformControl : ISamplePlatformControl
+	public class SampleNativeControl : ISampleNativeControl
 	{
 		public View View
 		{

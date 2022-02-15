@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateMaximumVisible();
 		}
 
-		protected override UIView CreatePlatformControl()
+		protected override UIView CreateNativeControl()
 		{
 			if (UIPager != null)
 			{
@@ -122,9 +122,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var control = (Element.IndicatorTemplate != null)
 				? (UIView)(Element.IndicatorLayout as VisualElement).GetRenderer()
-				: CreatePlatformControl();
+				: CreateNativeControl();
 
-			SetPlatformControl(control);
+			SetNativeControl(control);
 		}
 
 		void ClearIndicators()

@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					DrawableDepthFormat = GLKViewDrawableDepthFormat.Format24,
 					Delegate = new Delegate(e.NewElement)
 				};
-				SetPlatformControl(glkView);
+				SetNativeControl(glkView);
 
 				e.NewElement.DisplayRequested += Display;
 

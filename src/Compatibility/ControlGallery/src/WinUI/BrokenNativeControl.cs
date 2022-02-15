@@ -9,9 +9,9 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
-	internal class BrokenPlatformControl : Panel
+	internal class BrokenNativeControl : Panel
 	{
-		public BrokenPlatformControl()
+		public BrokenNativeControl()
 		{
 			_textBlock = new TextBlock
 			{
@@ -31,12 +31,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 
 		public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-			"Text", typeof(string), typeof(BrokenPlatformControl), new PropertyMetadata(default(string), PropertyChangedCallback));
+			"Text", typeof(string), typeof(BrokenNativeControl), new PropertyMetadata(default(string), PropertyChangedCallback));
 
 		static void PropertyChangedCallback(DependencyObject dependencyObject,
 			DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
 		{
-			((BrokenPlatformControl)dependencyObject)._textBlock.Text = (string)dependencyPropertyChangedEventArgs.NewValue;
+			((BrokenNativeControl)dependencyObject)._textBlock.Text = (string)dependencyPropertyChangedEventArgs.NewValue;
 		}
 
 		public string Text

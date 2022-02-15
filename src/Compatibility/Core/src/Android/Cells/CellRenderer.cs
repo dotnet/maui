@@ -89,20 +89,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		protected void WireUpForceUpdateSizeRequested(Cell cell, AView platformCell)
+		protected void WireUpForceUpdateSizeRequested(Cell cell, AView nativeCell)
 		{
 			ICellController cellController = cell;
 			cellController.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
 
 			_onForceUpdateSizeRequested = (sender, e) =>
 			{
-				if (platformCell.Handle == IntPtr.Zero)
+				if (nativeCell.Handle == IntPtr.Zero)
 					return;
 				// RenderHeight may not be changed, but that's okay, since we
 				// don't actually use the height argument in the OnMeasure override.
-				platformCell.Measure(platformCell.Width, (int)cell.RenderHeight);
-				platformCell.SetMinimumHeight(platformCell.MeasuredHeight);
-				platformCell.SetMinimumWidth(platformCell.MeasuredWidth);
+				nativeCell.Measure(nativeCell.Width, (int)cell.RenderHeight);
+				nativeCell.SetMinimumHeight(nativeCell.MeasuredHeight);
+				nativeCell.SetMinimumWidth(nativeCell.MeasuredWidth);
 			};
 
 			cellController.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;

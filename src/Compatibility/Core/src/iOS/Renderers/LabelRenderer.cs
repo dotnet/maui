@@ -12,10 +12,10 @@ using Microsoft.Maui.Controls.Platform;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using PlatformLabel = UIKit.UILabel;
+using NativeLabel = UIKit.UILabel;
 #else
 using AppKit;
-using PlatformLabel = AppKit.NSTextField;
+using NativeLabel = AppKit.NSTextField;
 #endif
 
 #if __MOBILE__
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-	public class LabelRenderer : ViewRenderer<Label, PlatformLabel>
+	public class LabelRenderer : ViewRenderer<Label, NativeLabel>
 	{
 		SizeRequest _perfectSize;
 
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				e.NewElement.PropertyChanging += ElementPropertyChanging;
 				if (Control == null)
 				{
-					SetPlatformControl(CreatePlatformControl());
+					SetNativeControl(CreateNativeControl());
 #if !__MOBILE__
 					Control.Editable = false;
 					Control.Bezeled = false;
@@ -238,12 +238,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				UpdateText();
 		}
 
-		protected override PlatformLabel CreatePlatformControl()
+		protected override NativeLabel CreateNativeControl()
 		{
 #if __MOBILE__
-			return Element.Padding.IsEmpty ? new PlatformLabel(RectangleF.Empty) : new FormsLabel(RectangleF.Empty);
+			return Element.Padding.IsEmpty ? new NativeLabel(RectangleF.Empty) : new FormsLabel(RectangleF.Empty);
 #else
-			return new PlatformLabel(RectangleF.Empty);
+			return new NativeLabel(RectangleF.Empty);
 #endif
 		}
 
@@ -691,7 +691,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 #if __MOBILE__
-		class FormsLabel : PlatformLabel
+		class FormsLabel : NativeLabel
 		{
 			public UIEdgeInsets TextInsets { get; set; }
 

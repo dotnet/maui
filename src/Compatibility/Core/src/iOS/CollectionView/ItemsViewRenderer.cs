@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UpdateLayout();
 			Controller = CreateController(newElement, _layout);
-			SetPlatformControl(Controller.View);
+			SetNativeControl(Controller.View);
 			Controller.CollectionView.BackgroundColor = UIColor.Clear;
 			UpdateHorizontalScrollBarVisibility();
 			UpdateVerticalScrollBarVisibility();

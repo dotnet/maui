@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		{
 		}
 
-		public void ConvertToPlatform(View formsView)
+		public void ConvertToNative(View formsView)
 		{
 			var renderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.Platform.GetRenderer(formsView);
 			if (renderer != null)

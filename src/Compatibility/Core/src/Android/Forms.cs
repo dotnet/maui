@@ -136,11 +136,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
-		internal static void SendViewInitialized(this VisualElement self, global::Android.Views.View platformView)
+		internal static void SendViewInitialized(this VisualElement self, global::Android.Views.View nativeView)
 		{
 			EventHandler<ViewInitializedEventArgs> viewInitialized = ViewInitialized;
 			if (viewInitialized != null)
-				viewInitialized(self, new ViewInitializedEventArgs { View = self, PlatformView = platformView });
+				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
 		static bool IsInitializedRenderers;
@@ -342,7 +342,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
-				return Platform.Android.Platform.GetPlatformSize(view, widthConstraint, heightConstraint);
+				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}
 
 			public OSAppTheme RequestedTheme

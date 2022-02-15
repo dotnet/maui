@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public partial class Activity1
 	{
-		void AddPlatformControls(NestedPlatformControlGalleryPage page)
+		void AddNativeControls(NestedNativeControlGalleryPage page)
 		{
-			if (page.PlatformControlsAdded)
+			if (page.NativeControlsAdded)
 			{
 				return;
 			}
@@ -51,11 +51,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			sl?.Children.Add(button.ToView());
 
 			// Create a control which we know doesn't behave correctly with regard to measurement
-			var difficultControl0 = new BrokenPlatformControl(this)
+			var difficultControl0 = new BrokenNativeControl(this)
 			{
 				Text = "This native control doesn't play nice with sizing, which is why it's all squished to one side."
 			};
-			var difficultControl1 = new BrokenPlatformControl(this)
+			var difficultControl1 = new BrokenNativeControl(this)
 			{
 				Text = "Same control, but with a custom GetDesiredSize delegate to accomodate it's sizing problems."
 			};
@@ -66,15 +66,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			// Add a misbehaving control with a custom delegate for GetDesiredSize
 			sl?.Children.Add(difficultControl1, SizeBrokenControl);
 
-			page.PlatformControlsAdded = true;
+			page.NativeControlsAdded = true;
 		}
 
-		static SizeRequest? SizeBrokenControl(PlatformViewWrapperRenderer renderer,
+		static SizeRequest? SizeBrokenControl(NativeViewWrapperRenderer renderer,
 			int widthConstraint, int heightConstraint)
 		{
-			global::Android.Views.View platformView = renderer.Control;
+			global::Android.Views.View nativeView = renderer.Control;
 
-			if ((widthConstraint == 0 && heightConstraint == 0) || platformView == null)
+			if ((widthConstraint == 0 && heightConstraint == 0) || nativeView == null)
 			{
 				return null;
 			}
@@ -82,14 +82,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			int width = global::Android.Views.View.MeasureSpec.GetSize(widthConstraint);
 			int widthSpec = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(width * 2,
 				global::Android.Views.View.MeasureSpec.GetMode(widthConstraint));
-			platformView.Measure(widthSpec, heightConstraint);
-			var size = new Size(platformView.MeasuredWidth, platformView.MeasuredHeight);
+			nativeView.Measure(widthSpec, heightConstraint);
+			var size = new Size(nativeView.MeasuredWidth, nativeView.MeasuredHeight);
 			return new SizeRequest(size);
 		}
 
-		void AddPlatformBindings(PlatformBindingGalleryPage page)
+		void AddNativeBindings(NativeBindingGalleryPage page)
 		{
-			if (page.PlatformControlsAdded)
+			if (page.NativeControlsAdded)
 				return;
 
 			StackLayout sl = page.Layout;
@@ -108,16 +108,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			var colorPicker = new ColorPickerView(this, 200, 200);
 
-			textView.SetBinding(nameof(textView.Text), new Binding("PlatformLabel"));
+			textView.SetBinding(nameof(textView.Text), new Binding("NativeLabel"));
 			//this doesn't work because there's not TextColor property
-			//textView.SetBinding("TextColor", new Binding("PlatformLabelColor", converter: new ColorConverter()));
-			colorPicker.SetBinding(nameof(colorPicker.SelectedColor), new Binding("PlatformLabelColor", BindingMode.TwoWay, new ColorConverter()), "ColorPicked");
+			//textView.SetBinding("TextColor", new Binding("NativeLabelColor", converter: new ColorConverter()));
+			colorPicker.SetBinding(nameof(colorPicker.SelectedColor), new Binding("NativeLabelColor", BindingMode.TwoWay, new ColorConverter()), "ColorPicked");
 
 			sl?.Children.Add(viewGroup);
 			sl?.Children.Add(buttonColor.ToView());
 			sl?.Children.Add(colorPicker);
 
-			page.PlatformControlsAdded = true;
+			page.NativeControlsAdded = true;
 		}
 
 		public class ColorConverter : IValueConverter

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		bool _platformViewLoaded;
+		bool _nativeViewLoaded;
 
 		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
@@ -59,16 +59,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (ViewHandler.PlatformView is FrameworkElement frameworkElement)
 			{
-				frameworkElement.Loaded += PlatformViewLoaded;
+				frameworkElement.Loaded += NativeViewLoaded;
 			}
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
 		}
 
-		void PlatformViewLoaded(object sender, RoutedEventArgs e)
+		void NativeViewLoaded(object sender, RoutedEventArgs e)
 		{
-			_platformViewLoaded = true;
-			((FrameworkElement)sender).Loaded -= PlatformViewLoaded;
+			_nativeViewLoaded = true;
+			((FrameworkElement)sender).Loaded -= NativeViewLoaded;
 
 			// For old-school renderers on Windows, VisualElementRenderer watches for the Loaded event and 
 			// sets IsPlatformStateConsistent, which invalidates the measure for the element. This tells everything 
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					// Unfortunately, the layout and its children will have cached their previous measurement results
 					// So we need to iterate over the children and force them to clear their caches so they'll call
-					// the platform measurement methods again now that measurement is a valid thing to do.
+					// the native measurement methods again now that measurement is a valid thing to do.
 					foreach (var child in layout.Children)
 					{
 						if (child is VisualElement ve)
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (!_platformViewLoaded)
+			if (!_nativeViewLoaded)
 			{
 				return new SizeRequest(Size.Zero);
 			}
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new SizeRequest(size, size);
 		}
 
-		public UIElement GetPlatformElement()
+		public UIElement GetNativeElement()
 		{
 			return (FrameworkElement)ViewHandler.PlatformView;
 		}

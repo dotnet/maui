@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					button.Checked += OnRadioButtonCheckedOrUnchecked;
 					button.Unchecked += OnRadioButtonCheckedOrUnchecked;
 
-					SetPlatformControl(button);
+					SetNativeControl(button);
 				}
 				else
 				{

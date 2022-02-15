@@ -15,20 +15,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : VisualElement
 		where TPlatformElement : FrameworkElement
 	{
-		TPlatformElement? _platformView;
+		TPlatformElement? _nativeView;
 		public FrameworkElement ContainerElement => this;
 
-		public TPlatformElement? Control => ((IElementHandler)this).PlatformView as TPlatformElement ?? _platformView;
-		object? IElementHandler.PlatformView => _platformView;
+		public TPlatformElement? Control => ((IElementHandler)this).PlatformView as TPlatformElement ?? _nativeView;
+		object? IElementHandler.PlatformView => _nativeView;
 
-		public UIElement? GetPlatformElement() => Control;
+		public UIElement? GeTPlatformElement() => Control;
 
-		protected virtual void UpdatePlatformControl() { }
+		protected virtual void UpdateNativeControl() { }
 
-		protected void SetPlatformControl(TPlatformElement control)
+		protected void SetNativeControl(TPlatformElement control)
 		{
 			TPlatformElement? oldControl = Control;
-			_platformView = control;
+			_nativeView = control;
 
 			if (oldControl != null)
 			{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Control.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
 			Children.Add(control);
-			UpdatePlatformControl();
+			UpdateNativeControl();
 		}
 
 		protected virtual void Dispose(bool disposing)

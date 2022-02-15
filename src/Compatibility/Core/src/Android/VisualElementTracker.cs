@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (_initialUpdateNeeded)
 			{
-				UpdatePlatformView(this, EventArgs.Empty);
+				UpdateNativeView(this, EventArgs.Empty);
 				_initialUpdateNeeded = false;
 			}
 
@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.RequestLayout();
 		}
 
-		void UpdatePlatformView(object sender, EventArgs e)
+		void UpdateNativeView(object sender, EventArgs e)
 		{
 			Performance.Start(out string reference);
 

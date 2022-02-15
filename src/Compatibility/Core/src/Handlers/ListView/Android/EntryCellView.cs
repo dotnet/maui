@@ -6,12 +6,13 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.Widget;
 using Java.Lang;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public sealed class EntryCellView : LinearLayout, ITextWatcher, global::Android.Views.View.IOnFocusChangeListener, TextView.IOnEditorActionListener, IPlatformElementView
+	public sealed class EntryCellView : LinearLayout, ITextWatcher, global::Android.Views.View.IOnFocusChangeListener, TextView.IOnEditorActionListener, INativeElementView
 	{
 		public const double DefaultMinHeight = 55;
 

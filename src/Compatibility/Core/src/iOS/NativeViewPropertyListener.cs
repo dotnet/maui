@@ -9,11 +9,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-	class PlatformViewPropertyListener : NSObject, INotifyPropertyChanged
+	class NativeViewPropertyListener : NSObject, INotifyPropertyChanged
 	{
 		string TargetProperty { get; set; }
 
-		public PlatformViewPropertyListener(string targetProperty)
+		public NativeViewPropertyListener(string targetProperty)
 		{
 			TargetProperty = targetProperty;
 		}

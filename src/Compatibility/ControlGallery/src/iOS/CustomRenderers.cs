@@ -17,7 +17,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 [assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
-[assembly: ExportRenderer(typeof(PlatformCell), typeof(NativeiOSCellRenderer))]
+[assembly: ExportRenderer(typeof(NativeCell), typeof(NativeiOSCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla39987.CustomMapView), typeof(CustomIOSMapRenderer))]
@@ -31,17 +31,17 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Issue13390), typeof(Issue13390Renderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
-	public class Issue13390Renderer : ShellRenderer
+	public class Issue13390Renderer : Controls.Handlers.Compatibility.ShellRenderer
 	{
-		protected override IShellFlyoutRenderer CreateFlyoutRenderer()
+		protected override Controls.Platform.Compatibility.IShellFlyoutRenderer CreateFlyoutRenderer()
 		{
-			return new ShellFlyoutRenderer()
+			return new Controls.Platform.Compatibility.ShellFlyoutRenderer()
 			{
 				FlyoutTransition = new SlideFlyoutTransition2()
 			};
 		}
 
-		public class SlideFlyoutTransition2 : IShellFlyoutTransition
+		public class SlideFlyoutTransition2 : Controls.Platform.Compatibility.IShellFlyoutTransition
 		{
 			public void LayoutViews(CGRect bounds, nfloat openPercent, UIView flyout, UIView shell, FlyoutBehavior behavior)
 			{
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 					_mapView = new MKMapView(UIScreen.MainScreen.Bounds);
 					_mapView.MapType = MKMapType.Standard;
 					_mapView.RotateEnabled = false;
-					SetPlatformControl(_mapView);
+					SetNativeControl(_mapView);
 				}
 
 			}
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 	public class NativeiOSCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
-		static NSString s_rid = new NSString("PlatformCell");
+		static NSString s_rid = new NSString("NativeCell");
 
 		public NativeiOSCellRenderer()
 		{
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			var x = (PlatformCell)item;
+			var x = (NativeCell)item;
 			Console.WriteLine(x);
 
 			NativeiOSCell c = reusableCell as NativeiOSCell;
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			if (Control == null)
 			{
-				SetPlatformControl(new UITableView());
+				SetNativeControl(new UITableView());
 			}
 
 			if (e.OldElement != null)
@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			if (Control == null)
 			{
-				SetPlatformControl(new UITableView());
+				SetNativeControl(new UITableView());
 			}
 
 			if (e.OldElement != null)
@@ -515,7 +515,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
 				};
 				_controller = new CollectionViewController(flowLayout, ItemSelected);
-				SetPlatformControl(_controller.CollectionView);
+				SetNativeControl(_controller.CollectionView);
 			}
 
 			base.OnElementChanged(e);

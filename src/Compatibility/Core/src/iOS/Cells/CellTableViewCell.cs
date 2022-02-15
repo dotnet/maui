@@ -6,7 +6,7 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.CellTableViewCell instead")]
-	public class CellTableViewCell : UITableViewCell, IPlatformElementView
+	public class CellTableViewCell : UITableViewCell, INativeElementView
 	{
 		Cell _cell;
 
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => PropertyChanged?.Invoke(sender, e);
 
-		internal static UITableViewCell GetPlatformCell(UITableView tableView, Cell cell, bool recycleCells = false, string templateId = "")
+		internal static UITableViewCell GetNativeCell(UITableView tableView, Cell cell, bool recycleCells = false, string templateId = "")
 		{
 			var id = cell.GetType().FullName;
 
@@ -73,9 +73,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 				reusableCell = tableView.DequeueReusableCell(id);
 
-			var platformCell = renderer.GetCell(cell, reusableCell, tableView);
+			var nativeCell = renderer.GetCell(cell, reusableCell, tableView);
 
-			var cellWithContent = platformCell;
+			var cellWithContent = nativeCell;
 
 			// Sometimes iOS for returns a dequeued cell whose Layer is hidden. 
 			// This prevents it from showing up, so lets turn it back on!
@@ -84,18 +84,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (contextCell != null)
 			{
-				contextCell.Update(tableView, cell, platformCell);
+				contextCell.Update(tableView, cell, nativeCell);
 				var viewTableCell = contextCell.ContentCell as ViewCellRenderer.ViewTableCell;
 				if (viewTableCell != null)
 					viewTableCell.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
-				platformCell = contextCell;
+				nativeCell = contextCell;
 			}
 
 			// Because the layer was hidden we need to layout the cell by hand
 			if (cellWithContent != null)
 				cellWithContent.LayoutSubviews();
 
-			return platformCell;
+			return nativeCell;
 		}
 
 		protected override void Dispose(bool disposing)

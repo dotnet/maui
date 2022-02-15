@@ -61,12 +61,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var control = (Element.IndicatorTemplate != null)
 				? (FrameworkElement)(Element.IndicatorLayout as VisualElement).GetOrCreateRenderer()
-				: CreatePlatformControl();
+				: CreateNativeControl();
 
-			SetPlatformControl(control);
+			SetNativeControl(control);
 		}
 
-		FrameworkElement CreatePlatformControl()
+		FrameworkElement CreateNativeControl()
 		{
 			return new ItemsControl
 			{

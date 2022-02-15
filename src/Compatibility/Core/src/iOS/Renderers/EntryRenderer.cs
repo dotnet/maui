@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Frame = new CGRect(0, 20, 320, 40);
 		}
 
-		protected override UITextField CreatePlatformControl()
+		protected override UITextField CreateNativeControl()
 		{
 			var textField = new UITextField(RectangleF.Zero);
 			textField.BorderStyle = UITextBorderStyle.RoundedRect;
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.Dispose(disposing);
 		}
 
-		abstract protected override TControl CreatePlatformControl();
+		abstract protected override TControl CreateNativeControl();
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
 		{
@@ -108,8 +108,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Control == null)
 			{
-				var textField = CreatePlatformControl();
-				SetPlatformControl(textField);
+				var textField = CreateNativeControl();
+				SetNativeControl(textField);
 
 				// Cache the default text color
 				_defaultTextColor = textField.TextColor;

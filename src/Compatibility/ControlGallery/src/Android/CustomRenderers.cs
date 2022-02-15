@@ -37,7 +37,7 @@ using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeAndroidListViewRenderer))]
-[assembly: ExportRenderer(typeof(PlatformCell), typeof(NativeAndroidCellRenderer))]
+[assembly: ExportRenderer(typeof(NativeCell), typeof(NativeAndroidCellRenderer))]
 
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoDecimal), typeof(EntryRendererNoDecimal))]
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoNegative), typeof(EntryRendererNoNegative))]
@@ -264,7 +264,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override global::Android.Widget.ListView CreatePlatformControl()
+		protected override global::Android.Widget.ListView CreateNativeControl()
 		{
 			return new global::Android.Widget.ListView(Context);
 		}
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			if (Control == null)
 			{
-				SetPlatformControl(CreatePlatformControl());
+				SetNativeControl(CreateNativeControl());
 			}
 
 			if (e.OldElement != null)
@@ -376,7 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		protected override global::Android.Views.View GetCellCore(Cell item, global::Android.Views.View convertView, ViewGroup parent, Context context)
 		{
-			var x = (PlatformCell)item;
+			var x = (NativeCell)item;
 
 			var view = convertView;
 
@@ -440,7 +440,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override global::Android.Widget.ListView CreatePlatformControl()
+		protected override global::Android.Widget.ListView CreateNativeControl()
 		{
 			// Disabled the warning so we have a test that this obsolete stuff still works
 			return new global::Android.Widget.ListView(Context);
@@ -452,7 +452,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			if (Control == null)
 			{
-				SetPlatformControl(CreatePlatformControl());
+				SetNativeControl(CreateNativeControl());
 			}
 
 			if (e.OldElement != null)
@@ -598,7 +598,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			AutoPackage = true;
 		}
 
-		protected override AView CreatePlatformControl()
+		protected override AView CreateNativeControl()
 		{
 			return new AView(Context);
 		}
@@ -630,7 +630,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override AppCompatButton CreatePlatformControl()
+		protected override AppCompatButton CreateNativeControl()
 		{
 			return new CustomNativeButton(Context);
 		}
@@ -639,8 +639,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			if (Control == null)
 			{
-				CustomNativeButton b = (CustomNativeButton)CreatePlatformControl();
-				SetPlatformControl(b);
+				CustomNativeButton b = (CustomNativeButton)CreateNativeControl();
+				SetNativeControl(b);
 			}
 
 			base.OnElementChanged(e);
@@ -825,7 +825,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override Issue4561CustomView CreatePlatformControl() => new Issue4561CustomView(Context);
+		protected override Issue4561CustomView CreateNativeControl() => new Issue4561CustomView(Context);
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Issue4561.CustomView> e)
 		{
@@ -834,8 +834,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			{
 				if (Control == null)
 				{
-					var view = CreatePlatformControl();
-					SetPlatformControl(view);
+					var view = CreateNativeControl();
+					SetNativeControl(view);
 				}
 			}
 		}

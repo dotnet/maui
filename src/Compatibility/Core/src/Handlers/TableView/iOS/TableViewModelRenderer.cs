@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
 			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
-			var platformCell = CellTableViewCell.GetPlatformCell(tableView, cell);
+			var nativeCell = CellTableViewCell.GetPlatformCell(tableView, cell);
 
-			return platformCell;
+			return nativeCell;
 		}
 
 		public override nfloat GetHeightForHeader(UITableView tableView, nint section)

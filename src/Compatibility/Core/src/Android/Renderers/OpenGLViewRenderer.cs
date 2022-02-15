@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.Dispose(disposing);
 		}
 
-		protected override GLSurfaceView CreatePlatformControl()
+		protected override GLSurfaceView CreateNativeControl()
 		{
 			return new GLSurfaceView(Context);
 		}
@@ -49,9 +49,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				GLSurfaceView surfaceView = Control;
 				if (surfaceView == null)
 				{
-					surfaceView = CreatePlatformControl();
+					surfaceView = CreateNativeControl();
 					surfaceView.SetEGLContextClientVersion(2);
-					SetPlatformControl(surfaceView);
+					SetNativeControl(surfaceView);
 				}
 
 				((IOpenGlViewController)Element).DisplayRequested += Render;

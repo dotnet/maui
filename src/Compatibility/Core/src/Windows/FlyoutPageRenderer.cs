@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return new SizeRequest(size);
 		}
 
-		UIElement IVisualElementRenderer.GetPlatformElement()
+		UIElement IVisualElementRenderer.GetNativeElement()
 		{
 			return Control;
 		}
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Control = new FlyoutPageControl();
 					Control.Loaded += OnControlLoaded;
 					Control.Unloaded += OnControlUnloaded;
-					Control.SizeChanged += OnPlatformSizeChanged;
+					Control.SizeChanged += OnNativeSizeChanged;
 
 					Control.RegisterPropertyChangedCallback(FlyoutPageControl.IsPaneOpenProperty, OnIsPaneOpenChanged);
 
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.FlyoutTitle = _master?.Title;
 		}
 
-		void OnPlatformSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnNativeSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			UpdateBounds();
 		}

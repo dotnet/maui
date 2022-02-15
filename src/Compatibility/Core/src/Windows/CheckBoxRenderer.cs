@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static WBrush _tintDefaultBrush = Colors.Blue.ToPlatform();
 		bool _disposed = false;
 
-		protected virtual FormsCheckBox CreatePlatformControl()
+		protected virtual FormsCheckBox CreateNativeControl()
 		{
 			return new FormsCheckBox()
 			{
@@ -27,11 +27,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var control = CreatePlatformControl();
+					var control = CreateNativeControl();
 					control.Checked += OnNativeChecked;
 					control.Unchecked += OnNativeChecked;
 
-					SetPlatformControl(control);
+					SetNativeControl(control);
 				}
 
 				UpdateIsChecked();

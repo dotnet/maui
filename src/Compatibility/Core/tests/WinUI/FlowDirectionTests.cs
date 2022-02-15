@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 				{
 					GetRenderer(contentPage);
 				}
-				var textField = GetPlatformControl(entry);
+				var textField = GetNativeControl(entry);
 				return textField.TextAlignment;
 			});
 
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 				{
 					GetRenderer(contentPage);
 				}
-				var textField = GetPlatformControl(editor);
+				var textField = GetNativeControl(editor);
 				return (textField.TextAlignment, textField.FlowDirection);
 			});
 

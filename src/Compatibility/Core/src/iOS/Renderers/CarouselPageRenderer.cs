@@ -50,10 +50,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
+			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView PlatformView
+		public UIView NativeView
 		{
 			get { return View; }
 		}
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			if (element != null)
-				element.SendViewInitialized(PlatformView);
+				element.SendViewInitialized(NativeView);
 
 			_previousPage = Carousel?.CurrentPage;
 		}
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (renderer != null)
 				{
 					renderer.ViewController.RemoveFromParentViewController();
-					renderer.PlatformView.RemoveFromSuperview();
+					renderer.NativeView.RemoveFromSuperview();
 					Platform.SetRenderer(kvp.Key, null);
 				}
 			}
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UIView container = new CarouselPageContainer(page);
 
-			UIView view = renderer.PlatformView;
+			UIView view = renderer.NativeView;
 
 			container.AddSubview(view);
 			_containerMap[page] = container;
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			renderer.ViewController.RemoveFromParentViewController();
-			renderer.PlatformView.RemoveFromSuperview();
+			renderer.NativeView.RemoveFromSuperview();
 		}
 
 		void Reset()
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackground()
 		{
-			this.ApplyPlatformImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
+			this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);

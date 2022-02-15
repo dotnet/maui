@@ -116,8 +116,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				var viewRenderer = Platform.CreateRenderer(view);
 				Platform.SetRenderer(view, viewRenderer);
 
-				var uiview = Renderer.PlatformView;
-				uiview.AddSubview(viewRenderer.PlatformView);
+				var uiview = Renderer.NativeView;
+				uiview.AddSubview(viewRenderer.NativeView);
 
 				if (Renderer.ViewController != null && viewRenderer.ViewController != null)
 					Renderer.ViewController.AddChildViewController(viewRenderer.ViewController);
@@ -131,10 +131,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected virtual void OnChildRemoved(VisualElement view)
 		{
 			var viewRenderer = Platform.GetRenderer(view);
-			if (viewRenderer == null || viewRenderer.PlatformView == null)
+			if (viewRenderer == null || viewRenderer.NativeView == null)
 				return;
 
-			viewRenderer.PlatformView.RemoveFromSuperview();
+			viewRenderer.NativeView.RemoveFromSuperview();
 
 			if (Renderer.ViewController != null && viewRenderer.ViewController != null)
 				viewRenderer.ViewController.RemoveFromParentViewController();
@@ -157,11 +157,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (childRenderer == null)
 					continue;
 
-				var platformControl = childRenderer.PlatformView;
+				var nativeControl = childRenderer.NativeView;
 #if __MOBILE__
-				Renderer.PlatformView.BringSubviewToFront(platformControl);
+				Renderer.NativeView.BringSubviewToFront(nativeControl);
 #endif
-				platformControl.Layer.ZPosition = z * 1000;
+				nativeControl.Layer.ZPosition = z * 1000;
 			}
 		}
 

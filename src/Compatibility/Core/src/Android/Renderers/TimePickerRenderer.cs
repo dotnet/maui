@@ -47,9 +47,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				var textField = CreatePlatformControl();
+				var textField = CreateNativeControl();
 
-				SetPlatformControl(textField);
+				SetNativeControl(textField);
 			}
 
 			SetTime(e.NewElement.Time);
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		protected override EditText CreatePlatformControl()
+		protected override EditText CreateNativeControl()
 		{
 			return new PickerEditText(Context);
 		}

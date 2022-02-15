@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetPlatformControl(new WEllipse());
+				SetNativeControl(new WEllipse());
 			}
 
 			base.OnElementChanged(args);

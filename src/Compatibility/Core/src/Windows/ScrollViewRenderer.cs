@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetPlatformControl(new ScrollViewer
+					SetNativeControl(new ScrollViewer
 					{
 						HorizontalScrollBarVisibility = ScrollBarVisibilityToUwp(e.NewElement.HorizontalScrollBarVisibility),
 						VerticalScrollBarVisibility = ScrollBarVisibilityToUwp(e.NewElement.VerticalScrollBarVisibility)

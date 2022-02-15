@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		/// Determines whether the native control is disposed of when this renderer is disposed
 		/// Can be overridden in deriving classes 
 		/// </summary>
-		protected virtual bool ManagePlatformControlLifetime => true;
+		protected virtual bool ManageNativeControlLifetime => true;
 
 		bool CheckFlagsForDisposed() => (_flags & VisualElementRendererFlags.Disposed) != 0;
 		bool IDisposedState.IsDisposed => CheckFlagsForDisposed();
@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_packager = null;
 				}
 
-				if (ManagePlatformControlLifetime)
+				if (ManageNativeControlLifetime)
 				{
 					while (ChildCount > 0)
 					{
@@ -397,9 +397,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			this.UpdateBackground(background);
 		}
 
-		internal virtual void SendVisualElementInitialized(VisualElement element, AView platformView)
+		internal virtual void SendVisualElementInitialized(VisualElement element, AView nativeView)
 		{
-			element.SendViewInitialized(platformView);
+			element.SendViewInitialized(nativeView);
 		}
 
 		void IVisualElementRenderer.SetLabelFor(int? id)

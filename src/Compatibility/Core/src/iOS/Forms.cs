@@ -22,11 +22,11 @@ using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using TPlatformView = UIKit.UIView;
+using TNativeView = UIKit.UIView;
 #else
 using AppKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.MacOS;
-using TPlatformView = AppKit.NSView;
+using TNativeView = AppKit.NSView;
 #endif
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -226,9 +226,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
-		internal static void SendViewInitialized(this VisualElement self, TPlatformView platformView)
+		internal static void SendViewInitialized(this VisualElement self, TNativeView nativeView)
 		{
-			ViewInitialized?.Invoke(self, new ViewInitializedEventArgs { View = self, PlatformView = platformView });
+			ViewInitialized?.Invoke(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
 		class iOSExpressionSearch : ExpressionVisitor, IExpressionSearch
@@ -282,20 +282,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return new HttpClient(handler);
 			}
 
-#if !__MOBILE__
-			public void QuitApplication()
-			{
-				NSApplication.SharedApplication.Terminate(new NSObject());
-			}
-#endif
-
 			public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
-#if __MOBILE__
-				return Platform.iOS.Platform.GetPlatformSize(view, widthConstraint, heightConstraint);
-#else
-				return Platform.MacOS.Platform.GetPlatformSize(view, widthConstraint, heightConstraint);
-#endif
+				return Platform.iOS.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}
 
 			public OSAppTheme RequestedTheme

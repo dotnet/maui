@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					var picker = new Microsoft.UI.Xaml.Controls.TimePicker();
 
-					SetPlatformControl(picker);
+					SetNativeControl(picker);
 
 					Control.TimeChanged += OnControlTimeChanged;
 					Control.Loaded += ControlOnLoaded;

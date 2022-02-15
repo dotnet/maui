@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetPlatformControl(new FormsComboBox());
+					SetNativeControl(new FormsComboBox());
 					Control.SelectionChanged += OnControlSelectionChanged;
 					Control.DropDownOpened += OnDropDownOpenStateChanged;
 					Control.DropDownClosed += OnDropDownOpenStateChanged;

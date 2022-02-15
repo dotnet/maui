@@ -56,11 +56,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			return (border.Background as WSolidColorBrush).Color;
 		}
 
-		async Task<WColor> GetPlatformColor(View view)
+		async Task<WColor> GetNativeColor(View view)
 		{
 			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				var control = GetPlatformControl(view);
+				var control = GetNativeControl(view);
 
 				if (control != null)
 				{
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		[Description("View background color should match renderer background color")]
 		public async Task BackgroundColorConsistent(View view)
 		{
-			var nativeColor = await GetPlatformColor(view);
+			var nativeColor = await GetNativeColor(view);
 			var formsColor = view.BackgroundColor.ToWindowsColor();
 			Assert.That(nativeColor, Is.EqualTo(formsColor));
 		}
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			var actualColor = await Device.InvokeOnMainThreadAsync(() =>
 			{
 				var renderer = GetRenderer(frame);
-				var nativeElement = renderer.GetPlatformElement() as WBorder;
+				var nativeElement = renderer.GetNativeElement() as WBorder;
 
 				var backgroundBrush = nativeElement.Background as WSolidColorBrush;
 				return backgroundBrush.Color;

@@ -4,13 +4,13 @@ using Microsoft.Maui.Graphics;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using PlatformView = UIKit.UIView;
-using PlatformViewController = UIKit.UIViewController;
+using NativeView = UIKit.UIView;
+using NativeViewController = UIKit.UIViewController;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
-using PlatformView = AppKit.NSView;
-using PlatformViewController = AppKit.NSViewController;
+using NativeView = AppKit.NSView;
+using NativeViewController = AppKit.NSViewController;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
@@ -19,9 +19,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 	{
 		VisualElement Element { get; }
 
-		PlatformView PlatformView { get; }
+		NativeView NativeView { get; }
 
-		PlatformViewController ViewController { get; }
+		NativeViewController ViewController { get; }
 
 		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 

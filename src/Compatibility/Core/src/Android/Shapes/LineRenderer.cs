@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetPlatformControl(new LineView(Context));
+				SetNativeControl(new LineView(Context));
 			}
 
 			base.OnElementChanged(args);

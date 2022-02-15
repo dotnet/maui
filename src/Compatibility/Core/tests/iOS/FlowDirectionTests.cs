@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				{
 					GetRenderer(contentPage);
 				}
-				var textField = GetPlatformControl(entry);
+				var textField = GetNativeControl(entry);
 				return textField.TextAlignment;
 			});
 
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				{
 					GetRenderer(contentPage);
 				}
-				var textField = GetPlatformControl(editor);
+				var textField = GetNativeControl(editor);
 				return textField.TextAlignment;
 			});
 

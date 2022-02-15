@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Platform;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using PlatformView = UIKit.UIView;
+using NativeView = UIKit.UIView;
 using NativeGestureRecognizer = UIKit.UIGestureRecognizer;
 using NativeGestureRecognizerState = UIKit.UIGestureRecognizerState;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -18,7 +18,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using AppKit;
-using PlatformView = AppKit.NSView;
+using NativeView = AppKit.NSView;
 using NativeGestureRecognizer = AppKit.NSGestureRecognizer;
 using NativeGestureRecognizerState = AppKit.NSGestureRecognizerState;
 using Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific;
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		readonly IVisualElementRenderer _renderer;
 
 		bool _disposed;
-		PlatformView _handler;
+		NativeView _handler;
 
 		double _previousScale = 1.0;
 #if __MOBILE__
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			_handler = null;
 		}
 
-		public void LoadEvents(PlatformView handler)
+		public void LoadEvents(NativeView handler)
 		{
 			if (_disposed)
 				throw new ObjectDisposedException(null);
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (eventTracker._disposed || view == null)
 				return null;
 
-			var originPoint = sender.LocationInView(eventTracker._renderer.PlatformView);
+			var originPoint = sender.LocationInView(eventTracker._renderer.NativeView);
 			var childGestures = view.GetChildElements(new Point(originPoint.X, originPoint.Y));
 			return childGestures;
 		}
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 #endif
 
-		protected virtual NativeGestureRecognizer GetPlatformRecognizer(IGestureRecognizer recognizer)
+		protected virtual NativeGestureRecognizer GetNativeRecognizer(IGestureRecognizer recognizer)
 		{
 			if (recognizer == null)
 				return null;
@@ -326,9 +326,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
 #if __MOBILE__
-						originPoint = UIApplication.SharedApplication.GetKeyWindow().ConvertPointToView(originPoint, eventTracker._renderer.PlatformView);
+						originPoint = UIApplication.SharedApplication.GetKeyWindow().ConvertPointToView(originPoint, eventTracker._renderer.NativeView);
 #else
-						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._renderer.PlatformView);
+						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._renderer.NativeView);
 #endif
 						var scaledPoint = new Point(originPoint.X / view.Width, originPoint.Y / view.Height);
 
@@ -578,7 +578,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			if (_dragAndDropDelegate != null)
 			{
-				foreach (var interaction in _renderer.PlatformView.Interactions)
+				foreach (var interaction in _renderer.NativeView.Interactions)
 				{
 					if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
 						uIDragInteraction = uIDrag;
@@ -597,7 +597,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (_gestureRecognizers.ContainsKey(recognizer))
 					continue;
 
-				var nativeRecognizer = GetPlatformRecognizer(recognizer);
+				var nativeRecognizer = GetNativeRecognizer(recognizer);
 				if (nativeRecognizer != null && _handler != null)
 				{
 #if __MOBILE__
@@ -617,7 +617,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
 						interaction.Enabled = true;
-						_renderer.PlatformView.AddInteraction(interaction);
+						_renderer.NativeView.AddInteraction(interaction);
 					}
 				}
 
@@ -628,7 +628,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					if (uIDropInteraction == null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
-						_renderer.PlatformView.AddInteraction(interaction);
+						_renderer.NativeView.AddInteraction(interaction);
 					}
 				}
 #endif
@@ -636,10 +636,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (!dragFound && uIDragInteraction != null)
-				_renderer.PlatformView.RemoveInteraction(uIDragInteraction);
+				_renderer.NativeView.RemoveInteraction(uIDragInteraction);
 
 			if (!dropFound && uIDropInteraction != null)
-				_renderer.PlatformView.RemoveInteraction(uIDropInteraction);
+				_renderer.NativeView.RemoveInteraction(uIDropInteraction);
 #endif
 
 			var toRemove = _gestureRecognizers.Keys.Where(key => !ElementGestureRecognizers.Contains(key)).ToArray();
@@ -666,13 +666,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			// If the touch is coming from the UIView our renderer is wrapping (e.g., if it's  
 			// wrapping a UIView which already has a gesture recognizer), then we should let it through
 			// (This goes for children of that control as well)
-			if (_renderer?.PlatformView == null)
+			if (_renderer?.NativeView == null)
 			{
 				return false;
 			}
 
-			if (touch.View.IsDescendantOfView(_renderer.PlatformView) &&
-				(touch.View.GestureRecognizers?.Length > 0 || _renderer.PlatformView.GestureRecognizers?.Length > 0))
+			if (touch.View.IsDescendantOfView(_renderer.NativeView) &&
+				(touch.View.GestureRecognizers?.Length > 0 || _renderer.NativeView.GestureRecognizers?.Length > 0))
 			{
 				return true;
 			}

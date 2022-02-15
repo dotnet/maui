@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		[PortHandler]
-		protected override FormsEditText CreatePlatformControl()
+		protected override FormsEditText CreateNativeControl()
 		{
 			return new FormsEditText(Context)
 			{
@@ -112,9 +112,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var edit = Control;
 			if (edit == null)
 			{
-				edit = CreatePlatformControl();
+				edit = CreateNativeControl();
 
-				SetPlatformControl(edit);
+				SetNativeControl(edit);
 				EditText.AddTextChangedListener(this);
 				if (EditText is IFormsEditText formsEditText)
 					formsEditText.OnKeyboardBackPressed += OnKeyboardBackPressed;

@@ -1,11 +1,12 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Compatibility;
 using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class CellTableViewCell : UITableViewCell, IPlatformElementView
+	public class CellTableViewCell : UITableViewCell, INativeElementView
 	{
 		Cell _cell;
 

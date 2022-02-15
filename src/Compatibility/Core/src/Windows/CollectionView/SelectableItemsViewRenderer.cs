@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	public class SelectableItemsViewRenderer<TItemsView> : StructuredItemsViewRenderer<TItemsView>
 		where TItemsView : SelectableItemsView
 	{
-		bool _ignorePlatformSelectionChange;
+		bool _ignoreNativeSelectionChange;
 
 		protected override void TearDownOldElement(ItemsView oldElement)
 		{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (oldListViewBase != null)
 			{
 				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
-				oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+				oldListViewBase.SelectionChanged -= NativeSelectionChanged;
 			}
 
 			if (ItemsView != null)
@@ -58,25 +58,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 							Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
 						});
 
-				newListViewBase.SelectionChanged += PlatformSelectionChanged;
+				newListViewBase.SelectionChanged += NativeSelectionChanged;
 			}
 
-			UpdatePlatformSelection();
+			UpdateNativeSelection();
 		}
 
 		protected override void UpdateItemsSource()
 		{
-			_ignorePlatformSelectionChange = true;
+			_ignoreNativeSelectionChange = true;
 
 			base.UpdateItemsSource();
-			UpdatePlatformSelection();
+			UpdateNativeSelection();
 
-			_ignorePlatformSelectionChange = false;
+			_ignoreNativeSelectionChange = false;
 		}
 
-		void UpdatePlatformSelection()
+		void UpdateNativeSelection()
 		{
-			_ignorePlatformSelectionChange = true;
+			_ignoreNativeSelectionChange = true;
 
 			switch (ListViewBase.SelectionMode)
 			{
@@ -127,22 +127,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					break;
 			}
 
-			_ignorePlatformSelectionChange = false;
+			_ignoreNativeSelectionChange = false;
 		}
 
 		void FormsSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			UpdatePlatformSelection();
+			UpdateNativeSelection();
 		}
 
-		void PlatformSelectionChanged(object sender, UWPSelectionChangedEventArgs args)
+		void NativeSelectionChanged(object sender, UWPSelectionChangedEventArgs args)
 		{
 			UpdateFormsSelection();
 		}
 			
 		void UpdateFormsSelection()
 		{
-			if (_ignorePlatformSelectionChange || ItemsView == null)
+			if (_ignoreNativeSelectionChange || ItemsView == null)
 			{
 				return;
 			}

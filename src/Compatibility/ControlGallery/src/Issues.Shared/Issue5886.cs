@@ -13,12 +13,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Category(UITestCategories.Layout)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 5886, "Value does not fall with in the expected range Exception while creating PlatformView Xamarin Forms UWP", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 5886, "Value does not fall with in the expected range Exception while creating NativeView Xamarin Forms UWP", PlatformAffected.UWP)]
 	public class Issue5886 : TestContentPage
 	{
 		public interface IReplaceUWPRendererService
 		{
-			void ConvertToPlatform(View formsView);
+			void ConvertToNative(View formsView);
 			void CreateRenderer(View formsView);
 		}
 
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		void Button_Clicked(object sender, EventArgs e)
 		{
-			DependencyService.Get<IReplaceUWPRendererService>().ConvertToPlatform(this.scrollView);
+			DependencyService.Get<IReplaceUWPRendererService>().ConvertToNative(this.scrollView);
 			label.Text = "Step 2 OK";
 		}
 

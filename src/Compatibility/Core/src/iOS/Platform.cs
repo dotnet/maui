@@ -210,12 +210,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			throw new InvalidOperationException("RemovePage is not supported globally on iOS, please use a NavigationPage.");
 		}
 
-		public static SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			Performance.Start(out string reference);
 
 			var renderView = GetRenderer(view);
-			if (renderView == null || renderView.PlatformView == null)
+			if (renderView == null || renderView.NativeView == null)
 			{
 				if (view is IView iView)
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
@@ -389,12 +389,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var viewRenderer = CreateRenderer(view);
 				SetRenderer(view, viewRenderer);
 
-				var platformView = viewRenderer.PlatformView;
+				var nativeView = viewRenderer.NativeView;
 
-				_renderer.View.AddSubview(platformView);
+				_renderer.View.AddSubview(nativeView);
 				if (viewRenderer.ViewController != null)
 					_renderer.AddChildViewController(viewRenderer.ViewController);
-				viewRenderer.PlatformView.Frame = new CGRect(0, 0, _renderer.View.Bounds.Width, _renderer.View.Bounds.Height);
+				viewRenderer.NativeView.Frame = new CGRect(0, 0, _renderer.View.Bounds.Width, _renderer.View.Bounds.Height);
 				viewRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
 			}
 			else

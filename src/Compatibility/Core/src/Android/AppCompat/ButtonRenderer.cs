@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnLayout(changed, l, t, r, b);
 		}
 
-		protected override AppCompatButton CreatePlatformControl()
+		protected override AppCompatButton CreateNativeControl()
 		{
 			return new AppCompatButton(Context);
 		}
@@ -91,14 +91,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				if (Control == null)
 				{
-					AppCompatButton button = CreatePlatformControl();
+					AppCompatButton button = CreateNativeControl();
 
 					button.SetOnClickListener(this);
 					button.SetOnTouchListener(this);
 					button.AddOnAttachStateChangeListener(this);
 					_textColorSwitcher = new TextColorSwitcher(button.TextColors, e.NewElement.UseLegacyColorManagement());
 
-					SetPlatformControl(button);
+					SetNativeControl(button);
 				}
 
 				_defaultFontSize = 0f;

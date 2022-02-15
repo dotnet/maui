@@ -10,9 +10,9 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 #if WINDOWS
-	class ViewHandlerDelegator<TElement, TPlatformElement>
+	class ViewHandlerDelegator<TElement, TNativeElement>
 		where TElement : VisualElement
-		where TPlatformElement : Microsoft.UI.Xaml.FrameworkElement
+		where TNativeElement : Microsoft.UI.Xaml.FrameworkElement
 #else
 	class ViewHandlerDelegator<TElement>
 		where TElement : Element, IView
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public Size GetDesiredSize(double widthConstraint, double heightConstraint, Size? minimumSize = null) =>
 #if WINDOWS
-			VisualElementRenderer<TElement, TPlatformElement>.GetDesiredSize(_viewHandler, widthConstraint, heightConstraint, minimumSize);
+			VisualElementRenderer<TElement, TNativeElement>.GetDesiredSize(_viewHandler, widthConstraint, heightConstraint, minimumSize);
 #else
 			VisualElementRenderer<TElement>.GetDesiredSize(_viewHandler, widthConstraint, heightConstraint, minimumSize);
 #endif
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			bool autoPackage)
 		{
 #if WINDOWS
-			VisualElementRenderer<TElement, TPlatformElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
+			VisualElementRenderer<TElement, TNativeElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
 #else
 			VisualElementRenderer<TElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
 #endif

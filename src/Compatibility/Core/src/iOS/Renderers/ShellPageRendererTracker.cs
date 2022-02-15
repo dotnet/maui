@@ -252,7 +252,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (image != null)
 			{
-				icon = await image.GetPlatformImageAsync();
+				icon = await image.GetNativeImageAsync();
 			}
 			else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 			{
@@ -655,7 +655,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		async void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
 		{
-			var result = await source.GetPlatformImageAsync();
+			var result = await source.GetNativeImageAsync();
 			if (result != null)
 			{
 				var newResult = result.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);

@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		// For the time being, we don't want ViewRenderer handling disposal of the MKMapView
 		// if we're on iOS 9 or 10; during Dispose we'll be putting the MKMapView in a pool instead
 #if __MOBILE__
-		protected override bool ManagePlatformControlLifetime => false;
+		protected override bool ManageNativeControlLifetime => false;
 #endif
 		protected override void Dispose(bool disposing)
 		{
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 						mapView = new MKMapView(RectangleF.Empty);
 					}
 
-					SetPlatformControl(mapView);
+					SetNativeControl(mapView);
 
 					mapView.GetViewForAnnotation = GetViewForAnnotation;
 					mapView.OverlayRenderer = GetViewForOverlay;

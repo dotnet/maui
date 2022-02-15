@@ -6,9 +6,9 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
-	public partial class XamlPlatformViews : ContentPage
+	public partial class XamlNativeViews : ContentPage
 	{
-		public XamlPlatformViews()
+		public XamlNativeViews()
 		{
 			InitializeComponent();
 			BindingContext = new VM { NativeText = "Text set to Native view using native binding" };

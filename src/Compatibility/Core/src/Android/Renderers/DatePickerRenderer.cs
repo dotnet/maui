@@ -48,8 +48,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				var textField = CreatePlatformControl();
-				SetPlatformControl(textField);
+				var textField = CreateNativeControl();
+				SetNativeControl(textField);
 				_originalHintTextColor = EditText.CurrentHintTextColor;
 			}
 
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		protected override EditText CreatePlatformControl()
+		protected override EditText CreateNativeControl()
 		{
 			return new PickerEditText(Context);
 		}

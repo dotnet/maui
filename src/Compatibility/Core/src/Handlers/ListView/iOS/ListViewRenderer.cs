@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -226,7 +227,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
 					}
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
-					SetPlatformControl(_tableViewController.TableView);
+					SetNativeControl(_tableViewController.TableView);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
 
@@ -1071,7 +1072,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					{
 						var templatedList = TemplatedItemsView.TemplatedItems.GetGroup(indexPath.Section);
 
-						cell = (Cell)((IPlatformElementView)platformCell).Element;
+						cell = (Cell)((INativeElementView)platformCell).Element;
 						cell.SendDisappearing();
 
 						templatedList.UpdateContent(cell, indexPath.Row);
@@ -1212,7 +1213,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				Cell formsCell = null;
 				if ((List.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
-					formsCell = (Cell)((IPlatformElementView)cell).Element;
+					formsCell = (Cell)((INativeElementView)cell).Element;
 
 				SetCellBackgroundColor(cell, UIColor.Clear);
 

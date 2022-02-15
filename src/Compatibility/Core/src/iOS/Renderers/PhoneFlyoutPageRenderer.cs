@@ -68,10 +68,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
+			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView PlatformView
+		public UIView NativeView
 		{
 			get { return View; }
 		}
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (element != null)
-				element.SendViewInitialized(PlatformView);
+				element.SendViewInitialized(NativeView);
 		}
 
 		public void SetElementSize(Size size)
@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackground()
 		{
-			_ = this.ApplyPlatformImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
+			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
@@ -368,12 +368,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			((FlyoutPage)Element).Flyout.PropertyChanged += HandleFlyoutPropertyChanged;
 
-			UIView flyoutView = flyoutRenderer.PlatformView;
+			UIView flyoutView = flyoutRenderer.NativeView;
 
 			_flyoutController.View.AddSubview(flyoutView);
 			_flyoutController.AddChildViewController(flyoutRenderer.ViewController);
 
-			UIView detailView = detailRenderer.PlatformView;
+			UIView detailView = detailRenderer.NativeView;
 
 			_detailController.View.AddSubview(detailView);
 			_detailController.AddChildViewController(detailRenderer.ViewController);

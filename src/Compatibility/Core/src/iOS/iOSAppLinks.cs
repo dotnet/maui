@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (deepLinkUri.Thumbnail != null)
 			{
-				using (var uiimage = await deepLinkUri.Thumbnail.GetPlatformImageAsync())
+				using (var uiimage = await deepLinkUri.Thumbnail.GetNativeImageAsync())
 				{
 					if (uiimage == null)
 						throw new InvalidOperationException("AppLinkEntry Thumbnail must be set to a valid source");

@@ -3,6 +3,7 @@ using System.Linq;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return c;
 		}
 
-		internal class ViewCellContainer : ViewGroup, IPlatformElementView
+		internal class ViewCellContainer : ViewGroup, INativeElementView
 		{
 			readonly View _parent;
 			readonly BindableProperty _rowHeight;

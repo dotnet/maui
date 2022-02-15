@@ -1,17 +1,17 @@
 #if __MOBILE__
-using PlatformImage = UIKit.UIImage;
-using PlatformImageView = UIKit.UIImageView;
+using NativeImage = UIKit.UIImage;
+using NativeImageView = UIKit.UIImageView;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
-using PlatformImage = AppKit.NSImage;
-using PlatformImageView = AppKit.NSImageView;
+using NativeImage = AppKit.NSImage;
+using NativeImageView = AppKit.NSImageView;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-	public interface IImageVisualElementRenderer : IVisualPlatformElementRenderer
+	public interface IImageVisualElementRenderer : IVisualNativeElementRenderer
 	{
-		void SetImage(PlatformImage image);
+		void SetImage(NativeImage image);
 		bool IsDisposed { get; }
-		PlatformImageView GetImage();
+		NativeImageView GetImage();
 	}
 }

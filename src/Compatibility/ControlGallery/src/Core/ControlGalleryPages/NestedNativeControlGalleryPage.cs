@@ -1,20 +1,20 @@
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
-	public partial class NestedPlatformControlGalleryPage : ContentPage
+	public partial class NestedNativeControlGalleryPage : ContentPage
 	{
 		public new StackLayout Layout { get; set; }
 
-		public bool PlatformControlsAdded { get; set; }
+		public bool NativeControlsAdded { get; set; }
 
-		public const string ReadyForPlatformControlsMessage = "ReadyForPlatformControls";
+		public const string ReadyForNativeControlsMessage = "ReadyForNativeControls";
 
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			MessagingCenter.Send(this, ReadyForPlatformControlsMessage);
+			MessagingCenter.Send(this, ReadyForNativeControlsMessage);
 		}
 
-		public NestedPlatformControlGalleryPage()
+		public NestedNativeControlGalleryPage()
 		{
 			Layout = new StackLayout { Padding = 20, VerticalOptions = LayoutOptions.FillAndExpand };
 

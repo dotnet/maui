@@ -198,10 +198,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
+			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView PlatformView
+		public UIView NativeView
 		{
 			get { return View; }
 		}
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (element != null)
-				element.SendViewInitialized(PlatformView);
+				element.SendViewInitialized(NativeView);
 		}
 
 		public void SetElementSize(Size size)
@@ -323,7 +323,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateFlowDirection();
 			UpdateFlyoutLayoutBehavior(View.Bounds.Size);
 			_tracker = new VisualElementTracker(this);
-			_events.LoadEvents(PlatformView);
+			_events.LoadEvents(NativeView);
 		}
 
 		void UpdateFlyoutLayoutBehavior(CGSize newBounds)
@@ -496,7 +496,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackground()
 		{
-			_ = this.ApplyPlatformImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
+			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
@@ -542,11 +542,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateFlowDirection()
 		{
-			if (PlatformView.UpdateFlowDirection(Element) && Forms.IsiOS13OrNewer && PlatformView.Superview != null)
+			if (NativeView.UpdateFlowDirection(Element) && Forms.IsiOS13OrNewer && NativeView.Superview != null)
 			{
-				var view = PlatformView.Superview;
-				PlatformView.RemoveFromSuperview();
-				view.AddSubview(PlatformView);
+				var view = NativeView.Superview;
+				NativeView.RemoveFromSuperview();
+				view.AddSubview(NativeView);
 			}
 		}
 

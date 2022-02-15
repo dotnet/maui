@@ -19,10 +19,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : View, IView
 		where TPlatformView : PlatformView
 	{
-		TPlatformView? _platformView;
+		TPlatformView? _nativeView;
 
-		public TPlatformView? Control => ((IElementHandler)this).PlatformView as TPlatformView ?? _platformView;
-		object? IElementHandler.PlatformView => _platformView;
+		public TPlatformView? Control => ((IElementHandler)this).PlatformView as TPlatformView ?? _nativeView;
+		object? IElementHandler.PlatformView => _nativeView;
 
 		public ViewRenderer() : this(VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{
@@ -60,12 +60,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return Control?.SizeThatFits(size) ?? base.SizeThatFits(size);
 		}
 
-		protected virtual TPlatformView CreatePlatformControl()
+		protected virtual TPlatformView CreateNativeControl()
 		{
 			return default(TPlatformView)!;
 		}
 
-		protected void SetPlatformControl(TPlatformView control)
+		protected void SetNativeControl(TPlatformView control)
 		{
 			if (Control != null)
 			{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 
-			_platformView = control;
+			_nativeView = control;
 
 			if (Control != null)
 				AddSubview(Control);
@@ -81,20 +81,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		private protected override void DisconnectHandlerCore()
 		{
-			if (_platformView != null && Element != null)
+			if (_nativeView != null && Element != null)
 			{
-				// We set the PlatformView to null so no one outside of this handler tries to access
-				// PlatformView. PlatformView access should be isolated to the instance passed into
+				// We set the NativeView to null so no one outside of this handler tries to access
+				// NativeView. NativeView access should be isolated to the instance passed into
 				// DisconnectHandler
-				var oldPlatformView = _platformView;
-				_platformView = null;
-				DisconnectHandler(oldPlatformView);
+				var oldNativeView = _nativeView;
+				_nativeView = null;
+				DisconnectHandler(oldNativeView);
 			}
 
 			base.DisconnectHandlerCore();
 		}
 
-		protected virtual void DisconnectHandler(TPlatformView oldPlatformView)
+		protected virtual void DisconnectHandler(TPlatformView oldNativeView)
 		{
 		}
 	}

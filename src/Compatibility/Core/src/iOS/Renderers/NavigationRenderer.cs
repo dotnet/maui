@@ -63,10 +63,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
+			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView PlatformView
+		public UIView NativeView
 		{
 			get { return View; }
 		}
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			if (element != null)
-				element.SendViewInitialized(PlatformView);
+				element.SendViewInitialized(NativeView);
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -821,7 +821,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 			}
 
-			await FlyoutPage.Flyout.ApplyPlatformImageAsync(Page.IconImageSourceProperty, icon =>
+			await FlyoutPage.Flyout.ApplyNativeImageAsync(Page.IconImageSourceProperty, icon =>
 			{
 				if (icon != null)
 				{
@@ -1070,7 +1070,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				IVisualElementRenderer childRenderer;
 				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
-					childRenderer.PlatformView.Frame = Child.Bounds.ToRectangleF();
+					childRenderer.NativeView.Frame = Child.Bounds.ToRectangleF();
 				base.ViewDidLayoutSubviews();
 			}
 
@@ -1319,7 +1319,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else
 				{
-					var image = await titleIcon.GetPlatformImageAsync();
+					var image = await titleIcon.GetNativeImageAsync();
 					try
 					{
 						titleViewContainer.Icon = new UIImageView(image);
@@ -1588,7 +1588,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_view = view;
 					_child = Platform.CreateRenderer(view);
 					Platform.SetRenderer(view, _child);
-					AddSubview(_child.PlatformView);
+					AddSubview(_child.NativeView);
 				}
 
 				ClipsToBounds = true;
@@ -1697,7 +1697,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (_child != null)
 					{
 						_child.Element?.DisposeModalAndChildRenderers();
-						_child.PlatformView.RemoveFromSuperview();
+						_child.NativeView.RemoveFromSuperview();
 						_child.Dispose();
 						_child = null;
 					}

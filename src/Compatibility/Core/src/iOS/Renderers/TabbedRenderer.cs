@@ -57,10 +57,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint);
+			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView PlatformView
+		public UIView NativeView
 		{
 			get { return View; }
 		}
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnPagesChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
 			if (element != null)
-				element.SendViewInitialized(PlatformView);
+				element.SendViewInitialized(NativeView);
 
 			//disable edit/reorder of tabs
 			CustomizableViewControllers = null;
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		/// </returns>
 		protected virtual async Task<Tuple<UIImage, UIImage>> GetIcon(Page page)
 		{
-			var icon = await page.IconImageSource.GetPlatformImageAsync();
+			var icon = await page.IconImageSource.GetNativeImageAsync();
 			return icon == null ? null : Tuple.Create(icon, (UIImage)null);
 		}
 	}

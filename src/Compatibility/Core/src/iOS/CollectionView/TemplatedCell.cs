@@ -82,11 +82,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
 
 			// Update the size of the root view to accommodate the Forms element
-			var platformView = VisualElementRenderer.PlatformView;
-			platformView.Frame = new CGRect(CGPoint.Empty, size);
+			var nativeView = VisualElementRenderer.NativeView;
+			nativeView.Frame = new CGRect(CGPoint.Empty, size);
 
 			// Layout the Forms element 
-			var nativeBounds = platformView.Frame.ToRectangle();
+			var nativeBounds = nativeView.Frame.ToRectangle();
 			VisualElementRenderer.Element.Layout(nativeBounds);
 			_size = nativeBounds.Size;
 
@@ -164,28 +164,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void SetRenderer(IVisualElementRenderer renderer)
 		{
 			VisualElementRenderer = renderer;
-			var platformView = VisualElementRenderer.PlatformView;
+			var nativeView = VisualElementRenderer.NativeView;
 
 			// Clear out any old views if this cell is being reused
 			ContentView.ClearSubviews();
 
-			InitializeContentConstraints(platformView);
+			InitializeContentConstraints(nativeView);
 
 			renderer.Element.MeasureInvalidated += MeasureInvalidated;
 		}
 
 		protected void Layout(CGSize constraints)
 		{
-			var platformView = VisualElementRenderer.PlatformView;
+			var nativeView = VisualElementRenderer.NativeView;
 
 			var width = constraints.Width;
 			var height = constraints.Height;
 
 			VisualElementRenderer.Element.Measure(width, height, MeasureFlags.IncludeMargins);
 
-			platformView.Frame = new CGRect(0, 0, width, height);
+			nativeView.Frame = new CGRect(0, 0, width, height);
 
-			var rectangle = platformView.Frame.ToRectangle();
+			var rectangle = nativeView.Frame.ToRectangle();
 			VisualElementRenderer.Element.Layout(rectangle);
 			_size = rectangle.Size;
 		}

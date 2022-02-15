@@ -10,8 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public interface IPlatformServices
+	internal interface IPlatformServices
 	{
 		OSAppTheme RequestedTheme { get; }
 

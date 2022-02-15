@@ -1,18 +1,20 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
-using AView = Android.Views.View;
+using ObjCRuntime;
+using UIKit;
 
-[assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.PlatformBindingService))]
+[assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.NativeBindingService))]
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	class PlatformBindingService : IPlatformBindingService
+	[Preserve(AllMembers = true)]
+	class NativeBindingService : INativeBindingService
 	{
-		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmerConstants.PlatformBindingService)]
+		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
-			var view = target as AView;
+			var view = target as UIView;
 			if (view == null)
 				return false;
 			if (target.GetType().GetProperty(propertyName)?.GetMethod == null)
@@ -23,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public bool TrySetBinding(object target, BindableProperty property, BindingBase binding)
 		{
-			var view = target as AView;
+			var view = target as UIView;
 			if (view == null)
 				return false;
 			view.SetBinding(property, binding);
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public bool TrySetValue(object target, BindableProperty property, object value)
 		{
-			var view = target as AView;
+			var view = target as UIView;
 			if (view == null)
 				return false;
 			view.SetValue(property, value);

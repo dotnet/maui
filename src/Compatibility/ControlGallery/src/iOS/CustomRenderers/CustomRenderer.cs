@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			if (this.Control == null)
 			{
 				// Instantiate the native control and assign it to the Control property with
-				// the SetPlatformControl method
+				// the SetNativeControl method
 				UIView myView = new UIView();
-				this.SetPlatformControl(myView);
+				this.SetNativeControl(myView);
 			}
 
 			if (e.OldElement != null)

@@ -15,8 +15,8 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class VisualElementRenderer<TElement, TPlatformElement> : Panel, IVisualPlatformElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
-																																	  where TPlatformElement : FrameworkElement
+	public class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
+																																	  where TNativeElement : FrameworkElement
 	{
 		string _defaultAutomationPropertiesName;
 		AccessibilityView? _defaultAutomationPropertiesAccessibilityView;
@@ -27,13 +27,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 		event EventHandler _controlChanging;
 		event EventHandler _controlChanged;
-		VisualElementTracker<TElement, TPlatformElement> _tracker;
+		VisualElementTracker<TElement, TNativeElement> _tracker;
 		Microsoft.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
 		Control _control => Control as Control;
 
 		Canvas _backgroundLayer;
 
-		public TPlatformElement Control { get; private set; }
+		public TNativeElement Control { get; private set; }
 
 		public TElement Element { get; private set; }
 
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		IElementController ElementController => Element as IElementController;
 
-		protected VisualElementTracker<TElement, TPlatformElement> Tracker
+		protected VisualElementTracker<TElement, TNativeElement> Tracker
 		{
 			get { return _tracker; }
 			set
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return new SizeRequest();
 
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
-			TPlatformElement child = Control;
+			TNativeElement child = Control;
 
 			child.Measure(constraint);
 			var result = new Size(Math.Ceiling(child.DesiredSize.Width), Math.Ceiling(child.DesiredSize.Height));
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return new SizeRequest(result);
 		}
 
-		public UIElement GetPlatformElement()
+		public UIElement GetNativeElement()
 		{
 			return Control;
 		}
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				if (AutoTrack && Tracker == null)
 				{
-					Tracker = new VisualElementTracker<TElement, TPlatformElement>();
+					Tracker = new VisualElementTracker<TElement, TNativeElement>();
 				}
 
 				// Disabled until reason for crashes with unhandled exceptions is discovered
@@ -172,18 +172,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
-		event EventHandler<PropertyChangedEventArgs> IVisualPlatformElementRenderer.ElementPropertyChanged
+		event EventHandler<PropertyChangedEventArgs> IVisualNativeElementRenderer.ElementPropertyChanged
 		{
 			add => _elementPropertyChanged += value;
 			remove => _elementPropertyChanged -= value;
 		}
 
-		event EventHandler IVisualPlatformElementRenderer.ControlChanging
+		event EventHandler IVisualNativeElementRenderer.ControlChanging
 		{
 			add { _controlChanging += value; }
 			remove { _controlChanging -= value; }
 		}
-		event EventHandler IVisualPlatformElementRenderer.ControlChanged
+		event EventHandler IVisualNativeElementRenderer.ControlChanged
 		{
 			add { _controlChanged += value; }
 			remove { _controlChanged -= value; }
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Packager?.Dispose();
 			Packager = null;
 
-			SetPlatformControl(null);
+			SetNativeControl(null);
 			SetElement(null);
 		}
 
@@ -395,10 +395,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, null, _defaultAutomationPropertiesLabeledBy);
 		}
 
-		protected void SetPlatformControl(TPlatformElement control)
+		protected void SetNativeControl(TNativeElement control)
 		{
 			_controlChanging?.Invoke(this, EventArgs.Empty);
-			TPlatformElement oldControl = Control;
+			TNativeElement oldControl = Control;
 			Control = control;
 
 			if (oldControl != null)
@@ -527,7 +527,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				AccessKeyHelper.UpdateAccessKey(Control, Element);
 		}
 
-		protected virtual void UpdatePlatformControl()
+		protected virtual void UpdateNativeControl()
 		{
 			UpdateEnabled();
 			UpdateInputTransparent();
@@ -607,7 +607,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnTrackerUpdated(object sender, EventArgs e)
 		{
-			UpdatePlatformControl();
+			UpdateNativeControl();
 		}
 
 		void UpdateEnabled()

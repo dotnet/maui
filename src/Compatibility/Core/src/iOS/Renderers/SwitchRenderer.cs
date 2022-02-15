@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetPlatformControl(new UISwitch(CGRect.Empty));
+					SetNativeControl(new UISwitch(CGRect.Empty));
 					Control.ValueChanged += OnControlValueChanged;
 				}
 

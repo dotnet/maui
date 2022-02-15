@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetPlatformControl(new FormsProgressBar { IsIndeterminate = true,
+					SetNativeControl(new FormsProgressBar { IsIndeterminate = true,
 						// TODO WINUI for some reason FormsProgressBarStyle won't load
 						//Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsProgressBarStyle"] as Microsoft.UI.Xaml.Style 
 					});

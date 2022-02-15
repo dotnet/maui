@@ -9,36 +9,36 @@ using Microsoft.Maui.Controls.Platform;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using PlatformColor = UIKit.UIColor;
-using PlatformControl = UIKit.UIControl;
-using PlatformView = UIKit.UIView;
+using NativeColor = UIKit.UIColor;
+using NativeControl = UIKit.UIControl;
+using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
-using PlatformView = AppKit.NSView;
-using PlatformColor = CoreGraphics.CGColor;
-using PlatformControl = AppKit.NSControl;
+using NativeView = AppKit.NSView;
+using NativeColor = CoreGraphics.CGColor;
+using NativeControl = AppKit.NSControl;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
 	public interface ITabStop
 	{
-		PlatformView TabStop { get; }
+		NativeView TabStop { get; }
 	}
 
-	public abstract class ViewRenderer : ViewRenderer<View, PlatformView>
+	public abstract class ViewRenderer : ViewRenderer<View, NativeView>
 	{
 	}
 
-	public abstract class ViewRenderer<TView, TPlatformView> : VisualElementRenderer<TView>, IVisualPlatformElementRenderer, ITabStop where TView : View where TPlatformView : PlatformView
+	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IVisualNativeElementRenderer, ITabStop where TView : View where TNativeView : NativeView
 	{
 		string _defaultAccessibilityLabel;
 		string _defaultAccessibilityHint;
 		bool? _defaultIsAccessibilityElement;
 		bool? _defaultAccessibilityElementsHidden;
 
-		PlatformColor _defaultColor;
+		NativeColor _defaultColor;
 
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 		event EventHandler _controlChanging;
@@ -46,34 +46,34 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		private protected bool IsElementOrControlEmpty => Element == null || Control == null;
 
-		protected virtual TPlatformView CreatePlatformControl()
+		protected virtual TNativeView CreateNativeControl()
 		{
-			return default(TPlatformView);
+			return default(TNativeView);
 		}
 
-		public TPlatformView Control { get; private set; }
-		PlatformView IVisualPlatformElementRenderer.Control => Control;
+		public TNativeView Control { get; private set; }
+		NativeView IVisualNativeElementRenderer.Control => Control;
 
 
-		event EventHandler<PropertyChangedEventArgs> IVisualPlatformElementRenderer.ElementPropertyChanged
+		event EventHandler<PropertyChangedEventArgs> IVisualNativeElementRenderer.ElementPropertyChanged
 		{
 			add { _elementPropertyChanged += value; }
 			remove { _elementPropertyChanged -= value; }
 		}
 
-		event EventHandler IVisualPlatformElementRenderer.ControlChanging
+		event EventHandler IVisualNativeElementRenderer.ControlChanging
 		{
 			add { _controlChanging += value; }
 			remove { _controlChanging -= value; }
 		}
-		event EventHandler IVisualPlatformElementRenderer.ControlChanged
+		event EventHandler IVisualNativeElementRenderer.ControlChanged
 		{
 			add { _controlChanged += value; }
 			remove { _controlChanged -= value; }
 		}
 
 
-		PlatformView ITabStop.TabStop => Control;
+		NativeView ITabStop.TabStop => Control;
 #if __MOBILE__
 		public override void LayoutSubviews()
 		{
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #else
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return (Control ?? PlatformView).GetSizeRequest(widthConstraint, heightConstraint);
+			return (Control ?? NativeView).GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
 		public override void Layout()
@@ -104,10 +104,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 
 		/// <summary>
-		/// Determines whether the platform control is disposed of when this renderer is disposed
+		/// Determines whether the native control is disposed of when this renderer is disposed
 		/// Can be overridden in deriving classes 
 		/// </summary>
-		protected virtual bool ManagePlatformControlLifetime => true;
+		protected virtual bool ManageNativeControlLifetime => true;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				_controlChanging = null;
 				_controlChanged = null;
 
-				if (Control != null && ManagePlatformControlLifetime)
+				if (Control != null && ManageNativeControlLifetime)
 				{
 					Control.RemoveFromSuperview();
 					Control.Dispose();
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Control.UpdateBackground(brush);
 		}
 
-		protected void SetPlatformControl(TPlatformView uiview)
+		protected void SetNativeControl(TNativeView uiview)
 		{
 			_controlChanging?.Invoke(this, EventArgs.Empty);
 #if __MOBILE__
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				Control?.SetNeedsDisplay();
 		}
 
-		internal override void SendVisualElementInitialized(VisualElement element, PlatformView platformView)
+		internal override void SendVisualElementInitialized(VisualElement element, NativeView nativeView)
 		{
 			base.SendVisualElementInitialized(element, Control);
 		}
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (IsElementOrControlEmpty)
 				return;
 
-			var uiControl = Control as PlatformControl;
+			var uiControl = Control as NativeControl;
 			if (uiControl == null)
 				return;
 			uiControl.Enabled = Element.IsEnabled;

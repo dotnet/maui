@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.Dispose(disposing);
 		}
 
-		protected override UITableView CreatePlatformControl()
+		protected override UITableView CreateNativeControl()
 		{
 			return new UITableView(RectangleF.Empty, GetTableViewStyle(Element?.Intent ?? TableIntent.Data));
 		}
@@ -88,10 +88,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						Control.Dispose();
 					}
 
-					var tv = CreatePlatformControl();
+					var tv = CreateNativeControl();
 					_originalBackgroundView = tv.BackgroundView;
 
-					SetPlatformControl(tv);
+					SetNativeControl(tv);
 					tv.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateBackgroundView();
 		}
 
-		protected override void UpdatePlatformWidget()
+		protected override void UpdateNativeWidget()
 		{
 			if (Element.Opacity < 1)
 			{
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 				Control.Layer.ShouldRasterize = false;
-			base.UpdatePlatformWidget();
+			base.UpdateNativeWidget();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)

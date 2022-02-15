@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetPlatformControl(new UISlider { Continuous = true });
+					SetNativeControl(new UISlider { Continuous = true });
 					Control.ValueChanged += OnControlValueChanged;
 
 					// sliders SizeThatFits method returns non-useful answers
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateThumbImage()
 		{
-			_ = this.ApplyPlatformImageAsync(Slider.ThumbImageSourceProperty, uiimage =>
+			_ = this.ApplyNativeImageAsync(Slider.ThumbImageSourceProperty, uiimage =>
 			{
 				Control?.SetThumbImage(uiimage, UIControlState.Normal);
 

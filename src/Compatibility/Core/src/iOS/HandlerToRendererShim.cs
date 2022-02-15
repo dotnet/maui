@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public VisualElement Element { get; private set; }
 
-		public UIView PlatformView => ViewHandler.ContainerView ?? ViewHandler.PlatformView;
+		public UIView NativeView => ViewHandler.ContainerView ?? ViewHandler.PlatformView;
 
 		public UIViewController ViewController => ViewHandler.ViewController;
 

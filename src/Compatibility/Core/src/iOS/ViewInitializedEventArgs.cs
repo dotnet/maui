@@ -1,8 +1,8 @@
 using System;
 #if __MOBILE__
-using TPlatformView = UIKit.UIView;
+using TNativeView = UIKit.UIView;
 #else
-using TPlatformView = AppKit.NSView;
+using TNativeView = AppKit.NSView;
 
 #endif
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public class ViewInitializedEventArgs : EventArgs
 	{
-		public TPlatformView PlatformView { get; internal set; }
+		public TNativeView NativeView { get; internal set; }
 
 		public VisualElement View { get; internal set; }
 	}

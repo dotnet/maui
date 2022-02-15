@@ -22,10 +22,10 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class VisualElementTracker<TElement, TPlatformElement> : IDisposable where TElement : VisualElement where TPlatformElement : FrameworkElement
+	public class VisualElementTracker<TElement, TNativeElement> : IDisposable where TElement : VisualElement where TNativeElement : FrameworkElement
 	{
 		FrameworkElement _container;
-		TPlatformElement _control;
+		TNativeElement _control;
 		TElement _element;
 		bool _invalidateArrangeNeeded;
 		bool _isDisposed;
@@ -46,11 +46,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				_container = value;
 
-				UpdatePlatformControl();
+				UpdateNativeControl();
 			}
 		}
 
-		public TPlatformElement Control
+		public TNativeElement Control
 		{
 			get { return _control; }
 			set
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					return;
 
 				_control = value;
-				UpdatePlatformControl();
+				UpdateNativeControl();
 			}
 		}
 
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_element.PropertyChanged += OnPropertyChanged;
 				}
 
-				UpdatePlatformControl();
+				UpdateNativeControl();
 			}
 		}
 
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		protected virtual void UpdatePlatformControl()
+		protected virtual void UpdateNativeControl()
 		{
 			if (Element == null || Container == null)
 				return;
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnRedrawNeeded(object sender, EventArgs e)
 		{
-			UpdatePlatformControl();
+			UpdateNativeControl();
 		}
 
 		void OnUpdated()

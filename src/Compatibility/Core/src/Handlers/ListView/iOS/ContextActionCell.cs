@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Foundation;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.iOS.Resources;
 using ObjCRuntime;
 using UIKit;
@@ -12,7 +13,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	internal class ContextActionsCell : UITableViewCell, IPlatformElementView
+	internal class ContextActionsCell : UITableViewCell, INativeElementView
 	{
 		public const string Key = "ContextActionsCell";
 
@@ -66,14 +67,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return (ContextScrollViewDelegate)_scroller.Delegate; }
 		}
 
-		Element IPlatformElementView.Element
+		Element INativeElementView.Element
 		{
 			get
 			{
-				var boxedCell = ContentCell as IPlatformElementView;
+				var boxedCell = ContentCell as INativeElementView;
 				if (boxedCell == null)
 				{
-					throw new InvalidOperationException($"Implement {nameof(IPlatformElementView)} on cell renderer: {ContentCell.GetType().AssemblyQualifiedName}");
+					throw new InvalidOperationException($"Implement {nameof(INativeElementView)} on cell renderer: {ContentCell.GetType().AssemblyQualifiedName}");
 				}
 
 				return boxedCell.Element;
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Dispose(true);
 		}
 
-		public void Update(UITableView tableView, Cell cell, UITableViewCell platformCell)
+		public void Update(UITableView tableView, Cell cell, UITableViewCell nativeCell)
 		{
 			var parentListView = cell.RealParent as ListView;
 			var recycling = parentListView != null &&
@@ -144,8 +145,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var height = Frame.Height + (parentListView != null && parentListView.SeparatorVisibility == SeparatorVisibility.None ? 0.5f : 0f);
 			var width = ContentView.Frame.Width;
 
-			platformCell.Frame = new RectangleF(0, 0, width, height);
-			platformCell.SetNeedsLayout();
+			nativeCell.Frame = new RectangleF(0, 0, width, height);
+			nativeCell.SetNeedsLayout();
 
 			var handler = new PropertyChangedEventHandler(OnMenuItemPropertyChanged);
 
@@ -206,7 +207,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ScrollDelegate.Dispose();
 			}
 
-			if (ContentCell != platformCell)
+			if (ContentCell != nativeCell)
 			{
 				if (ContentCell != null)
 				{
@@ -214,7 +215,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					ContentCell = null;
 				}
 
-				ContentCell = platformCell;
+				ContentCell = nativeCell;
 
 				//Hack: if we have a ImageCell the insets are slightly different,
 				//the inset numbers user below were taken using the Reveal app from the default cells
@@ -230,7 +231,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					SeparatorInset = new UIEdgeInsets(0, imageCellInsetLeft, 0, imageCellInsetRight);
 				}
 
-				_scroller.AddSubview(platformCell);
+				_scroller.AddSubview(nativeCell);
 			}
 
 			SetupButtons(width, height);

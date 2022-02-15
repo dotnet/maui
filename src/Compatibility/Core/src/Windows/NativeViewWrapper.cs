@@ -2,15 +2,15 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class PlatformViewWrapper : View
+	public class NativeViewWrapper : View
 	{
-		public PlatformViewWrapper(FrameworkElement nativeElement, GetDesiredSizeDelegate getDesiredSizeDelegate = null, ArrangeOverrideDelegate arrangeOverrideDelegate = null,
+		public NativeViewWrapper(FrameworkElement nativeElement, GetDesiredSizeDelegate getDesiredSizeDelegate = null, ArrangeOverrideDelegate arrangeOverrideDelegate = null,
 								 MeasureOverrideDelegate measureOverrideDelegate = null)
 		{
 			GetDesiredSizeDelegate = getDesiredSizeDelegate;
 			ArrangeOverrideDelegate = arrangeOverrideDelegate;
 			MeasureOverrideDelegate = measureOverrideDelegate;
-			PlatformElement = nativeElement;
+			NativeElement = nativeElement;
 			nativeElement.TransferbindablePropertiesToWrapper(this);
 		}
 
@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public MeasureOverrideDelegate MeasureOverrideDelegate { get; set; }
 
-		public FrameworkElement PlatformElement { get; }
+		public FrameworkElement NativeElement { get; }
 
 		protected override void OnBindingContextChanged()
 		{
-			PlatformElement.SetBindingContext(BindingContext,  nv =>  nv.GetChildren<FrameworkElement>());
+			NativeElement.SetBindingContext(BindingContext,  nv =>  nv.GetChildren<FrameworkElement>());
 			base.OnBindingContextChanged();
 		}
 	}

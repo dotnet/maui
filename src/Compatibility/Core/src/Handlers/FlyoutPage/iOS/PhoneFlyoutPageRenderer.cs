@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 		}
 
-		public UIView PlatformView
+		public UIView NativeView
 		{
 			get { return View; }
 		}
@@ -533,13 +533,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IView IViewHandler.VirtualView => Element;
 
-		object IElementHandler.PlatformView => PlatformView;
+		object IElementHandler.PlatformView => NativeView;
 
 		Maui.IElement IElementHandler.VirtualView => Element;
 
 		IMauiContext IElementHandler.MauiContext => _mauiContext;
 
-		UIView IPlatformViewHandler.PlatformView => PlatformView;
+		UIView IPlatformViewHandler.PlatformView => NativeView;
 
 		UIView IPlatformViewHandler.ContainerView => null;
 

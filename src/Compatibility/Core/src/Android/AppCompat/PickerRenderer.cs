@@ -51,9 +51,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				((INotifyCollectionChanged)e.NewElement.Items).CollectionChanged += RowsCollectionChanged;
 				if (Control == null)
 				{
-					var textField = CreatePlatformControl();
+					var textField = CreateNativeControl();
 
-					SetPlatformControl(textField);
+					SetNativeControl(textField);
 
 					ControlUsedForAutomation.SetAccessibilityDelegate(_pickerAccessibilityDelegate = new EntryAccessibilityDelegate(Element));
 				}
@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 		}
 
-		protected override EditText CreatePlatformControl()
+		protected override EditText CreateNativeControl()
 		{
 			return new PickerEditText(Context);
 		}

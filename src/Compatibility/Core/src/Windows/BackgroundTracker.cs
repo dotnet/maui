@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnPropertyChanged(sender, e);
 		}
 
-		protected override void UpdatePlatformControl()
+		protected override void UpdateNativeControl()
 		{
-			base.UpdatePlatformControl();
+			base.UpdateNativeControl();
 
 			if (_backgroundNeedsUpdate)
 				UpdateBackground();

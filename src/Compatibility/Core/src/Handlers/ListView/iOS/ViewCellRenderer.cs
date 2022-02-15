@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
@@ -39,13 +40,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return cell;
 		}
 
-		internal class ViewTableCell : UITableViewCell, IPlatformElementView
+		internal class ViewTableCell : UITableViewCell, INativeElementView
 		{
 			IMauiContext MauiContext => _viewCell.FindMauiContext();
 			WeakReference<IPlatformViewHandler> _rendererRef;
 			ViewCell _viewCell;
 
-			Element IPlatformElementView.Element => ViewCell;
+			Element INativeElementView.Element => ViewCell;
 			internal bool SupressSeparator { get; set; }
 			bool _disposed;
 

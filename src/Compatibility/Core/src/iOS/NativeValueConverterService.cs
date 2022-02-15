@@ -5,25 +5,25 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 using ObjCRuntime;
 using UIKit;
 
-[assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.PlatformValueConverterService))]
+[assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.NativeValueConverterService))]
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using UIView = AppKit.NSView;
 
-[assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.MacOS.PlatformValueConverterService))]
+[assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.MacOS.NativeValueConverterService))]
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
 	[Preserve(AllMembers = true)]
-	class PlatformValueConverterService : IPlatformValueConverterService
+	class NativeValueConverterService : INativeValueConverterService
 	{
-		public bool ConvertTo(object value, Type toType, out object platformValue)
+		public bool ConvertTo(object value, Type toType, out object nativeValue)
 		{
-			platformValue = null;
+			nativeValue = null;
 			if (typeof(UIView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
 			{
-				platformValue = ((UIView)value).ToView();
+				nativeValue = ((UIView)value).ToView();
 				return true;
 			}
 			return false;

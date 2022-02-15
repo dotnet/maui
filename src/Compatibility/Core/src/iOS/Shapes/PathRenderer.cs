@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetPlatformControl(new PathView());
+				SetNativeControl(new PathView());
 			}
 
 			base.OnElementChanged(args);

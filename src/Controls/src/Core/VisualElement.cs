@@ -368,9 +368,9 @@ namespace Microsoft.Maui.Controls
 		int _batched;
 		LayoutConstraint _computedConstraint;
 
-		bool _isInNativeLayout;
+		bool _isInPlatformLayout;
 
-		bool _isNativeStateConsistent = true;
+		bool _isPlatformStateConsistent = true;
 
 		bool _isPlatformEnabled;
 
@@ -640,7 +640,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (_isInNativeLayout)
+				if (_isInPlatformLayout)
 					return true;
 
 				Element parent = RealParent;
@@ -653,19 +653,19 @@ namespace Microsoft.Maui.Controls
 
 				return false;
 			}
-			set { _isInNativeLayout = value; }
+			set { _isInPlatformLayout = value; }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsPlatformStateConsistent']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsPlatformStateConsistent
 		{
-			get { return _isNativeStateConsistent; }
+			get { return _isPlatformStateConsistent; }
 			set
 			{
-				if (_isNativeStateConsistent == value)
+				if (_isPlatformStateConsistent == value)
 					return;
-				_isNativeStateConsistent = value;
+				_isPlatformStateConsistent = value;
 				if (value && IsPlatformEnabled)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 			}
@@ -900,7 +900,6 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 

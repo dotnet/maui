@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers
 {
-	public interface ISamplePlatformControl
+	public interface ISampleNativeControl
 	{
 		View View { get; }
 	}

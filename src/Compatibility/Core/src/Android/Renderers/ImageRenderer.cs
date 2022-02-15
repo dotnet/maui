@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.Dispose(disposing);
 		}
 
-		protected override AImageView CreatePlatformControl()
+		protected override AImageView CreateNativeControl()
 		{
 			return new FormsImageView(Context);
 		}
@@ -48,8 +48,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				var view = CreatePlatformControl();
-				SetPlatformControl(view);
+				var view = CreateNativeControl();
+				SetNativeControl(view);
 			}
 
 			_motionEventHelper.UpdateElement(e.NewElement);

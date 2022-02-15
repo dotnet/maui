@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.Dispose(disposing);
 		}
 
-		protected override UITableView CreatePlatformControl()
+		protected override UITableView CreateNativeControl()
 		{
 			return new UITableView(RectangleF.Empty, GetTableViewStyle(Element?.Intent ?? TableIntent.Data));
 		}
@@ -85,10 +85,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						Control.Dispose();
 					}
 
-					var tv = CreatePlatformControl();
+					var tv = CreateNativeControl();
 					_originalBackgroundView = tv.BackgroundView;
 
-					SetPlatformControl(tv);
+					SetNativeControl(tv);
 					if (PlatformVersion.IsAtLeast(9))
 						tv.CellLayoutMarginsFollowReadableWidth = false;
 
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateBackgroundView();
 		}
 
-		protected override void UpdatePlatformWidget()
+		protected override void UpdateNativeWidget()
 		{
 			if (Element.Opacity < 1)
 			{
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 				Control.Layer.ShouldRasterize = false;
 
-			base.UpdatePlatformWidget();
+			base.UpdateNativeWidget();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)

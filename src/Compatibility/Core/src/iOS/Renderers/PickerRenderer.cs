@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[PortHandler]
-		protected override UITextField CreatePlatformControl()
+		protected override UITextField CreateNativeControl()
 		{
 			return new ReadOnlyField { BorderStyle = UITextBorderStyle.RoundedRect };
 		}
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
-		protected abstract override TControl CreatePlatformControl();
+		protected abstract override TControl CreateNativeControl();
 
 		[PortHandler("Partially ported, still missing code related to TitleColor, etc.")]
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (Control == null)
 				{
 					// disabled cut, delete, and toggle actions because they can throw an unhandled native exception
-					var entry = CreatePlatformControl();
+					var entry = CreateNativeControl();
 
 					entry.EditingDidBegin += OnStarted;
 					entry.EditingDidEnd += OnEnded;
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					entry.AccessibilityTraits = UIAccessibilityTrait.Button;
 
-					SetPlatformControl(entry);
+					SetNativeControl(entry);
 				}
 
 				_picker.Model = new PickerSource(this);

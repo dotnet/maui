@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_footer != null)
 			{
 				var renderer = Platform.CreateRenderer(_footer);
-				_footerView = renderer.PlatformView;
+				_footerView = renderer.NativeView;
 				Platform.SetRenderer(_footer, renderer);
 				_uIViews[FooterIndex] = _footerView;
 				AddViewInCorrectOrder(_footerView, previousIndex);
@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 			}
 
-			using (var nativeImage = await imageSource.GetPlatformImageAsync())
+			using (var nativeImage = await imageSource.GetNativeImageAsync())
 			{
 				if (View == null)
 					return;

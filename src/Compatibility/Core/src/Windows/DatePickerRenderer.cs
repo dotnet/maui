@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (Control == null)
 				{
 					var picker = new Microsoft.UI.Xaml.Controls.DatePicker();
-					SetPlatformControl(picker);
+					SetNativeControl(picker);
 					Control.Loaded += ControlOnLoaded;
 					Control.DateChanged += OnControlDateChanged;
 				}

@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (Control == null)
 				{
-					SetPlatformControl(CreatePlatformControl());
+					SetNativeControl(CreateNativeControl());
 				}
 
 				UpdateContent();
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementChanged(e);
 		}
 
-		protected override UIView CreatePlatformControl()
+		protected override UIView CreateNativeControl()
 		{
 			return new UIView();
 		}
@@ -574,7 +574,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			_swipeItems.TryGetValue(item, out object view);
 
-			if (view != null && view is UIView platformView)
+			if (view != null && view is UIView nativeView)
 			{
 				bool hidden = false;
 
@@ -585,7 +585,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					hidden = !swipeItemView.IsVisible;
 
 				_swipeThreshold = 0;
-				platformView.Hidden = hidden;
+				nativeView.Hidden = hidden;
 				LayoutSwipeItems(GetNativeSwipeItems());
 				SwipeToThreshold(false);
 			}
@@ -624,7 +624,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Platform.SetRenderer(formsSwipeItemView, renderer);
 			UpdateSwipeItemViewLayout(formsSwipeItemView);
 
-			var swipeItemView = renderer?.PlatformView;
+			var swipeItemView = renderer?.NativeView;
 
 			if (swipeItemView != null)
 				swipeItemView.Hidden = !formsSwipeItemView.IsVisible;
@@ -687,7 +687,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 			{
-				var image = await swipeItem.IconImageSource.GetPlatformImageAsync();
+				var image = await swipeItem.IconImageSource.GetNativeImageAsync();
 
 				var maxWidth = swipeButton.Frame.Width * 0.5f;
 				var maxHeight = swipeButton.Frame.Height * 0.5f;

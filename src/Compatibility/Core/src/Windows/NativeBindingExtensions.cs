@@ -7,7 +7,7 @@ using static System.String;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public static class PlatformBindingExtensions
+	public static class NativeBindingExtensions
 	{
 		public static void SetBinding(this FrameworkElement view, string propertyName, BindingBase bindingBase, string updateSourceEventName = null)
 		{

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_renderer = Platform.CreateRenderer(view);
 			Platform.SetRenderer(view, _renderer);
 
-			AddSubview(_renderer.PlatformView);
+			AddSubview(_renderer.NativeView);
 			ClipsToBounds = true;
 			view.MeasureInvalidated += OnMeasureInvalidated;
 			MeasuredHeight = double.NaN;

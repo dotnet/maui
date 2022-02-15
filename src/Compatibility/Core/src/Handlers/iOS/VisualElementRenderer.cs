@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		protected virtual void UpdatePlatformWidget()
+		protected virtual void UpdateNativeWidget()
 		{
 
 		}
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == VisualElement.OpacityProperty.PropertyName ||
 				e.PropertyName == Controls.Compatibility.Layout.CascadeInputTransparentProperty.PropertyName)
 			{
-				UpdatePlatformWidget();
+				UpdateNativeWidget();
 			}
 		}
 
@@ -84,12 +84,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void OnBatchCommitted(object? sender, Internals.EventArg<VisualElement> e)
 		{
-			UpdatePlatformWidget();
+			UpdateNativeWidget();
 		}
 
 		void OnSizeChanged(object? sender, EventArgs e)
 		{
-			UpdatePlatformWidget();
+			UpdateNativeWidget();
 		}
 	}
 }

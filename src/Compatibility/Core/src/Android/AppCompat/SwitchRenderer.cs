@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		}
 
 		[PortHandler]
-		protected override SwitchCompat CreatePlatformControl()
+		protected override SwitchCompat CreateNativeControl()
 		{
 			return new SwitchCompat(Context);
 		}
@@ -82,13 +82,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				if (Control == null)
 				{
-					SwitchCompat aswitch = CreatePlatformControl();
+					SwitchCompat aswitch = CreateNativeControl();
 					aswitch.SetOnCheckedChangeListener(this);
-					SetPlatformControl(aswitch);
+					SetNativeControl(aswitch);
 					_defaultTrackDrawable = aswitch.TrackDrawable;
 				}
 				else
-					UpdateEnabled(); // Normally set by SetPlatformControl, but not when the Control is reused.
+					UpdateEnabled(); // Normally set by SetNativeControl, but not when the Control is reused.
 
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;

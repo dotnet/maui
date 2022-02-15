@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					if (_headerRenderer != null)
-						Control.TableHeaderView = _headerRenderer.PlatformView;
+						Control.TableHeaderView = _headerRenderer.NativeView;
 				});
 			}
 
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					if (_footerRenderer != null)
-						Control.TableFooterView = _footerRenderer.PlatformView;
+						Control.TableFooterView = _footerRenderer.NativeView;
 				});
 			}
 
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
 					}
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
-					SetPlatformControl(_tableViewController.TableView);
+					SetNativeControl(_tableViewController.TableView);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
 
@@ -401,7 +401,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 			Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
 
-			Control.TableFooterView = _footerRenderer.PlatformView;
+			Control.TableFooterView = _footerRenderer.NativeView;
 		}
 
 		void OnGroupedCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -423,7 +423,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 			Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
 
-			Control.TableHeaderView = _headerRenderer.PlatformView;
+			Control.TableHeaderView = _headerRenderer.NativeView;
 		}
 
 		void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 				Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
 
-				Control.TableFooterView = _footerRenderer.PlatformView;
+				Control.TableFooterView = _footerRenderer.NativeView;
 				footerView.MeasureInvalidated += OnFooterMeasureInvalidated;
 			}
 			else if (_footerRenderer != null)
@@ -540,7 +540,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 				Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
 
-				Control.TableHeaderView = _headerRenderer.PlatformView;
+				Control.TableHeaderView = _headerRenderer.NativeView;
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
 			}
 			else if (_headerRenderer != null)
@@ -1069,9 +1069,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_isDragging = true;
 			}
 
-			void SetupSelection(UITableViewCell platformCell, UITableView tableView)
+			void SetupSelection(UITableViewCell nativeCell, UITableView tableView)
 			{
-				if (!(platformCell is ContextActionsCell))
+				if (!(nativeCell is ContextActionsCell))
 					return;
 
 				if (_setupSelection)
@@ -1085,7 +1085,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 			{
 				Cell cell;
-				UITableViewCell platformCell;
+				UITableViewCell nativeCell;
 
 				Performance.Start(out string reference);
 
@@ -1093,23 +1093,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (cachingStrategy == ListViewCachingStrategy.RetainElement)
 				{
 					cell = GetCellForPath(indexPath);
-					platformCell = CellTableViewCell.GetPlatformCell(tableView, cell);
+					nativeCell = CellTableViewCell.GetNativeCell(tableView, cell);
 				}
 				else if ((cachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 				{
 					var id = TemplateIdForPath(indexPath);
-					platformCell = tableView.DequeueReusableCell(ContextActionsCell.Key + id);
-					if (platformCell == null)
+					nativeCell = tableView.DequeueReusableCell(ContextActionsCell.Key + id);
+					if (nativeCell == null)
 					{
 						cell = GetCellForPath(indexPath);
 
-						platformCell = CellTableViewCell.GetPlatformCell(tableView, cell, true, id.ToString());
+						nativeCell = CellTableViewCell.GetNativeCell(tableView, cell, true, id.ToString());
 					}
 					else
 					{
 						var templatedList = TemplatedItemsView.TemplatedItems.GetGroup(indexPath.Section);
 
-						cell = (Cell)((IPlatformElementView)platformCell).Element;
+						cell = (Cell)((INativeElementView)nativeCell).Element;
 						cell.SendDisappearing();
 
 						templatedList.UpdateContent(cell, indexPath.Row);
@@ -1119,22 +1119,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				else
 					throw new NotSupportedException();
 
-				SetupSelection(platformCell, tableView);
+				SetupSelection(nativeCell, tableView);
 
 				if (List.IsSet(Specifics.SeparatorStyleProperty))
 				{
 					if (List.OnThisPlatform().GetSeparatorStyle() == SeparatorStyle.FullWidth)
 					{
-						platformCell.SeparatorInset = UIEdgeInsets.Zero;
-						platformCell.LayoutMargins = UIEdgeInsets.Zero;
-						platformCell.PreservesSuperviewLayoutMargins = false;
+						nativeCell.SeparatorInset = UIEdgeInsets.Zero;
+						nativeCell.LayoutMargins = UIEdgeInsets.Zero;
+						nativeCell.PreservesSuperviewLayoutMargins = false;
 					}
 				}
 				var bgColor = tableView.IndexPathForSelectedRow != null && tableView.IndexPathForSelectedRow.Equals(indexPath) ? UIColor.Clear : DefaultBackgroundColor;
-				SetCellBackgroundColor(platformCell, bgColor);
+				SetCellBackgroundColor(nativeCell, bgColor);
 				PreserveActivityIndicatorState(cell);
 				Performance.Stop(reference);
-				return platformCell;
+				return nativeCell;
 			}
 
 			public override nfloat GetHeightForHeader(UITableView tableView, nint section)
@@ -1246,7 +1246,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				Cell formsCell = null;
 				if ((List.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
-					formsCell = (Cell)((IPlatformElementView)cell).Element;
+					formsCell = (Cell)((INativeElementView)cell).Element;
 
 				SetCellBackgroundColor(cell, UIColor.Clear);
 

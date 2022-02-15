@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetPlatformControl(new EllipseView());
+				SetNativeControl(new EllipseView());
 			}
 
 			base.OnElementChanged(args);

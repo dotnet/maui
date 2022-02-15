@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			_ = VisualElementRenderer ?? throw new InvalidOperationException("VisualElementRenderer cannot be null here");
 
-			return VisualElementRenderer.PlatformView;
+			return VisualElementRenderer.NativeView;
 		}
 
 		IVisualElementRenderer CreateRenderer(IView view)

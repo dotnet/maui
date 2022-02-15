@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_density = Resources.DisplayMetrics.Density;
 
-					SetPlatformControl(CreatePlatformControl());
+					SetNativeControl(CreateNativeControl());
 				}
 
 				UpdateContent();
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementChanged(e);
 		}
 
-		protected override AView CreatePlatformControl()
+		protected override AView CreateNativeControl()
 		{
 			return new AView(_context);
 		}
@@ -765,7 +765,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			_swipeItems.TryGetValue(item, out object view);
 
-			if (view != null && view is AView platformView)
+			if (view != null && view is AView nativeView)
 			{
 				bool hidden = false;
 
@@ -776,7 +776,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					hidden = !swipeItemView.IsVisible;
 
 				_swipeThreshold = 0;
-				platformView.Visibility = hidden ? ViewStates.Gone : ViewStates.Visible;
+				nativeView.Visibility = hidden ? ViewStates.Gone : ViewStates.Visible;
 				LayoutSwipeItems(GetNativeSwipeItems());
 				SwipeToThreshold(false);
 			}

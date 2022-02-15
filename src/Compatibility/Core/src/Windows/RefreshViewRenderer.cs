@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 							refreshControl.UnregisterPropertyChangedCallback(RefreshContainer.VisualizerProperty, callbackToken);
 						});
 
-					SetPlatformControl(refreshControl);
+					SetNativeControl(refreshControl);
 				}
 
 				UpdateContent();

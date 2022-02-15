@@ -43,10 +43,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		public static void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs e)
 		{
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
-			MessagingCenter.Subscribe<NestedPlatformControlGalleryPage>(window, NestedPlatformControlGalleryPage.ReadyForPlatformControlsMessage, AddPlatformControls);
+			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(window, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
-			MessagingCenter.Subscribe<PlatformBindingGalleryPage>(window, PlatformBindingGalleryPage.ReadyForPlatformBindingsMessage, AddPlatformBindings);
+			MessagingCenter.Subscribe<NativeBindingGalleryPage>(window, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
 			Application.Current.PropertyChanged += OnAppPropertyChanged;
 
@@ -92,9 +92,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			}
 		}
 
-		static void AddPlatformControls(NestedPlatformControlGalleryPage page)
+		static void AddNativeControls(NestedNativeControlGalleryPage page)
 		{
-			if (page.PlatformControlsAdded)
+			if (page.NativeControlsAdded)
 			{
 				return;
 			}
@@ -119,12 +119,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			sl?.Children.Add(button.ToView());
 
 			// Create a control which we know doesn't behave correctly with regard to measurement
-			var difficultControl = new BrokenPlatformControl
+			var difficultControl = new BrokenNativeControl
 			{
 				Text = "Not Sized/Arranged Properly"
 			};
 
-			var difficultControl2 = new BrokenPlatformControl
+			var difficultControl2 = new BrokenNativeControl
 			{
 				Text = "Fixed"
 			};
@@ -160,12 +160,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				}
 			);
 
-			page.PlatformControlsAdded = true;
+			page.NativeControlsAdded = true;
 		}
 
-		static void AddPlatformBindings(PlatformBindingGalleryPage page)
+		static void AddNativeBindings(NativeBindingGalleryPage page)
 		{
-			if (page.PlatformControlsAdded)
+			if (page.NativeControlsAdded)
 				return;
 
 			StackLayout sl = page.Layout;
@@ -188,9 +188,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			var btnTextBox = new global::Microsoft.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
 			btnTextBox.Click += (sender, args) => txbBox.Text = "Hello 2 way native";
 
-			txbLabel.SetBinding("Text", new Binding("PlatformLabel"));
-			txbBox.SetBinding("Text", new Binding("PlatformLabel", BindingMode.TwoWay), "TextChanged");
-			txbLabel.SetBinding("Foreground", new Binding("PlatformLabelColor", BindingMode.TwoWay, new ColorToBrushPlatformBindingConverter()));
+			txbLabel.SetBinding("Text", new Binding("NativeLabel"));
+			txbBox.SetBinding("Text", new Binding("NativeLabel", BindingMode.TwoWay), "TextChanged");
+			txbLabel.SetBinding("Foreground", new Binding("NativeLabelColor", BindingMode.TwoWay, new ColorToBrushNativeBindingConverter()));
 
 			var grd = new StackPanel();
 			grd.Children.Add(txbLabel);
@@ -201,10 +201,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			sl?.Children.Add(txbBox);
 			sl?.Children.Add(btnTextBox.ToView());
 
-			page.PlatformControlsAdded = true;
+			page.NativeControlsAdded = true;
 		}
 
-		class ColorToBrushPlatformBindingConverter : IValueConverter
+		class ColorToBrushNativeBindingConverter : IValueConverter
 		{
 			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{

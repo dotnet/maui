@@ -10,9 +10,8 @@ using static System.String;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PlatformBindingHelpers']/Docs" />
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class PlatformBindingHelpers
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PlatformBindingHelpers']/Docs" />	
+	internal static class PlatformBindingHelpers
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="//Member[@MemberName='SetBinding']/Docs" />
 		public static void SetBinding<TPlatformView>(TPlatformView target, string targetProperty, BindingBase bindingBase, string updateSourceEventName = null) where TPlatformView : class

@@ -46,10 +46,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return PlatformView.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
+			return NativeView.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
 		}
 
-		public UIView PlatformView
+		public UIView NativeView
 		{
 			get { return this; }
 		}
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_packager.Load();
 
 					_tracker = new VisualElementTracker(this);
-					_tracker.PlatformControlUpdated += OnPlatformControlUpdated;
+					_tracker.NativeControlUpdated += OnNativeControlUpdated;
 					_events = new EventTracker(this);
 					_events.LoadEvents(this);
 
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_packager.Dispose();
 				_packager = null;
 
-				_tracker.PlatformControlUpdated -= OnPlatformControlUpdated;
+				_tracker.NativeControlUpdated -= OnNativeControlUpdated;
 				_tracker.Dispose();
 				_tracker = null;
 
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateScrollPosition();
 		}
 
-		void OnPlatformControlUpdated(object sender, EventArgs eventArgs)
+		void OnNativeControlUpdated(object sender, EventArgs eventArgs)
 		{
 			var elementContentSize = RetrieveElementContentSize();
 			ContentSize = elementContentSize.IsEmpty ? Bounds.Size : elementContentSize;
@@ -312,12 +312,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackground()
 		{
-			if (PlatformView == null)
+			if (NativeView == null)
 				return;
 
 			Brush background = Element.Background;
 
-			PlatformView.UpdateBackground(background);
+			NativeView.UpdateBackground(background);
 		}
 
 		void UpdateContentSize()
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
-			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, PlatformView);
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, NativeView);
 		}
 	}
 }

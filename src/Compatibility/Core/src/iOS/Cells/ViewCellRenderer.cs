@@ -40,12 +40,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return cell;
 		}
 
-		internal class ViewTableCell : UITableViewCell, IPlatformElementView
+		internal class ViewTableCell : UITableViewCell, INativeElementView
 		{
 			WeakReference<IVisualElementRenderer> _rendererRef;
 			ViewCell _viewCell;
 
-			Element IPlatformElementView.Element => ViewCell;
+			Element INativeElementView.Element => ViewCell;
 			internal bool SupressSeparator { get; set; }
 			bool _disposed;
 
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				IVisualElementRenderer renderer;
 				if (_rendererRef.TryGetTarget(out renderer))
-					renderer.PlatformView.Frame = view.Bounds.ToRectangleF();
+					renderer.NativeView.Frame = view.Bounds.ToRectangleF();
 
 				Performance.Stop(reference);
 			}
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				var newRenderer = Platform.CreateRenderer(_viewCell.View);
 				_rendererRef = new WeakReference<IVisualElementRenderer>(newRenderer);
-				ContentView.AddSubview(newRenderer.PlatformView);
+				ContentView.AddSubview(newRenderer.NativeView);
 				return newRenderer;
 			}
 

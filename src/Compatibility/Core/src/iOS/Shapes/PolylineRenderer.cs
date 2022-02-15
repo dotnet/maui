@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Control == null && args.NewElement != null)
 			{
-				SetPlatformControl(new PolylineView());
+				SetNativeControl(new PolylineView());
 			}
 
 			base.OnElementChanged(args);

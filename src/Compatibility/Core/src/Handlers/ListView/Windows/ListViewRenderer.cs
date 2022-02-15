@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					};
 
 					List.SelectionChanged += OnControlSelectionChanged;
-					SetPlatformControl(List);
+					SetNativeControl(List);
 				}
 
 				ReloadData();
@@ -444,7 +444,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_zoom.CanChangeViews = true;
 				}
 
-				SetPlatformControl(_zoom);
+				SetNativeControl(_zoom);
 			}
 			else
 			{

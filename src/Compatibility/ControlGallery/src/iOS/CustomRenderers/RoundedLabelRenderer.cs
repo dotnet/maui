@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRendere
 		{
 			if (Control == null)
 			{
-				SetPlatformControl(new TagUiLabel());
+				SetNativeControl(new TagUiLabel());
 			}
 			base.OnElementChanged(e);
 			if (e.NewElement != null)

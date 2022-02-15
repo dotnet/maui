@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				SelectableItemsView.SelectedItemsProperty,
 				SelectableItemsView.SelectionModeProperty))
 			{
-				UpdatePlatformSelection();
+				UpdateNativeSelection();
 			}
 		}
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			base.SetUpNewElement(newElement);
 
-			UpdatePlatformSelection();
+			UpdateNativeSelection();
 		}
 
 		protected override TAdapter CreateAdapter()
@@ -36,11 +36,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return (TAdapter)new SelectableItemsViewAdapter<TItemsView, TItemsViewSource>(ItemsView);
 		}
 
-		void UpdatePlatformSelection()
+		void UpdateNativeSelection()
 		{
 			var mode = ItemsView.SelectionMode;
 
-			ItemsViewAdapter.ClearPlatformSelection();
+			ItemsViewAdapter.ClearNativeSelection();
 
 			switch (mode)
 			{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				case SelectionMode.Single:
 					var selectedItem = ItemsView.SelectedItem;
-					ItemsViewAdapter.MarkPlatformSelection(selectedItem);
+					ItemsViewAdapter.MarkNativeSelection(selectedItem);
 					return;
 
 				case SelectionMode.Multiple:
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					foreach (var item in selectedItems)
 					{
-						ItemsViewAdapter.MarkPlatformSelection(item);
+						ItemsViewAdapter.MarkNativeSelection(item);
 					}
 					return;
 			}

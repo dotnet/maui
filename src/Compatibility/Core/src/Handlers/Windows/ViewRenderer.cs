@@ -7,9 +7,9 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract partial class ViewRenderer<TElement, TPlatformView> : VisualElementRenderer<TElement, TPlatformView>, IPlatformViewHandler
+	public abstract partial class ViewRenderer<TElement, TNativeView> : VisualElementRenderer<TElement, TNativeView>, IPlatformViewHandler
 		where TElement : View, IView
-		where TPlatformView : PlatformView
+		where TNativeView : PlatformView
 	{
 		public ViewRenderer() : this(VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{

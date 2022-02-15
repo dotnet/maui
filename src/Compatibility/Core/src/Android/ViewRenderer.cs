@@ -21,15 +21,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 	}
 
-	public abstract class ViewRenderer<TView, TPlatformView> : VisualElementRenderer<TView>, IViewRenderer, ITabStop, AView.IOnFocusChangeListener where TView : View where TPlatformView : AView
+	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IViewRenderer, ITabStop, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
 	{
 		protected ViewRenderer(Context context) : base(context)
 		{
 		}
 
-		protected virtual TPlatformView CreatePlatformControl()
+		protected virtual TNativeView CreateNativeControl()
 		{
-			return default(TPlatformView);
+			return default(TNativeView);
 		}
 
 		ViewGroup _container;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		SoftInput _startingInputMode;
 
-		public TPlatformView Control { get; private set; }
+		public TNativeView Control { get; private set; }
 		protected virtual AView ControlUsedForAutomation => Control;
 
 		AView ITabStop.TabStop => Control;
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (disposing && !_disposed)
 			{
-				if (Control != null && ManagePlatformControlLifetime)
+				if (Control != null && ManageNativeControlLifetime)
 				{
 					Control.OnFocusChangeListener = null;
 				}
@@ -261,9 +261,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(ControlUsedForAutomation, Element);
 		}
 
-		protected void SetPlatformControl(TPlatformView control)
+		protected void SetNativeControl(TNativeView control)
 		{
-			SetPlatformControl(control, this);
+			SetNativeControl(control, this);
 		}
 
 		protected virtual void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -300,12 +300,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		internal override void SendVisualElementInitialized(VisualElement element, AView platformView)
+		internal override void SendVisualElementInitialized(VisualElement element, AView nativeView)
 		{
 			base.SendVisualElementInitialized(element, Control);
 		}
 
-		internal void SetPlatformControl(TPlatformView control, ViewGroup container)
+		internal void SetNativeControl(TNativeView control, ViewGroup container)
 		{
 			if (Control != null)
 			{

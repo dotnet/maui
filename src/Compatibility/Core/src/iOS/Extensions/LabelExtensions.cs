@@ -6,10 +6,10 @@ using Microsoft.Maui.Controls.Internals;
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
-using PlatformLabel = UIKit.UILabel;
+using NativeLabel = UIKit.UILabel;
 #else
 using AppKit;
-using PlatformLabel = AppKit.NSTextField;
+using NativeLabel = AppKit.NSTextField;
 #endif
 
 #if __MOBILE__
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 {
 	internal static class LabelExtensions
 	{
-		public static void RecalculateSpanPositions(this PlatformLabel control, Label element)
+		public static void RecalculateSpanPositions(this NativeLabel control, Label element)
 		{
 			if (element == null)
 				return;
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return layoutManager.GetBoundingRect(glyphRange, textContainer);
 		}
 
-		static double FindDefaultLineHeight(this PlatformLabel control, int start, int length)
+		static double FindDefaultLineHeight(this NativeLabel control, int start, int length)
 		{
 			if (length == 0)
 				return 0.0;

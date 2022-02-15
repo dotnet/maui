@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
 	public delegate SizeRequest? GetDesiredSizeDelegate(
-		PlatformViewWrapperRenderer renderer, double widthConstraint, double heightConstraint);
+		NativeViewWrapperRenderer renderer, double widthConstraint, double heightConstraint);
 
 	public delegate CGSize? SizeThatFitsDelegate(CGSize size);
 
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static View ToView(this UIView view, GetDesiredSizeDelegate getDesiredSizeDelegate = null,
 			SizeThatFitsDelegate sizeThatFitsDelegate = null, LayoutSubviewsDelegate layoutSubViews = null)
 		{
-			return new PlatformViewWrapper(view, getDesiredSizeDelegate, sizeThatFitsDelegate, layoutSubViews);
+			return new NativeViewWrapper(view, getDesiredSizeDelegate, sizeThatFitsDelegate, layoutSubViews);
 		}
 	}
 }

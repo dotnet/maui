@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls.Xaml.Internals
 {
 
-	public interface IPlatformBindingService
+	public interface INativeBindingService
 	{
 		bool TrySetBinding(object target, string propertyName, BindingBase binding);
 		bool TrySetBinding(object target, BindableProperty property, BindingBase binding);

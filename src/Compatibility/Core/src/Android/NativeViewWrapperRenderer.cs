@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	public class PlatformViewWrapperRenderer : ViewRenderer<PlatformViewWrapper, global::Android.Views.View>
+	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, global::Android.Views.View>
 	{
-		public PlatformViewWrapperRenderer(Context context) : base(context)
+		public NativeViewWrapperRenderer(Context context) : base(context)
 		{
 		}
 
@@ -24,18 +24,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		// not called by the view wrapper renderer
-		protected override global::Android.Views.View CreatePlatformControl()
+		protected override global::Android.Views.View CreateNativeControl()
 		{
 			return new global::Android.Views.View(Context);
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<PlatformViewWrapper> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<NativeViewWrapper> e)
 		{
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
 			{
-				SetPlatformControl(Element.PlatformView);
+				SetNativeControl(Element.NativeView);
 				Control.LayoutChange += (sender, args) => ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 			}
 		}
@@ -72,6 +72,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
-		protected override bool ManagePlatformControlLifetime => false;
+		protected override bool ManageNativeControlLifetime => false;
 	}
 }

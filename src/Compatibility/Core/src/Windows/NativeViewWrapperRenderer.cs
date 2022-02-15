@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class PlatformViewWrapperRenderer : ViewRenderer<PlatformViewWrapper, FrameworkElement>
+	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, FrameworkElement>
 	{
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -56,13 +56,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return result ?? base.MeasureOverride(availableSize);
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<PlatformViewWrapper> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<NativeViewWrapper> e)
 		{
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
 			{
-				SetPlatformControl(Element.PlatformElement);
+				SetNativeControl(Element.NativeElement);
 				Control.SizeChanged += (sender, args) => { ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged); };
 			}
 		}

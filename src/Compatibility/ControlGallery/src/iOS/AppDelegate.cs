@@ -125,9 +125,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			Forms.ViewInitialized += (object sender, ViewInitializedEventArgs e) =>
 			{
 				// http://developer.xamarin.com/recipes/testcloud/set-accessibilityidentifier-ios/
-				if (null != e.View.AutomationId && null != e.PlatformView)
+				if (null != e.View.AutomationId && null != e.NativeView)
 				{
-					//	e.PlatformView.AccessibilityIdentifier = e.View.StyleId;
+					//	e.NativeView.AccessibilityIdentifier = e.View.StyleId;
 				}
 			};
 
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			}
 
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
-			MessagingCenter.Subscribe<NestedPlatformControlGalleryPage>(this, NestedPlatformControlGalleryPage.ReadyForPlatformControlsMessage, AddPlatformControls);
+			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 			MessagingCenter.Subscribe<Bugzilla40911>(this, Bugzilla40911.ReadyToSetUp40911Test, SetUp40911Test);
 			MessagingCenter.Subscribe<Issue5503>(this, Issue5503.ChangeUITableViewAppearanceBgColor, (s) =>
 			{
@@ -150,14 +150,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			});
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
-			MessagingCenter.Subscribe<PlatformBindingGalleryPage>(this, PlatformBindingGalleryPage.ReadyForPlatformBindingsMessage, AddPlatformBindings);
+			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
 			return base.FinishedLaunching(uiApplication, launchOptions);
 		}
 
-		void AddPlatformControls(NestedPlatformControlGalleryPage page)
+		void AddNativeControls(NestedNativeControlGalleryPage page)
 		{
-			if (page.PlatformControlsAdded)
+			if (page.NativeControlsAdded)
 			{
 				return;
 			}
@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			sl?.Children.Add(uibutton.ToView());
 
 			// Create some control which we know don't behave correctly with regard to measurement
-			var difficultControl0 = new BrokenPlatformControl
+			var difficultControl0 = new BrokenNativeControl
 			{
 				MinimumFontSize = 14f,
 				Font = UIFont.FromName("Helvetica", 14f),
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				Text = "Doesn't play nice with sizing. That's why there's a big gap around it."
 			};
 
-			var difficultControl1 = new BrokenPlatformControl
+			var difficultControl1 = new BrokenNativeControl
 			{
 				MinimumFontSize = 14f,
 				Font = UIFont.FromName("Helvetica", 14f),
@@ -239,10 +239,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			sl?.Children.Add(explanation1);
 			sl?.Children.Add(difficultControl1, FixSize);
 
-			page.PlatformControlsAdded = true;
+			page.NativeControlsAdded = true;
 		}
 
-		SizeRequest? FixSize(PlatformViewWrapperRenderer renderer, double width, double height)
+		SizeRequest? FixSize(NativeViewWrapperRenderer renderer, double width, double height)
 		{
 			var uiView = renderer.Control;
 			var view = renderer.Element;
@@ -254,16 +254,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			var constraint = new CGSize(width, height);
 
-			// Let the BrokenPlatformControl determine its size (which we know will be wrong)
+			// Let the BrokenNativeControl determine its size (which we know will be wrong)
 			var badRect = uiView.SizeThatFits(constraint);
 
 			// And we'll use the width (which is fine) and substitute our own height
 			return new SizeRequest(new Size(badRect.Width, 20));
 		}
 
-		void AddPlatformBindings(PlatformBindingGalleryPage page)
+		void AddNativeBindings(NativeBindingGalleryPage page)
 		{
-			if (page.PlatformControlsAdded)
+			if (page.NativeControlsAdded)
 				return;
 
 			StackLayout sl = page.Layout;
@@ -287,8 +287,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			var nativeColorConverter = new ColorConverter();
 
-			uilabel.SetBinding("Text", new Binding("PlatformLabel"));
-			uilabel.SetBinding(nameof(uilabel.TextColor), new Binding("PlatformLabelColor", converter: nativeColorConverter));
+			uilabel.SetBinding("Text", new Binding("NativeLabel"));
+			uilabel.SetBinding(nameof(uilabel.TextColor), new Binding("NativeLabelColor", converter: nativeColorConverter));
 
 			var kvoSlider = new KVOUISlider();
 			kvoSlider.MaxValue = 100;
@@ -302,9 +302,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			sl?.Children.Add(uibuttonColor.ToView());
 			// TODO: Replace with a new plugin or API
 			//var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
-			//colorPicker.SetBinding("SelectedColor", new Binding("PlatformLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
+			//colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
 			//sl?.Children.Add(colorPicker);
-			page.PlatformControlsAdded = true;
+			page.NativeControlsAdded = true;
 		}
 
 		#region Stuff for repro of Bugzilla case 40911

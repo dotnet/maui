@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
-			var platformValueConverterService = DependencyService.Get<IPlatformValueConverterService>();
+			var platformValueConverterService = DependencyService.Get<INativeValueConverterService>();
 
 			object platformValue = null;
 			if (platformValueConverterService != null && platformValueConverterService.ConvertTo(value, toType, out platformValue))

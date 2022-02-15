@@ -18,9 +18,9 @@ using Shape = Microsoft.Maui.Controls.Shapes.Shape;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	public class ShapeRenderer<TShape, TPlatformShape> : ViewRenderer<TShape, TPlatformShape>
+	public class ShapeRenderer<TShape, TNativeShape> : ViewRenderer<TShape, TNativeShape>
 		 where TShape : Shape
-		 where TPlatformShape : ShapeView
+		 where TNativeShape : ShapeView
 	{
 		double _height;
 		double _width;
