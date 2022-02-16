@@ -4,9 +4,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ContentViewHandler, INativeViewHandler
+	public partial class PageHandler : ContentViewHandler, IPlatformViewHandler
 	{
-		protected override ContentView CreateNativeView()
+		protected override ContentView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 			if (ViewController == null)
 				ViewController = new PageViewController(VirtualView, this.MauiContext);
 
-			if (ViewController is PageViewController pc && pc.CurrentNativeView is ContentView pv)
+			if (ViewController is PageViewController pc && pc.CurrentPlatformView is ContentView pv)
 				return pv;
 
 			if (ViewController.View is ContentView cv)
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitle(PageHandler handler, IContentView page)
 		{
-			if (handler is INativeViewHandler invh && invh.ViewController != null)
+			if (handler is IPlatformViewHandler invh && invh.ViewController != null)
 			{
 				if (page is ITitledElement titled)
 				{

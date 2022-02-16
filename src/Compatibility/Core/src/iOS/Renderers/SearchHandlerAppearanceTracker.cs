@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textField == null)
 				return;
 
-			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToNativeTextAlignment(EffectiveFlowDirection.Explicit);
+			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformTextAlignment(EffectiveFlowDirection.Explicit);
 		}
 
 		void UpdateSearchBarVerticalTextAlignment(UITextField textField)
@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textField == null)
 				return;
 
-			textField.VerticalAlignment = _searchHandler.VerticalTextAlignment.ToNativeTextAlignment();
+			textField.VerticalAlignment = _searchHandler.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		void UpdateKeyboard()

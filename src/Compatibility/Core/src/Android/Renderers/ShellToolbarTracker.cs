@@ -646,7 +646,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateTitleView()
 		{
-			UpdateTitleView(ShellContext.AndroidContext, _toolbar, Shell.GetTitleView(Page));
+			var titleView = ShellContext.Shell.GetEffectiveValue<View>(Shell.TitleViewProperty, () => Shell.GetTitleView(ShellContext.Shell), null, Page);
+			UpdateTitleView(ShellContext.AndroidContext, _toolbar, titleView);
 		}
 
 		void UpdateToolbarItems()

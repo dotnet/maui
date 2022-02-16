@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Hosting
 		{
 #if __ANDROID__
 			builder.Services.TryAddSingleton<IEnergySaverListenerManager>(svcs => new EnergySaverListenerManager());
-			builder.Services.TryAddScoped<ITicker>(svcs => new NativeTicker(svcs.GetRequiredService<IEnergySaverListenerManager>()));
+			builder.Services.TryAddScoped<ITicker>(svcs => new PlatformTicker(svcs.GetRequiredService<IEnergySaverListenerManager>()));
 #else
-			builder.Services.TryAddScoped<ITicker>(svcs => new NativeTicker());
+			builder.Services.TryAddScoped<ITicker>(svcs => new PlatformTicker());
 #endif
 			builder.Services.TryAddScoped<IAnimationManager>(svcs => new AnimationManager(svcs.GetRequiredService<ITicker>()));
 

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 
 			var measure = CrossPlatformMeasure(availableSize.Width, availableSize.Height);
 
-			return measure.ToNative();
+			return measure.ToPlatform();
 		}
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Platform
 			if (_borderPath == null)
 				return;
 
-			_borderPath.Fill = background?.ToNative();
+			_borderPath.Fill = background?.ToPlatform();
 		}
 
 		public void UpdateStroke(Paint borderBrush)
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 			if (_borderPath == null)
 				return;
 
-			_borderPath.Stroke = borderBrush.ToNative();
+			_borderPath.Stroke = borderBrush.ToPlatform();
 		}
 
 		public void UpdateStrokeThickness(double borderWidth)

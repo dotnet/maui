@@ -122,7 +122,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected Context AndroidContext { get; }
 		protected Shell Element { get; private set; }
-		FragmentManager FragmentManager => AndroidContext.GetFragmentManager();
+		FragmentManager FragmentManager =>
+			Element.FindMauiContext().GetFragmentManager();
 
 		protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
 		{
@@ -314,11 +315,11 @@ namespace Microsoft.Maui.Controls.Platform
 				AColor color;
 				if (appearance != null)
 				{
-					color = appearance.BackgroundColor.ToNative(Color.FromArgb("#03A9F4"));
+					color = appearance.BackgroundColor.ToPlatform(Color.FromArgb("#03A9F4"));
 				}
 				else
 				{
-					color = Color.FromArgb("#03A9F4").ToNative();
+					color = Color.FromArgb("#03A9F4").ToPlatform();
 				}
 
 				if (!(decorView.Background is SplitDrawable splitDrawable) ||

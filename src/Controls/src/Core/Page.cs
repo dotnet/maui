@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls
 			if (container != null)
 			{
 				Page page = container.CurrentPage;
-				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsNativeStateConsistent))
+				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsPlatformStateConsistent))
 					return;
 			}
 			else
@@ -409,7 +409,7 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < logicalChildren.Count; i++)
 				{
 					var v = logicalChildren[i] as VisualElement;
-					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
+					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
 						return;
 				}
 			}
@@ -555,14 +555,14 @@ namespace Microsoft.Maui.Controls
 		bool ShouldLayoutChildren()
 		{
 			var logicalChildren = ((IElementController)this).LogicalChildren;
-			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsNativeStateConsistent)
+			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsPlatformStateConsistent)
 				return false;
 
 			var container = this as IPageContainer<Page>;
 			if (container?.CurrentPage != null)
 			{
 				if (InternalChildren.Contains(container.CurrentPage))
-					return container.CurrentPage.IsPlatformEnabled && container.CurrentPage.IsNativeStateConsistent;
+					return container.CurrentPage.IsPlatformEnabled && container.CurrentPage.IsPlatformStateConsistent;
 				return true;
 			}
 
@@ -570,7 +570,7 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < logicalChildren.Count; i++)
 			{
 				var v = logicalChildren[i] as VisualElement;
-				if (v != null && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
+				if (v != null && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
 				{
 					any = true;
 					break;
