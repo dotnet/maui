@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public bool IsMonitoring { get; set; }
 
+		public void Start(SensorSpeed sensorSpeed)
+			=> Start(sensorSpeed, false);
+
 		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			sensor = DefaultCompass;
