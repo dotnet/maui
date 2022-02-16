@@ -12,8 +12,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class EmailImplementation : IEmail
 	{
-		static readonly EmailMessage testEmail =
-			new EmailMessage("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
+		static EmailMessage testEmail =>
+			new ("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
 
 		public bool IsComposeSupported
 			=> Platform.IsIntentSupported(CreateIntent(testEmail));
@@ -34,17 +34,13 @@ namespace Microsoft.Maui.Essentials.Implementations
 		}
 
 		public Task ComposeAsync(string subject, string body, params string[] to)
-		{
-			return ComposeAsync
-							(
-								new EmailMessage()
-								{
-									Subject = subject,
-									Body = body,
-									To = to.ToList()
-								}
-							);
-		}
+			=> ComposeAsync(
+				new EmailMessage()
+				{
+					Subject = subject,
+					Body = body,
+					To = to.ToList()
+				});
 
 		public Task ComposeAsync()
 			=> ComposeAsync(null);

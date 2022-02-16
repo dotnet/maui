@@ -36,17 +36,13 @@ namespace Microsoft.Maui.Essentials.Implementations
 		}
 
 		public Task ComposeAsync(string subject, string body, params string[] to)
-		{
-			return ComposeAsync
-							(
-								new EmailMessage()
-								{
-									Subject = subject,
-									Body = body,
-									To = to.List<string>()
-								}
-							);
-		}
+			=> ComposeAsync(
+				new EmailMessage
+				{
+					Subject = subject,
+					Body = body,
+					To = to.List<string>()
+				});
 
 		public Task ComposeAsync()
 			=> ComposeAsync(null);
