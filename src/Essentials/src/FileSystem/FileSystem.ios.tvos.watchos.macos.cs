@@ -16,17 +16,32 @@ namespace Microsoft.Maui.Essentials
 
 		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult((Stream)File.OpenRead(file));
+		}
+
+		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult(File.Exists(file));
+		}
+
+		static string PlatformGetFullAppPackageFilePath(string filename)
+		{
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = filename.Replace('\\', Path.DirectorySeparatorChar);
+			filename = NormalizePath(filename);
+
 			var root = NSBundle.MainBundle.BundlePath;
 #if MACCATALYST || MACOS
-            root = Path.Combine(root, "Contents", "Resources");
+			root = Path.Combine(root, "Contents", "Resources");
 #endif
-			var file = Path.Combine(root, filename);
-			return Task.FromResult((Stream)File.OpenRead(file));
+			return Path.Combine(root, filename);
 		}
+
+		static string NormalizePath(string filename) =>
+			filename.Replace('\\', Path.DirectorySeparatorChar);
 
 		static string GetDirectory(NSSearchPathDirectory directory)
 		{

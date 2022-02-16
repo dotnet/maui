@@ -28,6 +28,11 @@ namespace Microsoft.Maui.Handlers
 				PlatformRadioButton.CheckedChange -= OnCheckChanged;
 		}
 
+		public static void MapBackground(RadioButtonHandler handler, IRadioButton radioButton)
+		{
+			handler.PlatformRadioButton?.UpdateBackground(radioButton);
+		}
+
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
 		{
 			handler.PlatformRadioButton?.UpdateIsChecked(radioButton);
@@ -55,14 +60,20 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformRadioButton?.UpdateFont(textStyle, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton)
+		{
+			handler.PlatformRadioButton?.UpdateStrokeColor(radioButton);
+		}
 
-		[MissingMapper]
-		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton)
+		{
+			handler.PlatformRadioButton?.UpdateStrokeThickness(radioButton);
+		}
 
-		[MissingMapper]
-		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton)
+		{
+			handler.PlatformRadioButton?.UpdateCornerRadius(radioButton);
+		}
 
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)
 		{

@@ -59,10 +59,10 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) { }
-		
+
 		[MissingMapper]
 		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) { }
-		
+
 		[MissingMapper]
 		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
 	}

@@ -4,6 +4,9 @@
 	{
 		public static IPropertyMapper<IRadioButton, RadioButtonHandler> Mapper = new PropertyMapper<IRadioButton, RadioButtonHandler>(ViewHandler.ViewMapper)
 		{
+#if ANDROID
+			[nameof(IRadioButton.Background)] = MapBackground,
+#endif
 			[nameof(IRadioButton.IsChecked)] = MapIsChecked,
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
