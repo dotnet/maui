@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			OnConnectivityChanged();
 		}
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess PlatformNetworkAccess
 		{
 			get
 			{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> PlatformConnectionProfiles
 		{
 			get
 			{
@@ -66,14 +66,14 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		static void StartListeners()
+		public void StartListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.NetworkState>();
 			ConnectionManager.ConnectionTypeChanged += OnChanged;
 			GetProfileListAsync();
 		}
 
-		static void StopListeners()
+		public void StopListeners()
 		{
 			ConnectionManager.ConnectionTypeChanged -= OnChanged;
 		}
