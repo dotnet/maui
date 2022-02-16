@@ -8,13 +8,13 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public class StrokeShapeTypeConverter : TypeConverter
 	{
-		public const string Ellipse = "ellipse";
-		public const string Line = "line";
-		public const string Path = "path";
-		public const string Polygon = "polygon";
-		public const string Polyline = "polyline";
-		public const string Rectangle = "rectangle";
-		public const string RoundRectangle = "roundrectangle";
+		public const string Ellipse = nameof(Ellipse);
+		public const string Line = nameof(Line);
+		public const string Path = nameof(Path);
+		public const string Polygon = nameof(Polygon);
+		public const string Polyline = nameof(Polyline);
+		public const string Rectangle = nameof(Rectangle);
+		public const string RoundRectangle = nameof(RoundRectangle);
 
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			   => sourceType == typeof(string);
