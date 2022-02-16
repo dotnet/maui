@@ -81,6 +81,11 @@ namespace Microsoft.Maui.Platform
 			element.SetBinding(GetForegroundProperty(element), binding);
 		}
 
+		public static void UpdateVerticalTextAlignment(this Control platformControl, ITextAlignment textAlignment)
+		{
+			platformControl.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment();
+		}
+
 		internal static IEnumerable<T?> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
 		{
 			var myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);

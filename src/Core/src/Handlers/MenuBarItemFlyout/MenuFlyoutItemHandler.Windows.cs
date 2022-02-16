@@ -5,13 +5,13 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutItemHandler : MenuFlyoutItemBaseHandler<IMenuFlyoutItem, MenuFlyoutItem>
+	public partial class MenuFlyoutItemHandler
 	{
 		protected override MenuFlyoutItem CreateNativeElement()
 		{
 			return new MenuFlyoutItem();
 		}
-		
+
 		protected override void ConnectHandler(MenuFlyoutItem nativeView)
 		{
 			base.ConnectHandler(nativeView);
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MenuFlyoutItem nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			nativeView.Click -= OnClicked;			
+			nativeView.Click -= OnClicked;
 		}
 
 		void OnClicked(object sender, UI.Xaml.RoutedEventArgs e)
@@ -37,12 +37,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			((MenuFlyoutItem)handler.NativeView!).Text = view.Text;
+			handler.NativeView.Text = view.Text;
 		}
 
-		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
+			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
+
+		public static void MapTextColor(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
+			handler.NativeView?.UpdateTextColor(view);
+
+		public static void MapCharacterSpacing(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
+			handler.NativeView?.UpdateCharacterSpacing(view);
+
+		public static void MapFont(IMenuFlyoutItemHandler handler, IMenuFlyoutItem menuBar)
 		{
-			handler.NativeView.IsEnabled = view.IsEnabled;
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.NativeView?.UpdateFont(menuBar, fontManager);
 		}
 	}
 }

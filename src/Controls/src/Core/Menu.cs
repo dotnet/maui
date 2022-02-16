@@ -14,9 +14,19 @@ namespace Microsoft.Maui.Controls
 		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCastingList<Element, TMenuType>(_menus);
 
+		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
+			typeof(VisualElement), true);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Menu.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public Menu()
 		{
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabled']/Docs" />
+		public bool IsEnabled
+		{
+			get { return (bool)GetValue(IsEnabledProperty); }
+			set { SetValue(IsEnabledProperty, value); }
 		}
 
 		public TMenuType this[int index]

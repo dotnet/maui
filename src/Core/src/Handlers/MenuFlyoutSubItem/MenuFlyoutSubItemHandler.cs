@@ -13,12 +13,12 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutSubItemHandler : IMenuFlyoutSubItemHandler
+	public partial class MenuFlyoutSubItemHandler : ElementHandler<IMenuFlyoutSubItem, PlatformView>, IMenuFlyoutSubItemHandler
 	{
 		public static IPropertyMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler> Mapper = new PropertyMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler>(ElementMapper)
 		{
 #if WINDOWS
-			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
+			[nameof(IMenuFlyoutSubItem.Text)] = MapText
 #endif
 		};
 

@@ -7,5 +7,10 @@ namespace Microsoft.Maui
 	public interface IMenuBarItem : IList<IMenuFlyoutItemBase>, IElement
 	{
 		string Text { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether this View is enabled in the user interface. 
+		/// </summary>
+		bool IsEnabled { get; }
 	}
 }

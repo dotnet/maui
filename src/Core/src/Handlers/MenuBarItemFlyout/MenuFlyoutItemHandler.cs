@@ -13,7 +13,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutItemHandler : MenuFlyoutItemBaseHandler<IMenuFlyoutItem, PlatformView>,
+	public partial class MenuFlyoutItemHandler : ElementHandler<IMenuFlyoutItem, PlatformView>,
 		IMenuFlyoutItemHandler
 	{
 		public static IPropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler> Mapper = new PropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler>(ElementMapper)
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
 			[nameof(IMenuElement.Source)] = MapSource,
-			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled,
+			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled
 #endif
 		};
 

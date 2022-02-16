@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Platform;
-using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutSubItemHandler : ElementHandler<IMenuFlyoutSubItem, View>
+	public partial class MenuFlyoutSubItemHandler
 	{
-		protected override View CreateNativeElement()
+		protected override object CreateNativeElement()
 		{
 			throw new NotImplementedException();
 		}

@@ -19,8 +19,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(IMenuBarItemHandler handler, IMenuBarItem view)
 		{
-			// TODO MAUI Fix the types on interfaces
-			((MenuBarItem)handler.NativeView!).Title = view.Text;
+			handler.NativeView.Title = view.Text;
+		}
+
+		public static void MapIsEnabled(IMenuBarItemHandler handler, IMenuBarItem view) =>
+			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
+
+		public static void MapTextColor(IMenuBarItemHandler handler, IMenuBarItem view) =>
+			handler.NativeView?.UpdateTextColor(view);
+
+		public static void MapCharacterSpacing(IMenuBarItemHandler handler, IMenuBarItem view) =>
+			handler.NativeView?.UpdateCharacterSpacing(view);
+
+		public static void MapFont(IMenuBarItemHandler handler, IMenuBarItem menuBar)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.NativeView?.UpdateFont(menuBar, fontManager);
 		}
 
 		public override void SetVirtualView(IElement view)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.StyleSheets;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {

@@ -6,8 +6,7 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutSubItemHandler : 
-		MenuFlyoutItemBaseHandler<IMenuFlyoutSubItem, MenuFlyoutSubItem>
+	public partial class MenuFlyoutSubItemHandler
 	{
 		protected override MenuFlyoutSubItem CreateNativeElement()
 		{
@@ -16,8 +15,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
-			// TODO MAUI Fix the types on interfaces
-			((MenuFlyoutSubItem)handler.NativeView!).Text = view.Text;
+			handler.NativeView.Text = view.Text;
+		}
+
+		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view) =>
+			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
+
+		public static void MapTextColor(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view) =>
+			handler.NativeView?.UpdateTextColor(view);
+
+		public static void MapCharacterSpacing(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view) =>
+			handler.NativeView?.UpdateCharacterSpacing(view);
+
+		public static void MapFont(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem menuBar)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.NativeView?.UpdateFont(menuBar, fontManager);
 		}
 
 		public override void SetVirtualView(IElement view)

@@ -10,7 +10,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public interface IMenuFlyoutSubItemHandler : IMenuFlyoutItemBaseHandler<IMenuFlyoutSubItem>
+	public interface IMenuFlyoutSubItemHandler : IElementHandler
 	{
 		void Add(IMenuFlyoutItemBase view);
 		void Remove(IMenuFlyoutItemBase view);
