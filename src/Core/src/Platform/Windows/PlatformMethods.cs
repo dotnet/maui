@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Maui.Platform
 {
-	static class NativeMethods
+	static class PlatformMethods
 	{
 		public delegate IntPtr WindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 

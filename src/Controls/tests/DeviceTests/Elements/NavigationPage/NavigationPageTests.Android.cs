@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 		MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();
-			return navManager.ToolbarElement.Toolbar.Handler.NativeView as
+			return navManager.ToolbarElement.Toolbar.Handler.PlatformView as
 				MaterialToolbar;
 		}
 

@@ -29,12 +29,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = searchBarStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
@@ -55,12 +55,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = searchBarStub.VerticalTextAlignment,
-					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+					PlatformViewValue = GetNativeVerticalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -80,16 +80,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = slider.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
 		static UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
-			(UISearchBar)searchBarHandler.NativeView;
+			(UISearchBar)searchBarHandler.PlatformView;
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;

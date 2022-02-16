@@ -2,9 +2,9 @@
 
 namespace Microsoft.Maui.Platform
 {
-	public class WindowsNativeMessageEventArgs : EventArgs
+	public class WindowsPlatformMessageEventArgs : EventArgs
 	{
-		public WindowsNativeMessageEventArgs(IntPtr hwnd, uint messageId, IntPtr wParam, IntPtr lParam)
+		public WindowsPlatformMessageEventArgs(IntPtr hwnd, uint messageId, IntPtr wParam, IntPtr lParam)
 		{
 			Hwnd = hwnd;
 			MessageId = messageId;

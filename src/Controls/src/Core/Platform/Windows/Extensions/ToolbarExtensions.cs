@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBarBackground(this MauiToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var barBackground = toolbar.BarBackground?.ToBrush() ?? 
-				toolbar.BarBackgroundColor?.ToNative();
+				toolbar.BarBackgroundColor?.ToPlatform();
 
 			nativeToolbar.Background = barBackground;
 		}
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBarTextColor(this MauiToolbar nativeToolbar, Toolbar toolbar)
 		{
 			if (toolbar.BarTextColor != null)
-				nativeToolbar.TitleColor = toolbar.BarTextColor.ToNative();
+				nativeToolbar.TitleColor = toolbar.BarTextColor.ToPlatform();
 		}
 
 		public static void UpdateToolbarDynamicOverflowEnabled(this MauiToolbar nativeToolbar, Toolbar toolbar)

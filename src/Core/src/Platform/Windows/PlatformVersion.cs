@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Platform
 {
-	public static class NativeVersion
+	public static class PlatformVersion
 	{
 		// https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.window.current?view=winui-3.0
 		// The currently activated window for UWP apps. Null for Desktop apps.

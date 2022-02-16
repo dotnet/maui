@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Animations
 {
-	public class NativeTicker : Ticker
+	public class PlatformTicker : Ticker
 	{
 	}
 }

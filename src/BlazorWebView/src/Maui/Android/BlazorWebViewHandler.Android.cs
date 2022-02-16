@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
 
-		protected override BlazorAndroidWebView CreateNativeView()
+		protected override BlazorAndroidWebView CreatePlatformView()
 		{
 			var blazorAndroidWebView = new BlazorAndroidWebView(Context!)
 			{
@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return blazorAndroidWebView;
 		}
 
-		protected override void DisconnectHandler(BlazorAndroidWebView nativeView)
+		protected override void DisconnectHandler(BlazorAndroidWebView platformView)
 		{
-			nativeView.StopLoading();
+			platformView.StopLoading();
 
 			if (_webviewManager != null)
 			{
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				return;
 			}
-			if (NativeView == null)
+			if (PlatformView == null)
 			{
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
 			}
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new AndroidWebKitWebViewManager(this, PlatformView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
 
 			if (RootComponents != null)
 			{

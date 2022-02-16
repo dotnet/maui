@@ -4,7 +4,7 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Animations
 {
-	public class NativeTicker : Ticker, IDisposable, IEnergySaverListener
+	public class PlatformTicker : Ticker, IDisposable, IEnergySaverListener
 	{
 		readonly IEnergySaverListenerManager _manager;
 		readonly ValueAnimator _val;
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Animations
 		bool _systemEnabled;
 		bool _disposedValue;
 
-		public NativeTicker(IEnergySaverListenerManager manager)
+		public PlatformTicker(IEnergySaverListenerManager manager)
 		{
 			_manager = manager;
 			_val = new ValueAnimator();
