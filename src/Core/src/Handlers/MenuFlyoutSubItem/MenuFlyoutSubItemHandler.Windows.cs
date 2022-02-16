@@ -21,6 +21,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view) =>
 			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
 
+		public static void MapSource(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
+		{
+			handler.NativeView.Icon =
+				view.Source?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
+		}
+
 		public override void SetVirtualView(IElement view)
 		{
 			base.SetVirtualView(view);

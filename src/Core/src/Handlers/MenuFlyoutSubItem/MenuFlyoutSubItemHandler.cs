@@ -18,7 +18,8 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler> Mapper = new PropertyMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler>(ElementMapper)
 		{
 #if WINDOWS
-			[nameof(IMenuFlyoutSubItem.Text)] = MapText
+			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
+			[nameof(IMenuFlyoutSubItem.Source)] = MapSource
 #endif
 		};
 

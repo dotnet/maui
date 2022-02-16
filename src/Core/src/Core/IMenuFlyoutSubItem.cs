@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	public interface IMenuFlyoutSubItem : IMenuFlyoutItemBase, IList<IMenuFlyoutItemBase>
+	public interface IMenuFlyoutSubItem : IMenuFlyoutItemBase, IList<IMenuFlyoutItemBase>, IImageSourcePart
 	{
 		/// <summary>
 		/// Gets the text.
