@@ -117,15 +117,6 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEditingBegan(object? sender, EventArgs e)
 		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = true;
-		}
-
-		void OnEditingChanged(object? sender, EventArgs e) =>
-			VirtualView.UpdateText(NativeView.Text);
-
-		void OnEditingBegan(object? sender, EventArgs e)
-		{
 			if (VirtualView == null || NativeView == null)
 				return;
 
@@ -134,13 +125,16 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsFocused = true;
 		}
 
+		void OnEditingChanged(object? sender, EventArgs e) =>
+			VirtualView.UpdateText(NativeView.Text);
+
 		void OnEditingEnded(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || NativeView == null)
 				return;
 
 			VirtualView.UpdateText(NativeView.Text);
-      VirtualView.IsFocused = false;
+			VirtualView.IsFocused = false;
 		}
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>
