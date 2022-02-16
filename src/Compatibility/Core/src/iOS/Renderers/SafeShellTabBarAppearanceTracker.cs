@@ -32,17 +32,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
 
 			var tabBar = controller.TabBar;
-			bool operatingSystemSupportsUnselectedTint = Forms.IsiOS10OrNewer;
 
 			if (_defaultTint == null)
 			{
 				_defaultBarTint = tabBar.BarTintColor;
 				_defaultTint = tabBar.TintColor;
-
-				if (operatingSystemSupportsUnselectedTint)
-				{
-					_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
-				}
+				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
 			}
 
 			if (Forms.IsiOS15OrNewer)
@@ -146,14 +141,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				tabBar.BarTintColor = backgroundColor.ToUIColor();
 			if (titleColor.IsDefault != null)
 				tabBar.TintColor = titleColor.ToUIColor();
-
-			bool operatingSystemSupportsUnselectedTint = Forms.IsiOS10OrNewer;
-
-			if (operatingSystemSupportsUnselectedTint)
-			{
-				if (unselectedColor.IsDefault != null)
-					tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
-			}
+			if (unselectedColor.IsDefault != null)
+				tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
 		}
 	}
 }
