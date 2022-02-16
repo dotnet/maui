@@ -422,5 +422,11 @@ namespace Microsoft.Maui.Platform
 		{
 			return view?.Superview;
 		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
+
+		internal static IWindow? GetHostedWindow(this UIView? view)
+			=> GetHostedWindow(view?.Window);
 	}
 }
