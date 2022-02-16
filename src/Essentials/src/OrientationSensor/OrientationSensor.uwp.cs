@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			var reading = e.Reading;
 			var data = new OrientationSensorData(reading.Quaternion.X, reading.Quaternion.Y, reading.Quaternion.Z, reading.Quaternion.W);
-			OnChanged(data);
+			OrientationSensor.OnChanged(data);
 		}
 
 		public void Stop()
