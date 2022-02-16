@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	public class UIContainerView : UIView
 	{
 		readonly View _view;
-		INativeViewHandler _renderer;
+		IPlatformViewHandler _renderer;
 		bool _disposed;
 		internal event EventHandler HeaderSizeChanged;
 
@@ -17,9 +17,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_view = view;
 
-			_renderer = (INativeViewHandler)view.ToHandler(view.FindMauiContext());
+			_renderer = (IPlatformViewHandler)view.ToHandler(view.FindMauiContext());
 
-			AddSubview(_renderer.NativeView);
+			AddSubview(_renderer.PlatformView);
 			ClipsToBounds = true;
 			view.MeasureInvalidated += OnMeasureInvalidated;
 			MeasuredHeight = double.NaN;

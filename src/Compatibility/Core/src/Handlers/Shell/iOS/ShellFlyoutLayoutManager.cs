@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (Content != null)
 			{
-				var oldRenderer = (INativeViewHandler)Content.Handler;
+				var oldRenderer = (IPlatformViewHandler)Content.Handler;
 				var oldContentView = ContentView;
 				var oldContent = Content;
 
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (Content != null)
 			{
 				var renderer = Content.ToHandler(_context.Shell.FindMauiContext());
-				ContentView = renderer.NativeView;
+				ContentView = renderer.PlatformView;
 				ContentView.ClipsToBounds = true;
 
 				// not sure if there's a more efficient way to do this
@@ -123,10 +123,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (ContentView is UIScrollView sv1)
 					ScrollView = sv1;
-				else if (ContentView is INativeViewHandler ver && ver.NativeView is UIScrollView uIScroll)
+				else if (ContentView is IPlatformViewHandler ver && ver.PlatformView is UIScrollView uIScroll)
 					ScrollView = uIScroll;
 
-				if (ScrollView != null && NativeVersion.IsAtLeast(11))
+				if (ScrollView != null && PlatformVersion.IsAtLeast(11))
 					ScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 				LayoutParallax();

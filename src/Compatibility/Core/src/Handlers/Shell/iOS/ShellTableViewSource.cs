@@ -119,8 +119,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				height = (float)view.View.HeightRequest;
 				(view.View as IView).Measure(tableView.Bounds.Width, view.View.HeightRequest);
-				(view.View.Handler as INativeViewHandler)
-					.NativeView.Frame = new CoreGraphics.CGRect(0, 0, tableView.Bounds.Width, view.View.HeightRequest);
+				(view.View.Handler as IPlatformViewHandler)
+					.PlatformView.Frame = new CoreGraphics.CGRect(0, 0, tableView.Bounds.Width, view.View.HeightRequest);
 
 			}
 			else

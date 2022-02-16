@@ -237,9 +237,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlowDirection(bool readdViews = false)
 		{
-			bool update = View.UpdateFlowDirection(Shell);
-			update = Flyout?.ViewController?.View.UpdateFlowDirection(Shell) == true || update;
-			update = Detail?.View?.UpdateFlowDirection(Shell) == true || update;
+			var originalValue = View.SemanticContentAttribute;
+			var originalFlyoutValue = Flyout?.ViewController?.View?.SemanticContentAttribute;
+			var originalDetailValue = Detail?.View?.SemanticContentAttribute;
+
+			View.UpdateFlowDirection(Shell);
+			Flyout?.ViewController?.View.UpdateFlowDirection(Shell);
+			Detail?.View?.UpdateFlowDirection(Shell);
+
+			bool update = originalValue == View.SemanticContentAttribute;
+			update = Flyout?.ViewController?.View?.SemanticContentAttribute == originalFlyoutValue || update;
+			update = Detail?.View?.SemanticContentAttribute == originalDetailValue || update;
 
 			if (update && readdViews)
 			{

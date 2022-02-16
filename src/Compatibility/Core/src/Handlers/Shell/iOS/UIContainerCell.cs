@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class UIContainerCell : UITableViewCell
 	{
-		INativeViewHandler _renderer;
+		IPlatformViewHandler _renderer;
 		object _bindingContext;
 
 		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
@@ -20,15 +20,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View.MeasureInvalidated += MeasureInvalidated;
 			SelectionStyle = UITableViewCellSelectionStyle.None;
 
-			_renderer = (INativeViewHandler)view.Handler;
+			_renderer = (IPlatformViewHandler)view.Handler;
 
 			if (_renderer == null)
 			{
-				_renderer = (INativeViewHandler)view.ToHandler(shell.FindMauiContext());
+				_renderer = (IPlatformViewHandler)view.ToHandler(shell.FindMauiContext());
 			}
 
-			ContentView.AddSubview(_renderer.NativeView);
-			_renderer.NativeView.ClipsToBounds = true;
+			ContentView.AddSubview(_renderer.PlatformView);
+			_renderer.PlatformView.ClipsToBounds = true;
 			ContentView.ClipsToBounds = true;
 
 			BindingContext = context;
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.LayoutSubviews();
 			if (View is IView view)
 			{
-				_renderer.NativeView.Frame = Bounds;
+				_renderer.PlatformView.Frame = Bounds;
 				view.Arrange(Bounds.ToRectangle());
 			}
 		}

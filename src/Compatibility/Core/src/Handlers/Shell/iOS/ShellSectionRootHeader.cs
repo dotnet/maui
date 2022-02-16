@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetValues(Color backgroundColor, Color foregroundColor, Color unselectedColor)
 		{
-			CollectionView.BackgroundColor = new Color(backgroundColor.Red, backgroundColor.Green, backgroundColor.Blue, .863f).ToNative();
+			CollectionView.BackgroundColor = new Color(backgroundColor.Red, backgroundColor.Green, backgroundColor.Blue, .863f).ToPlatform();
 
 			bool reloadData = _selectedColor != foregroundColor || _unselectedColor != unselectedColor;
 
@@ -99,8 +99,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			headerCell.Label.Text = shellContent.Title;
 			headerCell.Label.SetNeedsDisplay();
 
-			headerCell.SelectedColor = _selectedColor.ToNative();
-			headerCell.UnSelectedColor = _unselectedColor.ToNative();
+			headerCell.SelectedColor = _selectedColor.ToPlatform();
+			headerCell.UnSelectedColor = _unselectedColor.ToPlatform();
 
 			if (selectedItems.Length > 0 && selectedItems[0].Row == indexPath.Row)
 				headerCell.Selected = true;
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			if (CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
-				cell.Label.TextColor = _unselectedColor.ToNative();
+				cell.Label.TextColor = _unselectedColor.ToPlatform();
 		}
 
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, item);
 
 			if (CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
-				cell.Label.TextColor = _selectedColor.ToNative();
+				cell.Label.TextColor = _selectedColor.ToPlatform();
 		}
 
 		public override nint NumberOfSections(UICollectionView collectionView)
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			CollectionView.AddSubview(_bar);
 
 			_bottomShadow = new UIView(new CGRect(0, 0, 10, 1));
-			_bottomShadow.BackgroundColor = Colors.Black.MultiplyAlpha(0.3f).ToNative();
+			_bottomShadow.BackgroundColor = Colors.Black.MultiplyAlpha(0.3f).ToPlatform();
 			_bottomShadow.Layer.ZPosition = 9002;
 			CollectionView.AddSubview(_bottomShadow);
 

@@ -9,7 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class ShellRenderer : UIViewController, IShellContext, INativeViewHandler
+	public class ShellRenderer : UIViewController, IShellContext, IPlatformViewHandler
 	{
 		public static IPropertyMapper<Shell, ShellRenderer> Mapper = new PropertyMapper<Shell, ShellRenderer>(ViewHandler.ViewMapper);
 		public static CommandMapper<Shell, ShellRenderer> CommandMapper = new CommandMapper<Shell, ShellRenderer>(ViewHandler.ViewCommandMapper);
@@ -240,8 +240,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_currentShellItemRenderer?.ViewController == null)
 				return;
 
-			bool update = _currentShellItemRenderer.ViewController.View.UpdateFlowDirection(Element);
-			update = View.UpdateFlowDirection(Element) || update;
+			var originalValue = _currentShellItemRenderer.ViewController.View.SemanticContentAttribute;
+			var originalViewValue = View.SemanticContentAttribute;
+
+			_currentShellItemRenderer.ViewController.View.UpdateFlowDirection(Element);
+			View.UpdateFlowDirection(Element);
+
+			bool update = originalValue == _currentShellItemRenderer.ViewController.View.SemanticContentAttribute ||
+				originalViewValue == View.SemanticContentAttribute;
 
 			if (update && readdViews)
 			{
@@ -324,7 +330,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void UpdateBackgroundColor()
 		{
-			var color = Shell.BackgroundColor?.ToNative();
+			var color = Shell.BackgroundColor?.ToPlatform();
 			if (color == null)
 				color = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor;
 
@@ -349,19 +355,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IView IViewHandler.VirtualView => Element;
 
-		object IElementHandler.NativeView => NativeView;
+		object IElementHandler.PlatformView => NativeView;
 
 		Maui.IElement IElementHandler.VirtualView => Element;
 
 		IMauiContext IElementHandler.MauiContext => _mauiContext;
 
-		UIView INativeViewHandler.NativeView => NativeView;
+		UIView IPlatformViewHandler.PlatformView => NativeView;
 
-		UIView INativeViewHandler.ContainerView => null;
+		UIView IPlatformViewHandler.ContainerView => null;
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) => new Size(100, 100);
 
-		void IViewHandler.NativeArrange(Rectangle rect)
+		void IViewHandler.PlatformArrange(Rectangle rect)
 		{
 			//TODO I don't think we need this
 		}

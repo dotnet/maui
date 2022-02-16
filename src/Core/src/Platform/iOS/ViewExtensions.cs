@@ -428,8 +428,8 @@ namespace Microsoft.Maui.Platform
 		{
 			var platformFrame = new RectangleF(0, 0, width, height);
 
-			if (view.Handler is INativeViewHandler viewHandler && viewHandler.NativeView != null)
-				viewHandler.NativeView.Frame = platformFrame;
+			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+				viewHandler.PlatformView.Frame = platformFrame;
 
 			view.Arrange(platformFrame.ToRectangle());
 		}
@@ -439,8 +439,8 @@ namespace Microsoft.Maui.Platform
 			var size = view.Measure(width, height);
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
 
-			if (view.Handler is INativeViewHandler viewHandler && viewHandler.NativeView != null)
-				viewHandler.NativeView.Frame = platformFrame;
+			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+				viewHandler.PlatformView.Frame = platformFrame;
 
 			view.Arrange(platformFrame.ToRectangle());
 			return size;

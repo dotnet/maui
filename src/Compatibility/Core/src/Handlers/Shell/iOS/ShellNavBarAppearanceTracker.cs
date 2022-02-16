@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
 			}
 
-			if (NativeVersion.IsAtLeast(15))
+			if (PlatformVersion.IsAtLeast(15))
 				UpdateiOS15NavigationBarAppearance(controller, appearance);
 			else
 				UpdateNavigationBarAppearance(controller, appearance);
@@ -97,19 +97,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var foreground = appearance.ForegroundColor;
 
 			if (foreground != null)
-				navBar.TintColor = foreground.ToNative();
+				navBar.TintColor = foreground.ToPlatform();
 
 			// Set BackgroundColor
 			var background = appearance.BackgroundColor;
 
 			if (background != null)
-				navigationBarAppearance.BackgroundColor = background.ToNative();
+				navigationBarAppearance.BackgroundColor = background.ToPlatform();
 
 			// Set TitleColor
 			var titleColor = appearance.TitleColor;
 
 			if (titleColor != null)
-				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToNative() };
+				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToPlatform() };
 
 			navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
 		}
@@ -123,14 +123,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var navBar = controller.NavigationBar;
 
 			if (background != null)
-				navBar.BarTintColor = background.ToNative();
+				navBar.BarTintColor = background.ToPlatform();
 			if (foreground != null)
-				navBar.TintColor = foreground.ToNative();
+				navBar.TintColor = foreground.ToPlatform();
 			if (titleColor != null)
 			{
 				navBar.TitleTextAttributes = new UIStringAttributes
 				{
-					ForegroundColor = titleColor.ToNative()
+					ForegroundColor = titleColor.ToPlatform()
 				};
 			}
 		}

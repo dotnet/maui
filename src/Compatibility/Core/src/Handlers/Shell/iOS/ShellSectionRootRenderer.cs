@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellContent _currentContent;
 		int _currentIndex = 0;
 		IShellSectionRootHeader _header;
-		INativeViewHandler _isAnimatingOut;
-		Dictionary<ShellContent, INativeViewHandler> _renderers = new Dictionary<ShellContent, INativeViewHandler>();
+		IPlatformViewHandler _isAnimatingOut;
+		Dictionary<ShellContent, IPlatformViewHandler> _renderers = new Dictionary<ShellContent, IPlatformViewHandler>();
 		IShellPageRendererTracker _tracker;
 		bool _didLayoutSubviews;
 		int _lastTabThickness = Int32.MinValue;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 
 			_containerArea = new UIView();
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 				_containerArea.InsetsLayoutMarginsFromSafeArea = false;
 
 			View.AddSubview(_containerArea);
@@ -165,8 +165,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					var oldRenderer = renderer.Value;
 
-					if (oldRenderer.NativeView != null)
-						oldRenderer.NativeView.RemoveFromSuperview();
+					if (oldRenderer.PlatformView != null)
+						oldRenderer.PlatformView.RemoveFromSuperview();
 
 					if (oldRenderer.ViewController != null)
 						oldRenderer.ViewController.RemoveFromParentViewController();
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var shellContent = items[i];
 				if (_renderers.TryGetValue(shellContent, out var renderer))
 				{
-					var view = renderer.NativeView;
+					var view = renderer.PlatformView;
 					if (view != null)
 						view.Frame = new CGRect(0, 0, View.Bounds.Width, View.Bounds.Height);
 				}
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (item == currentItem)
 				{
-					_containerArea.AddSubview(renderer.NativeView);
+					_containerArea.AddSubview(renderer.PlatformView);
 					_currentContent = currentItem;
 					_currentIndex = i;
 				}
@@ -329,34 +329,34 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 		UIViewPropertyAnimator CreateContentAnimator(
-			INativeViewHandler oldRenderer,
-			INativeViewHandler newRenderer,
+			IPlatformViewHandler oldRenderer,
+			IPlatformViewHandler newRenderer,
 			int oldIndex,
 			int newIndex,
 			UIView containerView)
 		{
-			containerView.AddSubview(newRenderer.NativeView);
+			containerView.AddSubview(newRenderer.PlatformView);
 			// -1 == slide left, 1 ==  slide right
 			int motionDirection = newIndex > oldIndex ? -1 : 1;
 
-			newRenderer.NativeView.Frame = new CGRect(-motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
+			newRenderer.PlatformView.Frame = new CGRect(-motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
 
-			if (oldRenderer.NativeView != null)
-				oldRenderer.NativeView.Frame = containerView.Bounds;
+			if (oldRenderer.PlatformView != null)
+				oldRenderer.PlatformView.Frame = containerView.Bounds;
 
 			return new UIViewPropertyAnimator(0.25, UIViewAnimationCurve.EaseOut, () =>
 			{
-				newRenderer.NativeView.Frame = containerView.Bounds;
+				newRenderer.PlatformView.Frame = containerView.Bounds;
 
-				if (oldRenderer.NativeView != null)
-					oldRenderer.NativeView.Frame = new CGRect(motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
+				if (oldRenderer.PlatformView != null)
+					oldRenderer.PlatformView.Frame = new CGRect(motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
 
 			});
 		}
 
 		void RemoveNonVisibleRenderers()
 		{
-			INativeViewHandler activeRenderer = null;
+			IPlatformViewHandler activeRenderer = null;
 			var activeItem = ShellSection?.CurrentItem;
 
 			if (activeItem is IShellContentController scc &&
@@ -372,14 +372,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var oldContent = r.Key;
 					var oldRenderer = r.Value;
 
-					r.Value.NativeView.RemoveFromSuperview();
+					r.Value.PlatformView.RemoveFromSuperview();
 
 					if (!sectionItems.Contains(oldContent) && _renderers.ContainsKey(oldContent))
 					{
 						removeMe = removeMe ?? new List<ShellContent>();
 						removeMe.Add(oldContent);
 
-						if (oldRenderer.NativeView != null)
+						if (oldRenderer.PlatformView != null)
 						{
 							oldRenderer.ViewController.RemoveFromParentViewController();
 							oldRenderer.DisconnectHandler();
@@ -466,7 +466,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						_currentIndex--;
 
 					_renderers.Remove(oldItem);
-					oldRenderer.NativeView.RemoveFromSuperview();
+					oldRenderer.PlatformView.RemoveFromSuperview();
 					oldRenderer.ViewController.RemoveFromParentViewController();
 					oldRenderer.DisconnectHandler();
 				}
@@ -487,11 +487,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		INativeViewHandler SetPageRenderer(Page page, ShellContent shellContent)
+		IPlatformViewHandler SetPageRenderer(Page page, ShellContent shellContent)
 		{
 			page.Handler?.DisconnectHandler();
 
-			var renderer = (INativeViewHandler)page.ToHandler(shellContent.FindMauiContext());
+			var renderer = (IPlatformViewHandler)page.ToHandler(shellContent.FindMauiContext());
 			_renderers[shellContent] = renderer;
 
 			return renderer;
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_header != null)
 			{
 				tabThickness = HeaderHeight;
-				var headerTop = NativeVersion.IsAtLeast(11) ? View.SafeAreaInsets.Top : TopLayoutGuide.Length;
+				var headerTop = PlatformVersion.IsAtLeast(11) ? View.SafeAreaInsets.Top : TopLayoutGuide.Length;
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			nfloat top;
 			nfloat right;
 			nfloat bottom;
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
 				left = View.SafeAreaInsets.Left;
 				top = View.SafeAreaInsets.Top;

@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			int previousIndex = GetPreviousIndex(_footerView);
 			if (_footer != null)
 			{
-				var oldRenderer = (INativeViewHandler)_footer.Handler;
+				var oldRenderer = (IPlatformViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
 				_tableViewController.FooterView = null;
 				_footerView = null;
@@ -135,8 +135,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_footer != null)
 			{
-				var renderer = (INativeViewHandler)_footer.ToHandler(_shellContext.Shell.FindMauiContext());
-				_footerView = renderer.NativeView;
+				var renderer = (IPlatformViewHandler)_footer.ToHandler(_shellContext.Shell.FindMauiContext());
+				_footerView = renderer.PlatformView;
 				_uIViews[FooterIndex] = _footerView;
 				AddViewInCorrectOrder(_footerView, previousIndex);
 
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var brush = _shellContext.Shell.FlyoutBackground;
 			int previousIndex = GetPreviousIndex(_blurView);
 			var backgroundImage = View.GetBackgroundImage(brush);
-			View.BackgroundColor = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : color?.ToNative() ?? Maui.Platform.ColorExtensions.BackgroundColor;
+			View.BackgroundColor = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : color?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 
 			if (View.BackgroundColor.CGColor.Alpha < 1)
 			{

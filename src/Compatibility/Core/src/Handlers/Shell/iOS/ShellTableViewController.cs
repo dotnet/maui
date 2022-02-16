@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 			TableView.Source = _source;

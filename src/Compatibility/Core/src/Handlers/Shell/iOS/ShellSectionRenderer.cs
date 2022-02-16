@@ -312,9 +312,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var page = e.Page;
 			var before = e.BeforePage;
 
-			var beforeRenderer = (INativeViewHandler)before.Handler;
+			var beforeRenderer = (IPlatformViewHandler)before.Handler;
 
-			var renderer = (INativeViewHandler)page.ToHandler(_shellSection.FindMauiContext());
+			var renderer = (IPlatformViewHandler)page.ToHandler(_shellSection.FindMauiContext());
 
 			var tracker = _context.CreatePageRendererTracker();
 			tracker.ViewController = renderer.ViewController;
@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var page = e.Page;
 
-			var renderer = (INativeViewHandler)page.Handler;
+			var renderer = (IPlatformViewHandler)page.Handler;
 			var viewController = renderer?.ViewController;
 
 			if (viewController == null && _trackers.ContainsKey(page))
@@ -502,7 +502,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (child == null)
 					continue;
-				var renderer = (INativeViewHandler)child.Handler;
+				var renderer = (IPlatformViewHandler)child.Handler;
 				if (viewController == renderer.ViewController)
 					return child;
 			}
@@ -584,7 +584,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void PushPage(Page page, bool animated, TaskCompletionSource<bool> completionSource = null)
 		{
-			var renderer = (INativeViewHandler)page.ToHandler(_shellSection.FindMauiContext());
+			var renderer = (IPlatformViewHandler)page.ToHandler(_shellSection.FindMauiContext());
 
 			var tracker = _context.CreatePageRendererTracker();
 			tracker.ViewController = renderer.ViewController;
