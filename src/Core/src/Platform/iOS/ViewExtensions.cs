@@ -445,5 +445,11 @@ namespace Microsoft.Maui.Platform
 			view.Arrange(platformFrame.ToRectangle());
 			return size;
 		}
+    
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
+
+		internal static IWindow? GetHostedWindow(this UIView? view)
+			=> GetHostedWindow(view?.Window);
 	}
 }
