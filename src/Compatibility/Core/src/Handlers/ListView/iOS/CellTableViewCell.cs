@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Compatibility;
 using ObjCRuntime;
 using UIKit;
 
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => PropertyChanged?.Invoke(sender, e);
 
-		internal static UITableViewCell GetNativeCell(UITableView tableView, Cell cell, bool recycleCells = false, string templateId = "")
+		internal static UITableViewCell GetPlatformCell(UITableView tableView, Cell cell, bool recycleCells = false, string templateId = "")
 		{
 			var id = cell.GetType().FullName;
 
@@ -74,11 +75,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.ReusableCell = reusableCell;
 			cell.TableView = tableView;
 			var handler = cell.ToHandler(cell.FindMauiContext());
-			var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
+			var renderer = (handler as CellRenderer) ?? (handler.PlatformView as CellRenderer);
 
-			var nativeCell = renderer.NativeView;
+			var platformCell = renderer.PlatformView;
 
-			var cellWithContent = nativeCell;
+			var cellWithContent = platformCell;
 
 			// Sometimes iOS for returns a dequeued cell whose Layer is hidden. 
 			// This prevents it from showing up, so lets turn it back on!
@@ -87,18 +88,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (contextCell != null)
 			{
-				contextCell.Update(tableView, cell, nativeCell);
+				contextCell.Update(tableView, cell, platformCell);
 				var viewTableCell = contextCell.ContentCell as ViewCellRenderer.ViewTableCell;
 				if (viewTableCell != null)
 					viewTableCell.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
-				nativeCell = contextCell;
+				platformCell = contextCell;
 			}
 
 			// Because the layer was hidden we need to layout the cell by hand
 			if (cellWithContent != null)
 				cellWithContent.LayoutSubviews();
 
-			return nativeCell;
+			return platformCell;
 		}
 
 		protected override void Dispose(bool disposing)

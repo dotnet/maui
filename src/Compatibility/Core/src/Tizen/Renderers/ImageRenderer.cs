@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Specific.GetBlendColor(Element).IsDefault)
 				return;
 
-			Control.Color = Specific.GetBlendColor(Element).ToNative();
+			Control.Color = Specific.GetBlendColor(Element).ToPlatform();
 		}
 	}
 

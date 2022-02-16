@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			if (!IsNullOrEmpty(updateSourceEventName))
 			{
-				NativeBindingHelpers.SetBinding(view, propertyName, bindingBase, updateSourceEventName);
+				PlatformBindingHelpers.SetBinding(view, propertyName, bindingBase, updateSourceEventName);
 				return;
 			}
 
@@ -94,28 +94,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 			}
 
-			NativeBindingHelpers.SetBinding(view, propertyName, bindingBase, nativePropertyListener);
+			PlatformBindingHelpers.SetBinding(view, propertyName, bindingBase, nativePropertyListener);
 		}
 
 		public static void SetBinding(this UIView self, BindableProperty targetProperty, BindingBase binding)
 		{
-			NativeBindingHelpers.SetBinding(self, targetProperty, binding);
+			PlatformBindingHelpers.SetBinding(self, targetProperty, binding);
 		}
 
 		public static void SetValue(this UIView target, BindableProperty targetProperty, object value)
 		{
-			NativeBindingHelpers.SetValue(target, targetProperty, value);
+			PlatformBindingHelpers.SetValue(target, targetProperty, value);
 		}
 
 		public static void SetBindingContext(this UIView target, object bindingContext,
 			Func<UIView, IEnumerable<UIView>> getChildren = null)
 		{
-			NativeBindingHelpers.SetBindingContext(target, bindingContext, getChildren);
+			PlatformBindingHelpers.SetBindingContext(target, bindingContext, getChildren);
 		}
 
 		internal static void TransferbindablePropertiesToWrapper(this UIView target, View wrapper)
 		{
-			NativeBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
+			PlatformBindingHelpers.TransferBindablePropertiesToWrapper(target, wrapper);
 		}
 
 		internal static T FindDescendantView<T>(this UIView view) where T : UIView

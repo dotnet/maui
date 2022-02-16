@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		Microsoft.UI.Xaml.DataTemplate GetTemplate(Cell cell)
 		{
-			return (UI.Xaml.DataTemplate)cell.ToHandler(cell.FindMauiContext()).NativeView;
+			return (UI.Xaml.DataTemplate)cell.ToHandler(cell.FindMauiContext()).PlatformView;
 		}
 
 		void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)

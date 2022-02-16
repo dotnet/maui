@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
 			_ = _page.ToPlatform(_mauiContext);
-			return new ShellPageContainer(RequireContext(), (INativeViewHandler)_page.Handler, true)
+			return new ShellPageContainer(RequireContext(), (IPlatformViewHandler)_page.Handler, true)
 			{
 				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
 			};

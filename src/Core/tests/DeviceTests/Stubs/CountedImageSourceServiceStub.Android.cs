@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					if (imageSource.Wait)
 						DoWork.WaitOne();
 
-					var color = imageSource.Color.ToNative();
+					var color = imageSource.Color.ToPlatform();
 
 					return new ColorDrawable(color);
 				}).ConfigureAwait(false);

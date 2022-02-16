@@ -404,7 +404,7 @@ internal static class MaterialColors
 #elif __IOS__
 			return color.ToUIColor();
 #elif __TIZEN__
-			return color.ToNative();
+			return color.ToPlatform();
 #endif
 	}
 

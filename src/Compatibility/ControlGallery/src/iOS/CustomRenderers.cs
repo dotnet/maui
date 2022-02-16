@@ -511,8 +511,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				{
 					SectionInset = new UIEdgeInsets(20, 20, 20, 20),
 					ScrollDirection = UICollectionViewScrollDirection.Vertical,
-					MinimumInteritemSpacing = 5, // minimum spacing between cells 
-					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
+					MinimumInteritemSpacing = 5, // minimum spacing between cells 
+					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
 				};
 				_controller = new CollectionViewController(flowLayout, ItemSelected);
 				SetNativeControl(_controller.CollectionView);

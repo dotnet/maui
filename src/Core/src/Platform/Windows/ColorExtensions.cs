@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 			return color == null;
 		}
 
-		public static WBrush ToNative(this Graphics.Color color)
+		public static WBrush ToPlatform(this Graphics.Color color)
 		{
 			return new WSolidColorBrush(color.ToWindowsColor());
 		}

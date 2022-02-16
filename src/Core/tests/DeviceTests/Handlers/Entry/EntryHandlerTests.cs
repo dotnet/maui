@@ -313,9 +313,9 @@ namespace Microsoft.Maui.DeviceTests
 				Text = text
 			};
 
-			var nativeText = await GetValueAsync(entry, GetNativeText);
+			var platformText = await GetValueAsync(entry, GetNativeText);
 
-			Assert.Equal(expectedText, nativeText);
+			Assert.Equal(expectedText, platformText);
 			Assert.Equal(expectedText, entry.Text);
 		}
 
@@ -329,14 +329,14 @@ namespace Microsoft.Maui.DeviceTests
 				MaxLength = -1,
 			};
 
-			var nativeText = await GetValueAsync(entry, handler =>
+			var platformText = await GetValueAsync(entry, handler =>
 			{
 				entry.Text = text;
 
 				return GetNativeText(handler);
 			});
 
-			Assert.Equal(text, nativeText);
+			Assert.Equal(text, platformText);
 			Assert.Equal(text, entry.Text);
 		}
 
@@ -355,14 +355,14 @@ namespace Microsoft.Maui.DeviceTests
 				MaxLength = maxLength,
 			};
 
-			var nativeText = await GetValueAsync(entry, handler =>
+			var platformText = await GetValueAsync(entry, handler =>
 			{
 				entry.Text = text;
 
 				return GetNativeText(handler);
 			});
 
-			Assert.Equal(expectedText, nativeText);
+			Assert.Equal(expectedText, platformText);
 			Assert.Equal(expectedText, entry.Text);
 		}
 
@@ -538,7 +538,7 @@ namespace Microsoft.Maui.DeviceTests
 				SelectionLength = initialLength
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.SelectionLength, GetNativeSelectionLength, initialLength);
+			await ValidatePropertyInitValue(entry, () => entry.SelectionLength, GetPlatformSelectionLength, initialLength);
 		}
 
 		[Theory(DisplayName = "SelectionLength Updates Correctly")]
@@ -555,7 +555,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyUpdatesValue(
 				entry,
 				nameof(IEntry.SelectionLength),
-				GetNativeSelectionLength,
+				GetPlatformSelectionLength,
 				setValue,
 				unsetValue
 			);
@@ -573,7 +573,7 @@ namespace Microsoft.Maui.DeviceTests
 				SelectionLength = selectionLength
 			};
 
-			var actualLength = await GetValueAsync(entry, GetNativeSelectionLength);
+			var actualLength = await GetValueAsync(entry, GetPlatformSelectionLength);
 
 			Assert.Equal(text.Length, actualLength);
 		}

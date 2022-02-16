@@ -1,11 +1,11 @@
 #if IOS || MACCATALYST
-using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
+using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif ANDROID
-using NativeView = Microsoft.Maui.Platform.MauiSwipeView;
+using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Controls.SwipeControl;
+using PlatformView = Microsoft.UI.Xaml.Controls.SwipeControl;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -51,6 +51,6 @@ namespace Microsoft.Maui.Handlers
 
 		ISwipeView ISwipeViewHandler.TypedVirtualView => VirtualView;
 
-		NativeView ISwipeViewHandler.TypedNativeView => NativeView;
+		PlatformView ISwipeViewHandler.TypedPlatformView => PlatformView;
 	}
 }
