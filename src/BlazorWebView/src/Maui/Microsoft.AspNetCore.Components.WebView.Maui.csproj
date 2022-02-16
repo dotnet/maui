@@ -10,8 +10,8 @@
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup>
-    <Content Remove="build\**\*" />
-    <None Include="build\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Content Remove="targets\**\*" />
+    <None Include="targets\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
