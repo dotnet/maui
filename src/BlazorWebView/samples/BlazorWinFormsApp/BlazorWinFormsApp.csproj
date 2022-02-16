@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <Import Project="..\..\src\WindowsForms\build\Microsoft.AspNetCore.Components.WebView.WindowsForms.props" />
+  <Import Project="..\..\src\WindowsForms\targets\Microsoft.AspNetCore.Components.WebView.WindowsForms.props" />
 
   <PropertyGroup>
     <TargetFrameworks>$(_MauiDotNetTfm)-windows</TargetFrameworks>
@@ -21,6 +21,6 @@
     </Content>
   </ItemGroup>
 
-  <Import Project="..\..\src\WindowsForms\build\Microsoft.AspNetCore.Components.WebView.WindowsForms.targets" />
+  <Import Project="..\..\src\WindowsForms\targets\Microsoft.AspNetCore.Components.WebView.WindowsForms.targets" />
 
 </Project>
