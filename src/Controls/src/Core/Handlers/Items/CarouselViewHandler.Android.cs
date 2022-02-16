@@ -1,9 +1,9 @@
 ﻿namespace Microsoft.Maui.Controls.Handlers.Items
 {
-    public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
+	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
 		protected override IItemsLayout GetItemsLayout() => VirtualView.ItemsLayout;
-		
+
 		[MissingMapper]
 		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView) { }
 
