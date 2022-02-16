@@ -34,14 +34,32 @@
                     Text="HorizontalTextAlignment"
                     Style="{StaticResource Headline}" />
                 <Label 
-                    HorizontalTextAlignment="End"
-                    Text="This should be at the end of the line"
-                    />
-                <Label
-                    Text="VerticalTextAlignment"
-                    Style="{StaticResource Headline}" />
+                    BackgroundColor="LightGray"
+                    HorizontalTextAlignment="Start"
+                    Text="This should be at the start of the line" />
                 <Label 
-                    BackgroundColor="Pink"
+                    BackgroundColor="LightGray"
+                    HorizontalTextAlignment="Center"
+                    Text="This should be at the center of the line" />
+                <Label 
+                    HorizontalTextAlignment="End"
+                    Text="This should be at the end of the line" />
+                <Label
+                    BackgroundColor="LightGray"
+                    Text="VerticalTextAlignment"
+                    Style="{StaticResource Headline}" />    
+                <Label  
+                    BackgroundColor="LightGray"
+                    VerticalTextAlignment="Start"
+                    Text="This should be at the start"
+                    HeightRequest="100"/>
+                <Label 
+                    BackgroundColor="LightGray"
+                    VerticalTextAlignment="Center"
+                    Text="This should be at the center"
+                    HeightRequest="100"/>
+                <Label 
+                    BackgroundColor="LightGray"
                     VerticalTextAlignment="End"
                     Text="This should be at the bottom"
                     HeightRequest="100"/>
