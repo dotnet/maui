@@ -11,6 +11,6 @@
 		}
 
 		public static void UpdateColor(this MauiActivityIndicator activityIndicatorView, IActivityIndicator activityIndicator)
-			=> activityIndicatorView.Color = activityIndicator.Color?.ToNative();
+			=> activityIndicatorView.Color = activityIndicator.Color?.ToPlatform();
 	}
 }

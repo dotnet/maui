@@ -29,12 +29,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = datePicker.MinimumDate,
-					NativeViewValue = GetNativeMinimumDate(handler)
+					PlatformViewValue = GetNativeMinimumDate(handler)
 				};
 			});
 
 			Assert.Equal(xplatMinimumDate, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "Maximum Date Initializes Correctly")]
@@ -56,12 +56,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = datePicker.MaximumDate,
-					NativeViewValue = GetNativeMaximumDate(handler)
+					PlatformViewValue = GetNativeMaximumDate(handler)
 				};
 			});
 
 			Assert.Equal(xplatMaximumDate, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -82,16 +82,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = datePicker.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
+			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
-			datePickerHandler.NativeView;
+			datePickerHandler.PlatformView;
 
 		DateTime GetNativeDate(DatePickerHandler datePickerHandler)
 		{

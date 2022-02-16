@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					imageController?.SetIsLoading(false);
 			}
 
-			(imageElement as IViewController)?.NativeSizeChanged();
+			(imageElement as IViewController)?.PlatformSizeChanged();
 		}
 
 #if __MOBILE__

@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
 		{
-			var titleArgb = title.ToNative(ShellView.DefaultTitleColor).ToArgb();
+			var titleArgb = title.ToPlatform(ShellView.DefaultTitleColor).ToArgb();
 
 			if (_titleTextColor != titleArgb)
 			{
@@ -42,10 +42,10 @@ namespace Microsoft.Maui.Controls.Platform
 				_titleTextColor = titleArgb;
 			}
 
-			var newColor = background.ToNative(ShellView.DefaultBackgroundColor);
+			var newColor = background.ToPlatform(ShellView.DefaultBackgroundColor);
 			if (!(toolbar.Background is ColorDrawable cd) || cd.Color != newColor)
 			{
-				using (var colorDrawable = new ColorDrawable(background.ToNative(ShellView.DefaultBackgroundColor)))
+				using (var colorDrawable = new ColorDrawable(background.ToPlatform(ShellView.DefaultBackgroundColor)))
 					toolbar.SetBackground(colorDrawable);
 			}
 

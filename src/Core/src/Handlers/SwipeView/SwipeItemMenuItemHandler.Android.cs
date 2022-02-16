@@ -12,10 +12,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, AView>
 	{
-		protected override void ConnectHandler(AView nativeView)
+		protected override void ConnectHandler(AView platformView)
 		{
-			base.ConnectHandler(nativeView);
-			NativeView.ViewAttachedToWindow += OnViewAttachedToWindow;
+			base.ConnectHandler(platformView);
+			PlatformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 		}
 
 		void OnViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
@@ -23,44 +23,44 @@ namespace Microsoft.Maui.Handlers
 			UpdateSize();
 		}
 
-		protected override void DisconnectHandler(AView nativeView)
+		protected override void DisconnectHandler(AView platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.ViewAttachedToWindow -= OnViewAttachedToWindow;
+			base.DisconnectHandler(platformView);
+			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 		}
 
 		public static void MapTextColor(SwipeItemMenuItemHandler handler, ITextStyle view)
 		{
-			(handler.NativeView as TextView)?.UpdateTextColor(view);
+			(handler.PlatformView as TextView)?.UpdateTextColor(view);
 		}
 
 		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view)
 		{
-			(handler.NativeView as TextView)?.UpdateCharacterSpacing(view);
+			(handler.PlatformView as TextView)?.UpdateCharacterSpacing(view);
 		}
 
 		public static void MapFont(SwipeItemMenuItemHandler handler, ITextStyle view)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			(handler.NativeView as TextView)?.UpdateFont(view, fontManager);
+			(handler.PlatformView as TextView)?.UpdateFont(view, fontManager);
 		}
 
 		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 
-			(handler.NativeView as TextView)?.UpdateTextPlainText(view);
+			(handler.PlatformView as TextView)?.UpdateTextPlainText(view);
 
 			handler.UpdateSize();
 		}
 
 		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			handler.NativeView.UpdateBackground(handler.VirtualView.Background);
+			handler.PlatformView.UpdateBackground(handler.VirtualView.Background);
 
-			var textColor = handler.VirtualView.GetTextColor()?.ToNative();
+			var textColor = handler.VirtualView.GetTextColor()?.ToPlatform();
 
-			if (handler.NativeView is TextView textView)
+			if (handler.PlatformView is TextView textView)
 			{
 				if (textColor != null)
 					textView.SetTextColor(textColor.Value);
@@ -71,14 +71,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			var swipeView = handler.NativeView.Parent.GetParentOfType<MauiSwipeView>();
+			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
 				swipeView.UpdateIsVisibleSwipeItem(view);
 
-			handler.NativeView.Visibility = view.Visibility.ToNativeVisibility();
+			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
 		}
 
-		protected override AView CreateNativeElement()
+		protected override AView CreatePlatformElement()
 		{
 			_ = MauiContext?.Context ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is not IImageSourcePart imageSourcePart || imageSourcePart.Source == null)
 				return 0;
 
-			var mauiSwipeView = NativeView.Parent.GetParentOfType<MauiSwipeView>();
+			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 
 			if (mauiSwipeView == null || MauiContext?.Context == null)
 				return 0;
@@ -112,13 +112,13 @@ namespace Microsoft.Maui.Handlers
 			var textSize = 0;
 			var contentHeight = 0;
 
-			var mauiSwipeView = NativeView.Parent.GetParentOfType<MauiSwipeView>();
+			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			if (mauiSwipeView == null)
 				return;
 
 			contentHeight = mauiSwipeView.Height;
 
-			if (NativeView is TextView textView)
+			if (PlatformView is TextView textView)
 			{
 				textSize = !string.IsNullOrEmpty(textView.Text) ? (int)textView.TextSize : 0;
 				var icons = textView.GetCompoundDrawables();
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Handlers
 
 			var iconSize = GetIconSize();
 			var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
-			NativeView.SetPadding(0, buttonPadding, 0, buttonPadding);
+			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);
 		}
 
 		void OnSetImageSource(Drawable? drawable)
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 			if (drawable != null)
 			{
 				var iconSize = GetIconSize();
-				var textColor = VirtualView.GetTextColor()?.ToNative();
+				var textColor = VirtualView.GetTextColor()?.ToPlatform();
 				int drawableWidth = drawable.IntrinsicWidth;
 				int drawableHeight = drawable.IntrinsicHeight;
 
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Handlers
 					drawable.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
 			}
 
-			(NativeView as TextView)?.SetCompoundDrawables(null, drawable, null, null);
+			(PlatformView as TextView)?.SetCompoundDrawables(null, drawable, null, null);
 		}
 	}
 }

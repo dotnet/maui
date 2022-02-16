@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 
 			var bar = new AView(parent.Context);
-			bar.SetBackgroundColor(Colors.Black.MultiplyAlpha(0.14f).ToNative());
+			bar.SetBackgroundColor(Colors.Black.MultiplyAlpha(0.14f).ToPlatform());
 			bar.LayoutParameters = new LP(LP.MatchParent, (int)parent.Context.ToPixels(1));
 			linearLayout.AddView(bar);
 
