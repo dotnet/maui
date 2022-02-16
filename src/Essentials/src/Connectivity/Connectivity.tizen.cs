@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			OnConnectivityChanged();
 		}
 
-		public NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		public IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{
