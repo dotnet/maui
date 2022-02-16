@@ -12,10 +12,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public interface IMenuBarItemHandler : IElementHandler
 	{
-		void Add(IMenuFlyoutItemBase view);
-		void Remove(IMenuFlyoutItemBase view);
+		void Add(IMenuElement view);
+		void Remove(IMenuElement view);
 		void Clear();
-		void Insert(int index, IMenuFlyoutItemBase view);
+		void Insert(int index, IMenuElement view);
 		new PlatformView NativeView { get; }
 		new IMenuBarItem VirtualView { get; }
 	}

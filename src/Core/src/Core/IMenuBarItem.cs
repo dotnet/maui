@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	public interface IMenuBarItem : IList<IMenuFlyoutItemBase>, IElement
+	public interface IMenuBarItem : IList<IMenuElement>, IElement
 	{
 		string Text { get; }
 

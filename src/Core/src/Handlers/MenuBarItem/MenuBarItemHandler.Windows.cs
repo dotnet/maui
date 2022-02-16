@@ -36,12 +36,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public void Add(IMenuFlyoutItemBase view)
+		public void Add(IMenuElement view)
 		{
 			NativeView.Items.Add((MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
 		}
 
-		public void Remove(IMenuFlyoutItemBase view)
+		public void Remove(IMenuElement view)
 		{
 			if (view.Handler != null)
 				NativeView.Items.Remove((MenuFlyoutItemBase)view.ToPlatform());
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.Items.Clear();
 		}
 
-		public void Insert(int index, IMenuFlyoutItemBase view)
+		public void Insert(int index, IMenuElement view)
 		{
 			NativeView.Items.Insert(index, (MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
 		}

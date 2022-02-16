@@ -9,11 +9,11 @@ namespace Microsoft.Maui.Handlers
 			throw new NotImplementedException();
 		}
 
-		public void Add(IMenuFlyoutItemBase view)
+		public void Add(IMenuElement view)
 		{
 		}
 
-		public void Remove(IMenuFlyoutItemBase view)
+		public void Remove(IMenuElement view)
 		{
 		}
 
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public void Insert(int index, IMenuFlyoutItemBase view)
+		public void Insert(int index, IMenuElement view)
 		{
 		}
 	}

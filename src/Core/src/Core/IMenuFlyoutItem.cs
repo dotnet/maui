@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	public interface IMenuFlyoutItem : IMenuFlyoutItemBase, IMenuElement
+	public interface IMenuFlyoutItem : IMenuElement
 	{
 	}
 }

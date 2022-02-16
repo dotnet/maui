@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.StyleSheets;
@@ -8,33 +9,80 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class MenuFlyoutSubItem : Menu<IMenuFlyoutItemBase>, IMenuFlyoutSubItem
+	public partial class MenuFlyoutSubItem : MenuFlyoutItem, IMenuFlyoutSubItem
 	{
-		public static readonly BindableProperty IconProperty =
-			BindableProperty.Create(nameof(Icon), typeof(ImageSource), typeof(MenuFlyoutSubItem), default(ImageSource));
+		ReadOnlyCastingList<Element, IMenuElement> _logicalChildren;
+		readonly ObservableCollection<IMenuElement> _menus = new ObservableCollection<IMenuElement>();
 
-		public static readonly BindableProperty TextProperty =
-			BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuFlyoutSubItem), null);
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
+			_logicalChildren ??= new ReadOnlyCastingList<Element, IMenuElement>(_menus);
 
-		public string Text
+		public IMenuElement this[int index]
 		{
-			get => (string)GetValue(TextProperty);
-			set => SetValue(TextProperty, value);
+			get { return _menus[index]; }
+			set { _menus[index] = value; }
 		}
 
-		public ImageSource Icon
+		public void Invalidate() => OnPropertyChanged();
+
+		public int Count => _menus.Count;
+
+		public bool IsReadOnly => false;
+
+		public void Add(IMenuElement item)
 		{
-			get => (ImageSource)GetValue(IconProperty);
-			set => SetValue(IconProperty, value);
+			_menus.Add(item);
+			Invalidate();
 		}
 
-		IImageSource IImageSourcePart.Source => this.Icon;
-
-		bool IImageSourcePart.IsAnimationPlaying => false;
-
-		void IImageSourcePart.UpdateIsLoading(bool isLoading)
+		public void Clear()
 		{
+			_menus.Clear();
+			Invalidate();
 		}
 
+		public bool Contains(IMenuElement item)
+		{
+			return _menus.Contains(item);
+		}
+
+		public void CopyTo(IMenuElement[] array, int arrayIndex)
+		{
+			_menus.CopyTo(array, arrayIndex);
+		}
+
+		public IEnumerator<IMenuElement> GetEnumerator()
+		{
+			return _menus.GetEnumerator();
+		}
+
+		public int IndexOf(IMenuElement item)
+		{
+			return _menus.IndexOf(item);
+		}
+
+		public void Insert(int index, IMenuElement item)
+		{
+			_menus.Insert(index, item);
+			Invalidate();
+		}
+
+		public bool Remove(IMenuElement item)
+		{
+			var result = _menus.Remove(item);
+			Invalidate();
+			return result;
+		}
+
+		public void RemoveAt(int index)
+		{
+			_menus.RemoveAt(index);
+			Invalidate();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _menus.GetEnumerator();
+		}
 	}
 }

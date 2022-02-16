@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is MenuBarItemHandlerUpdate args)
 			{
-				handler.Add(args.MenuBarItemItem);
+				handler.Add(args.MenuElement);
 			}
 		}
 
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is MenuBarItemHandlerUpdate args)
 			{
-				handler.Remove(args.MenuBarItemItem);
+				handler.Remove(args.MenuElement);
 			}
 		}
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is MenuBarItemHandlerUpdate args)
 			{
-				handler.Insert(args.Index, args.MenuBarItemItem);
+				handler.Insert(args.Index, args.MenuElement);
 			}
 		}
 

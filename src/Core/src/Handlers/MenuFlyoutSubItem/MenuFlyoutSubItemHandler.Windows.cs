@@ -13,6 +13,23 @@ namespace Microsoft.Maui.Handlers
 			return new MenuFlyoutSubItem();
 		}
 
+		protected override void DisconnectHandler(MenuFlyoutSubItem nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			nativeView.Tapped -= OnTapped;
+		}
+
+		protected override void ConnectHandler(MenuFlyoutSubItem nativeView)
+		{
+			base.ConnectHandler(nativeView);
+			nativeView.Tapped += OnTapped;
+		}
+
+		void OnTapped(object sender, UI.Xaml.Input.TappedRoutedEventArgs e)
+		{
+			VirtualView.Clicked();
+		}
+
 		public static void MapText(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
 			handler.NativeView.Text = view.Text;
@@ -38,12 +55,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public void Add(IMenuFlyoutItemBase view)
+		public void Add(IMenuElement view)
 		{
 			NativeView.Items.Add((MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
 		}
 
-		public void Remove(IMenuFlyoutItemBase view)
+		public void Remove(IMenuElement view)
 		{
 			if (view.Handler != null)
 				NativeView.Items.Remove((MenuFlyoutItemBase)view.ToPlatform());
@@ -54,7 +71,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.Items.Clear();
 		}
 
-		public void Insert(int index, IMenuFlyoutItemBase view)
+		public void Insert(int index, IMenuElement view)
 		{
 			NativeView.Items.Insert(index, (MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
 		}
