@@ -375,7 +375,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (window.Handler?.NativeView is Microsoft.UI.Xaml.Window win)
 				{
-					if (win.Content.XamlRoot == root)
+					if (win.Content?.XamlRoot == root)
 						return window;
 				}
 			}
