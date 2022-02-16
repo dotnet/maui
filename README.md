@@ -8,6 +8,7 @@
 
 * [Install .NET MAUI](https://docs.microsoft.com/dotnet/maui/get-started/first-app?pivots=windows)
 * [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui)
+* [.NET Podcasts Sample Apps](https://github.com/microsoft/dotnet-podcasts)
 * [Weather '21 Sample App](https://github.com/davidortinau/WeatherTwentyOne)
 * [Development Guide](./.github/DEVELOPMENT.md)
 
