@@ -27,5 +27,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public AppTheme RequestedTheme
 			=> AppTheme.Unspecified;
+
+		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 	}
 }
