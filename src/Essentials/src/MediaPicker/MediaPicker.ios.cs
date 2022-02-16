@@ -7,28 +7,28 @@ using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class MediaPicker
+	public partial class MediaPickerImplementation : IMediaPicker
 	{
 		static UIImagePickerController picker;
 
-		static bool PlatformIsCaptureSupported
+		public bool IsCaptureSupported
 			=> UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 
-		static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, true, true);
 
-		static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, true, false);
 
-		static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, false, true);
 
-		static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
+		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, false, false);
 
-		static async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
+		public async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
 		{
 			var sourceType = pickExisting ? UIImagePickerControllerSourceType.PhotoLibrary : UIImagePickerControllerSourceType.Camera;
 			var mediaType = photo ? UTType.Image : UTType.Movie;
