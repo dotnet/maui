@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var expectedColor = Color.FromArgb(colorHex);
 
-				await handler.TypedNativeView.AssertContainsColor(expectedColor);
+				await handler.TypedPlatformView.AssertContainsColor(expectedColor);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await GetNativeImageView(handler).AttachAndRun(() =>
+				await GetPlatformImageView(handler).AttachAndRun(() =>
 				{
 					Assert.Equal(isAnimating, GetNativeIsAnimationPlaying(handler));
 				});
@@ -125,16 +125,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = (INativeViewHandler)CreateHandler(image);
+				var handler = (IPlatformViewHandler)CreateHandler(image);
 
 				await image.Wait();
 
 #if __ANDROID__
-				handler.NativeView.SetMinimumHeight(1);
-				handler.NativeView.SetMinimumWidth(1);
+				handler.PlatformView.SetMinimumHeight(1);
+				handler.PlatformView.SetMinimumWidth(1);
 #endif
 
-				await handler.NativeView.AssertContainsColor(color);
+				await handler.PlatformView.AssertContainsColor(color);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
@@ -193,7 +193,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(new[] { "Before Starting", "Starting", "DoWork", "Finishing", "After Finishing" }, order.ToArray());
 
 				// make sure it did actually work
-				await handler.NativeView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
 
 				return handler.ImageEvents;
 			});
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.DeviceTests
 				await image.Wait();
 
 				// make sure it did actually work
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				return handler.ImageEvents;
 			});
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.DeviceTests
 			view.Handler = handler;
 
 			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
-			handler.NativeArrange(view.Frame);
+			handler.PlatformArrange(view.Frame);
 
 			return handler;
 		}

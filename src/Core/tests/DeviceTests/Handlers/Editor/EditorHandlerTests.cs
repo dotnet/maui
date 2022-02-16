@@ -176,9 +176,9 @@ namespace Microsoft.Maui.DeviceTests
 				Text = text
 			};
 
-			var nativeText = await GetValueAsync(editor, GetNativeText);
+			var platformText = await GetValueAsync(editor, GetNativeText);
 
-			Assert.Equal(expectedText, nativeText);
+			Assert.Equal(expectedText, platformText);
 			//TODO: Until Editor gets text update events
 			//Assert.Equal(expectedText, editor.Text);
 		}
@@ -198,14 +198,14 @@ namespace Microsoft.Maui.DeviceTests
 				MaxLength = maxLength,
 			};
 
-			var nativeText = await GetValueAsync(editor, handler =>
+			var platformText = await GetValueAsync(editor, handler =>
 			{
 				editor.Text = text;
 
 				return GetNativeText(handler);
 			});
 
-			Assert.Equal(expectedText, nativeText);
+			Assert.Equal(expectedText, platformText);
 			//TODO: Until Editor gets text update events
 			//Assert.Equal(expectedText, editor.Text);
 		}

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 				Value = 50
 			};
 
-			await ValidatePropertyInitValue(stepper, () => stepper.Value, GetNativeValue, stepper.Value);
+			await ValidatePropertyInitValue(stepper, () => stepper.Value, GetPlatformValue, stepper.Value);
 		}
 
 		[Fact(DisplayName = "Is Maximum Initializes Correctly")]

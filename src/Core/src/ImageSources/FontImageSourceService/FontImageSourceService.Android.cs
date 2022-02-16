@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 			var size = FontManager.GetFontSize(imageSource.Font);
 			var textSize = TypedValue.ApplyDimension(size.Unit, size.Value, context.Resources?.DisplayMetrics);
 			var typeface = FontManager.GetTypeface(imageSource.Font);
-			var color = (imageSource.Color ?? Graphics.Colors.White).ToNative();
+			var color = (imageSource.Color ?? Graphics.Colors.White).ToPlatform();
 
 			try
 			{

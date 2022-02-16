@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 		AButton? IStepperHandler.DownButton => _downButton;
 
-		protected override LinearLayout CreateNativeView()
+		protected override LinearLayout CreatePlatformView()
 		{
 			var stepperLayout = new LinearLayout(Context)
 			{
@@ -39,22 +39,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateMinimum(stepper);
+			handler.PlatformView?.UpdateMinimum(stepper);
 		}
 
 		public static void MapMaximum(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateMaximum(stepper);
+			handler.PlatformView?.UpdateMaximum(stepper);
 		}
 
 		public static void MapIncrement(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateIncrement(stepper);
+			handler.PlatformView?.UpdateIncrement(stepper);
 		}
 
 		public static void MapValue(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateValue(stepper);
+			handler.PlatformView?.UpdateValue(stepper);
 		}
 
 		AButton IStepperHandler.CreateButton()

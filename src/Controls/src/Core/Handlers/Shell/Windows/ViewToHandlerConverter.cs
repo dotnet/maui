@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			readonly View _view;
 			IView View => _view;
-			INativeViewHandler? Handler => View.Handler as INativeViewHandler;
+			IPlatformViewHandler? Handler => View.Handler as IPlatformViewHandler;
 
 			FrameworkElement FrameworkElement { get; }
 
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 					// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
 					// with all the controls in a consistent native state (i.e., loaded) so they'll actually
 					// have Bounds set
-					Handler?.NativeView?.InvalidateMeasure(View);
+					Handler?.PlatformView?.InvalidateMeasure(View);
 					InvalidateMeasure();
 				};
 			}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 			{
-				_view.IsInNativeLayout = true;
+				_view.IsInPlatformLayout = true;
 				_view.Frame = new Rectangle(0, 0, finalSize.Width, finalSize.Height);
 				FrameworkElement?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 					Opacity = 1;
 				}
 
-				_view.IsInNativeLayout = false;
+				_view.IsInPlatformLayout = false;
 
 				return finalSize;
 			}

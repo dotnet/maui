@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			_round.Color = Element.BackgroundColor.ToNative();
+			_round.Color = Element.BackgroundColor.ToPlatform();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateBorderColor()
 		{
-			_border.Color = Element.BorderColor.ToNative();
+			_border.Color = Element.BorderColor.ToPlatform();
 		}
 
 		void UpdateAspect()
