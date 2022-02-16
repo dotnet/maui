@@ -52,14 +52,11 @@ namespace Microsoft.Maui.Platform
 			if (_label == null)
 				return;
 
-
-			if (_label.Frame == Graphics.Rectangle.Zero)
-				return;
-
 			SizeF fitSize;
 
-			nfloat labelX = (nfloat)Math.Max(0, _label.Frame.X);
-			nfloat labelY = (nfloat)Math.Max(0, _label.Frame.Y);
+			nfloat labelX = Frame.X;
+			nfloat labelY = Frame.Y;
+
 			nfloat labelHeight = (nfloat)Math.Max(0, _label.Frame.Size.Height);
 			nfloat labelWidth = (nfloat)Math.Max(0, _label.Frame.Size.Width);
 
@@ -68,16 +65,25 @@ namespace Microsoft.Maui.Platform
 				case Maui.TextAlignment.Start:
 					fitSize = SizeThatFits(_label.Frame.Size.ToCGSize());
 					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
-					Frame = new RectangleF(labelX, labelY, labelWidth, labelHeight);
+					var startFrame = new RectangleF(labelX, labelY, labelWidth, labelHeight);
+
+					if (startFrame != RectangleF.Empty)
+						Frame = startFrame;
 					break;
 				case Maui.TextAlignment.Center:
-					Frame = new RectangleF(labelX, labelY, labelWidth, labelHeight);
+					var centerFrame = new RectangleF(labelX, labelY, labelWidth, labelHeight);
+
+					if (centerFrame != RectangleF.Empty)
+						Frame = centerFrame;
 					break;
 				case Maui.TextAlignment.End:
 					fitSize = SizeThatFits(_label.Frame.Size.ToCGSize());
-					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
-					nfloat yOffset = (nfloat)(_label.Height - labelHeight);
-					Frame = new RectangleF(labelX, yOffset, labelWidth, labelHeight);
+					var fitHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
+					nfloat yOffset = labelHeight - fitHeight;
+					var endFrame = new RectangleF(labelX, yOffset, labelWidth, fitHeight);
+
+					if (endFrame != RectangleF.Empty)
+						Frame = endFrame;
 					break;
 			}
 		}
