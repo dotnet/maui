@@ -33,26 +33,10 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IView.Margin => Thickness.Zero;
 
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
-			if (Content is IView view)
-			{
-				_ = view.Measure(widthConstraint, heightConstraint);
-			}
-
-			return new Size(widthConstraint, heightConstraint);
-		}
-
-		protected override Size ArrangeOverride(Rectangle bounds)
-		{
-			Frame = this.ComputeFrame(bounds);
-
-			if (Content is IView view)
-			{
-				_ = view.Arrange(Frame);
-			}
-
-			return Frame.Size;
+			// We don't want forcelayout to call the legacy
+			// Page.LayoutChildren code
 		}
 
 		void IStackNavigation.RequestNavigation(NavigationRequest eventArgs)
@@ -123,34 +107,31 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		IToolbar IStackNavigation.Toolbar
+		internal IToolbar FindMyToolbar()
 		{
-			get
+			if (this.Toolbar != null)
+				return Toolbar;
+
+			var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
+			if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
 			{
-				if (this.Toolbar != null)
-					return Toolbar;
+				// This means I'm inside a Modal Page so we shouldn't return the Toolbar from the window
+				if (rootPage is not IWindow && te is IWindow)
+					return null;
 
-				var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
-				if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
-				{
-					// This means I'm inside a Modal Page so we shouldn't return the Toolbar from the window
-					if (rootPage is not IWindow && te is IWindow)
-						return null;
-
-					return te.Toolbar;
-				}
-
-				return null;
+				return te.Toolbar;
 			}
+
+			return null;
 		}
 
 		void OnNavigatingFrom(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if (this is IStackNavigation te && te.Toolbar is NavigationPageToolbar ct)
+			if (FindMyToolbar() is NavigationPageToolbar ct)
 			{
 				// If the root page is being covered by a Modal Page then we don't worry about hiding the nav bar
-				bool coveredByModal = te.Toolbar.Parent is Window && Navigation.ModalStack.Count > 0;
+				bool coveredByModal = ct.Parent is Window && Navigation.ModalStack.Count > 0;
 				ct.ApplyNavigationPage(this, coveredByModal);
 			}
 		}
@@ -158,7 +139,7 @@ namespace Microsoft.Maui.Controls
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if (this is IStackNavigation te && te.Toolbar is NavigationPageToolbar ct)
+			if (FindMyToolbar() is NavigationPageToolbar ct)
 			{
 				ct.ApplyNavigationPage(this, HasAppeared);
 			}
@@ -287,7 +268,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler == null && (this as IStackNavigation).Toolbar is IToolbar tb)
+			if (Handler == null && FindMyToolbar() is IToolbar tb)
 			{
 				tb.Handler = null;
 				if (tb.Parent is Window w)

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		void InitMappings()
 		{
 			var mappings = new Dictionary<string, IVisual>(StringComparer.OrdinalIgnoreCase);
-			Assembly[] assemblies = Device.GetAssemblies();
+			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
 			// Check for IVisual Types
 			foreach (var assembly in assemblies)

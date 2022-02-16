@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		{
 			GenListItem item = GetItemContext(cell)?.Item as GenListItem;
 			if (item != null)
-				this.ScrollTo(item, position.ToNative(), animated);
+				this.ScrollTo(item, position.ToPlatform(), animated);
 		}
 
 		/// <summary>

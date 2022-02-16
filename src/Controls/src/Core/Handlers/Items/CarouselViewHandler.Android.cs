@@ -1,7 +1,7 @@
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Handlers;
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			return new CarouselViewAdapter<CarouselView, IItemsViewSource>(VirtualView, (view, context) => new SizedItemContentView(Context, GetItemWidth, GetItemHeight));
 		}
-		protected override RecyclerView CreateNativeView()
+		protected override RecyclerView CreatePlatformView()
 		{
 			return new MauiCarouselRecyclerView(Context, GetItemsLayout, CreateAdapter);
 		}

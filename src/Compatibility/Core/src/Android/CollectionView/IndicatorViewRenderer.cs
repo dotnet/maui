@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				RemoveViewAt(ChildCount - 1);
 			}
-			IndicatorView.NativeSizeChanged();
+			IndicatorView.PlatformSizeChanged();
 		}
 
 		void ResetIndicators()
