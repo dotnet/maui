@@ -23,12 +23,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapPoints(PolylineHandler handler, Polyline polyline)
 		{
-			handler.NativeView?.InvalidateShape(polyline);
+			handler.PlatformView?.InvalidateShape(polyline);
 		}
 
 		void OnPointsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			NativeView?.InvalidateShape(VirtualView);
+			PlatformView?.InvalidateShape(VirtualView);
 		}
 	}
 }

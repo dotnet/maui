@@ -6,12 +6,12 @@ namespace Microsoft.Maui.Controls.Handlers
 	{
 		public static void MapData(PathHandler handler, Path path)
 		{
-			handler.NativeView?.InvalidateShape(path);
+			handler.PlatformView?.InvalidateShape(path);
 		}
 
 		public static void MapRenderTransform(PathHandler handler, Path path)
 		{
-			handler.NativeView?.InvalidateShape(path);
+			handler.PlatformView?.InvalidateShape(path);
 		}
 	}
 }
