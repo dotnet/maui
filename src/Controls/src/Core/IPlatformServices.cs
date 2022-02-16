@@ -10,13 +10,12 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public interface IPlatformServices
+	internal interface IPlatformServices
 	{
 		OSAppTheme RequestedTheme { get; }
 
 		void StartTimer(TimeSpan interval, Func<bool> callback);
 
-		SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint);
+		SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint);
 	}
 }

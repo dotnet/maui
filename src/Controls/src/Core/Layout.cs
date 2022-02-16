@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			int count = children.Count;
 			for (var index = 0; index < count; index++)
 			{
-				if (LogicalChildrenInternal[index] is VisualElement v && v.IsVisible && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
+				if (LogicalChildrenInternal[index] is VisualElement v && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
 					return;
 			}
 
@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		bool ShouldLayoutChildren()
 		{
-			if (Width <= 0 || Height <= 0 || !LogicalChildrenInternal.Any() || !IsVisible || !IsNativeStateConsistent || DisableLayout)
+			if (Width <= 0 || Height <= 0 || !LogicalChildrenInternal.Any() || !IsVisible || !IsPlatformStateConsistent || DisableLayout)
 				return false;
 
 			foreach (Element element in VisibleDescendants())
@@ -469,7 +469,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				if (visual == null || !visual.IsVisible)
 					continue;
 
-				if (!visual.IsPlatformEnabled || !visual.IsNativeStateConsistent)
+				if (!visual.IsPlatformEnabled || !visual.IsPlatformStateConsistent)
 				{
 					return false;
 				}

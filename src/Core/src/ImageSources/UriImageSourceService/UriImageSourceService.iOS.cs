@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 
 					if (imageSource.CachingEnabled)
 						CacheImage(imageData, pathToImageCache);
-			}
+				}
 
 				var image = UIImage.LoadFromData(imageData, scale);
 

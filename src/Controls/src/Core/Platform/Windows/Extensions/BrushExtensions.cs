@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return null;
 				}
 
-				return solidColorBrush.Color.ToNative();
+				return solidColorBrush.Color.ToPlatform();
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)

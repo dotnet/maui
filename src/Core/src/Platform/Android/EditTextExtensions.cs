@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = textColor.ToNative();
+				var androidColor = textColor.ToPlatform();
 				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
 					editText.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = placeholderTextColor.ToNative();
+				var androidColor = placeholderTextColor.ToPlatform();
 				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
 					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
-			editText.ImeOptions = entry.ReturnType.ToNative();
+			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
 		public static void UpdateCursorPosition(this EditText editText, ITextInput entry)
@@ -352,9 +352,9 @@ namespace Microsoft.Maui.Platform
 		/// This will return True to handle OnTouch to prevent re-activating keyboard after clearing the text.
 		/// </summary>
 		/// <returns>True if clear button is clicked and Text is cleared. False if not.</returns>
-		internal static bool HandleClearButtonTouched(this EditText? nativeView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
+		internal static bool HandleClearButtonTouched(this EditText? platformView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
 		{
-			if (nativeView is null)
+			if (platformView is null)
 				return false;
 
 			var motionEvent = touchEvent?.Event;
@@ -374,20 +374,20 @@ namespace Microsoft.Maui.Platform
 			var y = motionEvent.GetY();
 
 			if ((flowDirection != FlowDirection.LeftToRight
-				|| x < nativeView.Right - buttonWidth
-				|| x > nativeView.Right - nativeView.PaddingRight
-				|| y < nativeView.PaddingTop
-				|| y > nativeView.Height - nativeView.PaddingBottom) &&
+				|| x < platformView.Right - buttonWidth
+				|| x > platformView.Right - platformView.PaddingRight
+				|| y < platformView.PaddingTop
+				|| y > platformView.Height - platformView.PaddingBottom) &&
 				(flowDirection != FlowDirection.RightToLeft
-				|| x < nativeView.Left + nativeView.PaddingLeft
-				|| x > nativeView.Left + buttonWidth
-				|| y < nativeView.PaddingTop
-				|| y > nativeView.Height - nativeView.PaddingBottom))
+				|| x < platformView.Left + platformView.PaddingLeft
+				|| x > platformView.Left + buttonWidth
+				|| y < platformView.PaddingTop
+				|| y > platformView.Height - platformView.PaddingBottom))
 			{
 				return false;
 			}
 
-			nativeView.Text = null;
+			platformView.Text = null;
 			return true;
 		}
 	}

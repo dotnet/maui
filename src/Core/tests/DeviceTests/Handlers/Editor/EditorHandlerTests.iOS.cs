@@ -98,12 +98,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = editor.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
@@ -124,16 +124,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = editorStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		static MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
-			editorHandler.NativeView;
+			editorHandler.PlatformView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;

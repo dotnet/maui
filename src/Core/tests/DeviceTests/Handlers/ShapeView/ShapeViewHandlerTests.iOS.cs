@@ -29,14 +29,14 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(rectangle, Colors.Red, () => xPlatShadow.Paint = new SolidPaint(Colors.Red));
 		}
 
-		MauiShapeView GetNativeShapeView(ShapeViewHandler shapeViewHandler) =>
-			shapeViewHandler.NativeView;
+		MauiShapeView GetPlatformShapeView(ShapeViewHandler shapeViewHandler) =>
+			shapeViewHandler.PlatformView;
 
 		Task ValidateNativeFill(IShapeView shapeView, Color color)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				return GetNativeShapeView(CreateHandler(shapeView)).AssertContainsColor(color);
+				return GetPlatformShapeView(CreateHandler(shapeView)).AssertContainsColor(color);
 			});
 		}
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeShape = GetNativeShapeView(CreateHandler(shape));
+				var nativeShape = GetPlatformShapeView(CreateHandler(shape));
 				action?.Invoke();
 				nativeShape.AssertContainsColor(color);
 			});

@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapText(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapPlaceholder(IViewHandler handler, ISearchBar searchBar) { }
