@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Essentials
 {
 	public interface IClipboard
 	{
-		 bool HasText { get; }
+		bool HasText { get; }
+
 		Task SetTextAsync(string text);
 
 		Task<string> GetTextAsync();
