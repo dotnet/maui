@@ -120,7 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 				view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
-				viewHandler.NativeArrange(view.Frame);
+				viewHandler.PlatformArrange(view.Frame);
 			}
 
 			return handler;

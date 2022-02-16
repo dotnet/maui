@@ -35,12 +35,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void SetColors(TabLayout tabLayout, Color foreground, Color background, Color title, Color unselected)
 		{
-			var titleArgb = title.ToNative(ShellView.DefaultTitleColor).ToArgb();
-			var unselectedArgb = unselected.ToNative(ShellView.DefaultUnselectedColor).ToArgb();
+			var titleArgb = title.ToPlatform(ShellView.DefaultTitleColor).ToArgb();
+			var unselectedArgb = unselected.ToPlatform(ShellView.DefaultUnselectedColor).ToArgb();
 
 			tabLayout.SetTabTextColors(unselectedArgb, titleArgb);
-			tabLayout.SetBackground(new ColorDrawable(background.ToNative(ShellView.DefaultBackgroundColor)));
-			tabLayout.SetSelectedTabIndicatorColor(foreground.ToNative(ShellView.DefaultForegroundColor));
+			tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellView.DefaultBackgroundColor)));
+			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellView.DefaultForegroundColor));
 		}
 
 		#region IDisposable

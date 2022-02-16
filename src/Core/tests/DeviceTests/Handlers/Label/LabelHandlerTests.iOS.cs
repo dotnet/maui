@@ -32,12 +32,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "Padding Initializes Correctly")]
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var insets = ((MauiLabel)handler.NativeView).TextInsets;
+			var insets = ((MauiLabel)handler.PlatformView).TextInsets;
 
 			Assert.Equal(5, insets.Left);
 			Assert.Equal(10, insets.Top);
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelHandler.TextDecorations,
-					GetNativeLabel(handler).AttributedText
+					GetPlatformLabel(handler).AttributedText
 				};
 			});
 
@@ -170,29 +170,29 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = label.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
-			Assert.Equal(expected, values.NativeViewValue);
+			Assert.Equal(expected, values.PlatformViewValue);
 		}
 
-		UILabel GetNativeLabel(LabelHandler labelHandler) =>
-			(UILabel)labelHandler.NativeView;
+		UILabel GetPlatformLabel(LabelHandler labelHandler) =>
+			(UILabel)labelHandler.PlatformView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Text;
+			GetPlatformLabel(labelHandler).Text;
 
 		Color GetNativeTextColor(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).TextColor.ToColor();
+			GetPlatformLabel(labelHandler).TextColor.ToColor();
 
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
- 			(int)GetNativeLabel(labelHandler).Lines;
+ 			(int)GetPlatformLabel(labelHandler).Lines;
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler)
 		{
-			var nativeLabel = GetNativeLabel(labelHandler);
-			var text = nativeLabel.AttributedText;
+			var platformLabel = GetPlatformLabel(labelHandler);
+			var text = platformLabel.AttributedText;
 			return text.GetCharacterSpacing();
 		}
 
@@ -200,20 +200,20 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return await InvokeOnMainThreadAsync(() =>
 			{
-				var label = GetNativeLabel(labelHandler);
+				var label = GetPlatformLabel(labelHandler);
 				return label.AttributedText;
 			});
 		}
 
 		UITextAlignment GetNativeHorizontalTextAlignment(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).TextAlignment;
+			GetPlatformLabel(labelHandler).TextAlignment;
 
 		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).LineBreakMode;
+			GetPlatformLabel(labelHandler).LineBreakMode;
 
 		double GetNativeLineHeight(LabelHandler labelHandler)
 		{
-			var attrText = GetNativeLabel(labelHandler).AttributedText;
+			var attrText = GetPlatformLabel(labelHandler).AttributedText;
 
 			if (attrText == null)
 				return new nfloat(-1.0f);
@@ -230,9 +230,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				var platformLabel = GetPlatformLabel(CreateHandler(label));
 				action?.Invoke();
-				nativeLabel.AssertContainsColor(color);
+				platformLabel.AssertContainsColor(color);
 			});
 		}
 	}

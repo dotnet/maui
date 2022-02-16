@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 
 			base.OnCreate(savedInstanceState);
 
-			this.CreateNativeWindow(MauiApplication.Current.Application, savedInstanceState);
+			this.CreatePlatformWindow(MauiApplication.Current.Application, savedInstanceState);
 		}
 	}
 }

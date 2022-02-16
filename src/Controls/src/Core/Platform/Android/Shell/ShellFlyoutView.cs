@@ -316,7 +316,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_behavior == FlyoutBehavior.Locked)
 			{
-				SetScrimColor(Colors.Transparent.ToNative());
+				SetScrimColor(Colors.Transparent.ToPlatform());
 				_scrimPaint = null;
 			}
 			else
@@ -333,13 +333,13 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 					}
 					else
-						SetScrimColor(backdropColor.ToNative());
+						SetScrimColor(backdropColor.ToPlatform());
 				}
 				else
 				{
 					_scrimPaint = _scrimPaint ?? new Paint();
 					_scrimPaint.UpdateBackground(_scrimBrush, Height, Width);
-					SetScrimColor(Colors.Transparent.ToNative());
+					SetScrimColor(Colors.Transparent.ToPlatform());
 				}
 			}
 		}

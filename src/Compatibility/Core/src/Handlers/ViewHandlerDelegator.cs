@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected readonly IPropertyMapper _defaultMapper;
 		protected IPropertyMapper _mapper;
 		protected CommandMapper _commandMapper;
-		INativeViewHandler _viewHandler;
+		IPlatformViewHandler _viewHandler;
 		TElement? _element;
 		public TElement? Element => _element;
 		bool _disposed;
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public ViewHandlerDelegator(
 			IPropertyMapper mapper,
 			CommandMapper commandMapper,
-			INativeViewHandler viewHandler)
+			IPlatformViewHandler viewHandler)
 		{
 			_defaultMapper = mapper;
 			_mapper = _defaultMapper;
@@ -72,8 +72,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			VisualElementRenderer<TElement>.GetDesiredSize(_viewHandler, widthConstraint, heightConstraint, minimumSize);
 #endif
 
-		public void NativeArrange(Rectangle rect) =>
-			_viewHandler.NativeArrangeHandler(rect);
+		public void PlatformArrange(Rectangle rect) =>
+			_viewHandler.PlatformArrangeHandler(rect);
 
 		public void SetVirtualView(
 			Maui.IElement view,

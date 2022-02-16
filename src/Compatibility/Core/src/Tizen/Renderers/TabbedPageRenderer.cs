@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.BarBackgroundColor.IsDefault)
 				return;
 
-			EColor bgColor = Element.BarBackgroundColor.ToNative();
+			EColor bgColor = Element.BarBackgroundColor.ToPlatform();
 			_toolbar.BackgroundColor = bgColor;
 			foreach (EToolbarItem item in _itemToItemPage.Keys)
 			{
@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			foreach (EToolbarItem item in _itemToItemPage.Keys)
 			{
-				ApplyBarItemColors(item, BarItemColorType.Text, Element.BarTextColor.ToNative());
+				ApplyBarItemColors(item, BarItemColorType.Text, Element.BarTextColor.ToPlatform());
 			}
 		}
 
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			foreach (EToolbarItem item in _itemToItemPage.Keys)
 			{
-				ApplyBarItemColors(item, BarItemColorType.SelectedTab, Element.SelectedTabColor.ToNative());
+				ApplyBarItemColors(item, BarItemColorType.SelectedTab, Element.SelectedTabColor.ToPlatform());
 			}
 		}
 
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			foreach (EToolbarItem item in _itemToItemPage.Keys)
 			{
-				ApplyBarItemColors(item, BarItemColorType.UnselectedTab, Element.UnselectedTabColor.ToNative());
+				ApplyBarItemColors(item, BarItemColorType.UnselectedTab, Element.UnselectedTabColor.ToPlatform());
 			}
 		}
 
@@ -322,10 +322,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			_toolbarItemList.Insert(index, toolbarItem);
 			_itemToItemPage.Add(toolbarItem, newItem);
 
-			ApplyBarItemColors(toolbarItem, BarItemColorType.Background, Element.BarBackgroundColor.ToNative());
-			ApplyBarItemColors(toolbarItem, BarItemColorType.Text, Element.BarTextColor.ToNative());
-			ApplyBarItemColors(toolbarItem, BarItemColorType.SelectedTab, Element.SelectedTabColor.ToNative());
-			ApplyBarItemColors(toolbarItem, BarItemColorType.UnselectedTab, Element.UnselectedTabColor.ToNative());
+			ApplyBarItemColors(toolbarItem, BarItemColorType.Background, Element.BarBackgroundColor.ToPlatform());
+			ApplyBarItemColors(toolbarItem, BarItemColorType.Text, Element.BarTextColor.ToPlatform());
+			ApplyBarItemColors(toolbarItem, BarItemColorType.SelectedTab, Element.SelectedTabColor.ToPlatform());
+			ApplyBarItemColors(toolbarItem, BarItemColorType.UnselectedTab, Element.UnselectedTabColor.ToPlatform());
 
 			var childContent = Platform.GetOrCreateRenderer(newItem).NativeView;
 			_innerBox.PackEnd(childContent);

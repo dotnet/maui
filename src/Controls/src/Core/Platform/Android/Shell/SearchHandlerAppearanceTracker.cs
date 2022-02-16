@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			var linearLayout = (_control as ViewGroup).GetChildrenOfType<LinearLayout>().FirstOrDefault();
-			linearLayout.SetBackgroundColor(_searchHandler.BackgroundColor.ToNative());
+			linearLayout.SetBackgroundColor(_searchHandler.BackgroundColor.ToPlatform());
 		}
 
 		void UpdateCancelButtonColor()
