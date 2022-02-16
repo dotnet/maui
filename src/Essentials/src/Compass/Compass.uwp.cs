@@ -17,8 +17,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 		internal static WindowsCompass DefaultCompass =>
 			WindowsCompass.GetDefault();
 
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			DefaultCompass != null;
+
+		public bool IsMonitoring { get; set; }
 
 		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
