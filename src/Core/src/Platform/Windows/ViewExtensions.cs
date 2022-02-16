@@ -358,5 +358,29 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
+
+		internal static IWindow? GetHostedWindow(this FrameworkElement? view)
+			=> GetWindowForXamlRoot(view?.XamlRoot);
+
+		internal static IWindow? GetWindowForXamlRoot(XamlRoot? root)
+		{
+			if (root is null)
+				return null;
+
+			var windows = WindowExtensions.GetWindows();
+			foreach(var window in windows)
+			{
+				if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window win)
+				{
+					if (win.Content?.XamlRoot == root)
+						return window;
+				}
+			}
+
+			return null;
+		}
 	}
 }
