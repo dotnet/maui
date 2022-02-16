@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapIsReadOnly(SearchBarHandler handler, ISearchBar searchBar)
-		{ 
+		{
 			handler.QueryEditor?.UpdateIsReadOnly(searchBar);
 		}
 

@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 	]
 	public partial class Activity1 : MauiAppCompatActivity
 	{
-		App App => Microsoft.Maui.Controls.Application.Current as App; 
+		App App => Microsoft.Maui.Controls.Application.Current as App;
 
 		protected override void OnCreate(Bundle bundle)
 		{

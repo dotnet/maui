@@ -168,7 +168,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
 		{
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
-				
+
 			return !uiSearchBar.UserInteractionEnabled;
 		}
 
