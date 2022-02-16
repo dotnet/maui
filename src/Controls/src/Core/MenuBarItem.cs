@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class MenuBarItem : Element, IMenuBarItem
+	public partial class MenuBarItem : BaseMenuItem, IMenuBarItem
 	{
 		public static readonly BindableProperty TextProperty =
 			BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuBarItem), null);
@@ -43,8 +43,6 @@ namespace Microsoft.Maui.Controls
 		public int Count => _menus.Count;
 
 		public bool IsReadOnly => false;
-
-		bool IMenuBarItem.IsEnabled => throw new NotImplementedException();
 
 		public void Add(IMenuElement item)
 		{
