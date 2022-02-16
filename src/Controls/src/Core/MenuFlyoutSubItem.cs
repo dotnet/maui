@@ -27,5 +27,14 @@ namespace Microsoft.Maui.Controls
 			get => (ImageSource)GetValue(IconProperty);
 			set => SetValue(IconProperty, value);
 		}
+
+		IImageSource IImageSourcePart.Source => this.Icon;
+
+		bool IImageSourcePart.IsAnimationPlaying => false;
+
+		void IImageSourcePart.UpdateIsLoading(bool isLoading)
+		{
+		}
+
 	}
 }

@@ -57,14 +57,27 @@ namespace Maui.Controls.Sample
 				IconImageSource = "dotnet_bot.png"
 			});
 
+			menuBarItem.Add(new MenuFlyoutSubItem()
+			{
+				new MenuFlyoutItem()
+				{
+					Text = "Flyout Item",
+					IconImageSource = "dotnet_bot.png"
+				}
+			});
+
+			(menuBarItem[1] as MenuFlyoutSubItem).Text = "SUB ITEM";
+
 			window.MenuBar = new MenuBar()
 			{
 				menuBarItem,
 				new MenuBarItem() { Text = "Edit" },
 				new MenuBarItem() { Text = "Open" },
 				new MenuBarItem() { Text = "View" },
-				new MenuBarItem() { Text = "Close" }
+				new MenuBarItem() { Text = "Close" },				
 			};
+
+			
 
 			window.Title = ".NET MAUI Samples Gallery";
 			return window;
