@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Essentials
 	public interface IEmail
 	{
 		bool IsComposeSupported { get; }
+		
 		Task ComposeAsync();
 
 		Task ComposeAsync(string subject, string body, params string[] to);
