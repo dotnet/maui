@@ -42,17 +42,5 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
 			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
-
-		public static void MapTextColor(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
-			handler.NativeView?.UpdateTextColor(view);
-
-		public static void MapCharacterSpacing(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
-			handler.NativeView?.UpdateCharacterSpacing(view);
-
-		public static void MapFont(IMenuFlyoutItemHandler handler, IMenuFlyoutItem menuBar)
-		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView?.UpdateFont(menuBar, fontManager);
-		}
 	}
 }

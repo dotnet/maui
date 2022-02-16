@@ -11,18 +11,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IMenuBarHandler handler, IMenuBar view) =>
 			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
 
-		public static void MapTextColor(IMenuBarHandler handler, IMenuBar menuBar) =>
-			handler.NativeView?.UpdateTextColor(menuBar);
-
-		public static void MapCharacterSpacing(IMenuBarHandler handler, IMenuBar menuBar) =>
-			handler.NativeView?.UpdateCharacterSpacing(menuBar);
-
-		public static void MapFont(IMenuBarHandler handler, IMenuBar menuBar)
-		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView?.UpdateFont(menuBar, fontManager);
-		}
-
 		protected override MenuBar CreateNativeElement()
 		{
 			return new MenuBar();
