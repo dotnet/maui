@@ -6,12 +6,12 @@ namespace Microsoft.Maui.Controls.Handlers
 	{
 		public static void MapRadiusX(RectangleHandler handler, Rectangle rectangle)
 		{
-			handler.NativeView?.InvalidateShape(rectangle);
+			handler.PlatformView?.InvalidateShape(rectangle);
 		}
 
 		public static void MapRadiusY(RectangleHandler handler, Rectangle rectangle)
 		{
-			handler.NativeView?.InvalidateShape(rectangle);
+			handler.PlatformView?.InvalidateShape(rectangle);
 		}
 	}
 }

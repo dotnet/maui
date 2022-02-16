@@ -22,12 +22,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapPoints(PolygonHandler handler, Polygon polygon)
 		{
-			handler.NativeView?.InvalidateShape(polygon);
+			handler.PlatformView?.InvalidateShape(polygon);
 		}
 
 		void OnPointsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			NativeView?.InvalidateShape(VirtualView);
+			PlatformView?.InvalidateShape(VirtualView);
 		}
 	}
 }
