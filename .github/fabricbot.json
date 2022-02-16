@@ -1,0 +1,35 @@
+[
+  {
+    "taskType": "trigger",
+    "capabilityId": "IssueResponder",
+    "subCapability": "IssuesOnlyResponder",
+    "version": "1.0",
+    "config": {
+      "conditions": {
+        "operator": "and",
+        "operands": [
+          {
+            "name": "labelAdded",
+            "parameters": {
+              "label": "Needs: Author Feedback"
+            }
+          }
+        ]
+      },
+      "eventType": "issue",
+      "eventNames": [
+        "issues",
+        "project_card"
+      ],
+      "taskName": "Add comment when 'Needs Author Feedback' is applied to issue",
+      "actions": [
+        {
+          "name": "addReply",
+          "parameters": {
+            "comment": "Hi @${issueAuthor}. We have added the \"Needs: Author Feedback\" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time."
+          }
+        }
+      ]
+    }
+  }
+]

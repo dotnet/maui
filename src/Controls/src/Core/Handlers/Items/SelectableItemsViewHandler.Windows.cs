@@ -12,11 +12,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
-		bool _ignoreNativeSelectionChange;
+		bool _ignorePlatformSelectionChange;
 
-		protected override void ConnectHandler(ListViewBase nativeView)
+		protected override void ConnectHandler(ListViewBase platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
 			if (ItemsView != null)
 			{
@@ -36,19 +36,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
 						});
 
-				newListViewBase.SelectionChanged += NativeSelectionChanged;
+				newListViewBase.SelectionChanged += PlatformSelectionChanged;
 			}
 
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
-		protected override void DisconnectHandler(ListViewBase nativeView)
+		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			var oldListViewBase = ListViewBase;
 			if (oldListViewBase != null)
 			{
 				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
-				oldListViewBase.SelectionChanged -= NativeSelectionChanged;
+				oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
 			}
 
 			if (ItemsView != null)
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
@@ -72,9 +72,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		void UpdateNativeSelection()
+		void UpdatePlatformSelection()
 		{
-			_ignoreNativeSelectionChange = true;
+			_ignorePlatformSelectionChange = true;
 
 			switch (ListViewBase.SelectionMode)
 			{
@@ -125,22 +125,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 			}
 
-			_ignoreNativeSelectionChange = false;
+			_ignorePlatformSelectionChange = false;
 		}
 
 		void VirtualSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 		}
 
-		void NativeSelectionChanged(object sender, WASDKSelectionChangedEventArgs args)
+		void PlatformSelectionChanged(object sender, WASDKSelectionChangedEventArgs args)
 		{
 			UpdateVirtualSelection();
 		}
 
 		void UpdateVirtualSelection()
 		{
-			if (_ignoreNativeSelectionChange || ItemsView == null)
+			if (_ignorePlatformSelectionChange || ItemsView == null)
 			{
 				return;
 			}
@@ -201,12 +201,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void UpdateItemsSource()
 		{
-			_ignoreNativeSelectionChange = true;
+			_ignorePlatformSelectionChange = true;
 
 			base.UpdateItemsSource();
-			UpdateNativeSelection();
+			UpdatePlatformSelection();
 
-			_ignoreNativeSelectionChange = false;
+			_ignorePlatformSelectionChange = false;
 		}
 
 		class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter

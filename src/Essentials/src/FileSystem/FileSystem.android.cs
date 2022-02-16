@@ -37,21 +37,41 @@ namespace Microsoft.Maui.Essentials
 		static string PlatformAppDataDirectory
 			=> Platform.AppContext.FilesDir.AbsolutePath;
 
-		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename) =>
+			Task.FromResult(PlatformOpenAppPackageFile(filename));
+
+		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		{
+			try
+			{
+				using var stream = PlatformOpenAppPackageFile(filename);
+				return Task.FromResult(true);
+			}
+			catch (FileNotFoundException)
+			{
+				return Task.FromResult(false);
+			}
+		}
+
+		static Stream PlatformOpenAppPackageFile(string filename)
 		{
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = filename.Replace('\\', Path.DirectorySeparatorChar);
+			filename = NormalizePath(filename);
+
 			try
 			{
-				return Task.FromResult(Platform.AppContext.Assets.Open(filename));
+				return Platform.AppContext.Assets.Open(filename);
 			}
 			catch (Java.IO.FileNotFoundException ex)
 			{
 				throw new FileNotFoundException(ex.Message, filename, ex);
 			}
 		}
+
+		static string NormalizePath(string filename) =>
+			filename.Replace('\\', Path.DirectorySeparatorChar);
 
 		internal static Java.IO.File GetEssentialsTemporaryFile(Java.IO.File root, string fileName)
 		{

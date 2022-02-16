@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
-		AppCompatRadioButton? PlatformRadioButton => (NativeView as AppCompatRadioButton);
+		AppCompatRadioButton? PlatformRadioButton => (PlatformView as AppCompatRadioButton);
 
-		protected override AppCompatRadioButton CreateNativeView()
+		protected override AppCompatRadioButton CreatePlatformView()
 		{
 			return new AppCompatRadioButton(Context)
 			{
@@ -16,13 +16,13 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(View nativeView)
+		protected override void ConnectHandler(View platformView)
 		{
 			if (PlatformRadioButton != null)
 				PlatformRadioButton.CheckedChange += OnCheckChanged;
 		}
 
-		protected override void DisconnectHandler(View nativeView)
+		protected override void DisconnectHandler(View platformView)
 		{
 			if (PlatformRadioButton != null)
 				PlatformRadioButton.CheckedChange -= OnCheckChanged;

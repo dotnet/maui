@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers
 	public partial class ShellHandler : ViewHandler<Shell, ShellFlyoutView>
 	{
 		ShellView _shellView;
-		protected override ShellFlyoutView CreateNativeView()
+		protected override ShellFlyoutView CreatePlatformView()
 		{
 			var drawerLayout = (_shellView as IShellContext)?.CurrentDrawerLayout;
 			return (ShellFlyoutView)drawerLayout;

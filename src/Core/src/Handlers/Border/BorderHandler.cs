@@ -1,12 +1,12 @@
 ﻿#nullable enable
 #if __IOS__ || MACCATALYST
-using NativeView = Microsoft.Maui.Platform.ContentView;
+using PlatformView = Microsoft.Maui.Platform.ContentView;
 #elif __ANDROID__
-using NativeView = Microsoft.Maui.Platform.ContentViewGroup;
+using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 #elif WINDOWS
-using NativeView = Microsoft.Maui.Platform.ContentPanel;
+using PlatformView = Microsoft.Maui.Platform.ContentPanel;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -52,50 +52,50 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateBackground(border);
+			((PlatformView?)handler.PlatformView)?.UpdateBackground(border);
 		}
 
 		public static void MapStrokeShape(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateStrokeShape(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStrokeShape(border);
 			MapBackground(handler, border);
 		}
 
 		public static void MapStroke(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateStroke(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStroke(border);
 			MapBackground(handler, border);
 		}
 
 		public static void MapStrokeThickness(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateStrokeThickness(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStrokeThickness(border);
 			MapBackground(handler, border);
 		}
 
 		public static void MapStrokeLineCap(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateStrokeLineCap(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStrokeLineCap(border);
 		}
 
 		public static void MapStrokeLineJoin(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateStrokeLineJoin(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStrokeLineJoin(border);
 		}
 
 		public static void MapStrokeDashPattern(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateStrokeDashPattern(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStrokeDashPattern(border);
 		}
 
 		public static void MapStrokeDashOffset(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateStrokeDashOffset(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStrokeDashOffset(border);
 		}
 
 		public static void MapStrokeMiterLimit(IBorderHandler handler, IBorderView border)
 		{
-			((NativeView?)handler.NativeView)?.UpdateStrokeMiterLimit(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStrokeMiterLimit(border);
 		}
 	}
 }

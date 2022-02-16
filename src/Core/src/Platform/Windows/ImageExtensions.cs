@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 				};
 
 				if (fontImageSource.Color != null)
-					image.Foreground = fontImageSource.Color.ToNative();
+					image.Foreground = fontImageSource.Color.ToPlatform();
 
 				var fontManager = mauiContext.Services.GetRequiredService<IFontManager>();
 				var uwpFontFamily = fontManager.GetFontFamily(fontImageSource.Font);

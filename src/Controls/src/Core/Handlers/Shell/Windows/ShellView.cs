@@ -34,7 +34,6 @@ namespace Microsoft.Maui.Controls.Platform
 			MenuItemsSource = FlyoutItems;
 		}
 
-
 		internal void SetElement(VisualElement element)
 		{
 			if (Element != null && element != null)
@@ -189,8 +188,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			ItemRenderer ??= (ShellItemHandler)Element.CurrentItem.ToHandler(MauiContext);
 
-			if (ItemRenderer.NativeView != (Content as FrameworkElement))
-				Content = ItemRenderer.NativeView;
+			if (ItemRenderer.PlatformView != (Content as FrameworkElement))
+				Content = ItemRenderer.PlatformView;
 
 			if (ItemRenderer.VirtualView != Element.CurrentItem)
 				ItemRenderer.SetVirtualView(Element.CurrentItem);
