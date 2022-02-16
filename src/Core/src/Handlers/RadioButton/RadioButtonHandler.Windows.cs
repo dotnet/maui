@@ -43,22 +43,22 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) =>
-			handler.NativeView?.UpdateStrokeColor(radioButton);
+			handler.PlatformView?.UpdateStrokeColor(radioButton);
 
 		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) =>
-			handler.NativeView?.UpdateStrokeThickness(radioButton);
+			handler.PlatformView?.UpdateStrokeThickness(radioButton);
 
 		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) =>
-			handler.NativeView?.UpdateCornerRadius(radioButton);
+			handler.PlatformView?.UpdateCornerRadius(radioButton);
 
 		void OnCheckedOrUnchecked(object? sender, RoutedEventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 			{
 				return;
 			}
 
-			VirtualView.IsChecked = NativeView.IsChecked == true;
+			VirtualView.IsChecked = PlatformView.IsChecked == true;
 		}
 	}
 }
