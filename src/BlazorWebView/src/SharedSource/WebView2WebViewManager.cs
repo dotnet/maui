@@ -40,7 +40,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		// Using an IP address means that WebView2 doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
-		private protected const string AppOrigin = "https://0.0.0.0/";
+		internal static readonly string AppHostAddress = "0.0.0.0";
+		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
 		private readonly WebView2Control _webview;
 		private readonly Task _webviewReadyTask;
@@ -58,10 +59,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		public WebView2WebViewManager(WebView2Control webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+		public WebView2WebViewManager(
+			WebView2Control webview!!, 
+			IServiceProvider services, 
+			Dispatcher dispatcher, 
+			IFileProvider fileProvider, 
+			JSComponentConfigurationStore jsComponents, 
+			string hostPageRelativePath)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
-			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
+			_webview = webview;
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -94,10 +101,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			ApplyDefaultWebViewSettings();
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
+
 			_webview.CoreWebView2.WebResourceRequested += async (s, eventArgs) =>
 			{
 				await HandleWebResourceRequest(eventArgs);
 			};
+
+			_webview.CoreWebView2.NavigationStarting += CoreWebView2_NavigationStarting;
+			_webview.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
 			// The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
 			// so the following is an adaptor from blazor.webview.js conventions to WebView2 APIs
@@ -149,6 +160,20 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// Override this method to queue a call to Blazor.start(). Not all platforms require this.
 		/// </summary>
 		protected virtual void QueueBlazorStart()
+		{
+		}
+
+		/// <summary>
+		/// Override this method to manage opening links in the webview. Not all platforms require this.
+		/// </summary>
+		protected virtual void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
+		{
+		}
+
+		/// <summary>
+		/// Override this method to manage opening a new window in the webview. Not all platforms require this.
+		/// </summary>
+		protected virtual void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs args)
 		{
 		}
 

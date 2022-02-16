@@ -13,16 +13,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public class IOSWebViewManager : WebViewManager
 	{
-		private const string AppOrigin = "app://0.0.0.0/";
-
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly WKWebView _webview;
 
-		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, WKWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+			: base(services, dispatcher, new Uri(BlazorWebViewHandler.AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
-			_blazorMauiWebViewHandler = blazorMauiWebViewHandler ?? throw new ArgumentNullException(nameof(blazorMauiWebViewHandler));
-			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
+			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
+			_webview = webview;
 
 			InitializeWebView();
 		}
@@ -204,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				// We need to intercept the redirects to the app scheme because Safari will block them.
 				// We will handle these redirects through the Navigation Manager.
-				if (_currentUri?.Host == "0.0.0.0")
+				if (_currentUri?.Host == BlazorWebView.AppHostAddress)
 				{
 					var uri = _currentUri;
 					_currentUri = null;

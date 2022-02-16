@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		private IOSWebViewManager? _webviewManager;
 
-		private const string AppOrigin = "app://0.0.0.0/";
+		internal static readonly string AppOrigin = $"app://{BlazorWebView.AppHostAddress}/";
 		private const string BlazorInitScript = @"
 			window.__receiveMessageCallbacks = [];
 			window.__dispatchMessageCallback = function(message) {

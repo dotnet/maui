@@ -22,25 +22,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly WebView2Control _webview;
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
-		private readonly ExternalLinkMode _externalLinkMode;
+		private readonly BlazorWebViewHandler _blazorWebViewHandler;
 
 		public WinUIWebViewManager(
-			WebView2Control webview!!,
+			WebView2Control webview,
 			IServiceProvider services,
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
 			string contentRootDir,
-			ExternalLinkMode externalLinkMode)
+			BlazorWebViewHandler blazorWebViewHandler)
 			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_webview = webview;
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
-			_externalLinkMode = externalLinkMode;
-
-			_webview.CoreWebView2Initialized += Webview_CoreWebView2Initialized;
+			_blazorWebViewHandler = blazorWebViewHandler;
 		}
 
 		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
@@ -105,6 +103,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			deferral.Complete();
 		}
 
+		protected override void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
+		{
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) &&
+				uri.Host != AppHostAddress &&
+				_blazorWebViewHandler.ExternalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
+			{
+				_ = Launcher.LaunchUriAsync(uri);
+				args.Cancel = true;
+			}
+		}
+
+		protected override void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs args)
+		{
+			// Intercept _blank target <a> tags to always open in device browser
+			// regardless of ExternalLinkMode.OpenInWebview
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
+			{
+				_ = Launcher.LaunchUriAsync(uri);
+				args.Handled = true;
+			}
+		}
+
 		protected override void QueueBlazorStart()
 		{
 			// In .NET MAUI we use autostart='false' for the Blazor script reference, so we start it up manually in this event
@@ -114,34 +134,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					Blazor.start();
 					");
 			};
-		}
-
-		private void Webview_CoreWebView2Initialized(WebView2Control sender, UI.Xaml.Controls.CoreWebView2InitializedEventArgs args)
-		{
-			_webview.CoreWebView2.NavigationStarting += CoreWebView2_NavigationStarting;
-			_webview.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
-		}
-
-		private void CoreWebView2_NavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
-		{
-			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) &&
-				uri.Host != "0.0.0.0" && 
-				_externalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
-			{
-				_ = Launcher.LaunchUriAsync(uri);
-				args.Cancel = true;
-			}
-		}
-
-		private void CoreWebView2_NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
-		{
-			// Intercept _blank target <a> tags to always open in device browser
-			// regardless of ExternalLinkMode.OpenInWebview
-			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
-			{
-				_ = Launcher.LaunchUriAsync(uri);
-				args.Handled = true;
-			}
 		}
 	}
 }

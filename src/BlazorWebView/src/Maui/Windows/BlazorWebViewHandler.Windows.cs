@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				VirtualView.JSComponents,
 				hostPageRelativePath,
 				contentRootDir,
-				ExternalLinkMode);
+				this);
 
 			if (RootComponents != null)
 			{

@@ -9,13 +9,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	internal class WebKitWebViewClient : WebViewClient
 	{
-		private const string AppOrigin = "https://0.0.0.0/";
+		// Using an IP address means that WebView doesn't wait for any DNS resolution,
+		// making it substantially faster. Note that this isn't real HTTP traffic, since
+		// we intercept all the requests within this origin.
+		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
 
 		private readonly BlazorWebViewHandler? _webViewHandler;
 
-		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler)
+		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler!!)
 		{
-			_webViewHandler = webViewHandler ?? throw new ArgumentNullException(nameof(webViewHandler));
+			_webViewHandler = webViewHandler;
 		}
 
 		protected WebKitWebViewClient(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -34,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var uri = new Uri(requestUri);
 
-				if (uri.Host == "0.0.0.0" &&
+				if (uri.Host == BlazorWebView.AppHostAddress &&
 					view is not null && 
 					request is not null && 
 					request.IsRedirect && 
@@ -43,8 +46,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					view.LoadUrl(uri.ToString());
 					return true;
 				}
-				else if (uri.Host != "0.0.0.0" && 
-					_webViewHandler is not null &&
+				else if (uri.Host != BlazorWebView.AppHostAddress && 
+					_webViewHandler != null &&
 					_webViewHandler.ExternalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
 				{
 					var intent = new Intent(Intent.ActionView, AUri.Parse(requestUri));
@@ -181,9 +184,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			private readonly Action _callback;
 
-			public JavaScriptValueCallback(Action callback)
+			public JavaScriptValueCallback(Action callback!!)
 			{
-				_callback = callback ?? throw new ArgumentNullException(nameof(callback));
+				_callback = callback;
 			}
 
 			public void OnReceiveValue(Java.Lang.Object? value)

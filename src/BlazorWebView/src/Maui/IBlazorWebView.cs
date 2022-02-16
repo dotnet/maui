@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
 
@@ -9,6 +10,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		string? HostPage { get; set; }
 		RootComponentsCollection RootComponents { get; }
 		JSComponentConfigurationStore JSComponents { get; }
+
+		/// <summary>
+		/// Specify whether links should be opened in the external
+		/// system default browser, or within the webview.
+		/// </summary>
 		ExternalLinkMode ExternalLinkMode { get; set; }
 
 		/// <summary>
