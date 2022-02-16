@@ -13,18 +13,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[TestFixture]
-		class Tests
+		public class Tests
 		{
 			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
-			[Test]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void InitializeStrokeShape(bool useCompiledXaml)
 			{
 				var layout = new Border(useCompiledXaml);
-				Assert.NotNull(layout.border0.StrokeShape);
-				Assert.NotNull(layout.border1.StrokeShape);
-				Assert.NotNull(layout.border2.StrokeShape);
+				Assert.NotNull(layout.Border0.StrokeShape);
+				Assert.NotNull(layout.Border1.StrokeShape);
+				Assert.NotNull(layout.Border2.StrokeShape);
 			}
 		}
 	}

@@ -5,19 +5,19 @@
     x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Border">
     <StackLayout>
         <Border 
-            x:Name="border0"
+            x:Name="Border0"
             StrokeShape="Rectangle">
             <Label 
                 Text="Rectangle"/>
         </Border>
         <Border 
-            x:Name="border1"
+            x:Name="Border1"
             StrokeShape="RoundRectangle">
             <Label 
                 Text="RoundRectangle"/>
         </Border>
         <Border 
-            x:Name="border2"
+            x:Name="Border2"
             StrokeShape="Ellipse">
             <Label 
                 Text="Ellipse"/>

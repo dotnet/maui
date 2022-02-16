@@ -101,8 +101,13 @@ namespace Microsoft.Maui.Controls.Shapes
 				{
 					var parts = strValue.Split(delimiter, 2);
 
-					CornerRadiusTypeConverter cornerRadiusTypeConverter = new CornerRadiusTypeConverter();
-					CornerRadius cornerRadius = (CornerRadius)cornerRadiusTypeConverter.ConvertFromString(parts[1]);
+					CornerRadius cornerRadius = new CornerRadius();
+
+					if (parts.Length > 1)
+					{
+						CornerRadiusTypeConverter cornerRadiusTypeConverter = new CornerRadiusTypeConverter();
+						cornerRadius = (CornerRadius)cornerRadiusTypeConverter.ConvertFromString(parts[1]);
+					}
 
 					return new RoundRectangle { CornerRadius = cornerRadius };
 				}
