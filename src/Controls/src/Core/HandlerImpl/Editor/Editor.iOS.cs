@@ -4,7 +4,7 @@
 	{
 		public static void MapText(EditorHandler handler, Editor editor) 
 		{
-			Platform.MauiTextViewExtensions.UpdateText(handler.NativeView, editor);
+			Platform.TextExtensions.UpdateText(handler.NativeView, editor);
 		}
 	}
 }
