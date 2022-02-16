@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Essentials
 		public static Task<Stream> OpenAppPackageFileAsync(string filename)
 			=> PlatformOpenAppPackageFileAsync(filename);
 
+		public static Task<bool> AppPackageFileExistsAsync(string filename)
+			=> PlatformAppPackageFileExistsAsync(filename);
+
 		internal static class MimeTypes
 		{
 			internal const string All = "*/*";

@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, object>
 	{
-		protected override object CreateNativeElement() => throw new NotImplementedException();
+		protected override object CreatePlatformElement() => throw new NotImplementedException();
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) { }
 

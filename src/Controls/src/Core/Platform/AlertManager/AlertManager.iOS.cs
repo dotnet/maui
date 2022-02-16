@@ -18,19 +18,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Subscribe(Window window)
 		{
-			var nativeWindow = window?.MauiContext.GetNativeWindow();
+			var platformWindow = window?.MauiContext.GetPlatformWindow();
 
-			if (Subscriptions.Any(s => s.Window == nativeWindow))
+			if (Subscriptions.Any(s => s.Window == platformWindow))
 				return;
 
-			Subscriptions.Add(new AlertRequestHelper(nativeWindow));
+			Subscriptions.Add(new AlertRequestHelper(platformWindow));
 		}
 
 		internal void Unsubscribe(Window window)
 		{
-			var nativeWindow = window?.MauiContext.GetNativeWindow();
+			var platformWindow = window?.MauiContext.GetPlatformWindow();
 
-			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
+			var toRemove = Subscriptions.Where(s => s.Window == platformWindow).ToList();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void PresentAlert(AlertArguments arguments)
 			{
-				var window = new UIWindow { BackgroundColor = Colors.Transparent.ToNative() };
+				var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
 
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 				var oldFrame = alert.View.Frame;
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void PresentPrompt(PromptArguments arguments)
 			{
-				var window = new UIWindow { BackgroundColor = Colors.Transparent.ToNative() };
+				var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
 
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 				alert.AddTextField(uiTextField =>
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Platform
 			void PresentActionSheet(ActionSheetArguments arguments)
 			{
 				var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
-				var window = new UIWindow { BackgroundColor = Colors.Transparent.ToNative() };
+				var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
 
 				// Clicking outside of an ActionSheet is an implicit cancel on iPads. If we don't handle it, it freezes the app.
 				if (arguments.Cancel != null || UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Platform
 			static void PresentPopUp(UIWindow window, UIAlertController alert, ActionSheetArguments arguments = null)
 			{
 				window.RootViewController = new UIViewController();
-				window.RootViewController.View.BackgroundColor = Colors.Transparent.ToNative();
+				window.RootViewController.View.BackgroundColor = Colors.Transparent.ToPlatform();
 				window.WindowLevel = UIWindowLevel.Alert + 1;
 				window.MakeKeyAndVisible();
 

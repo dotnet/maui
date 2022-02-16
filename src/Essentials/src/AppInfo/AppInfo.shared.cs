@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Essentials
 		void ShowSettingsUI();
 
 		AppTheme RequestedTheme { get; }
+
+		AppPackagingModel PackagingModel { get; }
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppInfo']/Docs" />
@@ -46,6 +48,8 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
 		public static AppTheme RequestedTheme => Current.RequestedTheme;
 
+		public static AppPackagingModel PackagingModel => Current.PackagingModel;
+
 
 		static IAppInfo? currentImplementation;
 
@@ -56,5 +60,11 @@ namespace Microsoft.Maui.Essentials
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrent(IAppInfo? implementation) =>
 			currentImplementation = implementation;
+	}
+
+	public enum AppPackagingModel
+	{
+		Packaged,
+		Unpackaged,
 	}
 }

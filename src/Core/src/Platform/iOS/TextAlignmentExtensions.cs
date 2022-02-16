@@ -5,10 +5,10 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{
-		public static UITextAlignment ToNative(this TextAlignment alignment, IView view)
-			=> alignment.ToNative(view.FlowDirection == FlowDirection.LeftToRight);
+		public static UITextAlignment ToPlatform(this TextAlignment alignment, IView view)
+			=> alignment.ToPlatform(view.FlowDirection == FlowDirection.LeftToRight);
 
-		public static UITextAlignment ToNative(this TextAlignment alignment, bool isLtr)
+		public static UITextAlignment ToPlatform(this TextAlignment alignment, bool isLtr)
 		{
 			switch (alignment)
 			{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static UIControlContentVerticalAlignment ToNative(this TextAlignment alignment)
+		public static UIControlContentVerticalAlignment ToPlatform(this TextAlignment alignment)
 		{
 			switch (alignment)
 			{

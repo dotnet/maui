@@ -55,8 +55,10 @@ namespace Microsoft.Maui.DeviceTests
 				var detailView2 = details2.ToPlatform();
 
 				await detailView2.OnLoadedAsync();
-				dl = FindPlatformFlyoutView(detailView);
+				await detailView.OnUnloadedAsync();
+				dl = FindPlatformFlyoutView(detailView2);
 				Assert.Equal(flyoutView, dl);
+				Assert.Null(FindPlatformFlyoutView(detailView));
 			});
 		}
 #endif

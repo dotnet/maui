@@ -3,16 +3,26 @@ parameters:
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
+  provisionatorChannel: 'latest'
 
 steps:
+  - template: agent-cleanser/v1.yml@xamarin-templates
+    parameters:
+      UninstallMono: false
+      UninstallXamarinMac: false
+      CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
 
   - template: provision.yml
     parameters:
       platform: macos
       skipXcode: ${{ eq(parameters.platform, 'android') }}
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release"
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
 
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'

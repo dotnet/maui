@@ -27,11 +27,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_uiSettings.ColorValuesChanged += UISettingsColorValuesChanged;
 		}
 
-		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-		{
-			return size.GetFontSize();
-		}
-
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			var timerTick = 0L;
@@ -51,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			CompositionTarget.Rendering += renderingFrameEventHandler;
 		}
 
-		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}

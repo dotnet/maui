@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var elementConfiguration = modal as IElementConfiguration<Page>;
 
-			var presentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle().ToNativeModalPresentationStyle();
+			var presentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle().ToPlatformModalPresentationStyle();
 
 			bool shouldFire = true;
 
@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else if (handler is IVisualElementRenderer ver)
 					renderer = ver;
-				else if (handler is INativeViewHandler vh)
+				else if (handler is IPlatformViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
 					element.Handler = handler;
@@ -521,12 +521,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 			}
 
-			if (!Forms.IsiOS9OrNewer)
-			{
-				// For iOS 8, we need to explicitly set the size of the window
-				window.Frame = new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
-			}
-
 			window.RootViewController.PresentViewController(alert, true, null);
 		}
 
@@ -539,7 +533,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				SetRenderer(modal, modalRenderer);
 			}
 
-			var wrapper = new ModalWrapper(modalRenderer.Element.Handler as INativeViewHandler);
+			var wrapper = new ModalWrapper(modalRenderer.Element.Handler as IPlatformViewHandler);
 
 			if (_modals.Count > 1)
 			{
