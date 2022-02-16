@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public bool IsSupported =>
 			TizenCompass.IsSupported;
 
+		public bool IsMonitoring { get; set; }
+
 		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			DefaultSensor.Interval = sensorSpeed.ToPlatform();
