@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapMinimum(IViewHandler handler, IStepper stepper) { }
 		public static void MapMaximum(IViewHandler handler, IStepper stepper) { }

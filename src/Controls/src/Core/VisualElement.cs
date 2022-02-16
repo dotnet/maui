@@ -368,9 +368,9 @@ namespace Microsoft.Maui.Controls
 		int _batched;
 		LayoutConstraint _computedConstraint;
 
-		bool _isInNativeLayout;
+		bool _isInPlatformLayout;
 
-		bool _isNativeStateConsistent = true;
+		bool _isPlatformStateConsistent = true;
 
 		bool _isPlatformEnabled;
 
@@ -634,38 +634,38 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool DisableLayout { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsInNativeLayout']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsInPlatformLayout']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IsInNativeLayout
+		public bool IsInPlatformLayout
 		{
 			get
 			{
-				if (_isInNativeLayout)
+				if (_isInPlatformLayout)
 					return true;
 
 				Element parent = RealParent;
 				if (parent != null)
 				{
 					var visualElement = parent as VisualElement;
-					if (visualElement != null && visualElement.IsInNativeLayout)
+					if (visualElement != null && visualElement.IsInPlatformLayout)
 						return true;
 				}
 
 				return false;
 			}
-			set { _isInNativeLayout = value; }
+			set { _isInPlatformLayout = value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsNativeStateConsistent']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsPlatformStateConsistent']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IsNativeStateConsistent
+		public bool IsPlatformStateConsistent
 		{
-			get { return _isNativeStateConsistent; }
+			get { return _isPlatformStateConsistent; }
 			set
 			{
-				if (_isNativeStateConsistent == value)
+				if (_isPlatformStateConsistent == value)
 					return;
-				_isNativeStateConsistent = value;
+				_isPlatformStateConsistent = value;
 				if (value && IsPlatformEnabled)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 			}
@@ -685,7 +685,7 @@ namespace Microsoft.Maui.Controls
 					return;
 
 				_isPlatformEnabled = value;
-				if (value && IsNativeStateConsistent)
+				if (value && IsPlatformStateConsistent)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 
 				InvalidateStateTriggers(IsPlatformEnabled);
@@ -756,9 +756,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='NativeSizeChanged']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='PlatformSizeChanged']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void NativeSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		public void PlatformSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		public event EventHandler ChildrenReordered;
 
@@ -900,11 +900,10 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
-			return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
+			return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)

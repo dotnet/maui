@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
-		public const double NativeMaxValue = int.MaxValue;
+		public const double PlatformMaxValue = int.MaxValue;
 
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 			var max = slider.Maximum;
 			var value = slider.Value;
 
-			seekBar.Progress = (int)((value - min) / (max - min) * NativeMaxValue);
+			seekBar.Progress = (int)((value - min) / (max - min) * PlatformMaxValue);
 		}
 
 		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider) =>
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToNative());
+				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 				seekBar.ProgressTintMode = PorterDuff.Mode.SrcIn;
 			}
 		}
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToNative());
+				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToPlatform());
 				seekBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
 			}
 		}

@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_bottomView = _outerLayout.FindViewById<BottomNavigationView>(Resource.Id.bottomtab_tabbar);
 			_navigationArea = _outerLayout.FindViewById<FrameLayout>(Resource.Id.bottomtab_navarea);
 
-			_bottomView.SetBackgroundColor(Colors.White.ToNative());
+			_bottomView.SetBackgroundColor(Colors.White.ToPlatform());
 			_bottomView.SetOnItemSelectedListener(this);
 
 			if (ShellItem == null)
@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Platform
 							image.SetImageDrawable(result?.Value);
 							if (result?.Value != null)
 							{
-								var color = Colors.Black.MultiplyAlpha(0.6f).ToNative();
+								var color = Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
 								result.Value.SetTint(color);
 							}
 						});

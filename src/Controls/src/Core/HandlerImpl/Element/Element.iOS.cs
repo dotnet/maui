@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 			if (!element.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
 				return;
 
-			var Control = handler.NativeView as UIView;
+			var Control = handler.PlatformView as UIView;
 
 			// iOS sets the default value for IsAccessibilityElement late in the layout cycle
 			// But if we set it to false ourselves then that causes it to act like it's false
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 			if (!view.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
 				return;
 
-			var Control = handler.NativeView as UIView;
+			var Control = handler.PlatformView as UIView;
 
 			var _defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden || Control is UIControl;
 			Control.AccessibilityElementsHidden = (bool)((bool?)view.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
