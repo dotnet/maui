@@ -13,9 +13,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-#if WINDOWS
 			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
-#endif
 			handlersCollection.AddHandler<Application, ApplicationHandler>();
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 			handlersCollection.AddHandler<BoxView, ShapeViewHandler>();
@@ -56,7 +54,6 @@ namespace Microsoft.Maui.Controls.Hosting
 #if ANDROID || IOS
 			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
-      handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
 #if WINDOWS || ANDROID
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
