@@ -138,5 +138,27 @@ namespace Microsoft.Maui
 		public IServiceProvider Services { get; protected set; } = null!;
 
 		public IApplication Application { get; protected set; } = null!;
+
+		internal IUIMenuBuilder? MenuBuilder { get; private set; }
+		public override void BuildMenu(IUIMenuBuilder builder)
+		{
+			base.BuildMenu(builder);
+
+			builder.InsertSiblingMenuAfter(
+				UIMenu.Create("test menu", new UIMenuElement[0]),
+				UIMenuIdentifier.File.ToString());
+
+			/*var openDocument = UIKeyCommand.Create("Open...", null,
+				new Selector(""), null);*/
+
+
+			/*MenuBuilder = builder;
+
+			var window = Window ?? this.GetWindow() ??
+				UIApplication.SharedApplication.GetWindow()?.Handler?.NativeView as UIWindow;
+
+			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
+			MenuBuilder = null;*/
+		}
 	}
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 #if IOS || MACCATALYST
-using PlatformView = UIKit.UIAction;
+using PlatformView = UIKit.UIMenuElement;
 #elif MONOANDROID
 using PlatformView = Android.Views.View;
 #elif WINDOWS
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-#if !WINDOWS
+#if !WINDOWS && !IOS
 		protected override PlatformView CreateNativeElement()
 		{
 			throw new NotImplementedException();
