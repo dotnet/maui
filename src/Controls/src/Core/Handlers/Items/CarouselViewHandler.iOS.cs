@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.NativeView.Frame.Size);
+			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.PlatformView.Frame.Size);
 			handler.Controller.Layout.InvalidateLayout();
 		}
 

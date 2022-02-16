@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
-		protected override object CreateNativeView()
+		protected override object CreatePlatformView()
 		{
 			throw new NotImplementedException();
 		}

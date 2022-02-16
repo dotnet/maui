@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}, (long)interval.TotalMilliseconds);
 			}
 
-			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+			public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
 				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}

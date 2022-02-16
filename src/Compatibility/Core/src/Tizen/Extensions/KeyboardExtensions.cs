@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static void UpdateKeyboard(this Native.IEntry control, Keyboard keyboard, bool isSpellCheckEnabled, bool isTextPredictionEnabled)
 		{
-			control.Keyboard = keyboard.ToNative();
+			control.Keyboard = keyboard.ToPlatform();
 			if (keyboard is CustomKeyboard customKeyboard)
 			{
 				(control as EEntry).AutoCapital = customKeyboard.Flags.ToAutoCapital();

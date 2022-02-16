@@ -1,4 +1,4 @@
-﻿using NativeView = UIKit.UIView;
+﻿using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {

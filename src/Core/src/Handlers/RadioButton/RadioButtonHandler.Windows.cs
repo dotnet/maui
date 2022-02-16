@@ -4,42 +4,42 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, MauiRadioButton>
 	{
-		protected override MauiRadioButton CreateNativeView() => new MauiRadioButton();
+		protected override MauiRadioButton CreatePlatformView() => new MauiRadioButton();
 
-		protected override void ConnectHandler(MauiRadioButton nativeView)
+		protected override void ConnectHandler(MauiRadioButton platformView)
 		{
-			nativeView.Checked += OnCheckedOrUnchecked;
-			nativeView.Unchecked += OnCheckedOrUnchecked;
+			platformView.Checked += OnCheckedOrUnchecked;
+			platformView.Unchecked += OnCheckedOrUnchecked;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiRadioButton nativeView)
+		protected override void DisconnectHandler(MauiRadioButton platformView)
 		{
-			nativeView.Checked -= OnCheckedOrUnchecked;
-			nativeView.Unchecked -= OnCheckedOrUnchecked;
+			platformView.Checked -= OnCheckedOrUnchecked;
+			platformView.Unchecked -= OnCheckedOrUnchecked;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.NativeView?.UpdateIsChecked(radioButton);
+			handler.PlatformView?.UpdateIsChecked(radioButton);
 		}
 
 		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle) =>
-			handler.NativeView?.UpdateTextColor(textStyle);
+			handler.PlatformView?.UpdateTextColor(textStyle);
 
 		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle) =>
-			handler.NativeView?.UpdateCharacterSpacing(textStyle);
+			handler.PlatformView?.UpdateCharacterSpacing(textStyle);
 
 		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton) =>
-			handler.NativeView?.UpdateContent(radioButton);
+			handler.PlatformView?.UpdateContent(radioButton);
 
 		public static void MapFont(RadioButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView?.UpdateFont(button, fontManager);
+			handler.PlatformView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) =>
