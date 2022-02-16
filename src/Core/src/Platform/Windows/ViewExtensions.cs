@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static IWindow? GetHostedWindow(this IView? view)
-			=> GetHostedWindow(view?.Handler?.NativeView as FrameworkElement);
+			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
 
 		internal static IWindow? GetHostedWindow(this FrameworkElement? view)
 			=> GetWindowForXamlRoot(view?.XamlRoot);
@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Platform
 			var windows = WindowExtensions.GetWindows();
 			foreach(var window in windows)
 			{
-				if (window.Handler?.NativeView is Microsoft.UI.Xaml.Window win)
+				if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window win)
 				{
 					if (win.Content?.XamlRoot == root)
 						return window;

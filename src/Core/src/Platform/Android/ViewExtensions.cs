@@ -502,7 +502,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static IWindow? GetHostedWindow(this IView? view)
-			=> GetHostedWindow(view?.Handler?.NativeView as View);
+			=> GetHostedWindow(view?.Handler?.PlatformView as View);
 
 		internal static IWindow? GetHostedWindow(this View? view)
 			=> GetWindowFromActivity(view?.Context?.GetActivity());
@@ -515,7 +515,7 @@ namespace Microsoft.Maui.Platform
 			var windows = WindowExtensions.GetWindows();
 			foreach (var window in windows)
 			{
-				if (window.Handler?.NativeView is Android.App.Activity active)
+				if (window.Handler?.PlatformView is Android.App.Activity active)
 				{
 					if (active == activity)
 						return window;

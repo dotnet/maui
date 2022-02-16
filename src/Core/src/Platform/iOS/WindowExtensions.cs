@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			foreach (var window in windows)
 			{
 
-				if (window.Handler?.NativeView is UIWindow win)
+				if (window.Handler?.PlatformView is UIWindow win)
 				{
 					if (win == uiWindow)
 						return window;

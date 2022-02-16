@@ -424,7 +424,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static IWindow? GetHostedWindow(this IView? view)
-			=> GetHostedWindow(view?.Handler?.NativeView as UIView);
+			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
 
 		internal static IWindow? GetHostedWindow(this UIView? view)
 			=> GetHostedWindow(view?.Window);
