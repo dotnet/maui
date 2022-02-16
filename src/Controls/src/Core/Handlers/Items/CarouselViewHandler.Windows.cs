@@ -106,16 +106,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return _loopableCollectionView;
 		}
 
-		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
-		{
-
-		}
-
-		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
-		{
-
-		}
-
 		protected override ListViewBase SelectListViewBase()
 		{
 			return CreateCarouselListLayout(CarouselItemsLayout.Orientation);
