@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Essentials
 		void Start(SensorSpeed sensorSpeed);
 
 		void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter);
+		
 		void Stop();
 	}
 
