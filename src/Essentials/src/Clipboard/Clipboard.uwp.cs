@@ -33,6 +33,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public void StopClipboardListeners()
 			=> WindowsClipboard.ContentChanged -= ClipboardChangedEventListener;
 
-		public void ClipboardChangedEventListener(object sender, object val) => ClipboardChangedInternal();
+		public void ClipboardChangedEventListener(object sender, object val) => Clipboard.ClipboardChangedInternal();
 	}
 }
