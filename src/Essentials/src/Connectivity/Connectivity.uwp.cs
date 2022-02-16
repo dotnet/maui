@@ -7,16 +7,16 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class ConnectivityImplementation : IConnectivity
 	{
-		static void StartListeners() =>
+		public void StartListeners() =>
 			 NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
 
 		static void NetworkStatusChanged(object sender) =>
 			OnConnectivityChanged();
 
-		static void StopListeners() =>
+		public void StopListeners() =>
 			 NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{
