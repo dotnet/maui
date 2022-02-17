@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 						break;
 				}
 			}
-			OnConnectivityChanged();
+			Connectivity.OnConnectivityChanged();
 		}
 
 		public NetworkAccess NetworkAccess

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			 NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
 
 		static void NetworkStatusChanged(object sender) =>
-			OnConnectivityChanged();
+			Connectivity.OnConnectivityChanged();
 
 		public void StopListeners() =>
 			 NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
