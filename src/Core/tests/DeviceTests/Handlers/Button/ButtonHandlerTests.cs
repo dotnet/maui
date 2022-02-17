@@ -133,7 +133,7 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode = xplatLineBreakMode
 			};
 
-			var expectedValue = xplatLineBreakMode.ToNative();
+			var expectedValue = xplatLineBreakMode.ToPlatform();
 
 			var values = await GetValueAsync(button, (handler) =>
 			{
