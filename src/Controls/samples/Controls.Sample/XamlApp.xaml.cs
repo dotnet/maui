@@ -48,28 +48,31 @@ namespace Maui.Controls.Sample
 		{
 			var window = new Window(Services.GetRequiredService<Page>());
 
-			var menuBarItem = new MenuBarItem();
-			menuBarItem.Text = "File";
-
-			menuBarItem.Add(new MenuFlyoutItem()
-			{
-				Text = "Flyout Item",
-				IconImageSource = "dotnet_bot.png"
-			});
-
+			var menuBarItem = new MenuBarItem() { Text = "Top Item" };
+			menuBarItem.Add(new MenuFlyoutItem() { Text = "First Child" });
 			menuBarItem.Add(new MenuFlyoutSubItem()
 			{
 				new MenuFlyoutItem()
 				{
 					Text = "Flyout Item",
 					IconImageSource = "dotnet_bot.png"
+				},
+
+				new MenuFlyoutItem()
+				{
+					Text = "Flyout Item 2",
+					IconImageSource = "dotnet_bot.png"
 				}
 			});
 
-			(menuBarItem[1] as MenuFlyoutSubItem).Text = "SUB ITEM";
+			(menuBarItem[1] as MenuFlyoutSubItem).Text = "Second Child";
+
+			var fileBarItem = new MenuBarItem { Text = "File" };
+			fileBarItem.Add(new MenuFlyoutItem() { Text = " Extra File item" });
 
 			window.MenuBar = new MenuBar()
 			{
+				fileBarItem,
 				menuBarItem,
 				new MenuBarItem() { Text = "Edit" },
 				new MenuBarItem() { Text = "Open" },
