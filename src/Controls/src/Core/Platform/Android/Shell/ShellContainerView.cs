@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 		View _view;
 		ShellContentView _shellContentView;
 		readonly IMauiContext _mauiContext;
-		AView NativeView => _view?.Handler?.NativeView as AView;
+		AView PlatformView => _view?.Handler?.PlatformView as AView;
 
 		public ShellContainerView(Context context, View view, IMauiContext mauiContext) : base(context)
 		{
@@ -125,8 +125,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_shellContentView.Measure(measureWidth, measureHeight, null, (int?)maxHeight);
-			//NativeView.Measure(measureWidth, measureHeight);
-			SetMeasuredDimension(NativeView.MeasuredWidth, NativeView.MeasuredHeight);
+			//PlatformView.Measure(measureWidth, measureHeight);
+			SetMeasuredDimension(PlatformView.MeasuredWidth, PlatformView.MeasuredHeight);
 
 			//_shellContentView.LayoutView(0, 0, measureWidth, measureHeight, null, maxHeight);
 
@@ -154,8 +154,8 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 				_shellContentView.OnViewSet(view);
 
-			if (_shellContentView.NativeView != null)
-				AddView(_shellContentView.NativeView);
+			if (_shellContentView.PlatformView != null)
+				AddView(_shellContentView.PlatformView);
 		}
 	}
 }

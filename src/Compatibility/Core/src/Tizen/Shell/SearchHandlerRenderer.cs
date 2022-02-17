@@ -222,18 +222,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateBackgroundColor()
 		{
-			var color = Element.BackgroundColor.ToNative();
+			var color = Element.BackgroundColor.ToPlatform();
 			Control.BackgroundColor = color == EColor.Default ? EColor.White : color;
 		}
 
 		void UpdateTextColor()
 		{
-			Control.TextColor = Element.TextColor.ToNative();
+			Control.TextColor = Element.TextColor.ToPlatform();
 		}
 
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
 		}
 
 		void OnFocusChangedRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateKeyboard()
 		{
-			Control.Keyboard = Element.Keyboard.ToNative();
+			Control.Keyboard = Element.Keyboard.ToPlatform();
 		}
 
 		void UpdatePlaceholder()
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 		void UpdatePlaceholderColor()
 		{
-			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
+			Control.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
 		}
 
 		void OnFocused(object sender, EventArgs e)

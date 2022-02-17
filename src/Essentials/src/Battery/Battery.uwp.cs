@@ -1,31 +1,31 @@
 using Windows.System.Power;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Battery
+	public partial class BatteryImplementation : IBattery
 	{
-		static void StartEnergySaverListeners() =>
+		public void StartEnergySaverListeners() =>
 			PowerManager.EnergySaverStatusChanged += ReportEnergySaverUpdated;
 
-		static void StopEnergySaverListeners() =>
+		public void StopEnergySaverListeners() =>
 			PowerManager.EnergySaverStatusChanged -= ReportEnergySaverUpdated;
 
-		static void ReportEnergySaverUpdated(object sender, object e)
-			=> MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
+		void ReportEnergySaverUpdated(object sender, object e)
+			=> MainThread.BeginInvokeOnMainThread(Battery.OnEnergySaverChanged);
 
-		static void StartBatteryListeners() =>
+		public void StartBatteryListeners() =>
 			DefaultBattery.ReportUpdated += ReportUpdated;
 
-		static void StopBatteryListeners() =>
+		public void StopBatteryListeners() =>
 			DefaultBattery.ReportUpdated -= ReportUpdated;
 
-		static void ReportUpdated(object sender, object e)
-			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
+	 	void ReportUpdated(object sender, object e)
+			=> MainThread.BeginInvokeOnMainThread(Battery.OnBatteryInfoChanged);
 
-		static global::Windows.Devices.Power.Battery DefaultBattery =>
+		global::Windows.Devices.Power.Battery DefaultBattery =>
 			global::Windows.Devices.Power.Battery.AggregateBattery;
 
-		static double PlatformChargeLevel
+		public double ChargeLevel
 		{
 			get
 			{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static BatteryState PlatformState
+		public BatteryState State
 		{
 			get
 			{
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static BatteryPowerSource PlatformPowerSource
+		public BatteryPowerSource PowerSource
 		{
 			get
 			{
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static EnergySaverStatus PlatformEnergySaverStatus =>
+		public EnergySaverStatus EnergySaverStatus =>
 			PowerManager.EnergySaverStatus == global::Windows.System.Power.EnergySaverStatus.On ? EnergySaverStatus.On : EnergySaverStatus.Off;
 	}
 }

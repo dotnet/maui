@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using System;
 using Microsoft.UI.Xaml;
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace Microsoft.Maui.Handlers
 {

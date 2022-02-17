@@ -7,35 +7,35 @@ using UIDevice = WatchKit.WKInterfaceDevice;
 using UIDeviceBatteryState = WatchKit.WKInterfaceDeviceBatteryState;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Battery
+	public partial class BatteryImplementation : IBattery
 	{
 #if !__WATCHOS__
-		static NSObject levelObserver;
-		static NSObject stateObserver;
+		NSObject levelObserver;
+		NSObject stateObserver;
 #endif
 
-		static NSObject saverStatusObserver;
+		NSObject saverStatusObserver;
 
-		static void StartEnergySaverListeners()
+		public void StartEnergySaverListeners()
 		{
 			saverStatusObserver = NSNotificationCenter.DefaultCenter.AddObserver(NSProcessInfo.PowerStateDidChangeNotification, PowerChangedNotification);
 		}
 
-		static void StopEnergySaverListeners()
+		public void StopEnergySaverListeners()
 		{
 			saverStatusObserver?.Dispose();
 			saverStatusObserver = null;
 		}
 
-		static void PowerChangedNotification(NSNotification notification)
-			=> MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
+		void PowerChangedNotification(NSNotification notification)
+			=> MainThread.BeginInvokeOnMainThread(Battery.OnEnergySaverChanged);
 
-		static EnergySaverStatus PlatformEnergySaverStatus =>
+		public EnergySaverStatus EnergySaverStatus =>
 			NSProcessInfo.ProcessInfo?.LowPowerModeEnabled == true ? EnergySaverStatus.On : EnergySaverStatus.Off;
 
-		static void StartBatteryListeners()
+		public void StartBatteryListeners()
 		{
 #if __WATCHOS__
             throw new FeatureNotSupportedException();
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Essentials
 #endif
 		}
 
-		static void StopBatteryListeners()
+		public void StopBatteryListeners()
 		{
 #if __WATCHOS__
             throw new FeatureNotSupportedException();
@@ -59,10 +59,10 @@ namespace Microsoft.Maui.Essentials
 #endif
 		}
 
-		static void BatteryInfoChangedNotification(object sender, NSNotificationEventArgs args)
-			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
+		void BatteryInfoChangedNotification(object sender, NSNotificationEventArgs args)
+			=> MainThread.BeginInvokeOnMainThread(Battery.OnBatteryInfoChanged);
 
-		static double PlatformChargeLevel
+		public double ChargeLevel
 		{
 			get
 			{
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static BatteryState PlatformState
+		public BatteryState State
 		{
 			get
 			{
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static BatteryPowerSource PlatformPowerSource
+		public BatteryPowerSource PowerSource
 		{
 			get
 			{

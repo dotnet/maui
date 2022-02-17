@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Platform
 					if (Shadow.Paint is SolidPaint solidPaint)
 					{
 						solidColor = solidPaint.ToColor();
-						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToNative();
+						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
 					}
 
 					// Apply the shadow radius 
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Platform
 
 			// Reset alpha to draw child with full alpha
 			if (solidColor != null)
-				_shadowPaint.Color = solidColor.ToNative();
+				_shadowPaint.Color = solidColor.ToPlatform();
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		EventHandler? _onForceUpdateSizeRequested;
 		PropertyChangedEventHandler? _onPropertyChangedEventHandler;
-		readonly UIColor _defaultCellBgColor = NativeVersion.IsAtLeast(13) ? UIColor.Clear : UIColor.White;
+		readonly UIColor _defaultCellBgColor = PlatformVersion.IsAtLeast(13) ? UIColor.Clear : UIColor.White;
 
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
 				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
-		protected override UITableViewCell CreateNativeElement()
+		protected override UITableViewCell CreatePlatformElement()
 		{
 			var reusableCell = VirtualView.ReusableCell;
 			var tv = VirtualView.TableView;
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #endif
 			if (defaultBgColor != null)
 			{
-				uiBgColor = defaultBgColor.ToNative();
+				uiBgColor = defaultBgColor.ToPlatform();
 			}
 			else
 			{
@@ -110,14 +110,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 				{
 					if (cell.RealParent is VisualElement element && element.BackgroundColor != null)
-						uiBgColor = element.BackgroundColor.ToNative();
+						uiBgColor = element.BackgroundColor.ToPlatform();
 				}
 			}
 
 			SetBackgroundColor(tableViewCell, cell, uiBgColor);
 		}
 
-		protected void WireUpForceUpdateSizeRequested(ICellController cell, UITableViewCell nativeCell, UITableView tableView)
+		protected void WireUpForceUpdateSizeRequested(ICellController cell, UITableViewCell platformCell, UITableView tableView)
 		{
 			var inpc = cell as INotifyPropertyChanged;
 			cell.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_onForceUpdateSizeRequested = (sender, e) =>
 			{
-				var index = tableView?.IndexPathForCell(nativeCell);
+				var index = tableView?.IndexPathForCell(platformCell);
 				if (index == null && sender is Cell c)
 				{
 					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
