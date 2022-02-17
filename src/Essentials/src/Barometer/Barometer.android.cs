@@ -4,80 +4,32 @@ using Android.Runtime;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class BarometerImplementation : IBarometer
+	public partial class BarometerImplementation : IBarometer
 	{
-		public bool IsSupported
-			=> DefaultBarometer != null;
-
-		public event EventHandler<BarometerChangedEventArgs> ReadingChanged;
-
 		static Sensor DefaultBarometer 
 			=> Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
 		
 		static Sensor barometer;
 		static BarometerListener listener;
 
-		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+		bool PlatformIsSupported
+			=> DefaultBarometer != null;
 
-		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
-
-		public bool IsMonitoring { get; private set; }
-
-		public void Start(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			if (!IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (IsMonitoring)
-				throw new InvalidOperationException("Barometer has already been started.");
-
-			IsMonitoring = true;
-			SensorSpeed = sensorSpeed;
-
-			try
-			{
-				listener = new BarometerListener(data =>
-				{
-					if (UseSyncContext)
-						MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(this, new BarometerChangedEventArgs(data)));
-					else
-						ReadingChanged?.Invoke(this, new BarometerChangedEventArgs(data));
-				});
-					
-				barometer = DefaultBarometer;
-				Platform.SensorManager.RegisterListener(listener, barometer, sensorSpeed.ToPlatform());
-			}
-			catch
-			{
-				IsMonitoring = false;
-				throw;
-			}
+			listener = new BarometerListener(RaiseReadingChanged);					
+			barometer = DefaultBarometer;
+			Platform.SensorManager.RegisterListener(listener, barometer, sensorSpeed.ToPlatform());
 		}
 
-		public void Stop()
+		void PlatformStop()
 		{
-			if (!IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (!IsMonitoring)
-				return;
-
-			IsMonitoring = false;
-
 			if (listener == null)
 				return;
-
-			try
-			{
-				Platform.SensorManager.UnregisterListener(listener, barometer);
-				listener.Dispose();
-				listener = null;
-			}
-			catch
-			{
-				IsMonitoring = true;
-				throw;
-			}
+			
+			Platform.SensorManager.UnregisterListener(listener, barometer);
+			listener.Dispose();
+			listener = null;
 		}
 	}
 

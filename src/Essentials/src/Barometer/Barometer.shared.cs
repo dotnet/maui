@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Essentials
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs" />
-	public static partial class Barometer
+	public static class Barometer
 	{
 		public static event EventHandler<BarometerChangedEventArgs> ReadingChanged
 		{
@@ -98,5 +98,77 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() => $"{nameof(PressureInHectopascals)}: {PressureInHectopascals}";
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class BarometerImplementation : IBarometer
+	{
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+#pragma warning disable CS0067
+		public event EventHandler<BarometerChangedEventArgs> ReadingChanged;
+#pragma warning restore CS0067
+
+		public bool IsSupported
+			=> PlatformIsSupported;
+
+		public bool IsMonitoring { get; private set; }
+
+		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+
+		void RaiseReadingChanged(BarometerData reading)
+		{
+			var args = new BarometerChangedEventArgs(reading);
+
+			if (UseSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(this, args));
+			else
+				ReadingChanged?.Invoke(this, args);
+		}
+
+		public void Start(SensorSpeed sensorSpeed)
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Barometer has already been started.");
+
+			IsMonitoring = true;
+			SensorSpeed = sensorSpeed;
+
+			try
+			{
+				PlatformStart(sensorSpeed);
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
+		}
+
+		public void Stop()
+		{
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
+			try
+			{
+				PlatformStop();
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
+		}
 	}
 }

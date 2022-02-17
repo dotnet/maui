@@ -2,25 +2,15 @@ using System;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class BarometerImplementation : IBarometer
+	public partial class BarometerImplementation : IBarometer
 	{
-#pragma warning disable CS0067
-		public event EventHandler<BarometerChangedEventArgs> ReadingChanged;
-#pragma warning restore CS0067
-
-		public SensorSpeed SensorSpeed
+		void PlatformStart(SensorSpeed sensorSpeed)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public bool IsSupported
+		void PlatformStop()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public bool IsMonitoring
+		bool PlatformIsSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
-
-		public void Start(SensorSpeed sensorSpeed) =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-
-		public void Stop() =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
