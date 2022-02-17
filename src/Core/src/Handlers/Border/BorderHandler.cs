@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 
 		IBorderView IBorderHandler.VirtualView => VirtualView;
 
-		NativeView IBorderHandler.NativeView => NativeView;
+		PlatformView IBorderHandler.PlatformView => PlatformView;
 
 		public static void MapBackground(IBorderHandler handler, IBorderView border)
 		{

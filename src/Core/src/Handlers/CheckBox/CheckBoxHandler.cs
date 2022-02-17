@@ -1,10 +1,10 @@
 ﻿#nullable enable
 #if __IOS__ || MACCATALYST || WINDOWS
-using NativeView = Microsoft.Maui.Platform.MauiCheckBox;
+using PlatformView = Microsoft.Maui.Platform.MauiCheckBox;
 #elif __ANDROID__
-using NativeView = AndroidX.AppCompat.Widget.AppCompatCheckBox;
+using PlatformView = AndroidX.AppCompat.Widget.AppCompatCheckBox;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -36,6 +36,6 @@ namespace Microsoft.Maui.Handlers
 
 		ICheckBox ICheckBoxHandler.VirtualView => VirtualView;
 
-		NativeView ICheckBoxHandler.NativeView => NativeView;
+		PlatformView ICheckBoxHandler.PlatformView => PlatformView;
 	}
 }
