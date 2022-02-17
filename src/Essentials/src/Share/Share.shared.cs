@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials.Implementations;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IShare
+	{
+		Task RequestAsync(ShareTextRequest request);
+		Task RequestAsync(ShareMultipleFilesRequest request);
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Share']/Docs" />
 	public static partial class Share
 	{
@@ -26,7 +34,7 @@ namespace Microsoft.Maui.Essentials
 			if (string.IsNullOrEmpty(request.Text) && string.IsNullOrEmpty(request.Uri))
 				throw new ArgumentException($"Both the {nameof(request.Text)} and {nameof(request.Uri)} are invalid. Make sure to include at least one of them in the request.");
 
-			return PlatformRequestAsync(request);
+			return Current.RequestAsync(request);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][1]/Docs" />
@@ -38,7 +46,7 @@ namespace Microsoft.Maui.Essentials
 			if (request.File == null)
 				throw new ArgumentException(FileNullExeption(nameof(request.File)));
 
-			return PlatformRequestAsync((ShareMultipleFilesRequest)request);
+			return Current.RequestAsync((ShareMultipleFilesRequest)request);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][2]/Docs" />
@@ -53,11 +61,23 @@ namespace Microsoft.Maui.Essentials
 			if (request.Files.Any(file => file == null))
 				throw new ArgumentException(FileNullExeption(nameof(request.Files)));
 
-			return PlatformRequestAsync(request);
+			return Current.RequestAsync(request);
 		}
 
 		static string FileNullExeption(string file)
 			=> $"The {file} parameter in the request files is invalid";
+
+#nullable enable
+		static IShare? currentImplementation;
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IShare Current =>
+			currentImplementation ??= new ShareImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetCurrent(IShare? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ShareRequestBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ShareRequestBase']/Docs" />

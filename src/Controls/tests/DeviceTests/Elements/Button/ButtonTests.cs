@@ -18,9 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<ButtonHandler>(control);
 
-			var nativeText = await GetNativeText(handler);
+			var platformText = await GetNativeText(handler);
 
-			Assert.Equal(expected, nativeText);
+			Assert.Equal(expected, platformText);
 		}
 	}
 }

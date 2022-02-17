@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IShellContext _shellContext;
 		IShellToolbarAppearanceTracker _appearanceTracker;
 		Page _page;
-		INativeViewHandler _viewhandler;
+		IPlatformViewHandler _viewhandler;
 		AView _root;
 		ShellPageContainer _shellPageContainer;
 		ShellContent _shellContent;
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_toolbar = _root.FindViewById<AToolbar>(Resource.Id.shellcontent_toolbar);
 			_page.ToPlatform(MauiContext);
-			_viewhandler = (INativeViewHandler)_page.Handler;
+			_viewhandler = (IPlatformViewHandler)_page.Handler;
 
 			_shellPageContainer = new ShellPageContainer(Context, _viewhandler);
 
