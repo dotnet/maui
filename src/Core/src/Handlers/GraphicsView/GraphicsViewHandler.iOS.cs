@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, CustomPlatformGraphicsView>
 	{
-		protected override PlatformGraphicsView CreatePlatformView()
+		protected override CustomPlatformGraphicsView CreatePlatformView()
 		{
 			return new CustomPlatformGraphicsView();
 		}

@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
-			var currentPoint = e.GetCurrentPoint(NativeView);
+			var currentPoint = e.GetCurrentPoint(PlatformView);
 			var currentPosition = currentPoint.Position;
 			var point = new Point(currentPosition.X, currentPosition.Y);
 
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPointerMoved(object sender, PointerRoutedEventArgs e)
 		{
-			var currentPoint = e.GetCurrentPoint(NativeView);
+			var currentPoint = e.GetCurrentPoint(PlatformView);
 			var currentPosition = currentPoint.Position;
 			var point = new Point(currentPosition.X, currentPosition.Y);
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			var currentPoint = e.GetCurrentPoint(NativeView);
+			var currentPoint = e.GetCurrentPoint(PlatformView);
 			var currentPosition = currentPoint.Position;
 			var point = new Point(currentPosition.X, currentPosition.Y);
 
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
 		{
-			var currentPoint = e.GetCurrentPoint(NativeView);
+			var currentPoint = e.GetCurrentPoint(PlatformView);
 			var currentPosition = currentPoint.Position;
 			var point = new Point(currentPosition.X, currentPosition.Y);
 
