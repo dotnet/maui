@@ -196,7 +196,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static TextTrimming ToNative(this LineBreakMode mode) =>
+		public static TextTrimming ToPlatform(this LineBreakMode mode) =>
 			mode switch
 			{
 				LineBreakMode.NoWrap => TextTrimming.Clip,
