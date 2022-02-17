@@ -67,6 +67,6 @@ namespace Microsoft.Maui.Handlers
 
 		IMenuFlyoutSubItem IMenuFlyoutSubItemHandler.VirtualView => VirtualView;
 
-		PlatformView IMenuFlyoutSubItemHandler.NativeView => NativeView;
+		PlatformView IMenuFlyoutSubItemHandler.PlatformView => PlatformView;
 	}
 }

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, View>
 	{
-		protected override View CreateNativeElement()
+		protected override View CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}

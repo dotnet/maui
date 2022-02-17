@@ -13,6 +13,6 @@ namespace Microsoft.Maui.Handlers
 	public interface IMenuFlyoutItemHandler : IElementHandler
 	{
 		new IMenuFlyoutItem VirtualView { get; }
-		new PlatformView NativeView { get; }
+		new PlatformView PlatformView { get; }
 	}
 }

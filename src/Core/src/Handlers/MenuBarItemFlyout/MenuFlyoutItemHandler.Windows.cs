@@ -7,21 +7,21 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuFlyoutItemHandler
 	{
-		protected override MenuFlyoutItem CreateNativeElement()
+		protected override MenuFlyoutItem CreatePlatformElement()
 		{
 			return new MenuFlyoutItem();
 		}
 
-		protected override void ConnectHandler(MenuFlyoutItem nativeView)
+		protected override void ConnectHandler(MenuFlyoutItem PlatformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.Click += OnClicked;
+			base.ConnectHandler(PlatformView);
+			PlatformView.Click += OnClicked;
 		}
 
-		protected override void DisconnectHandler(MenuFlyoutItem nativeView)
+		protected override void DisconnectHandler(MenuFlyoutItem PlatformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.Click -= OnClicked;
+			base.DisconnectHandler(PlatformView);
+			PlatformView.Click -= OnClicked;
 		}
 
 		void OnClicked(object sender, UI.Xaml.RoutedEventArgs e)
@@ -31,16 +31,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			handler.NativeView.Icon =
+			handler.PlatformView.Icon =
 				view.Source?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
 		}
 
 		public static void MapText(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			handler.NativeView.Text = view.Text;
+			handler.PlatformView.Text = view.Text;
 		}
 
 		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
-			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
+			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
 	}
 }

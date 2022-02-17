@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		protected override View CreateNativeElement()
+		protected override View CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}

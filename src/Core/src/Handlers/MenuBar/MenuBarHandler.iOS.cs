@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuBarHandler : ElementHandler<IMenuBar, IUIMenuBuilder>, IMenuBarHandler
 	{
-		protected override IUIMenuBuilder CreateNativeElement()
+		protected override IUIMenuBuilder CreatePlatformElement()
 		{
 			return MauiUIApplicationDelegate.Current.MenuBuilder
 				?? throw new InvalidOperationException("Menu has not been initialized yet on the Application");
@@ -30,14 +30,14 @@ namespace Microsoft.Maui.Handlers
 			foreach (var item in VirtualView)
 			{
 				var handler = item.ToHandler(MauiContext!);
-				var menuItem = (UIMenu)handler!.NativeView!;
+				var menuItem = (UIMenu)handler!.PlatformView!;
 
 				UIMenu? catalystMenu = null;
 
 				var identifierConstant = menuItem.Identifier.GetConstant();
 				if (identifierConstant != null)
 				{	
-					catalystMenu = NativeView.GetMenu(identifierConstant);
+					catalystMenu = PlatformView.GetMenu(identifierConstant);
 				}
 
 				lastFoundMenu = catalystMenu ?? lastFoundMenu;
@@ -49,11 +49,11 @@ namespace Microsoft.Maui.Handlers
 					{
 						var fileMenuId = lastFoundMenu.GetIdentifier();
 
-						NativeView.InsertSiblingMenuAfter(menuItem, fileMenuId);
+						PlatformView.InsertSiblingMenuAfter(menuItem, fileMenuId);
 					}
 					else
 					{
-						NativeView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant());
+						PlatformView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant());
 					}
 				}
 

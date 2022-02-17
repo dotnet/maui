@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 		void Remove(IMenuBarItem view);
 		void Clear();
 		void Insert(int index, IMenuBarItem view);
-		new PlatformView NativeView { get; }
+		new PlatformView PlatformView { get; }
 		new IMenuBar VirtualView { get; }
 	}
 }

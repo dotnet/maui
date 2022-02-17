@@ -66,6 +66,6 @@ namespace Microsoft.Maui.Handlers
 
 		IMenuBar IMenuBarHandler.VirtualView => VirtualView;
 
-		PlatformView IMenuBarHandler.NativeView => NativeView;
+		PlatformView IMenuBarHandler.PlatformView => PlatformView;
 	}
 }

@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Handlers
 	public partial class MenuBarHandler : ElementHandler<IMenuBar, MenuBar>, IMenuBarHandler
 	{
 		public static void MapIsEnabled(IMenuBarHandler handler, IMenuBar view) =>
-			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
+			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
 
-		protected override MenuBar CreateNativeElement()
+		protected override MenuBar CreatePlatformElement()
 		{
 			return new MenuBar();
 		}
@@ -29,23 +29,23 @@ namespace Microsoft.Maui.Handlers
 
 		public void Add(IMenuBarItem view)
 		{
-			NativeView.Items.Add((MenuBarItem)view.ToPlatform(MauiContext!));
+			PlatformView.Items.Add((MenuBarItem)view.ToPlatform(MauiContext!));
 		}
 
 		public void Remove(IMenuBarItem view)
 		{
 			if (view.Handler != null)
-				NativeView.Items.Remove((MenuBarItem)view.ToPlatform());
+				PlatformView.Items.Remove((MenuBarItem)view.ToPlatform());
 		}
 
 		public void Clear()
 		{
-			NativeView.Items.Clear();
+			PlatformView.Items.Clear();
 		}
 
 		public void Insert(int index, IMenuBarItem view)
 		{
-			NativeView.Items.Insert(index, (MenuBarItem)view.ToPlatform(MauiContext!));
+			PlatformView.Items.Insert(index, (MenuBarItem)view.ToPlatform(MauiContext!));
 		}
 	}
 }

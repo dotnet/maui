@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if !WINDOWS && !IOS
-		protected override PlatformView CreateNativeElement()
+		protected override PlatformView CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}
@@ -43,6 +43,6 @@ namespace Microsoft.Maui.Handlers
 
 		IMenuFlyoutItem IMenuFlyoutItemHandler.VirtualView => VirtualView;
 
-		PlatformView IMenuFlyoutItemHandler.NativeView => NativeView;
+		PlatformView IMenuFlyoutItemHandler.PlatformView => PlatformView;
 	}
 }

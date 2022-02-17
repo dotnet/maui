@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuFlyoutSubItemHandler
 	{
-		protected override View CreateNativeElement()
+		protected override View CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}

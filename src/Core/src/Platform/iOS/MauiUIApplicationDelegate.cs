@@ -147,7 +147,7 @@ namespace Microsoft.Maui
 			MenuBuilder = builder;
 
 			var window = Window ?? this.GetWindow() ??
-				UIApplication.SharedApplication.GetWindow()?.Handler?.NativeView as UIWindow;
+				UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
 
 			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
 			MenuBuilder = null;

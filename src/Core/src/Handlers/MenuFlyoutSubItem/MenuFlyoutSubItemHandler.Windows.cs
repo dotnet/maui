@@ -8,21 +8,21 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuFlyoutSubItemHandler
 	{
-		protected override MenuFlyoutSubItem CreateNativeElement()
+		protected override MenuFlyoutSubItem CreatePlatformElement()
 		{
 			return new MenuFlyoutSubItem();
 		}
 
-		protected override void DisconnectHandler(MenuFlyoutSubItem nativeView)
+		protected override void DisconnectHandler(MenuFlyoutSubItem PlatformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.Tapped -= OnTapped;
+			base.DisconnectHandler(PlatformView);
+			PlatformView.Tapped -= OnTapped;
 		}
 
-		protected override void ConnectHandler(MenuFlyoutSubItem nativeView)
+		protected override void ConnectHandler(MenuFlyoutSubItem PlatformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.Tapped += OnTapped;
+			base.ConnectHandler(PlatformView);
+			PlatformView.Tapped += OnTapped;
 		}
 
 		void OnTapped(object sender, UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -32,15 +32,15 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
-			handler.NativeView.Text = view.Text;
+			handler.PlatformView.Text = view.Text;
 		}
 
 		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view) =>
-			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
+			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
 
 		public static void MapSource(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
-			handler.NativeView.Icon =
+			handler.PlatformView.Icon =
 				view.Source?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
 		}
 
@@ -57,23 +57,23 @@ namespace Microsoft.Maui.Handlers
 
 		public void Add(IMenuElement view)
 		{
-			NativeView.Items.Add((MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
+			PlatformView.Items.Add((MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
 		}
 
 		public void Remove(IMenuElement view)
 		{
 			if (view.Handler != null)
-				NativeView.Items.Remove((MenuFlyoutItemBase)view.ToPlatform());
+				PlatformView.Items.Remove((MenuFlyoutItemBase)view.ToPlatform());
 		}
 
 		public void Clear()
 		{
-			NativeView.Items.Clear();
+			PlatformView.Items.Clear();
 		}
 
 		public void Insert(int index, IMenuElement view)
 		{
-			NativeView.Items.Insert(index, (MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
+			PlatformView.Items.Insert(index, (MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
 		}
 	}
 }

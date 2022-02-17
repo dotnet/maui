@@ -12,18 +12,18 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		protected override MenuBarItem CreateNativeElement()
+		protected override MenuBarItem CreatePlatformElement()
 		{
 			return new MenuBarItem();
 		}
 
 		public static void MapText(IMenuBarItemHandler handler, IMenuBarItem view)
 		{
-			handler.NativeView.Title = view.Text;
+			handler.PlatformView.Title = view.Text;
 		}
 
 		public static void MapIsEnabled(IMenuBarItemHandler handler, IMenuBarItem view) =>
-			handler.NativeView.UpdateIsEnabled(view.IsEnabled);
+			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
 
 		public override void SetVirtualView(IElement view)
 		{
@@ -38,23 +38,23 @@ namespace Microsoft.Maui.Handlers
 
 		public void Add(IMenuElement view)
 		{
-			NativeView.Items.Add((MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
+			PlatformView.Items.Add((MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
 		}
 
 		public void Remove(IMenuElement view)
 		{
 			if (view.Handler != null)
-				NativeView.Items.Remove((MenuFlyoutItemBase)view.ToPlatform());
+				PlatformView.Items.Remove((MenuFlyoutItemBase)view.ToPlatform());
 		}
 
 		public void Clear()
 		{
-			NativeView.Items.Clear();
+			PlatformView.Items.Clear();
 		}
 
 		public void Insert(int index, IMenuElement view)
 		{
-			NativeView.Items.Insert(index, (MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
+			PlatformView.Items.Insert(index, (MenuFlyoutItemBase)view.ToPlatform(MauiContext!));
 		}
 	}
 }

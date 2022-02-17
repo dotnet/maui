@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuFlyoutSubItemHandler
 	{
-		protected override UIMenu CreateNativeElement()
+		protected override UIMenu CreatePlatformElement()
 		{
 			UIMenuElement[] menuElements = new UIMenuElement[VirtualView.Count];
 			for (int i = 0; i < VirtualView.Count; i++)
 			{
 				var item = VirtualView[i];
-				var menuElement = (UIMenuElement)item.ToHandler(MauiContext!)!.NativeView!;
+				var menuElement = (UIMenuElement)item.ToHandler(MauiContext!)!.PlatformView!;
 				menuElements[i] = menuElement;
 			}
 

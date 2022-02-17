@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuFlyoutItemHandler
 	{
-		protected override UIMenuElement CreateNativeElement()
+		protected override UIMenuElement CreatePlatformElement()
 		{
 			var selector = new Selector(Guid.NewGuid().ToString());
 			var command = UICommand.Create(title: VirtualView.Text, null, selector, null);

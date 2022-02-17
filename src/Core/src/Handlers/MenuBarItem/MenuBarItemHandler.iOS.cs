@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, UIMenu>, IMenuBarItemHandler
 	{
-		protected override UIMenu CreateNativeElement()
+		protected override UIMenu CreatePlatformElement()
 		{
 			UIMenu? catalystMenu = null;
 			if (Enum.TryParse(typeof(UIMenuIdentifier), VirtualView.Text, out object? result))
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			for (int i = 0; i < VirtualView.Count; i++)
 			{
 				var item = VirtualView[i];
-				var menuElement = (UIMenuElement)item.ToHandler(MauiContext!)!.NativeView!;
+				var menuElement = (UIMenuElement)item.ToHandler(MauiContext!)!.PlatformView!;
 				menuElements[i] = menuElement;
 			}
 
