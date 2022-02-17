@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Platform
 			elementHolder.Element = item.Element;
 		}
 
-		class LinearLayoutWithFocus : LinearLayout, ITabStop//, IVisualElementRenderer
+		class LinearLayoutWithFocus : LinearLayout, ITabStop//, INativeViewHandler
 		{
 			public LinearLayoutWithFocus(global::Android.Content.Context context) : base(context)
 			{
@@ -117,30 +117,30 @@ namespace Microsoft.Maui.Controls.Platform
 
 			AView ITabStop.TabStop => this;
 
-			//			#region IVisualElementRenderer
+			//			#region INativeViewHandler
 
-			//			VisualElement IVisualElementRenderer.Element => Content?.BindingContext as VisualElement;
+			//			VisualElement INativeViewHandler.Element => Content?.BindingContext as VisualElement;
 
-			//			VisualElementTracker IVisualElementRenderer.Tracker => null;
+			//			VisualElementTracker INativeViewHandler.Tracker => null;
 
-			//			ViewGroup IVisualElementRenderer.ViewGroup => this;
+			//			ViewGroup INativeViewHandler.ViewGroup => this;
 
-			//			AView IVisualElementRenderer.View => this;
+			//			AView INativeViewHandler.View => this;
 
-			//			SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint) => new SizeRequest(new Size(100, 100));
+			//			SizeRequest INativeViewHandler.GetDesiredSize(int widthConstraint, int heightConstraint) => new SizeRequest(new Size(100, 100));
 
-			//			void IVisualElementRenderer.SetElement(VisualElement element) { }
+			//			void INativeViewHandler.SetElement(VisualElement element) { }
 
-			//			void IVisualElementRenderer.SetLabelFor(int? id) { }
+			//			void INativeViewHandler.SetLabelFor(int? id) { }
 
-			//			void IVisualElementRenderer.UpdateLayout() { }
+			//			void INativeViewHandler.UpdateLayout() { }
 
 			//#pragma warning disable 67
 			//			public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 			//			public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 			//#pragma warning restore 67
 
-			//			#endregion IVisualElementRenderer
+			//			#endregion INativeViewHandler
 
 			internal View Content { get; set; }
 

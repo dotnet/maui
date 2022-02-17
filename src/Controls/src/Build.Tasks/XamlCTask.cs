@@ -288,7 +288,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				var visitorContext = new ILContext(il, body, module)
 				{
-					DefineDebug = DebugSymbols || (!string.IsNullOrEmpty(DebugType) && DebugType.ToLowerInvariant() != "none"),
 					XamlFilePath = xamlFilePath
 				};
 
