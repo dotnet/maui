@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				cell = base.GetCell(collectionView, indexPath);
 			}
 
-			var element = (cell as TemplatedCell)?.NativeHandler?.VirtualView as VisualElement;
+			var element = (cell as TemplatedCell)?.PlatformHandler?.VirtualView as VisualElement;
 
 			if (element != null)
 				VisualStateManager.GoToState(element, CarouselView.DefaultItemVisualState);
@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var cell in cells)
 			{
-				if (!((cell as CarouselTemplatedCell)?.NativeHandler?.VirtualView is View itemView))
+				if (!((cell as CarouselTemplatedCell)?.PlatformHandler?.VirtualView is View itemView))
 					return;
 
 				var item = itemView.BindingContext;

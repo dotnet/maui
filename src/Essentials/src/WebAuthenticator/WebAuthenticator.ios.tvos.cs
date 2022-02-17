@@ -72,11 +72,11 @@ namespace Microsoft.Maui.Essentials
 				sf = null;
 			}
 
-			if (UIDevice.CurrentDevice.CheckSystemVersion(12, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(12, 0))
 			{
 				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 
-				if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+				if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
 				{
 					var ctx = new ContextProvider(Platform.GetCurrentWindow());
 					void_objc_msgSend_IntPtr(was.Handle, ObjCRuntime.Selector.GetHandle("setPresentationContextProvider:"), ctx.Handle);
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Essentials
 			if (prefersEphemeralWebBrowserSession)
 				ClearCookies();
 
-			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 			{
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 				using (sf)
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Essentials
 			NSUrlCache.SharedCache.RemoveAllCachedResponses();
 
 #if __IOS__
-			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 			{
 				WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.GetAllCookies((cookies) =>
 				{
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Essentials
 		static bool VerifyHasUrlSchemeOrDoesntRequire(string scheme)
 		{
 			// iOS11+ uses sfAuthenticationSession which handles its own url routing
-			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 				return true;
 
 			return AppInfoImplementation.VerifyHasUrlScheme(scheme);

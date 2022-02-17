@@ -1,8 +1,11 @@
 {
   "profiles": {
-    "Windows Machine": {
+    "Windows Machine (on 10.0.19041)": {
       "commandName": "MsixPackage",
       "nativeDebugging": true
+    },
+    "Unpackaged Windows Machine (on 10.0.20348)": {
+      "commandName": "Project"
     }
   }
 }

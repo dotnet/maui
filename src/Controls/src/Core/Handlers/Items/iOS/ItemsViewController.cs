@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ItemsSource = CreateItemsViewSource();
 
-			if (!NativeVersion.IsAtLeast(11))
+			if (!PlatformVersion.IsAtLeast(11))
 				AutomaticallyAdjustsScrollViewInsets = false;
 			else
 			{

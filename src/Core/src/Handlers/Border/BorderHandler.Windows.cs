@@ -10,27 +10,27 @@ namespace Microsoft.Maui.Handlers
         {
             base.SetVirtualView(view);
 
-            _ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+            _ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
             _ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-            NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-            NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+            PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+            PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
         }
 
         void UpdateContent()
         {
-            _ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+            _ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
             _ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
             _ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-            NativeView.Children.Clear();
-			NativeView.EnsureBorderPath();
+            PlatformView.Children.Clear();
+			PlatformView.EnsureBorderPath();
 
             if (VirtualView.PresentedContent is IView view)
-                NativeView.Children.Add(view.ToPlatform(MauiContext));
+                PlatformView.Children.Add(view.ToPlatform(MauiContext));
         }
 
-        protected override ContentPanel CreateNativeView()
+        protected override ContentPanel CreatePlatformView()
         {
             if (VirtualView == null)
             {

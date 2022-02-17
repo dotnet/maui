@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (backgroundColor == null)
 				return;
 
-			SetBackgroundColor(backgroundColor.ToNative());
+			SetBackgroundColor(backgroundColor.ToPlatform());
 		}
 
 		protected virtual void UpdateBackground(Brush brush = null)

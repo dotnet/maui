@@ -5,7 +5,7 @@ using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 #elif WINDOWS
 using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 

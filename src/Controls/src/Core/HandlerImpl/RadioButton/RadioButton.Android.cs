@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (radioButton.ResolveControlTemplate() != null)
 			{
-				if (handler.NativeView is ContentViewGroup vg && handler.MauiContext != null)
+				if (handler.PlatformView is ContentViewGroup vg && handler.MauiContext != null)
 				{
 					// Cleanup the old view when reused
 					vg.RemoveAllViews();

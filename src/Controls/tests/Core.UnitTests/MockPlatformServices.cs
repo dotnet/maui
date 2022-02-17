@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			timer = new Timer(onTimeout, null, interval, interval);
 		}
 
-		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			if (getNativeSizeFunc != null)
 				return getNativeSizeFunc(view, widthConstraint, heightConstraint);

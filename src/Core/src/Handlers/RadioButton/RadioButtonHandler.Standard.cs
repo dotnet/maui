@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton) { }
 		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton) { }

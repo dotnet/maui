@@ -147,7 +147,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
-		public async Task ReturnsNonEmptyNativeViewBounds(int size)
+		public async Task ReturnsNonEmptyPlatformViewBounds(int size)
 		{
 			var view = new TStub()
 			{
@@ -155,8 +155,8 @@ namespace Microsoft.Maui.DeviceTests
 				Width = size,
 			};
 
-			var nativeViewBounds = await GetValueAsync(view, handler => GetNativeViewBounds(handler));
-			Assert.NotEqual(nativeViewBounds, new Graphics.Rectangle());
+			var platformViewBounds = await GetValueAsync(view, handler => GetPlatformViewBounds(handler));
+			Assert.NotEqual(platformViewBounds, new Graphics.Rectangle());
 		}
 
 		[Theory(DisplayName = "Native View Bounding Box are not empty")]
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
-		public async Task ReturnsNonEmptyNativeViewTransforms(int size)
+		public async Task ReturnsNonEmptyPlatformViewTransforms(int size)
 		{
 			var view = new TStub()
 			{
@@ -194,8 +194,8 @@ namespace Microsoft.Maui.DeviceTests
 				Rotation = size,
 			};
 
-			var nativeViewTransform = await GetValueAsync(view, handler => GetViewTransform(handler));
-			Assert.NotEqual(nativeViewTransform, new System.Numerics.Matrix4x4());
+			var platformViewTransform = await GetValueAsync(view, handler => GetViewTransform(handler));
+			Assert.NotEqual(platformViewTransform, new System.Numerics.Matrix4x4());
 		}
 	}
 }
