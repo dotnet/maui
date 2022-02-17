@@ -43,12 +43,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = searchBarStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
@@ -69,12 +69,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = searchBarStub.VerticalTextAlignment,
-					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+					PlatformViewValue = GetNativeVerticalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -95,12 +95,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = searchBar.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
+			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
 		[Fact]
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
-			searchBarHandler.NativeView;
+			searchBarHandler.PlatformView;
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Query;
@@ -214,6 +214,17 @@ namespace Microsoft.Maui.DeviceTests
 				action?.Invoke();
 				nativeSearchBar.AssertContainsColor(color);
 			});
+		}
+
+		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText == null)
+				return false;
+
+			return !editText.Focusable && !editText.FocusableInTouchMode;
 		}
 	}
 }

@@ -12,11 +12,11 @@ using Microsoft.UI.Xaml.Media;
 
 
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class SemanticScreenReader
+	public partial class SemanticScreenReaderImplementation : ISemanticScreenReader
 	{
-		static void PlatformAnnounce(string text)
+		public void Announce(string text)
 		{
 			if (Platform.CurrentWindow == null)
 				return;

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class TabbedPageHandler : ViewHandler<TabbedPage, object>
 	{
-		protected override object CreateNativeView()
+		protected override object CreatePlatformView()
 		{
 			throw new NotImplementedException();
 		}

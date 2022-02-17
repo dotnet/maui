@@ -22,11 +22,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Tizen
 		{
 			if (Control is MEditor me)
 			{
-				me.TextColor = Element.TextColor.ToNative();
-				me.TextFocusedColor = Element.TextColor.ToNative();
-				me.UnderlineColor = Element.TextColor.ToNative();
-				me.UnderlineFocusedColor = Element.TextColor.ToNative();
-				me.CursorColor = Element.TextColor.ToNative();
+				me.TextColor = Element.TextColor.ToPlatform();
+				me.TextFocusedColor = Element.TextColor.ToPlatform();
+				me.UnderlineColor = Element.TextColor.ToPlatform();
+				me.UnderlineFocusedColor = Element.TextColor.ToPlatform();
+				me.CursorColor = Element.TextColor.ToPlatform();
 			}
 		}
 	}

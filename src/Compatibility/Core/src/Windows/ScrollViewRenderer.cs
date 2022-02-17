@@ -32,11 +32,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null || Control == null)
 				return finalSize;
 
-			Element.IsInNativeLayout = true;
+			Element.IsInPlatformLayout = true;
 
 			Control?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 
-			Element.IsInNativeLayout = false;
+			Element.IsInPlatformLayout = false;
 
 			return finalSize;
 		}
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// values. The ScrollViewRenderer for Android does something similar by waiting up
 			// to 10ms for layout to occur.
 			int cycle = 0;
-			while (Element != null && !Element.IsInNativeLayout)
+			while (Element != null && !Element.IsInPlatformLayout)
 			{
 				await Task.Delay(TimeSpan.FromMilliseconds(1));
 				cycle++;

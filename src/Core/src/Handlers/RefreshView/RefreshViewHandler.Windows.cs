@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RefreshViewHandler : ViewHandler<IRefreshView, RefreshContainer>
 	{
-		protected override RefreshContainer CreateNativeView()
+		protected override RefreshContainer CreatePlatformView()
 		{
 			return new RefreshContainer();
 		}

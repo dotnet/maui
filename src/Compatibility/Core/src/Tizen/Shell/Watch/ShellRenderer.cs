@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 
 			if (_navigationView != null)
 			{
-				_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToNative();
+				_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToPlatform();
 			}
 		}
 

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor.IsNotDefault())
-				run.Foreground = span.TextColor.ToNative();
+				run.Foreground = span.TextColor.ToPlatform();
 
 			var font = span.ToFont();
 			if (!font.IsDefault)
@@ -237,8 +237,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (label == null)
 				return;
 
-			textBlock.TextAlignment = label.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
-			textBlock.VerticalAlignment = label.VerticalTextAlignment.ToNativeVerticalAlignment();
+			textBlock.TextAlignment = label.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			textBlock.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		void UpdateColor(TextBlock textBlock)
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Label label = Element;
 			if (label != null && label.TextColor.IsNotDefault())
 			{
-				textBlock.Foreground = label.TextColor.ToNative();
+				textBlock.Foreground = label.TextColor.ToPlatform();
 			}
 			else
 			{

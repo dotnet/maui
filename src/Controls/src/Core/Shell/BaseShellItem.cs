@@ -329,7 +329,6 @@ namespace Microsoft.Maui.Controls
 					Class = DefaultFlyoutItemLayoutStyle,
 				};
 
-
 				var groups = new VisualStateGroupList();
 
 				var commonGroup = new VisualStateGroup();
@@ -353,14 +352,11 @@ namespace Microsoft.Maui.Controls
 					});
 				}
 
-				if (Device.RuntimePlatform == Device.UWP)
+				normalState.Setters.Add(new Setter
 				{
-					normalState.Setters.Add(new Setter
-					{
-						Property = VisualElement.BackgroundColorProperty,
-						Value = Colors.Transparent
-					});
-				}
+					Property = VisualElement.BackgroundColorProperty,
+					Value = Colors.Transparent
+				});
 
 				commonGroup.States.Add(selectedState);
 
