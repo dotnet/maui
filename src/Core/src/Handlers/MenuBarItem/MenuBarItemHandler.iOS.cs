@@ -11,50 +11,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override UIMenu CreatePlatformElement()
 		{
-			UIMenu? catalystMenu = null;
-			if (Enum.TryParse(typeof(UIMenuIdentifier), VirtualView.Text, out object? result))
-			{
-				if (result != null)
-				{
-					catalystMenu =
-						MauiUIApplicationDelegate.Current.MenuBuilder?.GetMenu(((UIMenuIdentifier)result).GetConstant());
-				}
-			}
-
-			UIMenuElement[] menuElements = new UIMenuElement[VirtualView.Count];
-			for (int i = 0; i < VirtualView.Count; i++)
-			{
-				var item = VirtualView[i];
-				var menuElement = (UIMenuElement)item.ToHandler(MauiContext!)!.PlatformView!;
-				menuElements[i] = menuElement;
-			}
-
-			if (catalystMenu != null)
-			{
-				if (menuElements.Length > 0)
-				{
-					var menuContainer =
-						UIMenu.Create(String.Empty, null,
-							UIMenuIdentifier.None,
-							UIMenuOptions.DisplayInline,
-							menuElements);
-
-					MauiUIApplicationDelegate
-									.Current
-									.MenuBuilder?
-									.InsertChildMenuAtStart(menuContainer, catalystMenu.GetIdentifier());
-				}
-			}
-			else
-			{
-				catalystMenu =
-					UIMenu.Create(VirtualView.Text, null, UIMenuIdentifier.None,
-						UIMenuOptions.SingleSelection, menuElements);
-			}
-
-			return catalystMenu;
+			return VirtualView.ToPlatformMenu(VirtualView.Text, MauiContext!);
 		}
-
 
 
 		[Export("MenuBarItemHandlerMenuClickAction:")]

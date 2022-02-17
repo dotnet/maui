@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVerticalTextAlignment(this Control platformControl, ITextAlignment textAlignment)
 		{
-			platformControl.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment();
+			platformControl.VerticalAlignment = textAlignment.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		internal static IEnumerable<T?> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
