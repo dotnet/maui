@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
 				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiPicker platformView)
