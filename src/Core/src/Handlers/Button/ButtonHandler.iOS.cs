@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapLineBreakMode(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateLineBreakMode(button);
+			handler.PlatformView?.UpdateLineBreakMode(button);
 		}
 
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
