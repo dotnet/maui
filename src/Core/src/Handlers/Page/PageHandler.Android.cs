@@ -10,7 +10,7 @@
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.NativeView?.UpdateBackgroundImageSourceAsync(page, provider)	
+			handler.PlatformView?.UpdateBackgroundImageSourceAsync(page, provider)	
 				.FireAndForget(handler);
 		}
 	}
