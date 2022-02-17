@@ -6,19 +6,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		partial void ConnectingHandler(NativeView? nativeView)
+		partial void ConnectingHandler(PlatformView? platformView)
 		{
-			if (nativeView != null)
+			if (platformView != null)
 			{
-				nativeView.GotFocus += NativeViewGotFocus;
-				nativeView.LostFocus += NativeViewLostFocus;
+				platformView.GotFocus += NativeViewGotFocus;
+				platformView.LostFocus += NativeViewLostFocus;
 			}
 		}
 
-		partial void DisconnectingHandler(NativeView nativeView)
+		partial void DisconnectingHandler(PlatformView platformView)
 		{
-			nativeView.GotFocus -= NativeViewGotFocus;
-			nativeView.LostFocus -= NativeViewLostFocus;
+			platformView.GotFocus -= NativeViewGotFocus;
+			platformView.LostFocus -= NativeViewLostFocus;
 		}
 		
 		static partial void MappingFrame(IViewHandler handler, IView view)
