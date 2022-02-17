@@ -75,8 +75,8 @@ parameters:
         bootsiOS: $(iOS.Msi)
         artifact: net6-windows
       - name: macOS
-        poolName: $(macOSXNet6VmPool)
-        vmImage: $(macOSXNet6VmImage)
+        poolName: 'MAUI'
+        vmImage: ''
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
