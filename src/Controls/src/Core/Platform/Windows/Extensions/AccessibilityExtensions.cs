@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 			FrameworkElement nativeElement = null;
 
 			if(mauiContext != null)
-				nativeElement = (elemValue as IView)?.ToHandler(mauiContext)?.NativeView as FrameworkElement;
+				nativeElement = (elemValue as IView)?.ToHandler(mauiContext)?.PlatformView as FrameworkElement;
 
 			if (nativeElement != null)
 				Control.SetValue(AutomationProperties.LabeledByProperty, nativeElement);

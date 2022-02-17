@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		RootPanel? _rootPanel = null;
 
-		protected override void ConnectHandler(UI.Xaml.Window nativeView)
+		protected override void ConnectHandler(UI.Xaml.Window platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
 			if (_rootPanel == null)
 			{
@@ -23,30 +23,30 @@ namespace Microsoft.Maui.Handlers
 				};
 			}
 
-			nativeView.Content = _rootPanel;
+			platformView.Content = _rootPanel;
 		}
 
-		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
+		protected override void DisconnectHandler(UI.Xaml.Window platformView)
 		{			
 			MauiContext
 				?.GetNavigationRootManager()
 				?.Disconnect();			
 
 			_rootPanel?.Children?.Clear();
-			nativeView.Content = null;
+			platformView.Content = null;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
-			handler.NativeView?.UpdateTitle(window);
+			handler.PlatformView?.UpdateTitle(window);
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
 			windowManager.Connect(handler.VirtualView.Content);
-			var rootPanel = handler.NativeView.Content as Panel;
+			var rootPanel = handler.PlatformView.Content as Panel;
 
 			if (rootPanel == null)
 				return;

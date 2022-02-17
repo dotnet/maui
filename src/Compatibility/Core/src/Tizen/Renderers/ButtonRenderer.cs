@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IButton ib)
 			{
-				ib.TextColor = Element.TextColor.ToNative();
+				ib.TextColor = Element.TextColor.ToPlatform();
 			}
 		}
 

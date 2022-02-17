@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LayoutHandler : ViewHandler<ILayout, LayoutViewGroup>
 	{
-		protected override LayoutViewGroup CreateNativeView()
+		protected override LayoutViewGroup CreatePlatformView()
 		{
 			if (VirtualView == null)
 			{
@@ -29,98 +29,98 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 
-			NativeView.RemoveAllViews();
+			PlatformView.RemoveAllViews();
 
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
-				NativeView.AddView(child.ToPlatform(MauiContext));
+				PlatformView.AddView(child.ToPlatform(MauiContext));
 			}
 		}
 
 		public void Add(IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.AddView(child.ToPlatform(MauiContext), targetIndex);
+			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
 		public void Remove(IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
 			if (child?.ToPlatform() is View view)
 			{
-				NativeView.RemoveView(view);
+				PlatformView.RemoveView(view);
 			}
 		}
 
-		void Clear(LayoutViewGroup nativeView)
+		void Clear(LayoutViewGroup platformView)
 		{
-			nativeView.RemoveAllViews();
+			platformView.RemoveAllViews();
 		}
 
 		public void Clear()
 		{
-			Clear(NativeView);
+			Clear(PlatformView);
 		}
 
 		public void Insert(int index, IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.AddView(child.ToPlatform(MauiContext), targetIndex);
+			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
 		public void Update(int index, IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.RemoveViewAt(index);
+			PlatformView.RemoveViewAt(index);
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.AddView(child.ToPlatform(MauiContext), targetIndex);
+			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
 		public void UpdateZIndex(IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			EnsureZIndexOrder(child);
 		}
 
-		protected override void DisconnectHandler(LayoutViewGroup nativeView)
+		protected override void DisconnectHandler(LayoutViewGroup platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			Clear(nativeView);
-			base.DisconnectHandler(nativeView);
+			Clear(platformView);
+			base.DisconnectHandler(platformView);
 		}
 
 		void EnsureZIndexOrder(IView child)
 		{
-			if (NativeView.ChildCount == 0)
+			if (PlatformView.ChildCount == 0)
 			{
 				return;
 			}
 
 			AView nativeChildView = child.ToPlatform(MauiContext!);
-			var currentIndex = IndexOf(NativeView, nativeChildView);
+			var currentIndex = IndexOf(PlatformView, nativeChildView);
 
 			if (currentIndex == -1)
 			{
@@ -131,8 +131,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (currentIndex != targetIndex)
 			{
-				NativeView.RemoveViewAt(currentIndex);
-				NativeView.AddView(nativeChildView, targetIndex);
+				PlatformView.RemoveViewAt(currentIndex);
+				PlatformView.AddView(nativeChildView, targetIndex);
 			}
 		}
 

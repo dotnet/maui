@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, object>
 	{
-		protected override object CreateNativeElement()
+		protected override object CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}

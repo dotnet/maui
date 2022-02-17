@@ -65,7 +65,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
 			double height = Bounds.Height;
@@ -1551,8 +1550,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
-			if (Forms.IsiOS9OrNewer)
-				TableView.CellLayoutMarginsFollowReadableWidth = false;
+			TableView.CellLayoutMarginsFollowReadableWidth = false;
 
 			_usingLargeTitles = usingLargeTitles;
 

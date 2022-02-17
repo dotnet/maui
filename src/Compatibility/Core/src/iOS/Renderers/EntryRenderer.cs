@@ -213,6 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 		}
 
+		[PortHandler("Pending to port setting the IsFocused property")]
 		void OnEditingBegan(object sender, EventArgs e)
 		{
 			if (!_cursorPositionChangePending && !_selectionLengthChangePending)
@@ -230,7 +231,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCursorFromControl(null);
 		}
 
-		[PortHandler("Ported Text setter")]
+		[PortHandler("Pending to port setting the IsFocused property")]
 		void OnEditingEnded(object sender, EventArgs e)
 		{
 			// Typing aid changes don't always raise EditingChanged event
@@ -259,13 +260,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
+			Control.VerticalAlignment = Element.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		[PortHandler]

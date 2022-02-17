@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public bool IsInFragment { get; set; }
 
-		public ShellPageContainer(Context context, INativeViewHandler child, bool inFragment = false) : base(context)
+		public ShellPageContainer(Context context, IPlatformViewHandler child, bool inFragment = false) : base(context)
 		{
 			Child = child;
 			IsInFragment = inFragment;
@@ -30,10 +30,10 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 					color = LightBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundLight);
 
-				child.NativeView.SetBackgroundColor(new AColor(color));
+				child.PlatformView.SetBackgroundColor(new AColor(color));
 			}
-			child.NativeView.RemoveFromParent();
-			AddView(child.NativeView);
+			child.PlatformView.RemoveFromParent();
+			AddView(child.PlatformView);
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -41,13 +41,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var width = r - l;
 			var height = b - t;
 
-			if (Child.NativeView is AView aView)
+			if (Child.PlatformView is AView aView)
 				aView.Layout(0, 0, width, height);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (Child.NativeView is AView aView)
+			if (Child.PlatformView is AView aView)
 			{
 				aView.Measure(widthMeasureSpec, heightMeasureSpec);
 				SetMeasuredDimension(aView.MeasuredWidth, aView.MeasuredHeight);

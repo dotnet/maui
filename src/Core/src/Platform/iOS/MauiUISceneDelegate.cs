@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 
 			if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && MauiUIApplicationDelegate.Current?.Application != null)
 			{
-				this.CreateNativeWindow(MauiUIApplicationDelegate.Current.Application, scene, session, connectionOptions);
+				this.CreatePlatformWindow(MauiUIApplicationDelegate.Current.Application, scene, session, connectionOptions);
 			}
 		}
 

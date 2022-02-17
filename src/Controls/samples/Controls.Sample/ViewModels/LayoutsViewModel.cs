@@ -47,7 +47,7 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ClippingPage), "Clipping",
 				"Demonstrations of layout clipping."),
-			
+
 			new SectionModel(typeof(CustomLayoutPage), "Custom Layout",
 				"Demonstrations of custom layout."),
 		};

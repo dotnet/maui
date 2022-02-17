@@ -1,11 +1,11 @@
 #if IOS || MACCATALYST
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 #elif ANDROID
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 using System;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,9 +16,9 @@ namespace Microsoft.Maui
 {
 	static class ElementHandlerExtensions
 	{
-		public static NativeView ToPlatform(this IElementHandler elementHandler) =>
-			(elementHandler.VirtualView?.ToPlatform() as NativeView) ??
-				throw new InvalidOperationException($"Unable to convert {elementHandler} to {typeof(NativeView)}");
+		public static PlatformView ToPlatform(this IElementHandler elementHandler) =>
+			(elementHandler.VirtualView?.ToPlatform() as PlatformView) ??
+				throw new InvalidOperationException($"Unable to convert {elementHandler} to {typeof(PlatformView)}");
 
 		public static IServiceProvider GetServiceProvider(this IElementHandler handler)
 		{

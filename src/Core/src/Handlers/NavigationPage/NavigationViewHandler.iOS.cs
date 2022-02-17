@@ -12,16 +12,16 @@ using UIKit;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<IStackNavigationView, UIView>, INativeViewHandler
+		ViewHandler<IStackNavigationView, UIView>, IPlatformViewHandler
 	{
 		ControlsNavigationController? _controlsNavigationController;
-		UIViewController? INativeViewHandler.ViewController => _controlsNavigationController;
+		UIViewController? IPlatformViewHandler.ViewController => _controlsNavigationController;
 
 		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
 
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
-		protected override UIView CreateNativeView()
+		protected override UIView CreatePlatformView()
 		{
 			_controlsNavigationController = new ControlsNavigationController(this);
 
@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Handlers
 			//	});
 		}
 
-		//protected override void ConnectHandler(UIView nativeView)
+		//protected override void ConnectHandler(UIView platformView)
 		//{
-		//	base.ConnectHandler(nativeView);
+		//	base.ConnectHandler(platformView);
 
 		//	if (VirtualView == null || MauiContext == null || _controlsNavigationController == null)
 		//		return;
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Handlers
 		////	var navController = handler._controlsNavigationController;
 		////	var NavigationBar = navController.NavigationBar;
 
-		////	if (NativeVersion.IsAtLeast(13))
+		////	if (PlatformVersion.IsAtLeast(13))
 		////	{
 		////		var navigationBarAppearance = NavigationBar.StandardAppearance;
 
@@ -141,24 +141,24 @@ namespace Microsoft.Maui.Handlers
 		////	var globalTitleTextAttributes = UINavigationBar.Appearance.TitleTextAttributes;
 		////	var titleTextAttributes = new UIStringAttributes
 		////	{
-		////		ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToNative(),
+		////		ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 		////		Font = globalTitleTextAttributes?.Font
 		////	};
 
 		////	// Determine new large title text attributes via global static data
 		////	var largeTitleTextAttributes = titleTextAttributes;
-		////	if (NativeVersion.IsAtLeast(11))
+		////	if (PlatformVersion.IsAtLeast(11))
 		////	{
 		////		var globalLargeTitleTextAttributes = UINavigationBar.Appearance.LargeTitleTextAttributes;
 
 		////		largeTitleTextAttributes = new UIStringAttributes
 		////		{
-		////			ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToNative(),
+		////			ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 		////			Font = globalLargeTitleTextAttributes?.Font
 		////		};
 		////	}
 
-		////	if (NativeVersion.IsAtLeast(13))
+		////	if (PlatformVersion.IsAtLeast(13))
 		////	{
 		////		if (NavigationBar.CompactAppearance != null)
 		////		{
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Handlers
 		////	{
 		////		NavigationBar.TitleTextAttributes = titleTextAttributes;
 
-		////		if (NativeVersion.IsAtLeast(11))
+		////		if (PlatformVersion.IsAtLeast(11))
 		////			NavigationBar.LargeTitleTextAttributes = largeTitleTextAttributes;
 		////	}
 
@@ -194,9 +194,9 @@ namespace Microsoft.Maui.Handlers
 		////}
 
 
-		//protected override void ConnectHandler(UIView nativeView)
+		//protected override void ConnectHandler(UIView platformView)
 		//{
-		//	base.ConnectHandler(nativeView);
+		//	base.ConnectHandler(platformView);
 
 		//	if (VirtualView == null)
 		//		return;
@@ -210,9 +210,9 @@ namespace Microsoft.Maui.Handlers
 		//	//VirtualView.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 		//}
 
-		//protected override void DisconnectHandler(UIView nativeView)
+		//protected override void DisconnectHandler(UIView platformView)
 		//{
-		//	base.DisconnectHandler(nativeView);
+		//	base.DisconnectHandler(platformView);
 
 		//	if (VirtualView == null)
 		//		return;

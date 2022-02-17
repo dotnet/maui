@@ -19,7 +19,45 @@ namespace Microsoft.Maui.Essentials
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			return Package.Current.InstalledLocation.OpenStreamForReadAsync(NormalizePath(filename));
+			if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+			{
+				filename = NormalizePath(filename);
+
+				return Package.Current.InstalledLocation.OpenStreamForReadAsync(filename);
+			}
+			else
+			{
+				var file = PlatformGetFullAppPackageFilePath(filename);
+				return Task.FromResult((Stream)File.OpenRead(file));
+			}
+		}
+
+		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult(File.Exists(file));
+		}
+
+		internal static bool AppPackageFileExists(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return File.Exists(file);
+		}
+
+		static string PlatformGetFullAppPackageFilePath(string filename)
+		{
+			if (filename == null)
+				throw new ArgumentNullException(nameof(filename));
+
+			filename = NormalizePath(filename);
+
+			string root;
+			if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+				root = Package.Current.InstalledLocation.Path;
+			else
+				root = AppContext.BaseDirectory;
+
+			return Path.Combine(root, filename);
 		}
 
 		internal static string NormalizePath(string path)

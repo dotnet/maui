@@ -7,44 +7,44 @@ namespace Microsoft.Maui.Handlers
 	{
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 
-		protected override AppCompatCheckBox CreateNativeView()
+		protected override AppCompatCheckBox CreatePlatformView()
 		{
-			var nativeCheckBox = new AppCompatCheckBox(Context)
+			var platformCheckBox = new AppCompatCheckBox(Context)
 			{
 				SoundEffectsEnabled = false
 			};
 
-			nativeCheckBox.SetClipToOutline(true);
+			platformCheckBox.SetClipToOutline(true);
 
-			return nativeCheckBox;
+			return platformCheckBox;
 		}
 
-		protected override void ConnectHandler(AppCompatCheckBox nativeView)
+		protected override void ConnectHandler(AppCompatCheckBox platformView)
 		{
 			ChangeListener.Handler = this;
-			nativeView.SetOnCheckedChangeListener(ChangeListener);
+			platformView.SetOnCheckedChangeListener(ChangeListener);
 		}
 
-		protected override void DisconnectHandler(AppCompatCheckBox nativeView)
+		protected override void DisconnectHandler(AppCompatCheckBox platformView)
 		{
 			ChangeListener.Handler = null;
-			nativeView.SetOnCheckedChangeListener(null);
+			platformView.SetOnCheckedChangeListener(null);
 		}
 
 		// This is an Android-specific mapping
 		public static void MapBackground(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateBackground(check);
+			handler.PlatformView?.UpdateBackground(check);
 		}
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
 		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		void OnCheckedChanged(bool isChecked)
@@ -61,9 +61,9 @@ namespace Microsoft.Maui.Handlers
 			{
 			}
 
-			public void OnCheckedChanged(CompoundButton? nativeCheckBox, bool isChecked)
+			public void OnCheckedChanged(CompoundButton? platformCheckBox, bool isChecked)
 			{
-				if (Handler == null || nativeCheckBox == null)
+				if (Handler == null || platformCheckBox == null)
 					return;
 
 				Handler.OnCheckedChanged(isChecked);
