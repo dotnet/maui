@@ -6,11 +6,14 @@
 		{
 		}
 
-		public static void MapBackgroundImageSource(PageHandler handler, IPage page)
+		public static void MapBackgroundImageSource(PageHandler handler, IContentView page)
 		{
+			if (page is not IViewBackgroundImagePart viewBackgroundImagePart)
+				return;
+
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.PlatformView?.UpdateBackgroundImageSourceAsync(page, provider)	
+			handler.PlatformView?.UpdateBackgroundImageSourceAsync(viewBackgroundImagePart, provider)	
 				.FireAndForget(handler);
 		}
 	}

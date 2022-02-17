@@ -26,6 +26,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ClipPage), "Clip",
 				"Defines the outline of the contents of an element."),
+		
+			new SectionModel(typeof(ContentPageGallery), "ContentPage",
+				"Demonstrates using a Content Page."),
 
 			new SectionModel(typeof(EffectsPage), "Effects",
 				"Apply Effects to a View."),

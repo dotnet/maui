@@ -6,12 +6,12 @@ namespace Microsoft.Maui
 {
 	public static class PageExtensions
 	{
-		public static async Task UpdateBackgroundImageSourceAsync(this ContentView nativePage, IPage page, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this ContentView nativePage, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
 		{
 			if (provider == null)
 				return;
 
-			var backgroundImageSource = page.BackgroundImageSource;
+			var backgroundImageSource = viewBackgroundImagePart.Source;
 
 			if (backgroundImageSource != null)
 			{

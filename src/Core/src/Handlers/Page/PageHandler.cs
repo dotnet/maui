@@ -3,13 +3,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PageHandler : ContentViewHandler
 	{
-		public static IPropertyMapper<IContentView, PageHandler> PageMapper = new PropertyMapper<IPage, PageHandler>(ContentViewMapper)
+		public static IPropertyMapper<IContentView, PageHandler> PageMapper = new PropertyMapper<IContentView, PageHandler>(ContentViewMapper)
 		{
 			[nameof(ITitledElement.Title)] = MapTitle,
-			[nameof(IPage.BackgroundImageSource)] = MapBackgroundImageSource
+			[nameof(IViewBackgroundImagePart.Source)] = MapBackgroundImageSource
 		};
 
-		public static CommandMapper<IPage, PageHandler> PageCommandMapper = new(ContentViewCommandMapper)
+		public static CommandMapper<IContentView, PageHandler> PageCommandMapper = new(ContentViewCommandMapper)
 		{
 
 		};
