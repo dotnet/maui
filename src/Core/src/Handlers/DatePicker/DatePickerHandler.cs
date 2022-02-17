@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IDatePicker.TextColor)] = MapTextColor,
 		};
 
-		public static CommandMapper<IPicker, PickerHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IPicker, IDatePickerHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 

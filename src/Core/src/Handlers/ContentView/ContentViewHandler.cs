@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IContentView.Content)] = MapContent,
 		};
 
-		public static CommandMapper<IPicker, PickerHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IPicker, IContentViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 
