@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 		IMauiContext _applicationContext = null!;
 
 		protected MauiUIApplicationDelegate() : base()
-		{
+		{	
 			Current = this;
 			IPlatformApplication.Current = this;
 		}
@@ -144,21 +144,24 @@ namespace Microsoft.Maui
 		{
 			base.BuildMenu(builder);
 
-			builder.InsertSiblingMenuAfter(
-				UIMenu.Create("test menu", new UIMenuElement[0]),
-				UIMenuIdentifier.File.ToString());
-
-			/*var openDocument = UIKeyCommand.Create("Open...", null,
-				new Selector(""), null);*/
-
-
-			/*MenuBuilder = builder;
+			MenuBuilder = builder;
 
 			var window = Window ?? this.GetWindow() ??
 				UIApplication.SharedApplication.GetWindow()?.Handler?.NativeView as UIWindow;
 
 			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
-			MenuBuilder = null;*/
+			MenuBuilder = null;
+		}
+
+		public override bool CanPerform(Selector action, NSObject? withSender)
+		{
+			return true;
+		}
+
+		[Export("MenuFlyoutItemHandlerMenuClickAction:")]
+		public void MenuClickAction(UICommand uICommand)
+		{
+
 		}
 	}
 }

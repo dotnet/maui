@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Foundation;
 using Microsoft.Maui.Platform;
 using UIKit;
+using ObjCRuntime;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -19,37 +21,71 @@ namespace Microsoft.Maui.Handlers
 		public override void SetVirtualView(IElement view)
 		{
 			base.SetVirtualView(view);
-			Clear();
+			BuildNewMenu();
+		}
 
-			foreach (var item in ((IMenuBar)view))
+		void BuildNewMenu()
+		{
+			UIMenu? lastFoundMenu = null;
+			foreach (var item in VirtualView)
 			{
-				Add(item);
+				var handler = item.ToHandler(MauiContext!);
+				var menuItem = (UIMenu)handler!.NativeView!;
+
+				UIMenu? catalystMenu = null;
+
+				var identifierConstant = menuItem.Identifier.GetConstant();
+				if (identifierConstant != null)
+				{	
+					catalystMenu = NativeView.GetMenu(identifierConstant);
+				}
+
+				lastFoundMenu = catalystMenu ?? lastFoundMenu;
+
+				if (catalystMenu == null)
+				{
+					
+					if (lastFoundMenu != null)
+					{
+						var fileMenuId = lastFoundMenu.GetIdentifier();
+
+						NativeView.InsertSiblingMenuAfter(menuItem, fileMenuId);
+					}
+					else
+					{
+						NativeView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant());
+					}
+				}
+
+				lastFoundMenu = menuItem;
 			}
 		}
 
 		public void Add(IMenuBarItem view)
 		{
-			var handler = view.ToHandler(MauiContext!);
-			var menuItem = (UIMenu)handler!.NativeView!;
-
-			NativeView.InsertSiblingMenuAfter(menuItem, UIKit.UIMenuIdentifier.File.ToString());
-			//NativeView.Items.Add((MenuBarItem)view.ToPlatform(MauiContext!));
+			Rebuild();
 		}
 
 		public void Remove(IMenuBarItem view)
 		{
-			/*if (view.Handler != null)
-				NativeView.Items.Remove((MenuBarItem)view.ToPlatform());*/
+			Rebuild();
 		}
 
 		public void Clear()
 		{
-			//NativeView.Items.Clear();
+			Rebuild();
 		}
 
 		public void Insert(int index, IMenuBarItem view)
 		{
-			//NativeView.Items.Insert(index, (MenuBarItem)view.ToPlatform(MauiContext!));
+			Rebuild();
+		}
+
+		void Rebuild()
+		{
+			UIMenuSystem
+						.MainSystem
+						.SetNeedsRebuild();
 		}
 	}
 }

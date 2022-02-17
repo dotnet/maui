@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override UIMenu CreateNativeElement()
 		{
-			var selector = new Selector("MenuFlyoutSubItemHandlerMenuClickAction:");
+			var selector = new Selector(Guid.NewGuid().ToString());
 			var command = UICommand.Create(title: VirtualView.Text, null, selector, null);
 			var menu = UIMenu.Create(VirtualView.Text, new UIMenuElement[] { command });
 			return menu;

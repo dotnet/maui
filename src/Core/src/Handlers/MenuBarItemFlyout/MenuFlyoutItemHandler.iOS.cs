@@ -11,10 +11,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override UIMenuElement CreateNativeElement()
 		{
-			var selector = new Selector("MenuFlyoutItemHandlerMenuClickAction:");
+			var selector = new Selector(Guid.NewGuid().ToString());
 			var command = UICommand.Create(title: VirtualView.Text, null, selector, null);
-			var menu = UIMenu.Create(VirtualView.Text, new UIMenuElement[] { command });
-			return menu;
+			return command;
 		}
 
 		[Export("MenuFlyoutItemHandlerMenuClickAction:")]
