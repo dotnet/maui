@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.NativeView.CanGoBack)
+			if (handler.PlatformView.CanGoBack)
 				handler.LastBackForwardWebNavigationEvent = WebNavigationEvent.Back;
 
 			handler.PlatformView?.UpdateGoBack(webView);
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.NativeView.CanGoForward)
+			if (handler.PlatformView.CanGoForward)
 				handler.LastBackForwardWebNavigationEvent = WebNavigationEvent.Forward;
 
 			handler.PlatformView?.UpdateGoForward(webView);

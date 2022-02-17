@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnReceivedError(WebView? view, IWebResourceRequest? request, WebResourceError? error)
 		{
-			if (request != null && request.Url?.ToString() == _handler?.NativeView.Url)
+			if (request != null && request.Url?.ToString() == _handler?.PlatformView.Url)
 			{
 				_navigationResult = WebNavigationResult.Failure;
 

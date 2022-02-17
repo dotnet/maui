@@ -30,14 +30,14 @@ namespace Microsoft.Maui.Platform
 			if (url == $"file://{NSBundle.MainBundle.BundlePath}/")
 				return;
 
-			var virtualView = _handler.VirtualView;
+			var virtualView = _handler?.VirtualView;
 
 			if (virtualView == null)
 				return;
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Success);
 
-			_handler.NativeView.UpdateCanGoBackForward(virtualView);
+			_handler?.PlatformView.UpdateCanGoBackForward(virtualView);
 		}
 
 		public override void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Platform
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Failure);
 
-			_handler.NativeView?.UpdateCanGoBackForward(virtualView);
+			_handler.PlatformView?.UpdateCanGoBackForward(virtualView);
 		}
 
 		public override void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Platform
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Failure);
 
-			_handler.NativeView?.UpdateCanGoBackForward(virtualView);
+			_handler.PlatformView?.UpdateCanGoBackForward(virtualView);
 
 		}
 
@@ -121,13 +121,13 @@ namespace Microsoft.Maui.Platform
 			var lastUrl = request.Url.ToString();
 
 			bool cancel = virtualView.Navigating(navEvent, lastUrl);
-			_handler.NativeView?.UpdateCanGoBackForward(virtualView);
+			_handler.PlatformView?.UpdateCanGoBackForward(virtualView);
 			decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
 		}
 
 		string GetCurrentUrl()
 		{
-			return _handler.NativeView?.Url?.AbsoluteUrl?.ToString() ?? string.Empty;
+			return _handler.PlatformView?.Url?.AbsoluteUrl?.ToString() ?? string.Empty;
 		}
 	}
 }
