@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	internal static class TemplateHelpers
 	{
 
-		public static INativeViewHandler GetHandler(View view, IMauiContext context)
+		public static IPlatformViewHandler GetHandler(View view, IMauiContext context)
 		{
 			if (view == null)
 			{
@@ -20,12 +20,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (handler == null)
 				handler = view.ToHandler(context);
 
-			(handler.NativeView as UIView).Frame = view.Bounds.ToCGRect();
+			(handler.PlatformView as UIView).Frame = view.Bounds.ToCGRect();
 
-			return (INativeViewHandler)handler;
+			return (IPlatformViewHandler)handler;
 		}
 
-		public static (UIView NativeView, VisualElement FormsElement) RealizeView(object view, DataTemplate viewTemplate, ItemsView itemsView)
+		public static (UIView PlatformView, VisualElement FormsElement) RealizeView(object view, DataTemplate viewTemplate, ItemsView itemsView)
 		{
 			if (viewTemplate != null)
 			{
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// and set the view as its BindingContext
 				element.BindingContext = view;
 
-				return ((UIView)renderer.NativeView, element);
+				return ((UIView)renderer.PlatformView, element);
 			}
 
 			if (view is View formsView)
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var renderer = GetHandler(formsView, itemsView.FindMauiContext());
 				var element = renderer.VirtualView as VisualElement;
 
-				return ((UIView)renderer.NativeView, element);
+				return ((UIView)renderer.PlatformView, element);
 			}
 
 			return (new UILabel { TextAlignment = UITextAlignment.Center, Text = $"{view}" }, null);

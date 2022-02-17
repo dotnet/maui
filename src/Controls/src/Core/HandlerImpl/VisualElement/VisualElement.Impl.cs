@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
-			Handler?.NativeArrange(Frame);
+			Handler?.PlatformArrange(Frame);
 			return Frame.Size;
 		}
 

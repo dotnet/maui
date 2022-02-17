@@ -111,11 +111,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = new View { IsPlatformEnabled = true };
 
-			Assert.True(view.IsNativeStateConsistent);
+			Assert.True(view.IsPlatformStateConsistent);
 
-			view.IsNativeStateConsistent = false;
+			view.IsPlatformStateConsistent = false;
 
-			Assert.False(view.IsNativeStateConsistent);
+			Assert.False(view.IsPlatformStateConsistent);
 
 			bool sizeChanged = false;
 			view.MeasureInvalidated += (sender, args) =>
@@ -123,12 +123,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				sizeChanged = true;
 			};
 
-			view.IsNativeStateConsistent = true;
+			view.IsPlatformStateConsistent = true;
 
 			Assert.True(sizeChanged);
 
 			sizeChanged = false;
-			view.IsNativeStateConsistent = true;
+			view.IsPlatformStateConsistent = true;
 
 			Assert.False(sizeChanged);
 		}
@@ -165,14 +165,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestNativeSizeChanged()
+		public void TestPlatformSizeChanged()
 		{
 			var view = new View();
 
 			bool sizeChanged = false;
 			view.MeasureInvalidated += (sender, args) => sizeChanged = true;
 
-			((IVisualElementController)view).NativeSizeChanged();
+			((IVisualElementController)view).PlatformSizeChanged();
 
 			Assert.True(sizeChanged);
 		}

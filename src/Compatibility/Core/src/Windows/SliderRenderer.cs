@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (Element.MinimumTrackColor.IsDefault())
 					Control.Foreground = defaultforegroundcolor;
 				else
-					Control.Foreground = Element.MinimumTrackColor.ToNative();
+					Control.Foreground = Element.MinimumTrackColor.ToPlatform();
 			}
 		}
 
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (Element.MaximumTrackColor.IsDefault())
 					Control.Background = defaultbackgroundcolor;
 				else
-					Control.Background = Element.MaximumTrackColor.ToNative();
+					Control.Background = Element.MaximumTrackColor.ToPlatform();
 			}
 		}
 
@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Color backgroundColor = Element.BackgroundColor;
 				if (!backgroundColor.IsDefault())
 				{
-					Control.Background = backgroundColor.ToNative();
+					Control.Background = backgroundColor.ToPlatform();
 				}
 				else
 				{

@@ -17,7 +17,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class FrameRenderer : CardView, INativeViewHandler
+	public class FrameRenderer : CardView, IPlatformViewHandler
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererMapper)
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				if (value != null)
-					(this as INativeViewHandler).SetVirtualView(value);
+					(this as IPlatformViewHandler).SetVirtualView(value);
 			}
 		}
 
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			Color bgColor = Element.BackgroundColor;
-			_backgroundDrawable.SetColor(bgColor?.ToNative() ?? AColor.White);
+			_backgroundDrawable.SetColor(bgColor?.ToPlatform() ?? AColor.White);
 		}
 
 		void UpdateBackground()
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
 			else
-				_backgroundDrawable.SetStroke(3, borderColor.ToNative());
+				_backgroundDrawable.SetStroke(3, borderColor.ToPlatform());
 		}
 
 		void UpdateShadow()
@@ -302,26 +302,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);
 		}
-
-		#region INativeViewHandler
+		
+		#region IPlatformViewHandler
 		bool IViewHandler.HasContainer { get => false; set { } }
 
 		object? IViewHandler.ContainerView => null;
 
 		IView? IViewHandler.VirtualView => Element;
 
-		object IElementHandler.NativeView => this;
+		object IElementHandler.PlatformView => this;
 
 		Maui.IElement? IElementHandler.VirtualView => Element;
 
 		IMauiContext? IElementHandler.MauiContext => _mauiContext;
 
-		AView INativeViewHandler.NativeView => this;
+		AView IPlatformViewHandler.PlatformView => this;
 
-		AView? INativeViewHandler.ContainerView => this;
+		AView? IPlatformViewHandler.ContainerView => this;
 
-		void IViewHandler.NativeArrange(Rectangle rect) =>
-			this.NativeArrangeHandler(rect);
+		void IViewHandler.PlatformArrange(Rectangle rect) =>
+			this.PlatformArrangeHandler(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext) =>
 			_mauiContext = mauiContext;
