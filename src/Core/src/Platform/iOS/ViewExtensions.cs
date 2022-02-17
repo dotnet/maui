@@ -10,6 +10,7 @@ using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -423,6 +424,28 @@ namespace Microsoft.Maui.Platform
 			return view?.Superview;
 		}
 
+		internal static void LayoutToSize(this IView view, double width, double height)
+		{
+			var platformFrame = new RectangleF(0, 0, width, height);
+
+			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+				viewHandler.PlatformView.Frame = platformFrame;
+
+			view.Arrange(platformFrame.ToRectangle());
+		}
+
+		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
+		{
+			var size = view.Measure(width, height);
+			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
+
+			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+				viewHandler.PlatformView.Frame = platformFrame;
+
+			view.Arrange(platformFrame.ToRectangle());
+			return size;
+		}
+    
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
 
