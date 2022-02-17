@@ -69,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 				view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
 
 				if (handler is IViewHandler ivh)
-					ivh.NativeArrange(view.Frame);
+					ivh.PlatformArrange(view.Frame);
 			}
 		}
 

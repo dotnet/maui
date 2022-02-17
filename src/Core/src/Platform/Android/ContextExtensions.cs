@@ -264,13 +264,13 @@ namespace Microsoft.Maui.Platform
 
 		public static IWindow? GetWindow(this Context context)
 		{
-			var nativeWindow = context.GetActivity();
-			if (nativeWindow is null)
+			var platformWindow = context.GetActivity();
+			if (platformWindow is null)
 				return null;
 
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView == nativeWindow)
+				if (window?.Handler?.PlatformView == platformWindow)
 					return window;
 			}
 
@@ -300,12 +300,12 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (double.IsInfinity(constraint))
 			{
-				// We've got infinite space; we'll leave the size up to the native control
+				// We've got infinite space; we'll leave the size up to the platform control
 				mode = MeasureSpecMode.Unspecified;
 				constraint = 0;
 			}
 
-			// Convert to a native size to create the spec for measuring
+			// Convert to a platform size to create the spec for measuring
 			var deviceConstraint = (int)context.ToPixels(constraint);
 
 			return mode.MakeMeasureSpec(deviceConstraint);

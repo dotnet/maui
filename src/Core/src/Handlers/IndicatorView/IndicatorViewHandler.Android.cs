@@ -4,59 +4,59 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, MauiPageControl>
 	{
-		protected override MauiPageControl CreateNativeView()
+		protected override MauiPageControl CreatePlatformView()
 		{
 			return new MauiPageControl(Context);
 		}
 
-		private protected override void OnConnectHandler(AView nativeView)
+		private protected override void OnConnectHandler(AView platformView)
 		{
-			base.OnConnectHandler(nativeView);
-			NativeView.SetIndicatorView(VirtualView);
+			base.OnConnectHandler(platformView);
+			PlatformView.SetIndicatorView(VirtualView);
 		}
 
-		private protected override void OnDisconnectHandler(AView nativeView)
+		private protected override void OnDisconnectHandler(AView platformView)
 		{
-			base.OnDisconnectHandler(nativeView);
-			NativeView.SetIndicatorView(null);
+			base.OnDisconnectHandler(platformView);
+			PlatformView.SetIndicatorView(null);
 		}
 
 		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.UpdateIndicatorCount();
+			handler.PlatformView.UpdateIndicatorCount();
 		}
 
 		public static void MapPosition(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.UpdatePosition();
+			handler.PlatformView.UpdatePosition();
 		}
 
 		public static void MapHideSingle(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.UpdateIndicatorCount();
+			handler.PlatformView.UpdateIndicatorCount();
 		}
 
 		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.UpdateIndicatorCount();
+			handler.PlatformView.UpdateIndicatorCount();
 		}
 
 		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.ResetIndicators();
+			handler.PlatformView.ResetIndicators();
 		}
 
 		public static void MapIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.ResetIndicators();
+			handler.PlatformView.ResetIndicators();
 		}
 		public static void MapSelectedIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.ResetIndicators();
+			handler.PlatformView.ResetIndicators();
 		}
 		public static void MapIndicatorShape(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.ResetIndicators();
+			handler.PlatformView.ResetIndicators();
 		}
 	}
 }

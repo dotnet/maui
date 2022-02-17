@@ -282,20 +282,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return new HttpClient(handler);
 			}
 
-#if !__MOBILE__
-			public void QuitApplication()
+			public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
-				NSApplication.SharedApplication.Terminate(new NSObject());
-			}
-#endif
-
-			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-			{
-#if __MOBILE__
 				return Platform.iOS.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
-#else
-				return Platform.MacOS.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
-#endif
 			}
 
 			public OSAppTheme RequestedTheme

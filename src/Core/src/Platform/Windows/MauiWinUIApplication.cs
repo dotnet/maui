@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, applicationContext);
 
-			this.CreateNativeWindow(Application, args);
+			this.CreatePlatformWindow(Application, args);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}

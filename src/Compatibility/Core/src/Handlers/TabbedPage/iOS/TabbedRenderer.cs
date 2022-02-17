@@ -14,7 +14,7 @@ using TranslucencyMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecif
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class TabbedRenderer : UITabBarController, INativeViewHandler
+	public class TabbedRenderer : UITabBarController, IPlatformViewHandler
 	{
 		bool _barBackgroundColorWasSet;
 		bool _barTextColorWasSet;
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UIViewController GetViewController(Page page)
 		{
-			if (page.Handler is not INativeViewHandler nvh)
+			if (page.Handler is not IPlatformViewHandler nvh)
 				return null;
 
 			return nvh.ViewController;
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			// Setting TabBarItem.Title in iOS 10 causes rendering bugs
 			// Work around this by creating a new UITabBarItem on each change
-			if (e.PropertyName == Page.TitleProperty.PropertyName && !NativeVersion.IsAtLeast(10))
+			if (e.PropertyName == Page.TitleProperty.PropertyName && !PlatformVersion.IsAtLeast(10))
 			{
 				var page = (Page)sender;
 				var renderer = page.ToHandler(_mauiContext);
@@ -163,11 +163,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (renderer.ViewController.TabBarItem != null)
 					renderer.ViewController.TabBarItem.Title = page.Title;
 			}
-			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && NativeVersion.IsAtLeast(10))
+			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && PlatformVersion.IsAtLeast(10))
 			{
 				var page = (Page)sender;
 
-				INativeViewHandler renderer = page.ToHandler(_mauiContext);
+				IPlatformViewHandler renderer = page.ToHandler(_mauiContext);
 
 				if (renderer?.ViewController.TabBarItem == null)
 					return;
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void SetupPage(Page page, int index)
 		{
-			var renderer = (INativeViewHandler)page.ToHandler(_mauiContext);
+			var renderer = (IPlatformViewHandler)page.ToHandler(_mauiContext);
 
 			page.PropertyChanged += OnPagePropertyChanged;
 
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!isDefaultColor)
 				_barBackgroundColorWasSet = true;
 
-			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToNative();
+			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
 		}
 
 		void UpdateBarBackground()
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (isDefaultColor)
 				tabBarTextColor = _defaultBarTextColor;
 			else
-				tabBarTextColor = barTextColor.ToNative();
+				tabBarTextColor = barTextColor.ToPlatform();
 
 			var attributes = new UIStringAttributes();
 			attributes.ForegroundColor = tabBarTextColor;
@@ -379,7 +379,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
-			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToNative();
+			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToPlatform();
 		}
 
 		void UpdateBarTranslucent()
@@ -422,7 +422,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			((TabbedPage)Element).CurrentPage = index >= 0 && index < count ? Tabbed.GetPageByIndex(index) : null;
 		}
 
-		async void SetTabBarItem(INativeViewHandler renderer)
+		async void SetTabBarItem(IPlatformViewHandler renderer)
 		{
 			var page = renderer.VirtualView as Page;
 			if (page == null)
@@ -445,25 +445,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != null)
 			{
-				if (NativeVersion.IsAtLeast(10))
-					TabBar.TintColor = Tabbed.SelectedTabColor.ToNative();
+				if (PlatformVersion.IsAtLeast(10))
+					TabBar.TintColor = Tabbed.SelectedTabColor.ToPlatform();
 				else
-					TabBar.SelectedImageTintColor = Tabbed.SelectedTabColor.ToNative();
+					TabBar.SelectedImageTintColor = Tabbed.SelectedTabColor.ToPlatform();
 
 			}
 			else
 			{
-				if (NativeVersion.IsAtLeast(10))
+				if (PlatformVersion.IsAtLeast(10))
 					TabBar.TintColor = UITabBar.Appearance.TintColor;
 				else
 					TabBar.SelectedImageTintColor = UITabBar.Appearance.SelectedImageTintColor;
 			}
 
-			if (!NativeVersion.IsAtLeast(10))
+			if (!PlatformVersion.IsAtLeast(10))
 				return;
 
 			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
-				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToNative();
+				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToPlatform();
 			else
 				TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;
 		}
@@ -491,27 +491,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return source.Task;
 		}
 
-		#region INativeViewHandler
+		#region IPlatformViewHandler
 		bool IViewHandler.HasContainer { get => false; set { } }
 
 		object IViewHandler.ContainerView => null;
 
 		IView IViewHandler.VirtualView => Element;
 
-		object IElementHandler.NativeView => NativeView;
+		object IElementHandler.PlatformView => NativeView;
 
 		Maui.IElement IElementHandler.VirtualView => Element;
 
 		IMauiContext IElementHandler.MauiContext => _mauiContext;
 
-		UIView INativeViewHandler.NativeView => NativeView;
+		UIView IPlatformViewHandler.PlatformView => NativeView;
 
-		UIView INativeViewHandler.ContainerView => null;
+		UIView IPlatformViewHandler.ContainerView => null;
 
-		UIViewController INativeViewHandler.ViewController => this;
+		UIViewController IPlatformViewHandler.ViewController => this;
 
-		void IViewHandler.NativeArrange(Rectangle rect) =>
-			_viewHandlerWrapper.NativeArrange(rect);
+		void IViewHandler.PlatformArrange(Rectangle rect) =>
+			_viewHandlerWrapper.PlatformArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
 		{

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{
 			if (_handler != null)
-				_handler.NativeView.UpdateCanGoBackForward(_handler.VirtualView);
+				_handler.PlatformView.UpdateCanGoBackForward(_handler.VirtualView);
 
 			base.OnPageStarted(view, url, favicon);
 		}
