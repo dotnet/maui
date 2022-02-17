@@ -314,18 +314,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is FocusRequest request)
 			{
-				if (handler.NativeView == null)
+				if (handler.PlatformView == null)
 				{
 					return;
 				}
 
-				((NativeView?)handler.NativeView)?.Focus(request);
+				((PlatformView?)handler.PlatformView)?.Focus(request);
 			}
 		}
 
 		public static void MapUnfocus(IViewHandler handler, IView view, object? args)
 		{
-			((NativeView?)handler.NativeView)?.Unfocus(view);
+			((PlatformView?)handler.PlatformView)?.Unfocus(view);
 		}
 	}
 }

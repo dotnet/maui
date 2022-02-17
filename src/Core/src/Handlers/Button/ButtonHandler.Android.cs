@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 			TouchListener.Handler = null;
 			platformView.SetOnTouchListener(null);
 
-			nativeView.FocusChange -= OnNativeViewFocusChange;
+			platformView.FocusChange -= OnNativeViewFocusChange;
 
 			ImageSourceLoader.Reset();
 

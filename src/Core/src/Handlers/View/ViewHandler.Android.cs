@@ -8,17 +8,17 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		partial void ConnectingHandler(NativeView? platformView)
+		partial void ConnectingHandler(PlatformView? platformView)
 		{
 			if (platformView != null)
 			{
 				platformView.FocusChange += OnNativeViewFocusChange;
 			}
 		}
-    
+
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
-	    if (platformView.IsAlive())
+			if (platformView.IsAlive())
 			{
 				platformView.FocusChange -= OnNativeViewFocusChange;
 
@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 					ad.Handler = null;
 					ViewCompat.SetAccessibilityDelegate(platformView, null);
 				}
+			}
 		}
 
 		void OnRootViewSet(object? sender, EventArgs e)
@@ -201,7 +202,7 @@ namespace Microsoft.Maui.Handlers
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 
-		void OnNativeViewFocusChange(object? sender, NativeView.FocusChangeEventArgs e)
+		void OnNativeViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)
 			{
