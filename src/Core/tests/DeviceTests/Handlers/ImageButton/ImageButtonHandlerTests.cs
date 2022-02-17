@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 				var scaled = user;
 
 #if __ANDROID__
-				scaled = handler.NativeView.Context!.ToPixels(scaled);
+				scaled = handler.PlatformView.Context!.ToPixels(scaled);
 #endif
 
 				return (scaled, native);
