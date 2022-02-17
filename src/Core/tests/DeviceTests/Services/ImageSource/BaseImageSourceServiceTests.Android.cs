@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	public abstract partial class BaseImageSourceServiceTests
 	{
 		protected string CreateBitmapFile(int width, int height, Color color, string filename = null) =>
-			CreateBitmapFile(width, height, color.ToNative(), filename);
+			CreateBitmapFile(width, height, color.ToPlatform(), filename);
 
 		protected string CreateBitmapFile(int width, int height, AColor color, string filename = null)
 		{
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected Stream CreateBitmapStream(int width, int height, Color color) =>
-			CreateBitmapStream(width, height, color.ToNative());
+			CreateBitmapStream(width, height, color.ToPlatform());
 
 		protected Stream CreateBitmapStream(int width, int height, AColor color)
 		{
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected ABitmap CreateBitmap(int width, int height, Color color) =>
-			CreateBitmap(width, height, color.ToNative());
+			CreateBitmap(width, height, color.ToPlatform());
 
 		protected ABitmap CreateBitmap(int width, int height, AColor color)
 		{

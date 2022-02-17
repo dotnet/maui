@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			(page as IContentView).CrossPlatformMeasure(expectedSize.Width, expectedSize.Height);
 			(page as IContentView).CrossPlatformArrange(expectedRect);
 
-			buttonHandler.Received().NativeArrange(expectedRect);
+			buttonHandler.Received().PlatformArrange(expectedRect);
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
 		}
 

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 
 		public EditText? QueryEditor => _editText;
 
-		protected override SearchView CreateNativeView()
+		protected override SearchView CreatePlatformView()
 		{
 			var searchView = new SearchView(Context);
 			searchView.SetIconifiedByDefault(false);
@@ -25,50 +25,50 @@ namespace Microsoft.Maui.Handlers
 			return searchView;
 		}
 
-		protected override void ConnectHandler(SearchView nativeView)
+		protected override void ConnectHandler(SearchView platformView)
 		{
-			nativeView.QueryTextChange += OnQueryTextChange;
-			nativeView.QueryTextSubmit += OnQueryTextSubmit;
-			SetupDefaults(nativeView);
+			platformView.QueryTextChange += OnQueryTextChange;
+			platformView.QueryTextSubmit += OnQueryTextSubmit;
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(SearchView nativeView)
+		protected override void DisconnectHandler(SearchView platformView)
 		{
-			nativeView.QueryTextChange -= OnQueryTextChange;
-			nativeView.QueryTextSubmit -= OnQueryTextSubmit;
+			platformView.QueryTextChange -= OnQueryTextChange;
+			platformView.QueryTextSubmit -= OnQueryTextSubmit;
 		}
 
-		void SetupDefaults(SearchView nativeView)
+		void SetupDefaults(SearchView platformView)
 		{
-			DefaultBackground = nativeView.Background;
+			DefaultBackground = platformView.Background;
 		}
 
 		// This is a Android-specific mapping
 		public static void MapBackground(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateBackground(searchBar, DefaultBackground);
+			handler.PlatformView?.UpdateBackground(searchBar, DefaultBackground);
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateText(searchBar);
+			handler.PlatformView?.UpdateText(searchBar);
 		}
 
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholder(searchBar);
+			handler.PlatformView?.UpdatePlaceholder(searchBar);
 		}
 
 		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholderColor(searchBar, DefaultPlaceholderTextColors, handler._editText);
+			handler.PlatformView?.UpdatePlaceholderColor(searchBar, DefaultPlaceholderTextColors, handler._editText);
 		}
 
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(searchBar, fontManager, handler._editText);
+			handler.PlatformView?.UpdateFont(searchBar, fontManager, handler._editText);
 		}
 
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler._editText);
+			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar, handler._editText);
 		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
@@ -93,22 +93,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar, handler.QueryEditor);
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar, handler.QueryEditor);
 		}
 
 		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateMaxLength(searchBar, handler.QueryEditor);
+			handler.PlatformView?.UpdateMaxLength(searchBar, handler.QueryEditor);
 		}
 
 		public static void MapIsReadOnly(SearchBarHandler handler, ISearchBar searchBar)
-		{ 
+		{
 			handler.QueryEditor?.UpdateIsReadOnly(searchBar);
 		}
 
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateCancelButtonColor(searchBar);
+			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
 

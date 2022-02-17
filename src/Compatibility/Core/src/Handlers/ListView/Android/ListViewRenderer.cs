@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
 
 		ListViewAdapter _adapter;
-		INativeViewHandler _headerRenderer;
-		INativeViewHandler _footerRenderer;
+		IPlatformViewHandler _headerRenderer;
+		IPlatformViewHandler _footerRenderer;
 		Container _headerView;
 		Container _footerView;
 		bool _isAttached;
@@ -79,23 +79,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		//protected override void SetupContainer()
 		//{
-		//	if (Context == null || NativeView == null || ContainerView != null)
+		//	if (Context == null || PlatformView == null || ContainerView != null)
 		//		return;
 
 
-		//	var oldParent = (ViewGroup)NativeView.Parent;
+		//	var oldParent = (ViewGroup)PlatformView.Parent;
 
-		//	var oldIndex = oldParent?.IndexOfChild(NativeView);
-		//	oldParent?.RemoveView(NativeView);
+		//	var oldIndex = oldParent?.IndexOfChild(PlatformView);
+		//	oldParent?.RemoveView(PlatformView);
 
 		//	if (ContainerView == null)
 		//	{
-		//		_refresh = CreateNativePullToRefresh(Context);
+		//		_refresh = CreatePlatformPullToRefresh(Context);
 		//		_refresh.SetOnRefreshListener(new ListViewSwipeRefreshLayoutListener(this));
 		//		ContainerView = _refresh;
 		//	}
 
-		//	_refresh.AddView(NativeView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
+		//	_refresh.AddView(PlatformView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
 
 		//	if (oldIndex is int idx && idx >= 0)
 		//		oldParent?.AddView(ContainerView, idx);
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						// an additional ConditionalFocusLayout
 						// We're basically faking re-use to the GetView call
 						AView currentParent = null;
-						if (cell.Handler?.NativeView is AView aView)
+						if(cell.Handler?.PlatformView is AView aView)
 							currentParent = aView.Parent as AView;
 
 						AView listItem = _adapter.GetView(i, currentParent, Control);
@@ -390,7 +390,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				_ = footer.ToPlatform(Element.FindMauiContext());
 				if (_footerView != null)
-					_footerView.Child = (INativeViewHandler)footer.Handler;
+					_footerView.Child = (IPlatformViewHandler)footer.Handler;
 			}
 		}
 
@@ -419,7 +419,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				_ = header.ToPlatform(Element.FindMauiContext());
 				if (_headerView != null)
-					_headerView.Child = (INativeViewHandler)header.Handler;
+					_headerView.Child = (IPlatformViewHandler)header.Handler;
 			}
 		}
 
@@ -477,7 +477,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateSpinnerColor()
 		{
 			if (_refresh != null && Element.RefreshControlColor != null)
-				_refresh.SetColorSchemeColors(Element.RefreshControlColor.ToNative());
+				_refresh.SetColorSchemeColors(Element.RefreshControlColor.ToPlatform());
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
@@ -512,46 +512,46 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal class Container : ViewGroup
 		{
-			INativeViewHandler _child;
+			IPlatformViewHandler _child;
 
 			public Container(Context context) : base(context)
 			{
 			}
 
-			public INativeViewHandler Child
+			public IPlatformViewHandler Child
 			{
 				set
 				{
 					if (_child != null)
-						RemoveView(_child.NativeView);
+						RemoveView(_child.PlatformView);
 
 					_child = value;
 
 					if (value != null)
-						AddView(value.NativeView);
+						AddView(value.PlatformView);
 				}
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (_child?.NativeView == null)
+				if (_child?.PlatformView == null)
 				{
 					return;
 				}
 
-				_child.NativeView.Layout(l, t, r, b);
+				_child.PlatformView.Layout(l, t, r, b);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				if (_child?.NativeView == null)
+				if (_child?.PlatformView == null)
 				{
 					SetMeasuredDimension(0, 0);
 					return;
 				}
 
-				_child.NativeView.Measure(widthMeasureSpec, heightMeasureSpec);
-				SetMeasuredDimension(_child.NativeView.MeasuredWidth, _child.NativeView.MeasuredHeight);
+				_child.PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
+				SetMeasuredDimension(_child.PlatformView.MeasuredWidth, _child.PlatformView.MeasuredHeight);
 			}
 		}
 

@@ -66,7 +66,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			view.Handler = handler;
 
 			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
-			handler.NativeArrange(view.Frame);
+			handler.PlatformArrange(view.Frame);
 
 			return handler;
 		}

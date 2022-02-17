@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Color backgroundColor = Element.BackgroundColor;
 					if (!backgroundColor.IsDefault())
 					{
-						element.SetValue(_backgroundProperty, backgroundColor.ToNative());
+						element.SetValue(_backgroundProperty, backgroundColor.ToPlatform());
 					}
 					else
 					{

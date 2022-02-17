@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
-using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 		MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();
-			return navManager.ToolbarElement.Toolbar.Handler.NativeView as
+			return navManager.ToolbarElement.Toolbar.Handler.PlatformView as
 				MaterialToolbar;
 		}
 

@@ -4,24 +4,24 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SemanticExtensions
 	{
-		public static void UpdateSemantics(this UIView nativeView, IView view)
+		public static void UpdateSemantics(this UIView platformView, IView view)
 		{
 			var semantics = view.Semantics;
 
 			if (semantics == null)
 				return;
 
-			nativeView.AccessibilityLabel = semantics.Description;
-			nativeView.AccessibilityHint = semantics.Hint;
+			platformView.AccessibilityLabel = semantics.Description;
+			platformView.AccessibilityHint = semantics.Hint;
 
 			// UIControl elements automatically have IsAccessibilityElement set to true
-			if (nativeView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
-				nativeView.IsAccessibilityElement = true;
+			if (platformView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
+				platformView.IsAccessibilityElement = true;
 
 			if (semantics.IsHeading)
-				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
+				platformView.AccessibilityTraits |= UIAccessibilityTrait.Header;
 			else
-				nativeView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
+				platformView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
 		}
 	}
 }

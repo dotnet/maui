@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapReload(PickerHandler handler, IPicker picker, object? args) { }
 		public static void MapTitle(PickerHandler handler, IPicker view) { }

@@ -75,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected UIFont GetNativeFont(ElementHandler handler)
 		{
-			switch (handler.NativeView)
+			switch (handler.PlatformView)
 			{
 				case UITextField tf:
 					return tf.Font;
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 				case UITextView tv:
 					return tv.Font;
 				default:
-					Assert.True(false, $"I don't know how to get the UIFont from here {handler.NativeView}");
+					Assert.True(false, $"I don't know how to get the UIFont from here {handler.PlatformView}");
 					return null;
 
 			}

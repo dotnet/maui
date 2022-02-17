@@ -25,6 +25,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		IToolbar IToolbarHandler.VirtualView => VirtualView;
-		PlatformView IToolbarHandler.NativeView => NativeView;
+		PlatformView IToolbarHandler.PlatformView => PlatformView;
 	}
 }

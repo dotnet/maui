@@ -3,7 +3,7 @@
     public partial class RadioButtonHandlerTests
     {
         UI.Xaml.Controls.RadioButton GetNativeRadioButton(RadioButtonHandler radioButtonHandler) =>
-            radioButtonHandler.NativeView;
+            radioButtonHandler.PlatformView;
 
         bool GetNativeIsChecked(RadioButtonHandler radioButtonHandler) =>
             GetNativeRadioButton(radioButtonHandler).IsChecked ?? false;

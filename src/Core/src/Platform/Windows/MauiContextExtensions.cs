@@ -20,10 +20,10 @@ namespace Microsoft.Maui.Platform
 		public static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<NavigationRootManager>();
 
-		public static UI.Xaml.Window GetNativeWindow(this IMauiContext mauiContext) =>
+		public static UI.Xaml.Window GetPlatformWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<UI.Xaml.Window>();
 
-		public static UI.Xaml.Window? GetOptionalNativeWindow(this IMauiContext mauiContext) =>
+		public static UI.Xaml.Window? GetOptionalPlatformWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<UI.Xaml.Window>();
 
 		public static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
