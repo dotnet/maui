@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (switchCell.OnColor == null)
 					uiSwitch.OnTintColor = _defaultOnColor;
 				else
-					uiSwitch.OnTintColor = switchCell.OnColor.ToNative();
+					uiSwitch.OnTintColor = switchCell.OnColor.ToPlatform();
 			}
 		}
 	}

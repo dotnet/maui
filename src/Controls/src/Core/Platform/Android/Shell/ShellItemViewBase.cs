@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated && trackFragment != null)
 			{
-				GetNavigationTarget().SetBackgroundColor(Colors.Black.ToNative());
+				GetNavigationTarget().SetBackgroundColor(Colors.Black.ToPlatform());
 				void callback(object s, EventArgs e)
 				{
 					trackFragment.AnimationFinished -= callback;

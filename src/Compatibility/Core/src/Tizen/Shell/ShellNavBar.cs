@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
 
-		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
-		EColor _foregroudColor = ShellRenderer.DefaultForegroundColor.ToNative();
-		EColor _titleColor = ShellRenderer.DefaultTitleColor.ToNative();
+		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
+		EColor _foregroudColor = ShellRenderer.DefaultForegroundColor.ToPlatform();
+		EColor _titleColor = ShellRenderer.DefaultTitleColor.ToPlatform();
 
 		// The source of icon resources is https://materialdesignicons.com/
 		const string _menuIconRes = ThemeConstants.Shell.Resources.MenuIcon;

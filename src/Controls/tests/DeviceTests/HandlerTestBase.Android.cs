@@ -16,18 +16,18 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class HandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			GetSemanticNativeElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
+			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
 
 
 		protected bool GetExcludedWithChildren(IViewHandler viewHandler) =>
-			GetSemanticNativeElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
+			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
 
-		public AView GetSemanticNativeElement(IViewHandler viewHandler)
+		public AView GetSemanticPlatformElement(IViewHandler viewHandler)
 		{
-			if (viewHandler.NativeView is AndroidX.AppCompat.Widget.SearchView sv)
+			if (viewHandler.PlatformView is AndroidX.AppCompat.Widget.SearchView sv)
 				return sv.FindViewById(Resource.Id.search_button)!;
 
-			return (AView)viewHandler.NativeView;
+			return (AView)viewHandler.PlatformView;
 		}
 
 		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)

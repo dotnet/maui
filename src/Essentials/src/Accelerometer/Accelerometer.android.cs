@@ -1,25 +1,25 @@
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Accelerometer
+	public partial class AccelerometerImplementation
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null;
 
-		static AccelerometerListener listener;
-		static Sensor accelerometer;
+		AccelerometerListener listener;
+		Sensor accelerometer;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
-			listener = new AccelerometerListener();
+			listener = new AccelerometerListener(this);
 			accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
 			Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
 			if (listener == null || accelerometer == null)
 				return;
@@ -35,8 +35,11 @@ namespace Microsoft.Maui.Essentials
 		// acceleration due to gravity
 		const double gravity = 9.81;
 
-		internal AccelerometerListener()
+		AccelerometerImplementation _accelerometer;
+
+		internal AccelerometerListener(AccelerometerImplementation accelerometer)
 		{
+			_accelerometer = accelerometer;
 		}
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
@@ -49,7 +52,7 @@ namespace Microsoft.Maui.Essentials
 				return;
 
 			var data = new AccelerometerData(e.Values[0] / gravity, e.Values[1] / gravity, e.Values[2] / gravity);
-			Accelerometer.OnChanged(data);
+			_accelerometer.OnChanged(data);
 		}
 	}
 }

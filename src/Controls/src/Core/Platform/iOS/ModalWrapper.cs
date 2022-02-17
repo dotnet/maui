@@ -12,19 +12,19 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ModalWrapper : UIViewController, IUIAdaptivePresentationControllerDelegate
 	{
-		INativeViewHandler _modal;
+		IPlatformViewHandler _modal;
 		bool _isDisposed;
 
-		internal ModalWrapper(INativeViewHandler modal)
+		internal ModalWrapper(IPlatformViewHandler modal)
 		{
 			_modal = modal;
 
 			var elementConfiguration = modal.VirtualView as IElementConfiguration<Page>;
 			if (elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 			{
-				var result = style.ToNativeModalPresentationStyle();
+				var result = style.ToPlatformModalPresentationStyle();
 
-				if (!NativeVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (!PlatformVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			modal.ViewController.DidMoveToParentViewController(this);
 
-			if (NativeVersion.IsAtLeast(13))
+			if (PlatformVersion.IsAtLeast(13))
 				PresentationController.Delegate = this;
 
 			((Page)modal.VirtualView).PropertyChanged += OnModalPagePropertyChanged;
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			_modal?.NativeArrange(new Rectangle(0, 0, View.Bounds.Width, View.Bounds.Height));
+			_modal?.PlatformArrange(new Rectangle(0, 0, View.Bounds.Width, View.Bounds.Height));
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (NativeVersion.Supports(NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
 				Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
-				View.BackgroundColor = modalBkgndColor?.ToNative() ?? Maui.Platform.ColorExtensions.BackgroundColor;
+				View.BackgroundColor = modalBkgndColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 			}
 			else
 			{

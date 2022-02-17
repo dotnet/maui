@@ -4,13 +4,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, WSwipeItem>
 	{
-		protected override WSwipeItem CreateNativeElement()
+		protected override WSwipeItem CreatePlatformElement()
 		{
 			return new WSwipeItem();
 		}
 
 		public static void MapTextColor(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
-			handler.NativeView.UpdateTextColor(view);
+			handler.PlatformView.UpdateTextColor(view);
 
 		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view) { }
 
@@ -18,29 +18,29 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) 
 		{
-			handler.NativeView.Text = view.Text;
+			handler.PlatformView.Text = view.Text;
 		}
 
 		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
-			handler.NativeView.UpdateBackground(view.Background);
+			handler.PlatformView.UpdateBackground(view.Background);
 
 		public static void MapVisibility(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
 		public static void MapSource(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			handler.NativeView.IconSource = view.Source?.ToIconSource(handler.MauiContext!);
+			handler.PlatformView.IconSource = view.Source?.ToIconSource(handler.MauiContext!);
 		}
 
-		protected override void ConnectHandler(WSwipeItem nativeView)
+		protected override void ConnectHandler(WSwipeItem platformView)
 		{
-			base.ConnectHandler(nativeView);
-			NativeView.Invoked += OnSwipeItemInvoked;
+			base.ConnectHandler(platformView);
+			PlatformView.Invoked += OnSwipeItemInvoked;
 		}
 
-		protected override void DisconnectHandler(WSwipeItem nativeView)
+		protected override void DisconnectHandler(WSwipeItem platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			NativeView.Invoked -= OnSwipeItemInvoked;
+			base.DisconnectHandler(platformView);
+			PlatformView.Invoked -= OnSwipeItemInvoked;
 		}
 
 		void OnSwipeItemInvoked(WSwipeItem sender, Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs args)

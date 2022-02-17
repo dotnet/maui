@@ -30,16 +30,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = button.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		UI.Xaml.Controls.Button GetNativeButton(ButtonHandler buttonHandler) =>
-			buttonHandler.NativeView;
+			buttonHandler.PlatformView;
 
 		string? GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).GetContent<TextBlock>()?.Text;
@@ -54,8 +54,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeButton = GetNativeButton(CreateHandler(button));
-				var ap = new ButtonAutomationPeer(nativeButton);
+				var platformButton = GetNativeButton(CreateHandler(button));
+				var ap = new ButtonAutomationPeer(platformButton);
 				var ip = ap.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
 				ip?.Invoke();
 			});

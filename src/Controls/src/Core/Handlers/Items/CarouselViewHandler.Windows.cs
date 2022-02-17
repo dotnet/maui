@@ -26,17 +26,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		LinearItemsLayout CarouselItemsLayout => ItemsView?.ItemsLayout;
 		WDataTemplate CarouselItemsViewTemplate => (WDataTemplate)WApp.Current.Resources["CarouselItemsViewDefaultTemplate"];
 
-		protected override void ConnectHandler(ListViewBase nativeView)
+		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			ItemsView.Scrolled -= CarouselScrolled;
 			ListViewBase.SizeChanged += InitialSetup;
 			
 			UpdateScrollBarVisibilityForLoop();
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(ListViewBase nativeView)
+		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			if (ItemsView != null)
 				ItemsView.Scrolled -= CarouselScrolled;
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_scrollViewer.SizeChanged -= InitialSetup;
 			}
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		protected override void UpdateItemsSource()

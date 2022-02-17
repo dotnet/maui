@@ -10,17 +10,17 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
-		static CGRect GetTitleBoundingRect(this UIButton nativeButton)
+		static CGRect GetTitleBoundingRect(this UIButton platformButton)
 		{
-			if (nativeButton.CurrentAttributedTitle != null ||
-					   nativeButton.CurrentTitle != null)
+			if (platformButton.CurrentAttributedTitle != null ||
+					   platformButton.CurrentTitle != null)
 			{
 				var title =
-					   nativeButton.CurrentAttributedTitle ??
-					   new NSAttributedString(nativeButton.CurrentTitle, new UIStringAttributes { Font = nativeButton.TitleLabel.Font });
+					   platformButton.CurrentAttributedTitle ??
+					   new NSAttributedString(platformButton.CurrentTitle, new UIStringAttributes { Font = platformButton.TitleLabel.Font });
 
 				return title.GetBoundingRect(
-					nativeButton.Bounds.Size,
+					platformButton.Bounds.Size,
 					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
 					null);
 			}
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return CGRect.Empty;
 		}
 
-		public static void UpdatePadding(this UIButton nativeButton, Button button)
+		public static void UpdatePadding(this UIButton platformButton, Button button)
 		{
 			double spacingVertical = 0;
 			double spacingHorizontal = 0;
@@ -41,12 +41,12 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					var imageHeight = nativeButton.ImageView.Image?.Size.Height ?? 0f;
+					var imageHeight = platformButton.ImageView.Image?.Size.Height ?? 0f;
 
-					if (imageHeight < nativeButton.Bounds.Height)
+					if (imageHeight < platformButton.Bounds.Height)
 					{
 						spacingVertical = button.ContentLayout.Spacing +
-							nativeButton.GetTitleBoundingRect().Height;
+							platformButton.GetTitleBoundingRect().Height;
 					}
 
 				}
@@ -58,12 +58,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			padding += new Thickness(spacingHorizontal / 2, spacingVertical / 2);
 
-			nativeButton.UpdatePadding(padding);
+			platformButton.UpdatePadding(padding);
 		}
 
-		public static void UpdateContentLayout(this UIButton nativeButton, Button button)
+		public static void UpdateContentLayout(this UIButton platformButton, Button button)
 		{
-			if (nativeButton.Bounds.Width == 0)
+			if (platformButton.Bounds.Width == 0)
 			{
 				return;
 			}
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
 
-			var image = nativeButton.CurrentImage;
+			var image = platformButton.CurrentImage;
 
 
 			// if the image is too large then we just position at the edge of the button
@@ -82,18 +82,18 @@ namespace Microsoft.Maui.Controls.Platform
 			// This makes the behavior consistent with android
 			var contentMode = UIViewContentMode.Center;
 
-			if (image != null && !string.IsNullOrEmpty(nativeButton.CurrentTitle))
+			if (image != null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
 				// TODO: Do not use the title label as it is not yet updated and
 				//       if we move the image, then we technically have more
 				//       space and will require a new layout pass.
 
-				var titleRect = nativeButton.GetTitleBoundingRect();
+				var titleRect = platformButton.GetTitleBoundingRect();
 				var titleWidth = titleRect.Width;
 				var imageWidth = image.Size.Width;
 				var imageHeight = image.Size.Height;
-				var buttonWidth = nativeButton.Bounds.Width;
-				var buttonHeight = nativeButton.Bounds.Height;
+				var buttonWidth = platformButton.Bounds.Width;
+				var buttonHeight = platformButton.Bounds.Height;
 
 				// These are just used to shift the image and title to center
 				// Which makes the later math easier to follow
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			nativeButton.ImageView.ContentMode = contentMode;
+			platformButton.ImageView.ContentMode = contentMode;
 
 			// This is used to match the behavior between platforms.
 			// If the image is too big then we just hide the label because
@@ -173,29 +173,29 @@ namespace Microsoft.Maui.Controls.Platform
 			// bounds of the UIButton. We could set the UIButton to clip bounds
 			// but that feels like it might cause confusing side effects
 			if (contentMode == UIViewContentMode.Center)
-				nativeButton.TitleLabel.Layer.Hidden = false;
+				platformButton.TitleLabel.Layer.Hidden = false;
 			else
-				nativeButton.TitleLabel.Layer.Hidden = true;
+				platformButton.TitleLabel.Layer.Hidden = true;
 
-			nativeButton.UpdatePadding(button);
+			platformButton.UpdatePadding(button);
 
-			if (nativeButton.ImageEdgeInsets != imageInsets ||
-				nativeButton.TitleEdgeInsets != titleInsets)
+			if (platformButton.ImageEdgeInsets != imageInsets ||
+				platformButton.TitleEdgeInsets != titleInsets)
 			{
-				nativeButton.ImageEdgeInsets = imageInsets;
-				nativeButton.TitleEdgeInsets = titleInsets;
-				nativeButton.Superview?.SetNeedsLayout();
+				platformButton.ImageEdgeInsets = imageInsets;
+				platformButton.TitleEdgeInsets = titleInsets;
+				platformButton.Superview?.SetNeedsLayout();
 			}
 		}
 
-		public static void UpdateText(this UIButton nativeButton, Button button)
+		public static void UpdateText(this UIButton platformButton, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
-			nativeButton.SetTitle(text, UIControlState.Normal);
+			platformButton.SetTitle(text, UIControlState.Normal);
 
 			// Content layout depends on whether or not the text is empty; changing the text means
 			// we may need to update the content layout
-			nativeButton.UpdateContentLayout(button);
+			platformButton.UpdateContentLayout(button);
 		}
 	}
 }

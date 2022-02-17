@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(imageLoaded);
 				var expectedColor = Color.FromArgb(colorHex);
-				await handler.NativeView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 		}
 
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 				var scaled = user;
 
 #if __ANDROID__
-				scaled = handler.NativeView.Context!.ToPixels(scaled);
+				scaled = handler.PlatformView.Context!.ToPixels(scaled);
 #endif
 
 				return (scaled, native);

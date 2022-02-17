@@ -32,9 +32,9 @@ namespace Microsoft.Maui.DeviceTests
 			handler.UpdateContent();
 		}
 
-		protected override void DisconnectHandler(AActivity nativeView)
+		protected override void DisconnectHandler(AActivity platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			var windowManager = MauiContext.GetNavigationRootManager();
 			windowManager.Disconnect();
 		}
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		protected override AActivity CreateNativeElement()
+		protected override AActivity CreatePlatformElement()
 		{
 			return MauiProgram.CurrentContext.GetActivity();
 		}

@@ -9,9 +9,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class CountedImageHandler
 	{
-		protected override AImageView CreateNativeView() => new CountedImageView(Context);
+		protected override AImageView CreatePlatformView() => new CountedImageView(Context);
 
-		public List<(string Member, object Value)> ImageEvents => ((CountedImageView)NativeView).ImageEvents;
+		public List<(string Member, object Value)> ImageEvents => ((CountedImageView)PlatformView).ImageEvents;
 
 		public class CountedImageView : AImageView
 		{

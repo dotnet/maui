@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Foundation;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.iOS.Resources;
 using ObjCRuntime;
 using UIKit;
@@ -397,7 +398,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element e = _cell;
 			while (e.RealParent != null)
 			{
-				var renderer = (INativeViewHandler)e.RealParent.ToHandler(e.FindMauiContext());
+				var renderer = (IPlatformViewHandler)e.RealParent.ToHandler(e.FindMauiContext());
 				if (renderer.ViewController != null)
 					return renderer.ViewController;
 

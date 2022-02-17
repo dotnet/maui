@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke) { }
 		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke) { }

@@ -209,7 +209,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 		//public static FontWeight GetFontWeight(this Typeface typeface) =>
-		//	NativeVersion.IsAtLeast(28)
+		//	PlatformVersion.IsAtLeast(28)
 		//		? (FontWeight)typeface.Weight
 		//		: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
 	}
