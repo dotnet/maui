@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Chat;
 using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Sms
+	public class SmsImplementation:ISms
 	{
 		internal static bool IsComposeSupported
 			=> ApiInformation.IsTypePresent("Windows.ApplicationModel.Chat.ChatMessageManager");
 
-		static Task PlatformComposeAsync(SmsMessage message)
+		public Task ComposeAsync(SmsMessage message)
 		{
 			var chat = new ChatMessage();
 			if (!string.IsNullOrWhiteSpace(message?.Body))

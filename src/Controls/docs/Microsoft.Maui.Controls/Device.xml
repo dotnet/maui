@@ -106,32 +106,6 @@ Device.BeginInvokeOnMainThread (() => {
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetAssemblies">
-      <MemberSignature Language="C#" Value="public static System.Reflection.Assembly[] GetAssemblies ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Reflection.Assembly[] GetAssemblies() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Device.GetAssemblies" />
-      <MemberSignature Language="F#" Value="static member GetAssemblies : unit -&gt; System.Reflection.Assembly[]" Usage="Microsoft.Maui.Controls.Device.GetAssemblies " />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Reflection.Assembly[]</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="GetMainThreadSynchronizationContextAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Threading.SynchronizationContext&gt; GetMainThreadSynchronizationContextAsync ();" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Threading.SynchronizationContext&gt; GetMainThreadSynchronizationContextAsync() cil managed" />

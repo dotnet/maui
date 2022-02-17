@@ -2,7 +2,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, MauiLabel>
 	{
-		protected override MauiLabel CreateNativeView() => new MauiLabel();
+		protected override MauiLabel CreatePlatformView() => new MauiLabel();
 
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextPlainText(label);
+			handler.PlatformView?.UpdateTextPlainText(label);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, label);
@@ -25,17 +25,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextColor(label);
+			handler.PlatformView?.UpdateTextColor(label);
 		}
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(label);
+			handler.PlatformView?.UpdateCharacterSpacing(label);
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(label);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
 		}
 
 		[MissingMapper]
@@ -43,46 +43,46 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateLineBreakMode(label);
+			handler.PlatformView?.UpdateLineBreakMode(label);
 		}
 
 		public static void MapMaxLines(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateMaxLines(label);
+			handler.PlatformView?.UpdateMaxLines(label);
 		}
 
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdatePadding(label);
+			handler.PlatformView?.UpdatePadding(label);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextDecorations(label);
+			handler.PlatformView?.UpdateTextDecorations(label);
 		}
 
 		public static void MapFont(LabelHandler handler, ILabel label)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(label, fontManager);
+			handler.PlatformView?.UpdateFont(label, fontManager);
 		}
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateLineHeight(label);
+			handler.PlatformView?.UpdateLineHeight(label);
 		}
 
 		public static void MapFormatting(LabelHandler handler, ILabel label)
 		{
 			// Update all of the attributed text formatting properties
-			handler.NativeView?.UpdateLineHeight(label);
-			handler.NativeView?.UpdateTextDecorations(label);
-			handler.NativeView?.UpdateCharacterSpacing(label);
+			handler.PlatformView?.UpdateLineHeight(label);
+			handler.PlatformView?.UpdateTextDecorations(label);
+			handler.PlatformView?.UpdateCharacterSpacing(label);
 
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.NativeView?.UpdateHorizontalTextAlignment(label);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
 		}
 	}
 }

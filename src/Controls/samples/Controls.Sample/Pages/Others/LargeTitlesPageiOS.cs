@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Windows.Input;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
 using LargeTitleDisplayMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {

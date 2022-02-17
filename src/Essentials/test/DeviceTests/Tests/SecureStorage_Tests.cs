@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			// simulate corrupt the key
 			var corruptData = "A2PfJSNdEDjM+422tpu7FqFcVQQbO3ti/DvnDnIqrq9CFwaBi6NdXYcicjvMW6nF7X/Clpto5xerM41U1H4qtWJDO0Ijc5QNTHGZl9tDSbXJ6yDCDDnEDryj2uTa8DiHoNcNX68QtcV3at4kkJKXXAwZXSC88a73/xDdh1u5gUdCeXJzVc5vOY6QpAGUH0bjR5NHrqEQNNGDdquFGN9n2ZJPsEK6C9fx0QwCIL+uldpAYSWrpmUIr+/0X7Y0mJpN84ldygEVxHLBuVrzB4Bbu5XGLUN/0Sr2plWcKm7XhM6wp3JRW6Eae2ozys42p1YLeM0HXWrhTqP6FRPkS6mOtw==";
-			var all = Preferences.GetSharedPreferences(SecureStorage.Alias).All;
+			var all = PreferencesImplementation.GetSharedPreferences(SecureStorage.Alias).All;
 			Preferences.Set(all.Keys.First(x => !x.StartsWith("_")), corruptData, SecureStorage.Alias);
 
 			var c = await SecureStorage.GetAsync(key);
