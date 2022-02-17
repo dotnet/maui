@@ -14,13 +14,6 @@ namespace Microsoft.Maui.Handlers
 			return VirtualView.ToPlatformMenu(VirtualView.Text, MauiContext!);
 		}
 
-
-		[Export("MenuBarItemHandlerMenuClickAction:")]
-		public void MenuClickAction(UICommand uICommand)
-		{
-
-		}
-
 		public void Add(IMenuElement view)
 		{
 			Rebuild();
