@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
 			[nameof(IView.Frame)] = MapFrame,
-			[nameof(IView.ZIndex)] = MapZIndex,	
+			[nameof(IView.ZIndex)] = MapZIndex,
 			[nameof(IView.Focus)] = MapFocus,
 			[nameof(IView.Unfocus)] = MapUnfocus,
 		};
