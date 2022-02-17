@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 		public static void Focus(this object platformView, FocusRequest request) { }
 
 		public static void Unfocus(this object platformView, IView view) { }
-	
+
 		public static void UpdateVisibility(this object platformView, IView view) { }
 
 		public static void UpdateBackground(this object platformView, IView view) { }
