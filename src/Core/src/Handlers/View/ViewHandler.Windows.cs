@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (platformView != null)
 			{
-				platformView.GotFocus += OnNativeViewGotFocus;
-				platformView.LostFocus += OnNativeViewLostFocus;
+				platformView.GotFocus += OnPlatformViewGotFocus;
+				platformView.LostFocus += OnPlatformViewLostFocus;
 			}
 		}
 
@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			UpdateIsFocused(false);
 
-			platformView.GotFocus -= OnNativeViewGotFocus;
-			platformView.LostFocus -= OnNativeViewLostFocus;
+			platformView.GotFocus -= OnPlatformViewGotFocus;
+			platformView.LostFocus -= OnPlatformViewLostFocus;
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
@@ -98,12 +98,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnNativeViewGotFocus(object sender, RoutedEventArgs args)
+		void OnPlatformViewGotFocus(object sender, RoutedEventArgs args)
 		{
 			UpdateIsFocused(true);
 		}
 
-		void OnNativeViewLostFocus(object sender, RoutedEventArgs args)
+		void OnPlatformViewLostFocus(object sender, RoutedEventArgs args)
 		{
 			UpdateIsFocused(false);
 		}

@@ -72,14 +72,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				throw new System.NotImplementedException();
 			}
 
-			public bool Focus()
-			{
-				throw new System.NotImplementedException();
-			}
+			public bool Focus() => false;
 
 			public void Unfocus()
 			{
-				throw new System.NotImplementedException();
 			}
 
 			#endregion

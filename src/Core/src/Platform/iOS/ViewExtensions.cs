@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
-using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -28,12 +26,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this UIView platformView, FocusRequest request)
 		{
-			// TODO: Implement Focus on iOS.
+			platformView.BecomeFirstResponder();
 		}
 
 		public static void Unfocus(this UIView platformView, IView view)
 		{
-			// TODO: Implement Unfocus on iOS.
+			platformView.ResignFirstResponder();
 		}
 
 		public static void UpdateVisibility(this UIView platformView, IView view) =>

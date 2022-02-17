@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Platform
 		{
 			// TODO: Implement Focus on Android.
 		}
-	
+
 		public static void Unfocus(this AView platformView, IView view)
 		{
 			// TODO: Implement Unfocus on Android.

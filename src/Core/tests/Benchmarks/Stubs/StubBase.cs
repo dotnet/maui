@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		
 		public bool IsFocused { get; set; }
 
+		public bool IsFocused { get; set; }
+
 		public Visibility Visibility { get; set; } = Visibility.Visible;
 
 		public IShape Clip { get; set; }
@@ -126,6 +128,12 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
 			return new Size(widthConstraint, heightConstraint);
+		}
+
+		public bool Focus() => false;
+
+		public void Unfocus()
+		{
 		}
 	}
 }
