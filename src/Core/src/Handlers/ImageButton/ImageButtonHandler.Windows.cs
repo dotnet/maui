@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
 		{
-			(handler.NativeView as Button)?.UpdatePadding(imageButton);
+			(handler.PlatformView as Button)?.UpdatePadding(imageButton);
 		}
 
 		void OnSetImageSource(ImageSource? nativeImageSource)

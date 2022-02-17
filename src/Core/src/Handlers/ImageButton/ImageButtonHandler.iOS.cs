@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
 		{
-			(handler.NativeView as UIButton)?.UpdatePadding(imageButton);
+			(handler.PlatformView as UIButton)?.UpdatePadding(imageButton);
 		}
 
 		void OnButtonTouchUpInside(object? sender, EventArgs e)
