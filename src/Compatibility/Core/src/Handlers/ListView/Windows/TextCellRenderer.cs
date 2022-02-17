@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
-		protected override WDataTemplate CreateNativeElement() =>
+		protected override WDataTemplate CreatePlatformElement() =>
 			GetTemplate(VirtualView);
 
 		public abstract WDataTemplate GetTemplate(Cell cell);

@@ -10,27 +10,27 @@ namespace Microsoft.Maui.Handlers
         {
             base.SetVirtualView(view);
 
-            _ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+            _ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
             _ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-            NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-            NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+            PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+            PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
         }
 
         static void UpdateContent(IBorderHandler handler)
         {
-            _ = handler.NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+            _ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
             _ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
             _ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			handler.NativeView.Children.Clear();
-			handler.NativeView.EnsureBorderPath();
+			handler.PlatformView.Children.Clear();
+			handler.PlatformView.EnsureBorderPath();
 
             if (handler.VirtualView.PresentedContent is IView view)
-				handler.NativeView.Children.Add(view.ToPlatform(handler.MauiContext));
+				handler.PlatformView.Children.Add(view.ToPlatform(handler.MauiContext));
         }
 
-        protected override ContentPanel CreateNativeView()
+        protected override ContentPanel CreatePlatformView()
         {
             if (VirtualView == null)
             {

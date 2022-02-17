@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = placeholderTextColor.ToNative();
+				var androidColor = placeholderTextColor.ToPlatform();
 				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
 				{
 					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
@@ -87,6 +87,15 @@ namespace Microsoft.Maui.Platform
 			{
 				searchView.SetQuery(trimmedQuery, false);
 			}
+		}
+
+		public static void UpdateIsReadOnly(this EditText editText, ISearchBar searchBar)
+		{
+			bool isReadOnly = !searchBar.IsReadOnly;
+
+			editText.FocusableInTouchMode = isReadOnly;
+			editText.Focusable = isReadOnly;
+			editText.SetCursorVisible(isReadOnly);
 		}
 
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)

@@ -13,6 +13,6 @@ namespace Microsoft.Maui.Handlers
 		public void Update(int index, IView view) => throw new NotImplementedException();
 		public void UpdateZIndex(IView view) => throw new NotImplementedException();
 
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 	}
 }

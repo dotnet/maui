@@ -14,6 +14,6 @@ namespace Microsoft.Maui.Handlers
 	public partial interface IBorderHandler : IViewHandler
 	{
 		new IBorderView VirtualView { get; }
-		new NativeView NativeView { get; }
+		new NativeView PlatformView { get; }
 	}
 }
