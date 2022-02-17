@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal WebNavigationEvent _lastBackForwardEvent;
 
-		protected override WKWebView CreateNativeView()
+		protected override WKWebView CreatePlatformView()
 		{
 			var nativeWebView = new MauiWKWebView(RectangleF.Empty)
 			{
@@ -27,9 +27,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
-			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
+			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 
-			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView.CanGoBack)
 				handler.LastBackForwardWebNavigationEvent = WebNavigationEvent.Back;
 
-			handler.NativeView?.UpdateGoBack(webView);
+			handler.PlatformView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
@@ -45,12 +45,12 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView.CanGoForward)
 				handler.LastBackForwardWebNavigationEvent = WebNavigationEvent.Forward;
 
-			handler.NativeView?.UpdateGoForward(webView);
+			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateReload(webView);
+			handler.PlatformView?.UpdateReload(webView);
 		}
 
 		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 			if (arg is not string script)
 				return;
 
-			handler.NativeView?.Eval(webView, script);
+			handler.PlatformView?.Eval(webView, script);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -98,13 +98,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
-				if (handler.NativeView == null)
+				if (handler.PlatformView == null)
 				{
 					request.SetCanceled();
 					return;
 				}
 
-				handler.NativeView.EvaluateJavaScript(request);
+				handler.PlatformView.EvaluateJavaScript(request);
 			}
 		}
 	}

@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			{
 			}
 
-			protected override object CreateNativeView() => new object();
+			protected override object CreatePlatformView() => new object();
 		}
 	}
 }

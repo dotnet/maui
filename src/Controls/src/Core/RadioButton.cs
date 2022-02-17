@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (UsingRenderer)
 			{
-				return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
+				return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
 			}
 
 			return base.OnMeasure(widthConstraint, heightConstraint);

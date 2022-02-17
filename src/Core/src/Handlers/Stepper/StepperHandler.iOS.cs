@@ -7,51 +7,51 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, UIStepper>
 	{
-		protected override UIStepper CreateNativeView()
+		protected override UIStepper CreatePlatformView()
 		{
 			return new UIStepper(RectangleF.Empty);
 		}
 
-		protected override void ConnectHandler(UIStepper nativeView)
+		protected override void ConnectHandler(UIStepper platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.ValueChanged += OnValueChanged;
+			platformView.ValueChanged += OnValueChanged;
 		}
 
-		protected override void DisconnectHandler(UIStepper nativeView)
+		protected override void DisconnectHandler(UIStepper platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.ValueChanged -= OnValueChanged;
+			platformView.ValueChanged -= OnValueChanged;
 		}
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateMinimum(stepper);
+			handler.PlatformView?.UpdateMinimum(stepper);
 		}
 
 		public static void MapMaximum(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateMaximum(stepper);
+			handler.PlatformView?.UpdateMaximum(stepper);
 		}
 
 		public static void MapIncrement(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateIncrement(stepper);
+			handler.PlatformView?.UpdateIncrement(stepper);
 		}
 
 		public static void MapValue(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateValue(stepper);
+			handler.PlatformView?.UpdateValue(stepper);
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)
 		{
-			if (NativeView == null || VirtualView == null)
+			if (PlatformView == null || VirtualView == null)
 				return;
 
-			VirtualView.Value = NativeView.Value;
+			VirtualView.Value = PlatformView.Value;
 		}
 	}
 }

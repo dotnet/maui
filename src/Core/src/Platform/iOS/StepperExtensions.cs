@@ -5,28 +5,28 @@ namespace Microsoft.Maui.Platform
 {
 	public static class StepperExtensions
 	{
-		public static void UpdateMinimum(this UIStepper nativeStepper, IStepper stepper)
+		public static void UpdateMinimum(this UIStepper platformStepper, IStepper stepper)
 		{
-			nativeStepper.MinimumValue = stepper.Minimum;
+			platformStepper.MinimumValue = stepper.Minimum;
 		}
 
-		public static void UpdateMaximum(this UIStepper nativeStepper, IStepper stepper)
+		public static void UpdateMaximum(this UIStepper platformStepper, IStepper stepper)
 		{
-			nativeStepper.MaximumValue = stepper.Maximum;
+			platformStepper.MaximumValue = stepper.Maximum;
 		}
 
-		public static void UpdateIncrement(this UIStepper nativeStepper, IStepper stepper)
+		public static void UpdateIncrement(this UIStepper platformStepper, IStepper stepper)
 		{
 			var increment = stepper.Interval;
 
 			if (increment > 0)
-				nativeStepper.StepValue = stepper.Interval;
+				platformStepper.StepValue = stepper.Interval;
 		}
 
-		public static void UpdateValue(this UIStepper nativeStepper, IStepper stepper)
+		public static void UpdateValue(this UIStepper platformStepper, IStepper stepper)
 		{
-			if (nativeStepper.Value != stepper.Value)
-				nativeStepper.Value = stepper.Value;
+			if (platformStepper.Value != stepper.Value)
+				platformStepper.Value = stepper.Value;
 		}
 	}
 }

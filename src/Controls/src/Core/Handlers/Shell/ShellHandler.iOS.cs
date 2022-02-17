@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class ShellHandler : ViewHandler<Shell, UIView>
 	{
-		protected override UIView CreateNativeView()
+		protected override UIView CreatePlatformView()
 		{
 			throw new NotImplementedException();
 		}

@@ -121,16 +121,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected CATransform3D GetLayerTransform(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).Layer.Transform;
+			((UIView)viewHandler.PlatformView).Layer.Transform;
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityIdentifier;
+			((UIView)viewHandler.PlatformView).AccessibilityIdentifier;
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
 		{
-			var nativeView = (UIView)viewHandler.NativeView;
+			var platformView = (UIView)viewHandler.PlatformView;
 
-			if (nativeView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+			if (platformView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
 				return FlowDirection.RightToLeft;
 
 			return FlowDirection.LeftToRight;
@@ -138,44 +138,44 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
 		{
-			var nativeView = ((UIView)viewHandler.NativeView);
+			var platformView = ((UIView)viewHandler.PlatformView);
 
 			// UIControl elements when instantiated have IsAccessibilityElement set to false.
 			// Once they are added to the visual tree then iOS transitions IsAccessibilityElement
 			// to true. In code we only set non UIControl elements ourselves to true.
-			if (nativeView is UIControl)
+			if (platformView is UIControl)
 				return true;
 
-			return nativeView.IsAccessibilityElement;
+			return platformView.IsAccessibilityElement;
 		}
 
-		protected Maui.Graphics.Rectangle GetNativeViewBounds(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).GetNativeViewBounds();
+		protected Maui.Graphics.Rectangle GetPlatformViewBounds(IViewHandler viewHandler) =>
+			((UIView)viewHandler.PlatformView).GetPlatformViewBounds();
 
 		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).GetBoundingBox();
+			((UIView)viewHandler.PlatformView).GetBoundingBox();
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).GetViewTransform();
+			((UIView)viewHandler.PlatformView).GetViewTransform();
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityLabel;
+			((UIView)viewHandler.PlatformView).AccessibilityLabel;
 
 		protected string GetSemanticHint(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityHint;
+			((UIView)viewHandler.PlatformView).AccessibilityHint;
 
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
+			((UIView)viewHandler.PlatformView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
 		protected nfloat GetOpacity(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).Alpha;
+			((UIView)viewHandler.PlatformView).Alpha;
 
 		protected Visibility GetVisibility(IViewHandler viewHandler)
 		{
-			var nativeView = (UIView)viewHandler.NativeView;
+			var platformView = (UIView)viewHandler.PlatformView;
 
-			foreach (var constraint in nativeView.Constraints)
+			foreach (var constraint in platformView.Constraints)
 			{
 				if (constraint is CollapseConstraint collapseConstraint)
 				{
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			if (nativeView.Hidden)
+			if (platformView.Hidden)
 			{
 				return Visibility.Hidden;
 			}

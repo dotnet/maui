@@ -9,7 +9,7 @@
   <style name="MyTheme" parent="MyTheme.Base">
   </style>
   <!-- Base theme applied no matter what API -->
-  <style name="MyTheme.Base" parent="Theme.AppCompat.DayNight.DarkActionBar">
+  <style name="MyTheme.Base" parent="Maui.MainTheme.NoActionBar">
     <!--If you are using revision 22.1 please use just windowNoTitle. Without android:-->
     <item name="windowNoTitle">true</item>
     <!--We will be using the toolbar so no need to show ActionBar-->
@@ -40,11 +40,11 @@
 		<!--<item name="android:buttonStyle">@style/red_button_style</item>-->
   </style>
 
-  <style name="AppCompatDialogStyle" parent="Theme.AppCompat.Light.Dialog">
+  <style name="AppCompatDialogStyle" parent="Theme.MaterialComponents.Light.Dialog">
     <item name="colorAccent">#FF4081</item>
   </style>
 
-  <style name="DayNightDialogStyle" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+  <style name="DayNightDialogStyle" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
     <item name="colorAccent">#00FF21</item>
   </style>
 

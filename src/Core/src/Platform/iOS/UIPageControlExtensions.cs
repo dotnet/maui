@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Platform
 			=> pageControl.Pages = pageCount;
 
 		public static void UpdatePagesIndicatorTintColor(this UIPageControl pageControl, IIndicatorView indicatorView)
-			=> pageControl.PageIndicatorTintColor = indicatorView.IndicatorColor?.ToColor()?.ToNative();
+			=> pageControl.PageIndicatorTintColor = indicatorView.IndicatorColor?.ToColor()?.ToPlatform();
 
 		public static void UpdateCurrentPagesIndicatorTintColor(this UIPageControl pageControl, IIndicatorView indicatorView)
-			=> pageControl.CurrentPageIndicatorTintColor = indicatorView.SelectedIndicatorColor?.ToColor()?.ToNative();
+			=> pageControl.CurrentPageIndicatorTintColor = indicatorView.SelectedIndicatorColor?.ToColor()?.ToPlatform();
 	}
 }

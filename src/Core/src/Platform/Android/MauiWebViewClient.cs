@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 				_handler.VirtualView.Navigated(_handler.CurrentWebNavigationEvent, GetValidUrl(url), _navigationResult);
 
 			if (_handler != null)
-				_handler.NativeView.UpdateCanGoBackForward(_handler.VirtualView);
+				_handler.PlatformView.UpdateCanGoBackForward(_handler.VirtualView);
 
 			base.OnPageFinished(view, url);
 		}
