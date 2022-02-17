@@ -65,6 +65,7 @@
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'tizen' ">
     <TizenManifestFile Condition=" Exists('$(TizenProjectFolder)tizen-manifest.xml') ">$(TizenProjectFolder)tizen-manifest.xml</TizenManifestFile>
     <TizenResourcePrefix>$(TizenProjectFolder)res</TizenResourcePrefix>
+    <TizenSharedPrefix>$(TizenProjectFolder)shared</TizenSharedPrefix>
   </PropertyGroup>
 
   <!--

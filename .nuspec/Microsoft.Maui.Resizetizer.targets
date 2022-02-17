@@ -321,9 +321,11 @@
             <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
         </ItemGroup>
         <PropertyGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-            <_MauiAssetFolderName>res</_MauiAssetFolderName>
             <_MauiAssetItemMetadata>TizenTpkFileName</_MauiAssetItemMetadata>
         </PropertyGroup>
+      <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
+        <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+      </ItemGroup>
         <GetMauiAssetPath
             ProjectDirectory="$(MSBuildProjectDirectory)"
             ItemMetadata="$(_MauiAssetItemMetadata)"
@@ -331,7 +333,7 @@
             <Output ItemName="AndroidAsset"          TaskParameter="Output" Condition="'$(_ResizetizerIsAndroidApp)' == 'True'" />
             <Output ItemName="Content"               TaskParameter="Output" Condition="'$(_ResizetizerIsiOSApp)' == 'True'" />
             <Output ItemName="ContentWithTargetPath" TaskParameter="Output" Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
-            <Output ItemName="TizenTpkUserIncludeFiles" TaskParameter="Output" Condition="'$(_ResizetizerIsTizenApp)' == 'True'" />
+            <Output ItemName="TizenResource" TaskParameter="Output" Condition="'$(_ResizetizerIsTizenApp)' == 'True'" />
         </GetMauiAssetPath>
     </Target>
 
