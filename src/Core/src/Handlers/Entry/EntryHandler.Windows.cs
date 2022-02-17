@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalTextAlignment(entry);
 
 		public static void MapIsSpellCheckEnabled(EntryHandler handler, IEntry entry) =>
-			handler.NativeView?.UpdateIsSpellCheckEnabled(entry);
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(entry);
 
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(entry);

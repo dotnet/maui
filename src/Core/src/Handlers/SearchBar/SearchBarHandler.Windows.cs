@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsSpellCheckEnabled(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateIsSpellCheckEnabled(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(searchBar, handler._queryTextBox);
 		}
 
 		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) 
