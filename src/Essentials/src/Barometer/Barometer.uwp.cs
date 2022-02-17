@@ -2,35 +2,86 @@ using System;
 using Windows.Devices.Sensors;
 using WinBarometer = Windows.Devices.Sensors.Barometer;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Barometer
+	public class BarometerImplementation : IBarometer
 	{
 		static WinBarometer sensor;
 
 		static WinBarometer DefaultBarometer => WinBarometer.GetDefault();
 
-		internal static bool IsSupported =>
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+		public event EventHandler<BarometerChangedEventArgs> ReadingChanged;
+
+		public bool IsMonitoring { get; private set; }
+
+		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+
+		public bool IsSupported =>
 			DefaultBarometer != null;
 
-		static void PlatformStart(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
-			sensor = DefaultBarometer;
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
 
-			var interval = sensorSpeed.ToPlatform();
-			sensor.ReportInterval = sensor.MinimumReportInterval >= interval ? sensor.MinimumReportInterval : interval;
+			if (IsMonitoring)
+				throw new InvalidOperationException("Barometer has already been started.");
 
-			sensor.ReadingChanged += BarometerReportedInterval;
+			IsMonitoring = true;
+			SensorSpeed = sensorSpeed;
+
+			try
+			{
+				sensor = DefaultBarometer;
+
+				var interval = sensorSpeed.ToPlatform();
+				sensor.ReportInterval = sensor.MinimumReportInterval >= interval ? sensor.MinimumReportInterval : interval;
+
+				sensor.ReadingChanged += BarometerReportedInterval;
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
 		}
 
-		static void BarometerReportedInterval(object sender, BarometerReadingChangedEventArgs e)
-			=> OnChanged(new BarometerData(e.Reading.StationPressureInHectopascals));
-
-		static void PlatformStop()
+		internal void BarometerReportedInterval(object sender, BarometerReadingChangedEventArgs e)
 		{
-			sensor.ReadingChanged -= BarometerReportedInterval;
-			sensor.ReportInterval = 0;
-			sensor = null;
+			var data = new BarometerData(e.Reading.StationPressureInHectopascals);
+
+			if (UseSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(this, new BarometerChangedEventArgs(data)));
+			else
+				ReadingChanged?.Invoke(this, new BarometerChangedEventArgs(data));
+		}
+
+		public void Stop()
+		{
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
+			if (sensor == null)
+				return;
+
+			try
+			{
+				sensor.ReadingChanged -= BarometerReportedInterval;
+				sensor.ReportInterval = 0;
+				sensor = null;
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
 		}
 	}
 }

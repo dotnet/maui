@@ -2,39 +2,94 @@ using System;
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Barometer
+	public class BarometerImplementation : IBarometer
 	{
-		internal static bool IsSupported =>
-			   DefaultBarometer != null;
+		public bool IsSupported
+			=> DefaultBarometer != null;
 
-		static Sensor DefaultBarometer => Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
+		public event EventHandler<BarometerChangedEventArgs> ReadingChanged;
 
+		static Sensor DefaultBarometer 
+			=> Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
+		
 		static Sensor barometer;
-
 		static BarometerListener listener;
 
-		static void PlatformStart(SensorSpeed sensorSpeed)
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+
+		public bool IsMonitoring { get; private set; }
+
+		public void Start(SensorSpeed sensorSpeed)
 		{
-			listener = new BarometerListener();
-			barometer = DefaultBarometer;
-			Platform.SensorManager.RegisterListener(listener, barometer, sensorSpeed.ToPlatform());
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Barometer has already been started.");
+
+			IsMonitoring = true;
+			SensorSpeed = sensorSpeed;
+
+			try
+			{
+				listener = new BarometerListener(data =>
+				{
+					if (UseSyncContext)
+						MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(this, new BarometerChangedEventArgs(data)));
+					else
+						ReadingChanged?.Invoke(this, new BarometerChangedEventArgs(data));
+				});
+					
+				barometer = DefaultBarometer;
+				Platform.SensorManager.RegisterListener(listener, barometer, sensorSpeed.ToPlatform());
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
 		}
 
-		static void PlatformStop()
+		public void Stop()
 		{
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
 			if (listener == null)
 				return;
 
-			Platform.SensorManager.UnregisterListener(listener, barometer);
-			listener.Dispose();
-			listener = null;
+			try
+			{
+				Platform.SensorManager.UnregisterListener(listener, barometer);
+				listener.Dispose();
+				listener = null;
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
 		}
 	}
 
 	class BarometerListener : Java.Lang.Object, ISensorEventListener, IDisposable
 	{
+		public BarometerListener(Action<BarometerData> changeHandler)
+		{
+			ChangeHandler = changeHandler;
+		}
+
+		public readonly Action<BarometerData> ChangeHandler;
+
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
 		{
 		}
@@ -44,7 +99,7 @@ namespace Microsoft.Maui.Essentials
 			if ((e?.Values?.Count ?? 0) <= 0)
 				return;
 
-			Barometer.OnChanged(new BarometerData(e.Values[0]));
+			ChangeHandler?.Invoke(new BarometerData(e.Values[0]));
 		}
 	}
 }

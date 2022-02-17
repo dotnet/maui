@@ -1,15 +1,26 @@
-namespace Microsoft.Maui.Essentials
+using System;
+
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs" />
-	public static partial class Barometer
+	public class BarometerImplementation : IBarometer
 	{
-		internal static bool IsSupported =>
+#pragma warning disable CS0067
+		public event EventHandler<BarometerChangedEventArgs> ReadingChanged;
+#pragma warning restore CS0067
+
+		public SensorSpeed SensorSpeed
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public bool IsSupported
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public bool IsMonitoring
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public void Start(SensorSpeed sensorSpeed) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed) =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-
-		internal static void PlatformStop() =>
+		public void Stop() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

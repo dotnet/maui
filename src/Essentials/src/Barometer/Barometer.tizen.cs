@@ -1,32 +1,79 @@
+using System;
 using Tizen.Sensor;
 using TizenBarometerSensor = Tizen.Sensor.PressureSensor;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Barometer
+	public class BarometerImplementation : IBarometer
 	{
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+
+		public event EventHandler<BarometerChangedEventArgs> ReadingChanged;
+
 		static TizenBarometerSensor DefaultSensor
 			=> (TizenBarometerSensor)Platform.GetDefaultSensor(SensorType.Barometer);
 
-		internal static bool IsSupported
+		public bool IsSupported
 			=> TizenBarometerSensor.IsSupported;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		public bool IsMonitoring { get; private set; }
+
+		public void Start(SensorSpeed sensorSpeed)
 		{
-			DefaultSensor.Interval = sensorSpeed.ToPlatform();
-			DefaultSensor.DataUpdated += DataUpdated;
-			DefaultSensor.Start();
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Barometer has already been started.");
+
+			IsMonitoring = true;
+			SensorSpeed = sensorSpeed;
+
+			try
+			{
+				DefaultSensor.Interval = sensorSpeed.ToPlatform();
+				DefaultSensor.DataUpdated += DataUpdated;
+				DefaultSensor.Start();
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
 		}
 
-		internal static void PlatformStop()
+		void DataUpdated(object sender, PressureSensorDataUpdatedEventArgs e)
 		{
-			DefaultSensor.DataUpdated -= DataUpdated;
-			DefaultSensor.Stop();
+			var data = new BarometerData(e.Pressure);
+
+			if (UseSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(this, new BarometerChangedEventArgs(data)));
+			else
+				ReadingChanged?.Invoke(this, new BarometerChangedEventArgs(data));
 		}
 
-		static void DataUpdated(object sender, PressureSensorDataUpdatedEventArgs e)
+		public void Stop()
 		{
-			OnChanged(new BarometerData(e.Pressure));
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
+			try
+			{
+				DefaultSensor.DataUpdated -= DataUpdated;
+				DefaultSensor.Stop();
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
 		}
 	}
 }
