@@ -31,16 +31,19 @@ namespace Microsoft.Maui.Handlers
 
 			if (catalystMenu != null)
 			{
-				var menuContainer =
-					UIMenu.Create(String.Empty, null,
-						UIMenuIdentifier.None,
-						UIMenuOptions.DisplayInline,
-						menuElements);
+				if (menuElements.Length > 0)
+				{
+					var menuContainer =
+						UIMenu.Create(String.Empty, null,
+							UIMenuIdentifier.None,
+							UIMenuOptions.DisplayInline,
+							menuElements);
 
-				MauiUIApplicationDelegate
-								.Current
-								.MenuBuilder?
-								.InsertChildMenuAtStart(menuContainer, catalystMenu.GetIdentifier());
+					MauiUIApplicationDelegate
+									.Current
+									.MenuBuilder?
+									.InsertChildMenuAtStart(menuContainer, catalystMenu.GetIdentifier());
+				}
 			}
 			else
 			{
