@@ -115,10 +115,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					_ = Launcher.LaunchUriAsync(uri);
 				}
 
-				if (externalLinkMode != ExternalLinkNavigationPolicy.OpenInWebView)
-				{
-					args.Cancel = true;
-				}
+				args.Cancel = externalLinkMode != ExternalLinkNavigationPolicy.OpenInWebView;
 			}
 		}
 
