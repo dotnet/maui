@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		void DataUpdated(object sender, OrientationSensorDataUpdatedEventArgs e)
 		{
-			OnChanged(new CompassData(e.Azimuth));
+			Compass.OnChanged(new CompassData(e.Azimuth));
 		}
 	}
 }

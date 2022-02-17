@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		void CompassReportedInterval(object sender, CompassReadingChangedEventArgs e)
 		{
 			var data = new CompassData(e.Reading.HeadingMagneticNorth);
-			OnChanged(data);
+			Compass.OnChanged(data);
 		}
 
 		public void Stop()
