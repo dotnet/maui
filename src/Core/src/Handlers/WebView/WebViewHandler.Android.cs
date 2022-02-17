@@ -96,6 +96,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.Eval(webView, script);
 		}
 
+		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is EvaluateJavaScriptAsyncRequest request)
+			{
+				handler.PlatformView.EvaluateJavaScript(request);
+			}
+		}
+
 		protected internal bool NavigatingCanceled(string? url)
 		{
 			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
@@ -105,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 				return false;
 
 			// TODO: Sync Cookies
-			bool cancel = VirtualView.Navigating(_eventState, url);
+			bool cancel = VirtualView.Navigating(CurrentWebNavigationEvent, url);
 			PlatformView?.UpdateCanGoBackForward(VirtualView);
 			UrlCanceled = cancel ? null : url;
 
@@ -121,14 +129,6 @@ namespace Microsoft.Maui.Handlers
 
 			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
-		}
-
-		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
-		{
-			if (arg is EvaluateJavaScriptAsyncRequest request)
-			{
-				handler.PlatformView.EvaluateJavaScript(request);
-			}
 		}
 	}
 }
