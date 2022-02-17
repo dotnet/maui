@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		Thickness GetNativePadding(ImageButtonHandler imageButtonHandler)
 		{
-			var shapeableImageView = GetNativeImageButton(imageButtonHandler);
+			var shapeableImageView = GetPlatformImageButton(imageButtonHandler);
 
 			return new Thickness(
 				shapeableImageView.ContentPaddingLeft,

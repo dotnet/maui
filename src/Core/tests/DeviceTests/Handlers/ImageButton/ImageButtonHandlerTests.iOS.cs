@@ -40,8 +40,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
-		UIButton GetPlatformImageButton(ImageButtonHandler imageButtonHandler) =>
-			   imageButtonHandler.PlatformView;
+		UIButton GetPlatformImageButton(ImageButtonHandler imageButtonHandler) =>	 
+			imageButtonHandler.PlatformView;
 
 		UIColor GetNativeStrokeColor(ImageButtonHandler imageButtonHandler)
 		{
@@ -62,6 +62,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UIEdgeInsets GetNativePadding(ImageButtonHandler imageButtonHandler) =>
-			GetNativeImageButton(imageButtonHandler).ContentEdgeInsets;
+			GetPlatformImageButton(imageButtonHandler).ContentEdgeInsets;
 	}
 }
