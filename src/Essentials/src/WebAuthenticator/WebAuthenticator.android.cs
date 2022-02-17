@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class WebAuthenticator
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator
 	{
 		static TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
 		static Uri currentRedirectUri = null;
@@ -43,7 +43,10 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
+			=> await AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
+
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;

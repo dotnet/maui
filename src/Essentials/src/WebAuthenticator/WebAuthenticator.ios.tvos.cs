@@ -13,9 +13,9 @@ using UIKit;
 using WebKit;
 using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class WebAuthenticator
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator
 	{
 #if __IOS__
 		[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
@@ -39,7 +39,10 @@ namespace Microsoft.Maui.Essentials
 		static SFAuthenticationSession sf;
 #endif
 
-		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
+			=> await AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
+
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;

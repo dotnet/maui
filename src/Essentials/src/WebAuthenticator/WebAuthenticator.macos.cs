@@ -4,9 +4,9 @@ using AppKit;
 using AuthenticationServices;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class WebAuthenticator
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator
 	{
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
 		const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Essentials
 			callbackHelper.Register();
 		}
 
-		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
