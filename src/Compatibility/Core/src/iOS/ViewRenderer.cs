@@ -305,6 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void ViewOnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs focusRequestArgs)
 		{
 			if (Control == null)

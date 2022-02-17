@@ -67,6 +67,16 @@ namespace Microsoft.Maui.Platform
 			platformView.Enabled = view.IsEnabled;
 		}
 
+		public static void Focus(this AView platformView, FocusRequest request)
+		{
+			// TODO: Implement Focus on Android.
+		}
+
+		public static void Unfocus(this AView platformView, IView view)
+		{
+			// TODO: Implement Unfocus on Android.
+		}
+
 		public static void UpdateVisibility(this AView platformView, IView view)
 		{
 			platformView.Visibility = view.Visibility.ToPlatformVisibility();

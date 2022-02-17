@@ -32,6 +32,16 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view) =>
 			(platformView as Control)?.UpdateIsEnabled(view.IsEnabled);
 
+		public static void Focus(this FrameworkElement platformView, FocusRequest request)
+		{
+			// TODO: Implement Focus on Windows.
+		}
+
+		public static void Unfocus(this FrameworkElement platformView, IView view)
+		{
+			// TODO: Implement Unfocus on Windows.
+		}
+
 		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
 		{
 			double opacity = view.Opacity;

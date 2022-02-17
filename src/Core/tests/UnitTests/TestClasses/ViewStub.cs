@@ -15,6 +15,8 @@ namespace Microsoft.Maui.UnitTests
 
 		public bool IsEnabled { get; set; }
 
+		public bool IsFocused { get; set; }
+
 		public Visibility Visibility { get; set; }
 
 		public IShape Clip { get; set; }
@@ -90,6 +92,12 @@ namespace Microsoft.Maui.UnitTests
 		public void InvalidateMeasure() { }
 
 		public Size Measure(double widthConstraint, double heightConstraint) =>
-			Size.Zero;
+			Size.Zero; 
+		
+		public bool Focus() => false;
+
+		public void Unfocus()
+		{
+		}
 	}
 }
