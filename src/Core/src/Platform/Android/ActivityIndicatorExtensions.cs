@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				return activityIndicator.Visibility.ToNativeVisibility();
+				return activityIndicator.Visibility.ToPlatformVisibility();
 			}
 		}
 
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 			var color = activityIndicator.Color;
 
 			if (color != null)
-				progressBar.IndeterminateDrawable?.SetColorFilter(color.ToNative(), FilterMode.SrcIn);
+				progressBar.IndeterminateDrawable?.SetColorFilter(color.ToPlatform(), FilterMode.SrcIn);
 			else
 				progressBar.IndeterminateDrawable?.ClearColorFilter();
 		}

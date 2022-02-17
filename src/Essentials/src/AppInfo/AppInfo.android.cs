@@ -82,5 +82,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				UiMode.NightNo => AppTheme.Light,
 				_ => AppTheme.Unspecified
 			};
+
+		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 	}
 }

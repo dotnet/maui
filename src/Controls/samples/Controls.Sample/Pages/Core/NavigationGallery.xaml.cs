@@ -58,6 +58,22 @@ namespace Maui.Controls.Sample.Pages
 			NavigationPage.SetHasBackButton(this, !NavigationPage.GetHasBackButton(this));
 		}
 
+		void ToggleSecondaryToolbarItem(object sender, EventArgs e)
+		{
+			if (!this.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Secondary).Any())
+			{
+				this.ToolbarItems.Add(new ToolbarItem() { Text = "One", Order = ToolbarItemOrder.Secondary });
+				this.ToolbarItems.Add(new ToolbarItem() { Text = "Two", Order = ToolbarItemOrder.Secondary });
+			}
+			else
+			{
+				foreach (var ti in this.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Secondary).ToList())
+				{
+					this.ToolbarItems.Remove(ti);
+				}
+			}
+		}
+
 
 		void SwapRoot(object sender, EventArgs e)
 		{

@@ -7,73 +7,73 @@ namespace Microsoft.Maui.Platform
 {
 	public static class WebViewExtensions
 	{
-		public static void UpdateSource(this AWebView nativeWebView, IWebView webView)
+		public static void UpdateSource(this AWebView platformWebView, IWebView webView)
 		{
-			nativeWebView.UpdateSource(webView, null);
+			platformWebView.UpdateSource(webView, null);
 		}
 
-		public static void UpdateSource(this AWebView nativeWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
+		public static void UpdateSource(this AWebView platformWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
 		{
 			if (webViewDelegate != null)
 			{
 				webView.Source?.Load(webViewDelegate);
 
-				nativeWebView.UpdateCanGoBackForward(webView);
+				platformWebView.UpdateCanGoBackForward(webView);
 			}
 		}
 
-		public static void UpdateSettings(this AWebView nativeWebView, IWebView webView, bool javaScriptEnabled, bool domStorageEnabled)
+		public static void UpdateSettings(this AWebView platformWebView, IWebView webView, bool javaScriptEnabled, bool domStorageEnabled)
 		{
-			if (nativeWebView.Settings == null)
+			if (platformWebView.Settings == null)
 				return;
 
-			nativeWebView.Settings.JavaScriptEnabled = javaScriptEnabled;
-			nativeWebView.Settings.DomStorageEnabled = domStorageEnabled;
+			platformWebView.Settings.JavaScriptEnabled = javaScriptEnabled;
+			platformWebView.Settings.DomStorageEnabled = domStorageEnabled;
 		}
 
-		public static void Eval(this AWebView nativeWebView, IWebView webView, string script)
+		public static void Eval(this AWebView platformWebView, IWebView webView, string script)
 		{
 			string source = "javascript:" + script;
 
-			nativeWebView.LoadUrl(source);
+			platformWebView.LoadUrl(source);
 		}
 
-		public static void UpdateGoBack(this AWebView nativeWebView, IWebView webView)
+		public static void UpdateGoBack(this AWebView platformWebView, IWebView webView)
 		{
-			if (nativeWebView == null)
+			if (platformWebView == null)
 				return;
 
-			if (nativeWebView.CanGoBack())
-				nativeWebView.GoBack();
+			if (platformWebView.CanGoBack())
+				platformWebView.GoBack();
 
-			nativeWebView.UpdateCanGoBackForward(webView);
+			platformWebView.UpdateCanGoBackForward(webView);
 		}
 
-		public static void UpdateGoForward(this AWebView nativeWebView, IWebView webView)
+		public static void UpdateGoForward(this AWebView platformWebView, IWebView webView)
 		{
-			if (nativeWebView == null)
+			if (platformWebView == null)
 				return;
 
-			if (nativeWebView.CanGoForward())
-				nativeWebView.GoForward();
+			if (platformWebView.CanGoForward())
+				platformWebView.GoForward();
 
-			nativeWebView.UpdateCanGoBackForward(webView);
+			platformWebView.UpdateCanGoBackForward(webView);
 		}
 
-		public static void UpdateReload(this AWebView nativeWebView, IWebView webView)
+		public static void UpdateReload(this AWebView platformWebView, IWebView webView)
 		{
 			// TODO: Sync Cookies
 
-			nativeWebView.Reload();
+			platformWebView.Reload();
 		}
 
-		internal static void UpdateCanGoBackForward(this AWebView nativeWebView, IWebView webView)
+		internal static void UpdateCanGoBackForward(this AWebView platformWebView, IWebView webView)
 		{
-			if (webView == null || nativeWebView == null)
+			if (webView == null || platformWebView == null)
 				return;
 
-			webView.CanGoBack = nativeWebView.CanGoBack();
-			webView.CanGoForward = nativeWebView.CanGoForward();
+			webView.CanGoBack = platformWebView.CanGoBack();
+			webView.CanGoForward = platformWebView.CanGoForward();
 		}
 
 		public static void EvaluateJavaScript(this AWebView webView, EvaluateJavaScriptAsyncRequest request)

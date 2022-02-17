@@ -4,15 +4,15 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RefreshViewHandler : ViewHandler<IRefreshView, MauiSwipeRefreshLayout>
 	{
-		protected override MauiSwipeRefreshLayout CreateNativeView()
+		protected override MauiSwipeRefreshLayout CreatePlatformView()
 		{
 			return new MauiSwipeRefreshLayout(Context);
 		}
 
-		protected override void ConnectHandler(MauiSwipeRefreshLayout nativeView)
+		protected override void ConnectHandler(MauiSwipeRefreshLayout platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.Refresh += OnSwipeRefresh;
+			base.ConnectHandler(platformView);
+			platformView.Refresh += OnSwipeRefresh;
 		}
 
 		void OnSwipeRefresh(object? sender, System.EventArgs e)
@@ -20,16 +20,16 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsRefreshing = true;
 		}
 
-		protected override void DisconnectHandler(MauiSwipeRefreshLayout nativeView)
+		protected override void DisconnectHandler(MauiSwipeRefreshLayout platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			nativeView.Refresh -= OnSwipeRefresh;
-			nativeView.UpdateContent(null, null);
-			base.DisconnectHandler(nativeView);
+			platformView.Refresh -= OnSwipeRefresh;
+			platformView.UpdateContent(null, null);
+			base.DisconnectHandler(platformView);
 		}
 
 		void UpdateContent() =>
-			NativeView.UpdateContent(VirtualView.Content, MauiContext);
+			PlatformView.UpdateContent(VirtualView.Content, MauiContext);
 
 		void UpdateRefreshColor()
 		{
@@ -39,11 +39,11 @@ namespace Microsoft.Maui.Handlers
 			var color = VirtualView.RefreshColor.ToColor()?.ToInt();
 
 			if (color != null)
-				NativeView.SetColorSchemeColors(color.Value);
+				PlatformView.SetColorSchemeColors(color.Value);
 		}
 
 		void UpdateIsRefreshing() =>
-			NativeView.Refreshing = VirtualView.IsRefreshing;
+			PlatformView.Refreshing = VirtualView.IsRefreshing;
 
 		void UpdateBackground()
 		{
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 
 			var color = VirtualView.Background.ToColor()?.ToInt();
 			if (color != null)
-				NativeView.SetProgressBackgroundColorSchemeColor(color.Value);
+				PlatformView.SetProgressBackgroundColorSchemeColor(color.Value);
 		}
 
 		public static void MapBackground(RefreshViewHandler handler, IView view)

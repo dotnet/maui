@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 			// Even if there's only one page on the stack
 
 			_currentView =
-				NavigationManager.CurrentPage.Handler?.NativeView as AView;
+				NavigationManager.CurrentPage.Handler?.PlatformView as AView;
 
 			if (_currentView == null)
 			{

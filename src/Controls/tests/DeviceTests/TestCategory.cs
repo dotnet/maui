@@ -9,6 +9,7 @@
 		public const string Gesture = "Gesture";
 		public const string Label = "Label";
 		public const string NavigationPage = "NavigationPage";
+		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
 		public const string VisualElement = "VisualElement";
 	}

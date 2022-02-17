@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Platform
 
 		internal DrawerLayout? DrawerLayout { get; private set; }
 
+		internal IToolbarElement? ToolbarElement => _toolbarElement;
+
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
