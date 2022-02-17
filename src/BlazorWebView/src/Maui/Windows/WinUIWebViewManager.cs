@@ -105,19 +105,27 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected override void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
 		{
-			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) &&
-				uri.Host != AppHostAddress &&
-				_blazorWebViewHandler.ExternalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) && uri.Host != AppHostAddress)
 			{
-				_ = Launcher.LaunchUriAsync(uri);
-				args.Cancel = true;
+				var callbackArgs = new ExternalLinkNavigationInfo(uri);
+				var externalLinkMode = _blazorWebViewHandler.OnExternalNavigationStarting?.Invoke(callbackArgs) ?? ExternalLinkNavigationPolicy.OpenInExternalBrowser;
+
+				if (externalLinkMode == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+				{
+					_ = Launcher.LaunchUriAsync(uri);
+				}
+
+				if (externalLinkMode != ExternalLinkNavigationPolicy.OpenInWebView)
+				{
+					args.Cancel = true;
+				}
 			}
 		}
 
 		protected override void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs args)
 		{
-			// Intercept _blank target <a> tags to always open in device browser
-			// regardless of ExternalLinkMode.OpenInWebview
+			// Intercept _blank target <a> tags to always open in device browser.
+			// The ExternalLinkCallback is not invoked.
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
 				_ = Launcher.LaunchUriAsync(uri);

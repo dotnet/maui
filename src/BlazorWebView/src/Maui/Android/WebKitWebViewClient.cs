@@ -33,10 +33,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// Handle redirects to the app custom scheme by reloading the URL in the view.
 			// Handle navigation to external URLs using the system browser, unless overriden.
 			var requestUri = request?.Url?.ToString();
-			if (requestUri != null)
+			if (Uri.TryCreate(requestUri, UriKind.RelativeOrAbsolute, out var uri))
 			{
-				var uri = new Uri(requestUri);
-
 				if (uri.Host == BlazorWebView.AppHostAddress &&
 					view is not null && 
 					request is not null && 
@@ -46,13 +44,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					view.LoadUrl(uri.ToString());
 					return true;
 				}
-				else if (uri.Host != BlazorWebView.AppHostAddress && 
-					_webViewHandler != null &&
-					_webViewHandler.ExternalLinkMode == ExternalLinkMode.OpenInExternalBrowser)
+				else if (uri.Host != BlazorWebView.AppHostAddress && _webViewHandler != null)
 				{
-					var intent = new Intent(Intent.ActionView, AUri.Parse(requestUri));
-					_webViewHandler.Context.StartActivity(intent);
-					return true;
+					var callbackArgs = new ExternalLinkNavigationInfo(uri);
+					var externalLinkMode = _webViewHandler.OnExternalNavigationStarting?.Invoke(callbackArgs) ?? ExternalLinkNavigationPolicy.OpenInExternalBrowser;
+
+					if (externalLinkMode == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+					{
+						var intent = new Intent(Intent.ActionView, AUri.Parse(requestUri));
+						_webViewHandler.Context.StartActivity(intent);
+					}
+
+					if (externalLinkMode != ExternalLinkNavigationPolicy.OpenInWebView)
+					{
+						return true;
+					}
 				}
 			}
 

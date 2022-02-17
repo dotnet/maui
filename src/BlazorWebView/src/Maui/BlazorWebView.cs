@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using System;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 
@@ -21,12 +22,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		public RootComponentsCollection RootComponents { get; }
 
-		/// <summary>
-		/// Specify whether links should be opened in the external
-		/// system default browser, or within the webview.
-		/// </summary>
-		/// <value>Defaults to opening links in the system default browser.</value>
-		public ExternalLinkMode ExternalLinkMode { get; set; } = ExternalLinkMode.OpenInExternalBrowser;
+		/// <inheritdoc/>
+		public Func<ExternalLinkNavigationInfo, ExternalLinkNavigationPolicy>? OnExternalNavigationStarting { get; set; } 
 
 		/// <inheritdoc/>
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
-			[nameof(IBlazorWebView.ExternalLinkMode)] = MapExternalLinkMode,
+			[nameof(IBlazorWebView.OnExternalNavigationStarting)] = MapOnExternalNavigationStarting,
 		};
 
 		public BlazorWebViewHandler() : base(BlazorWebViewMapper)
@@ -42,17 +43,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #endif
 		}
 
-		public static void MapExternalLinkMode(BlazorWebViewHandler handler, IBlazorWebView webView)
+		public static void MapOnExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
-			handler.ExternalLinkMode = webView.ExternalLinkMode;
+			handler.OnExternalNavigationStarting = webView.OnExternalNavigationStarting;
 			handler.StartWebViewCoreIfPossible();
 #endif
 		}
 
 #if !NETSTANDARD
 		private string? HostPage { get; set; }
-		internal ExternalLinkMode ExternalLinkMode { get; private set; }
+		internal Func<ExternalLinkNavigationInfo, ExternalLinkNavigationPolicy>? OnExternalNavigationStarting { get; private set; }
 
 		private RootComponentsCollection? _rootComponents;
 		private RootComponentsCollection? RootComponents

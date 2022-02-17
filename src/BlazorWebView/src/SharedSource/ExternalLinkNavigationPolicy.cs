@@ -1,12 +1,12 @@
 ﻿namespace Microsoft.AspNetCore.Components.WebView
 {
 	/// <summary>
-	/// Link handling mode for anchor tags <![CDATA[<a>]]> within a Blazor WebView.
+	/// Link handling policy for anchor tags <![CDATA[<a>]]> within a Blazor WebView.
 	/// 
 	/// `_blank` target links will always open in the default browser
-	/// regardless of this setting.
+	/// regardless of the policy.
 	/// </summary>
-	public enum ExternalLinkMode
+	public enum ExternalLinkNavigationPolicy
 	{
 		/// <summary>
 		/// Opens anchor tags <![CDATA[<a>]]> in the system default browser.
@@ -16,6 +16,11 @@
 		/// <summary>
 		/// Opens anchor tags <![CDATA[<a>]]> in the WebView. This is not recommended.
 		/// </summary>
-		OpenInWebView
+		OpenInWebView,
+
+		/// <summary>
+		/// Cancels the current navigation attempt to an external link.
+		/// </summary>
+		CancelNavigation
 	}
 }
