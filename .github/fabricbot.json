@@ -9,12 +9,6 @@
                 "operator": "and",
                 "operands": [
                     {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "INTERNAL: Debug"
-                        }
-                    },
-                    {
                         "operator": "not",
                         "operands": [
                             {
@@ -117,12 +111,6 @@
             "conditions": {
                 "operator": "and",
                 "operands": [
-                    {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "INTERNAL: Debug"
-                        }
-                    },
                     {
                         "name": "isAction",
                         "parameters": {
@@ -284,12 +272,6 @@
             ],
             "searchTerms": [
                 {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "INTERNAL: Debug"
-                    }
-                },
-                {
                     "name": "isClosed",
                     "parameters": {}
                 },
@@ -329,12 +311,6 @@
             "conditions": {
                 "operator": "and",
                 "operands": [
-                    {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "INTERNAL: Debug"
-                        }
-                    },
                     {
                         "name": "isAction",
                         "parameters": {
@@ -413,12 +389,6 @@
                 "operator": "and",
                 "operands": [
                     {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "INTERNAL: Debug"
-                        }
-                    },
-                    {
                         "operator": "not",
                         "operands": [
                             {
@@ -462,12 +432,6 @@
             "conditions": {
                 "operator": "and",
                 "operands": [
-                    {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "INTERNAL: Debug"
-                        }
-                    },
                     {
                         "name": "hasLabel",
                         "parameters": {
@@ -646,12 +610,6 @@
             ],
             "searchTerms": [
                 {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "INTERNAL: Debug"
-                    }
-                },
-            {
                     "name": "isIssue",
                     "parameters": {}
                 },
@@ -842,12 +800,6 @@
             ],
             "searchTerms": [
                 {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "INTERNAL: Debug"
-                    }
-                },
-                {
                     "name": "isIssue",
                     "parameters": {}
                 },
@@ -947,12 +899,6 @@
                 "operator": "and",
                 "operands": [
                     {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "INTERNAL: Debug"
-                        }
-                    },
-                    {
                         "name": "addedToMilestone",
                         "parameters": {
                             "milestoneName": "Future"
@@ -985,12 +931,6 @@
             "conditions": {
                 "operator": "and",
                 "operands": [
-                    {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "INTERNAL: Debug"
-                        }
-                    },
                     {
                         "name": "labelAdded",
                         "parameters": {
@@ -1037,12 +977,6 @@
             "conditions": {
                 "operator": "and",
                 "operands": [
-                    {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "INTERNAL: Debug"
-                        }
-                    },
                     {
                         "name": "labelAdded",
                         "parameters": {
