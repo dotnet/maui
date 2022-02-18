@@ -127,12 +127,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return new Size(widthConstraint, heightConstraint);
 		}
 
-		public bool Focus() => false;
-
-		public void Unfocus()
-		{
-		}
-
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => this.Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
 
 		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent as IVisualTreeElement;
