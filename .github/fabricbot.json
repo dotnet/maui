@@ -1462,7 +1462,7 @@
                 }
             ]
         }
-    }
+    },
     {
         "taskType": "trigger",
         "capabilityId": "IssueResponder",
