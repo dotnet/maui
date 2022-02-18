@@ -20,10 +20,10 @@ namespace Microsoft.Maui.Essentials
 	{
 #if __IOS__ || __TVOS__
 		public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
-			=> Implementations.WebAuthenticatorImplementation.OpenUrl(new Uri(url.AbsoluteString));
+			=> WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
 
 		public static bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
-			=> Implementations.WebAuthenticatorImplementation.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
+			=> WebAuthenticator.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
 #endif
 
 #if __IOS__

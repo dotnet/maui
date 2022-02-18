@@ -15,7 +15,7 @@ using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class WebAuthenticatorImplementation : IWebAuthenticator
+	public class WebAuthenticatorImplementation : IWebAuthenticator
 	{
 #if __IOS__
 		[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
@@ -30,17 +30,17 @@ namespace Microsoft.Maui.Essentials.Implementations
 		const string sfAuthenticationErrorDomain = "com.apple.SafariServices.Authentication";
 #endif
 
-		static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
-		static UIViewController currentViewController;
-		static Uri redirectUri;
+		TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
+		UIViewController currentViewController;
+		Uri redirectUri;
 
 #if __IOS__
-		static ASWebAuthenticationSession was;
-		static SFAuthenticationSession sf;
+		ASWebAuthenticationSession was;
+		SFAuthenticationSession sf;
 #endif
 
-		public async Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
-			=> await AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
+		public Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
+			=> AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
@@ -60,10 +60,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 			var scheme = redirectUri.Scheme;
 
 #if __IOS__
-			static void AuthSessionCallback(NSUrl cbUrl, NSError error)
+			void AuthSessionCallback(NSUrl cbUrl, NSError error)
 			{
 				if (error == null)
-					OpenUrl(cbUrl);
+					OpenUrlCallback(cbUrl);
 				else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
 					tcsResponse.TrySetCanceled();
 				else if (error.Domain == sfAuthenticationErrorDomain && error.Code == sfAuthenticationErrorCanceledLogin)
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return await tcsResponse.Task;
 		}
 
-		static void ClearCookies()
+		void ClearCookies()
 		{
 			NSUrlCache.SharedCache.RemoveAllCachedResponses();
 
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 #endif
 		}
 
-		internal static bool OpenUrl(Uri uri)
+		public bool OpenUrlCallback(Uri uri)
 		{
 			// If we aren't waiting on a task, don't handle the url
 			if (tcsResponse?.Task?.IsCompleted ?? true)

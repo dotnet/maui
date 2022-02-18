@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppleSignInAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppleSignInAuthenticator']/Docs" />
-	public static partial class AppleSignInAuthenticator
+	public static class AppleSignInAuthenticator
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppleSignInAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync']/Docs" />
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Options options = null)

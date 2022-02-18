@@ -14,8 +14,16 @@ namespace Microsoft.Maui.Essentials
 		Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl);
 
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions);
+
+#if IOS || MACCATALYST
+		bool OpenUrlCallback(Uri uri);
+#elif MACOS
+		bool OpenUrlCallback(global::Foundation.NSUrl uri);
+#elif ANDROID
+		bool OnResumeCallback(global::Android.Content.Intent intent);
+#endif
 	}
-	
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs" />
 	public static partial class WebAuthenticator
 	{
@@ -26,6 +34,17 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync']/Docs" />
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions);
+
+#if IOS || MACCATALYST
+		internal static bool OpenUrl(Uri uri)
+			=> Current.OpenUrlCallback(uri);
+#elif MACOS
+		internal static bool OpenUrl(global::Foundation.NSUrl uri)
+			=> Current.OpenUrlCallback(uri);
+#elif ANDROID
+		internal static bool OnResume(global::Android.Content.Intent intent)
+			=> Current.OnResumeCallback(intent);
+#endif
 
 #nullable enable
 		static IWebAuthenticator? currentImplementation;

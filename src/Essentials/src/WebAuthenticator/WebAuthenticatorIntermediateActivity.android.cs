@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			else
 			{
 				// otherwise, resume the auth flow and finish this activity
-				WebAuthenticatorImplementation.OnResume(Intent);
+				WebAuthenticator.OnResume(Intent!);
 
 				Finish();
 			}

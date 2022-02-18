@@ -9,9 +9,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
+	public class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
 	{
-		static AuthManager authManager;
+		AuthManager authManager;
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
 		{

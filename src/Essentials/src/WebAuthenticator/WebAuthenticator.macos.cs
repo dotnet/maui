@@ -6,22 +6,25 @@ using Foundation;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class WebAuthenticatorImplementation : IWebAuthenticator
+	public class WebAuthenticatorImplementation : IWebAuthenticator
 	{
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
 		const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
 
-		static readonly CallBackHelper callbackHelper = new CallBackHelper();
+		readonly CallBackHelper callbackHelper = new CallBackHelper();
 
-		static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
-		static Uri redirectUri;
+		TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
+		Uri redirectUri;
 
-		static ASWebAuthenticationSession was;
+		ASWebAuthenticationSession was;
 
-		static WebAuthenticator()
+		WebAuthenticatorImplementation()
 		{
 			callbackHelper.Register();
 		}
+
+		public Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
+			=> AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
@@ -44,7 +47,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				static void AuthSessionCallback(NSUrl cbUrl, NSError error)
 				{
 					if (error == null)
-						OpenUrl(cbUrl);
+						OpenUrlCallback(cbUrl);
 					else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
 						tcsResponse.TrySetCanceled();
 					else
@@ -73,7 +76,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return await tcsResponse.Task;
 		}
 
-		static bool OpenUrl(NSUrl uri)
+		public bool OpenUrlCallback(NSUrl uri)
 		{
 			// If we aren't waiting on a task, don't handle the url
 			if (tcsResponse?.Task?.IsCompleted ?? true)
@@ -122,7 +125,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			{
 				var url = evt.ParamDescriptorForKeyword(DirectObject).StringValue;
 				var uri = new Uri(url);
-				OpenUrl(WebUtils.GetNativeUrl(uri));
+				OpenUrlCallback(WebUtils.GetNativeUrl(uri));
 			}
 
 			static uint GetDescriptor(string s) =>
