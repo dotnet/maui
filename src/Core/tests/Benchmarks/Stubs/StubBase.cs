@@ -129,11 +129,5 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			return new Size(widthConstraint, heightConstraint);
 		}
-
-		public bool Focus() => false;
-
-		public void Unfocus()
-		{
-		}
 	}
 }

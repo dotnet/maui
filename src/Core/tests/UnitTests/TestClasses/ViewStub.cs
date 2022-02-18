@@ -96,12 +96,6 @@ namespace Microsoft.Maui.UnitTests
 		public void Unfocus() { }
 
 		public Size Measure(double widthConstraint, double heightConstraint) =>
-			Size.Zero; 
-		
-		public bool Focus() => false;
-
-		public void Unfocus()
-		{
-		}
+			Size.Zero;
 	}
 }
