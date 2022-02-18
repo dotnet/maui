@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class SearchBarTests
 	{
 		AutoSuggestBox GetPlatformControl(SearchBarHandler handler) =>
-			handler.NativeView;
+			handler.PlatformView;
 
 		Task<string> GetPlatformText(SearchBarHandler handler)
 		{

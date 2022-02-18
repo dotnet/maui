@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class EditorTests
 	{
 		TextBox GetPlatformControl(EditorHandler handler) =>
-			handler.NativeView;
+			handler.PlatformView;
 
 		Task<string> GetPlatformText(EditorHandler handler)
 		{
