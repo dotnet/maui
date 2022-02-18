@@ -18,11 +18,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 	public class WebAuthenticatorImplementation : IWebAuthenticator
 	{
 #if __IOS__
-		[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Required for iOS Export")]
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Required for iOS Export")]
-		static extern void void_objc_msgSend_IntPtr(IntPtr receiver, IntPtr selector, IntPtr arg1);
-
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
 		const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
 
@@ -82,7 +77,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
 				{
 					var ctx = new ContextProvider(Platform.GetCurrentWindow());
-					void_objc_msgSend_IntPtr(was.Handle, ObjCRuntime.Selector.GetHandle("setPresentationContextProvider:"), ctx.Handle);
+					was.PresentationContextProvider = ctx;
 					was.PrefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession;
 				}
 				else if (prefersEphemeralWebBrowserSession)
@@ -196,13 +191,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 				DidFinishHandler?.Invoke(controller);
 		}
 
-		[ObjCRuntime.Adopts("ASWebAuthenticationPresentationContextProviding")]
-		class ContextProvider : NSObject
+		class ContextProvider : NSObject, IASWebAuthenticationPresentationContextProviding
 		{
 			public ContextProvider(UIWindow window) =>
 				Window = window;
 
-			public UIWindow Window { get; private set; }
+			public readonly UIWindow Window;
 
 			[Export("presentationAnchorForWebAuthenticationSession:")]
 			public UIWindow GetPresentationAnchor(ASWebAuthenticationSession session)
