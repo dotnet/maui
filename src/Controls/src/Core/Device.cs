@@ -61,8 +61,7 @@ namespace Microsoft.Maui.Controls
 		public static FlowDirection FlowDirection { get; internal set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='PlatformServices']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IPlatformServices PlatformServices
+		internal static IPlatformServices PlatformServices
 		{
 			get
 			{

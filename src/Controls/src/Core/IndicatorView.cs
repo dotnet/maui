@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (IndicatorTemplate == null)
-				return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
+				return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
 			else
 				return base.OnMeasure(widthConstraint, heightConstraint);
 		}

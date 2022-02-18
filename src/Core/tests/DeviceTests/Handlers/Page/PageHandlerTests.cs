@@ -22,9 +22,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(page);
 
-				var nativeView = GetNativePageContent(handler);
+				var platformView = GetNativePageContent(handler);
 
-				Assert.Equal(slider.Handler.NativeView, nativeView);
+				Assert.Equal(slider.Handler.PlatformView, platformView);
 			});
 		}
 
@@ -43,9 +43,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				page.Content = slider;
 
-				var nativeView = GetNativePageContent(handler);
+				var platformView = GetNativePageContent(handler);
 
-				Assert.Equal(slider.Handler.NativeView, nativeView);
+				Assert.Equal(slider.Handler.PlatformView, platformView);
 			});
 		}
 	}

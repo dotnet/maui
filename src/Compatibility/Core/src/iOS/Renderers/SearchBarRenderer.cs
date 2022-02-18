@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_textField == null)
 				return;
 
-			_textField.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			_textField.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		[PortHandler]
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_textField == null)
 				return;
 
-			_textField.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
+			_textField.VerticalAlignment = Element.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		public virtual void UpdateCancelButton()
@@ -440,7 +440,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateSearchBarStyle()
 		{
-			Control.SearchBarStyle = Element.OnThisPlatform().GetSearchBarStyle().ToNativeSearchBarStyle();
+			Control.SearchBarStyle = Element.OnThisPlatform().GetSearchBarStyle().ToPlatformSearchBarStyle();
 		}
 	}
 }

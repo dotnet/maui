@@ -14,6 +14,7 @@ using Android.OS;
 using Android.Views;
 using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {

@@ -7,76 +7,77 @@ namespace Microsoft.Maui.Handlers
 	{
 		static UIColor? DefaultTextColor;
 
-		protected override MauiTimePicker CreateNativeView()
+		protected override MauiTimePicker CreatePlatformView()
 		{
 			return new MauiTimePicker(() =>
 			{
 				SetVirtualViewTime();
-				NativeView?.ResignFirstResponder();
+				PlatformView?.ResignFirstResponder();
 			});
 		}
 
-		protected override void ConnectHandler(MauiTimePicker nativeView)
+		protected override void ConnectHandler(MauiTimePicker platformView)
 		{
-			base.ConnectHandler(nativeView);
-			SetupDefaults(nativeView);
+			base.ConnectHandler(platformView);
+      
+			SetupDefaults(platformView);
 
-			if (nativeView != null)
+			if (platformView != null)
 			{
-				nativeView.EditingDidBegin += OnStarted;
-				nativeView.EditingDidEnd += OnEnded;
-				nativeView.ValueChanged += OnValueChanged;
-				nativeView.DateSelected += OnDateSelected;	
+				platformView.EditingDidBegin += OnStarted;
+				platformView.EditingDidEnd += OnEnded;
+				platformView.ValueChanged += OnValueChanged;
+				platformView.DateSelected += OnDateSelected;	
 			}
 		}
 
-		protected override void DisconnectHandler(MauiTimePicker nativeView)
+		protected override void DisconnectHandler(MauiTimePicker platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			if (nativeView != null)
+			if (platformView != null)
 			{
-				nativeView.RemoveFromSuperview();
+				platformView.RemoveFromSuperview();
 
-				nativeView.EditingDidBegin -= OnStarted;
-				nativeView.EditingDidEnd -= OnEnded;
-				nativeView.ValueChanged -= OnValueChanged;
-				nativeView.DateSelected -= OnDateSelected;
+				platformView.EditingDidBegin -= OnStarted;
+				platformView.EditingDidEnd -= OnEnded;
+				platformView.ValueChanged -= OnValueChanged;
+				platformView.DateSelected -= OnDateSelected;
 
-				nativeView.Dispose();
+				platformView.Dispose();
 			}
 		}
 
-		void SetupDefaults(MauiTimePicker nativeView)
+		void SetupDefaults(MauiTimePicker platformView)
 		{
-			DefaultTextColor = nativeView.TextColor;
+			DefaultTextColor = platformView.TextColor;
 		}
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateFormat(timePicker, handler.NativeView?.Picker);
+			handler.PlatformView?.UpdateFormat(timePicker, handler.NativeView?.Picker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTime(timePicker, handler.NativeView?.Picker);
+			handler.PlatformView?.UpdateTime(timePicker, handler.NativeView?.Picker);
 		}
 
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(timePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
 		}
 
 		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(timePicker, fontManager);
+			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
 		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTextColor(timePicker, DefaultTextColor);
+			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColor);
 		}
 
 		public static void MapFlowDirection(TimePickerHandler handler, ITimePicker timePicker)
@@ -87,12 +88,14 @@ namespace Microsoft.Maui.Handlers
 
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)
@@ -107,10 +110,10 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualViewTime()
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.Time = NativeView.Date.ToDateTime() - new DateTime(1, 1, 1);
+			VirtualView.Time = PlatformView.Date.ToDateTime() - new DateTime(1, 1, 1);
 		}
 	}
 }

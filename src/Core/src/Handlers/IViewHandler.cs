@@ -12,6 +12,6 @@ namespace Microsoft.Maui
 
 		Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
-		void NativeArrange(Rectangle frame);
+		void PlatformArrange(Rectangle frame);
 	}
 }

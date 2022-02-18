@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 			// Default value of color documented to be black in iOS docs
 
 			var textColor = textStyle.TextColor;
-			textField.TextColor = textColor.ToNative(defaultTextColor ?? ColorExtensions.LabelColor);
+			textField.TextColor = textColor.ToPlatform(defaultTextColor ?? ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
@@ -43,12 +43,12 @@ namespace Microsoft.Maui.Platform
 			else
 				isLtr = false;
 
-			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(isLtr);
+			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatform(isLtr);
 		}
 
 		public static void UpdateVerticalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
-			textField.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNative();
+			textField.VerticalAlignment = textAlignment.VerticalTextAlignment.ToPlatform();
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Platform
 
 			textField.AttributedPlaceholder = foregroundColor == null
  				? new NSAttributedString(placeholder)
- 				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToNative());
+ 				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToPlatform());
 
 			textField.AttributedPlaceholder.WithCharacterSpacing(entry.CharacterSpacing);
 		}
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this UITextField textField, IEntry entry)
 		{
-			textField.ReturnKeyType = entry.ReturnType.ToNative();
+			textField.ReturnKeyType = entry.ReturnType.ToPlatform();
 		}
 
 		public static void UpdateCharacterSpacing(this UITextField textField, ITextStyle textStyle)

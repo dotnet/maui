@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Handlers
 		UIColor? _defaultTextColor;
 		UIDatePicker? _picker;
 
-		protected override MauiDatePicker CreateNativeView()
+		protected override MauiDatePicker CreatePlatformView()
 		{
-			MauiDatePicker nativeDatePicker = new MauiDatePicker();
+			MauiDatePicker platformDatePicker = new MauiDatePicker();
 
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 
-			if (NativeVersion.IsAtLeast(14))
+			if (PlatformVersion.IsAtLeast(14))
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
@@ -27,28 +27,28 @@ namespace Microsoft.Maui.Handlers
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
 			{
 				SetVirtualViewDate();
-				nativeDatePicker.ResignFirstResponder();
+				platformDatePicker.ResignFirstResponder();
 			});
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
 
-			nativeDatePicker.InputView = _picker;
-			nativeDatePicker.InputAccessoryView = toolbar;
+			platformDatePicker.InputView = _picker;
+			platformDatePicker.InputAccessoryView = toolbar;
 
-			nativeDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-			nativeDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 
-			nativeDatePicker.InputAssistantItem.LeadingBarButtonGroups = null;
-			nativeDatePicker.InputAssistantItem.TrailingBarButtonGroups = null;
+			platformDatePicker.InputAssistantItem.LeadingBarButtonGroups = null;
+			platformDatePicker.InputAssistantItem.TrailingBarButtonGroups = null;
 
-			nativeDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
+			platformDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
-			return nativeDatePicker;
+			return platformDatePicker;
 		}
 
 		internal UIDatePicker? DatePickerDialog { get { return _picker; } }
 
-		protected override void ConnectHandler(MauiDatePicker nativeView)
+		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			nativeView.EditingDidBegin += OnStarted;
 			nativeView.EditingDidEnd += OnEnded;
@@ -60,11 +60,12 @@ namespace Microsoft.Maui.Handlers
 				_picker.ValueChanged += OnValueChanged;
 			}
 
-			base.ConnectHandler(nativeView);
-			SetupDefaults(nativeView);
+			SetupDefaults(platformView);
+
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiDatePicker nativeView)
+		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			nativeView.EditingDidBegin -= OnStarted;
 			nativeView.EditingDidEnd -= OnEnded;
@@ -76,49 +77,49 @@ namespace Microsoft.Maui.Handlers
 				_picker.ValueChanged -= OnValueChanged;
 			}
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(MauiDatePicker nativeView)
+		void SetupDefaults(MauiDatePicker platformView)
 		{
-			_defaultTextColor = nativeView.TextColor;
+			_defaultTextColor = platformView.TextColor;
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFormat(datePicker, handler._picker);
+			handler.PlatformView?.UpdateFormat(datePicker, handler._picker);
 		}
 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker, handler._picker);
+			handler.PlatformView?.UpdateDate(datePicker, handler._picker);
 		}
 
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMinimumDate(datePicker, handler._picker);
+			handler.PlatformView?.UpdateMinimumDate(datePicker, handler._picker);
 		}
 
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMaximumDate(datePicker, handler._picker);
+			handler.PlatformView?.UpdateMaximumDate(datePicker, handler._picker);
 		}
 
 		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(datePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
 		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
 		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColor);
+			handler.PlatformView?.UpdateTextColor(datePicker, handler._defaultTextColor);
 		}
     
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
@@ -130,11 +131,15 @@ namespace Microsoft.Maui.Handlers
 		void OnValueChanged(object? sender, EventArgs? e)
 		{
 			SetVirtualViewDate();
+
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
 		}
 
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)

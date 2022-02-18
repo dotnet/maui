@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		WeakReference<Context> _context;
 		readonly IMauiContext _mauiContext;
 		IView MauiView => View;
-		public AView NativeView { get; private set; }
+		public AView PlatformView { get; private set; }
 
 		// These are used by layout calls made by android if the layouts
 		// are invalidated. This ensures that the layout is performed
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Context context;
 
-			if (Handler == null || !(_context.TryGetTarget(out context)) || !NativeView.IsAlive())
+			if (Handler == null || !(_context.TryGetTarget(out context)) || !PlatformView.IsAlive())
 				return;
 
 			if (View == null)
@@ -86,9 +86,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			// NativeView.Measure(widthMeasureSpec, heightMeasureSpec);
+			// PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
 
-			var layoutParams = NativeView.LayoutParameters;
+			var layoutParams = PlatformView.LayoutParameters;
 			//if (double.IsInfinity(height))
 			//	height = request.Height;
 
@@ -111,20 +111,20 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 				heightMeasureSpec = MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
 
-			NativeView.LayoutParameters = layoutParams;
-			//var c = NativeView.Context;
+			PlatformView.LayoutParameters = layoutParams;
+			//var c = PlatformView.Context;
 			//var l = (int)c.ToPixels(x);
 			//var t = (int)c.ToPixels(y);
 			//var r = (int)c.ToPixels(width) + l;
 			//var b = (int)c.ToPixels(height) + t;
 
-			//NativeView.Layout(l, t, r, b);
-			NativeView.Measure(widthMeasureSpec, heightMeasureSpec);
+			//PlatformView.Layout(l, t, r, b);
+			PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
 		}
 
 		public void LayoutView(int l, int t, int r, int b)
 		{
-			NativeView.Layout(l, t, r, b);
+			PlatformView.Layout(l, t, r, b);
 
 			//if (width == -1)
 			//	width = double.PositiveInfinity;
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			//Context context;
 
-			//if (Handler == null || !(_context.TryGetTarget(out context)) || !NativeView.IsAlive())
+			//if (Handler == null || !(_context.TryGetTarget(out context)) || !PlatformView.IsAlive())
 			//	return;
 
 			//if (View == null)
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			//var request = MauiView.Measure(width, height);
 
-			//var layoutParams = NativeView.LayoutParameters;
+			//var layoutParams = PlatformView.LayoutParameters;
 			//if (double.IsInfinity(height))
 			//	height = request.Height;
 
@@ -172,14 +172,14 @@ namespace Microsoft.Maui.Controls.Platform
 			//if (layoutParams.Height != LP.MatchParent)
 			//	layoutParams.Height = (int)context.ToPixels(height);
 
-			//NativeView.LayoutParameters = layoutParams;
-			//var c = NativeView.Context;
+			//PlatformView.LayoutParameters = layoutParams;
+			//var c = PlatformView.Context;
 			//var l = (int)c.ToPixels(x);
 			//var t = (int)c.ToPixels(y);
 			//var r = (int)c.ToPixels(width) + l;
 			//var b = (int)c.ToPixels(height) + t;
 
-			//NativeView.Layout(l, t, r, b);
+			//PlatformView.Layout(l, t, r, b);
 		}
 
 		public virtual void OnViewSet(View view)
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (View != null)
 			{
-				NativeView.RemoveFromParent();
+				PlatformView.RemoveFromParent();
 				View.Handler = null;
 			}
 
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!(_context.TryGetTarget(out context)))
 					return;
 
-				NativeView = view.ToPlatform(_mauiContext);
+				PlatformView = view.ToPlatform(_mauiContext);
 				Handler = view.Handler;
 
 				//if (View is VisualElement ve)
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				NativeView = null;
+				PlatformView = null;
 			}
 		}
 

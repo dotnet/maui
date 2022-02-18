@@ -5,56 +5,56 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageButtonHandler : ViewHandler<IImageButton, UIButton>
 	{
-		protected override UIButton CreateNativeView()
+		protected override UIButton CreatePlatformView()
 		{
-			var nativeView = new UIButton(UIButtonType.System)
+			var platformView = new UIButton(UIButtonType.System)
 			{
 				ClipsToBounds = true
 			};
 
-			return nativeView;
+			return platformView;
 		}
 
 		void OnSetImageSource(UIImage? obj)
 		{
-			NativeView.SetImage(obj?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
-			NativeView.HorizontalAlignment = UIControlContentHorizontalAlignment.Fill;
-			NativeView.VerticalAlignment = UIControlContentVerticalAlignment.Fill;
+			PlatformView.SetImage(obj?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
+			PlatformView.HorizontalAlignment = UIControlContentHorizontalAlignment.Fill;
+			PlatformView.VerticalAlignment = UIControlContentVerticalAlignment.Fill;
 		}
 
-		protected override void ConnectHandler(UIButton nativeView)
+		protected override void ConnectHandler(UIButton platformView)
 		{
-			nativeView.TouchUpInside += OnButtonTouchUpInside;
-			nativeView.TouchUpOutside += OnButtonTouchUpOutside;
-			nativeView.TouchDown += OnButtonTouchDown;
+			platformView.TouchUpInside += OnButtonTouchUpInside;
+			platformView.TouchUpOutside += OnButtonTouchUpOutside;
+			platformView.TouchDown += OnButtonTouchDown;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(UIButton nativeView)
+		protected override void DisconnectHandler(UIButton platformView)
 		{
-			nativeView.TouchUpInside -= OnButtonTouchUpInside;
-			nativeView.TouchUpOutside -= OnButtonTouchUpOutside;
-			nativeView.TouchDown -= OnButtonTouchDown;
+			platformView.TouchUpInside -= OnButtonTouchUpInside;
+			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
+			platformView.TouchDown -= OnButtonTouchDown;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
 			SourceLoader.Reset();
 		}
 
 		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.NativeView as UIButton)?.UpdateStrokeColor(buttonStroke);
+			(handler.PlatformView as UIButton)?.UpdateStrokeColor(buttonStroke);
 		}
 
 		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.NativeView as UIButton)?.UpdateStrokeThickness(buttonStroke);
+			(handler.PlatformView as UIButton)?.UpdateStrokeThickness(buttonStroke);
 		}
 
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.NativeView as UIButton)?.UpdateCornerRadius(buttonStroke);
+			(handler.PlatformView as UIButton)?.UpdateCornerRadius(buttonStroke);
 		}
 
 		void OnButtonTouchUpInside(object? sender, EventArgs e)

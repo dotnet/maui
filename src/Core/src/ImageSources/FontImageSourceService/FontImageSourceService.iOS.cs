@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 		internal UIImage RenderImage(IFontImageSource imageSource, float scale)
 		{
 			var font = FontManager.GetFont(imageSource.Font);
-			var color = (imageSource.Color ?? Colors.White).ToNative();
+			var color = (imageSource.Color ?? Colors.White).ToPlatform();
 			var glyph = (NSString)imageSource.Glyph;
 
 			var attString = new NSAttributedString(glyph, font, color);
