@@ -12,7 +12,7 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IShellContentInsetObserver, IDisconnectable
+	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IShellContentInsetObserver, Controls.Platform.Compatibility.IDisconnectable
 	{
 		bool _appeared;
 		bool _disposed;
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			NativeView?.Window?.EndEditing(true);
 		}
 
-		void IDisconnectable.Disconnect()
+		void Controls.Platform.Compatibility.IDisconnectable.Disconnect()
 		{
 			if (_shellSection != null)
 			{
@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (disposing)
 			{
-				(this as IDisconnectable).Disconnect();
+				(this as Controls.Platform.Compatibility.IDisconnectable).Disconnect();
 
 				_packager?.Dispose();
 				_tracker?.Dispose();
@@ -430,6 +430,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			NativeView?.SetNeedsLayout();
 		}
 
+		[PortHandler]
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
@@ -487,6 +488,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				NavigationItem.Title = Page.Title;
 		}
 
+		[PortHandler]
 		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
 		{
 			while (view != null)

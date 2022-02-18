@@ -1,9 +1,9 @@
 using Tizen.Sensor;
 using TizenAccelerometer = Tizen.Sensor.Accelerometer;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Accelerometer
+	public partial class AccelerometerImplementation
 	{
 		internal static TizenAccelerometer DefaultSensor =>
 			(TizenAccelerometer)Platform.GetDefaultSensor(SensorType.Accelerometer);
@@ -11,20 +11,20 @@ namespace Microsoft.Maui.Essentials
 		internal static bool IsSupported =>
 			TizenAccelerometer.IsSupported;
 
-		static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			DefaultSensor.Interval = sensorSpeed.ToPlatform();
 			DefaultSensor.DataUpdated += DataUpdated;
 			DefaultSensor.Start();
 		}
 
-		static void PlatformStop()
+		void PlatformStop()
 		{
 			DefaultSensor.DataUpdated -= DataUpdated;
 			DefaultSensor.Stop();
 		}
 
-		static void DataUpdated(object sender, AccelerometerDataUpdatedEventArgs e)
+		void DataUpdated(object sender, AccelerometerDataUpdatedEventArgs e)
 		{
 			OnChanged(new AccelerometerData(e.X, e.Y, e.Z));
 		}

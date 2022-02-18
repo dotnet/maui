@@ -308,7 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTextColor()
 		{
 			Color color = Element.TextColor;
-			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? color.ToNative()) : color.ToNative();
+			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? color.ToPlatform()) : color.ToPlatform();
 		}
 	}
 }

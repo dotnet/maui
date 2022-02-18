@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, state.Context.GetOptionalNativeWindow(), maybeOptions: options);
+			SetupInit(state.Context, state.Context.GetOptionalPlatformWindow(), maybeOptions: options);
 		}
 
 		static void SetupInit(
@@ -50,29 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			KnownColor.SetAccent(accent.ToColor());
 
-			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(mauiContext.GetFlowDirection());
-
-			//TODO WINUI3
-			//switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
-			//{
-			//	case "Windows.Desktop":
-			//		if (Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
-			//			Windows.UI.ViewManagement.UserInteractionMode.Touch)
-			//			Device.SetIdiom(TargetIdiom.Tablet);
-			//		else
-			//			Device.SetIdiom(TargetIdiom.Desktop);
-			//		break;
-			//	case "Windows.Mobile":
-			//		Device.SetIdiom(TargetIdiom.Phone);
-			//		break;
-			//	case "Windows.Xbox":
-			//		Device.SetIdiom(TargetIdiom.TV);
-			//		break;
-			//	default:
-			//		Device.SetIdiom(TargetIdiom.Unsupported);
-			//		break;
-			//}
 
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
@@ -81,7 +59,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var platformServices = new WindowsPlatformServices();
 
 			Device.PlatformServices = platformServices;
-			Device.PlatformInvalidator = platformServices;
 
 			if (mainWindow != null)
 			{

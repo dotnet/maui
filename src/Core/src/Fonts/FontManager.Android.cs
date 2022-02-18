@@ -139,7 +139,7 @@ namespace Microsoft.Maui
 				}
 			}
 
-			if (NativeVersion.IsAtLeast(28))
+			if (PlatformVersion.IsAtLeast(28))
 				result = Typeface.Create(result, (int)weight, italic);
 			else
 				result = Typeface.Create(result, style);

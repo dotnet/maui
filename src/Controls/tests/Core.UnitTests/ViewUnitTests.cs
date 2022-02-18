@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using NSubstitute;
@@ -13,10 +14,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ViewUnitTests : BaseTestFixture
 	{
+		MockDeviceInfo mockDeviceInfo;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, widthConstraint, heightConstraint) =>
 			{
 				if (widthConstraint < 30)
@@ -107,11 +111,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = new View { IsPlatformEnabled = true };
 
-			Assert.True(view.IsNativeStateConsistent);
+			Assert.True(view.IsPlatformStateConsistent);
 
-			view.IsNativeStateConsistent = false;
+			view.IsPlatformStateConsistent = false;
 
-			Assert.False(view.IsNativeStateConsistent);
+			Assert.False(view.IsPlatformStateConsistent);
 
 			bool sizeChanged = false;
 			view.MeasureInvalidated += (sender, args) =>
@@ -119,12 +123,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				sizeChanged = true;
 			};
 
-			view.IsNativeStateConsistent = true;
+			view.IsPlatformStateConsistent = true;
 
 			Assert.True(sizeChanged);
 
 			sizeChanged = false;
-			view.IsNativeStateConsistent = true;
+			view.IsPlatformStateConsistent = true;
 
 			Assert.False(sizeChanged);
 		}
@@ -161,14 +165,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestNativeSizeChanged()
+		public void TestPlatformSizeChanged()
 		{
 			var view = new View();
 
 			bool sizeChanged = false;
 			view.MeasureInvalidated += (sender, args) => sizeChanged = true;
 
-			((IVisualElementController)view).NativeSizeChanged();
+			((IVisualElementController)view).PlatformSizeChanged();
 
 			Assert.True(sizeChanged);
 		}
@@ -277,9 +281,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestOnIdiomDefault()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			Assert.That((int)(new OnIdiom<int> { Tablet = 12, Default = 42 }), Is.EqualTo(12));
-			Device.Idiom = TargetIdiom.Watch;
+			mockDeviceInfo.Idiom = DeviceIdiom.Watch;
 			Assert.That((int)(new OnIdiom<int> { Tablet = 12, Default = 42 }), Is.EqualTo(42));
 		}
 

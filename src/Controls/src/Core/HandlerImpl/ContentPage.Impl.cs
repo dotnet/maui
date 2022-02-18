@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
-			Handler?.NativeArrange(Frame);
+			Handler?.PlatformArrange(Frame);
 			return Frame.Size;
 		}
 
@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformArrange(Rectangle bounds)
 		{
+			Frame = bounds;
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}

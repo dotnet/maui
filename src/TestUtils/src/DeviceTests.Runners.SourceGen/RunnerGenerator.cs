@@ -149,7 +149,7 @@ namespace " + RootNamespace + @"
 {
 	[global::Android.App.Activity(
 		Name = """ + ApplicationId + "." + headlessActivityName + @""",
-		Theme = ""@style/Theme.MaterialComponents"",
+		Theme = ""@style/Maui.MainTheme.NoActionBar"",
 		ConfigurationChanges =
 			global::Android.Content.PM.ConfigChanges.ScreenSize |
 			global::Android.Content.PM.ConfigChanges.Orientation |

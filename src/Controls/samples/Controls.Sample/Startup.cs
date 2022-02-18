@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample
 	{
 		static bool UseMauiGraphicsSkia = false;
 
-		enum PageType { Main, Blazor, Shell, Template, FlyoutPage }
+		enum PageType { Main, Blazor, Shell, Template, FlyoutPage, TabbedPage }
 		readonly static PageType _pageType = PageType.Main;
 
 		public static MauiApp CreateMauiApp()
@@ -117,6 +117,7 @@ namespace Maui.Controls.Sample
 					PageType.Shell => typeof(AppShell),
 					PageType.Main => typeof(CustomNavigationPage),
 					PageType.FlyoutPage => typeof(CustomFlyoutPage),
+					PageType.TabbedPage => typeof(Pages.TabbedPageGallery),
 					PageType.Blazor =>
 #if NET6_0_OR_GREATER
 						typeof(BlazorPage),
@@ -143,7 +144,6 @@ namespace Maui.Controls.Sample
 				.ConfigureEssentials(essentials =>
 				{
 					essentials
-						.UseVersionTracking()
 						.UseMapServiceToken("YOUR-KEY-HERE")
 						.AddAppAction("test_action", "Test App Action")
 						.AddAppAction("second_action", "Second App Action")
@@ -151,6 +151,10 @@ namespace Maui.Controls.Sample
 						{
 							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
 						});
+
+					// TODO: Unpackaged apps need to know the package ID and local data locations
+					if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+						essentials.UseVersionTracking();
 				})
 				.ConfigureLifecycleEvents(events =>
 				{

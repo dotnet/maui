@@ -5,7 +5,7 @@
 //       Stephane Delcroix <stephane@mi8.be>
 //
 // Copyright (c) 2013 Mobile Inception
-// Copyright (c) 2014 Microsoft.Maui.Controls, Inc.
+// Copyright (c) 2014 Xamarin, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -227,11 +227,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
-			var nativeValueConverterService = DependencyService.Get<INativeValueConverterService>();
+			var platformValueConverterService = DependencyService.Get<INativeValueConverterService>();
 
-			object nativeValue = null;
-			if (nativeValueConverterService != null && nativeValueConverterService.ConvertTo(value, toType, out nativeValue))
-				return nativeValue;
+			object platformValue = null;
+			if (platformValueConverterService != null && platformValueConverterService.ConvertTo(value, toType, out platformValue))
+				return platformValue;
 
 			return value;
 		}

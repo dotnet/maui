@@ -20,6 +20,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer instead")]
 	public class NavigationRenderer : UINavigationController, IVisualElementRenderer, IEffectControlProvider
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
@@ -1488,7 +1489,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			return Platform.GetRenderer(Current)?.ViewController ??
-				(Current.Handler as INativeViewHandler)?.ViewController;
+				(Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>

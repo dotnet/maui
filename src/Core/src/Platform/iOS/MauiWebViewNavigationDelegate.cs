@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 		public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			if (_handler != null)
-				_handler.NativeView.UpdateCanGoBackForward(_handler.VirtualView);
+				_handler.PlatformView.UpdateCanGoBackForward(_handler.VirtualView);
 
 			base.DidFinishNavigation(webView, navigation);
 		}

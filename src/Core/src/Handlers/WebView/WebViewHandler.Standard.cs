@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapSource(IViewHandler handler, IWebView webView) { }
 
@@ -12,5 +13,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapGoForward(IViewHandler handler, IWebView webView, object? arg) { }
 		public static void MapReload(IViewHandler handler, IWebView webView, object? arg) { }
 		public static void MapEval(IViewHandler handler, IWebView webView, object? arg) { }
+		public static void MapEvaluateJavaScriptAsync(IViewHandler handler, IWebView webView, object? arg) { }
 	}
 }

@@ -4,27 +4,27 @@ namespace Microsoft.Maui.Platform
 {
 	public static class StrokeExtensions
 	{
-		public static void UpdateStrokeShape(this ContentPanel nativeView, IBorderStroke border)
+		public static void UpdateStrokeShape(this ContentPanel platformView, IBorderStroke border)
 		{
 			var shape = border.Shape;
 
 			if (shape == null)
 				return;
 
-			nativeView.UpdateBorderShape(shape);
+			platformView.UpdateBorderShape(shape);
 		}
 
-		public static void UpdateStroke(this ContentPanel nativeView, IBorderStroke border)
+		public static void UpdateStroke(this ContentPanel platformView, IBorderStroke border)
 		{
 			var stroke = border.Stroke;
 
 			if (stroke == null)
 				return;
 
-			nativeView.UpdateStroke(stroke);
+			platformView.UpdateStroke(stroke);
 		}
 
-		public static void UpdateStrokeThickness(this ContentPanel nativeView, IBorderStroke border)
+		public static void UpdateStrokeThickness(this ContentPanel platformView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -32,20 +32,20 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeThickness = border.StrokeThickness;
-			nativeView.UpdateStrokeThickness(strokeThickness);
+			platformView.UpdateStrokeThickness(strokeThickness);
 		}
 
-		public static void UpdateStrokeDashPattern(this ContentPanel nativeView, IBorderStroke border)
+		public static void UpdateStrokeDashPattern(this ContentPanel platformView, IBorderStroke border)
 		{
 			var strokeDashPattern = border.StrokeDashPattern;
 
 			if (strokeDashPattern == null)
 				return;
 
-			nativeView.UpdateStrokeDashPattern(strokeDashPattern);
+			platformView.UpdateStrokeDashPattern(strokeDashPattern);
 		}
 
-		public static void UpdateStrokeDashOffset(this ContentPanel nativeView, IBorderStroke border)
+		public static void UpdateStrokeDashOffset(this ContentPanel platformView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -53,10 +53,10 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeDashOffset = border.StrokeDashOffset;
-			nativeView.UpdateBorderDashOffset(strokeDashOffset);
+			platformView.UpdateBorderDashOffset(strokeDashOffset);
 		}
 
-		public static void UpdateStrokeMiterLimit(this ContentPanel nativeView, IBorderStroke border)
+		public static void UpdateStrokeMiterLimit(this ContentPanel platformView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -64,10 +64,10 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeMiterLimit = border.StrokeMiterLimit;
-			nativeView.UpdateStrokeMiterLimit(strokeMiterLimit);
+			platformView.UpdateStrokeMiterLimit(strokeMiterLimit);
 		}
 
-		public static void UpdateStrokeLineCap(this ContentPanel nativeView, IBorderStroke border) 
+		public static void UpdateStrokeLineCap(this ContentPanel platformView, IBorderStroke border) 
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -75,10 +75,10 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeLineCap = border.StrokeLineCap;
-			nativeView.UpdateStrokeLineCap(strokeLineCap);
+			platformView.UpdateStrokeLineCap(strokeLineCap);
 		}
 
-		public static void UpdateStrokeLineJoin(this ContentPanel nativeView, IBorderStroke border)
+		public static void UpdateStrokeLineJoin(this ContentPanel platformView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeLineJoin = border.StrokeLineJoin;
-			nativeView.UpdateStrokeLineJoin(strokeLineJoin);
+			platformView.UpdateStrokeLineJoin(strokeLineJoin);
 		}
 	}
 }

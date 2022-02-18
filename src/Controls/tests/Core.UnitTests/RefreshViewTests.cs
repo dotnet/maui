@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
-			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
+			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}
 
 		[Test]

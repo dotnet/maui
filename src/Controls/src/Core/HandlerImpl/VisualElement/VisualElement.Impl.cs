@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
-			Handler?.NativeArrange(Frame);
+			Handler?.PlatformArrange(Frame);
 			return Frame.Size;
 		}
 
@@ -148,6 +148,12 @@ namespace Microsoft.Maui.Controls
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 			return DesiredSize;
+		}
+
+		bool IView.IsFocused
+		{
+			get => (bool)GetValue(IsFocusedProperty);
+			set => SetValueCore(IsFocusedPropertyKey, value);
 		}
 
 		Maui.FlowDirection IView.FlowDirection
@@ -214,7 +220,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(MinimumWidthRequestProperty))
 				{
-					return Primitives.Dimension.Minimum;
+					return Primitives.Dimension.Unset;
 				}
 
 				// Access once up front to avoid multiple GetValue calls
@@ -230,7 +236,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(MinimumHeightRequestProperty))
 				{
-					return Primitives.Dimension.Minimum;
+					return Primitives.Dimension.Unset;
 				}
 
 				// Access once up front to avoid multiple GetValue calls

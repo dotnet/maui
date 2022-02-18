@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			ButtonBackground = value.ToNative();
+			ButtonBackground = value.ToPlatform();
 			UpdateButtonBackground();
 		}
 
