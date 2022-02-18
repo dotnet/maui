@@ -7,17 +7,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	public class BarometerImplementation : IBarometer
 	{
 		public bool IsSupported
-		{
-			get 
-			{
-			   return DefaultBarometer != null;
-			}
-
-			set
-			{
-				throw ExceptionUtils.NotSupportedOrImplementedException;
-			}
-		}
+			=> DefaultBarometer != null;
 
 		static Sensor DefaultBarometer => Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
 

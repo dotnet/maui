@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Essentials
 {
 	public interface IBarometer
 	{
-		bool IsSupported { get; set; }
+		bool IsSupported { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		bool IsMonitoring { get; set; }

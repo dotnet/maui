@@ -4,17 +4,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	public class BarometerImplementation : IBarometer
 	{
 		public bool IsSupported
-		{
-			get
-			{
-				throw ExceptionUtils.NotSupportedOrImplementedException;
-			}
-
- 			set
-			{
-				throw ExceptionUtils.NotSupportedOrImplementedException;
-			}
-		}
+			=> ExceptionUtils.NotSupportedOrImplementedException;
 
 		public bool IsMonitoring { get; set; }
 

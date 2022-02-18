@@ -7,18 +7,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	public class BarometerImplementation : IBarometer
 	{
 		public bool IsSupported
-		{
-			get 
-			{
-			   return CMAltimeter.IsRelativeAltitudeAvailable;
-			}
-
-			set
-			{
-				throw ExceptionUtils.NotSupportedOrImplementedException;
-			}
-		}
-
+			=> CMAltimeter.IsRelativeAltitudeAvailable;
 
 		static CMAltimeter altitudeManager;
 
