@@ -47,12 +47,6 @@
       <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" />
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
       <_VersionsToReplace Include="MicrosoftMauiGraphicsVersion" />
-      <_VersionsToReplace Include="SystemDiagnosticsDiagnosticSourcePackageVersion" />
-      <_VersionsToReplace Include="SystemDiagnosticsEventLogPackageVersion" />
-      <_VersionsToReplace Include="SystemIOPipelinesPackageVersion" />
-      <_VersionsToReplace Include="SystemRuntimeCompilerServicesUnsafePackageVersion" />
-      <_VersionsToReplace Include="SystemTextEncodingsWebPackageVersion" />
-      <_VersionsToReplace Include="SystemTextJsonPackageVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="MicrosoftMauiGraphicsVersion" />
     </ItemGroup>
