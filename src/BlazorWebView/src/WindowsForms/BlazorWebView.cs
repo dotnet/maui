@@ -198,7 +198,17 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// <returns>Returns a <see cref="IFileProvider"/> for static assets.</returns>
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
-			return new PhysicalFileProvider(contentRootDir);
+			if (Directory.Exists(contentRootDir))
+			{
+				// Typical case after publishing, or if you're copying content to the bin dir in development for some nonstandard reason
+				return new PhysicalFileProvider(contentRootDir);
+			}
+			else
+			{
+				// Typical case in development, as the files come from Microsoft.AspNetCore.Components.WebView.StaticContentProvider
+				// instead and aren't copied to the bin dir
+				return new NullFileProvider();
+			}
 		}
 
 		/// <inheritdoc />
