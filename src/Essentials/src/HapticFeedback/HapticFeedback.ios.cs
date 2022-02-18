@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		static void Click()
+		void Click()
 		{
 			if (Platform.HasOSVersion(10, 0))
 			{
