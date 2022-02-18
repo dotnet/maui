@@ -3,7 +3,6 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
-using Windows.UI.Core;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
@@ -13,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		bool _isLoaded;
 		Deferral? _refreshCompletionDeferral;
 
-		protected override RefreshContainer CreatePlatformView()
+		protected override MauiRefreshContainer CreatePlatformView()
 		{
 			return new MauiRefreshContainer
 			{
@@ -59,31 +58,31 @@ namespace Microsoft.Maui.Handlers
 			if (!VirtualView?.IsRefreshing ?? false)
 				CompleteRefresh();
 			else if (_refreshCompletionDeferral == null)
-				NativeView?.RequestRefresh();
+				PlatformView?.RequestRefresh();
 		}
 
-		void UpdateContent() =>  
-			NativeView.UpdateContent(VirtualView.Content, MauiContext);
+		void UpdateContent() =>
+			PlatformView.UpdateContent(VirtualView.Content, MauiContext);
 
 		void UpdateRefreshColor()
 		{
-			if (VirtualView == null || NativeView?.Visualizer == null)
+			if (VirtualView == null || PlatformView?.Visualizer == null)
 				return;
 
-			NativeView.Visualizer.Foreground = VirtualView.RefreshColor != null	
-				? VirtualView.RefreshColor.ToNative()	
+			PlatformView.Visualizer.Foreground = VirtualView.RefreshColor != null	
+				? VirtualView.RefreshColor.ToPlatform()	
 				: (WBrush)UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 		}
 
 		void UpdateBackground()
 		{
-			if (VirtualView == null || NativeView?.Visualizer == null)
+			if (VirtualView == null || PlatformView?.Visualizer == null)
 				return;
 
 			if (VirtualView.Background != null)
-				NativeView.Visualizer.Background = VirtualView.Background.ToNative();
+				PlatformView.Visualizer.Background = VirtualView.Background.ToPlatform();
 			else
-				NativeView.Visualizer.Background = Colors.White.ToNative();
+				PlatformView.Visualizer.Background = Colors.White.ToPlatform();
 		}
 
 		// Telling the refresh to start before the control has been sized
