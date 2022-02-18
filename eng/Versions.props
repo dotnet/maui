@@ -3,16 +3,16 @@
     <!-- dotnet/installer -->
     <MicrosoftDotnetSdkInternalPackageVersion>6.0.200-rtm.22107.3</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.3</MicrosoftNETCoreAppRefPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.89</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.91</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftiOSSdkPackageVersion>15.2.301-preview.13.5</MicrosoftiOSSdkPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.2.301-preview.13.5</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.1.301-preview.13.5</MicrosoftmacOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.2.301-preview.13.5</MicrosofttvOSSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
+    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.2</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.0.0</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.0.0.30</MicrosoftGraphicsWin2DPackageVersion>
@@ -25,42 +25,42 @@
     <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsWebPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.1</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>6.0.1</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersCompositePackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsFileProvidersCompositePackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>6.0.1</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersCompositePackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.1</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsHostingPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingEventLogPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsLoggingEventLogPackageVersion>
-    <MicrosoftExtensionsLoggingEventSourcePackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsLoggingEventSourcePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>6.0.2-mauipre.1.22102.15</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.1</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingEventLogPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingEventLogPackageVersion>
+    <MicrosoftExtensionsLoggingEventSourcePackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>7.0.0-alpha.1.21524.4</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftJSInteropPackageVersion>6.0.1</MicrosoftJSInteropPackageVersion>
     <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.1</MicrosoftWindowsDesktopAppRuntimewinx64Version>
-    <SystemCodeDomPackageVersion>6.0.2-mauipre.1.22102.15</SystemCodeDomPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.2-mauipre.1.22102.15</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>6.0.2-mauipre.1.22102.15</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>6.0.2-mauipre.1.22102.15</SystemIOPipelinesPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.2-mauipre.1.22102.15</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>6.0.2-mauipre.1.22102.15</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>6.0.2-mauipre.1.22102.15</SystemTextJsonPackageVersion>
+    <SystemCodeDomPackageVersion>7.0.0-alpha.1.21524.4</SystemCodeDomPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>7.0.0-alpha.1.21524.4</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>7.0.0-alpha.1.21524.4</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>6.0.1</SystemIOPipelinesPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>7.0.0-alpha.1.21524.4</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>7.0.0-alpha.1.21524.4</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>6.0.1</SystemTextJsonPackageVersion>
     <!-- Other packages -->
     <MicrosoftMauiGraphicsVersion>6.0.200-preview.13.935</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
