@@ -60,8 +60,6 @@
       <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersEmbeddedPackageVersion" />
       <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersPhysicalPackageVersion" />
       <_VersionsToReplace Include="MicrosoftExtensionsFileSystemGlobbingPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsHostingAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsHostingPackageVersion" />
       <_VersionsToReplace Include="MicrosoftExtensionsLoggingAbstractionsPackageVersion" />
       <_VersionsToReplace Include="MicrosoftExtensionsLoggingConfigurationPackageVersion" />
       <_VersionsToReplace Include="MicrosoftExtensionsLoggingConsolePackageVersion" />
