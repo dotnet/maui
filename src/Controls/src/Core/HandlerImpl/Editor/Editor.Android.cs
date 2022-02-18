@@ -4,7 +4,7 @@
 	{
 		public static void MapText(EditorHandler handler, Editor editor) 
 		{
-			Platform.EditTextExtensions.UpdateText(handler.NativeView, editor);
+			Platform.EditTextExtensions.UpdateText(handler.PlatformView, editor);
 		}
 	}
 }

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		public static void MapText(EntryHandler handler, Entry entry) 
 		{
-			Platform.EditTextExtensions.UpdateText(handler.NativeView, entry);
+			Platform.EditTextExtensions.UpdateText(handler.PlatformView, entry);
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			try
 			{
-				System.Diagnostics.Debug.WriteLine(nativeButton.LayoutParameters);
+				System.Diagnostics.Debug.WriteLine(platformButton.LayoutParameters);
 				platformButton.Text = text;
 			}
 			catch (Exception ex) 

@@ -4,7 +4,7 @@
 	{
 		public static void MapText(EntryHandler handler, Entry entry)
 		{
-			Platform.TextBoxExtensions.UpdateText(handler.NativeView, entry);
+			Platform.TextBoxExtensions.UpdateText(handler.PlatformView, entry);
 		}
 	}
 }

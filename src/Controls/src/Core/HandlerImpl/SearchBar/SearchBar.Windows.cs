@@ -4,7 +4,7 @@
 	{
 		public static void MapText(SearchBarHandler handler, SearchBar searchBar)
 		{
-			Platform.AutoSuggestBoxExtensions.UpdateText(handler.NativeView, searchBar);
+			Platform.AutoSuggestBoxExtensions.UpdateText(handler.PlatformView, searchBar);
 		}
 	}
 }
