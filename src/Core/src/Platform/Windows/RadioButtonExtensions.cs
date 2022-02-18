@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui
 {
@@ -47,6 +48,24 @@ namespace Microsoft.Maui
 			else
 				platformRadioButton.Content = $"{radioButton.Content}";
 		}
-			
+
+		public static void UpdateStrokeColor(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			if (radioButton.StrokeColor == null)
+				return;
+
+			nativeRadioButton.BorderBrush =  radioButton.StrokeColor.ToPlatform();
+		}
+
+		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			nativeRadioButton.BorderThickness = radioButton.StrokeThickness <= 0 ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(radioButton.StrokeThickness);
+		}
+
+		public static void UpdateCornerRadius(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			if (nativeRadioButton is MauiRadioButton mauiRadioButton)
+				mauiRadioButton.BorderRadius = radioButton.CornerRadius;
+		}
 	}
 }

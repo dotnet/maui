@@ -2,9 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface ITextToSpeech
+	{
+		Task<IEnumerable<Locale>> GetLocalesAsync();
+		
+		Task SpeakAsync(string text, CancellationToken cancelToken);
+
+		Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken);
+
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="Type[@FullName='Microsoft.Maui.Essentials.TextToSpeech']/Docs" />
 	public static partial class TextToSpeech
 	{
@@ -20,7 +33,7 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='GetLocalesAsync']/Docs" />
 		public static Task<IEnumerable<Locale>> GetLocalesAsync() =>
-			PlatformGetLocalesAsync();
+			Current.GetLocalesAsync();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync']/Docs" />
 		public static Task SpeakAsync(string text, CancellationToken cancelToken = default) =>
@@ -50,7 +63,7 @@ namespace Microsoft.Maui.Essentials
 			try
 			{
 				await semaphore.WaitAsync(cancelToken);
-				await PlatformSpeakAsync(text, options, cancelToken);
+				await Current.SpeakAsync(text, options, cancelToken);
 			}
 			finally
 			{
@@ -59,12 +72,26 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		internal static float PlatformNormalize(float min, float max, float percent)
+		internal static float Normalize(float min, float max, float percent)
 		{
 			var range = max - min;
 			var add = range * percent;
 			return min + add;
 		}
+		
+#nullable enable
+		static ITextToSpeech? currentImplementation;
+#nullable disable
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static ITextToSpeech Current =>
+			currentImplementation ??= new TextToSpeechImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(ITextToSpeech? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Locale']/Docs" />

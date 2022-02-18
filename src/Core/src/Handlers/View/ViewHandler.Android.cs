@@ -8,13 +8,25 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
+		partial void ConnectingHandler(PlatformView? platformView)
+		{
+			if (platformView != null)
+			{
+				platformView.FocusChange += OnNativeViewFocusChange;
+			}
+		}
+
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
-			if (platformView.IsAlive()
-				&& ViewCompat.GetAccessibilityDelegate(platformView) is MauiAccessibilityDelegateCompat ad)
+			if (platformView.IsAlive())
 			{
-				ad.Handler = null;
-				ViewCompat.SetAccessibilityDelegate(platformView, null);
+				platformView.FocusChange -= OnNativeViewFocusChange;
+
+				if (ViewCompat.GetAccessibilityDelegate(platformView) is MauiAccessibilityDelegateCompat ad)
+				{
+					ad.Handler = null;
+					ViewCompat.SetAccessibilityDelegate(platformView, null);
+				}
 			}
 		}
 
@@ -160,7 +172,6 @@ namespace Microsoft.Maui.Handlers
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 
-
 		internal static void MapToolbar(IElementHandler handler, IToolbarElement te)
 		{
 			if (te.Toolbar == null)
@@ -191,6 +202,12 @@ namespace Microsoft.Maui.Handlers
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 
-
+		void OnNativeViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
+		{
+			if (VirtualView != null)
+			{
+				VirtualView.IsFocused = e.HasFocus;
+			}
+		}
 	}
 }

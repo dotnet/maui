@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiTextField platformView)
 		{
 			platformView.ShouldReturn = OnShouldReturn;
+			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingChanged += OnEditingChanged;
 			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingDidEnd += OnEditingEnded;
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiTextField platformView)
 		{
+			platformView.EditingDidBegin -= OnEditingBegan;
 			platformView.EditingChanged -= OnEditingChanged;
 			platformView.EditingDidBegin -= OnEditingBegan;
 			platformView.EditingDidEnd -= OnEditingEnded;
@@ -113,9 +115,6 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		void OnEditingChanged(object? sender, EventArgs e) =>
-			VirtualView.UpdateText(PlatformView.Text);
-
 		void OnEditingBegan(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || PlatformView == null)
@@ -123,8 +122,11 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView?.UpdateSelectionLength(VirtualView);
 
-			// TODO: Update IsFocused property
+			VirtualView.IsFocused = true;
 		}
+
+		void OnEditingChanged(object? sender, EventArgs e) =>
+			VirtualView.UpdateText(PlatformView.Text);
 
 		void OnEditingEnded(object? sender, EventArgs e)
 		{
@@ -132,8 +134,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			VirtualView.UpdateText(PlatformView.Text);
-
-			// TODO: Update IsFocused property
+			VirtualView.IsFocused = false;
 		}
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>

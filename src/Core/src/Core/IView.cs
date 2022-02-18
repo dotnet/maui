@@ -50,6 +50,11 @@ namespace Microsoft.Maui
 		bool IsEnabled { get; }
 
 		/// <summary>
+		/// Gets a value indicating whether this View is focused currently.
+		/// </summary>
+		bool IsFocused { get; set; }
+
+		/// <summary>
 		/// Gets a value that determines whether this View should be part of the visual tree or not.
 		/// </summary>
 		Visibility Visibility { get; }
@@ -143,5 +148,16 @@ namespace Microsoft.Maui
 		/// Determines the drawing order of this IView within an ILayout; higher z-indexes will draw over lower z-indexes.
 		/// </summary>
 		int ZIndex { get; }
+
+		/// <summary>
+		/// Attempts to set focus to this View.
+		/// </summary>
+		/// <returns>true if the keyboard focus was set to this element; false if the call to this method did not force a focus change.</returns>
+		bool Focus();
+
+		/// <summary>
+		/// Unsets focus to this View.
+		/// </summary>
+		void Unfocus();
 	}
 }

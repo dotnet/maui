@@ -1,4 +1,7 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using UIKit;
+
 
 namespace Microsoft.Maui.Handlers
 {
@@ -10,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
 			if (ViewController == null)
-				ViewController = new PageViewController(VirtualView, this.MauiContext);
+				ViewController = new PageViewController(VirtualView, MauiContext);
 
 			if (ViewController is PageViewController pc && pc.CurrentPlatformView is ContentView pv)
 				return pv;
@@ -19,6 +22,24 @@ namespace Microsoft.Maui.Handlers
 				return cv;
 
 			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
+		}
+
+		protected override void ConnectHandler(ContentView nativeView)
+		{
+			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => nativeView?.EndEditing(true));
+
+			uiTapGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
+			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
+			uiTapGestureRecognizer.DelaysTouchesBegan =
+				uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
+			nativeView.AddGestureRecognizer(uiTapGestureRecognizer);
+
+			base.ConnectHandler(nativeView);
+		}
+
+		protected override void DisconnectHandler(ContentView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
 		}
 
 		public static void MapTitle(PageHandler handler, IContentView page)
@@ -32,6 +53,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+
 		public static void MapBackgroundImageSource(PageHandler handler, IContentView page)
 		{
 			if (page is not IViewBackgroundImagePart viewBackgroundImagePart)
@@ -41,6 +63,25 @@ namespace Microsoft.Maui.Handlers
 
 			handler.PlatformView?.UpdateBackgroundImageSourceAsync(viewBackgroundImagePart, provider)			
 				.FireAndForget(handler);
+    }
+
+		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
+		{
+			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
+			{
+				if (v != null && (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder))
+					return false;
+			}
+			return true;
+		}
+
+		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
+		{
+			while (view != null)
+			{
+				yield return view;
+				view = view.Superview;
+			}
 		}
 	}
 }
