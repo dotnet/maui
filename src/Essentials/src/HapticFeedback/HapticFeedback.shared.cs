@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Essentials
 	public interface IHapticFeedback
 	{
 		bool IsSupported { get; }
+		
 		void Perform(HapticFeedbackType type);
 	}
 
