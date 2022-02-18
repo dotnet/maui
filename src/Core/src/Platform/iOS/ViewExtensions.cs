@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
-using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -23,6 +22,16 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			uiControl.Enabled = view.IsEnabled;
+		}
+
+		public static void Focus(this UIView platformView, FocusRequest request)
+		{
+			platformView.BecomeFirstResponder();
+		}
+
+		public static void Unfocus(this UIView platformView, IView view)
+		{
+			platformView.ResignFirstResponder();
 		}
 
 		public static void UpdateVisibility(this UIView platformView, IView view) =>
@@ -422,5 +431,33 @@ namespace Microsoft.Maui.Platform
 		{
 			return view?.Superview;
 		}
+
+		internal static void LayoutToSize(this IView view, double width, double height)
+		{
+			var platformFrame = new RectangleF(0, 0, width, height);
+
+			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+				viewHandler.PlatformView.Frame = platformFrame;
+
+			view.Arrange(platformFrame.ToRectangle());
+		}
+
+		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
+		{
+			var size = view.Measure(width, height);
+			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
+
+			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+				viewHandler.PlatformView.Frame = platformFrame;
+
+			view.Arrange(platformFrame.ToRectangle());
+			return size;
+		}
+    
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
+
+		internal static IWindow? GetHostedWindow(this UIView? view)
+			=> GetHostedWindow(view?.Window);
 	}
 }

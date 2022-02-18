@@ -32,6 +32,16 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view) =>
 			(platformView as Control)?.UpdateIsEnabled(view.IsEnabled);
 
+		public static void Focus(this FrameworkElement platformView, FocusRequest request)
+		{
+			// TODO: Implement Focus on Windows.
+		}
+
+		public static void Unfocus(this FrameworkElement platformView, IView view)
+		{
+			// TODO: Implement Unfocus on Windows.
+		}
+
 		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
 		{
 			double opacity = view.Opacity;
@@ -277,10 +287,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
-			var root = element?.Parent as UIElement;
+			var root = element?.XamlRoot;
 			if (root == null)
 				return new Matrix4x4();
-			var offset = element?.TransformToVisual(root) as MatrixTransform;
+			var offset = element?.TransformToVisual(root.Content) as MatrixTransform;
 			if (offset == null)
 				return new Matrix4x4();
 			Matrix matrix = offset.Matrix;
@@ -355,6 +365,30 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is FrameworkElement pv)
 				return pv.Parent;
+
+			return null;
+		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
+
+		internal static IWindow? GetHostedWindow(this FrameworkElement? view)
+			=> GetWindowForXamlRoot(view?.XamlRoot);
+
+		internal static IWindow? GetWindowForXamlRoot(XamlRoot? root)
+		{
+			if (root is null)
+				return null;
+
+			var windows = WindowExtensions.GetWindows();
+			foreach(var window in windows)
+			{
+				if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window win)
+				{
+					if (win.Content?.XamlRoot == root)
+						return window;
+				}
+			}
 
 			return null;
 		}

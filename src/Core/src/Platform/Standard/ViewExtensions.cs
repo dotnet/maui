@@ -4,6 +4,10 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsEnabled(this object platformView, IView view) { }
 
+		public static void Focus(this object platformView, FocusRequest request) { }
+
+		public static void Unfocus(this object platformView, IView view) { }
+
 		public static void UpdateVisibility(this object platformView, IView view) { }
 
 		public static void UpdateBackground(this object platformView, IView view) { }
@@ -15,6 +19,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateClip(this object platformView, IView view) { }
 
 		public static void UpdateShadow(this object platformView, IView view) { }
+
 		public static void UpdateBorder(this object platformView, IView view) { }
 
 		public static void UpdateOpacity(this object platformView, IView view) { }
@@ -68,5 +73,8 @@ namespace Microsoft.Maui.Platform
 		{
 			return null;
 		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> null;
 	}
 }

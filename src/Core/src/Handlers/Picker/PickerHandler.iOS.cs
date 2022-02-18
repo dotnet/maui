@@ -55,13 +55,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
+			platformView.EditingDidBegin += OnStarted;
 			platformView.EditingDidEnd += OnEnded;
 			platformView.EditingChanged += OnEditing;
+      
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
+			platformView.EditingDidBegin -= OnStarted;
 			platformView.EditingDidEnd -= OnEnded;
 			platformView.EditingChanged -= OnEditing;
 
@@ -132,6 +135,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
 		}
 
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+		}
+		
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
 			if (_pickerView == null)
@@ -143,6 +152,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				_pickerView.Select(model.SelectedIndex, 0, false);
 			}
+
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void OnEditing(object? sender, EventArgs eventArgs)

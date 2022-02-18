@@ -1,11 +1,21 @@
 ﻿#nullable enable
+#if __IOS__ || MACCATALYST
+using PlatformView = Microsoft.Maui.Platform.MauiTextField;
+#elif MONOANDROID
+using PlatformView = AndroidX.AppCompat.Widget.AppCompatEditText;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.TextBox;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
 using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler
+	public partial class EntryHandler : IEntryHandler
 	{
-		public static IPropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IEntry.Background)] = MapBackground,
 			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
@@ -27,22 +37,27 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.SelectionLength)] = MapSelectionLength
 		};
 
+		public static CommandMapper<IEntry, IEntryHandler> CommandMapper = new(ViewCommandMapper)
+		{
+		};
 
 		static EntryHandler()
 		{
 #if __IOS__
-			EntryMapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
+			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
 #endif
 		}
 
-		public EntryHandler() : base(EntryMapper)
+		public EntryHandler() : base(Mapper)
 		{
-
 		}
 
-		public EntryHandler(IPropertyMapper? mapper = null) : base(mapper ?? EntryMapper)
+		public EntryHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		IEntry IEntryHandler.VirtualView => VirtualView;
+
+		PlatformView IEntryHandler.PlatformView => PlatformView;
 	}
 }
