@@ -6,11 +6,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class BarometerImplementation : IBarometer
 	{
-		static Sensor DefaultBarometer 
+		Sensor DefaultBarometer
 			=> Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
 		
-		static Sensor barometer;
-		static BarometerListener listener;
+		Sensor barometer;
+		BarometerListener listener;
 
 		bool PlatformIsSupported
 			=> DefaultBarometer != null;
@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			Platform.SensorManager.UnregisterListener(listener, barometer);
 			listener.Dispose();
 			listener = null;
+			barometer = null;
 		}
 	}
 

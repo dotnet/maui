@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class BarometerImplementation : IBarometer
 	{
-		static CMAltimeter altitudeManager;
+		CMAltimeter altitudeManager;
 
 		bool PlatformIsSupported
 			=> CMAltimeter.IsRelativeAltitudeAvailable;

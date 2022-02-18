@@ -6,17 +6,20 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public class BarometerImplementation : IBarometer
 	{
-		static TizenBarometerSensor DefaultSensor
-			=> (TizenBarometerSensor)Platform.GetDefaultSensor(SensorType.Barometer);
-
 		bool PlatformIsSupported
 			=> TizenBarometerSensor.IsSupported;
 
+		TizenBarometerSensor DefaultSensor
+			=> (TizenBarometerSensor)Platform.GetDefaultSensor(SensorType.Barometer);
+
+		TizenBarometerSensor sensor = null;
+
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			DefaultSensor.Interval = sensorSpeed.ToPlatform();
-			DefaultSensor.DataUpdated += DataUpdated;
-			DefaultSensor.Start();
+			sensor = DefaultSensor;
+			sensor.Interval = sensorSpeed.ToPlatform();
+			sensor.DataUpdated += DataUpdated;
+			sensor.Start();
 		}
 
 		void DataUpdated(object sender, PressureSensorDataUpdatedEventArgs e)
@@ -24,8 +27,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		void PlatformStop()
 		{
-			DefaultSensor.DataUpdated -= DataUpdated;
-			DefaultSensor.Stop();
+			sensor.DataUpdated -= DataUpdated;
+			sensor.Stop();
+			sensor = null;
 		}
 	}
 }

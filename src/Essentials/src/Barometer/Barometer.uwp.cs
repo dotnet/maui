@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class BarometerImplementation : IBarometer
 	{
-		static WinBarometer sensor;
+		WinBarometer sensor;
 
-		static WinBarometer DefaultBarometer => WinBarometer.GetDefault();
+		WinBarometer DefaultBarometer => WinBarometer.GetDefault();
 
 		bool PlatformIsSupported =>
 			DefaultBarometer != null;
