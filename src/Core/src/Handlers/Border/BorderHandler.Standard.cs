@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class BorderHandler : ViewHandler<IBorderView, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapContent(BorderHandler handler, IBorderView border)
 		{

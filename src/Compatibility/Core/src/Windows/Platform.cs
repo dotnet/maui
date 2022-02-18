@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				else if (handler is IVisualElementRenderer ver)
 					renderer = ver;
-				else if (handler is INativeViewHandler vh)
+				else if (handler is IPlatformViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
 					element.Handler = handler;
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			InitializeStatusBar();
 				
-			if(!NativeVersion.IsDesktop)
+			if(!PlatformVersion.IsDesktop)
 				SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 
 			// TODO WINUI: This event is only available on UWP

@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("Image", handler.ImageEvents[0].Member);
 				Assert.Null(handler.ImageEvents[0].Value);
 
-				await handler.NativeView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 		}
 
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("Image", handler.ImageEvents[0].Member);
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				handler.ImageEvents.Clear();
 
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("Image", handler.ImageEvents[0].Member);
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Null(events[0].Value);
 			Assert.Equal("Image", events[1].Member);
 			var image = Assert.IsType<UIImage>(events[1].Value);
-			image.AssertContainsColor(Colors.Blue.ToNative());
+			image.AssertContainsColor(Colors.Blue.ToPlatform());
 		}
 
 		[Fact]
@@ -122,17 +122,17 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Null(events[1].Value);
 			Assert.Equal("Image", events[2].Member);
 			var image = Assert.IsType<UIImage>(events[2].Value);
-			image.AssertContainsColor(Colors.Red.ToNative());
+			image.AssertContainsColor(Colors.Red.ToPlatform());
 		}
 
-		UIImageView GetNativeImageView(IImageHandler imageHandler) =>
-			imageHandler.TypedNativeView;
+		UIImageView GetPlatformImageView(IImageHandler imageHandler) =>
+			imageHandler.TypedPlatformView;
 
 		bool GetNativeIsAnimationPlaying(IImageHandler imageHandler) =>
-			GetNativeImageView(imageHandler).IsAnimating;
+			GetPlatformImageView(imageHandler).IsAnimating;
 
 		Aspect GetNativeAspect(IImageHandler imageHandler) =>
-			GetNativeImageView(imageHandler).ContentMode switch
+			GetPlatformImageView(imageHandler).ContentMode switch
 			{
 				UIViewContentMode.ScaleAspectFit => Aspect.AspectFit,
 				UIViewContentMode.ScaleAspectFill => Aspect.AspectFill,

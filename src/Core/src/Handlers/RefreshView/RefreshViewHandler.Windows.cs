@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 		bool _isLoaded;
 		Deferral? _refreshCompletionDeferral;
 
-		protected override MauiRefreshContainer CreateNativeView()
+		protected override RefreshContainer CreatePlatformView()
 		{
 			return new MauiRefreshContainer
 			{

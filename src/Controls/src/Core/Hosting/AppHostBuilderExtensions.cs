@@ -41,12 +41,12 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<Border, BorderHandler>();
 			handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 			handlersCollection.AddHandler<Shapes.Ellipse, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Line, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Path, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Polygon, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Polyline, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Rectangle, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.RoundRectangle, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.Line, LineHandler>();
+			handlersCollection.AddHandler<Shapes.Path, PathHandler>();
+			handlersCollection.AddHandler<Shapes.Polygon, PolygonHandler>();
+			handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
+			handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
+			handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
 			handlersCollection.AddHandler<Window, WindowHandler>();
 			handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 			handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();

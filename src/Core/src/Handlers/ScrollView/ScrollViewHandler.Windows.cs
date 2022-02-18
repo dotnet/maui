@@ -14,28 +14,28 @@ namespace Microsoft.Maui.Handlers
 	{
 		const string InsetPanelTag = "MAUIContentInsetPanel";
 
-		protected override ScrollViewer CreateNativeView()
+		protected override ScrollViewer CreatePlatformView()
 		{
 			return new ScrollViewer();
 		}
 
-		protected override void ConnectHandler(ScrollViewer nativeView)
+		protected override void ConnectHandler(ScrollViewer platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.ViewChanged += ViewChanged;
+			base.ConnectHandler(platformView);
+			platformView.ViewChanged += ViewChanged;
 		}
 
-		protected override void DisconnectHandler(ScrollViewer nativeView)
+		protected override void DisconnectHandler(ScrollViewer platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.ViewChanged -= ViewChanged;
+			base.DisconnectHandler(platformView);
+			platformView.ViewChanged -= ViewChanged;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
 
-			if (GetInsetPanel(NativeView) == null)
+			if (GetInsetPanel(PlatformView) == null)
 			{
 				VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 			}
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.NativeView == null || handler.MauiContext == null)
+			if (handler.PlatformView == null || handler.MauiContext == null)
 				return;
 
 			if (NeedsInsetPanel(scrollView))
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				var scrollViewer = handler.NativeView;
+				var scrollViewer = handler.PlatformView;
 				RemoveInsetPanel(scrollViewer);
 				scrollViewer.UpdateContent(scrollView.PresentedContent, handler.MauiContext);
 			}
@@ -62,31 +62,31 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
+			handler.PlatformView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
 		}
 
 		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView.VerticalScrollBarVisibility = scrollView.VerticalScrollBarVisibility.ToWindowsScrollBarVisibility();
+			handler.PlatformView.VerticalScrollBarVisibility = scrollView.VerticalScrollBarVisibility.ToWindowsScrollBarVisibility();
 		}
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
+			handler.PlatformView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
 		}
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.NativeView.ChangeView(request.HoriztonalOffset, request.VerticalOffset, null, request.Instant);
+				handler.PlatformView.ChangeView(request.HoriztonalOffset, request.VerticalOffset, null, request.Instant);
 			}
 		}
 
 		void ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
 		{
-			VirtualView.VerticalOffset = NativeView.VerticalOffset;
-			VirtualView.HorizontalOffset = NativeView.HorizontalOffset;
+			VirtualView.VerticalOffset = PlatformView.VerticalOffset;
+			VirtualView.HorizontalOffset = PlatformView.HorizontalOffset;
 
 			if (e.IsIntermediate == false)
 			{
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var scrollViewer = handler.NativeView;
+			var scrollViewer = handler.PlatformView;
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
 			if (GetInsetPanel(scrollViewer) is ContentPanel currentPaddingLayer)

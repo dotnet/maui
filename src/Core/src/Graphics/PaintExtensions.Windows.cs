@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Graphics
 {
 	public static partial class PaintExtensions
 	{
-		public static WBrush? ToNative(this Paint paint)
+		public static WBrush? ToPlatform(this Paint paint)
 		{
 			if (paint is SolidPaint solidPaint)
 				return solidPaint.CreateBrush();
@@ -46,8 +46,8 @@ namespace Microsoft.Maui.Graphics
 		{
 			var brush = new WLinearGradientBrush
 			{
-				StartPoint = linearGradientPaint.StartPoint.ToNative(),
-				EndPoint = linearGradientPaint.EndPoint.ToNative()
+				StartPoint = linearGradientPaint.StartPoint.ToPlatform(),
+				EndPoint = linearGradientPaint.EndPoint.ToPlatform()
 			};
 
 			brush.GradientStops.AddRange(linearGradientPaint.GradientStops);
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			var brush = new WRadialGradientBrush
 			{
-				Center = radialGradientPaint.Center.ToNative(),
+				Center = radialGradientPaint.Center.ToPlatform(),
 				RadiusX = radialGradientPaint.Radius,
 				RadiusY = radialGradientPaint.Radius
 			};

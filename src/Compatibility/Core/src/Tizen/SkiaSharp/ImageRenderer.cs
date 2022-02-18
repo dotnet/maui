@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 			if (initialize && Specific.GetBlendColor(Element).IsDefault)
 				return;
 
-			RealControl.Color = Specific.GetBlendColor(Element).ToNative();
+			RealControl.Color = Specific.GetBlendColor(Element).ToPlatform();
 		}
 	}
 }

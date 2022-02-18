@@ -3,20 +3,20 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.Networking.Connectivity;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Connectivity
+	public partial class ConnectivityImplementation : IConnectivity
 	{
-		static void StartListeners() =>
+		public void StartListeners() =>
 			 NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
 
 		static void NetworkStatusChanged(object sender) =>
-			OnConnectivityChanged();
+			Connectivity.OnConnectivityChanged();
 
-		static void StopListeners() =>
+		public void StopListeners() =>
 			 NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{

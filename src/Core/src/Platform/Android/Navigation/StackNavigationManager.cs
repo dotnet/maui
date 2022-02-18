@@ -45,6 +45,9 @@ namespace Microsoft.Maui.Platform
 
 		public IMauiContext MauiContext { get; }
 
+		internal IToolbarElement? ToolbarElement =>
+			MauiContext.GetNavigationRootManager().ToolbarElement;
+
 		public StackNavigationManager(IMauiContext mauiContext)
 		{
 			var currentInflater = mauiContext.GetLayoutInflater();
@@ -208,9 +211,9 @@ namespace Microsoft.Maui.Platform
 
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page
-			if (NavigationView is IStackNavigation te && te.Toolbar?.Handler != null)
+			if (NavigationView != null)
 			{
-				te.Toolbar.Handler.UpdateValue(nameof(IToolbar.BackButtonVisible));
+				ToolbarElement?.Toolbar?.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
 			}
 		}
 
@@ -326,7 +329,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Fragments are always destroyed if they aren't visible
-		// The Handler/NativeView associated with the visible IView remain intact
+		// The Handler/PlatformView associated with the visible IView remain intact
 		// The performance hit of destorying/recreating fragments should be negligible
 		// Hopefully this behavior survives implementation
 		// This will need to be tested with Maps and WebViews to make sure they behave efficiently
@@ -421,9 +424,9 @@ namespace Microsoft.Maui.Platform
 
 				AToolbar? nativeToolbar = null;
 				IToolbar? toolbar = null;
-
-				if (_stackNavigationManager.NavigationView?.Toolbar is IToolbar tb &&
-					tb?.Handler?.NativeView is AToolbar ntb)
+        
+				if (_stackNavigationManager.ToolbarElement?.Toolbar is IToolbar tb &&
+					tb?.Handler?.PlatformView is AToolbar ntb)
 				{
 					nativeToolbar = ntb;
 					toolbar = tb;

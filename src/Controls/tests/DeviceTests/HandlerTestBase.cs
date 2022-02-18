@@ -103,7 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (element is IView view && handler is IViewHandler viewHandler)
 			{
 				view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
-				viewHandler.NativeArrange(view.Frame);
+				viewHandler.PlatformArrange(view.Frame);
 			}
 
 			return handler;
@@ -119,6 +119,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<THandler>(view);
 				return func(handler);
+			});
+		}
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
+			where THandler : class, IElementHandler
+		{
+			return CreateHandlerAndAddToWindow<THandler>(view, handler =>
+			{
+				action(handler);
+				return Task.CompletedTask;
 			});
 		}
 
