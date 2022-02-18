@@ -15,14 +15,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 	}
 
-	public abstract partial class ViewRenderer<TElement, TNativeView> : VisualElementRenderer<TElement>, INativeViewHandler
+	public abstract partial class ViewRenderer<TElement, TPlatformView> : VisualElementRenderer<TElement>, IPlatformViewHandler
 		where TElement : View, IView
-		where TNativeView : PlatformView
+		where TPlatformView : PlatformView
 	{
-		TNativeView? _nativeView;
+		TPlatformView? _nativeView;
 
-		public TNativeView? Control => ((IElementHandler)this).NativeView as TNativeView ?? _nativeView;
-		object? IElementHandler.NativeView => _nativeView;
+		public TPlatformView? Control => ((IElementHandler)this).PlatformView as TPlatformView ?? _nativeView;
+		object? IElementHandler.PlatformView => _nativeView;
 
 		public ViewRenderer() : this(VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
-			var platformView = (this as IElementHandler).NativeView as UIView;
+			var platformView = (this as IElementHandler).PlatformView as UIView;
 			if (platformView != null && Element != null)
 			{
 				platformView.Frame = new CoreGraphics.CGRect(0, 0, (nfloat)Element.Width, (nfloat)Element.Height);
@@ -60,12 +60,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return Control?.SizeThatFits(size) ?? base.SizeThatFits(size);
 		}
 
-		protected virtual TNativeView CreateNativeControl()
+		protected virtual TPlatformView CreateNativeControl()
 		{
-			return default(TNativeView)!;
+			return default(TPlatformView)!;
 		}
 
-		protected void SetNativeControl(TNativeView control)
+		protected void SetNativeControl(TPlatformView control)
 		{
 			if (Control != null)
 			{
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.DisconnectHandlerCore();
 		}
 
-		protected virtual void DisconnectHandler(TNativeView oldNativeView)
+		protected virtual void DisconnectHandler(TPlatformView oldNativeView)
 		{
 		}
 	}

@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var fgcolor = span.TextColor ?? defaultColor;
 			if (fgcolor is not null)
-				run.Foreground = fgcolor.ToNative();
+				run.Foreground = fgcolor.ToPlatform();
 
 			// NOTE: Background is not supported in Run
 

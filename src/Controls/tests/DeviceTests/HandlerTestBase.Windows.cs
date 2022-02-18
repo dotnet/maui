@@ -15,13 +15,14 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((DependencyObject)viewHandler.NativeView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
+			((AccessibilityView)((DependencyObject)viewHandler.PlatformView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
 			== AccessibilityView.Content;
 
 		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
@@ -93,6 +94,14 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		protected double DistanceYFromTheBottomOfTheAppTitleBar(IElement element)
+		{
+			var handler = element.Handler;
+			var rootManager = handler.MauiContext.GetNavigationRootManager();
+			var position = element.GetLocationRelativeTo(rootManager.AppTitleBar);
+			var distance = rootManager.AppTitleBar.Height - position.Value.Y;
+			return distance;
+		}
 
 		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
 		{

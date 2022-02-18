@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers
 	public partial class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
 	{
 		TabbedPageManager _tabbedPageManager;
-		protected override ViewPager2 CreateNativeView()
+		protected override ViewPager2 CreatePlatformView()
 		{
 			_tabbedPageManager ??= new TabbedPageManager(MauiContext!);
 			return _tabbedPageManager.ViewPager;
@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			_tabbedPageManager.SetElement((TabbedPage)view);
 		}
 
-		protected override void DisconnectHandler(ViewPager2 nativeView)
+		protected override void DisconnectHandler(ViewPager2 platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			_tabbedPageManager.SetElement(null);
 		}
 

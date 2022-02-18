@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 			if (color.IsDefault() && defaultForeground == null)
 				return;
 
-			nativeComboBox.Foreground = color.IsDefault() ? (defaultForeground ?? color.ToNative()) : color.ToNative();
+			nativeComboBox.Foreground = color.IsDefault() ? (defaultForeground ?? color.ToPlatform()) : color.ToPlatform();
 		}
 
 		public static void UpdateSelectedIndex(this MauiComboBox nativeComboBox, IPicker picker)
@@ -44,12 +44,12 @@ namespace Microsoft.Maui.Platform
 		
 		public static void UpdateHorizontalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToNativeHorizontalAlignment();
+			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToPlatformHorizontalAlignment();
 		}
 
 		public static void UpdateVerticalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToNativeVerticalAlignment();
+			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 	}
 }

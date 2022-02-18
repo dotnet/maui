@@ -11,7 +11,7 @@ using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using System.Threading.Tasks;
-using System.Threading;
+using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.Platform
 {
@@ -257,6 +257,41 @@ namespace Microsoft.Maui.Platform
 			{
 				frameworkElement.Resources[propertyKey] = value;
 			}
+		}
+
+		internal static WPoint? GetLocationOnScreen(this UIElement element)
+		{
+			var ttv = element.TransformToVisual(element.XamlRoot.Content);
+			WPoint screenCoords = ttv.TransformPoint(new WPoint(0, 0));
+			return new WPoint(screenCoords.X, screenCoords.Y);
+		}
+
+		internal static WPoint? GetLocationOnScreen(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			var view = element.ToPlatform();
+			return
+				view.GetLocationRelativeTo(view.XamlRoot.Content);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this UIElement element, UIElement relativeTo)
+		{
+			var ttv = element.TransformToVisual(relativeTo);
+			WPoint screenCoords = ttv.TransformPoint(new WPoint(0, 0));
+			return new WPoint(screenCoords.X, screenCoords.Y);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this IElement element, UIElement relativeTo)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return
+				element
+					.ToPlatform()
+					.GetLocationRelativeTo(relativeTo);
 		}
 	}
 }
