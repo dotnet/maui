@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			}
 		}
 
-		public override void SetFillPaint(Paint paint, RectangleF rectangle)
+		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint is SolidPaint solidPaint)
 				FillColor = solidPaint.Color;

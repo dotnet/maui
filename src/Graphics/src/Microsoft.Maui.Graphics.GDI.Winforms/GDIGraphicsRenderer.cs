@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		IDrawable Drawable { get; set; }
 
-		void Draw(System.Drawing.Graphics graphics, RectangleF dirtyRect);
+		void Draw(System.Drawing.Graphics graphics, RectF dirtyRect);
 
 		void SizeChanged(int width, int height);
 

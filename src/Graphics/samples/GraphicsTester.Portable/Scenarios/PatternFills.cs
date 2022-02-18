@@ -25,7 +25,7 @@ namespace GraphicsTester.Scenarios
 				pattern = AddPictureAsPattern(picture.Picture, 12, 12);
 			}
 
-			canvas.SetFillPaint(pattern.AsPaint(), RectangleF.Zero);
+			canvas.SetFillPaint(pattern.AsPaint(), RectF.Zero);
 			canvas.FillRectangle(50, 50, 500, 500);
 
 			canvas.RestoreState();

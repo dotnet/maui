@@ -6,8 +6,8 @@ using System.Globalization;
 namespace Microsoft.Maui.Graphics
 {
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
-	[TypeConverter(typeof(Converters.RectangleTypeConverter))]
-	public partial struct Rectangle
+	[TypeConverter(typeof(Converters.RectTypeConverter))]
+	public partial struct Rect
 	{
 		public double X { get; set; }
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Graphics
 
 		public double Height { get; set; }
 
-		public static Rectangle Zero = new Rectangle();
+		public static Rect Zero = new Rect();
 
 		public override string ToString()
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Graphics
 		}
 
 		// constructors
-		public Rectangle(double x, double y, double width, double height) : this()
+		public Rect(double x, double y, double width, double height) : this()
 		{
 			X = x;
 			Y = y;
@@ -33,16 +33,16 @@ namespace Microsoft.Maui.Graphics
 			Height = height;
 		}
 
-		public Rectangle(Point loc, Size sz) : this(loc.X, loc.Y, sz.Width, sz.Height)
+		public Rect(Point loc, Size sz) : this(loc.X, loc.Y, sz.Width, sz.Height)
 		{
 		}
 
-		public static Rectangle FromLTRB(double left, double top, double right, double bottom)
+		public static Rect FromLTRB(double left, double top, double right, double bottom)
 		{
-			return new Rectangle(left, top, right - left, bottom - top);
+			return new Rect(left, top, right - left, bottom - top);
 		}
 
-		public bool Equals(Rectangle other)
+		public bool Equals(Rect other)
 		{
 			return X.Equals(other.X) && Y.Equals(other.Y) && Width.Equals(other.Width) && Height.Equals(other.Height);
 		}
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (ReferenceEquals(null, obj))
 				return false;
-			return obj is Rectangle && Equals((Rectangle)obj);
+			return obj is Rect && Equals((Rect)obj);
 		}
 
 		public override int GetHashCode()
@@ -66,18 +66,18 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
-		public static bool operator ==(Rectangle r1, Rectangle r2)
+		public static bool operator ==(Rect r1, Rect r2)
 		{
 			return (r1.Location == r2.Location) && (r1.Size == r2.Size);
 		}
 
-		public static bool operator !=(Rectangle r1, Rectangle r2)
+		public static bool operator !=(Rect r1, Rect r2)
 		{
 			return !(r1 == r2);
 		}
 
 		// Hit Testing / Intersection / Union
-		public bool Contains(Rectangle rect)
+		public bool Contains(Rect rect)
 		{
 			return X <= rect.X && Right >= rect.Right && Y <= rect.Y && Bottom >= rect.Bottom;
 		}
@@ -92,27 +92,27 @@ namespace Microsoft.Maui.Graphics
 			return (x >= Left) && (x < Right) && (y >= Top) && (y < Bottom);
 		}
 
-		public bool IntersectsWith(Rectangle r)
+		public bool IntersectsWith(Rect r)
 		{
 			return !((Left >= r.Right) || (Right <= r.Left) || (Top >= r.Bottom) || (Bottom <= r.Top));
 		}
 
-		public Rectangle Union(Rectangle r)
+		public Rect Union(Rect r)
 		{
 			return Union(this, r);
 		}
 
-		public static Rectangle Union(Rectangle r1, Rectangle r2)
+		public static Rect Union(Rect r1, Rect r2)
 		{
 			return FromLTRB(Math.Min(r1.Left, r2.Left), Math.Min(r1.Top, r2.Top), Math.Max(r1.Right, r2.Right), Math.Max(r1.Bottom, r2.Bottom));
 		}
 
-		public Rectangle Intersect(Rectangle r)
+		public Rect Intersect(Rect r)
 		{
 			return Intersect(this, r);
 		}
 
-		public static Rectangle Intersect(Rectangle r1, Rectangle r2)
+		public static Rect Intersect(Rect r1, Rect r2)
 		{
 			double x = Math.Max(r1.X, r2.X);
 			double y = Math.Max(r1.Y, r2.Y);
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Graphics
 			{
 				return Zero;
 			}
-			return new Rectangle(x, y, width, height);
+			return new Rect(x, y, width, height);
 		}
 
 		// Position/Size
@@ -176,14 +176,14 @@ namespace Microsoft.Maui.Graphics
 		public Point Center => new Point(X + Width / 2, Y + Height / 2);
 
 		// Inflate and Offset
-		public Rectangle Inflate(Size sz)
+		public Rect Inflate(Size sz)
 		{
 			return Inflate(sz.Width, sz.Height);
 		}
 
-		public Rectangle Inflate(double width, double height)
+		public Rect Inflate(double width, double height)
 		{
-			Rectangle r = this;
+			Rect r = this;
 			r.X -= width;
 			r.Y -= height;
 			r.Width += width * 2;
@@ -191,22 +191,22 @@ namespace Microsoft.Maui.Graphics
 			return r;
 		}
 
-		public Rectangle Offset(double dx, double dy)
+		public Rect Offset(double dx, double dy)
 		{
-			Rectangle r = this;
+			Rect r = this;
 			r.X += dx;
 			r.Y += dy;
 			return r;
 		}
 
-		public Rectangle Offset(Point dr)
+		public Rect Offset(Point dr)
 		{
 			return Offset(dr.X, dr.Y);
 		}
 
-		public Rectangle Round()
+		public Rect Round()
 		{
-			return new Rectangle(Math.Round(X), Math.Round(Y), Math.Round(Width), Math.Round(Height));
+			return new Rect(Math.Round(X), Math.Round(Y), Math.Round(Width), Math.Round(Height));
 		}
 
 		public void Deconstruct(out double x, out double y, out double width, out double height)
@@ -216,9 +216,10 @@ namespace Microsoft.Maui.Graphics
 			width = Width;
 			height = Height;
 		}
-		public static implicit operator RectangleF(Rectangle rect) => new RectangleF((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
 
-		public static bool TryParse(string value, out Rectangle rectangle)
+		public static implicit operator RectF(Rect rect) => new RectF((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
+
+		public static bool TryParse(string value, out Rect rectangle)
 		{
 			if (!string.IsNullOrEmpty(value))
 			{
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Graphics
 					&& double.TryParse(xywh[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double w)
 					&& double.TryParse(xywh[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double h))
 				{
-					rectangle = new Rectangle(x, y, w, h);
+					rectangle = new Rect(x, y, w, h);
 					return true;
 				}
 			}

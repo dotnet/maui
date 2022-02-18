@@ -64,7 +64,7 @@ namespace GraphicsTester.Scenarios
 			// Do nothing by default
 		}
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			Draw(canvas);
 		}

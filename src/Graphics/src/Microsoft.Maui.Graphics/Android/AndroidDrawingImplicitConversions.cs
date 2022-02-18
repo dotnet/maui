@@ -3,16 +3,16 @@ using Android.Graphics;
 
 namespace Microsoft.Maui.Graphics
 {
-	public partial struct RectangleF
+	public partial struct RectF
 	{
-		public static implicit operator Rect(RectangleF rect) => new Rect((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
-		public static implicit operator RectF(RectangleF rect) => new RectF(rect.X, rect.Y, rect.Width, rect.Height);
+		public static implicit operator global::Android.Graphics.Rect(RectF rect) => new global::Android.Graphics.Rect((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
+		public static implicit operator global::Android.Graphics.RectF(RectF rect) => new global::Android.Graphics.RectF(rect.X, rect.Y, rect.Width, rect.Height);
 	}
 
-	public partial struct Rectangle
+	public partial struct Rect
 	{
-		public static implicit operator Rect(Rectangle rect) => new Rect((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
-		public static implicit operator RectF(Rectangle rect) => new RectF((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
+		public static implicit operator global::Android.Graphics.Rect(Rect rect) => new global::Android.Graphics.Rect((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
+		public static implicit operator global::Android.Graphics.RectF(Rect rect) => new global::Android.Graphics.RectF((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
 	}
 
 	public partial struct PointF

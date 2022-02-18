@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private IImage _fillImage;
 
-		private RectangleF _gradientRectangle = RectangleF.Zero;
+		private RectF _gradientRectangle = RectF.Zero;
 		private Paint _paint;
 
 		// A local instance of a rectangle to avoid lots of object creation.
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		public override void SetFillPaint(Paint paint, RectangleF rectangle)
+		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			_gradientRectangle = rectangle;
 

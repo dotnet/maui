@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Graphics.Skia
 	public class SkiaTextLayout : IDisposable
 	{
 		private readonly LayoutLine _callback;
-		private readonly RectangleF _rect;
+		private readonly RectF _rect;
 		private readonly ITextAttributes _textAttributes;
 		private readonly string _value;
 		private readonly TextFlow _textFlow;
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public SkiaTextLayout(
 			string value,
-			RectangleF rect,
+			RectF rect,
 			ITextAttributes textAttributes,
 			LayoutLine callback,
 			TextFlow textFlow = TextFlow.ClipBounds,

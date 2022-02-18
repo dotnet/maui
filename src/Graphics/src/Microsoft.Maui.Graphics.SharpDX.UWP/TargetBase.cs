@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		/// <summary>
 		///     Gets the bounds of the control linked to this render target
 		/// </summary>
-		public Rect RenderTargetBounds { get; protected set; }
+		public Windows.Foundation.Rect RenderTargetBounds { get; protected set; }
 
 		/// <summary>
 		///     Gets the size in pixels of the Direct3D RenderTarget
@@ -83,13 +83,13 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		/// <summary>
 		///     Gets the bounds of the control linked to this render target
 		/// </summary>
-		public Rect ControlBounds { get; protected set; }
+		public Windows.Foundation.Rect ControlBounds { get; protected set; }
 
 
 		/// <summary>
 		///     Gets the current bounds of the control linked to this render target
 		/// </summary>
-		protected abstract Rect CurrentControlBounds { get; }
+		protected abstract Windows.Foundation.Rect CurrentControlBounds { get; }
 
 		/// <summary>
 		///     Event fired when size of the underlying control is changed
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		/// </summary>
 		public virtual void UpdateForSizeChange()
 		{
-			Rect newBounds = CurrentControlBounds;
+			Windows.Foundation.Rect newBounds = CurrentControlBounds;
 
 			if (newBounds.Width != ControlBounds.Width ||
 				newBounds.Height != ControlBounds.Height)

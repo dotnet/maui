@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		PlatformGraphicsView GraphicsView { set; }
 		ICanvas Canvas { get; }
 		IDrawable Drawable { get; set; }
-		void Draw(CGContext nativeCanvas, RectangleF dirtyRect);
+		void Draw(CGContext nativeCanvas, RectF dirtyRect);
 		void SizeChanged(float width, float height);
 		void Detached();
 		void Invalidate();

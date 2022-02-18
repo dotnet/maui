@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		private Vector2 _linearGradientEndPoint;
 		private Vector2 _radialGradientCenterPoint;
 		private float _radialGradientRadius;
-		private RectangleF _fillRectangle;
+		private RectF _fillRectangle;
 		private GradientStopCollection _gradientStopCollection;
 		private RectangleGeometry _layerBounds;
 		private PathGeometry _layerMask;
@@ -559,7 +559,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			_linearGradientEndPoint = endPoint;
 		}
 
-		public void SetRadialGradient(Paint aPaint, Vector2 center, float radius, RectangleF rectangle)
+		public void SetRadialGradient(Paint aPaint, Vector2 center, float radius, RectF rectangle)
 		{
 			ReleaseFillBrush();
 			_fillBrushValid = false;

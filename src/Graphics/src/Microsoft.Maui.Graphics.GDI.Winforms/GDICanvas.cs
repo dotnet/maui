@@ -484,7 +484,7 @@ namespace Microsoft.Maui.Graphics.GDI
 		{
 		}
 
-		public override void SetFillPaint(Paint paint, RectangleF rectangle)
+		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint == null)
 			{

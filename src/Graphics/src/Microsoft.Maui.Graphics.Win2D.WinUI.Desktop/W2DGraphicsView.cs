@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 		private readonly W2DCanvas _canvas;
 
 		private IDrawable _drawable;
-		private RectangleF _dirty;
+		private RectF _dirty;
 		//private bool _resizeDrawable = true;
 
 		public W2DGraphicsView()

@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk
 	public class GtkGraphicsView : global::Gtk.EventBox
 	{
 		private IDrawable? _drawable;
-		private RectangleF _dirtyRect;
+		private RectF _dirtyRect;
 		private Color? _backgroundColor;
 
 		public GtkGraphicsView()

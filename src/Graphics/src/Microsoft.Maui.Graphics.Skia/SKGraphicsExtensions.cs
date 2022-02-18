@@ -61,14 +61,14 @@ namespace Microsoft.Maui.Graphics.Skia
 			return new Color(r, g, b, a);
 		}
 
-		public static SKRect AsSKRect(this RectangleF target)
+		public static SKRect AsSKRect(this RectF target)
 		{
 			return new SKRect(target.Left, target.Top, target.Right, target.Bottom);
 		}
 
-		public static RectangleF AsRectangleF(this SKRect target)
+		public static RectF AsRectangleF(this SKRect target)
 		{
-			return new RectangleF(target.Left, target.Top, Math.Abs(target.Right - target.Left), Math.Abs(target.Bottom - target.Top));
+			return new RectF(target.Left, target.Top, Math.Abs(target.Right - target.Left), Math.Abs(target.Bottom - target.Top));
 		}
 
 		public static SKPoint ToSKPoint(this PointF target)

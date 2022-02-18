@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Graphics
 		private readonly List<bool> _subPathsClosed;
 
 		private object _platformPath;
-		private RectangleF? _cachedBounds;
+		private RectF? _cachedBounds;
 
 		private PathF(List<PointF> points, List<float> arcSizes, List<bool> arcClockwise, List<PathOperation> operations, int subPathCount)
 		{
@@ -1022,7 +1022,7 @@ namespace Microsoft.Maui.Graphics
 			return new PathF(points, arcSizes, arcClockwise, operations, _subPathCount);
 		}
 
-		public void AppendEllipse(RectangleF rect)
+		public void AppendEllipse(RectF rect)
 		{
 			AppendEllipse(rect.X, rect.Y, rect.Width, rect.Height);
 		}
@@ -1070,7 +1070,7 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
-		public void AppendRectangle(RectangleF rect, bool includeLast = false)
+		public void AppendRectangle(RectF rect, bool includeLast = false)
 		{
 			AppendRectangle(rect.X, rect.Y, rect.Width, rect.Height, includeLast);
 		}
@@ -1095,7 +1095,7 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
-		public void AppendRoundedRectangle(RectangleF rect, float cornerRadius, bool includeLast = false)
+		public void AppendRoundedRectangle(RectF rect, float cornerRadius, bool includeLast = false)
 		{
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, cornerRadius, includeLast);
 		}
@@ -1129,12 +1129,12 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
-		public void AppendRoundedRectangle(RectangleF rect, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
+		public void AppendRoundedRectangle(RectF rect, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
 		{
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius, includeLast);
 		}
 
-		public void AppendRoundedRectangle(RectangleF rect, float xCornerRadius, float yCornerRadius)
+		public void AppendRoundedRectangle(RectF rect, float xCornerRadius, float yCornerRadius)
 		{
 			xCornerRadius = Math.Min(xCornerRadius, rect.Width / 2);
 			yCornerRadius = Math.Min(yCornerRadius, rect.Height / 2);
@@ -1383,12 +1383,12 @@ namespace Microsoft.Maui.Graphics
 			return true;
 		}
 
-		public RectangleF Bounds
+		public RectF Bounds
 		{
 			get
 			{
 				if (_cachedBounds != null)
-					return (RectangleF)_cachedBounds;
+					return (RectF)_cachedBounds;
 
 #if IOS || MACCATALYST || __IOS__
 
@@ -1402,14 +1402,14 @@ namespace Microsoft.Maui.Graphics
 				_cachedBounds = GetBoundsByFlattening();
 #endif
 
-				return (RectangleF)_cachedBounds;
+				return (RectF)_cachedBounds;
 			}
 		}
 
-		public RectangleF GetBoundsByFlattening(float flatness = 0.001f)
+		public RectF GetBoundsByFlattening(float flatness = 0.001f)
 		{
 			if (_cachedBounds != null)
-				return (RectangleF)_cachedBounds;
+				return (RectF)_cachedBounds;
 
 			var path = GetFlattenedPath(flatness, true);
 
@@ -1436,8 +1436,8 @@ namespace Microsoft.Maui.Graphics
 				}
 			}
 
-			_cachedBounds = new RectangleF(l, t, r - l, b - t);
-			return (RectangleF)_cachedBounds;
+			_cachedBounds = new RectF(l, t, r - l, b - t);
+			return (RectF)_cachedBounds;
 		}
 
 		public PathF GetFlattenedPath(float flatness = .001f, bool includeSubPaths = false)

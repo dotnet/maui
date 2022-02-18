@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 		// https://developer.gnome.org/gdk-pixbuf/stable/gdk-pixbuf-The-GdkPixbuf-Structure.html
 		public Gdk.Pixbuf? NativeImage => _pixbuf;
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect) {
+		public void Draw(ICanvas canvas, RectF dirtyRect) {
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, (float) Math.Round(dirtyRect.Width), (float) Math.Round(dirtyRect.Height));
 		}
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 		{
 			using var context = new GtkBitmapExportContext(width, height, scale);
 			context.Canvas.Scale(scale, scale);
-			Draw(context.Canvas, new RectangleF(0, 0, (float)width / scale, (float)height / scale));
+			Draw(context.Canvas, new RectF(0, 0, (float)width / scale, (float)height / scale));
 			return context.Image;
 		}
 

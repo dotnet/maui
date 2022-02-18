@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 			return pattern;
 		}
 
-		public static Cairo.Pattern? GetCairoPattern(this LinearGradientPaint? it, RectangleF rectangle, float scaleFactor) {
+		public static Cairo.Pattern? GetCairoPattern(this LinearGradientPaint? it, RectF rectangle, float scaleFactor) {
 			if (it == null)
 				return null;
 
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 			return pattern;
 		}
 
-		public static Cairo.Pattern? GetCairoPattern(this RadialGradientPaint? it, RectangleF rectangle, float scaleFactor) {
+		public static Cairo.Pattern? GetCairoPattern(this RadialGradientPaint? it, RectF rectangle, float scaleFactor) {
 			if (it == null)
 				return null;
 

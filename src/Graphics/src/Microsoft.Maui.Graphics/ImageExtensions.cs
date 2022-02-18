@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Graphics
 				var paint = image.AsPaint();
 				if (paint != null)
 				{
-					canvas.SetFillPaint(paint, RectangleF.Zero);
+					canvas.SetFillPaint(paint, RectF.Zero);
 				}
 				else
 				{

@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Graphics.SharpDX.WindowsForms
 			set => _backgroundColor = value;
 		}
 
-		public void Draw(RectangleF dirtyRect)
+		public void Draw(RectF dirtyRect)
 		{
 			try
 			{

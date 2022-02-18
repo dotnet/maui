@@ -47,7 +47,7 @@ namespace GraphicsTester.Xaml
 			{
 				using (canvas.CreateSession())
 				{
-					drawable.Draw(canvas, new RectangleF(0, 0, (float) Canvas.Width, (float) Canvas.Height));
+					drawable.Draw(canvas, new RectF(0, 0, (float) Canvas.Width, (float) Canvas.Height));
 				}
 			}
 		}

@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			RenderTransform = null;
 			canvas.RenderTarget = context;
 			var scale = canvas.DisplayScale;
-			var bounds = new RectangleF(0, 0, (float) ActualWidth * scale, (float) ActualHeight * scale);
+			var bounds = new RectF(0, 0, (float) ActualWidth * scale, (float) ActualHeight * scale);
 
 			if (backgroundColor != null)
 			{

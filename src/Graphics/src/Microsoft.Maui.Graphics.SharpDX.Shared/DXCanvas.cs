@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		private Vector2 _point1;
 		private Vector2 _point2;
 		private float _radius;
-		private RectangleF _fillRectangle;
+		private RectF _fillRectangle;
 		private Size2F _size;
 		private global::SharpDX.RectangleF _rect;
 		private RenderTarget _renderTarget;
@@ -797,7 +797,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			set { }
 		}
 
-		public override void SetFillPaint(Paint paint, RectangleF rectangle)
+		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint == null)
 			{

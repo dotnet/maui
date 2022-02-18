@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public void Draw(
 			SKCanvas skiaCanvas,
-			RectangleF dirtyRect)
+			RectF dirtyRect)
 		{
 			_canvas.Canvas = skiaCanvas;
 

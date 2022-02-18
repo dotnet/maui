@@ -23,7 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)FontExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Matrix3x2Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathGeometryExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RectangleFExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RectFExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderTargetExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WicBitmapExtensions.cs" />

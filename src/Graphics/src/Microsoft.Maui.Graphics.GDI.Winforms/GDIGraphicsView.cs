@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Graphics.GDI
 {
 	public partial class GDIGraphicsView : UserControl
 	{
-		private readonly RectangleF dirtyRect = new RectangleF();
+		private readonly RectF dirtyRect = new RectF();
 		private GDIGraphicsRenderer renderer;
 		private IDrawable drawable;
 
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Graphics.GDI
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			// Extend render area by 1px to prevent rendering artifacts at the edges
-			RectangleF rect = new RectangleF(
+			RectF rect = new RectF(
 				x: e.ClipRectangle.X - 1,
 				y: e.ClipRectangle.Y - 1,
 				width: e.ClipRectangle.Width + 2,

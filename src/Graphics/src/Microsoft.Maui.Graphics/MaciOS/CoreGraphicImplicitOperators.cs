@@ -2,14 +2,14 @@ using System;
 using CoreGraphics;
 namespace Microsoft.Maui.Graphics
 {
-	public partial struct RectangleF
+	public partial struct RectF
 	{
-		public static implicit operator CGRect(RectangleF rect) => new CGRect(rect.X,rect.Y,rect.Width,rect.Height);
+		public static implicit operator CGRect(RectF rect) => new CGRect(rect.X,rect.Y,rect.Width,rect.Height);
 	}
 
-	public partial struct Rectangle
+	public partial struct Rect
 	{
-		public static implicit operator CGRect(Rectangle rect) => new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+		public static implicit operator CGRect(Rect rect) => new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
 	}
 
 	public partial struct Size

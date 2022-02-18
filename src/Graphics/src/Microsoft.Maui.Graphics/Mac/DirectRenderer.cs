@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			set => _graphicsView = value;
 		}
 
-		public void Draw(CGContext coreGraphics, RectangleF dirtyRect)
+		public void Draw(CGContext coreGraphics, RectF dirtyRect)
 		{
 			_canvas.Context = coreGraphics;
 

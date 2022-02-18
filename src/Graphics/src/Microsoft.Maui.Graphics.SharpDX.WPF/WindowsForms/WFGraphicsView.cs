@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Graphics.SharpDX.WindowsForms
 			if (_drawable == null) return;
 
 			var clipRect = e.ClipRectangle;
-			_renderer.Draw(new RectangleF(clipRect.X, clipRect.Y, clipRect.Width, clipRect.Height));
+			_renderer.Draw(new RectF(clipRect.X, clipRect.Y, clipRect.Width, clipRect.Height));
 		}
 
 		protected override void OnResize(EventArgs e)

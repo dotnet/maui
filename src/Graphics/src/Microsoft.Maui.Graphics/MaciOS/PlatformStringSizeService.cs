@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			var path = new CGPath();
-			path.AddRect(new RectangleF(0, 0, 512, 512));
+			path.AddRect(new RectF(0, 0, 512, 512));
 			path.CloseSubpath();
 
 			var attributedString = new NSMutableAttributedString(value);
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			return textBounds.Size;
 		}
 
-		internal static RectangleF GetTextSize(CTFramesetter frameSetter, CGPath path)
+		internal static RectF GetTextSize(CTFramesetter frameSetter, CGPath path)
 		{
 			var frame = frameSetter.GetFrame(new NSRange(0, 0), path, null);
 
@@ -77,10 +77,10 @@ namespace Microsoft.Maui.Graphics.Platform
 				return textSize;
 			}
 
-			return new RectangleF(0, 0, 0, 0);
+			return new RectF(0, 0, 0, 0);
 		}
 
-		internal static RectangleF GetTextSize(CTFrame frame)
+		internal static RectF GetTextSize(CTFrame frame)
 		{
 			var minY = float.MaxValue;
 			var maxY = float.MinValue;
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				lines[i].Dispose();
 			}
 
-			return new RectangleF(0f, minY, width, Math.Max(0, maxY - minY));
+			return new RectF(0f, minY, width, Math.Max(0, maxY - minY));
 		}
 	}
 }

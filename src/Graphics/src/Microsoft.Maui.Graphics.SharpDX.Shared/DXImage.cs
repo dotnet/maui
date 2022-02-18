@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			return Task.Factory.StartNew(() => Save(stream, format, quality));
 		}
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, Math.Abs(dirtyRect.Width), Math.Abs(dirtyRect.Height));
 		}
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		{
 			using var context = new DXBitmapExportContext(width, height, scale);
 			context.Canvas.Scale(scale, scale);
-			Draw(context.Canvas, new RectangleF(0, 0, (float)width / scale, (float)height / scale));
+			Draw(context.Canvas, new RectF(0, 0, (float)width / scale, (float)height / scale));
 			return context.Image;
 		}
 

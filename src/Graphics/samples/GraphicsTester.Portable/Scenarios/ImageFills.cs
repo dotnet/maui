@@ -22,7 +22,7 @@ namespace GraphicsTester.Scenarios
 
 			if (image != null)
 			{
-				canvas.SetFillPaint(image.AsPaint(), RectangleF.Zero);
+				canvas.SetFillPaint(image.AsPaint(), RectF.Zero);
 				canvas.FillRectangle(50, 50, 500, 500);
 			}
 		}
