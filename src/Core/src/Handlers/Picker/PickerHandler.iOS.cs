@@ -141,9 +141,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
 		}
-
+		
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
 			if (_pickerView == null)
@@ -154,9 +155,10 @@ namespace Microsoft.Maui.Handlers
 			if (model.SelectedIndex != -1 && model.SelectedIndex != _pickerView.SelectedRowInComponent(0))
 			{
 				_pickerView.Select(model.SelectedIndex, 0, false);
-			}   
-			
-			// TODO: Update IsFocused property
+			}
+
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void OnEditing(object? sender, EventArgs eventArgs)
