@@ -53,22 +53,22 @@ namespace Microsoft.Maui.Platform
 				{
 					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
 					var strDate = dateFormatter.StringFor(picker?.Date);
-					nativeDatePicker.Text = strDate;
+					platformDatePicker.Text = strDate;
 				}
 				else
 				{
 					dateFormatter.DateStyle = NSDateFormatterStyle.Short;
 					var strDate = dateFormatter.StringFor(picker?.Date);
-					nativeDatePicker.Text = strDate;
+					platformDatePicker.Text = strDate;
 				}
 			}
 			else if (format.Contains('/'))
 			{
-				nativeDatePicker.Text = datePicker.Date.ToString(format, CultureInfo.InvariantCulture);
+				platformDatePicker.Text = datePicker.Date.ToString(format, CultureInfo.InvariantCulture);
 			}
 			else
 			{
-				nativeDatePicker.Text = datePicker.Date.ToString(format);
+				platformDatePicker.Text = datePicker.Date.ToString(format);
 			}
 		
 			platformDatePicker.UpdateCharacterSpacing(datePicker);

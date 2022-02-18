@@ -50,9 +50,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
-			nativeView.EditingDidBegin += OnStarted;
-			nativeView.EditingDidEnd += OnEnded;
-
 			if (_picker != null)
 			{
 				_picker.EditingDidBegin += OnStarted;
@@ -67,9 +64,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			nativeView.EditingDidBegin -= OnStarted;
-			nativeView.EditingDidEnd -= OnEnded;
-
 			if (_picker != null)
 			{
 				_picker.EditingDidBegin -= OnStarted;
@@ -124,8 +118,8 @@ namespace Microsoft.Maui.Handlers
     
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFlowDirection(datePicker);
-			handler.NativeView?.UpdateTextAlignment(datePicker);
+			handler.PlatformView?.UpdateFlowDirection(datePicker);
+			handler.PlatformView?.UpdateTextAlignment(datePicker);
 		}
 
 		void OnValueChanged(object? sender, EventArgs? e)
@@ -139,12 +133,13 @@ namespace Microsoft.Maui.Handlers
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
 			if (VirtualView != null)
-				VirtualView.IsFocused = false;
+				VirtualView.IsFocused = true;
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void SetVirtualViewDate()

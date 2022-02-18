@@ -55,12 +55,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateFormat(timePicker, handler.NativeView?.Picker);
+			handler.PlatformView?.UpdateFormat(timePicker, handler.PlatformView?.Picker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTime(timePicker, handler.NativeView?.Picker);
+			handler.PlatformView?.UpdateTime(timePicker, handler.PlatformView?.Picker);
 		}
 
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
@@ -82,8 +82,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFlowDirection(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateFlowDirection(timePicker);
-			handler.NativeView?.UpdateTextAlignment(timePicker);
+			handler.PlatformView?.UpdateFlowDirection(timePicker);
+			handler.PlatformView?.UpdateTextAlignment(timePicker);
 		}
 
 		void OnStarted(object? sender, EventArgs eventArgs)
