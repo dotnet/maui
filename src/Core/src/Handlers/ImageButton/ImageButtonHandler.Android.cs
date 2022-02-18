@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ShapeableImageView platformView)
 		{
+			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
 			platformView.Touch -= OnTouch;
 
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(ShapeableImageView platformView)
 		{
+			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 			platformView.Touch += OnTouch;
 
@@ -60,7 +62,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			(handler.PlatformView as ShapeableImageView)?.UpdatePadding(imageButton);
 		}
-		
+
+		void OnFocusChange(object? sender, View.FocusChangeEventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = e.HasFocus;
+		}
+
 		void OnTouch(object? sender, View.TouchEventArgs e)
 		{
 			var motionEvent = e.Event;

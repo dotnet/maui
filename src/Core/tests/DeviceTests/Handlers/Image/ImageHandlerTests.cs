@@ -137,6 +137,8 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.PlatformView.AssertContainsColor(color);
 			});
 
+			await Task.Delay(1000);
+
 			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
 			Assert.NotNull(exception);
 		}

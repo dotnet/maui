@@ -304,6 +304,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ElementPropertyChanged?.Invoke(this, e);
 		}
 
+		[PortHandler]
 		// general state related
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
