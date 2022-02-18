@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
@@ -23,6 +24,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
+
 			base.ConnectHandler(platformView);
 
 			SetupDefaults(platformView);
@@ -32,6 +36,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
+
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -157,6 +164,11 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.Show();
 			}
+		}
+
+		void OnRowsCollectionChanged(object? sender, EventArgs e)
+		{
+			Reload();
 		}
 
 		void Reload()

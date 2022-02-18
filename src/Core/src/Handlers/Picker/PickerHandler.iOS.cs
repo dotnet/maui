@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using Microsoft.Extensions.DependencyInjection;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -58,7 +56,10 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditingDidBegin += OnStarted;
 			platformView.EditingDidEnd += OnEnded;
 			platformView.EditingChanged += OnEditing;
-      
+
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
+
 			base.ConnectHandler(platformView);
 		}
 
@@ -67,6 +68,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditingDidBegin -= OnStarted;
 			platformView.EditingDidEnd -= OnEnded;
 			platformView.EditingChanged -= OnEditing;
+
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 
 			if (_pickerView != null)
 			{
@@ -169,6 +173,11 @@ namespace Microsoft.Maui.Handlers
 
 			// Also clears the undo stack (undo/redo possible on iPads)
 			PlatformView.UndoManager.RemoveAllActions();
+		}
+
+		void OnRowsCollectionChanged(object? sender, EventArgs e)
+		{
+			Reload();
 		}
 
 		void UpdatePickerFromPickerSource(PickerSource pickerSource)
