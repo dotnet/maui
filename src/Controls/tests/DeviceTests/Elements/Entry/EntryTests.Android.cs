@@ -7,7 +7,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class EntryTests
 	{
 		AppCompatEditText GetPlatformControl(EntryHandler handler) =>
-			handler.NativeView;
+			handler.PlatformView;
 
 		Task<string> GetPlatformText(EntryHandler handler)
 		{

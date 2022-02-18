@@ -27,11 +27,6 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<LabelHandler>(control);
 			await InvokeOnMainThreadAsync(() => control.TextTransform = transform);
 			var platformText = await InvokeOnMainThreadAsync(() => TextForHandler(handler));
-			var label = new Label() { Text = text, TextTransform = transform };
-
-			var handler = await CreateHandlerAsync<LabelHandler>(label);
-
-			var platformText = await InvokeOnMainThreadAsync(() => TextForHandler(handler));
 			Assert.Equal(expected, platformText);
 		}
 

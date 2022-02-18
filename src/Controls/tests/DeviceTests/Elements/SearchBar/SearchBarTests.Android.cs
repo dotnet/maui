@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class SearchBarTests
 	{
 		SearchView GetPlatformControl(SearchBarHandler handler) =>
-			handler.NativeView;
+			handler.PlatformView;
 
 		Task<string> GetPlatformText(SearchBarHandler handler)
 		{

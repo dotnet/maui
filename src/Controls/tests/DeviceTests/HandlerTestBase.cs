@@ -109,7 +109,7 @@ namespace Microsoft.Maui.DeviceTests
 				// since we're not doing that here, we need to ensure they have LayoutParams so that tests
 				// which update properties don't crash. 
 
-				var aView = viewHandler.NativeView as Android.Views.View;
+				var aView = viewHandler.PlatformView as Android.Views.View;
 				if(aView.LayoutParameters == null)
 				{
 					aView.LayoutParameters = 
