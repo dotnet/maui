@@ -176,6 +176,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
