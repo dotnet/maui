@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
 			string contentRootDir,
-			Action<ExternalLinkNavigationInfo>? externalNavigationStarting)
+			Action<ExternalLinkNavigationEventArgs>? externalNavigationStarting)
 			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath, externalNavigationStarting)
 		{
 			_webview = webview;

@@ -51,10 +51,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private readonly Task _webviewReadyTask;
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
-		private readonly Action<ExternalLinkNavigationInfo> _externalNavigationStarting;
+		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
 #elif WEBVIEW2_MAUI
 		private protected CoreWebView2Environment? _coreWebView2Environment;
-		private readonly Action<ExternalLinkNavigationInfo>? _externalNavigationStarting;
+		private readonly Action<ExternalLinkNavigationEventArgs>? _externalNavigationStarting;
 #endif
 
 		/// <summary>
@@ -73,9 +73,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			JSComponentConfigurationStore jsComponents, 
 			string hostPageRelativePath,
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			Action<ExternalLinkNavigationInfo> externalNavigationStarting
+			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting
 #elif WEBVIEW2_MAUI
-			Action<ExternalLinkNavigationInfo>? externalNavigationStarting
+			Action<ExternalLinkNavigationEventArgs>? externalNavigationStarting
 #endif
 		)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) && uri.Host != AppHostAddress)
 			{
-				var callbackArgs = new ExternalLinkNavigationInfo(uri);
+				var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
 				_externalNavigationStarting?.Invoke(callbackArgs);
 
 				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)

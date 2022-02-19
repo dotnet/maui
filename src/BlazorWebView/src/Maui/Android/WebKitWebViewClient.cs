@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				else if (uri.Host != BlazorWebView.AppHostAddress && _webViewHandler != null)
 				{
-					var callbackArgs = new ExternalLinkNavigationInfo(uri);
+					var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
 					_webViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
 
 					if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)

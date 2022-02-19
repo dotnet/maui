@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Components.WebView
 	/// `_blank` target links will always open in the default browser
 	/// thus the OnExternalNavigationStarting won't be called.
 	/// </summary>
-	public class ExternalLinkNavigationInfo
+	public class ExternalLinkNavigationEventArgs : EventArgs
 	{
-		public ExternalLinkNavigationInfo(Uri uri)
+		public ExternalLinkNavigationEventArgs(Uri uri)
 		{
 			Uri = uri;
 		}

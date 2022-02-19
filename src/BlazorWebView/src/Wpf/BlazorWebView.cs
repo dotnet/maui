@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// </summary>
 		public static readonly DependencyProperty OnExternalNavigationStartingProperty = DependencyProperty.Register(
 			name: nameof(OnExternalNavigationStarting),
-			propertyType: typeof(EventHandler<ExternalLinkNavigationInfo>),
+			propertyType: typeof(EventHandler<ExternalLinkNavigationEventArgs>),
 			ownerType: typeof(BlazorWebView));
 		#endregion
 
@@ -110,9 +110,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// Allows customizing how external links are opened.
 		/// Opens external links in the system browser by default.
 		/// </summary>
-		public EventHandler<ExternalLinkNavigationInfo> OnExternalNavigationStarting
+		public EventHandler<ExternalLinkNavigationEventArgs> OnExternalNavigationStarting
 		{
-			get => (EventHandler<ExternalLinkNavigationInfo>)GetValue(OnExternalNavigationStartingProperty);
+			get => (EventHandler<ExternalLinkNavigationEventArgs>)GetValue(OnExternalNavigationStartingProperty);
 			set => SetValue(OnExternalNavigationStartingProperty, value);
 		}
 

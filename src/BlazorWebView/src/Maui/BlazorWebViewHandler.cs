@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 #if !NETSTANDARD
 		private string? HostPage { get; set; }
-		internal Action<ExternalLinkNavigationInfo>? ExternalNavigationStarting;
+		internal Action<ExternalLinkNavigationEventArgs>? ExternalNavigationStarting;
 
 		private RootComponentsCollection? _rootComponents;
 		private RootComponentsCollection? RootComponents
