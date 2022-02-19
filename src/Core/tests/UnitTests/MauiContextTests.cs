@@ -15,7 +15,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var collection = new MauiServiceCollection();
 			collection.AddSingleton(obj);
-			var services = new MauiFactory(collection, false);
+			var services = new MauiFactory(collection);
 
 			var first = new MauiContext(services);
 			var second = new MauiContext(first.Services);
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var collection = new MauiServiceCollection();
 			collection.AddSingleton(baseObj);
-			var services = new MauiFactory(collection, false);
+			var services = new MauiFactory(collection);
 
 			var specificObj = new TestThing();
 			var context = new MauiContext(services);
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.UnitTests
 		public void AddSpecificIsNotWeak()
 		{
 			var collection = new MauiServiceCollection();
-			var services = new MauiFactory(collection, false);
+			var services = new MauiFactory(collection);
 			var context = new MauiContext(services);
 
 			DoAdd(context);
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.UnitTests
 		public void AddWeakSpecificIsWeak()
 		{
 			var collection = new MauiServiceCollection();
-			var services = new MauiFactory(collection, false);
+			var services = new MauiFactory(collection);
 			var context = new MauiContext(services);
 
 			DoAdd(context);
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var collection = new MauiServiceCollection();
 			collection.AddSingleton(obj);
-			var services = new MauiFactory(collection, false);
+			var services = new MauiFactory(collection);
 
 			var first = new MauiContext(services);
 

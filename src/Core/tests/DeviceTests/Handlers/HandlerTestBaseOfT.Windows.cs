@@ -121,107 +121,107 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		protected Maui.Graphics.Rectangle GetNativeViewBounds(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.NativeView).GetNativeViewBounds();
+		protected Maui.Graphics.Rectangle GetPlatformViewBounds(IViewHandler viewHandler) =>
+			((FrameworkElement)viewHandler.PlatformView).GetPlatformViewBounds();
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.NativeView).GetViewTransform();
+			((FrameworkElement)viewHandler.PlatformView).GetViewTransform();
 
 		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.NativeView).GetBoundingBox();
+			((FrameworkElement)viewHandler.PlatformView).GetBoundingBox();
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			AutomationProperties.GetAutomationId((FrameworkElement)viewHandler.NativeView);
+			AutomationProperties.GetAutomationId((FrameworkElement)viewHandler.PlatformView);
 
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((FrameworkElement)viewHandler.NativeView).GetValue(AutomationProperties.AccessibilityViewProperty)) == AccessibilityView.Content;
+			((AccessibilityView)((FrameworkElement)viewHandler.PlatformView).GetValue(AutomationProperties.AccessibilityViewProperty)) == AccessibilityView.Content;
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
-			AutomationProperties.GetName((FrameworkElement)viewHandler.NativeView);
+			AutomationProperties.GetName((FrameworkElement)viewHandler.PlatformView);
 
 		protected string GetSemanticHint(IViewHandler viewHandler) =>
-			AutomationProperties.GetHelpText((FrameworkElement)viewHandler.NativeView);
+			AutomationProperties.GetHelpText((FrameworkElement)viewHandler.PlatformView);
 
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
-			(SemanticHeadingLevel)AutomationProperties.GetHeadingLevel((FrameworkElement)viewHandler.NativeView);
+			(SemanticHeadingLevel)AutomationProperties.GetHeadingLevel((FrameworkElement)viewHandler.PlatformView);
 
 		protected double GetOpacity(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.NativeView).Opacity;
+			((FrameworkElement)viewHandler.PlatformView).Opacity;
 
 		double GetTranslationX(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.RenderTransform is CompositeTransform composite)
+			if (platformView.RenderTransform is CompositeTransform composite)
 				return composite.TranslateX;
 			return 0.5;
 		}
 
 		double GetTranslationY(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.RenderTransform is CompositeTransform composite)
+			if (platformView.RenderTransform is CompositeTransform composite)
 				return composite.TranslateY;
 			return 0.5;
 		}
 
 		double GetScaleX(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.RenderTransform is ScaleTransform scale)
+			if (platformView.RenderTransform is ScaleTransform scale)
 				return scale.ScaleX;
-			if (nativeView.RenderTransform is CompositeTransform composite)
+			if (platformView.RenderTransform is CompositeTransform composite)
 				return composite.ScaleX;
 			return 1;
 		}
 
 		double GetScaleY(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.RenderTransform is ScaleTransform scale)
+			if (platformView.RenderTransform is ScaleTransform scale)
 				return scale.ScaleY;
-			if (nativeView.RenderTransform is CompositeTransform composite)
+			if (platformView.RenderTransform is CompositeTransform composite)
 				return composite.ScaleY;
 			return 1;
 		}
 
 		double GetRotation(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.RenderTransform is CompositeTransform composite)
+			if (platformView.RenderTransform is CompositeTransform composite)
 				return composite.Rotation;
 			return 0;
 		}
 
 		double GetRotationX(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.Projection is PlaneProjection projection)
+			if (platformView.Projection is PlaneProjection projection)
 				return -projection.RotationX;
 			return 0;
 		}
 
 		double GetRotationY(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.Projection is PlaneProjection projection)
+			if (platformView.Projection is PlaneProjection projection)
 				return -projection.RotationY;
 			return 0;
 		}
 
 		protected Visibility GetVisibility(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.Visibility == UI.Xaml.Visibility.Visible && nativeView.Opacity == 0)
+			if (platformView.Visibility == UI.Xaml.Visibility.Visible && platformView.Opacity == 0)
 				return Visibility.Hidden;
-			else if (nativeView.Visibility == UI.Xaml.Visibility.Collapsed)
+			else if (platformView.Visibility == UI.Xaml.Visibility.Collapsed)
 				return Visibility.Collapsed;
 			else
 				return Visibility.Visible;
@@ -229,9 +229,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
-			if (nativeView.FlowDirection == UI.Xaml.FlowDirection.LeftToRight)
+			if (platformView.FlowDirection == UI.Xaml.FlowDirection.LeftToRight)
 				return FlowDirection.LeftToRight;
 
 			return FlowDirection.RightToLeft;

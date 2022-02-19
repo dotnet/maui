@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if ((Element as Frame).BorderColor.IsDefault)
 				_frame.Color = s_DefaultColor;
 			else
-				_frame.Color = (Element as Frame).BorderColor.ToNative();
+				_frame.Color = (Element as Frame).BorderColor.ToPlatform();
 		}
 
 		void UpdateShadowVisibility()

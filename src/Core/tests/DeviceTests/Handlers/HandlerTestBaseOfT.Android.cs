@@ -153,36 +153,36 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			$"{GetSemanticNativeElement(viewHandler).ContentDescription}";
+			$"{GetSemanticPlatformElement(viewHandler).ContentDescription}";
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			if (nativeView.LayoutDirection == LayoutDirection.Rtl)
+			if (platformView.LayoutDirection == LayoutDirection.Rtl)
 				return FlowDirection.RightToLeft;
 
 			return FlowDirection.LeftToRight;
 		}
 
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			GetSemanticNativeElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
+			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
 
 
-		public View GetSemanticNativeElement(IViewHandler viewHandler)
+		public View GetSemanticPlatformElement(IViewHandler viewHandler)
 		{
-			if (viewHandler.NativeView is View sv)
-				return sv.GetSemanticNativeElement();
+			if (viewHandler.PlatformView is View sv)
+				return sv.GetSemanticPlatformElement();
 
-			return (View)viewHandler.NativeView;
+			return (View)viewHandler.PlatformView;
 		}
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
-			GetSemanticNativeElement(viewHandler).ContentDescription;
+			GetSemanticPlatformElement(viewHandler).ContentDescription;
 
 		protected string GetSemanticHint(IViewHandler viewHandler)
 		{
-			if (GetSemanticNativeElement(viewHandler) is EditText et)
+			if (GetSemanticPlatformElement(viewHandler) is EditText et)
 				return et.Hint;
 
 			return null;
@@ -193,106 +193,106 @@ namespace Microsoft.Maui.DeviceTests
 			// AccessibilityHeading is only available on API 28+
 			// With lower Apis you use ViewCompat.SetAccessibilityHeading
 			// but there exists no ViewCompat.GetAccessibilityHeading
-			if (NativeVersion.IsAtLeast(28))
-				return ((View)viewHandler.NativeView).AccessibilityHeading
+			if (PlatformVersion.IsAtLeast(28))
+				return ((View)viewHandler.PlatformView).AccessibilityHeading
 					? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
 			return viewHandler.VirtualView.Semantics.HeadingLevel;
 		}
 
 		protected float GetOpacity(IViewHandler viewHandler) =>
-			((View)viewHandler.NativeView).Alpha;
+			((View)viewHandler.PlatformView).Alpha;
 
 		double GetTranslationX(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			return Math.Floor(nativeView.Context.FromPixels(nativeView.TranslationX));
+			return Math.Floor(platformView.Context.FromPixels(platformView.TranslationX));
 		}
 
 		double GetTranslationY(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			return Math.Floor(nativeView.Context.FromPixels(nativeView.TranslationY));
+			return Math.Floor(platformView.Context.FromPixels(platformView.TranslationY));
 		}
 
 		double GetScaleX(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			return Math.Floor(nativeView.ScaleX);
+			return Math.Floor(platformView.ScaleX);
 		}
 
 		double GetScaleY(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			return Math.Floor(nativeView.ScaleY);
+			return Math.Floor(platformView.ScaleY);
 		}
 
 		double GetRotation(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			return Math.Floor(nativeView.Rotation);
+			return Math.Floor(platformView.Rotation);
 		}
 
 		double GetRotationX(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			return Math.Floor(nativeView.RotationX);
+			return Math.Floor(platformView.RotationX);
 		}
 
 		double GetRotationY(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			return Math.Floor(nativeView.RotationY);
+			return Math.Floor(platformView.RotationY);
 		}
 
 		double GetMinHeight(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			var nativeHeight = nativeView.MinimumHeight;
+			var nativeHeight = platformView.MinimumHeight;
 
-			var xplatHeight = nativeView.Context.FromPixels(nativeHeight);
+			var xplatHeight = platformView.Context.FromPixels(nativeHeight);
 
 			return xplatHeight;
 		}
 
 		double GetMinWidth(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			var nativeWidth = nativeView.MinimumWidth;
+			var nativeWidth = platformView.MinimumWidth;
 
-			var xplatWidth = nativeView.Context.FromPixels(nativeWidth);
+			var xplatWidth = platformView.Context.FromPixels(nativeWidth);
 
 			return xplatWidth;
 		}
 
 		protected Visibility GetVisibility(IViewHandler viewHandler)
 		{
-			var nativeView = (View)viewHandler.NativeView;
+			var platformView = (View)viewHandler.PlatformView;
 
-			if (nativeView.Visibility == ViewStates.Visible)
+			if (platformView.Visibility == ViewStates.Visible)
 				return Visibility.Visible;
-			else if (nativeView.Visibility == ViewStates.Gone)
+			else if (platformView.Visibility == ViewStates.Gone)
 				return Visibility.Collapsed;
 			else
 				return Visibility.Hidden;
 		}
 
-		protected Maui.Graphics.Rectangle GetNativeViewBounds(IViewHandler viewHandler) =>
-			((View)viewHandler.NativeView).GetNativeViewBounds();
+		protected Maui.Graphics.Rectangle GetPlatformViewBounds(IViewHandler viewHandler) =>
+			((View)viewHandler.PlatformView).GetPlatformViewBounds();
 
 		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
-			((View)viewHandler.NativeView).GetBoundingBox();
+			((View)viewHandler.PlatformView).GetBoundingBox();
 
 		protected Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
-			((View)viewHandler.NativeView).GetViewTransform();
+			((View)viewHandler.PlatformView).GetViewTransform();
 	}
 }

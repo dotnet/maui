@@ -26,7 +26,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Carousel = itemsView;
 			CollectionView.AllowsSelection = false;
 			CollectionView.AllowsMultipleSelection = false;
-			Carousel.PropertyChanged += CarouselViewPropertyChanged;
 			Carousel.Scrolled += CarouselViewScrolled;
 			_oldViews = new List<View>();
 		}
@@ -52,7 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				cell = base.GetCell(collectionView, indexPath);
 			}
 
-			var element = (cell as TemplatedCell)?.NativeHandler?.VirtualView as VisualElement;
+			var element = (cell as TemplatedCell)?.PlatformHandler?.VirtualView as VisualElement;
 
 			if (element != null)
 				VisualStateManager.GoToState(element, CarouselView.DefaultItemVisualState);
@@ -165,7 +164,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void TearDown()
 		{
-			Carousel.PropertyChanged -= CarouselViewPropertyChanged;
 			Carousel.Scrolled -= CarouselViewScrolled;
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			_carouselViewLoopManager?.Dispose();
@@ -293,17 +291,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		void CarouselViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs changedProperty)
-		{
-			if (changedProperty.Is(CarouselView.PositionProperty))
-				UpdateFromPosition();
-			else if (changedProperty.Is(CarouselView.CurrentItemProperty))
-				UpdateFromCurrentItem();
-			else if (changedProperty.Is(CarouselView.LoopProperty))
-				UpdateLoop();
-		}
-
-		void UpdateLoop()
+		internal void UpdateLoop()
 		{
 			var carouselPosition = Carousel.Position;
 
@@ -357,7 +345,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateVisualStates();
 		}
 
-		void UpdateFromCurrentItem()
+		internal void UpdateFromCurrentItem()
 		{
 			if (Carousel?.CurrentItem == null || ItemsSource == null || ItemsSource.ItemCount == 0)
 				return;
@@ -369,7 +357,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateVisualStates();
 		}
 
-		void UpdateFromPosition()
+		internal void UpdateFromPosition()
 		{
 			var itemsCount = ItemsSource?.ItemCount;
 			if (itemsCount == 0)
@@ -394,6 +382,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (!_initialPositionSet)
 			{
+				System.Diagnostics.Debug.WriteLine($"UpdateInitialPosition");
 				_initialPositionSet = true;
 
 				int position = Carousel.Position;
@@ -425,7 +414,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var cell in cells)
 			{
-				if (!((cell as CarouselTemplatedCell)?.NativeHandler?.VirtualView is View itemView))
+				if (!((cell as CarouselTemplatedCell)?.PlatformHandler?.VirtualView is View itemView))
 					return;
 
 				var item = itemView.BindingContext;

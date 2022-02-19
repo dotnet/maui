@@ -201,13 +201,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		void UpdateFont()

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -113,6 +114,7 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
 		public IDictionary<string, object> Properties
 		{
+			[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 			get
 			{
 				if (_propertiesTask == null)
@@ -263,6 +265,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SavePropertiesAsync']/Docs" />
 		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		public Task SavePropertiesAsync() =>
 			Dispatcher.DispatchIfRequiredAsync(async () =>
 			{
@@ -344,6 +347,7 @@ namespace Microsoft.Maui.Controls
 			OnResume();
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		internal void SendSleep()
 		{
 			OnSleep();
@@ -352,6 +356,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		internal Task SendSleepAsync()
 		{
 			OnSleep();
@@ -369,6 +374,7 @@ namespace Microsoft.Maui.Controls
 			OnStart();
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		async Task<IDictionary<string, object>> GetPropertiesAsync()
 		{
 			var deserializer = DependencyService.Get<IDeserializer>();
@@ -392,6 +398,7 @@ namespace Microsoft.Maui.Controls
 			=> PageDisappearing?.Invoke(this, page);
 
 
+		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		async Task SetPropertiesAsync()
 		{
 			await SaveSemaphore.WaitAsync();

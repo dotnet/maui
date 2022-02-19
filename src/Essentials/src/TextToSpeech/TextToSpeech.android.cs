@@ -10,26 +10,29 @@ using AndroidTextToSpeech = Android.Speech.Tts.TextToSpeech;
 using Debug = System.Diagnostics.Debug;
 using JavaLocale = Java.Util.Locale;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class TextToSpeech
+	public partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		const int maxSpeechInputLengthDefault = 4000;
 
-		static WeakReference<TextToSpeechImplementation> textToSpeechRef = null;
+		static WeakReference<TextToSpeechInternalImplementation> textToSpeechRef = null;
 
-		static TextToSpeechImplementation GetTextToSpeech()
+		static TextToSpeechInternalImplementation GetTextToSpeech()
 		{
 			if (textToSpeechRef == null || !textToSpeechRef.TryGetTarget(out var tts))
 			{
-				tts = new TextToSpeechImplementation();
-				textToSpeechRef = new WeakReference<TextToSpeechImplementation>(tts);
+				tts = new TextToSpeechInternalImplementation();
+				textToSpeechRef = new WeakReference<TextToSpeechInternalImplementation>(tts);
 			}
 
 			return tts;
 		}
 
-		internal static Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		public Task SpeakAsync(string text, CancellationToken cancelToken)
+			=> SpeakAsync(text, default, cancelToken);
+
+		public Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
 		{
 			var textToSpeech = GetTextToSpeech();
 
@@ -43,7 +46,7 @@ namespace Microsoft.Maui.Essentials
 			return textToSpeech.SpeakAsync(text, max, options, cancelToken);
 		}
 
-		internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync()
+		public Task<IEnumerable<Locale>> GetLocalesAsync()
 		{
 			var textToSpeech = GetTextToSpeech();
 
@@ -54,7 +57,7 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	class TextToSpeechImplementation : Java.Lang.Object, AndroidTextToSpeech.IOnInitListener,
+	class TextToSpeechInternalImplementation : Java.Lang.Object, AndroidTextToSpeech.IOnInitListener,
 #pragma warning disable CS0618
 		AndroidTextToSpeech.IOnUtteranceCompletedListener
 #pragma warning restore CS0618

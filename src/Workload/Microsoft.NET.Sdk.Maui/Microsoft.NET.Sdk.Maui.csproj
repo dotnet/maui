@@ -45,41 +45,8 @@
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationBinderPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationCommandLinePackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationFileExtensionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationJsonPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationUserSecretsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsDependencyInjectionPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersCompositePackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersEmbeddedPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersPhysicalPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileSystemGlobbingPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsHostingAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsHostingPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingConfigurationPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingConsolePackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingDebugPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingEventLogPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingEventSourcePackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsOptionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsPrimitivesPackageVersion" />
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
       <_VersionsToReplace Include="MicrosoftMauiGraphicsVersion" />
-      <_VersionsToReplace Include="SystemDiagnosticsDiagnosticSourcePackageVersion" />
-      <_VersionsToReplace Include="SystemDiagnosticsEventLogPackageVersion" />
-      <_VersionsToReplace Include="SystemIOPipelinesPackageVersion" />
-      <_VersionsToReplace Include="SystemRuntimeCompilerServicesUnsafePackageVersion" />
-      <_VersionsToReplace Include="SystemTextEncodingsWebPackageVersion" />
-      <_VersionsToReplace Include="SystemTextJsonPackageVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="MicrosoftMauiGraphicsVersion" />
     </ItemGroup>

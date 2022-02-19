@@ -9,14 +9,14 @@ using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract partial class VisualElementRenderer<TElement> : AViewGroup, INativeViewHandler
+	public abstract partial class VisualElementRenderer<TElement> : AViewGroup, IPlatformViewHandler
 		where TElement : Element, IView
 	{
-		object? IElementHandler.NativeView => ChildCount > 0 ? GetChildAt(0) : null;
+		object? IElementHandler.PlatformView => ChildCount > 0 ? GetChildAt(0) : null;
 
 		static partial void ProcessAutoPackage(Maui.IElement element)
 		{
-			if (element?.Handler?.NativeView is not AViewGroup viewGroup)
+			if (element?.Handler?.PlatformView is not AViewGroup viewGroup)
 				return;
 
 			viewGroup.RemoveAllViews();

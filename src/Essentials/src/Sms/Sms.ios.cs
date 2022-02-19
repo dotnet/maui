@@ -6,7 +6,7 @@ using MessageUI;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class SmsImplementation: ISms
+	public class SmsImplementation : ISms
 	{
 		internal static bool IsComposeSupported
 #if !(MACCATALYST || MACOS)

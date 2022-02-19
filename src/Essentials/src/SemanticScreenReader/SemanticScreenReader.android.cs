@@ -1,10 +1,10 @@
 ﻿using Android.Views.Accessibility;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class SemanticScreenReader
+	public partial class SemanticScreenReaderImplementation : ISemanticScreenReader
 	{
-		static void PlatformAnnounce(string text)
+		public void Announce(string text)
 		{
 			AccessibilityManager manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
 			AccessibilityEvent announcement = AccessibilityEvent.Obtain();

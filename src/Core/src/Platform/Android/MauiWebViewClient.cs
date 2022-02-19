@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 			_handler.SyncNativeCookiesToVirtualView(url);
 
 			if (_handler != null)
-				_handler.NativeView.UpdateCanGoBackForward(_handler.VirtualView);
+				_handler.PlatformView.UpdateCanGoBackForward(_handler.VirtualView);
 
 			base.OnPageStarted(view, url, favicon);
 		}

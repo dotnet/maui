@@ -384,17 +384,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateVerticalScrollBarVisibility()
 		{
-			Control.VerticalScrollBarVisibility = Element.VerticalScrollBarVisibility.ToNative();
+			Control.VerticalScrollBarVisibility = Element.VerticalScrollBarVisibility.ToPlatform();
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
-			Control.HorizontalScrollBarVisibility = Element.HorizontalScrollBarVisibility.ToNative();
+			Control.HorizontalScrollBarVisibility = Element.HorizontalScrollBarVisibility.ToPlatform();
 		}
 
 		void UpdateSeparator()
 		{
-			Control.BottomLineColor = Element.SeparatorVisibility == SeparatorVisibility.Default ? Element.SeparatorColor.ToNative() : EColor.Transparent;
+			Control.BottomLineColor = Element.SeparatorVisibility == SeparatorVisibility.Default ? Element.SeparatorColor.ToPlatform() : EColor.Transparent;
 		}
 	}
 }

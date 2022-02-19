@@ -8,14 +8,14 @@ namespace Microsoft.Maui.Platform
 	{
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
-			var window = mauiContext.GetNativeWindow();
+			var window = mauiContext.GetPlatformWindow();
 			if (window == null)
 				return FlowDirection.LeftToRight;
 
 			return window.EffectiveUserInterfaceLayoutDirection.ToFlowDirection();
 		}
 
-		public static UIWindow GetNativeWindow(this IMauiContext mauiContext) =>
+		public static UIWindow GetPlatformWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<UIWindow>();
 	}
 }

@@ -13,44 +13,44 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
 
-		protected override WebView2 CreateNativeView() => new MauiWebView();
+		protected override WebView2 CreatePlatformView() => new MauiWebView();
 
-		protected override void ConnectHandler(WebView2 nativeView)
+		protected override void ConnectHandler(WebView2 platformView)
 		{
-			nativeView.NavigationStarting += OnNavigationStarted;
-			nativeView.NavigationCompleted += OnNavigationCompleted;
+			platformView.NavigationStarting += OnNavigationStarted;
+			platformView.NavigationCompleted += OnNavigationCompleted;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(WebView2 nativeView)
+		protected override void DisconnectHandler(WebView2 platformView)
 		{
-			nativeView.NavigationStarting -= OnNavigationStarted;
-			nativeView.NavigationCompleted -= OnNavigationCompleted;
+			platformView.NavigationStarting -= OnNavigationStarted;
+			platformView.NavigationCompleted -= OnNavigationCompleted;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
-			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
+			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 
-			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateGoBack(webView);
+			handler.PlatformView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateGoForward(webView);
+			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateReload(webView);
+			handler.PlatformView?.UpdateReload(webView);
 		}
 
 		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 			if (arg is not string script)
 				return;
 
-			handler.NativeView?.Eval(webView, script);
+			handler.PlatformView?.Eval(webView, script);
 		}
 
 		void OnNavigationStarted(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
@@ -101,12 +101,12 @@ namespace Microsoft.Maui.Handlers
 		
 		void SendNavigated(string url)
 		{
-			SyncNativeCookiesToVirtualView(url);
+			SyncPlatformCookiesToVirtualView(url);
 
-			NativeView?.UpdateCanGoBackForward(VirtualView);
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
 		}
 		
-		void SyncNativeCookiesToVirtualView(string url)
+		void SyncPlatformCookiesToVirtualView(string url)
 		{
 			var myCookieJar = VirtualView.Cookies;
 		
@@ -119,14 +119,14 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var cookies = myCookieJar.GetCookies(uri);
-			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
+			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
 
 			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
-			var nativeCookies = filter.CookieManager.GetCookies(uri);
+			var platformCookies = filter.CookieManager.GetCookies(uri);
 
 			foreach (Cookie cookie in cookies)
 			{
-				var httpCookie = nativeCookies
+				var httpCookie = platformCookies
 					.FirstOrDefault(x => x.Name == cookie.Name);
 
 				if (httpCookie == null)
@@ -135,10 +135,10 @@ namespace Microsoft.Maui.Handlers
 					cookie.Value = httpCookie.Value;
 			}
 
-			SyncNativeCookies(url);
+			SyncPlatformCookies(url);
 		}
 
-		void SyncNativeCookies(string url)
+		void SyncPlatformCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
 			
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Handlers
 			if (cookies == null)
 				return;
 
-			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
+			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
 
 			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
 			
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (cookies != null)
 			{
-				var existingCookies = GetCookiesFromNativeStore(url);
+				var existingCookies = GetCookiesFromPlatformStore(url);
 				foreach (HttpCookie cookie in existingCookies)
 				{
 					if (cookies[cookie.Name] == null)
@@ -203,13 +203,13 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		HttpCookieCollection GetCookiesFromNativeStore(string url)
+		HttpCookieCollection GetCookiesFromPlatformStore(string url)
 		{
 			var uri = CreateUriForCookies(url);
 			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
-			var nativeCookies = filter.CookieManager.GetCookies(uri);
+			var platformCookies = filter.CookieManager.GetCookies(uri);
 			
-			return nativeCookies;
+			return platformCookies;
 		}
 
 		Uri? CreateUriForCookies(string url)
@@ -237,13 +237,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
-				if (handler.NativeView == null)
+				if (handler.PlatformView == null)
 				{ 
 					request.SetCanceled();
 					return;
 				}
 
-				handler.NativeView.EvaluateJavaScript(request);
+				handler.PlatformView.EvaluateJavaScript(request);
 			}
 		}
 	}

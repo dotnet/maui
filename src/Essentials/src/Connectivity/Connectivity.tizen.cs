@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Tizen.Network.Connection;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Connectivity
+	public partial class ConnectivityImplementation : IConnectivity
 	{
 		static IList<ConnectionProfile> profiles = new List<ConnectionProfile>();
 
@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Essentials
 						break;
 				}
 			}
-			OnConnectivityChanged();
+			Connectivity.OnConnectivityChanged();
 		}
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{
@@ -66,14 +66,14 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void StartListeners()
+		public void StartListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.NetworkState>();
 			ConnectionManager.ConnectionTypeChanged += OnChanged;
 			GetProfileListAsync();
 		}
 
-		static void StopListeners()
+		public void StopListeners()
 		{
 			ConnectionManager.ConnectionTypeChanged -= OnChanged;
 		}

@@ -18,41 +18,41 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual float MinimumSize => 44f;
 
-		protected override WKWebView CreateNativeView() => 
+		protected override WKWebView CreatePlatformView() => 
 			new MauiWKWebView(RectangleF.Empty, this);
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
-			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
+			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 
-			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateGoBack(webView);
+			handler.PlatformView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateGoForward(webView);
+			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
 		public static async void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
 			try
 			{
-				var url = ((MauiWKWebView)handler.NativeView).CurrentUrl;
+				var url = ((MauiWKWebView)handler.PlatformView).CurrentUrl;
 
 				if (url != null)
-					await handler.SyncNativeCookiesAsync(url);
+					await handler.SyncPlatformCookiesAsync(url);
 			}
 			catch (Exception exc)
 			{
 				handler.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning(exc, "Syncing Existing Cookies Failed");
 			}
 
-			handler.NativeView?.UpdateReload(webView);
+			handler.PlatformView?.UpdateReload(webView);
 		}
 
 		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 			if (arg is not string script)
 				return;
 
-			handler.NativeView?.Eval(webView, script);
+			handler.PlatformView?.Eval(webView, script);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -104,14 +104,14 @@ namespace Microsoft.Maui.Handlers
 			try
 			{
 				if (VirtualView.Cookies != null)
-					await SyncNativeCookiesToVirtualViewAsync(url);
+					await SyncPlatformCookiesToVirtualViewAsync(url);
 			}
 			catch
 			{
 				MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning("Failed to Sync Cookies");
 			}
 
-			NativeView?.UpdateCanGoBackForward(VirtualView);
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
 		}
 
 		internal async Task FirstLoadUrlAsync(string url)
@@ -124,11 +124,11 @@ namespace Microsoft.Maui.Handlers
 				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
 				NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri));
 
-				if (HasCookiesToLoad(url) && !NativeVersion.IsAtLeast(11))
+				if (HasCookiesToLoad(url) && !PlatformVersion.IsAtLeast(11))
 					return;
 
-				await SyncNativeCookiesAsync(url);
-				NativeView?.LoadRequest(request);
+				await SyncPlatformCookiesAsync(url);
+				PlatformView?.LoadRequest(request);
 			}
 			catch (UriFormatException)
 			{
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Handlers
 			return cookies.Count > 0;
 		}
 
-		internal async Task SyncNativeCookiesToVirtualViewAsync(string url)
+		internal async Task SyncPlatformCookiesToVirtualViewAsync(string url)
 		{
 			if (string.IsNullOrWhiteSpace(url))
 				return;
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var cookies = myCookieJar.GetCookies(uri);
-			var retrieveCurrentWebCookies = await GetCookiesFromNativeStore(url);
+			var retrieveCurrentWebCookies = await GetCookiesFromPlatformStore(url);
 
 			foreach (var nscookie in retrieveCurrentWebCookies)
 			{
@@ -214,10 +214,10 @@ namespace Microsoft.Maui.Handlers
 					cookie.Value = nSHttpCookie.Value;
 			}
 
-			await SyncNativeCookiesAsync(url);
+			await SyncPlatformCookiesAsync(url);
 		}
 
-		async Task SyncNativeCookiesAsync(string url)
+		async Task SyncPlatformCookiesAsync(string url)
 		{
 			var uri = CreateUriForCookies(url);
 
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Handlers
 			if (cookies == null)
 				return;
 
-			var retrieveCurrentWebCookies = await GetCookiesFromNativeStore(url);
+			var retrieveCurrentWebCookies = await GetCookiesFromPlatformStore(url);
 
 			List<NSHttpCookie> deleteCookies = new List<NSHttpCookie>();
 			foreach (var cookie in retrieveCurrentWebCookies)
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Handlers
 				// So on iOS10 if the user wants to remove any cookies we just delete 
 				// the cookie for the entire domain inside of DeleteCookies and then rewrite
 				// all the cookies
-				if (NativeVersion.IsAtLeast(11) || deleteCookies.Count == 0)
+				if (PlatformVersion.IsAtLeast(11) || deleteCookies.Count == 0)
 				{
 					foreach (var nsCookie in retrieveCurrentWebCookies)
 					{
@@ -296,11 +296,11 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			// Pre ios 11 we sync cookies after navigated
-			if (!NativeVersion.IsAtLeast(11))
+			if (!PlatformVersion.IsAtLeast(11))
 				return;
 
 			var cookies = myCookieJar.GetCookies(uri);
-			var existingCookies = await GetCookiesFromNativeStore(url);
+			var existingCookies = await GetCookiesFromPlatformStore(url);
 			foreach (var nscookie in existingCookies)
 			{
 				if (cookies[nscookie.Name] == null)
@@ -311,13 +311,13 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		async Task<List<NSHttpCookie>> GetCookiesFromNativeStore(string url)
+		async Task<List<NSHttpCookie>> GetCookiesFromPlatformStore(string url)
 		{
 			NSHttpCookie[]? _initialCookiesLoaded = null;
 
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
-				_initialCookiesLoaded = await NativeView.Configuration.WebsiteDataStore.HttpCookieStore.GetAllCookiesAsync();
+				_initialCookiesLoaded = await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.GetAllCookiesAsync();
 			}
 			else
 			{
@@ -349,30 +349,30 @@ namespace Microsoft.Maui.Handlers
 
 		async Task SetCookie(List<Cookie> cookies)
 		{
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
 				foreach (var cookie in cookies)
-					await NativeView.Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(cookie));
+					await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(cookie));
 			}
 			else
 			{
-				NativeView.Configuration.UserContentController.RemoveAllUserScripts();
+				PlatformView.Configuration.UserContentController.RemoveAllUserScripts();
 
 				if (cookies.Count > 0)
 				{
 					WKUserScript wKUserScript = new WKUserScript(new NSString(GetCookieString(cookies)), WKUserScriptInjectionTime.AtDocumentStart, false);
 
-					NativeView.Configuration.UserContentController.AddUserScript(wKUserScript);
+					PlatformView.Configuration.UserContentController.AddUserScript(wKUserScript);
 				}
 			}
 		}
 
 		async Task DeleteCookies(List<NSHttpCookie> cookies)
 		{
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
 				foreach (var cookie in cookies)
-					await NativeView.Configuration.WebsiteDataStore.HttpCookieStore.DeleteCookieAsync(cookie);
+					await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.DeleteCookieAsync(cookie);
 			}
 			else
 			{
@@ -483,7 +483,7 @@ namespace Microsoft.Maui.Handlers
 					return false;
 				}
 
-				NativeView?.LoadFileUrl(nsUrl, nsUrl);
+				PlatformView?.LoadFileUrl(nsUrl, nsUrl);
 
 				return true;
 			}
@@ -499,13 +499,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
-				if (handler.NativeView == null)
+				if (handler.PlatformView == null)
 				{
 					request.SetCanceled();
 					return;
 				}
 
-				handler.NativeView.EvaluateJavaScript(request);
+				handler.PlatformView.EvaluateJavaScript(request);
 			}
 		}
 	}

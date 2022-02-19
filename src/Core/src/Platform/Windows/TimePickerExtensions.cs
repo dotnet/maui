@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this TimePicker nativeTimePicker, ITimePicker timePicker,WBrush? defaultForeground)
 		{
 			Color textColor = timePicker.TextColor;
-			nativeTimePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToNative()) : textColor.ToNative();
+			nativeTimePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToPlatform()) : textColor.ToPlatform();
 		}
 	}
 }

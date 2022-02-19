@@ -210,14 +210,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateVerticalScrollBarVisibility()
 		{
-			Control.VerticalScrollBarVisiblePolicy = Element.VerticalScrollBarVisibility.ToNative();
+			Control.VerticalScrollBarVisiblePolicy = Element.VerticalScrollBarVisibility.ToPlatform();
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			var orientation = Element.Orientation;
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
-				Control.HorizontalScrollBarVisiblePolicy = Element.HorizontalScrollBarVisibility.ToNative();
+				Control.HorizontalScrollBarVisiblePolicy = Element.HorizontalScrollBarVisibility.ToPlatform();
 		}
 
 		void UpdateVerticalScrollStep(bool initialize)
