@@ -46,14 +46,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public static void MapOnExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
-			handler.OnExternalNavigationStarting = webView.OnExternalNavigationStarting;
-			handler.StartWebViewCoreIfPossible();
+			if (webView is BlazorWebView bwv)
+			{
+				handler.ExternalNavigationStarting = bwv.ExternalNavigationStarting;
+			}
 #endif
 		}
 
 #if !NETSTANDARD
 		private string? HostPage { get; set; }
-		internal Func<ExternalLinkNavigationInfo, ExternalLinkNavigationPolicy>? OnExternalNavigationStarting { get; private set; }
+		internal Action<ExternalLinkNavigationInfo>? ExternalNavigationStarting;
 
 		private RootComponentsCollection? _rootComponents;
 		private RootComponentsCollection? RootComponents

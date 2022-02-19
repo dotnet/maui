@@ -48,9 +48,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			propertyType: typeof(IServiceProvider),
 			ownerType: typeof(BlazorWebView),
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
+
+		/// <summary>
+		/// The backing store for the <see cref="Services"/> property.
+		/// </summary>
+		public static readonly DependencyProperty OnExternalNavigationStartingProperty = DependencyProperty.Register(
+			name: nameof(OnExternalNavigationStarting),
+			propertyType: typeof(EventHandler<ExternalLinkNavigationInfo>),
+			ownerType: typeof(BlazorWebView));
 		#endregion
 
-		private const string webViewTemplateChildName = "WebView";
+		private const string WebViewTemplateChildName = "WebView";
 		private WebView2Control _webview;
 		private WebView2WebViewManager _webviewManager;
 		private bool _isDisposed;
@@ -67,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			Template = new ControlTemplate
 			{
-				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), webViewTemplateChildName)
+				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
 			};
 		}
 
@@ -97,6 +105,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// </summary>
 		public RootComponentsCollection RootComponents =>
 			(RootComponentsCollection)GetValue(RootComponentsProperty);
+
+		/// <summary>
+		/// Allows customizing how external links are opened.
+		/// Opens external links in the system browser by default.
+		/// </summary>
+		public EventHandler<ExternalLinkNavigationInfo> OnExternalNavigationStarting
+		{
+			get => (EventHandler<ExternalLinkNavigationInfo>)GetValue(OnExternalNavigationStartingProperty);
+			set => SetValue(OnExternalNavigationStartingProperty, value);
+		}
 
 		/// <summary>
 		/// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
@@ -131,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (WebView2Control)GetTemplateChild(webViewTemplateChildName);
+				_webview = (WebView2Control)GetTemplateChild(WebViewTemplateChildName);
 				StartWebViewCoreIfPossible();
 			}
 		}
@@ -171,7 +189,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
-			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(_webview,
+				Services,
+				ComponentsDispatcher,
+				fileProvider,
+				RootComponents.JSComponents,
+				hostPageRelativePath,
+				(args) => OnExternalNavigationStarting?.Invoke(this, args));
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously

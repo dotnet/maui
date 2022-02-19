@@ -58,15 +58,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
       
-      _webviewManager = new WinUIWebViewManager(
-        PlatformView,
+			_webviewManager = new WinUIWebViewManager(
+				PlatformView,
 				Services!,
 				ComponentsDispatcher,
 				fileProvider,
 				VirtualView.JSComponents,
 				hostPageRelativePath,
 				contentRootDir,
-				this);
+				ExternalNavigationStarting);
 
 			if (RootComponents != null)
 			{

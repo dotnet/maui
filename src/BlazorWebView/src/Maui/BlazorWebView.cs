@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public class BlazorWebView : Microsoft.Maui.Controls.View, IBlazorWebView
 	{
-		internal static readonly string AppHostAddress = "0.0.0.0";
+		internal const string AppHostAddress = "0.0.0.0";
 
 		private readonly JSComponentConfigurationStore _jSComponents = new();
 
@@ -23,13 +23,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <inheritdoc/>
-		public Func<ExternalLinkNavigationInfo, ExternalLinkNavigationPolicy>? OnExternalNavigationStarting { get; set; } 
+		public event EventHandler<ExternalLinkNavigationInfo>? OnExternalNavigationStarting;
 
 		/// <inheritdoc/>
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
 			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
+		}
+
+		internal void ExternalNavigationStarting(ExternalLinkNavigationInfo args)
+		{
+			OnExternalNavigationStarting?.Invoke(this, args);
 		}
 	}
 }

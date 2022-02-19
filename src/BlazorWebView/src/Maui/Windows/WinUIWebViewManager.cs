@@ -8,7 +8,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
-using Launcher = Windows.System.Launcher;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -22,7 +21,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly WebView2Control _webview;
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
-		private readonly BlazorWebViewHandler _blazorWebViewHandler;
 
 		public WinUIWebViewManager(
 			WebView2Control webview,
@@ -32,13 +30,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
 			string contentRootDir,
-			BlazorWebViewHandler blazorWebViewHandler)
-			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath)
+			Action<ExternalLinkNavigationInfo>? externalNavigationStarting)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath, externalNavigationStarting)
 		{
 			_webview = webview;
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
-			_blazorWebViewHandler = blazorWebViewHandler;
 		}
 
 		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
@@ -101,33 +98,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
 			deferral.Complete();
-		}
-
-		protected override void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
-		{
-			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) && uri.Host != AppHostAddress)
-			{
-				var callbackArgs = new ExternalLinkNavigationInfo(uri);
-				var externalLinkMode = _blazorWebViewHandler.OnExternalNavigationStarting?.Invoke(callbackArgs) ?? ExternalLinkNavigationPolicy.OpenInExternalBrowser;
-
-				if (externalLinkMode == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
-				{
-					_ = Launcher.LaunchUriAsync(uri);
-				}
-
-				args.Cancel = externalLinkMode != ExternalLinkNavigationPolicy.OpenInWebView;
-			}
-		}
-
-		protected override void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs args)
-		{
-			// Intercept _blank target <a> tags to always open in device browser.
-			// The ExternalLinkCallback is not invoked.
-			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
-			{
-				_ = Launcher.LaunchUriAsync(uri);
-				args.Handled = true;
-			}
 		}
 
 		protected override void QueueBlazorStart()

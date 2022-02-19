@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-      _webviewManager = new AndroidWebKitWebViewManager(PlatformView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new AndroidWebKitWebViewManager(PlatformView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
 
 			if (RootComponents != null)
 			{

@@ -13,12 +13,15 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 #if WEBVIEW2_WINFORMS
+using System.Diagnostics;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 #elif WEBVIEW2_WPF
+using System.Diagnostics;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
@@ -27,6 +30,7 @@ using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Storage.Streams;
+using Launcher = Windows.System.Launcher;
 #endif
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
@@ -47,8 +51,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private readonly Task _webviewReadyTask;
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
+		private readonly Action<ExternalLinkNavigationInfo> _externalNavigationStarting;
 #elif WEBVIEW2_MAUI
 		private protected CoreWebView2Environment? _coreWebView2Environment;
+		private readonly Action<ExternalLinkNavigationInfo>? _externalNavigationStarting;
 #endif
 
 		/// <summary>
@@ -65,10 +71,17 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			Dispatcher dispatcher, 
 			IFileProvider fileProvider, 
 			JSComponentConfigurationStore jsComponents, 
-			string hostPageRelativePath)
+			string hostPageRelativePath,
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			Action<ExternalLinkNavigationInfo> externalNavigationStarting
+#elif WEBVIEW2_MAUI
+			Action<ExternalLinkNavigationInfo>? externalNavigationStarting
+#endif
+		)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_webview = webview;
+			_externalNavigationStarting = externalNavigationStarting;
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -163,18 +176,41 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 		}
 
-		/// <summary>
-		/// Override this method to manage opening links in the webview. Not all platforms require this.
-		/// </summary>
-		protected virtual void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
+		private void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
 		{
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) && uri.Host != AppHostAddress)
+			{
+				var callbackArgs = new ExternalLinkNavigationInfo(uri);
+				_externalNavigationStarting?.Invoke(callbackArgs);
+
+				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+				{
+					LaunchUri(uri);
+				}
+
+				args.Cancel = callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.OpenInWebView;
+			}
 		}
 
-		/// <summary>
-		/// Override this method to manage opening a new window in the webview. Not all platforms require this.
-		/// </summary>
-		protected virtual void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs args)
+		private void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs args)
 		{
+			// Intercept _blank target <a> tags to always open in device browser.
+			// The ExternalLinkCallback is not invoked.
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
+			{
+				LaunchUri(uri);
+				args.Handled = true;
+			}
+		}
+
+		private void LaunchUri(Uri uri)
+		{
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			Process.Start(@"C:\Program Files\Internet Explorer\iexplore.exe", uri.ToString());
+#elif WEBVIEW2_MAUI
+					
+			_ = Launcher.LaunchUriAsync(uri);
+#endif
 		}
 
 		private protected static string GetHeaderString(IDictionary<string, string> headers) =>
