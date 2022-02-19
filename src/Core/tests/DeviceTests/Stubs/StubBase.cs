@@ -116,15 +116,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 		}
 
-		public Size Measure(double widthConstraint, double heightConstraint)
-		{
-			return new Size(widthConstraint, heightConstraint);
-		}
-
 		public bool Focus() => false;
 
 		public void Unfocus()
 		{
+		}
+
+		public Size Measure(double widthConstraint, double heightConstraint)
+		{
+			return new Size(widthConstraint, heightConstraint);
 		}
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => this.Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
