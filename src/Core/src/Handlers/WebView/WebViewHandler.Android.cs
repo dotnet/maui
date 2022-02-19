@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, AWebView>
 	{
-		public const string AssetBaseUrl = "file:///android_asset/";
+		internal const string AssetBaseUrl = "file:///android_asset/";
 
 		WebViewClient? _webViewClient;
 		WebChromeClient? _webChromeClient;
