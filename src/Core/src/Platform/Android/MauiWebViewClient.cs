@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 			if (_handler?.VirtualView == null || string.IsNullOrWhiteSpace(url) || url == WebViewHandler.AssetBaseUrl)
 				return;
 
-			_handler.SyncNativeCookiesToVirtualView(url);
+			_handler.SyncPlatformCookiesToVirtualView(url);
 
 			if (_handler != null)
 				_handler.PlatformView.UpdateCanGoBackForward(_handler.VirtualView);
