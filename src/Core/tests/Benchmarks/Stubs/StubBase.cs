@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		
 		public bool IsFocused { get; set; }
 
-		public bool IsFocused { get; set; }
-
 		public Visibility Visibility { get; set; } = Visibility.Visible;
 
 		public IShape Clip { get; set; }
