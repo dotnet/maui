@@ -6,7 +6,7 @@ using System.ComponentModel;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Essentials
 {
 	public interface IAppleSignInAuthenticator
 	{
