@@ -17,10 +17,20 @@ namespace Microsoft.Maui.Controls
 			get => Bounds;
 			set
 			{
+				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
+					return;
+
+				BatchBegin();
+
 				X = value.X;
 				Y = value.Y;
 				Width = value.Width;
 				Height = value.Height;
+
+				SizeAllocated(Width, Height);
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+
+				BatchCommit();
 			}
 		}
 

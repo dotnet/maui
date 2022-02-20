@@ -110,6 +110,16 @@ namespace Microsoft.Maui
 		Thickness Margin { get; }
 
 		/// <summary>
+		/// Gets the current desired Size of this View. 
+		/// </summary>
+		Size DesiredSize { get; }
+
+		/// <summary>
+		/// Determines the drawing order of this IView within an ILayout; higher z-indexes will draw over lower z-indexes.
+		/// </summary>
+		int ZIndex { get; }
+
+		/// <summary>
 		/// Gets or sets the View Handler of the View.
 		/// </summary>
 		new IViewHandler? Handler { get; set; }
@@ -130,11 +140,6 @@ namespace Microsoft.Maui
 		Size Measure(double widthConstraint, double heightConstraint);
 
 		/// <summary>
-		/// Gets the current desired Size of this View. 
-		/// </summary>
-		Size DesiredSize { get; }
-
-		/// <summary>
 		/// Signals that the current measure value of this View is no longer valid and must be recomputed during the next measure pass.
 		/// </summary>
 		void InvalidateMeasure();
@@ -143,11 +148,6 @@ namespace Microsoft.Maui
 		/// Method that is called to invalidate the layout of this View.
 		/// </summary>
 		void InvalidateArrange();
-
-		/// <summary>
-		/// Determines the drawing order of this IView within an ILayout; higher z-indexes will draw over lower z-indexes.
-		/// </summary>
-		int ZIndex { get; }
 
 		/// <summary>
 		/// Attempts to set focus to this View.

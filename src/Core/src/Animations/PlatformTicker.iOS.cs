@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Animations
 				return;
 
 			_link = CADisplayLink.Create(() => Fire?.Invoke());
-			_link.AddToRunLoop(NSRunLoop.Current, NSRunLoop.NSRunLoopCommonModes);
+			_link.AddToRunLoop(NSRunLoop.Current, NSRunLoopMode.Common);
 		}
 
 		public override void Stop()
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Animations
 			if (_link == null)
 				return;
 
-			_link?.RemoveFromRunLoop(NSRunLoop.Current, NSRunLoop.NSRunLoopCommonModes);
+			_link?.RemoveFromRunLoop(NSRunLoop.Current, NSRunLoopMode.Common);
 			_link?.Dispose();
 			_link = null;
 		}

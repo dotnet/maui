@@ -5,10 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
+	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
 		public MauiHandlersFactory(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions) :
-			base(CreateHandlerCollection(registrationActions), constructorInjection: false)
+			base(CreateHandlerCollection(registrationActions))
 		{
 		}
 
