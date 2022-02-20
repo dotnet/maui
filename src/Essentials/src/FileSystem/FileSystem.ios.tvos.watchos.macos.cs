@@ -68,9 +68,11 @@ namespace Microsoft.Maui.Essentials
 			// ios does not like the extensions
 			extension = extension?.TrimStart('.');
 
-			var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
-			var mimeTypes = UTType.CopyAllTags(id, UTType.TagClassMIMEType);
-			return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
+			// var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
+			// var mimeTypes = UTType.CopyAllTags(id, UniformTypeIdentifiers.UTTagClass.MimeType.ToString());
+			// return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
+
+			return extension;
 		}
 
 		internal void PlatformInit(FileBase file)
