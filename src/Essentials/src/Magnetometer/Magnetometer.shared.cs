@@ -25,7 +25,8 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring { get; private set; }
 
-		public static bool IsSupported { get; }
+		public static bool IsSupported 
+			=> Current.IsSupported;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
