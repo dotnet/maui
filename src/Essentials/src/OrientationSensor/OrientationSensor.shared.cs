@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Essentials
 
 		public static event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
 
-		public static bool IsSupported { get; private set; }
+		public static bool IsSupported 
+			=> Current.IsSupported;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring { get; private set; }
