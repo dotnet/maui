@@ -18,8 +18,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual float MinimumSize => 44f;
 
-		protected override WKWebView CreatePlatformView() => 
-			new MauiWKWebView(RectangleF.Empty, this);
+		protected override WKWebView CreatePlatformView() =>
+			new MauiWKWebView(RectangleF.Empty, this)
+			{
+				UIDelegate = new MauiWebViewUIDelegate()
+			};
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
