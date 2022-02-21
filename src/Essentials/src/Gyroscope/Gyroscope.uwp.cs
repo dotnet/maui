@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public bool IsSupported =>
 			DefaultSensor != null;
 
-		internal static void Start(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultSensor;
 
