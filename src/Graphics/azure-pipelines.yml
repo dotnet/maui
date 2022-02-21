@@ -206,7 +206,7 @@ stages:
       ${{ if variables['signingCondition'] }}:
         dependsOn: [ 'nuget_signing' ]
       jobs:
-      - template: compliance/sbom/job.v1.yml@internal-templates
+      - template: compliance/sbom/job.v1.yml@xamarin-templates
         parameters:
           artifactNames: ['nuget']
           ${{ if variables['signingCondition'] }}:
