@@ -112,6 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return dialog;
 		}
 
+		[PortHandler]
 		void DeviceInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
 			DatePickerDialog currentDialog = _dialog;
