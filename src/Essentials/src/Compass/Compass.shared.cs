@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Essentials
 		public static event EventHandler<CompassChangedEventArgs> ReadingChanged;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsSupported { get; private set; }
+		public static bool IsSupported 
+			=> Current.IsSupported;
 
 		public static bool IsMonitoring { get; private set; }
 
