@@ -151,32 +151,32 @@ namespace Microsoft.Maui.Handlers
 			OnUnfocused();
 		}
 
-		partial void ConnectingHandler(NativeView? nativeView)
+		partial void ConnectingHandler(PlatformView? platformView)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
 
-			nativeView.Deleted += OnNativeViewDeleted;
+			platformView.Deleted += OnPlatformViewDeleted;
 
-			if (nativeView is Widget widget)
+			if (platformView is Widget widget)
 			{
 				widget.Focused += OnFocused;
 				widget.Unfocused += OnUnfocused;
 			}
 		}
 
-		partial void DisconnectingHandler(NativeView nativeView)
+		partial void DisconnectingHandler(PlatformView platformView)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
-			nativeView.Deleted -= OnNativeViewDeleted;
+			platformView.Deleted -= OnPlatformViewDeleted;
 		}
 
-		void OnNativeViewDeleted(object? sender, EventArgs e)
+		void OnPlatformViewDeleted(object? sender, EventArgs e)
 		{
-			OnNativeViewDeleted();
+			OnPlatformViewDeleted();
 		}
 	}
 }

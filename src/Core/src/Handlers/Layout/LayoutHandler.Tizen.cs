@@ -174,13 +174,13 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var toBeRemoved = NativeView.Children[index];
-			NativeView.Children.RemoveAt(index);
+			var toBeRemoved = PlatformView.Children[index];
+			PlatformView.Children.RemoveAt(index);
 			toBeRemoved.Unrealize();
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			NativeView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
-			if (child.Handler is INativeViewHandler childHandler)
+			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			if (child.Handler is IPlatformViewHandler childHandler)
 			{
 				childHandler?.SetParent(this);
 			}
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Handlers
 
 		public void UpdateZIndex(IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
@@ -197,13 +197,13 @@ namespace Microsoft.Maui.Handlers
 
 		void EnsureZIndexOrder(IView child)
 		{
-			if (NativeView.Children.Count == 0)
+			if (PlatformView.Children.Count == 0)
 			{
 				return;
 			}
 
 			var nativeChildView = child.ToPlatform(MauiContext!);
-			var currentIndex = NativeView.Children.IndexOf(nativeChildView);
+			var currentIndex = PlatformView.Children.IndexOf(nativeChildView);
 
 			if (currentIndex == -1)
 			{
@@ -214,9 +214,9 @@ namespace Microsoft.Maui.Handlers
 			if (targetIndex > currentIndex)
 			{
 				child.ToPlatform(MauiContext!).RaiseTop();
-				for (int i = targetIndex+1; i < NativeView.Children.Count; i++)
+				for (int i = targetIndex+1; i < PlatformView.Children.Count; i++)
 				{
-					NativeView.Children[i].RaiseTop();
+					PlatformView.Children[i].RaiseTop();
 				}
 			}
 			else
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Handlers
 				child.ToPlatform(MauiContext!).Lower();
 				for (int i = targetIndex-1; i >= 0; i--)
 				{
-					NativeView.Children[i].Lower();
+					PlatformView.Children[i].Lower();
 				}
 			}
 		}

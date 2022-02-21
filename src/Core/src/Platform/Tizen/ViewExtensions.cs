@@ -316,45 +316,45 @@ namespace Microsoft.Maui.Platform
 			return disposable;
 		}
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		internal static Rectangle GetPlatformViewBounds(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 			{
 				return new Rectangle();
 			}
 
-			return nativeView.GetNativeViewBounds();
+			return platformView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this EvasObject nativeView)
+		internal static Rectangle GetPlatformViewBounds(this EvasObject platformView)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return new Rectangle();
 
-			return nativeView.Geometry.ToDP();
+			return platformView.Geometry.ToDP();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 				return new Matrix4x4();
-			return nativeView.GetViewTransform();
+			return platformView.GetViewTransform();
 		}
 
-		internal static Matrix4x4 GetViewTransform(this EvasObject nativeView)
+		internal static Matrix4x4 GetViewTransform(this EvasObject platformView)
 			=> new Matrix4x4();
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this EvasObject? nativeView)
+		internal static Graphics.Rectangle GetBoundingBox(this EvasObject? platformView)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return new Rectangle();
 
-			return nativeView.Geometry.ToDP();
+			return platformView.Geometry.ToDP();
 		}
 
 		internal static EvasObject? GetParent(this EvasObject? view)

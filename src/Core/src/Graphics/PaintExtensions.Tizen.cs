@@ -5,16 +5,16 @@ namespace Microsoft.Maui.Graphics
 {
 	public static partial class PaintExtensions
 	{
-		public static EColor ToNativeEFL(this Paint paint)
+		public static EColor ToPlatformEFL(this Paint paint)
 		{
 			var color = paint.ToColor();
-			return color != null ? color.ToNativeEFL() : EColor.Default;
+			return color != null ? color.ToPlatformEFL() : EColor.Default;
 		}
 
-		public static TColor ToNative(this Paint paint)
+		public static TColor ToPlatform(this Paint paint)
 		{
 			var color = paint.ToColor();
-			return color != null ? color.ToNative() : TColor.Default;
+			return color != null ? color.ToPlatform() : TColor.Default;
 		}
 
 		public static MauiDrawable? ToDrawable(this Paint paint)

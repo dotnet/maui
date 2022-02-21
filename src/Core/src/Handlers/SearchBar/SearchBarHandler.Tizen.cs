@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateCancelButtonColor(searchBar);
+			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
 		[MissingMapper]

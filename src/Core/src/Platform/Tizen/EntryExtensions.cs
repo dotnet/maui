@@ -143,30 +143,30 @@ namespace Microsoft.Maui.Platform
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		[PortHandler]
-		public static void UpdateSelectionLength(this Entry nativeEntry, ITextInput entry)
+		public static void UpdateSelectionLength(this Entry platformEntry, ITextInput entry)
 		{
-			if (nativeEntry.IsUpdatingCursorPosition)
+			if (platformEntry.IsUpdatingCursorPosition)
 				return;
 
-			int start = GetSelectionStart(nativeEntry, entry);
-			int end = GetSelectionEnd(nativeEntry, entry, start);
+			int start = GetSelectionStart(platformEntry, entry);
+			int end = GetSelectionEnd(platformEntry, entry, start);
 
 			if (start < end)
 			{
-				nativeEntry.SetSelectionRegion(start, end);
+				platformEntry.SetSelectionRegion(start, end);
 			}
 			else
 			{
-				nativeEntry.CursorPosition = entry.CursorPosition;
+				platformEntry.CursorPosition = entry.CursorPosition;
 			}
 		}
 
-		static int GetSelectionStart(Entry nativeEntry, ITextInput entry)
+		static int GetSelectionStart(Entry platformEntry, ITextInput entry)
 		{
-			int start = nativeEntry.Text?.Length ?? 0;
+			int start = platformEntry.Text?.Length ?? 0;
 			int cursorPosition = entry.CursorPosition;
 
-			if (!string.IsNullOrEmpty(nativeEntry.Text))
+			if (!string.IsNullOrEmpty(platformEntry.Text))
 				start = Math.Min(start, cursorPosition);
 
 			if (start != cursorPosition)
@@ -175,9 +175,9 @@ namespace Microsoft.Maui.Platform
 			return start;
 		}
 
-		static int GetSelectionEnd(Entry nativeEntry, ITextInput entry, int start)
+		static int GetSelectionEnd(Entry platformEntry, ITextInput entry, int start)
 		{
-			int end = Math.Max(start, Math.Min(nativeEntry.Text?.Length ?? 0, start + entry.SelectionLength));
+			int end = Math.Max(start, Math.Min(platformEntry.Text?.Length ?? 0, start + entry.SelectionLength));
 			int selectionLength = end - start;
 			if (selectionLength != entry.SelectionLength)
 				entry.SelectionLength = selectionLength;

@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		void OnStateChanged(object? sender, EventArgs e)

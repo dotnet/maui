@@ -113,29 +113,29 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateSelectionLength(editor);
 		}
 
-		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		public static void MapKeyboard(IEditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateKeyboard(editor);
+			handler.PlatformView?.UpdateKeyboard(editor);
 		}
 
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 		}
 
-		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(editor);
+			handler.PlatformView?.UpdateVerticalTextAlignment(editor);
 		}
 
-		public static void MapCursorPosition(EditorHandler handler, ITextInput editor)
+		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor)
 		{
-			handler.NativeView?.UpdateSelectionLength(editor);
+			handler.PlatformView?.UpdateSelectionLength(editor);
 		}
 
-		public static void MapSelectionLength(EditorHandler handler, ITextInput editor)
+		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor)
 		{
-			handler.NativeView?.UpdateSelectionLength(editor);
+			handler.PlatformView?.UpdateSelectionLength(editor);
 		}
 
 		[MissingMapper]

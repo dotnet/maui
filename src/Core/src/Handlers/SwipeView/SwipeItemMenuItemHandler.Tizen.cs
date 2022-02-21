@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	//TODO : Need to implement
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, EvasObject>
 	{
-		protected override EvasObject CreateNativeElement()
+		protected override EvasObject CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}

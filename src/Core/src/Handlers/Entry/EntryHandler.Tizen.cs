@@ -156,19 +156,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateKeyboard(entry);
 		}
 
-		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		public static void MapSelectionLength(IEntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateSelectionLength(entry);
+			handler.PlatformView?.UpdateSelectionLength(entry);
 		}
 
-		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		public static void MapCursorPosition(IEntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateSelectionLength(entry);
+			handler.PlatformView?.UpdateSelectionLength(entry);
 		}
 
 		public static void MapKeyboard(EditorHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateKeyboard(entry);
+			handler.PlatformView?.UpdateKeyboard(entry);
 		}
 
 		[MissingMapper]
@@ -226,12 +226,12 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCursorChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			var position = NativeView.CursorPosition;
+			var position = PlatformView.CursorPosition;
 
-			NativeView.GetSelectRegion(out int start, out int end);
+			PlatformView.GetSelectRegion(out int start, out int end);
 
 			if (start > -1)
 			{
@@ -245,13 +245,13 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSelectionCleared(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			if (NativeView.IsFocused)
+			if (PlatformView.IsFocused)
 			{
 				VirtualView.SelectionLength = 0;
-				VirtualView.CursorPosition = NativeView.CursorPosition;
+				VirtualView.CursorPosition = PlatformView.CursorPosition;
 			}
 		}
 

@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapProgressColor(ProgressBarHandler handler, IProgress progress)
 		{
-			handler.NativeView?.UpdateProgressColor(progress);
+			handler.PlatformView?.UpdateProgressColor(progress);
 		}
 	}
 }
