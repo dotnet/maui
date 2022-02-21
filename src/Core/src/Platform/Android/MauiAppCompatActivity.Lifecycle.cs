@@ -14,6 +14,7 @@ namespace Microsoft.Maui
 		{
 			base.OnActivityResult(requestCode, resultCode, data);
 
+			ActivityResultCallbackRegistry.InvokeCallback(requestCode, resultCode, data);
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnActivityResult>(del => del(this, requestCode, resultCode, data));
 		}
 

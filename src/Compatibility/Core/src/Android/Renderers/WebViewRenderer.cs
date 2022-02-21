@@ -98,11 +98,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.Dispose(disposing);
 		}
 
+		[PortHandler]
 		protected virtual WebViewClient GetWebViewClient()
 		{
 			return new FormsWebViewClient(this);
 		}
 
+		[PortHandler]
 		protected virtual FormsWebChromeClient GetFormsWebChromeClient()
 		{
 			return new FormsWebChromeClient();
@@ -113,6 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return new Size(Context.ToPixels(40), Context.ToPixels(40));
 		}
 
+		[PortHandler]
 		protected override AWebView CreateNativeControl()
 		{
 			var webView = new AWebView(Context);

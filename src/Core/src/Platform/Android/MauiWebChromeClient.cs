@@ -1,21 +1,26 @@
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Webkit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Internals;
 using Object = Java.Lang.Object;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Platform
 {
-	[PortHandler]
-	public class FormsWebChromeClient : WebChromeClient
+	public class MauiWebChromeClient : WebChromeClient
 	{
+		readonly WebViewHandler _handler;
 		Activity _activity;
 		List<int> _requestCodes;
 
-		public override bool OnShowFileChooser(global::Android.Webkit.WebView webView, IValueCallback filePathCallback, FileChooserParams fileChooserParams)
+		public MauiWebChromeClient(WebViewHandler handler)
+		{
+			_handler = handler ?? throw new ArgumentNullException("handler");
+		}
+
+		public override bool OnShowFileChooser(WebView webView, IValueCallback filePathCallback, FileChooserParams fileChooserParams)
 		{
 			base.OnShowFileChooser(webView, filePathCallback, fileChooserParams);
 			return ChooseFile(filePathCallback, fileChooserParams.CreateIntent(), fileChooserParams.Title);
@@ -74,8 +79,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal void SetContext(Context thisActivity)
 		{
 			_activity = thisActivity as Activity;
+
 			if (_activity == null)
-				Application.Current?.FindMauiContext()?.CreateLogger<WebViewRenderer>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
+				_handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
 		}
 	}
 }

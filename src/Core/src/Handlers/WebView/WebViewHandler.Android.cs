@@ -12,17 +12,30 @@ namespace Microsoft.Maui.Handlers
 		internal const string AssetBaseUrl = "file:///android_asset/";
 
 		WebViewClient? _webViewClient;
-		WebChromeClient? _webChromeClient;
+		MauiWebChromeClient? _webChromeClient;
 
 		bool _firstRun = true;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
 
 		protected override AWebView CreatePlatformView()
 		{
-			return new MauiWebView(Context!)
+			var platformWebView =  new MauiWebView(Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
 			};
+
+			_webViewClient = GetWebViewClient();
+			platformWebView.SetWebViewClient(_webViewClient);
+
+			_webChromeClient = GetMauiWebChromeClient();
+			_webChromeClient.SetContext(Context);
+			platformWebView.SetWebChromeClient(_webChromeClient);
+
+			platformWebView.Settings.JavaScriptEnabled = true;
+			platformWebView.Settings.DomStorageEnabled = true;
+			platformWebView.Settings.SetSupportMultipleWindows(true);
+
+			return platformWebView;
 		}
 
 		public override void SetVirtualView(IView view)
@@ -37,8 +50,21 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AWebView platformView)
 		{
 			platformView.StopLoading();
+			
+			_webViewClient?.Dispose();
+			_webChromeClient?.Dispose();
 
 			base.DisconnectHandler(platformView);
+		}
+
+		protected virtual WebViewClient GetWebViewClient()
+		{
+			return new MauiWebViewClient(this);
+		}
+
+		protected virtual MauiWebChromeClient GetMauiWebChromeClient()
+		{
+			return new MauiWebChromeClient(this);
 		}
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
@@ -53,7 +79,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
 		{
-			handler.PlatformView.SetWebChromeClient(handler._webChromeClient ??= new WebChromeClient());
+			handler.PlatformView.SetWebChromeClient(handler._webChromeClient ??= new MauiWebChromeClient(handler));
 		}
 
 		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
