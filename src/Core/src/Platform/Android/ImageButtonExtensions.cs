@@ -20,13 +20,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCornerRadius(this ShapeableImageView nativeButton, IButtonStroke buttonStroke)
 		{
+			var radius = nativeButton.Context.ToPixels(buttonStroke.CornerRadius);
 			nativeButton.ShapeAppearanceModel =
 				nativeButton.ShapeAppearanceModel
 				.ToBuilder()
-				.SetTopLeftCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
-				.SetTopRightCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
-				.SetBottomLeftCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
-				.SetBottomRightCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
+				.SetTopLeftCorner(CornerFamily.Rounded, radius)
+				.SetTopRightCorner(CornerFamily.Rounded, radius)
+				.SetBottomLeftCorner(CornerFamily.Rounded, radius)
+				.SetBottomRightCorner(CornerFamily.Rounded, radius)
 				.Build();
 		}
 	}
