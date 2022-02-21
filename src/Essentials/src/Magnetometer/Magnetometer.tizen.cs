@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		static void DataUpdated(object sender, MagnetometerDataUpdatedEventArgs e)
 		{
-			OnChanged(new MagnetometerData(e.X, e.Y, e.Z));
+			Magnetometer.OnChanged(new MagnetometerData(e.X, e.Y, e.Z));
 		}
 	}
 }

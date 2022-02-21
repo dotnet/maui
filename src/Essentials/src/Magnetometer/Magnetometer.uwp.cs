@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			var reading = e.Reading;
 			var data = new MagnetometerData(reading.MagneticFieldX, reading.MagneticFieldY, reading.MagneticFieldZ);
-			OnChanged(data);
+			Magnetometer.OnChanged(data);
 		}
 
 		public void Stop()
