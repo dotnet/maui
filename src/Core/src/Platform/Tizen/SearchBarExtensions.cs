@@ -4,9 +4,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
-		public static void UpdateCancelButtonColor(this SearchBar nativeView, ISearchBar searchBar)
+		public static void UpdateCancelButtonColor(this SearchBar platformView, ISearchBar searchBar)
 		{
-			nativeView.SetClearButtonColor(searchBar.CancelButtonColor.ToNativeEFL());
+			platformView.SetClearButtonColor(searchBar.CancelButtonColor.ToPlatformEFL());
 		}
 	}
 }

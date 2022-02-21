@@ -15,14 +15,14 @@ namespace Microsoft.Maui.Platform
 		{
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView is EWindow win && win == MainWindow)
+				if (window?.Handler?.PlatformView is EWindow win && win == MainWindow)
 					return window;
 			}
 
 			throw new InvalidOperationException("Window Not Found");
 		}
 
-		public static void RequestNewWindow(this CoreApplication nativeApplication, IApplication application, OpenWindowRequest? args)
+		public static void RequestNewWindow(this CoreApplication platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 			//TODO : Need to implementation
 		}
 
-		public static void CreateNativeWindow(this CoreApplication nativeApplication, IApplication application)
+		public static void CreateNativeWindow(this CoreApplication platformApplication, IApplication application)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 
 			var mauiContext = applicationContext.MakeWindowScope(tizenWindow, out var windowScope);
 
-			tizenWindow.SetWindowCloseRequestHandler(() => nativeApplication.Exit());
+			tizenWindow.SetWindowCloseRequestHandler(() => platformApplication.Exit());
 
 			applicationContext.Services.InvokeLifecycleEvents<TizenLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

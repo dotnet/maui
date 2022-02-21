@@ -14,21 +14,21 @@ using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<IStackNavigationView, Naviframe>, INativeViewHandler
+		ViewHandler<IStackNavigationView, Naviframe>, IPlatformViewHandler
 	{
 		readonly List<Widget> _naviItemContentPartList = new List<Widget>();
 		TaskCompletionSource<bool>? _currentTaskSource = null;
 		IDictionary<IView, NaviItem>? _naviItemMap;
 
 		IView? PreviousPage => NavigationStack.Count > 1 ? NavigationStack[NavigationStack.Count - 2] : null;
-		NaviItem? CurrentNaviItem => NativeView.NavigationStack.Count > 0 ? NativeView.NavigationStack.Last() : null;
-		NaviItem? PreviousNaviItem => NativeView.NavigationStack.Count > 1 ? NativeView.NavigationStack[NativeView.NavigationStack.Count - 2] : null;
+		NaviItem? CurrentNaviItem => PlatformView.NavigationStack.Count > 0 ? PlatformView.NavigationStack.Last() : null;
+		NaviItem? PreviousNaviItem => PlatformView.NavigationStack.Count > 1 ? PlatformView.NavigationStack[PlatformView.NavigationStack.Count - 2] : null;
 
 		public INavigationView NavigationView => ((INavigationView)VirtualView);
 
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
-		protected override Naviframe CreateNativeView()
+		protected override Naviframe CreatePlatformView()
 		{
 			return new Naviframe(NativeParent)
 			{
@@ -60,19 +60,19 @@ namespace Microsoft.Maui.Handlers
 		//{
 		//	_ = _naviItemMap ?? throw new InvalidOperationException($"{nameof(_naviItemMap)} cannot be null.");
 
-		//	if (e.Animated || NativeView.NavigationStack.Count == 0)
+		//	if (e.Animated || PlatformView.NavigationStack.Count == 0)
 		//	{
-		//		_naviItemMap[e.Page] = NativeView.Push(CreateNavItem(e.Page), SpanTitle(e.Page));
+		//		_naviItemMap[e.Page] = PlatformView.Push(CreateNavItem(e.Page), SpanTitle(e.Page));
 		//		_currentTaskSource = new TaskCompletionSource<bool>();
 		//		e.Task = _currentTaskSource.Task;
 
 		//		// There is no TransitionFinished (AnimationFinished) event after the first Push
-		//		if (NativeView.NavigationStack.Count == 1)
+		//		if (PlatformView.NavigationStack.Count == 1)
 		//			CompleteCurrentNavigationTask();
 		//	}
 		//	else
 		//	{
-		//		_naviItemMap[e.Page] = NativeView.InsertAfter(NativeView.NavigationStack.Last(), CreateNavItem(e.Page), SpanTitle(e.Page));
+		//		_naviItemMap[e.Page] = PlatformView.InsertAfter(PlatformView.NavigationStack.Last(), CreateNavItem(e.Page), SpanTitle(e.Page));
 		//	}
 		//	//UpdateHasNavigationBar(nre.Page);
 		//}
@@ -81,20 +81,20 @@ namespace Microsoft.Maui.Handlers
 		//{
 		//	_ = _naviItemMap ?? throw new InvalidOperationException($"{nameof(_naviItemMap)} cannot be null.");
 
-		//	if (VirtualView.NavigationStack.Count == NativeView.NavigationStack.Count)
+		//	if (VirtualView.NavigationStack.Count == PlatformView.NavigationStack.Count)
 		//	{
 		//		//e.Page?.SendDisappearing();
 		//		//UpdateNavigationBar(PreviousPage, PreviousNaviItem);
 
 		//		if (e.Animated)
 		//		{
-		//			NativeView.Pop();
+		//			PlatformView.Pop();
 
 		//			_currentTaskSource = new TaskCompletionSource<bool>();
 		//			e.Task = _currentTaskSource.Task;
 
 		//			// There is no TransitionFinished (AnimationFinished) event after Pop the last page
-		//			if (NativeView.NavigationStack.Count == 0)
+		//			if (PlatformView.NavigationStack.Count == 0)
 		//				CompleteCurrentNavigationTask();
 		//		}
 		//		else
@@ -107,10 +107,10 @@ namespace Microsoft.Maui.Handlers
 		//	}
 		//}
 
-		protected override void ConnectHandler(Naviframe nativeView)
+		protected override void ConnectHandler(Naviframe platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.AnimationFinished += OnAnimationFinished;
+			base.ConnectHandler(platformView);
+			platformView.AnimationFinished += OnAnimationFinished;
 			_naviItemMap = new Dictionary<IView, NaviItem>();
 
 			if (VirtualView == null)
@@ -122,17 +122,17 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var page in NavigationStack)
 			{
-				_naviItemMap[page] = NativeView.Push(CreateNavItem(page), SpanTitle(page));
+				_naviItemMap[page] = PlatformView.Push(CreateNavItem(page), SpanTitle(page));
 				//page.PropertyChanged += NavigationBarPropertyChangedHandler;
 
 				//UpdateHasNavigationBar(page);
 			}
 		}
 
-		protected override void DisconnectHandler(Naviframe nativeView)
+		protected override void DisconnectHandler(Naviframe platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.AnimationFinished -= OnAnimationFinished;
+			base.DisconnectHandler(platformView);
+			platformView.AnimationFinished -= OnAnimationFinished;
 
 			//VirtualView.PushRequested -= OnPushRequested;
 			//VirtualView.PopRequested -= OnPopRequested;
@@ -176,39 +176,39 @@ namespace Microsoft.Maui.Handlers
 
 		//void OnPushRequested(object sender, NavigationRequestedEventArgs nre)
 		//{
-		//	if (nre.Animated || NativeView.NavigationStack.Count == 0)
+		//	if (nre.Animated || PlatformView.NavigationStack.Count == 0)
 		//	{
-		//		_naviItemMap[nre.Page] = NativeView.Push(CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
+		//		_naviItemMap[nre.Page] = PlatformView.Push(CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
 		//		_currentTaskSource = new TaskCompletionSource<bool>();
 		//		nre.Task = _currentTaskSource.Task;
 
 		//		// There is no TransitionFinished (AnimationFinished) event after the first Push
-		//		if (NativeView.NavigationStack.Count == 1)
+		//		if (PlatformView.NavigationStack.Count == 1)
 		//			CompleteCurrentNavigationTask();
 		//	}
 		//	else
 		//	{
-		//		_naviItemMap[nre.Page] = NativeView.InsertAfter(NativeView.NavigationStack.Last(), CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
+		//		_naviItemMap[nre.Page] = PlatformView.InsertAfter(PlatformView.NavigationStack.Last(), CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
 		//	}
 		//	UpdateHasNavigationBar(nre.Page);
 		//}
 
 		//void OnPopRequested(object sender, NavigationRequestedEventArgs nre)
 		//{
-		//	if (VirtualView.InternalChildren.Count == NativeView.NavigationStack.Count)
+		//	if (VirtualView.InternalChildren.Count == PlatformView.NavigationStack.Count)
 		//	{
 		//		nre.Page?.SendDisappearing();
 		//		UpdateNavigationBar(PreviousPage, PreviousNaviItem);
 
 		//		if (nre.Animated)
 		//		{
-		//			NativeView.Pop();
+		//			PlatformView.Pop();
 
 		//			_currentTaskSource = new TaskCompletionSource<bool>();
 		//			nre.Task = _currentTaskSource.Task;
 
 		//			// There is no TransitionFinished (AnimationFinished) event after Pop the last page
-		//			if (NativeView.NavigationStack.Count == 0)
+		//			if (PlatformView.NavigationStack.Count == 0)
 		//				CompleteCurrentNavigationTask();
 		//		}
 		//		else
@@ -260,7 +260,7 @@ namespace Microsoft.Maui.Handlers
 
 		//	TButton button = null;
 
-		//	if ((bool)page.GetValue(NavigationPage.HasBackButtonProperty) && NativeView.NavigationStack.Count > 1)
+		//	if ((bool)page.GetValue(NavigationPage.HasBackButtonProperty) && PlatformView.NavigationStack.Count > 1)
 		//	{
 		//		button = CreateNavigationButton((string)page.GetValue(NavigationPage.BackButtonTitleProperty));
 		//	}

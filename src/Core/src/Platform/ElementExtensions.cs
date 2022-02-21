@@ -16,7 +16,7 @@ using BasePlatformType = WinRT.IWinRTObject;
 using PlatformWindow = Microsoft.UI.Xaml.Window;
 using PlatformApplication = Microsoft.UI.Xaml.Application;
 #elif TIZEN
-using NativeView = ElmSharp.EvasObject;
+using PlatformView = ElmSharp.EvasObject;
 using BasePlatformType = System.Object;
 using PlatformWindow = ElmSharp.Window;
 using PlatformApplication = Tizen.Applications.CoreUIApplication;

@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		#endregion
 
-		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}

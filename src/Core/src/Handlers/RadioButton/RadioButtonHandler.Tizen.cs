@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, MauiRadioButton>
 	{
-		protected override MauiRadioButton CreateNativeView()
+		protected override MauiRadioButton CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
@@ -15,21 +15,21 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(MauiRadioButton nativeView)
+		protected override void ConnectHandler(MauiRadioButton platformView)
 		{
-			NativeView.ValueChanged += OnValueChanged;
-			base.ConnectHandler(nativeView);
+			PlatformView.ValueChanged += OnValueChanged;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiRadioButton nativeView)
+		protected override void DisconnectHandler(MauiRadioButton platformView)
 		{
-			NativeView.ValueChanged -= OnValueChanged;
-			base.DisconnectHandler(nativeView);
+			PlatformView.ValueChanged -= OnValueChanged;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.NativeView?.UpdateIsChecked(radioButton);
+			handler.PlatformView?.UpdateIsChecked(radioButton);
 		}
 
 		[MissingMapper]
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle)
 		{
-			handler.NativeView?.UpdateTextColor(textStyle);
+			handler.PlatformView?.UpdateTextColor(textStyle);
 		}
 
 		[MissingMapper]
@@ -46,9 +46,18 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle) { }
 
+		[MissingMapper]
+		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
+
 		void OnValueChanged(object? sender, EventArgs e)
 		{
-			VirtualView.IsChecked = NativeView.GroupValue == 1 ? true : false;
+			VirtualView.IsChecked = PlatformView.GroupValue == 1 ? true : false;
 		}
 	}
 }

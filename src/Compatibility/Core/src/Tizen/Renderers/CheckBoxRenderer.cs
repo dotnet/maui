@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			else
 			{
-				Control.SetOnColors(Element.Color.ToPlatform());
+				Control.SetOnColors(Element.Color.ToNative());
 			}
 		}
 	}

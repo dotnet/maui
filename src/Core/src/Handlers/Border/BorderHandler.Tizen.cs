@@ -4,9 +4,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class BorderHandler : ViewHandler<IBorderView, BorderView>
 	{
-		INativeViewHandler? _contentHandler;
+		IPlatformViewHandler? _contentHandler;
 
-		protected override BorderView CreateNativeView()
+		protected override BorderView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void SetupContainer()
 		{
 			base.SetupContainer();
-			NativeView.ContainerView = ContainerView;
+			PlatformView.ContainerView = ContainerView;
 		}
 
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -35,10 +35,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
 		public static void MapContent(BorderHandler handler, IBorderView border)
@@ -48,18 +48,18 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateContent()
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Clear();
+			PlatformView.Children.Clear();
 			_contentHandler?.Dispose();
 			_contentHandler = null;
 
 			if (VirtualView.PresentedContent is IView view)
 			{
-				NativeView.Children.Add(view.ToPlatform(MauiContext));
-				if (view.Handler is INativeViewHandler thandler)
+				PlatformView.Children.Add(view.ToPlatform(MauiContext));
+				if (view.Handler is IPlatformViewHandler thandler)
 				{
 					thandler?.SetParent(this);
 					_contentHandler = thandler;

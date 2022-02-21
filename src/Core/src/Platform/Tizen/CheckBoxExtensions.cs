@@ -5,17 +5,17 @@ namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{
-		public static void UpdateIsChecked(this Check nativeCheck, ICheckBox check)
+		public static void UpdateIsChecked(this Check platformCheck, ICheckBox check)
 		{
-			nativeCheck.IsChecked = check.IsChecked;
+			platformCheck.IsChecked = check.IsChecked;
 		}
 
-		public static void UpdateForeground(this Check nativeCheck, ICheckBox check)
+		public static void UpdateForeground(this Check platformCheck, ICheckBox check)
 		{
 			// For the moment, we're only supporting solid color Paint
 			if (check.Foreground is SolidPaint solid)
 			{
-				nativeCheck.Color = solid.Color.ToNativeEFL();
+				platformCheck.Color = solid.Color.ToPlatformEFL();
 			}
 		}
 	}

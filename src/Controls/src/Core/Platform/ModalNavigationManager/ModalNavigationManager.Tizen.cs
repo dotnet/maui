@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System.Threading.Tasks;
+using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 			((IPageController)modal).SendDisappearing();
 			var source = new TaskCompletionSource<Page>();
 
-			var modalRenderer = modal.Handler as INativeViewHandler;
+			var modalRenderer = modal.Handler as IPlatformViewHandler;
 			if (modalRenderer != null)
 			{
 				// TODO. Need to implement animated

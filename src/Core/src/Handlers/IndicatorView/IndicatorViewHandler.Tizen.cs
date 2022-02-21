@@ -5,32 +5,32 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, IndicatorView>
 	{
-		protected override IndicatorView CreateNativeView()
+		protected override IndicatorView CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 			return new IndicatorView(NativeParent);
 		}
 
-		protected override void ConnectHandler(IndicatorView nativeView)
+		protected override void ConnectHandler(IndicatorView platformView)
 		{
-			base.ConnectHandler(nativeView);
-			NativeView.SelectedPosition += OnSelectedPosition;
+			base.ConnectHandler(platformView);
+			PlatformView.SelectedPosition += OnSelectedPosition;
 		}
 
-		protected override void DisconnectHandler(IndicatorView nativeView)
+		protected override void DisconnectHandler(IndicatorView platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			NativeView.SelectedPosition -= OnSelectedPosition;
+			base.DisconnectHandler(platformView);
+			PlatformView.SelectedPosition -= OnSelectedPosition;
 		}
 
 		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.UpdateIndicatorCount(indicator);
+			handler.PlatformView.UpdateIndicatorCount(indicator);
 		}
 
 		public static void MapPosition(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.NativeView.UpdatePosition(indicator);
+			handler.PlatformView.UpdatePosition(indicator);
 		}
 
 		//TODO : Need to impl

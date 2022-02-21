@@ -7,12 +7,12 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateVerticalScrollBarVisibility(this ScrollView scrollView, ScrollBarVisibility scrollBarVisibility)
 		{
-			scrollView.VerticalScrollBarVisiblePolicy = scrollBarVisibility.ToNative();
+			scrollView.VerticalScrollBarVisiblePolicy = scrollBarVisibility.ToPlatform();
 		}
 
 		public static void UpdateHorizontalScrollBarVisibility(this ScrollView scrollView, ScrollBarVisibility scrollBarVisibility)
 		{
-			scrollView.HorizontalScrollBarVisiblePolicy = scrollBarVisibility.ToNative();
+			scrollView.HorizontalScrollBarVisiblePolicy = scrollBarVisibility.ToPlatform();
 		}
 
 		public static void UpdateOrientation(this ScrollView scrollView, ScrollOrientation scrollOrientation)
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static ScrollBarVisiblePolicy ToNative(this ScrollBarVisibility visibility)
+		public static ScrollBarVisiblePolicy ToPlatform(this ScrollBarVisibility visibility)
 		{
 			switch (visibility)
 			{

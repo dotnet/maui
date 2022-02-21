@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		/// <returns>ElmSharp.Color instance representing a color which corresponds to the provided Microsoft.Maui.Controls.Compatibility.Color</returns>
 		/// <param name="c">The Microsoft.Maui.Controls.Compatibility.Color instance which will be converted to a ElmSharp.Color</param>
-		public static EColor ToPlatform(this Color c)
+		public static EColor ToNative(this Color c)
 		{
 			if (c == null)
 			{

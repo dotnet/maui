@@ -6,37 +6,37 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
-		protected override Button CreateNativeView()
+		protected override Button CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
 			return new Button(NativeParent);
 		}
 
-		protected override void ConnectHandler(Button nativeView)
+		protected override void ConnectHandler(Button platformView)
 		{
-			nativeView.Released += OnButtonReleased;
-			nativeView.Clicked += OnButtonClicked;
-			nativeView.Pressed += OnButtonPressed;
-			base.ConnectHandler(nativeView);
+			platformView.Released += OnButtonReleased;
+			platformView.Clicked += OnButtonClicked;
+			platformView.Pressed += OnButtonPressed;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Button nativeView)
+		protected override void DisconnectHandler(Button platformView)
 		{
-			nativeView.Released -= OnButtonReleased;
-			nativeView.Clicked -= OnButtonClicked;
-			nativeView.Pressed -= OnButtonPressed;
-			base.DisconnectHandler(nativeView);
+			platformView.Released -= OnButtonReleased;
+			platformView.Clicked -= OnButtonClicked;
+			platformView.Pressed -= OnButtonPressed;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{
-			handler.NativeView?.UpdateText(button);
+			handler.PlatformView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.NativeView?.UpdateTextColor(button);
+			handler.PlatformView?.UpdateTextColor(button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSetImageSource(Image? image)
 		{
-			NativeView.Image = image;
+			PlatformView.Image = image;
 		}
 	}
 }

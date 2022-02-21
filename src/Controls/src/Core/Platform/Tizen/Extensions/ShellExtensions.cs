@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ShellExtensions
 	{
-		public static DrawerBehavior ToNative(this FlyoutBehavior behavior)
+		public static DrawerBehavior ToPlatform(this FlyoutBehavior behavior)
 		{
 			if (behavior == FlyoutBehavior.Disabled)
 				return DrawerBehavior.Disabled;

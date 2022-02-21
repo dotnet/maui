@@ -1,6 +1,6 @@
 ﻿using System;
 using ElmSharp;
-using NativeView = ElmSharp.EvasObject;
+using PlatformView = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform()?.UpdateTransformation(view);
 		}
 
-		protected virtual void OnNativeViewDeleted()
+		protected virtual void OnPlatformViewDeleted()
 		{
 		}
 
@@ -88,32 +88,32 @@ namespace Microsoft.Maui.Handlers
 			OnUnfocused();
 		}
 
-		partial void ConnectingHandler(NativeView? nativeView)
+		partial void ConnectingHandler(PlatformView? platformView)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
 
-			nativeView.Deleted += OnNativeViewDeleted;
+			platformView.Deleted += OnPlatformViewDeleted;
 
-			if (nativeView is Widget widget)
+			if (platformView is Widget widget)
 			{
 				widget.Focused += OnFocused;
 				widget.Unfocused += OnUnfocused;
 			}
 		}
 
-		partial void DisconnectingHandler(NativeView nativeView)
+		partial void DisconnectingHandler(PlatformView platformView)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
-			nativeView.Deleted -= OnNativeViewDeleted;
+			platformView.Deleted -= OnPlatformViewDeleted;
 		}
 
-		void OnNativeViewDeleted(object? sender, EventArgs e)
+		void OnPlatformViewDeleted(object? sender, EventArgs e)
 		{
-			OnNativeViewDeleted();
+			OnPlatformViewDeleted();
 		}
 	}
 }

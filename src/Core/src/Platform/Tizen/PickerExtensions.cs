@@ -4,21 +4,21 @@ namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{
-		public static void UpdateTitle(this Entry nativePicker, IPicker picker) =>
-			UpdatePicker(nativePicker, picker);
+		public static void UpdateTitle(this Entry platformPicker, IPicker picker) =>
+			UpdatePicker(platformPicker, picker);
 
-		public static void UpdateTitleColor(this Entry nativePicker, IPicker picker) =>
-			nativePicker.PlaceholderColor = picker.TitleColor.ToNative();
+		public static void UpdateTitleColor(this Entry platformPicker, IPicker picker) =>
+			platformPicker.PlaceholderColor = picker.TitleColor.ToPlatform();
 
-		public static void UpdateSelectedIndex(this Entry nativePicker, IPicker picker) =>
-			UpdatePicker(nativePicker, picker);
+		public static void UpdateSelectedIndex(this Entry platformPicker, IPicker picker) =>
+			UpdatePicker(platformPicker, picker);
 
-		internal static void UpdatePicker(this Entry nativePicker, IPicker picker)
+		internal static void UpdatePicker(this Entry platformPicker, IPicker picker)
 		{
 			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
-				nativePicker.Text = string.Empty;
+				platformPicker.Text = string.Empty;
 			else
-				nativePicker.Text = picker.GetItem(picker.SelectedIndex);
+				platformPicker.Text = picker.GetItem(picker.SelectedIndex);
 		}
 	}
 }

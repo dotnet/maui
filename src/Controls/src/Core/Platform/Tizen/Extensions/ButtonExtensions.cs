@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateContentLayout(this EButton nativeButton, Button button)
+		public static void UpdateContentLayout(this EButton platformButton, Button button)
 		{
 			//TODO : Need to impl
 		}

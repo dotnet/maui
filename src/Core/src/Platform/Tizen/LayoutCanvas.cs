@@ -29,20 +29,20 @@ namespace Microsoft.Maui.Platform
 
 		protected void OnLayoutUpdated(object? sender, LayoutEventArgs e)
 		{
-			var nativeGeometry = Geometry.ToDP();
+			var platformGeometry = Geometry.ToDP();
 
-			var measured = CrossPlatformMeasure!(nativeGeometry.Width, nativeGeometry.Height);
+			var measured = CrossPlatformMeasure!(platformGeometry.Width, platformGeometry.Height);
 			if (measured != _measureCache && _virtualView?.Parent is IView parentView)
 			{
 				parentView?.InvalidateMeasure();
 			}
 			_measureCache = measured;
 
-			if (nativeGeometry.Width > 0 && nativeGeometry.Height > 0)
+			if (platformGeometry.Width > 0 && platformGeometry.Height > 0)
 			{
-				nativeGeometry.X = 0;
-				nativeGeometry.Y = 0;
-				CrossPlatformArrange!(nativeGeometry);
+				platformGeometry.X = 0;
+				platformGeometry.Y = 0;
+				CrossPlatformArrange!(platformGeometry);
 			}
 		}
 	}

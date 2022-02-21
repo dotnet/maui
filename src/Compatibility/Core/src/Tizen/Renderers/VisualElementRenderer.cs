@@ -698,10 +698,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					if (parent.Handler is INativeViewHandler nativeHandler)
+					if (parent.Handler is IPlatformViewHandler nativeHandler)
 					{
 
-						parentX = nativeHandler.GetNativeContentGeometry().X.ToScaledDP();
+						parentX = nativeHandler.GetPlatformContentGeometry().X.ToScaledDP();
 					}
 					else
 					{
@@ -723,9 +723,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					if (parent.Handler is INativeViewHandler nativeHandler)
+					if (parent.Handler is IPlatformViewHandler nativeHandler)
 					{
-						parentY = nativeHandler.GetNativeContentGeometry().Y.ToScaledDP();
+						parentY = nativeHandler.GetPlatformContentGeometry().Y.ToScaledDP();
 					}
 					else
 					{

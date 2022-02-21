@@ -2,14 +2,14 @@
 {
 	public static class RadioButtonExtensions
 	{
-		public static void UpdateIsChecked(this MauiRadioButton nativeRadioButton, IRadioButton radioButton)
+		public static void UpdateIsChecked(this MauiRadioButton platformRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.GroupValue = radioButton.IsChecked ? 1 : 0;
+			platformRadioButton.GroupValue = radioButton.IsChecked ? 1 : 0;
 		}
 
-		public static void UpdateTextColor(this MauiRadioButton nativeRadioButton, ITextStyle radioButton)
+		public static void UpdateTextColor(this MauiRadioButton platformRadioButton, ITextStyle radioButton)
 		{
-			nativeRadioButton.TextColor = radioButton.TextColor.ToNative();
+			platformRadioButton.TextColor = radioButton.TextColor.ToPlatform();
 		}
 	}
 }

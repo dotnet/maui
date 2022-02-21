@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					Control.Style = SwitchStyle.Toggle;
 					break;
 			}
-			((IVisualElementController)Element).NativeSizeChanged();
+			((IVisualElementController)Element).PlatformSizeChanged();
 			UpdateBackgroundColor(false);
 			UpdateOnColor(false);
 			UpdateColor();

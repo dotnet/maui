@@ -5,28 +5,28 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, Check>
 	{
-		protected override Check CreateNativeView() => new Check(NativeParent);
+		protected override Check CreatePlatformView() => new Check(NativeParent);
 
-		protected override void ConnectHandler(Check nativeView)
+		protected override void ConnectHandler(Check platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.StateChanged += OnStateChanged;
+			base.ConnectHandler(platformView);
+			platformView.StateChanged += OnStateChanged;
 		}
 
-		protected override void DisconnectHandler(Check nativeView)
+		protected override void DisconnectHandler(Check platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.StateChanged -= OnStateChanged;
+			base.DisconnectHandler(platformView);
+			platformView.StateChanged -= OnStateChanged;
 		}
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
 		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		void OnStateChanged(object? sender, EventArgs e)
@@ -34,8 +34,8 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
-			if (NativeView != null)
-				VirtualView.IsChecked = NativeView.IsChecked;
+			if (PlatformView != null)
+				VirtualView.IsChecked = PlatformView.IsChecked;
 		}
 	}
 }

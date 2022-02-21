@@ -9,15 +9,15 @@ namespace Microsoft.Maui.Platform
 		static readonly string s_defaultFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern;
 		static TimeSpan Time = DateTime.Now.TimeOfDay;
 
-		public static void UpdateFormat(this Entry nativeTimePicker, ITimePicker timePicker)
+		public static void UpdateFormat(this Entry platformTimePicker, ITimePicker timePicker)
 		{
-			UpdateTime(nativeTimePicker, timePicker);
+			UpdateTime(platformTimePicker, timePicker);
 		}
 
-		public static void UpdateTime(this Entry nativeTimePicker, ITimePicker timePicker)
+		public static void UpdateTime(this Entry platformTimePicker, ITimePicker timePicker)
 		{
 			// Xamarin using DateTime formatting (https://developer.xamarin.com/api/property/Xamarin.Forms.TimePicker.Format/)
-			nativeTimePicker.Text = new DateTime(Time.Ticks).ToString(timePicker.Format ?? s_defaultFormat);
+			platformTimePicker.Text = new DateTime(Time.Ticks).ToString(timePicker.Format ?? s_defaultFormat);
 		}
 
 	}

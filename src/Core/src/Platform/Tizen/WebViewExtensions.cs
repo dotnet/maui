@@ -3,55 +3,55 @@ namespace Microsoft.Maui.Platform
 {
 	public static class WebViewExtensions
 	{
-		public static void UpdateSource(this MauiWebView nativeWebView, IWebView webView)
+		public static void UpdateSource(this MauiWebView platformWebView, IWebView webView)
 		{
-			nativeWebView.UpdateSource(webView, null);
+			platformWebView.UpdateSource(webView, null);
 		}
 
-		public static void UpdateSource(this MauiWebView nativeWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
+		public static void UpdateSource(this MauiWebView platformWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
 		{
 			if (webViewDelegate != null)
 				webView.Source?.Load(webViewDelegate);
 		}
 
-		public static void UpdateGoBack(this MauiWebView nativeWebView, IWebView webView)
+		public static void UpdateGoBack(this MauiWebView platformWebView, IWebView webView)
 		{
-			if (nativeWebView == null)
+			if (platformWebView == null)
 				return;
 
-			if (nativeWebView.WebView.CanGoBack())
-				nativeWebView.WebView.GoBack();
+			if (platformWebView.WebView.CanGoBack())
+				platformWebView.WebView.GoBack();
 
-			nativeWebView.UpdateCanGoBackForward(webView);
+			platformWebView.UpdateCanGoBackForward(webView);
 		}
 
-		public static void UpdateGoForward(this MauiWebView nativeWebView, IWebView webView)
+		public static void UpdateGoForward(this MauiWebView platformWebView, IWebView webView)
 		{
-			if (nativeWebView == null)
+			if (platformWebView == null)
 				return;
 
-			if (nativeWebView.WebView.CanGoForward())
-				nativeWebView.WebView.GoForward();
+			if (platformWebView.WebView.CanGoForward())
+				platformWebView.WebView.GoForward();
 
-			nativeWebView.UpdateCanGoBackForward(webView);
+			platformWebView.UpdateCanGoBackForward(webView);
 		}
 
-		public static void UpdateReload(this MauiWebView nativeWebView, IWebView webView)
+		public static void UpdateReload(this MauiWebView platformWebView, IWebView webView)
 		{
 			// TODO: Sync Cookies
 
-			nativeWebView?.WebView.Reload();
+			platformWebView?.WebView.Reload();
 		}
 
-		internal static void UpdateCanGoBackForward(this MauiWebView nativeWebView, IWebView webView)
+		internal static void UpdateCanGoBackForward(this MauiWebView platformWebView, IWebView webView)
 		{
-			webView.CanGoBack = nativeWebView.WebView.CanGoBack();
-			webView.CanGoForward = nativeWebView.WebView.CanGoForward();
+			webView.CanGoBack = platformWebView.WebView.CanGoBack();
+			webView.CanGoForward = platformWebView.WebView.CanGoForward();
 		}
 
-		public static void Eval(this MauiWebView nativeWebView, IWebView webView, string script)
+		public static void Eval(this MauiWebView platformWebView, IWebView webView, string script)
 		{
-			nativeWebView.WebView.Eval(script);
+			platformWebView.WebView.Eval(script);
 		}
 	}
 }

@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, Label>
 	{
-		protected override Label CreateNativeView()
+		protected override Label CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateText(label);
+			handler.PlatformView?.UpdateText(label);
 			
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, label);
@@ -33,33 +33,33 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextColor(label);
+			handler.PlatformView?.UpdateTextColor(label);
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(label);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
 		}
 
 		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(label);
+			handler.PlatformView?.UpdateVerticalTextAlignment(label);
 		}
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateLineBreakMode(label);
+			handler.PlatformView?.UpdateLineBreakMode(label);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextDecorations(label);
+			handler.PlatformView?.UpdateTextDecorations(label);
 		}
 
 		public static void MapFont(LabelHandler handler, ILabel label)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView?.UpdateFont(label, fontManager);
+			handler.PlatformView?.UpdateFont(label, fontManager);
 		}
 
 		public static void MapFormatting(LabelHandler handler, ILabel label)
@@ -67,8 +67,8 @@ namespace Microsoft.Maui.Handlers
 			// Update all of the attributed text formatting properties
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.NativeView?.UpdateHorizontalTextAlignment(label);
-			handler.NativeView?.UpdateTextDecorations(label);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
+			handler.PlatformView?.UpdateTextDecorations(label);
 		}
 
 		[MissingMapper]

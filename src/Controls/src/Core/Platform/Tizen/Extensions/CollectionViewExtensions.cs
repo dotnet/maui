@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		static INotifyCollectionChanged _observableSource;
 
-		public static void UpdateItemsSource(this TCollectionView nativeView, ItemsView view)
+		public static void UpdateItemsSource(this TCollectionView platformView, ItemsView view)
 		{
 			if (view.ItemsSource is INotifyCollectionChanged collectionChanged)
 			{
@@ -26,66 +26,66 @@ namespace Microsoft.Maui.Controls.Platform
 				_observableSource = collectionChanged;
 				_observableSource.CollectionChanged += OnCollectionChanged;
 			}
-			UpdateAdaptor(nativeView, view);
+			UpdateAdaptor(platformView, view);
 
 			void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 			{
 				if (view.ItemsSource == null || !view.ItemsSource.Cast<object>().Any())
 				{
-					nativeView.Adaptor = EmptyItemAdaptor.Create(view);
+					platformView.Adaptor = EmptyItemAdaptor.Create(view);
 				}
 				else
 				{
-					if (nativeView.Adaptor is EmptyItemAdaptor)
+					if (platformView.Adaptor is EmptyItemAdaptor)
 					{
-						nativeView.UpdateAdaptor(view);
+						platformView.UpdateAdaptor(view);
 					}
 				}
 			}
 		}
 
-		public static void UpdateItemsLayout(this TCollectionView nativeView, StructuredItemsView view)
+		public static void UpdateItemsLayout(this TCollectionView platformView, StructuredItemsView view)
 		{
 			if (view.ItemsLayout != null)
 			{
-				var itemSizingStrategy = view.ItemSizingStrategy.ToNative();
+				var itemSizingStrategy = view.ItemSizingStrategy.ToPlatform();
 				if (view.ItemsLayout is GridItemsLayout grid)
 				{
 					var orientation = grid.Orientation == ItemsLayoutOrientation.Horizontal;
 					var verticalItemSpacing = DPExtensions.ConvertToScaledPixel(grid.VerticalItemSpacing);
 					var horizontalItemSpacing = DPExtensions.ConvertToScaledPixel(grid.HorizontalItemSpacing);
-					nativeView.LayoutManager = new GridLayoutManager(orientation, grid.Span, itemSizingStrategy, verticalItemSpacing, horizontalItemSpacing);
+					platformView.LayoutManager = new GridLayoutManager(orientation, grid.Span, itemSizingStrategy, verticalItemSpacing, horizontalItemSpacing);
 				}
 				else if (view.ItemsLayout is LinearItemsLayout linear)
 				{
 					var orientation = linear.Orientation == ItemsLayoutOrientation.Horizontal;
 					var itemSpacing = DPExtensions.ConvertToScaledPixel(linear.ItemSpacing);
-					nativeView.LayoutManager = new LinearLayoutManager(orientation, itemSizingStrategy, itemSpacing);
+					platformView.LayoutManager = new LinearLayoutManager(orientation, itemSizingStrategy, itemSpacing);
 				}
 				else
 				{
-					nativeView.LayoutManager = new LinearLayoutManager(false);
+					platformView.LayoutManager = new LinearLayoutManager(false);
 				}
-				nativeView.SnapPointsType = (view.ItemsLayout as ItemsLayout).SnapPointsType.ToNative();
-				nativeView.SelectionMode = (view as SelectableItemsView).SelectionMode.ToNative();
+				platformView.SnapPointsType = (view.ItemsLayout as ItemsLayout).SnapPointsType.ToPlatform();
+				platformView.SelectionMode = (view as SelectableItemsView).SelectionMode.ToPlatform();
 			}
 		}
 
-		public static void UpdateAdaptor(this TCollectionView nativeView, ItemsView view)
+		public static void UpdateAdaptor(this TCollectionView platformView, ItemsView view)
 		{
 			if (view.ItemsSource == null || !view.ItemsSource.Cast<object>().Any())
 			{
-				nativeView.Adaptor = EmptyItemAdaptor.Create(view);
+				platformView.Adaptor = EmptyItemAdaptor.Create(view);
 			}
 			else if (view.ItemTemplate == null)
 			{
-				nativeView.Adaptor = new ItemDefaultTemplateAdaptor(view);
+				platformView.Adaptor = new ItemDefaultTemplateAdaptor(view);
 			}
 			else
 			{
-				nativeView.Adaptor = new ItemTemplateAdaptor(view);
+				platformView.Adaptor = new ItemTemplateAdaptor(view);
 			}
-			nativeView.Adaptor.ItemSelected += OnItemSelected;
+			platformView.Adaptor.ItemSelected += OnItemSelected;
 		}
 
 		static void OnItemSelected(object sender, TSelectedItemChangedEventArgs e)
@@ -93,14 +93,14 @@ namespace Microsoft.Maui.Controls.Platform
 			(sender as ItemTemplateAdaptor)?.SendItemSelected(e.SelectedItem);
 		}
 
-		public static TItemSizingStrategy ToNative(this ItemSizingStrategy itemSizingStrategy)
+		public static TItemSizingStrategy ToPlatform(this ItemSizingStrategy itemSizingStrategy)
 		{
 			if (itemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 				return TItemSizingStrategy.MeasureAllItems;
 			return TItemSizingStrategy.MeasureFirstItem;
 		}
 
-		public static TSnapPointsType ToNative(this SnapPointsType snapPointsType)
+		public static TSnapPointsType ToPlatform(this SnapPointsType snapPointsType)
 		{
 			switch (snapPointsType)
 			{
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public static TCollectionViewSelectionMode ToNative(this SelectionMode selectionMode)
+		public static TCollectionViewSelectionMode ToPlatform(this SelectionMode selectionMode)
 		{
 			switch (selectionMode)
 			{

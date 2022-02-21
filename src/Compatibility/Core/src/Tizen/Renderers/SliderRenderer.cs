@@ -118,18 +118,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateMinimumTrackColor()
 		{
-			var color = Element.MinimumTrackColor.IsDefault() ? _defaultMinColor : Element.MinimumTrackColor.ToPlatform();
+			var color = Element.MinimumTrackColor.IsDefault() ? _defaultMinColor : Element.MinimumTrackColor.ToNative();
 			Control.SetBarColor(color);
 		}
 
 		protected virtual void UpdateMaximumTrackColor()
 		{
-			Control.SetBackgroundColor(Element.MaximumTrackColor.IsDefault() ? _defaultMaxColor : Element.MaximumTrackColor.ToPlatform());
+			Control.SetBackgroundColor(Element.MaximumTrackColor.IsDefault() ? _defaultMaxColor : Element.MaximumTrackColor.ToNative());
 		}
 
 		protected virtual void UpdateThumbColor()
 		{
-			var color = Element.ThumbColor.IsDefault() ? _defaultThumbColor : Element.ThumbColor.ToPlatform();
+			var color = Element.ThumbColor.IsDefault() ? _defaultThumbColor : Element.ThumbColor.ToNative();
 			Control.SetHandlerColor(color);
 		}
 

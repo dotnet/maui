@@ -11,59 +11,59 @@ namespace Microsoft.Maui.Handlers
 		static EColor? DefaultMaxTrackColor;
 		static EColor? DefaultThumbColor;
 
-		protected override ESlider CreateNativeView() => new ESlider(NativeParent);
+		protected override ESlider CreatePlatformView() => new ESlider(NativeParent);
 
-		protected override void ConnectHandler(ESlider nativeView)
+		protected override void ConnectHandler(ESlider platformView)
 		{
-			nativeView!.ValueChanged += OnControlValueChanged;
-			nativeView!.DragStarted += OnDragStarted;
-			nativeView!.DragStopped += OnDragStopped;
+			platformView!.ValueChanged += OnControlValueChanged;
+			platformView!.DragStarted += OnDragStarted;
+			platformView!.DragStopped += OnDragStopped;
 		}
 
-		protected override void DisconnectHandler(ESlider nativeView)
+		protected override void DisconnectHandler(ESlider platformView)
 		{
-			nativeView!.ValueChanged -= OnControlValueChanged;
-			nativeView!.DragStarted -= OnDragStarted;
-			nativeView!.DragStopped -= OnDragStopped;
+			platformView!.ValueChanged -= OnControlValueChanged;
+			platformView!.DragStarted -= OnDragStarted;
+			platformView!.DragStopped -= OnDragStopped;
 		}
 
-		void SetupDefaults(ESlider nativeView)
+		void SetupDefaults(ESlider platformView)
 		{
-			DefaultMinTrackColor = nativeView.GetBarColor();
-			DefaultMaxTrackColor = nativeView.GetBackgroundColor();
-			DefaultThumbColor = nativeView.GetHandlerColor();
+			DefaultMinTrackColor = platformView.GetBarColor();
+			DefaultMaxTrackColor = platformView.GetBackgroundColor();
+			DefaultThumbColor = platformView.GetHandlerColor();
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimum(slider);
+			handler.PlatformView?.UpdateMinimum(slider);
 		}
 
 		public static void MapMaximum(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximum(slider);
+			handler.PlatformView?.UpdateMaximum(slider);
 		}
 
 
 		public static void MapValue(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateValue(slider);
+			handler.PlatformView?.UpdateValue(slider);
 		}
 
 		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
 		}
 
 		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
 		}
 
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
 
-			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(slider, DefaultThumbColor);
 		}
 
 		[MissingMapper]
@@ -71,10 +71,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
-			if (NativeView == null || VirtualView == null)
+			if (PlatformView == null || VirtualView == null)
 				return;
 
-			VirtualView.Value = NativeView.Value;
+			VirtualView.Value = PlatformView.Value;
 		}
 
 		void OnDragStarted(object? sender, EventArgs e)

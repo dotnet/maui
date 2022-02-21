@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		Box? Canvas => (Box?)_scrollCanvas;
 
-		protected override ScrollView CreateNativeView()
+		protected override ScrollView CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 			var scrollView = new ScrollView(NativeParent);
@@ -22,26 +22,26 @@ namespace Microsoft.Maui.Handlers
 			return scrollView;
 		}
 
-		protected override void ConnectHandler(ScrollView nativeView)
+		protected override void ConnectHandler(ScrollView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			_ = Canvas ?? throw new InvalidOperationException($"{nameof(Canvas)} cannot be null");
 
-			nativeView.Scrolled += OnScrolled;
+			platformView.Scrolled += OnScrolled;
 			Canvas.LayoutUpdated += OnContentLayoutUpdated;
 		}
 
-		public override ElmSharp.Rect GetNativeContentGeometry()
+		public override ElmSharp.Rect GetPlatformContentGeometry()
 		{
-			return Canvas?.Geometry ?? NativeView.Geometry;
+			return Canvas?.Geometry ?? PlatformView.Geometry;
 		}
 
-		protected override void DisconnectHandler(ScrollView nativeView)
+		protected override void DisconnectHandler(ScrollView platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			_ = Canvas ?? throw new InvalidOperationException($"{nameof(Canvas)} cannot be null");
 
-			nativeView.Scrolled -= OnScrolled;
+			platformView.Scrolled -= OnScrolled;
 			Canvas.LayoutUpdated -= OnContentLayoutUpdated;
 		}
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnScrolled(object? sender, EventArgs e)
 		{
-			var region = NativeView.CurrentRegion.ToDP();
+			var region = PlatformView.CurrentRegion.ToDP();
 			VirtualView.HorizontalOffset = region.X;
 			VirtualView.VerticalOffset = region.Y;
 		}
@@ -89,9 +89,9 @@ namespace Microsoft.Maui.Handlers
 			// elm-scroller updates the CurrentRegion after render
 			EcoreMainloop.Post(() =>
 			{
-				if (NativeView != null)
+				if (PlatformView != null)
 				{
-					OnScrolled(NativeView, EventArgs.Empty);
+					OnScrolled(PlatformView, EventArgs.Empty);
 				}
 			});
 		}
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Handlers
 
 			sHandler.Canvas.UnPackAll();
 			sHandler.Canvas.PackEnd(scrollView.PresentedContent.ToPlatform(handler.MauiContext));
-			if (scrollView.PresentedContent.Handler is INativeViewHandler thandler)
+			if (scrollView.PresentedContent.Handler is IPlatformViewHandler thandler)
 			{
 				thandler?.SetParent(sHandler);
 			}
@@ -114,17 +114,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
+			handler.PlatformView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
 		}
 
 		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView?.UpdateVerticalScrollBarVisibility(scrollView.VerticalScrollBarVisibility);
+			handler.PlatformView?.UpdateVerticalScrollBarVisibility(scrollView.VerticalScrollBarVisibility);
 		}
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView?.UpdateOrientation(scrollView.Orientation);
+			handler.PlatformView?.UpdateOrientation(scrollView.Orientation);
 		}
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
@@ -138,10 +138,10 @@ namespace Microsoft.Maui.Handlers
 				{
 					X = x.ToScaledPixel(),
 					Y = y.ToScaledPixel(),
-					Width = handler.NativeView!.Geometry.Width,
-					Height = handler.NativeView!.Geometry.Height
+					Width = handler.PlatformView!.Geometry.Width,
+					Height = handler.PlatformView!.Geometry.Height
 				};
-				handler.NativeView.ScrollTo(region, !request.Instant);
+				handler.PlatformView.ScrollTo(region, !request.Instant);
 
 				if (request.Instant)
 				{

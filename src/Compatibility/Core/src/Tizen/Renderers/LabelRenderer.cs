@@ -93,12 +93,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 		}
 
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToPlatform();
+			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToNative();
 		}
 
 		void UpdateFontProperties()

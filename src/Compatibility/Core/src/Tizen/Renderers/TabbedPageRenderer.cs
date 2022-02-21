@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (!string.IsNullOrEmpty(style))
 			{
 				_toolbar.Style = style;
-				((IVisualElementController)Element).NativeSizeChanged();
+				((IVisualElementController)Element).PlatformSizeChanged();
 				UpdateBackgroundColor(false);
 				UpdateBarBackgroundColor(false);
 				UpdateSelectedTabColor(false);

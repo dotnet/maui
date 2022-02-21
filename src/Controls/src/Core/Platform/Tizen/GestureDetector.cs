@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		View? View => Element as View;
 
-		protected virtual EvasObject? Control => _handler?.NativeView as EvasObject;
+		protected virtual EvasObject? Control => _handler?.PlatformView as EvasObject;
 
 		public bool IsEnabled
 		{

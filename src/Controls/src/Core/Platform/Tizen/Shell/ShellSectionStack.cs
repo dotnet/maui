@@ -122,12 +122,12 @@ namespace Microsoft.Maui.Controls.Platform
 			((IShellController)Shell.Current).AddFlyoutBehaviorObserver(_navBar);
 
 			_shellSectionHandler = CreateShellSectionView(ShellSection);
-			_shellSectionHandler.NativeView.Show();
-			_viewStack.Push(_shellSectionHandler.NativeView);
+			_shellSectionHandler.PlatformView.Show();
+			_viewStack.Push(_shellSectionHandler.PlatformView);
 
 			Device.BeginInvokeOnMainThread(() =>
 			{
-				(_shellSectionHandler.NativeView as Widget)?.SetFocus(true);
+				(_shellSectionHandler.PlatformView as Widget)?.SetFocus(true);
 			});
 		}
 
@@ -156,9 +156,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var backgroundColor = appearance?.BackgroundColor;
 			var foregroundColor = appearance?.ForegroundColor;
 
-			_navBar.TitleColor = titleColor.IsDefault() ? ShellView.DefaultTitleColor : (titleColor?.ToNativeEFL()).GetValueOrDefault();
-			_navBar.BackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToNativeEFL()).GetValueOrDefault();
-			_navBar.ForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToNativeEFL()).GetValueOrDefault();
+			_navBar.TitleColor = titleColor.IsDefault() ? ShellView.DefaultTitleColor : (titleColor?.ToPlatformEFL()).GetValueOrDefault();
+			_navBar.BackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToPlatformEFL()).GetValueOrDefault();
+			_navBar.ForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToPlatformEFL()).GetValueOrDefault();
 		}
 
 

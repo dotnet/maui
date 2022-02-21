@@ -10,12 +10,12 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler
 	{
 		bool _disposedValue;
 
-		EvasObject? INativeViewHandler.NativeView => this.ToPlatform();
-		EvasObject? INativeViewHandler.ContainerView => ContainerView;
+		EvasObject? IPlatformViewHandler.PlatformView => this.ToPlatform();
+		EvasObject? IPlatformViewHandler.ContainerView => ContainerView;
 
 		public new WrapperView? ContainerView
 		{
@@ -23,9 +23,9 @@ namespace Microsoft.Maui.Handlers
 			protected set => base.ContainerView = value;
 		}
 
-		public void SetParent(INativeViewHandler parent) => Parent = parent;
+		public void SetParent(IPlatformViewHandler parent) => Parent = parent;
 
-		public INativeViewHandler? Parent { get; private set; }
+		public IPlatformViewHandler? Parent { get; private set; }
 
 		public EvasObject? NativeParent => MauiContext?.GetNativeParent();
 
@@ -40,14 +40,14 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Shadow != null ||
 			base.NeedsContainer;
 
-		public override void NativeArrange(Rectangle frame)
+		public override void PlatformArrange(Rectangle frame)
 		{
 			if (NativeParent == null)
 				return;
 
-			var nativeView = this.ToPlatform();
+			var platformView = this.ToPlatform();
 
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
 			if (frame.Width < 0 || frame.Height < 0)
@@ -56,14 +56,14 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			nativeView.UpdateBounds(new Rectangle(ComputeAbsolutePoint(frame), new Size(frame.Width, frame.Height)).ToPixel());
+			platformView.UpdateBounds(new Rectangle(ComputeAbsolutePoint(frame), new Size(frame.Width, frame.Height)).ToPixel());
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = base.NativeView;
+			var platformView = base.PlatformView;
 
-			if (nativeView == null || VirtualView == null || NativeParent == null)
+			if (platformView == null || VirtualView == null || NativeParent == null)
 			{
 				return VirtualView == null || double.IsNaN(VirtualView.Width) || double.IsNaN(VirtualView.Height) ? Size.Zero : new Size(VirtualView.Width, VirtualView.Height);
 			}
@@ -82,9 +82,9 @@ namespace Microsoft.Maui.Handlers
 			var hasExplicitHeight = explicitHeight >= 0;
 
 			Size measured;
-			if (nativeView is IMeasurable nativeViewMeasurable)
+			if (platformView is IMeasurable platformViewMeasurable)
 			{
-				measured = nativeViewMeasurable.Measure(availableWidth, availableHeight).ToDP();
+				measured = platformViewMeasurable.Measure(availableWidth, availableHeight).ToDP();
 			}
 			else
 			{
@@ -95,33 +95,33 @@ namespace Microsoft.Maui.Handlers
 				hasExplicitHeight ? explicitHeight : measured.Height);
 		}
 
-		public virtual ERect GetNativeContentGeometry()
+		public virtual ERect GetPlatformContentGeometry()
 		{
-			var nativeView = this.ToPlatform();
+			var platformView = this.ToPlatform();
 
-			if (nativeView == null)
+			if (platformView == null)
 			{
 				return new ERect();
 			}
-			return nativeView.Geometry;
+			return platformView.Geometry;
 		}
 
 		protected virtual Size Measure(double availableWidth, double availableHeight)
 		{
-			var nativeView = this.ToPlatform();
+			var platformView = this.ToPlatform();
 
-			if (nativeView == null)
+			if (platformView == null)
 			{
 				return new Size(0, 0);
 			}
-			return new ESize(nativeView.MinimumWidth, nativeView.MinimumHeight).ToDP();
+			return new ESize(platformView.MinimumWidth, platformView.MinimumHeight).ToDP();
 		}
 
 		protected virtual double ComputeAbsoluteX(Rectangle frame)
 		{
 			if (Parent != null)
 			{
-				return frame.X + Parent.GetNativeContentGeometry().X.ToScaledDP();
+				return frame.X + Parent.GetPlatformContentGeometry().X.ToScaledDP();
 			}
 			else
 			{
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (Parent != null)
 			{
-				return frame.Y + Parent.GetNativeContentGeometry().Y.ToScaledDP();
+				return frame.Y + Parent.GetPlatformContentGeometry().Y.ToScaledDP();
 			}
 			else
 			{
@@ -148,29 +148,29 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
-			var parent = Parent?.NativeView as IContainable<EvasObject>;
-			parent?.Children.Remove(NativeView!);
+			var parent = Parent?.PlatformView as IContainable<EvasObject>;
+			parent?.Children.Remove(PlatformView!);
 
 			ContainerView ??= new WrapperView(NativeParent!);
 			ContainerView.Show();
-			ContainerView.Content = NativeView;
+			ContainerView.Content = PlatformView;
 
 			parent?.Children?.Add(ContainerView);
 		}
 
 		protected override void RemoveContainer()
 		{
-			var parent = Parent?.NativeView as IContainable<EvasObject>;
+			var parent = Parent?.PlatformView as IContainable<EvasObject>;
 			parent?.Children.Remove(ContainerView!);
 
 			ContainerView!.Content = null;
 			ContainerView?.Unrealize();
 			ContainerView = null;
 
-			parent?.Children.Add(NativeView!);
+			parent?.Children.Add(PlatformView!);
 		}
 
-		protected override void OnNativeViewDeleted()
+		protected override void OnPlatformViewDeleted()
 		{
 			Dispose();
 		}
@@ -181,9 +181,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (disposing)
 				{
-					var nativeView = base.NativeView;
+					var platformView = base.PlatformView;
 					(this as IElementHandler)?.DisconnectHandler();
-					nativeView?.Unrealize();
+					platformView?.Unrealize();
 					ContainerView?.Unrealize();
 				}
 

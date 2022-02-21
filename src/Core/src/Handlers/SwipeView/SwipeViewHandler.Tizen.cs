@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SwipeViewHandler : ViewHandler<ISwipeView, EvasObject>
 	{
 		// TODO : Need to implement
-		protected override EvasObject CreateNativeView()
+		protected override EvasObject CreatePlatformView()
 		{
 			throw new NotImplementedException();
 		}
@@ -15,12 +15,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 		}
 
 		public static void MapContent(ISwipeViewHandler handler, ISwipeView view)
 		{
-			_ = handler.NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = handler.TypedVirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 		}

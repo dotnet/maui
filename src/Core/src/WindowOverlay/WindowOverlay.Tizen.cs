@@ -11,25 +11,25 @@ namespace Microsoft.Maui
 
 		public virtual bool Initialize()
 		{
-			if (IsNativeViewInitialized)
+			if (IsPlatformViewInitialized)
 				return true;
 
 			if (Window == null)
 				return false;
 
-			var nativeWindow = Window.Content?.ToPlatform() as Window;
-			if (nativeWindow == null)
+			var platformWindow = Window.Content?.ToPlatform() as Window;
+			if (platformWindow == null)
 				return false;
 
 			var handler = Window.Handler as WindowHandler;
 			if (handler?.MauiContext == null)
 				return false;
 
-			_graphicsView = new SkiaGraphicsView(nativeWindow);
+			_graphicsView = new SkiaGraphicsView(platformWindow);
 			_graphicsView.Drawable = this;
 			_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
 
-			_touchLayer = new GestureLayer(nativeWindow);
+			_touchLayer = new GestureLayer(platformWindow);
 			_touchLayer.Attach(_graphicsView);
 			_touchLayer.SetTapCallback(GestureLayer.GestureType.Tap, GestureLayer.GestureState.Start, (data) =>
 			{
@@ -38,9 +38,9 @@ namespace Microsoft.Maui
 				OnTappedInternal(new Point(DPExtensions.ConvertToScaledDP(x), DPExtensions.ConvertToScaledDP(y)));
 			});
 
-			nativeWindow.SetOverlay(_graphicsView);
-			IsNativeViewInitialized = true;
-			return IsNativeViewInitialized;
+			platformWindow.SetOverlay(_graphicsView);
+			IsPlatformViewInitialized = true;
+			return IsPlatformViewInitialized;
 		}
 
 		public void Invalidate()
@@ -48,13 +48,13 @@ namespace Microsoft.Maui
 			_graphicsView?.Invalidate();
 		}
 
-		void DeinitializeNativeDependencies()
+		void DeinitializePlatformDependencies()
 		{
 			if (Window == null)
 				return;
 
-			var nativeWindow = Window?.Content?.ToPlatform();
-			if (nativeWindow == null)
+			var platformWindow = Window?.Content?.ToPlatform();
+			if (platformWindow == null)
 				return;
 
 			var handler = Window?.Handler as WindowHandler;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui
 
 			_graphicsView?.Unrealize();
 			_graphicsView = null;
-			IsNativeViewInitialized = false;
+			IsPlatformViewInitialized = false;
 		}
 
 		partial void OnDisableUITouchEventPassthroughSet()

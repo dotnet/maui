@@ -4,16 +4,16 @@ using ERect = ElmSharp.Rect;
 
 namespace Microsoft.Maui
 {
-	public interface INativeViewHandler : IViewHandler, IDisposable
+	public interface IPlatformViewHandler : IViewHandler, IDisposable
 	{
-		new EvasObject? NativeView { get; }
+		new EvasObject? PlatformView { get; }
 
 		new EvasObject? ContainerView { get; }
 
-		void SetParent(INativeViewHandler parent);
+		void SetParent(IPlatformViewHandler parent);
 
-		INativeViewHandler? Parent { get; }
+		IPlatformViewHandler? Parent { get; }
 
-		ERect GetNativeContentGeometry();
+		ERect GetPlatformContentGeometry();
 	}
 }

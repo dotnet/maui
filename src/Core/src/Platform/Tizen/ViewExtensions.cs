@@ -10,23 +10,33 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		public static void UpdateIsEnabled(this EvasObject nativeView, IView view)
+		public static void UpdateIsEnabled(this EvasObject platformView, IView view)
 		{
-			if (!(nativeView is Widget widget))
+			if (!(platformView is Widget widget))
 				return;
 
 			widget.IsEnabled = view.IsEnabled;
 		}
 
-		public static void UpdateVisibility(this EvasObject nativeView, IView view)
+		public static void Focus(this EvasObject platformView, FocusRequest request)
+		{
+			// TODO: Implement Focus on Tizen (ref #4588)
+		}
+
+		public static void Unfocus(this EvasObject platformView, IView view)
+		{
+			// TODO: Implement Unfocus on Tizen (ref #4588)
+		}
+
+		public static void UpdateVisibility(this EvasObject platformView, IView view)
 		{
 			if (view.Visibility.ToPlatformVisibility())
 			{
-				nativeView.Show();
+				platformView.Show();
 			}
 			else
 			{
-				nativeView.Hide();
+				platformView.Hide();
 			}
 		}
 
@@ -40,64 +50,64 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		public static void UpdateBackground(this EvasObject nativeView, IView view)
+		public static void UpdateBackground(this EvasObject platformView, IView view)
 		{
 			var paint = view.Background;
 
-			if (nativeView is WrapperView wrapperView)
+			if (platformView is WrapperView wrapperView)
 			{
 				wrapperView.UpdateBackground(paint);
 			}
-			else if (nativeView is BorderView borderView)
+			else if (platformView is BorderView borderView)
 			{
 				borderView.ContainerView?.UpdateBackground(paint);
 			}
 			else if (paint is not null)
 			{
-				nativeView.UpdateBackgroundColor(paint.ToNative());
+				platformView.UpdateBackgroundColor(paint.ToPlatform());
 			}
 		}
 
-		public static void UpdateBorder(this EvasObject nativeView, IView view)
+		public static void UpdateBorder(this EvasObject platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;
 
-			if (nativeView is WrapperView wrapperView)
+			if (platformView is WrapperView wrapperView)
 				wrapperView.Border = border;
 		}
 
-		public static void UpdateOpacity(this EvasObject nativeView, IView view)
+		public static void UpdateOpacity(this EvasObject platformView, IView view)
 		{
-			if (nativeView is Widget widget)
+			if (platformView is Widget widget)
 			{
 				widget.Opacity = (int)(view.Opacity * 255.0);
 			}
 		}
 
-		public static void UpdateClip(this EvasObject nativeView, IView view)
+		public static void UpdateClip(this EvasObject platformView, IView view)
 		{
-			if (nativeView is WrapperView wrapper)
+			if (platformView is WrapperView wrapper)
 				wrapper.Clip = view.Clip;
 		}
 
-		public static void UpdateShadow(this EvasObject nativeView, IView view)
+		public static void UpdateShadow(this EvasObject platformView, IView view)
 		{
-			if (nativeView is WrapperView wrapper)
+			if (platformView is WrapperView wrapper)
 				wrapper.Shadow = view.Shadow;
 		}
 
-		public static void UpdateAutomationId(this EvasObject nativeView, IView view)
+		public static void UpdateAutomationId(this EvasObject platformView, IView view)
 		{
 			{
 				//TODO: EvasObject.AutomationId is supported from tizen60.
-				//nativeView.AutomationId = view.AutomationId;
+				//platformView.AutomationId = view.AutomationId;
 			}
 		}
 
-		public static void UpdateSemantics(this EvasObject nativeView, IView view)
+		public static void UpdateSemantics(this EvasObject platformView, IView view)
 		{
 			var semantics = view.Semantics;
-			var accessibleObject = nativeView as IAccessibleObject;
+			var accessibleObject = platformView as IAccessibleObject;
 
 			if (semantics == null || accessibleObject == null)
 				return;
@@ -106,42 +116,42 @@ namespace Microsoft.Maui.Platform
 			accessibleObject.Description = semantics.Hint;
 		}
 
-		public static void InvalidateMeasure(this EvasObject nativeView, IView view)
+		public static void InvalidateMeasure(this EvasObject platformView, IView view)
 		{
-			nativeView.MarkChanged();
+			platformView.MarkChanged();
 		}
 
-		public static void UpdateWidth(this EvasObject nativeView, IView view)
+		public static void UpdateWidth(this EvasObject platformView, IView view)
 		{
-			UpdateSize(nativeView, view);
+			UpdateSize(platformView, view);
 		}
 
-		public static void UpdateHeight(this EvasObject nativeView, IView view)
+		public static void UpdateHeight(this EvasObject platformView, IView view)
 		{
-			UpdateSize(nativeView, view);
+			UpdateSize(platformView, view);
 		}
 
-		public static void UpdateMinimumWidth(this EvasObject nativeView, IView view)
+		public static void UpdateMinimumWidth(this EvasObject platformView, IView view)
 		{
-			UpdateSize(nativeView, view);
+			UpdateSize(platformView, view);
 		}
 
-		public static void UpdateMinimumHeight(this EvasObject nativeView, IView view)
+		public static void UpdateMinimumHeight(this EvasObject platformView, IView view)
 		{
-			UpdateSize(nativeView, view);
+			UpdateSize(platformView, view);
 		}
 
-		public static void UpdateMaximumWidth(this EvasObject nativeView, IView view)
+		public static void UpdateMaximumWidth(this EvasObject platformView, IView view)
 		{
-			UpdateSize(nativeView, view);
+			UpdateSize(platformView, view);
 		}
 
-		public static void UpdateMaximumHeight(this EvasObject nativeView, IView view)
+		public static void UpdateMaximumHeight(this EvasObject platformView, IView view)
 		{
-			UpdateSize(nativeView, view);
+			UpdateSize(platformView, view);
 		}
 
-		public static void UpdateSize(EvasObject nativeView, IView view)
+		public static void UpdateSize(EvasObject platformView, IView view)
 		{
 			if (!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
 			{
@@ -151,48 +161,48 @@ namespace Microsoft.Maui.Platform
 
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
 			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
-			nativeView.Resize(view.Width.ToScaledPixel(), view.Height.ToScaledPixel());
+			platformView.Resize(view.Width.ToScaledPixel(), view.Height.ToScaledPixel());
 		}
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		internal static Rectangle GetPlatformViewBounds(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 			{
 				return new Rectangle();
 			}
 
-			return nativeView.GetNativeViewBounds();
+			return platformView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this EvasObject nativeView)
+		internal static Rectangle GetPlatformViewBounds(this EvasObject platformView)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return new Rectangle();
 
-			return nativeView.Geometry.ToDP();
+			return platformView.Geometry.ToDP();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 				return new Matrix4x4();
-			return nativeView.GetViewTransform();
+			return platformView.GetViewTransform();
 		}
 
-		internal static Matrix4x4 GetViewTransform(this EvasObject nativeView)
+		internal static Matrix4x4 GetViewTransform(this EvasObject platformView)
 			=> new Matrix4x4();
 
 		internal static Graphics.Rectangle GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this EvasObject? nativeView)
+		internal static Graphics.Rectangle GetBoundingBox(this EvasObject? platformView)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return new Rectangle();
 
-			return nativeView.Geometry.ToDP();
+			return platformView.Geometry.ToDP();
 		}
 
 		internal static EvasObject? GetParent(this EvasObject? view)

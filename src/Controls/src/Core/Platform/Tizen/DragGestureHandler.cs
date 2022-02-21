@@ -38,11 +38,11 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		EvasObject NativeView
+		EvasObject PlatformView
 		{
 			get
 			{
-				return Handler.NativeView as EvasObject;
+				return Handler.PlatformView as EvasObject;
 			}
 		}
 
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				s_isDragging = true;
 
-				DragDropExtensions.StartDrag(NativeView,
+				DragDropExtensions.StartDrag(PlatformView,
 					target,
 					strData,
 					DragDropExtensions.DragDropActionType.Move,
@@ -107,13 +107,13 @@ namespace Microsoft.Maui.Controls.Platform
 		IntPtr OnIconCallback(IntPtr data, IntPtr window, ref int xoff, ref int yoff)
 		{
 			EvasObject icon = null;
-			EvasObject parent = new CustomWindow(NativeView, window);
+			EvasObject parent = new CustomWindow(PlatformView, window);
 
 			if (s_currentDragStateData.DataPackage.Image != null)
 			{
 				icon = GetImageIconAsync(parent).Result;
 			}
-			else if (NativeView is ShapeView)
+			else if (PlatformView is ShapeView)
 			{
 				icon = GetShapeView(parent);
 			}
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				icon = GetDefaultIcon(parent);
 			}
-			var bound = NativeView.Geometry;
+			var bound = PlatformView.Geometry;
 			bound.X = 0;
 			bound.Y = 0;
 			icon.Geometry = bound;
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Platform
 				IsFilled = true
 			};
 
-			if (NativeView is ShapeView shapeView)
+			if (PlatformView is ShapeView shapeView)
 			{
 				var canvas = shapeView.SKCanvasView;
 				var realHandle = DragDropExtensions.Interop.elm_object_part_content_get(canvas, "elm.swallow.content");

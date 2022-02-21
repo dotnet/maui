@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected virtual double MinimumSize => 40d;
 
-		protected override MauiShapeView CreateNativeView()
+		protected override MauiShapeView CreatePlatformView()
 		{
 			return new MauiShapeView(NativeParent!)
 			{
@@ -23,48 +23,48 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapShape(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.UpdateShape(shapeView);
+			handler.PlatformView?.UpdateShape(shapeView);
 			handler.ContainerView?.UpdateShape(shapeView.Shape);
 		}
 		
 		public static void MapAspect(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
 		public static void MapFill(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
 		public static void MapStroke(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
 		public static void MapStrokeThickness(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
 		public static void MapStrokeDashPattern(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
 		public static void MapStrokeLineCap(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
 		public static void MapStrokeLineJoin(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
 		public static void MapStrokeMiterLimit(ShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 	}
 }

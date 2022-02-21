@@ -1,13 +1,13 @@
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Graphics;
 using ERect = ElmSharp.Rect;
-using NativeView = ElmSharp.EvasObject;
+using PlatformView = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-	public partial class RendererToHandlerShim : INativeViewHandler
+	public partial class RendererToHandlerShim : IPlatformViewHandler
 	{
-		protected override NativeView CreateNativeView()
+		protected override PlatformView CreatePlatformView()
 		{
 			return VisualElementRenderer.NativeView;
 		}
@@ -31,17 +31,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.UpdateValue(property);
 			if (property == "Frame")
 			{
-				NativeArrange(VisualElementRenderer.Element.Bounds);
+				PlatformArrange(VisualElementRenderer.Element.Bounds);
 			}
 		}
 
-		public override void NativeArrange(Rectangle frame)
+		public override void PlatformArrange(Rectangle frame)
 		{
-			base.NativeArrange(frame);
+			base.PlatformArrange(frame);
 			VisualElementRenderer.UpdateLayout();
 		}
 
-		public override ERect GetNativeContentGeometry()
+		public override ERect GetPlatformContentGeometry()
 		{
 			return VisualElementRenderer?.GetNativeContentGeometry() ?? new ERect();
 		}

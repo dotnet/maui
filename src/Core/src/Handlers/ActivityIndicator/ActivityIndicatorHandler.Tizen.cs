@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected virtual EColor DefaultColor => ThemeConstants.ProgressBar.ColorClass.Default;
 
-		protected override EProgressBar CreateNativeView()
+		protected override EProgressBar CreatePlatformView()
 		{
 			var progressBar = new EProgressBar(NativeParent) { IsPulseMode = true }.SetSmallStyle();
 			progressBar.Color = DefaultColor;
@@ -17,12 +17,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
-			handler.NativeView?.UpdateIsRunning(activityIndicator);
+			handler.PlatformView?.UpdateIsRunning(activityIndicator);
 		}
 
 		public static void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
-			handler.NativeView?.UpdateColor(activityIndicator);
+			handler.PlatformView?.UpdateColor(activityIndicator);
 		}
 	}
 }

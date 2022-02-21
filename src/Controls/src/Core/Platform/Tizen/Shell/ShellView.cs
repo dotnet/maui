@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
 
-			_navigationDrawer.DrawerBehavior = Element.FlyoutBehavior.ToNative();
+			_navigationDrawer.DrawerBehavior = Element.FlyoutBehavior.ToPlatform();
 		}
 
 		protected virtual void BuildMenu()
@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
 
-			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToNativeEFL();
+			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToPlatformEFL();
 		}
 
 		async void UpdateFlyoutBackgroundImage()
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var imageSource = Element.FlyoutBackgroundImage;
 				var provider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
 				var service = provider.GetRequiredImageSourceService(imageSource);
-				image.Aspect = Element.FlyoutBackgroundImageAspect.ToNative();
+				image.Aspect = Element.FlyoutBackgroundImageAspect.ToPlatform();
 				_navigationView.BackgroundImage = image;
 
 				await service.GetImageAsync(imageSource, image);
@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_navigationView.BackgroundImage is TImage image)
 			{
-				image.Aspect = Element.FlyoutBackgroundImageAspect.ToNative();
+				image.Aspect = Element.FlyoutBackgroundImageAspect.ToPlatform();
 			}
 		}
 

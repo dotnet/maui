@@ -13,6 +13,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateColor(this ProgressBar activityIndicatorView, IActivityIndicator activityIndicator)
-			=> activityIndicatorView.Color = activityIndicator.Color.ToNativeEFL();
+			=> activityIndicatorView.Color = activityIndicator.Color.ToPlatformEFL();
 	}
 }

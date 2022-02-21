@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				if (!IsDisposed && success)
 				{
-					((IVisualElementController)Element).NativeSizeChanged();
+					((IVisualElementController)Element).PlatformSizeChanged();
 					UpdateAfterLoading(initialize);
 				}
 			}
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				if (!IsDisposed && success)
 				{
-					((IVisualElementController)Element).NativeSizeChanged();
+					((IVisualElementController)Element).PlatformSizeChanged();
 					UpdateAfterLoading(initialize);
 				}
 			}

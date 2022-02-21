@@ -20,7 +20,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
 #elif TIZEN
 using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform;
-using NativeView = ElmSharp.EvasObject;
+using PlatformView = ElmSharp.EvasObject;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, ElmSharp.EvasObject>;
 #elif NETSTANDARD

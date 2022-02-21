@@ -8,26 +8,26 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected virtual EColor DefaultColor => ThemeConstants.ProgressBar.ColorClass.Default;
 
-		protected override EProgressBar CreateNativeView()
+		protected override EProgressBar CreatePlatformView()
 		{
 			var progressBar = new EProgressBar(NativeParent);
 			progressBar.Color = DefaultColor;
 			return progressBar;
 		}
 
-		void SetupDefaults(EProgressBar nativeView)
+		void SetupDefaults(EProgressBar platformView)
 		{
-			nativeView.Color = ThemeConstants.ProgressBar.ColorClass.Default;
+			platformView.Color = ThemeConstants.ProgressBar.ColorClass.Default;
 		}
 
 		public static void MapProgress(ProgressBarHandler handler, IProgress progress)
 		{
-			handler.NativeView?.UpdateProgress(progress);
+			handler.PlatformView?.UpdateProgress(progress);
 		}
 
 		public static void MapProgressColor(ProgressBarHandler handler, IProgress progress)
 		{
-			handler.NativeView?.UpdateProgressColor(progress);
+			handler.PlatformView?.UpdateProgressColor(progress);
 		}
 	}
 }

@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class AspectExtensions
 	{
-		public static TAspect ToNative(this Aspect aspect) =>
+		public static TAspect ToPlatform(this Aspect aspect) =>
 			aspect switch
 			{
 				Aspect.AspectFit => TAspect.AspectFit,

@@ -4,14 +4,14 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateTextColor(this Button nativeButton, ITextStyle button)
+		public static void UpdateTextColor(this Button platformButton, ITextStyle button)
 		{
-			nativeButton.TextColor = button.TextColor.ToNative();
+			platformButton.TextColor = button.TextColor.ToPlatform();
 		}
 
-		public static void UpdateText(this Button nativeButton, IText button)
+		public static void UpdateText(this Button platformButton, IText button)
 		{
-			nativeButton.Text = button.Text ?? "";
+			platformButton.Text = button.Text ?? "";
 		}
 	}
 }

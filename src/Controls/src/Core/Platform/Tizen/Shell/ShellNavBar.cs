@@ -316,7 +316,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_searchView != null)
 			{
-				UnPack(_searchView.NativeView);
+				UnPack(_searchView.PlatformView);
 				_searchView.Dispose();
 				_searchView = null;
 			}
@@ -324,8 +324,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (handler != null)
 			{
 				_searchView = new ShellSearchView(handler, MauiContext);
-				_searchView.NativeView?.Show();
-				PackEnd(_searchView.NativeView);
+				_searchView.PlatformView?.Show();
+				PackEnd(_searchView.PlatformView);
 			}
 		}
 
@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_searchHandler != null)
 			{
-				_searchView?.NativeView?.Show();
+				_searchView?.PlatformView?.Show();
 				_title?.Hide();
 				_nativeTitleView?.Hide();
 			}
@@ -341,13 +341,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_nativeTitleView?.Show();
 				_title?.Hide();
-				_searchView?.NativeView?.Hide();
+				_searchView?.PlatformView?.Hide();
 			}
 			else
 			{
 				_title.Show();
 				_nativeTitleView?.Hide();
-				_searchView?.NativeView?.Hide();
+				_searchView?.PlatformView?.Hide();
 			}
 		}
 
@@ -377,9 +377,9 @@ namespace Microsoft.Maui.Controls.Platform
 			contentBound.Width -= (menuBound.Width + menuMargin + titleHMargin * 2);
 			contentBound.Height -= titleVMargin * 2;
 
-			if (_searchView != null && _searchView.NativeView != null)
+			if (_searchView != null && _searchView.PlatformView != null)
 			{
-				_searchView.NativeView.Geometry = contentBound;
+				_searchView.PlatformView.Geometry = contentBound;
 			}
 			else if (_titleView != null && _nativeTitleView != null)
 			{

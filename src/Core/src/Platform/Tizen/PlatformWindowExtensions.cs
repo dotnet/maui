@@ -6,20 +6,20 @@ using ELayout = ElmSharp.Layout;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class WindowExtensions
+	public static class PlatformWindowExtensions
 	{
 		static Dictionary<Window, Func<bool>> s_windowBackButtonPressedHandler = new Dictionary<Window, Func<bool>>();
 		static Dictionary<Window, Action> s_windowCloseRequestHandler = new Dictionary<Window, Action>();
 		static Dictionary<Window, ELayout> s_windowBaseLayout = new Dictionary<Window, ELayout>();
 		static Dictionary<Window, ModalStack> s_windowModalStack = new Dictionary<Window, ModalStack>();
 
-		public static void Initialize(this Window nativeWindow)
+		public static void Initialize(this Window platformWindow)
 		{
-			var baseLayout = (ELayout?)nativeWindow.GetType().GetProperty("BaseLayout")?.GetValue(nativeWindow);
+			var baseLayout = (ELayout?)platformWindow.GetType().GetProperty("BaseLayout")?.GetValue(platformWindow);
 
 			if (baseLayout == null)
 			{
-				var conformant = new Conformant(nativeWindow);
+				var conformant = new Conformant(platformWindow);
 				conformant.Show();
 
 				var layout = new ApplicationLayout(conformant);
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 				baseLayout = layout;
 				conformant.SetContent(baseLayout);
 			}
-			nativeWindow.SetBaseLayout(baseLayout);
+			platformWindow.SetBaseLayout(baseLayout);
 			var modalStack = new ModalStack(baseLayout)
 			{
 				AlignmentX = -1,
@@ -38,18 +38,18 @@ namespace Microsoft.Maui.Platform
 			};
 			modalStack.Show();
 			baseLayout.SetContent(modalStack);
-			nativeWindow.SetModalStack(modalStack);
+			platformWindow.SetModalStack(modalStack);
 
-			nativeWindow.Active();
-			nativeWindow.Show();
-			nativeWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
+			platformWindow.Active();
+			platformWindow.Show();
+			platformWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
 			
-			nativeWindow.RotationChanged += (sender, e) =>
+			platformWindow.RotationChanged += (sender, e) =>
 			{
 				// TODO : should update later
 			};
 
-			nativeWindow.BackButtonPressed += (s, e) => OnBackButtonPressed(nativeWindow);
+			platformWindow.BackButtonPressed += (s, e) => OnBackButtonPressed(platformWindow);
 		}
 
 		public static void SetOverlay(this Window window, EvasObject content)

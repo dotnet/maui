@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	{
 		public static void MapText(ButtonHandler handler, Button button)
 		{
-			handler.NativeView?.UpdateText(button);
+			handler.PlatformView?.UpdateText(button);
 		}
 	}
 }

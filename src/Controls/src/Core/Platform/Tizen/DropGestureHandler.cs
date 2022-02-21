@@ -25,11 +25,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public IViewHandler Handler { get; }
 
-		EvasObject NativeView
+		EvasObject PlatformView
 		{
 			get
 			{
-				var native = Handler.NativeView as EvasObject;
+				var native = Handler.PlatformView as EvasObject;
 				if (native is Canvas canvas)
 				{
 					var child = canvas.Children.LastOrDefault<EvasObject>();
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var target = DragDropExtensions.DragDropContentType.Targets;
 
-			DragDropExtensions.AddDropTarget(NativeView,
+			DragDropExtensions.AddDropTarget(PlatformView,
 				target,
 				_dragEnterCallback,
 				_dragLeaveCallback, null,

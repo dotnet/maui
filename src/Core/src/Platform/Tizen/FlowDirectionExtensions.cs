@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class FlowDirectionExtensions
 	{
-		internal static void UpdateFlowDirection(this EvasObject nativeView, IView view)
+		internal static void UpdateFlowDirection(this EvasObject platformView, IView view)
 		{
 			// TODO: Need to impl
 		}

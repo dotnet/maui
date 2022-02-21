@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is NIEntry ie)
 			{
-				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
+				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 			}
 		}
 

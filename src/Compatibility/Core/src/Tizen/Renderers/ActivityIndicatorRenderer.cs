@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.Color.IsDefault())
 				return;
 
-			Control.Color = (Element.Color.IsDefault()) ? s_defaultColor : Element.Color.ToPlatform();
+			Control.Color = (Element.Color.IsDefault()) ? s_defaultColor : Element.Color.ToNative();
 		}
 
 		void UpdateIsRunning()

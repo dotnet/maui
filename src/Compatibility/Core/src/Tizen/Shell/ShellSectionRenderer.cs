@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		Dictionary<EToolbarItem, ShellContent> _itemToContent = new Dictionary<EToolbarItem, ShellContent>();
 		List<EToolbarItem> _tabsItems = new List<EToolbarItem>();
 
-		EColor _backgroundColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
-		EColor _foregroundColor = ShellRenderer.DefaultForegroundColor.ToPlatform();
+		EColor _backgroundColor = ShellRenderer.DefaultBackgroundColor.ToNative();
+		EColor _foregroundColor = ShellRenderer.DefaultForegroundColor.ToNative();
 
 		bool _disposed = false;
 
@@ -130,8 +130,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var foregroundColor = appearance?.ForegroundColor;
-			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : backgroundColor.ToPlatform();
-			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellRenderer.DefaultForegroundColor.ToPlatform() : foregroundColor.ToPlatform();
+			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellRenderer.DefaultBackgroundColor.ToNative() : backgroundColor.ToNative();
+			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellRenderer.DefaultForegroundColor.ToNative() : foregroundColor.ToNative();
 		}
 
 		void UpdateDisplayedPage(Page page)

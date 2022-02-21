@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (Element.BackgroundColor.IsDefault() || Element.BackgroundColor.Alpha == 0)
 				_page.Color = EColor.Transparent;
 			else
-				_page.Color = Element.BackgroundColor.ToPlatform();
+				_page.Color = Element.BackgroundColor.ToNative();
 		}
 
 		protected override void UpdateLayout()

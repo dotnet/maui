@@ -9,10 +9,10 @@ namespace Microsoft.Maui.Controls.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-			NativeView?.SetElement((Shell)view, MauiContext);
+			PlatformView?.SetElement((Shell)view, MauiContext);
 		}
 
-		protected override ShellView CreateNativeView()
+		protected override ShellView CreatePlatformView()
 		{
 			if (DeviceInfo.GetDeviceType() == DeviceType.TV)
 			{

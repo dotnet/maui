@@ -33,8 +33,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		List<EToolbarItem> _tabsItems = new List<EToolbarItem>();
 
 		bool _disposed = false;
-		EColor _tabBarBackgroudColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
-		EColor _tabBarTitleColor = ShellRenderer.DefaultTitleColor.ToPlatform();
+		EColor _tabBarBackgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
+		EColor _tabBarTitleColor = ShellRenderer.DefaultTitleColor.ToNative();
 
 		public ShellItemRenderer(ShellItem item)
 		{
@@ -285,8 +285,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
-			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : tabBarBackgroudColor.ToPlatform();
-			TabBarTitleColor = tabBarTitleColor.IsDefault() ? ShellRenderer.DefaultTitleColor.ToPlatform() : tabBarTitleColor.ToPlatform();
+			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? ShellRenderer.DefaultBackgroundColor.ToNative() : tabBarBackgroudColor.ToNative();
+			TabBarTitleColor = tabBarTitleColor.IsDefault() ? ShellRenderer.DefaultTitleColor.ToNative() : tabBarTitleColor.ToNative();
 		}
 
 		void UpdateTabsBackgroudColor(EColor color)

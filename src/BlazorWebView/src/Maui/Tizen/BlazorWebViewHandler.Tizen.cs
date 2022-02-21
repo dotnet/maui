@@ -40,14 +40,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private TizenWebViewManager? _webviewManager;
 		private WebViewExtension.InterceptRequestCallback? _interceptRequestCallback;
 
-		private TWebView NativeWebView => NativeView.WebView;
+		private TWebView NativeWebView => PlatformView.WebView;
 
 		private bool RequiredStartupPropertiesSet =>
 			//_webview != null &&
 			HostPage != null &&
 			Services != null;
 
-		protected override WebViewContainer CreateNativeView()
+		protected override WebViewContainer CreatePlatformView()
 		{
 			TChromium.Initialize();
 			MauiApplication.Current.Terminated += (s, e) => TChromium.Shutdown();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return new WebViewContainer(NativeParent!);
 		}
 
-		protected override void ConnectHandler(WebViewContainer nativeView)
+		protected override void ConnectHandler(WebViewContainer platformView)
 		{
 			_interceptRequestCallback = OnRequestInterceptCallback;
 			NativeWebView.LoadFinished += OnLoadFinished;
@@ -64,10 +64,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			NativeWebView.GetSettings().JavaScriptEnabled = true;
 		}
 
-		protected override void DisconnectHandler(WebViewContainer nativeView)
+		protected override void DisconnectHandler(WebViewContainer platformView)
 		{
 			NativeWebView.LoadFinished -= OnLoadFinished;
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public void PostMessageFromJS(JavaScriptMessage message)
@@ -90,9 +90,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				return;
 			}
-			if (NativeView == null)
+			if (PlatformView == null)
 			{
-				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
+				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without platform web view instance.");
 			}
 
 			// We assume the host page is always in the root of the content directory, because it's

@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class KeyboardExtensions
 	{
-		public static TKeyboard ToNative(this Keyboard keyboard)
+		public static TKeyboard ToPlatform(this Keyboard keyboard)
 		{
 			if (keyboard == Keyboard.Numeric)
 			{
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateKeyboard(this TEntry control, Keyboard keyboard, bool isSpellCheckEnabled, bool isTextPredictionEnabled)
 		{
-			control.Keyboard = keyboard.ToNative();
+			control.Keyboard = keyboard.ToPlatform();
 			if (keyboard is CustomKeyboard customKeyboard)
 			{
 				control.AutoCapital = customKeyboard.Flags.ToAutoCapital();

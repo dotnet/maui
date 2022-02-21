@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (itemsView.SelectionMode != SelectionMode.None && itemsView.SelectedItem != null)
 			{
-				var index = handler.NativeView.Adaptor.GetItemIndex(itemsView.SelectedItem);
-				handler.NativeView.SelectedItemIndex = index;
+				var index = handler.PlatformView.Adaptor.GetItemIndex(itemsView.SelectedItem);
+				handler.PlatformView.SelectedItemIndex = index;
 			}
 		}
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			handler.NativeView.SelectionMode = itemsView.SelectionMode.ToNative();
+			handler.PlatformView.SelectionMode = itemsView.SelectionMode.ToPlatform();
 		}
 	}
 }

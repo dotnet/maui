@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageButtonHandler : ViewHandler<IImageButton, MauiImageButton>
 	{
-		protected override MauiImageButton CreateNativeView()
+		protected override MauiImageButton CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a ImageButton");
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
@@ -14,20 +14,20 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		protected override void ConnectHandler(MauiImageButton nativeView)
+		protected override void ConnectHandler(MauiImageButton platformView)
 		{
-			nativeView.Clicked += OnClicked;
-			nativeView.Pressed += OnPressed;
-			nativeView.Released += OnReleased;
-			base.ConnectHandler(nativeView);
+			platformView.Clicked += OnClicked;
+			platformView.Pressed += OnPressed;
+			platformView.Released += OnReleased;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiImageButton nativeView)
+		protected override void DisconnectHandler(MauiImageButton platformView)
 		{
-			nativeView.Clicked -= OnClicked;
-			nativeView.Pressed -= OnPressed;
-			nativeView.Released -= OnReleased;
-			base.DisconnectHandler(nativeView);
+			platformView.Clicked -= OnClicked;
+			platformView.Pressed -= OnPressed;
+			platformView.Released -= OnReleased;
+			base.DisconnectHandler(platformView);
 		}
 
 		[MissingMapper]

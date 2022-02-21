@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class SearchBarExtensions
 	{
 
-		public static TFontAttributes ToNative(this FontAttributes fontAttribute)
+		public static TFontAttributes ToPlatform(this FontAttributes fontAttribute)
 		{
 			TFontAttributes attributes = TFontAttributes.None;
 			if (fontAttribute == FontAttributes.Italic)

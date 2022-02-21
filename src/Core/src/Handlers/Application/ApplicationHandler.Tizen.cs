@@ -6,12 +6,12 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static void MapTerminate(ApplicationHandler handler, IApplication application, object? args)
 		{
-			handler.NativeView.Exit();
+			handler.PlatformView.Exit();
 		}
 
 		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
-			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+			handler.PlatformView?.RequestNewWindow(application, args as OpenWindowRequest);
 		}
 
 		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)

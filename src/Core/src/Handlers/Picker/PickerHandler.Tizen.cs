@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 		Dialog? _dialog;
 		Dictionary<ListItem, int> _itemToItemNumber = new Dictionary<ListItem, int>();
 
-		protected override TEntry CreateNativeView()
+		protected override TEntry CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
@@ -29,81 +29,81 @@ namespace Microsoft.Maui.Handlers
 			   };
 		}
 
-		protected override void ConnectHandler(TEntry nativeView)
+		protected override void ConnectHandler(TEntry platformView)
 		{
-			nativeView.SetVerticalTextAlignment(0.5);
+			platformView.SetVerticalTextAlignment(0.5);
 
-			nativeView.TextBlockFocused += OnTextBlockFocused;
-			nativeView.EntryLayoutFocused += OnFocused;
-			nativeView.EntryLayoutUnfocused += OnUnfocused;
+			platformView.TextBlockFocused += OnTextBlockFocused;
+			platformView.EntryLayoutFocused += OnFocused;
+			platformView.EntryLayoutUnfocused += OnUnfocused;
 
 			if (DeviceInfo.IsTV)
 			{
-				nativeView.EntryLayoutFocused += OnLayoutFocused;
-				nativeView.EntryLayoutUnfocused += OnLayoutUnfocused;
+				platformView.EntryLayoutFocused += OnLayoutFocused;
+				platformView.EntryLayoutUnfocused += OnLayoutUnfocused;
 			}
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(TEntry nativeView)
+		protected override void DisconnectHandler(TEntry platformView)
 		{
-			nativeView.TextBlockFocused -= OnTextBlockFocused;
-			nativeView.EntryLayoutFocused -= OnFocused;
-			nativeView.EntryLayoutUnfocused -= OnUnfocused;
+			platformView.TextBlockFocused -= OnTextBlockFocused;
+			platformView.EntryLayoutFocused -= OnFocused;
+			platformView.EntryLayoutUnfocused -= OnUnfocused;
 			if (DeviceInfo.IsTV)
 			{
-				nativeView.EntryLayoutFocused -= OnLayoutFocused;
-				nativeView.EntryLayoutUnfocused -= OnLayoutUnfocused;
+				platformView.EntryLayoutFocused -= OnLayoutFocused;
+				platformView.EntryLayoutUnfocused -= OnLayoutUnfocused;
 			}
 			CleanView();
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		void Reload()
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			NativeView.UpdatePicker(VirtualView);
+			PlatformView.UpdatePicker(VirtualView);
 		}
 
 		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
 
 		public static void MapTitleColor(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTitleColor(picker);
+			handler.PlatformView?.UpdateTitleColor(picker);
 		}
 
 		public static void MapFont(PickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView?.UpdateFont(picker, fontManager);
+			handler.PlatformView?.UpdateFont(picker, fontManager);
 		}
 
 		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
 		}
 
 		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
 		}
 
 		public static void MapTextColor(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTextColor(picker);
+			handler.PlatformView?.UpdateTextColor(picker);
 		}
 
 		public static void MapTitle(PickerHandler handler, IPicker picker) 
 		{
-			handler.NativeView?.UpdateTitle(picker);
+			handler.PlatformView?.UpdateTitle(picker);
 		}
 
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateSelectedIndex(picker);
+			handler.PlatformView?.UpdateSelectedIndex(picker);
 		}
 
 		[MissingMapper]
@@ -111,23 +111,23 @@ namespace Microsoft.Maui.Handlers
 
 		void OnLayoutFocused(object? sender, EventArgs e)
 		{
-			if (NativeView == null)
+			if (PlatformView == null)
 				return;
 
-			NativeView.FontSize = NativeView.FontSize * 1.5;
+			PlatformView.FontSize = PlatformView.FontSize * 1.5;
 		}
 
 		void OnLayoutUnfocused(object? sender, EventArgs e)
 		{
-			if (NativeView == null)
+			if (PlatformView == null)
 				return;
 
-			NativeView.FontSize = NativeView.FontSize / 1.5;
+			PlatformView.FontSize = PlatformView.FontSize / 1.5;
 		}
 
 		void OnTextBlockFocused(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null || NativeParent == null)
+			if (VirtualView == null || PlatformView == null || NativeParent == null)
 				return;
 
 			// For EFL Entry, the event will occur even if it is currently disabled.
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnItemSelected(object? senderObject, EventArgs ev)
 		{
-			if (VirtualView == null || NativeView == null || _dialog == null)
+			if (VirtualView == null || PlatformView == null || _dialog == null)
 				return;
 
 			VirtualView.SelectedIndex = _itemToItemNumber[(senderObject as List)!.SelectedItem];

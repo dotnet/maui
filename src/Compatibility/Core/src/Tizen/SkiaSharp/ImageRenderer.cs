@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 				bool success = await RealControl.LoadFromImageSourceAsync(source);
 				if (!IsDisposed && success)
 				{
-					((IVisualElementController)Element).NativeSizeChanged();
+					((IVisualElementController)Element).PlatformSizeChanged();
 					UpdateAfterLoading(initialize);
 				}
 			}
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 				bool success = RealControl.LoadFromFile(Specific.GetFile(Element));
 				if (!IsDisposed && success)
 				{
-					((IVisualElementController)Element).NativeSizeChanged();
+					((IVisualElementController)Element).PlatformSizeChanged();
 					UpdateAfterLoading(initialize);
 				}
 			}

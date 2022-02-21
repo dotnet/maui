@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class TabbedPageHandler : ViewHandler<TabbedPage, EvasObject>
 	{
-		protected override EvasObject CreateNativeView()
+		protected override EvasObject CreatePlatformView()
 		{
 			// TODO : Need to impl
 			throw new NotImplementedException();

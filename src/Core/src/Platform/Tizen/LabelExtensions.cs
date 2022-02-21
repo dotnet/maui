@@ -7,43 +7,43 @@ namespace Microsoft.Maui.Platform
 {
 	public static class LabelExtensions
 	{
-		public static void UpdateText(this Label nativeLabel, ILabel label)
+		public static void UpdateText(this Label platformLabel, ILabel label)
 		{
-			nativeLabel.Text = label.Text ?? "";
+			platformLabel.Text = label.Text ?? "";
 		}
 
-		public static void UpdateTextColor(this Label nativeLabel, ILabel label)
+		public static void UpdateTextColor(this Label platformLabel, ILabel label)
 		{
-			nativeLabel.TextColor = label.TextColor.ToNative();
+			platformLabel.TextColor = label.TextColor.ToPlatform();
 		}
 
-		public static void UpdateFont(this Label nativeLabel, ILabel label, IFontManager fontManager)
+		public static void UpdateFont(this Label platformLabel, ILabel label, IFontManager fontManager)
 		{
-			nativeLabel.BatchBegin();
-			nativeLabel.FontSize = label.Font.Size > 0 ? label.Font.Size : 25.ToDPFont();
-			nativeLabel.FontAttributes = label.Font.GetFontAttributes();
-			nativeLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family)??"";
-			nativeLabel.BatchCommit();
+			platformLabel.BatchBegin();
+			platformLabel.FontSize = label.Font.Size > 0 ? label.Font.Size : 25.ToDPFont();
+			platformLabel.FontAttributes = label.Font.GetFontAttributes();
+			platformLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family)??"";
+			platformLabel.BatchCommit();
 		}
 
-		public static void UpdateHorizontalTextAlignment(this Label nativeLabel, ILabel label)
+		public static void UpdateHorizontalTextAlignment(this Label platformLabel, ILabel label)
 		{
-			nativeLabel.HorizontalTextAlignment = label.HorizontalTextAlignment.ToNative();
+			platformLabel.HorizontalTextAlignment = label.HorizontalTextAlignment.ToPlatform();
 		}
 
-		public static void UpdateVerticalTextAlignment(this Label nativeLabel, ILabel label)
+		public static void UpdateVerticalTextAlignment(this Label platformLabel, ILabel label)
 		{
-			nativeLabel.VerticalTextAlignment = label.VerticalTextAlignment.ToNative();
+			platformLabel.VerticalTextAlignment = label.VerticalTextAlignment.ToPlatform();
 		}
 
-		public static void UpdateLineBreakMode(this Label nativeLabel, ILabel label)
+		public static void UpdateLineBreakMode(this Label platformLabel, ILabel label)
 		{
-			nativeLabel.LineBreakMode = label.LineBreakMode.ToNative();
+			platformLabel.LineBreakMode = label.LineBreakMode.ToPlatform();
 		}
 
-		public static void UpdateTextDecorations(this Label nativeLabel, ILabel label)
+		public static void UpdateTextDecorations(this Label platformLabel, ILabel label)
 		{
-			nativeLabel.TextDecorations = label.TextDecorations.ToNative();
+			platformLabel.TextDecorations = label.TextDecorations.ToPlatform();
 		}
 
 		public static FontAttributes GetFontAttributes(this Font font)
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 			return attributes;
 		}
 
-		public static TLineBreakMode ToNative(this LineBreakMode mode)
+		public static TLineBreakMode ToPlatform(this LineBreakMode mode)
 		{
 			switch (mode)
 			{
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static TTextDecorationse ToNative(this TextDecorations td)
+		public static TTextDecorationse ToPlatform(this TextDecorations td)
 		{
 			if (td == TextDecorations.Strikethrough)
 				return TTextDecorationse.Strikethrough;

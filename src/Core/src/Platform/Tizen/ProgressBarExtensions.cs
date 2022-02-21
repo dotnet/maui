@@ -4,14 +4,14 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ProgressBarExtensions
 	{
-		public static void UpdateProgress(this ProgressBar nativeProgressBar, IProgress progress)
+		public static void UpdateProgress(this ProgressBar platformProgressBar, IProgress progress)
 		{
-			nativeProgressBar.Value = progress.Progress;
+			platformProgressBar.Value = progress.Progress;
 		}
 
-		public static void UpdateProgressColor(this ProgressBar nativeProgressBar, IProgress progress)
+		public static void UpdateProgressColor(this ProgressBar platformProgressBar, IProgress progress)
 		{
-			nativeProgressBar.Color = progress.ProgressColor.ToNativeEFL();
+			platformProgressBar.Color = progress.ProgressColor.ToPlatformEFL();
 		}
 	}
 }

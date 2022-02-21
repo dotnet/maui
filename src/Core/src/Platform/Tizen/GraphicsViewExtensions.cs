@@ -4,9 +4,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class GraphicsViewExtensions
 	{
-		public static void UpdateDrawable(this SkiaGraphicsView nativeGraphicsView, IGraphicsView graphicsView)
+		public static void UpdateDrawable(this SkiaGraphicsView platformGraphicsView, IGraphicsView graphicsView)
 		{
-			nativeGraphicsView.Drawable = graphicsView.Drawable;
+			platformGraphicsView.Drawable = graphicsView.Drawable;
 		}
 	}
 }

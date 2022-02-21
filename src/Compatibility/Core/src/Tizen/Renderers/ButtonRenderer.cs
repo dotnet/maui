@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (!string.IsNullOrEmpty(style))
 			{
 				(Control as NIButton)?.UpdateStyle(style);
-				((IVisualElementController)Element).NativeSizeChanged();
+				((IVisualElementController)Element).PlatformSizeChanged();
 				UpdateBackgroundColor(false);
 			}
 		}

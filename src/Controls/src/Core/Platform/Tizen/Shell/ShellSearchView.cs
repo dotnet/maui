@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public SearchHandler Element { get; }
 		
-		public EvasObject? NativeView => Control;
+		public EvasObject? PlatformView => Control;
 
 		protected IMauiContext? MauiContext { get; private set; }
 
@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Control == null)
 				return;
 
-			Control.FontAttributes = Element.FontAttributes.ToNative();
+			Control.FontAttributes = Element.FontAttributes.ToPlatform();
 		}
 
 		void UpdateFontFamily()
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Control == null)
 				return;
 
-			var color = Element.BackgroundColor.ToNativeEFL();
+			var color = Element.BackgroundColor.ToPlatformEFL();
 			Control.BackgroundColor = color == EColor.Default ? EColor.White : color;
 		}
 
@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Control == null)
 				return;
 
-			Control.TextColor = Element.TextColor.ToNative();
+			Control.TextColor = Element.TextColor.ToPlatform();
 		}
 
 		void UpdateHorizontalTextAlignment()
@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Control == null)
 				return;
 
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
 		}
 
 		void OnFocusChangedRequested(object? sender, VisualElement.FocusRequestArgs e)
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Control == null)
 				return;
 
-			Control.Keyboard = Element.Keyboard.ToNative();
+			Control.Keyboard = Element.Keyboard.ToPlatform();
 		}
 
 		void UpdatePlaceholder()
@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Control == null)
 				return;
 
-			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
+			Control.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
 		}
 
 		void OnFocused(object? sender, EventArgs e)
@@ -364,10 +364,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateSearchResultLayout()
 		{
-			if (_searchResultList != null && NativeView != null)
+			if (_searchResultList != null && PlatformView != null)
 			{
-				var bound = NativeView.Geometry;
-				bound.Y += NativeView.Geometry.Height;
+				var bound = PlatformView.Geometry;
+				bound.Y += PlatformView.Geometry.Height;
 				_searchResultList.Geometry = bound;
 				_searchResultList.UpdateLayout();
 			}

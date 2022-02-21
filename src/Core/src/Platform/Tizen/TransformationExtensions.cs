@@ -10,49 +10,49 @@ namespace Microsoft.Maui.Platform
 	{
 		static Dictionary<EvasObject, Action> s_movedHandlers = new Dictionary<EvasObject, Action>();
 
-		public static void UpdateTransformation(this EvasObject nativeView, IView? view)
+		public static void UpdateTransformation(this EvasObject platformView, IView? view)
 		{
 			if (view == null)
 				return;
 
 			// prepare the EFL effect structure
-			Rect geometry = nativeView.Geometry;
+			Rect geometry = platformView.Geometry;
 			EvasMap map = new EvasMap(4);
 			map.PopulatePoints(geometry, 0);
 
 			bool changed = false;
 			view.ApplyScale(map, geometry, ref changed);
-			view.ApplyRotation(nativeView, map, geometry, ref changed);
+			view.ApplyRotation(platformView, map, geometry, ref changed);
 			view.ApplyTranslation(map, geometry, ref changed);
 
-			nativeView.IsMapEnabled = changed;
+			platformView.IsMapEnabled = changed;
 
 			if (changed)
 			{
-				nativeView.EvasMap = map;
-				if (!s_movedHandlers.ContainsKey(nativeView))
+				platformView.EvasMap = map;
+				if (!s_movedHandlers.ContainsKey(platformView))
 				{
 					// not registered moved handler
-					s_movedHandlers[nativeView] = () => nativeView.UpdateTransformation(view);
-					nativeView.Moved += OnMoved;
+					s_movedHandlers[platformView] = () => platformView.UpdateTransformation(view);
+					platformView.Moved += OnMoved;
 				}
 			}
 			else
 			{
-				if (s_movedHandlers.ContainsKey(nativeView))
+				if (s_movedHandlers.ContainsKey(platformView))
 				{
 					// need to unregister moved handler
-					nativeView.Moved -= OnMoved;
-					s_movedHandlers.Remove(nativeView);
+					platformView.Moved -= OnMoved;
+					s_movedHandlers.Remove(platformView);
 				}
 			}
 		}
 
 		static void OnMoved(object? sender, EventArgs e)
 		{
-			if (sender is EvasObject nativeView)
+			if (sender is EvasObject platformView)
 			{
-				s_movedHandlers[nativeView].Invoke();
+				s_movedHandlers[platformView].Invoke();
 			}
 		}
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void ApplyRotation(this IView view, EvasObject nativeView, EvasMap map, Rect geometry, ref bool changed)
+		internal static void ApplyRotation(this IView view, EvasObject platformView, EvasMap map, Rect geometry, ref bool changed)
 		{
 			var rotationX = view.RotationX;
 			var rotationY = view.RotationY;
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Platform
 				// the last argument is focal length, it determine the strength of distortion. We compared it with the Android implementation
 				map.Perspective3D(geometry.X + geometry.Width / 2, geometry.Y + geometry.Height / 2, 0, (int)(1.3 * Math.Max(geometry.Height, geometry.Width)));
 				// Need to unset clip because perspective 3d rotation is going beyond the container bound
-				nativeView.SetClip(null);
+				platformView.SetClip(null);
 				changed = true;
 			}
 		}

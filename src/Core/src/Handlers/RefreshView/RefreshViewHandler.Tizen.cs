@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	// TODO : Need to implement
 	public partial class RefreshViewHandler : ViewHandler<IRefreshView, EvasObject>
 	{
-		protected override EvasObject CreateNativeView() => throw new NotImplementedException();
+		protected override EvasObject CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapIsRefreshing(RefreshViewHandler handler, IRefreshView refreshView)
 		{

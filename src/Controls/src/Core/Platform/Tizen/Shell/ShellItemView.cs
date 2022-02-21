@@ -292,8 +292,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
 
-			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? ShellView.DefaultBackgroundColor : (tabBarBackgroudColor?.ToNativeEFL()).GetValueOrDefault();
-			TabBarTitleColor = tabBarTitleColor.IsDefault() ? ShellView.DefaultTitleColor : (tabBarTitleColor?.ToNativeEFL()).GetValueOrDefault();
+			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? ShellView.DefaultBackgroundColor : (tabBarBackgroudColor?.ToPlatformEFL()).GetValueOrDefault();
+			TabBarTitleColor = tabBarTitleColor.IsDefault() ? ShellView.DefaultTitleColor : (tabBarTitleColor?.ToPlatformEFL()).GetValueOrDefault();
 		}
 
 		void UpdateTabsBackgroudColor(EColor color)

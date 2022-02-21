@@ -30,9 +30,9 @@ namespace Microsoft.Maui
 
 			var rootContext = new MauiContext(mauiApp.Services);
 
-			var nativeWindow = CoreAppExtensions.GetDefaultWindow();
-			nativeWindow.Initialize();
-			rootContext.AddWeakSpecific(nativeWindow);
+			var platformWindow = CoreAppExtensions.GetDefaultWindow();
+			platformWindow.Initialize();
+			rootContext.AddWeakSpecific(platformWindow);
 
 			_applicationContext = rootContext.MakeApplicationScope(this);
 

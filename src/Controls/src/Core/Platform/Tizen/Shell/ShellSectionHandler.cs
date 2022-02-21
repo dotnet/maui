@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public interface IShellSectionHandler : IDisposable
 	{
-		EvasObject NativeView { get; }
+		EvasObject PlatformView { get; }
 	}
 
 	public class ShellSectionHandler : IAppearanceObserver, IShellSectionHandler
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellSection ShellSection { get; }
 
-		public EvasObject NativeView
+		public EvasObject PlatformView
 		{
 			get
 			{
@@ -145,8 +145,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var foregroundColor = appearance?.ForegroundColor;
 
-			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToNativeEFL()).GetValueOrDefault();
-			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToNativeEFL()).GetValueOrDefault();
+			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToPlatformEFL()).GetValueOrDefault();
+			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToPlatformEFL()).GetValueOrDefault();
 		}
 
 		void UpdateDisplayedPage(Page page)
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_contentToTabsItem.Clear();
 					_itemToContent.Clear();
 				}
-				NativeView.Unrealize();
+				PlatformView.Unrealize();
 			}
 			_disposed = true;
 		}
@@ -363,9 +363,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnLayout()
 		{
-			if (NativeView.Geometry.Width == 0 || NativeView.Geometry.Height == 0)
+			if (PlatformView.Geometry.Width == 0 || PlatformView.Geometry.Height == 0)
 				return;
-			var bound = NativeView.Geometry;
+			var bound = PlatformView.Geometry;
 
 			int tabsHeight;
 			if (_tabs != null && TabBarIsVisible)

@@ -5,44 +5,44 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, Spinner>
 	{
-		protected override Spinner CreateNativeView() => new Spinner(NativeParent) { IsEditable = false };
+		protected override Spinner CreatePlatformView() => new Spinner(NativeParent) { IsEditable = false };
 
-		protected override void ConnectHandler(Spinner nativeView)
+		protected override void ConnectHandler(Spinner platformView)
 		{
-			nativeView!.ValueChanged += OnValueChanged;
+			platformView!.ValueChanged += OnValueChanged;
 		}
 
-		protected override void DisconnectHandler(Spinner nativeView)
+		protected override void DisconnectHandler(Spinner platformView)
 		{
-			nativeView!.ValueChanged -= OnValueChanged;
+			platformView!.ValueChanged -= OnValueChanged;
 		}
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateMinimum(stepper);
+			handler.PlatformView?.UpdateMinimum(stepper);
 		}
 
 		public static void MapMaximum(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateMaximum(stepper);
+			handler.PlatformView?.UpdateMaximum(stepper);
 		}
 
 		public static void MapIncrement(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateIncrement(stepper);
+			handler.PlatformView?.UpdateIncrement(stepper);
 		}
 
 		public static void MapValue(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateValue(stepper);
+			handler.PlatformView?.UpdateValue(stepper);
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.Value = NativeView.Value;
+			VirtualView.Value = PlatformView.Value;
 		}
 	}
 }

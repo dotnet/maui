@@ -3,7 +3,7 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.Animations
 {
-	public class NativeTicker : Ticker
+	public class PlatformTicker : Ticker
 	{
 		readonly Timer _timer;
 		readonly SynchronizationContext? _context;
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Animations
 
 		public override bool IsRunning => _isRunning;
 
-		public NativeTicker()
+		public PlatformTicker()
 		{
 			if (SynchronizationContext.Current == null)
 			{

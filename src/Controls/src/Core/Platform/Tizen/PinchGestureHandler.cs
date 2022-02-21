@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override void OnStarted(View sender, object data)
 		{
-			var geometry = (_handler.NativeView as EvasObject).Geometry;
+			var geometry = (_handler.PlatformView as EvasObject).Geometry;
 			var zoomData = (GestureLayer.ZoomData)data;
 			_currentScalePoint = new Graphics.Point((zoomData.X - geometry.X) / (double)geometry.Width, (zoomData.Y - geometry.Y) / (double)geometry.Height);
 			_originalPinchScale = sender.Scale;

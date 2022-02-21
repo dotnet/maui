@@ -85,9 +85,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else if (handler is IVisualElementRenderer ver)
 					renderer = ver;
-				else if (handler is INativeViewHandler vh)
+				else if (handler is IPlatformViewHandler vh)
 				{
-					if (element.Parent is IView view && view.Handler is INativeViewHandler nvh)
+					if (element.Parent is IView view && view.Handler is IPlatformViewHandler nvh)
 					{
 						vh.SetParent(nvh);
 					}

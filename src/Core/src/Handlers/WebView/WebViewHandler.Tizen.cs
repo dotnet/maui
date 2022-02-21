@@ -9,27 +9,27 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected virtual double MinimumSize => 44d;
 
-		TWebView NativeWebView => NativeView.WebView;
+		TWebView PlatformWebView => PlatformView.WebView;
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
-			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
-			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
+			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
 		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateGoBack(webView);
+			handler.PlatformView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateGoForward(webView);
+			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.NativeView?.UpdateReload(webView);
+			handler.PlatformView?.UpdateReload(webView);
 		}
 
 		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 			if (arg is not string script)
 				return;
 
-			handler.NativeView?.Eval(webView, script);
+			handler.PlatformView?.Eval(webView, script);
 		}
 
 		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
@@ -45,10 +45,10 @@ namespace Microsoft.Maui.Handlers
 			if (arg is not string script)
 				return;
 
-			handler.NativeView?.Eval(webView, script);
+			handler.PlatformView?.Eval(webView, script);
 		}
 
-		protected override MauiWebView CreateNativeView()
+		protected override MauiWebView CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
 			return new MauiWebView(NativeParent)
@@ -58,23 +58,23 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(MauiWebView nativeView)
+		protected override void ConnectHandler(MauiWebView platformView)
 		{
 			TChromium.Initialize();
 			MauiApplication.Current.Terminated += (sender, arg) => TChromium.Shutdown();
-			NativeWebView.LoadFinished += OnLoadFinished;
+			PlatformWebView.LoadFinished += OnLoadFinished;
 		}
 
-		protected override void DisconnectHandler(MauiWebView nativeView)
+		protected override void DisconnectHandler(MauiWebView platformView)
 		{
-			NativeWebView.StopLoading();
-			NativeWebView.LoadFinished -= OnLoadFinished;
-			base.DisconnectHandler(nativeView);
+			PlatformWebView.StopLoading();
+			PlatformWebView.LoadFinished -= OnLoadFinished;
+			base.DisconnectHandler(platformView);
 		}
 
 		void OnLoadFinished(object? sender, EventArgs e)
 		{
-			NativeWebView.SetFocus(true);
+			PlatformWebView.SetFocus(true);
 		}
 	}
 }

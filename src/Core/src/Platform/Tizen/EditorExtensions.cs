@@ -4,9 +4,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class EditorExtensions
 	{
-		public static void UpdatePlaceholderColor(this Entry nativeEntry, IEditor editor)
+		public static void UpdatePlaceholderColor(this Entry platformEntry, IEditor editor)
 		{
-			nativeEntry.PlaceholderColor = editor.PlaceholderColor.ToNative();
+			platformEntry.PlaceholderColor = editor.PlaceholderColor.ToPlatform();
 		}
 	}
 }

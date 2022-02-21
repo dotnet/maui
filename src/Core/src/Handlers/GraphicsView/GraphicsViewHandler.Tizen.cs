@@ -4,19 +4,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, SkiaGraphicsView>
 	{
-		protected override SkiaGraphicsView CreateNativeView()
+		protected override SkiaGraphicsView CreatePlatformView()
 		{
 			return new SkiaGraphicsView(NativeParent);
 		}
 
-		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)
+		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
-			handler.NativeView?.UpdateDrawable(graphicsView);
+			handler.PlatformView?.UpdateDrawable(graphicsView);
 		}
 
-		public static void MapInvalidate(GraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
+		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
-			handler.NativeView?.Invalidate();
+			handler.PlatformView?.Invalidate();
 		}
 	}
 }

@@ -1,5 +1,7 @@
 ﻿#if __IOS__ || MACCATALYST || MONOANDROID || WINDOWS
 using PlatformView = Microsoft.Maui.Platform.PlatformTouchGraphicsView;
+#elif TIZEN
+using PlatformView = Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView;
 #else
 using PlatformView = System.Object;
 #endif

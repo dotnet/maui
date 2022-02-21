@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchBar>
 	{
-		protected override SearchBar CreateNativeView()
+		protected override SearchBar CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
@@ -19,81 +19,81 @@ namespace Microsoft.Maui.Handlers
 			return searchBar;
 		}
 
-		protected override void ConnectHandler(SearchBar nativeView)
+		protected override void ConnectHandler(SearchBar platformView)
 		{
-			nativeView.Activated += OnActivated;
-			nativeView.TextChanged += OnTextChanged;
-			nativeView.PrependMarkUpFilter(MaxLengthFilter);
-			nativeView.EntryLayoutFocused += OnFocused;
-			nativeView.EntryLayoutUnfocused += OnUnfocused;
+			platformView.Activated += OnActivated;
+			platformView.TextChanged += OnTextChanged;
+			platformView.PrependMarkUpFilter(MaxLengthFilter);
+			platformView.EntryLayoutFocused += OnFocused;
+			platformView.EntryLayoutUnfocused += OnUnfocused;
 
 		}
 
-		protected override void DisconnectHandler(SearchBar nativeView)
+		protected override void DisconnectHandler(SearchBar platformView)
 		{
-			nativeView.Activated -= OnActivated;
-			nativeView.TextChanged -= OnTextChanged;
-			nativeView.EntryLayoutFocused -= OnFocused;
-			nativeView.EntryLayoutUnfocused -= OnUnfocused;
+			platformView.Activated -= OnActivated;
+			platformView.TextChanged -= OnTextChanged;
+			platformView.EntryLayoutFocused -= OnFocused;
+			platformView.EntryLayoutUnfocused -= OnUnfocused;
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateText(searchBar);
+			handler.PlatformView?.UpdateText(searchBar);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, searchBar);
 		}
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholder(searchBar);
+			handler.PlatformView?.UpdatePlaceholder(searchBar);
 		}
 
 		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholderColor(searchBar);
+			handler.PlatformView?.UpdatePlaceholderColor(searchBar);
 		}
 
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(searchBar, fontManager);
+			handler.PlatformView?.UpdateFont(searchBar, fontManager);
 		}
 
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(searchBar);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
 		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(searchBar);
+			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar);
 		}
 
 		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateTextColor(searchBar);
+			handler.PlatformView?.UpdateTextColor(searchBar);
 		}
 
 		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateMaxLength(searchBar);
+			handler.PlatformView?.UpdateMaxLength(searchBar);
 		}
 
 		public static void MapIsReadOnly(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateIsReadOnly(searchBar);
+			handler.PlatformView?.UpdateIsReadOnly(searchBar);
 		}
 
 		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar);
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar);
 		}
 
 		public static void MapKeyboard(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateKeyboard(searchBar);
+			handler.PlatformView?.UpdateKeyboard(searchBar);
 		}
 
 		public static void MapFormatting(SearchBarHandler handler, ISearchBar searchBar)
@@ -101,13 +101,13 @@ namespace Microsoft.Maui.Handlers
 			// Update all of the attributed text formatting properties
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.NativeView?.UpdateMaxLength(searchBar);
-			handler.NativeView?.UpdateHorizontalTextAlignment(searchBar);
+			handler.PlatformView?.UpdateMaxLength(searchBar);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateCancelButtonColor(searchBar);
+			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
 		[MissingMapper]
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Handlers
 
 		string? MaxLengthFilter(EEntry searchBar, string s)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return null;
 
 			if (searchBar.Text.Length < VirtualView.MaxLength)
@@ -126,18 +126,18 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.Text = NativeView.Text;
+			VirtualView.Text = PlatformView.Text;
 		}
 
 		void OnActivated(object? sender, EventArgs e)
 		{
-			if (NativeView == null)
+			if (PlatformView == null)
 				return;
 
-			NativeView.HideInputPanel();
+			PlatformView.HideInputPanel();
 		}
 	}
 }

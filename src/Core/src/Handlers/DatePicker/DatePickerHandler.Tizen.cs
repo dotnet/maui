@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		const string DialogTitle = "Choose Date";
 		Lazy<IDateTimeDialog>? _lazyDialog;
 
-		protected override TEntry CreateNativeView()
+		protected override TEntry CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
@@ -27,13 +27,13 @@ namespace Microsoft.Maui.Handlers
 			return entry;
 		}
 
-		protected override void ConnectHandler(TEntry nativeView)
+		protected override void ConnectHandler(TEntry platformView)
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
-			nativeView.TextBlockFocused += OnTextBlockFocused;
-			nativeView.EntryLayoutFocused += OnFocused;
-			nativeView.EntryLayoutUnfocused += OnUnfocused;
+			platformView.TextBlockFocused += OnTextBlockFocused;
+			platformView.EntryLayoutFocused += OnFocused;
+			platformView.EntryLayoutUnfocused += OnUnfocused;
 
 			_lazyDialog = new Lazy<IDateTimeDialog>(() =>
 			{
@@ -47,10 +47,10 @@ namespace Microsoft.Maui.Handlers
 				return dialog;
 			});
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(TEntry nativeView)
+		protected override void DisconnectHandler(TEntry platformView)
 		{
 			if (_lazyDialog != null && _lazyDialog.IsValueCreated)
 			{
@@ -61,46 +61,46 @@ namespace Microsoft.Maui.Handlers
 				_lazyDialog = null;
 			}
 
-			nativeView.TextBlockFocused -= OnTextBlockFocused;
-			nativeView.EntryLayoutFocused -= OnFocused;
-			nativeView.EntryLayoutUnfocused -= OnUnfocused;
+			platformView.TextBlockFocused -= OnTextBlockFocused;
+			platformView.EntryLayoutFocused -= OnFocused;
+			platformView.EntryLayoutUnfocused -= OnUnfocused;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFormat(datePicker);
+			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateTextColor(datePicker);
+			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
 		[MissingMapper]
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker) { }
 
 		[MissingMapper]
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker) { }
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker) { }
 
 		protected virtual void OnDateTimeChanged(object? sender, DateChangedEventArgs dcea)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
 			VirtualView.Date = dcea.NewDate.Date;
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextBlockFocused(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null || _lazyDialog == null)
+			if (VirtualView == null || PlatformView == null || _lazyDialog == null)
 				return;
 
 			// For EFL Entry, the event will occur even if it is currently disabled.

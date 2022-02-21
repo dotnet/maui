@@ -1,5 +1,5 @@
 ﻿using System;
-using NativeView = ElmSharp.EvasObject;
+using PlatformView = ElmSharp.EvasObject;
 using EColor = ElmSharp.Color;
 using Tizen.UIExtensions.Common;
 
@@ -7,9 +7,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ContentViewHandler : ViewHandler<IContentView, ContentCanvas>
 	{
-		INativeViewHandler? _contentHandler;
+		IPlatformViewHandler? _contentHandler;
 
-		protected override ContentCanvas CreateNativeView()
+		protected override ContentCanvas CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
@@ -32,38 +32,41 @@ namespace Microsoft.Maui.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
-		public static void MapBackground(ContentViewHandler handler, IContentView view)
+		public static void MapBackground(IContentViewHandler handler, IContentView view)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
 			handler.ToPlatform()?.UpdateBackground(view);
 		}
 
-		public static void MapContent(ContentViewHandler handler, IContentView page)
+		public static void MapContent(IContentViewHandler handler, IContentView page)
 		{
-			handler.UpdateContent();
+			if (handler is ContentViewHandler contentViewHandler)
+			{
+				contentViewHandler.UpdateContent();
+			}
 		}
 
 		void UpdateContent()
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Clear();
+			PlatformView.Children.Clear();
 			_contentHandler?.Dispose();
 			_contentHandler = null;
 
 			if (VirtualView.PresentedContent is IView view)
 			{
-				NativeView.Children.Add(view.ToPlatform(MauiContext));
-				if (view.Handler is INativeViewHandler thandler)
+				PlatformView.Children.Add(view.ToPlatform(MauiContext));
+				if (view.Handler is IPlatformViewHandler thandler)
 				{
 					thandler?.SetParent(this);
 					_contentHandler = thandler;

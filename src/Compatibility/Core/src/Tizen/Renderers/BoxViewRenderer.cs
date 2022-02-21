@@ -82,13 +82,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				else
 				{
 					// Use BackgroundColor only if color is default and background color is not default.
-					Control.Color = Element.BackgroundColor.MultiplyAlpha((float)Element.Opacity).ToPlatform();
+					Control.Color = Element.BackgroundColor.MultiplyAlpha((float)Element.Opacity).ToNative();
 				}
 			}
 			else
 			{
 				// Color has higer priority than BackgroundColor.
-				Control.Color = Element.Color.MultiplyAlpha((float)Element.Opacity).ToPlatform();
+				Control.Color = Element.Color.MultiplyAlpha((float)Element.Opacity).ToNative();
 			}
 		}
 	}

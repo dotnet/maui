@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(PageHandler handler, IContentView page)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
-			if (page.Background != null && handler.NativeView.BackgroundColor != EColor.Transparent)
+			if (page.Background != null && handler.PlatformView.BackgroundColor != EColor.Transparent)
 			{
-				handler.NativeView.BackgroundColor = EColor.Transparent;
+				handler.PlatformView.BackgroundColor = EColor.Transparent;
 			}
 			handler.ToPlatform()?.UpdateBackground(page);
 		}
@@ -18,9 +18,9 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapTitle(PageHandler handler, IContentView page) { }
 		
-		protected override ContentCanvas CreateNativeView()
+		protected override ContentCanvas CreatePlatformView()
 		{
-			var view = base.CreateNativeView();
+			var view = base.CreatePlatformView();
 			view.BackgroundColor = (DeviceInfo.GetDeviceType() == DeviceType.TV) ? EColor.Transparent : EColor.White;
 
 			return view;

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		const string DialogTitle = "Choose Time";
 		Lazy<IDateTimeDialog>? _lazyDialog;
 
-		protected override TEntry CreateNativeView()
+		protected override TEntry CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
@@ -27,13 +27,13 @@ namespace Microsoft.Maui.Handlers
 			return entry;
 		}
 
-		protected override void ConnectHandler(TEntry nativeView)
+		protected override void ConnectHandler(TEntry platformView)
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
-			nativeView.TextBlockFocused += OnTextBlockFocused;
-			nativeView.EntryLayoutFocused += OnFocused;
-			nativeView.EntryLayoutUnfocused += OnUnfocused;
+			platformView.TextBlockFocused += OnTextBlockFocused;
+			platformView.EntryLayoutFocused += OnFocused;
+			platformView.EntryLayoutUnfocused += OnUnfocused;
 
 			_lazyDialog = new Lazy<IDateTimeDialog>(() =>
 			{
@@ -48,10 +48,10 @@ namespace Microsoft.Maui.Handlers
 				return dialog;
 			});
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(TEntry nativeView)
+		protected override void DisconnectHandler(TEntry platformView)
 		{
 			if (_lazyDialog != null && _lazyDialog.IsValueCreated)
 			{
@@ -62,32 +62,32 @@ namespace Microsoft.Maui.Handlers
 				_lazyDialog = null;
 			}
 
-			nativeView.TextBlockFocused -= OnTextBlockFocused;
-			nativeView.EntryLayoutFocused -= OnFocused;
-			nativeView.EntryLayoutUnfocused -= OnUnfocused;
+			platformView.TextBlockFocused -= OnTextBlockFocused;
+			platformView.EntryLayoutFocused -= OnFocused;
+			platformView.EntryLayoutUnfocused -= OnUnfocused;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateFormat(timePicker);
+			handler.PlatformView?.UpdateFormat(timePicker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTime(timePicker);
+			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
 		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView?.UpdateFont(timePicker, fontManager);
+			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
 		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTextColor(timePicker);
+			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
 		[MissingMapper]
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual void OnDateTimeChanged(object? sender, DateChangedEventArgs dcea)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
 			VirtualView.Time = dcea.NewDate.TimeOfDay;
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextBlockFocused(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null || _lazyDialog == null)
+			if (VirtualView == null || PlatformView == null || _lazyDialog == null)
 				return;
 
 			// For EFL Entry, the event will occur even if it is currently disabled.

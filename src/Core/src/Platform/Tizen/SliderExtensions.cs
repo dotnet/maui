@@ -6,70 +6,70 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
-		public static void UpdateMinimum(this Slider nativeSlider, ISlider slider)
+		public static void UpdateMinimum(this Slider platformSlider, ISlider slider)
 		{
-			nativeSlider.Minimum = slider.Minimum;
+			platformSlider.Minimum = slider.Minimum;
 		}
 
-		public static void UpdateMaximum(this Slider nativeSlider, ISlider slider)
+		public static void UpdateMaximum(this Slider platformSlider, ISlider slider)
 		{
-			nativeSlider.Maximum = slider.Maximum;
+			platformSlider.Maximum = slider.Maximum;
 		}
 
-		public static void UpdateValue(this Slider nativeSlider, ISlider slider)
+		public static void UpdateValue(this Slider platformSlider, ISlider slider)
 		{
-			nativeSlider.Value = slider.Value;
+			platformSlider.Value = slider.Value;
 		}
 
-		public static void UpdateMinimumTrackColor(this Slider nativeSlider, ISlider slider)
+		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateMinimumTrackColor(nativeSlider, slider, null);
+			UpdateMinimumTrackColor(platformSlider, slider, null);
 		}
 
-		public static void UpdateMinimumTrackColor(this Slider nativeSlider, ISlider slider, EColor? defaultMinTrackColor)
+		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider, EColor? defaultMinTrackColor)
 		{
 			if (slider.MinimumTrackColor == null)
 			{
 				if (defaultMinTrackColor != null)
-					nativeSlider.SetBarColor(defaultMinTrackColor.Value);
+					platformSlider.SetBarColor(defaultMinTrackColor.Value);
 			}
 			else
-				nativeSlider.SetBarColor(slider.MinimumTrackColor.ToNativeEFL());
+				platformSlider.SetBarColor(slider.MinimumTrackColor.ToPlatformEFL());
 		}
 
-		public static void UpdateMaximumTrackColor(this Slider nativeSlider, ISlider slider)
+		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateMaximumTrackColor(nativeSlider, slider, null);
+			UpdateMaximumTrackColor(platformSlider, slider, null);
 		}
 
-		public static void UpdateMaximumTrackColor(this Slider nativeSlider, ISlider slider, EColor? defaultMaxTrackColor)
+		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider, EColor? defaultMaxTrackColor)
 		{
 			if (slider.MaximumTrackColor == null)
 			{
 				if (defaultMaxTrackColor != null)
-					nativeSlider.SetBackgroundColor(defaultMaxTrackColor.Value);
+					platformSlider.SetBackgroundColor(defaultMaxTrackColor.Value);
 			}
 			else
 			{
-				nativeSlider.SetBackgroundColor(slider.MaximumTrackColor.ToNativeEFL());
+				platformSlider.SetBackgroundColor(slider.MaximumTrackColor.ToPlatformEFL());
 			}
 		}
 
-		public static void UpdateThumbColor(this Slider nativeSlider, ISlider slider)
+		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateThumbColor(nativeSlider, slider, null);
+			UpdateThumbColor(platformSlider, slider, null);
 		}
 
-		public static void UpdateThumbColor(this Slider nativeSlider, ISlider slider, EColor? defaultThumbColor)
+		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider, EColor? defaultThumbColor)
 		{
 			if (slider.ThumbColor == null)
 			{
 				if (defaultThumbColor != null)
-					nativeSlider.SetHandlerColor(defaultThumbColor.Value);
+					platformSlider.SetHandlerColor(defaultThumbColor.Value);
 			}
 			else
 			{
-				nativeSlider.SetHandlerColor(slider.ThumbColor.ToNativeEFL());
+				platformSlider.SetHandlerColor(slider.ThumbColor.ToPlatformEFL());
 			}
 		}
 	}

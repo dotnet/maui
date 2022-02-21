@@ -4,19 +4,19 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ImageExtensions
 	{
-		public static void Clear(this Image nativeImage)
+		public static void Clear(this Image platformImage)
 		{
 		}
 
-		public static void UpdateAspect(this Image nativeImage, IImage image)
+		public static void UpdateAspect(this Image platformImage, IImage image)
 		{
-			nativeImage.Aspect = image.Aspect.ToNative();
+			platformImage.Aspect = image.Aspect.ToPlatform();
 		}
 
-		public static void UpdateIsAnimationPlaying(this Image nativeImage, IImageSourcePart image)
+		public static void UpdateIsAnimationPlaying(this Image platformImage, IImageSourcePart image)
 		{
-			nativeImage.IsAnimated = image.IsAnimationPlaying;
-			nativeImage.IsAnimationPlaying = image.IsAnimationPlaying;
+			platformImage.IsAnimated = image.IsAnimationPlaying;
+			platformImage.IsAnimationPlaying = image.IsAnimationPlaying;
 		}
 	}
 }

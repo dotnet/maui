@@ -11,39 +11,39 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		protected override TCollectionView CreateNativeView()
+		protected override TCollectionView CreatePlatformView()
 		{
 			return new TCollectionView(NativeParent);
 		}
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateItemsSource(itemsView);
+			handler.PlatformView.UpdateItemsSource(itemsView);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.HorizontalScrollBarVisiblePolicy = itemsView.HorizontalScrollBarVisibility.ToNative();
+			handler.PlatformView.HorizontalScrollBarVisiblePolicy = itemsView.HorizontalScrollBarVisibility.ToPlatform();
 		}
 
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.VerticalScrollBarVisiblePolicy = itemsView.VerticalScrollBarVisibility.ToNative();
+			handler.PlatformView.VerticalScrollBarVisiblePolicy = itemsView.VerticalScrollBarVisibility.ToPlatform();
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateAdaptor(itemsView);
+			handler.PlatformView.UpdateAdaptor(itemsView);
 		}
 
 		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateAdaptor(itemsView);
+			handler.PlatformView.UpdateAdaptor(itemsView);
 		}
 
 		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateAdaptor(itemsView);
+			handler.PlatformView.UpdateAdaptor(itemsView);
 		}
 
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateVisibility(itemsView);
+			handler.PlatformView.UpdateVisibility(itemsView);
 		}
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{

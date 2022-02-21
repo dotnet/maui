@@ -13,16 +13,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	{
 		bool _disposed;
 
-		public HandlerToRendererShim(INativeViewHandler vh)
+		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		INativeViewHandler ViewHandler { get; }
+		IPlatformViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public EvasObject NativeView => ViewHandler.ContainerView ?? ViewHandler.NativeView;
+		public EvasObject NativeView => ViewHandler.ContainerView ?? ViewHandler.PlatformView;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (ViewHandler.VirtualView != element)
 				ViewHandler.SetVirtualView((IView)element);
 
-			if (element.RealParent is IView view && view.Handler is INativeViewHandler nvh)
+			if (element.RealParent is IView view && view.Handler is IPlatformViewHandler nvh)
 			{
 				ViewHandler.SetParent(nvh);
 			}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
 		{
-			ViewHandler?.NativeArrange(Element.Bounds);
+			ViewHandler?.PlatformArrange(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public void UpdateLayout()
 		{
-			ViewHandler.NativeArrange(Element.Bounds);
+			ViewHandler.PlatformArrange(Element.Bounds);
 		}
 
 		public ERect GetNativeContentGeometry()
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return NativeView.Geometry;
 		}
 
-		class MockParentHandler : INativeViewHandler
+		class MockParentHandler : IPlatformViewHandler
 		{
 
 			public MockParentHandler(VisualElement parent)
@@ -118,19 +118,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			VisualElement RealParent { get; }
 			IVisualElementRenderer Renderer => RealParent != null ? Platform.GetRenderer(RealParent) : null;
-			public EvasObject NativeView => Renderer.NativeView;
+			public EvasObject PlatformView => Renderer.NativeView;
 
-			public EvasObject ContainerView => NativeView;
+			public EvasObject ContainerView => PlatformView;
 
-			public INativeViewHandler Parent => null;
+			public IPlatformViewHandler Parent => null;
 
 			public IView VirtualView => Renderer.Element as IView;
 
 			public IMauiContext MauiContext => null;
 
-			object IElementHandler.NativeView => NativeView;
+			object IElementHandler.PlatformView => PlatformView;
 
-			object IViewHandler.ContainerView => NativeView;
+			object IViewHandler.ContainerView => PlatformView;
 
 			bool IViewHandler.HasContainer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
@@ -147,12 +147,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				throw new NotImplementedException();
 			}
 
-			public ERect GetNativeContentGeometry()
+			public ERect GetPlatformContentGeometry()
 			{
 				return Renderer?.GetNativeContentGeometry() ?? new ERect(0, 0, 0, 0);
 			}
 
-			public void NativeArrange(Rectangle frame)
+			public void PlatformArrange(Rectangle frame)
 			{
 				throw new NotImplementedException();
 			}
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				throw new NotImplementedException();
 			}
 
-			public void SetParent(INativeViewHandler parent)
+			public void SetParent(IPlatformViewHandler parent)
 			{
 				throw new NotImplementedException();
 			}
