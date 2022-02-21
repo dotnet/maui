@@ -622,6 +622,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IsHitTestVisible = Element.IsEnabled && !Element.InputTransparent;
 		}
 
+		[PortHandler]
 		void UpdateInputTransparent()
 		{
 			if (NeedsBackgroundLayer(Element))
@@ -649,6 +650,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void AddBackgroundLayer()
 		{
 			if (_backgroundLayer != null)
@@ -673,6 +675,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateBackground();
 		}
 
+		[PortHandler]
 		void RemoveBackgroundLayer()
 		{
 			if (_backgroundLayer == null)
@@ -687,6 +690,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateBackground();
 		}
 
+		[PortHandler]
 		internal static bool NeedsBackgroundLayer(VisualElement element)
 		{
 			if (!(element is Layout layout))

@@ -19,6 +19,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsFocused { get; set; }
 
+		public bool InputTransparent { get; set; } = false;
+
 		public List<StubBase> Children { get; set; }
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;

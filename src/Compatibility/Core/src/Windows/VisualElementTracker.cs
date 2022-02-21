@@ -211,6 +211,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Updated(this, EventArgs.Empty);
 		}
 
+		[PortHandler]
 		static void UpdateInputTransparent(VisualElement view, FrameworkElement frameworkElement)
 		{
 			if (view is Layout)

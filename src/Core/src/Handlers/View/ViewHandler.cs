@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.MinimumWidth)] = MapMinimumWidth,
 				[nameof(IView.MaximumWidth)] = MapMaximumWidth,
 				[nameof(IView.IsEnabled)] = MapIsEnabled,
+				[nameof(IView.InputTransparent)] = MapInputTransparent,
 				[nameof(IView.Opacity)] = MapOpacity,
 				[nameof(IView.Semantics)] = MapSemantics,
 				[nameof(IView.TranslationX)] = MapTranslationX,
@@ -200,6 +201,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateIsEnabled(view);
+		}
+
+		public static void MapInputTransparent(IViewHandler handler, IView view)
+		{
+			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(view);
 		}
 
 		public static void MapVisibility(IViewHandler handler, IView view)

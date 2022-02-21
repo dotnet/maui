@@ -17,6 +17,8 @@ namespace Microsoft.Maui.UnitTests
 
 		public bool IsFocused { get; set; }
 
+		public bool InputTransparent { get; set; } = false;
+
 		public Visibility Visibility { get; set; }
 
 		public IShape Clip { get; set; }

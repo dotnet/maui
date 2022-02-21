@@ -67,6 +67,8 @@ namespace Microsoft.Maui.Platform
 			platformView.Enabled = view.IsEnabled;
 		}
 
+		public static void UpdateInputTransparent(this AView platformView, IView view) { }
+
 		public static void Focus(this AView platformView, FocusRequest request)
 		{
 			// Android does the actual focus/unfocus work on the main looper

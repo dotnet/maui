@@ -55,6 +55,11 @@ namespace Microsoft.Maui
 		bool IsFocused { get; set; }
 
 		/// <summary>
+		/// Gets a value indicating whether this element should be involved in the user interaction cycle.
+		/// </summary>
+		bool InputTransparent { get; }
+
+		/// <summary>
 		/// Gets a value that determines whether this View should be part of the visual tree or not.
 		/// </summary>
 		Visibility Visibility { get; }

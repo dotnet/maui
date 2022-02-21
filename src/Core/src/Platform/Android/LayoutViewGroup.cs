@@ -42,6 +42,20 @@ namespace Microsoft.Maui.Platform
 
 		public override bool DispatchTouchEvent(MotionEvent? e)
 		{
+			bool cascadeInputTransparent = true;
+
+			if (VirtualView is ILayout layout)
+				cascadeInputTransparent = layout.CascadeInputTransparent;
+
+			if (VirtualView == null || (VirtualView.InputTransparent && cascadeInputTransparent))
+			{
+				// If the VirtualView is InputTransparent, this ViewGroup will be marked InputTransparent
+				// If we're InputTransparent and our transparency should be applied to our child controls,
+				// we return false on all touch events without even bothering to send them to the child Views
+
+				return false; // IOW, not handled
+			}
+
 			if (e?.Action == MotionEventActions.Down)
 			{
 				_downTime = DateTime.UtcNow;
@@ -140,6 +154,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal ILayout? VirtualView { get; set; }
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}

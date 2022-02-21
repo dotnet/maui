@@ -14,6 +14,24 @@ namespace Microsoft.Maui.Controls
 
 		protected ILayoutManager _layoutManager;
 
+		public static readonly BindableProperty CascadeInputTransparentProperty =
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
+				propertyChanged: CascadeInputTransparentPropertyChanged);
+
+		public bool CascadeInputTransparent
+		{
+			get => (bool)GetValue(CascadeInputTransparentProperty);
+			set => SetValue(CascadeInputTransparentProperty, value);
+		}
+
+		static void CascadeInputTransparentPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
+		{
+			if (bindableObject is IView view)
+			{
+				view.Handler?.UpdateValue(nameof(Maui.ILayout.CascadeInputTransparent));
+			}
+		}
+
 		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
 		// The actual backing store for the IViews in the ILayout

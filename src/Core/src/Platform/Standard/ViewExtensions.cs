@@ -4,6 +4,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsEnabled(this object platformView, IView view) { }
 
+		public static void UpdateInputTransparent(this object platformView, IView view) { }
+
 		public static void Focus(this object platformView, FocusRequest request) { }
 
 		public static void Unfocus(this object platformView, IView view) { }

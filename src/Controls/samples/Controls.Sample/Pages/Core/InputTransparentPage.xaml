@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.InputTransparentPage">
+    <ContentPage.Content>
+        <VerticalStackLayout>
+            <Label      
+                Text="InputTransparent False"
+                Style="{StaticResource Headline}"/>
+            <Grid
+                InputTransparent="False">
+                <Button
+                    Text="Clicked"
+                    Clicked="OnButtonClicked"/>
+            </Grid>
+            <Label
+                Text="InputTransparent True"
+                Style="{StaticResource Headline}"/>
+            <Grid
+                InputTransparent="True">
+                <Button
+                    Text="Clicked"
+                    Clicked="OnButtonClicked"/>
+            </Grid>
+        </VerticalStackLayout>
+    </ContentPage.Content>
+</ContentPage>

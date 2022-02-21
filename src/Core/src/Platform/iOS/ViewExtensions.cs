@@ -24,6 +24,30 @@ namespace Microsoft.Maui.Platform
 			uiControl.Enabled = view.IsEnabled;
 		}
 
+		public static void UpdateInputTransparent(this UIView platformView, IView view)
+		{
+			if (view is ITextInput textInput && view.IsEnabled && textInput.IsReadOnly)
+				return;
+
+			bool shouldInteract;
+
+			if (view is ILayout layout)
+			{
+				if (layout.InputTransparent)
+				{
+					shouldInteract = !layout.CascadeInputTransparent;
+				}
+				else
+				{
+					shouldInteract = layout.IsEnabled;
+				}
+			}
+			else
+				shouldInteract = !view.InputTransparent && view.IsEnabled;
+
+			platformView.UserInteractionEnabled = shouldInteract;
+		}
+
 		public static void Focus(this UIView platformView, FocusRequest request)
 		{
 			platformView.BecomeFirstResponder();

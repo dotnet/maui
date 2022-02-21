@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Handlers
 
 			var viewGroup = new LayoutViewGroup(Context!)
 			{
+				VirtualView = VirtualView,
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};

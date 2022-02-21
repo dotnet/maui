@@ -16,9 +16,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			public bool ClipsToBounds { get; set; }
 
+			public bool InputTransparent { get; set; }
+
+			public bool CascadeInputTransparent { get; set; } = true;
 
 			#region IView stuff
-			
+
 			public string AutomationId { get; }
 			public FlowDirection FlowDirection { get; }
 			public LayoutAlignment HorizontalLayoutAlignment { get; }

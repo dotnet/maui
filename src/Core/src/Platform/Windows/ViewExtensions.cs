@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Platform
 	public static partial class ViewExtensions
 	{
 		internal static Page? ContainingPage; // Cache of containing page used for unfocusing
+		internal static Canvas? BackgroundLayer;
 
 		public static void TryMoveFocus(this FrameworkElement platformView, FocusNavigationDirection direction)
 		{
@@ -28,6 +29,39 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view) =>
 			(platformView as Control)?.UpdateIsEnabled(view.IsEnabled);
+
+		public static void UpdateInputTransparent(this FrameworkElement platformView, IView view)
+		{
+			var panel = platformView as Panel;
+
+			if (NeedsBackgroundLayer(view))
+			{
+				platformView.IsHitTestVisible = true;
+
+				if (panel != null)
+					panel.AddBackgroundLayer(view);
+			}
+			else
+			{
+				if (panel != null)
+					panel.RemoveBackgroundLayer(view);
+
+				platformView.IsHitTestVisible = view.IsEnabled && !view.InputTransparent;
+
+				if (!platformView.IsHitTestVisible)
+				{
+					return;
+				}
+
+				// If this Panel's background brush is null, the UWP considers it transparent to hit testing (even 
+				// when IsHitTestVisible is true). So we have to explicitly set a background brush to make it show up
+				// in hit testing. 
+				if (view is ILayout && panel != null && panel.Background == null)
+				{
+					panel.Background = new SolidColorBrush(UI.Colors.Transparent);
+				}
+			}
+		}
 
 		public static void Focus(this FrameworkElement platformView, FocusRequest request)
 		{
@@ -429,6 +463,57 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		internal static bool NeedsBackgroundLayer(IView view)
+		{
+			if (view is not ILayout layout)
+			{
+				return false;
+			}
+
+			if (layout.IsEnabled && layout.InputTransparent && !layout.CascadeInputTransparent)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		internal static void AddBackgroundLayer(this Panel nativeControl, IView view)
+		{
+			if (BackgroundLayer != null)
+			{
+				return;
+			}
+
+			// In WinUI, once a control has hit testing disabled, all of its child controls
+			// also have hit testing disabled. The exception is a Panel with its 
+			// Background Brush set to `null`; the Panel will be invisible to hit testing, but its
+			// children will work just fine. 
+
+			// In order to handle the situation where we need the layout to be invisible to hit testing,
+			// the child controls to be visible to hit testing, *and* we need to support non-null
+			// background brushes, we insert another empty Panel which is invisible to hit testing; that
+			// Panel will be our Background color
+
+			BackgroundLayer = new Canvas { IsHitTestVisible = false };
+			nativeControl.Children.Insert(0, BackgroundLayer);
+
+			nativeControl.UpdateBackground(view);
+		}
+
+		internal static void RemoveBackgroundLayer(this Panel nativeControl, IView view)
+		{
+			if (BackgroundLayer == null)
+			{
+				return;
+			}
+
+			nativeControl.Children.Remove(BackgroundLayer);
+			BackgroundLayer = null;
+
+			nativeControl.UpdateBackground(view);
 		}
 	}
 }

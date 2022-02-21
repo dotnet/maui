@@ -74,7 +74,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public Thickness Padding { get; set; }
+
 		public int Count => _children.Count;
+
 		public bool IsReadOnly => _children.IsReadOnly;
 
 		ILayoutManager LayoutManager => _layoutManager ??= new LayoutManagerStub();
@@ -82,6 +84,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IgnoreSafeArea => false;
 
 		public bool ClipsToBounds { get; set; }
+
+		public bool CascadeInputTransparent { get; set; }
 
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 	}

@@ -36,11 +36,11 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(FocusPage), "Focus Management",
 				"Focus and onfocus views, detect when a view gains focus and more."),
 
-			new SectionModel(typeof(FocusPage), "Focus Management",
-				"Focus and onfocus views, detect when a view gains focus and more."),
-
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
+				
+			new SectionModel(typeof(InputTransparentPage), "InputTransparent",
+				"Manage if a View is involved in the user interaction cycle."),
 
 			new SectionModel(typeof(ModalPage), "Modal",
 				"Allows you to push and pop Modal Pages."),

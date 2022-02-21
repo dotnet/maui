@@ -680,7 +680,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isPinching = false;
 		}
-
+	
 		static void UpdateInputTransparent(VisualElement view, FrameworkElement frameworkElement)
 		{
 			if (view is Layout)
