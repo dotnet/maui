@@ -4,7 +4,7 @@ using TizenBarometerSensor = Tizen.Sensor.PressureSensor;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	class BarometerImplementation : IBarometer
+	public partial class BarometerImplementation : IBarometer
 	{
 		public bool IsSupported
 			=> TizenBarometerSensor.IsSupported;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		void DataUpdated(object sender, PressureSensorDataUpdatedEventArgs e)
-			=> RaiseDataChanged(new BarometerData(e.Pressure));
+			=> RaiseReadingChanged(new BarometerData(e.Pressure));
 
 		void PlatformStop()
 		{

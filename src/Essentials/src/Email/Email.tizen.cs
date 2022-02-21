@@ -34,5 +34,17 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			return Task.CompletedTask;
 		}
+
+		public Task ComposeAsync(string subject, string body, params string[] to)
+			=> ComposeAsync(
+				new EmailMessage
+				{
+					Subject = subject,
+					Body = body,
+					To = to.ToList()
+				});
+
+		public Task ComposeAsync()
+			=> ComposeAsync(null);
 	}
 }
