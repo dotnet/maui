@@ -4,15 +4,17 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppActions
+	public partial class AppActionsImplementation : IAppActions
 	{
-		internal static bool PlatformIsSupported
+		public string Type => "XE_APP_ACTION_TYPE";
+		public bool IsSupported
 			=> Platform.HasApiLevelNMr1;
 
-		static Task<IEnumerable<AppAction>> PlatformGetAsync()
+		public Task<IEnumerable<AppAction>> GetAsync()
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -20,11 +22,11 @@ namespace Microsoft.Maui.Essentials
 #if __ANDROID_25__
 			return Task.FromResult(Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction()));
 #else
-			return Task.FromResult < IEnumerable < AppAction >>> (null);
+			return Task.FromResult < IEnumerable < AppAction >> (null);
 #endif
 		}
 
-		static Task PlatformSetAsync(IEnumerable<AppAction> actions)
+		public Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -35,7 +37,15 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
-		static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
+		public Task SetAsync(params AppAction[] actions)
+		{	
+			return SetAsync(actions.AsEnumerable<AppAction>());
+		}
+	}
+
+	internal static partial class AppActionsExtensions
+	{
+		internal static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
 			new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);
 
 		const string extraAppActionId = "EXTRA_XE_APP_ACTION_ID";
@@ -49,8 +59,8 @@ namespace Microsoft.Maui.Essentials
 				intent.GetStringExtra(extraAppActionTitle),
 				intent.GetStringExtra(extraAppActionSubtitle),
 				intent.GetStringExtra(extraAppActionIcon));
-
-		static ShortcutInfo ToShortcutInfo(this AppAction action)
+				
+		internal static ShortcutInfo ToShortcutInfo(this AppAction action)
 		{
 			var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.Id)
 				.SetShortLabel(action.Title);
@@ -79,5 +89,5 @@ namespace Microsoft.Maui.Essentials
 
 			return shortcut.Build();
 		}
-	}
+	}	
 }

@@ -56,14 +56,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected TextView GetNativeTextView(ElementHandler handler)
 		{
-			switch (handler.NativeView)
+			switch (handler.PlatformView)
 			{
 				case TextView tv:
 					return tv;
 				case SearchView sv:
 					return sv.GetFirstChildOfType<EditText>();
 				default:
-					Assert.True(false, $"I don't know how to get the TextView from here {handler.NativeView}");
+					Assert.True(false, $"I don't know how to get the TextView from here {handler.PlatformView}");
 					return null;
 
 			}

@@ -3,11 +3,11 @@ using WinRT.Interop;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class WindowExtensions
+	public static partial class WindowExtensions
 	{
-		public static void UpdateTitle(this UI.Xaml.Window nativeWindow, IWindow window)
+		public static void UpdateTitle(this UI.Xaml.Window platformWindow, IWindow window)
 		{
-			nativeWindow.Title = window.Title;
+			platformWindow.Title = window.Title;
 
 			var rootManager = window.Handler?.MauiContext?.GetNavigationRootManager();
 			if (rootManager != null)
@@ -16,20 +16,20 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static IWindow? GetWindow(this UI.Xaml.Window nativeWindow)
+		public static IWindow? GetWindow(this UI.Xaml.Window platformWindow)
 		{
 			foreach (var window in MauiWinUIApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView is UI.Xaml.Window win && win == nativeWindow)
+				if (window?.Handler?.PlatformView is UI.Xaml.Window win && win == platformWindow)
 					return window;
 			}
 
 			return null;
 		}
 
-		public static IntPtr GetWindowHandle(this UI.Xaml.Window nativeWindow)
+		public static IntPtr GetWindowHandle(this UI.Xaml.Window platformWindow)
 		{
-			var hwnd = WindowNative.GetWindowHandle(nativeWindow);
+			var hwnd = WindowNative.GetWindowHandle(platformWindow);
 
 			if (hwnd == IntPtr.Zero)
 				throw new NullReferenceException("The Window Handle is null.");

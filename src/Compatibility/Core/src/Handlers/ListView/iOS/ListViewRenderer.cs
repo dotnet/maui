@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -30,8 +31,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UIView _backgroundUIView;
 		ListViewDataSource _dataSource;
-		INativeViewHandler _headerRenderer;
-		INativeViewHandler _footerRenderer;
+		IPlatformViewHandler _headerRenderer;
+		IPlatformViewHandler _footerRenderer;
 
 		KeyboardInsetTracker _insetTracker;
 		RectangleF _previousFrame;
@@ -114,7 +115,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (backgroundColor == null)
 						_backgroundUIView.BackgroundColor = UIColor.White;
 					else
-						_backgroundUIView.BackgroundColor = backgroundColor.ToNative();
+						_backgroundUIView.BackgroundColor = backgroundColor.ToPlatform();
 				}
 				else
 				{
@@ -220,7 +221,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (Control == null)
 				{
-					if (NativeVersion.IsAtLeast(11))
+					if (PlatformVersion.IsAtLeast(11))
 					{
 						var parentNav = e.NewElement.FindParentOfType<NavigationPage>();
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
@@ -309,7 +310,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the cells adhere to changes UI theme
-			if (NativeVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (PlatformVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				ReloadData();
 		}
 
@@ -351,12 +352,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var size = _footerRenderer.VirtualView.Measure(Bounds.Width, double.PositiveInfinity);
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
-			_footerRenderer.NativeView.Frame = platformFrame;
+			_footerRenderer.PlatformView.Frame = platformFrame;
 			_footerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
 			Device.BeginInvokeOnMainThread(() =>
 			{
 				if (_headerRenderer != null)
-					Control.TableFooterView = _footerRenderer.NativeView;
+					Control.TableFooterView = _footerRenderer.PlatformView;
 			});
 		}
 
@@ -369,9 +370,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var size = _headerRenderer.VirtualView.Measure(Bounds.Width, double.PositiveInfinity);
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
-			_headerRenderer.NativeView.Frame = platformFrame;
+			_headerRenderer.PlatformView.Frame = platformFrame;
 			_headerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
-			Control.TableHeaderView = _headerRenderer.NativeView;
+			Control.TableHeaderView = _headerRenderer.PlatformView;
 
 			// Time for another story with Jason. Gather round children because the following Math.Ceiling will look like it's completely useless.
 			// You will remove it and test and find everything is fiiiiiine, but it is not fine, no it is far from fine. See iOS, or at least iOS 8
@@ -384,7 +385,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Device.BeginInvokeOnMainThread(() =>
 			{
 				if (_headerRenderer != null)
-					Control.TableHeaderView = _headerRenderer.NativeView;
+					Control.TableHeaderView = _headerRenderer.PlatformView;
 			});
 		}
 
@@ -432,7 +433,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					Control.Layer.RemoveAllAnimations();
 					//iOS11 hack
-					if (NativeVersion.IsAtLeast(11))
+					if (PlatformVersion.IsAtLeast(11))
 						this.BeginInvokeOnMainThread(() =>
 						{
 							if (Control != null /*&& !_disposed*/)
@@ -468,6 +469,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_footerRenderer = footerView.ToHandler(MauiContext);
+
 				footerView.MeasureInvalidated += OnFooterMeasureInvalidated;
 				UpdateFooterMeasure();
 			}
@@ -506,6 +508,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_headerRenderer = headerView.ToHandler(MauiContext);
+
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
 				UpdateHeaderMeasure();
 			}
@@ -709,7 +712,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// ...and Steve said to the unbelievers the separator shall be gray, and gray it was. The unbelievers looked on, and saw that it was good, and
 			// they went forth and documented the default color. The holy scripture still reflects this default.
 			// Defined here: https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instp/UITableView/separatorColor
-			Control.SeparatorColor = color?.ToNative() ?? Controls.Compatibility.Platform.iOS.ColorExtensions.SeparatorColor;
+			Control.SeparatorColor = color?.ToPlatform() ?? Controls.Compatibility.Platform.iOS.ColorExtensions.SeparatorColor;
 		}
 
 		void UpdateSeparatorVisibility()
@@ -744,7 +747,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var color = Element.RefreshControlColor;
 
 			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToNative());
+				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
 		}
 
 		void UpdateVerticalScrollBarVisibility()
@@ -787,7 +790,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal class UnevenListViewDataSource : ListViewDataSource
 		{
-			INativeViewHandler _prototype;
+			IPlatformViewHandler _prototype;
 			bool _disposed;
 			Dictionary<object, Cell> _prototypicalCellByTypeOrDataTemplate = new Dictionary<object, Cell>();
 
@@ -854,7 +857,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var estimatedRowHeight = GetEstimatedRowHeight(tableView);
 				//if we are providing 0 we are disabling EstimatedRowHeight,
 				//this works fine on newer versions, but iOS10 it will cause a crash so we leave the default value
-				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && NativeVersion.IsAtLeast(11)))
+				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && PlatformVersion.IsAtLeast(11)))
 					tableView.EstimatedRowHeight = estimatedRowHeight;
 			}
 
@@ -1029,9 +1032,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_isDragging = true;
 			}
 
-			void SetupSelection(UITableViewCell nativeCell, UITableView tableView)
+			void SetupSelection(UITableViewCell platformCell, UITableView tableView)
 			{
-				if (!(nativeCell is ContextActionsCell))
+				if (!(platformCell is ContextActionsCell))
 					return;
 
 				if (_setupSelection)
@@ -1045,7 +1048,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 			{
 				Cell cell;
-				UITableViewCell nativeCell;
+				UITableViewCell platformCell;
 
 				Performance.Start(out string reference);
 
@@ -1053,23 +1056,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (cachingStrategy == ListViewCachingStrategy.RetainElement)
 				{
 					cell = GetCellForPath(indexPath);
-					nativeCell = CellTableViewCell.GetNativeCell(tableView, cell);
+					platformCell = CellTableViewCell.GetPlatformCell(tableView, cell);
 				}
 				else if ((cachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 				{
 					var id = TemplateIdForPath(indexPath);
-					nativeCell = tableView.DequeueReusableCell(ContextActionsCell.Key + id);
-					if (nativeCell == null)
+					platformCell = tableView.DequeueReusableCell(ContextActionsCell.Key + id);
+					if (platformCell == null)
 					{
 						cell = GetCellForPath(indexPath);
 
-						nativeCell = CellTableViewCell.GetNativeCell(tableView, cell, true, id.ToString());
+						platformCell = CellTableViewCell.GetPlatformCell(tableView, cell, true, id.ToString());
 					}
 					else
 					{
 						var templatedList = TemplatedItemsView.TemplatedItems.GetGroup(indexPath.Section);
 
-						cell = (Cell)((INativeElementView)nativeCell).Element;
+						cell = (Cell)((INativeElementView)platformCell).Element;
 						cell.SendDisappearing();
 
 						templatedList.UpdateContent(cell, indexPath.Row);
@@ -1079,22 +1082,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 					throw new NotSupportedException();
 
-				SetupSelection(nativeCell, tableView);
+				SetupSelection(platformCell, tableView);
 
 				if (List.IsSet(Specifics.SeparatorStyleProperty))
 				{
 					if (List.OnThisPlatform().GetSeparatorStyle() == SeparatorStyle.FullWidth)
 					{
-						nativeCell.SeparatorInset = UIEdgeInsets.Zero;
-						nativeCell.LayoutMargins = UIEdgeInsets.Zero;
-						nativeCell.PreservesSuperviewLayoutMargins = false;
+						platformCell.SeparatorInset = UIEdgeInsets.Zero;
+						platformCell.LayoutMargins = UIEdgeInsets.Zero;
+						platformCell.PreservesSuperviewLayoutMargins = false;
 					}
 				}
 				var bgColor = tableView.IndexPathForSelectedRow != null && tableView.IndexPathForSelectedRow.Equals(indexPath) ? UIColor.Clear : DefaultBackgroundColor;
-				SetCellBackgroundColor(nativeCell, bgColor);
+				SetCellBackgroundColor(platformCell, bgColor);
 				PreserveActivityIndicatorState(cell);
 				Performance.Stop(reference);
-				return nativeCell;
+				return platformCell;
 			}
 
 			public override nfloat GetHeightForHeader(UITableView tableView, nint section)
@@ -1129,8 +1132,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				cell.ReusableCell = null;
 
 				var handler = cell.ToHandler(cell.FindMauiContext());
-				var renderer = (handler as CellRenderer) ?? (handler.NativeView as CellRenderer);
-				header.SetTableViewCell(renderer.NativeView);
+				var renderer = (handler as CellRenderer) ?? (handler.PlatformView as CellRenderer);
+				header.SetTableViewCell(renderer.PlatformView);
 
 				return header;
 			}
@@ -1515,7 +1518,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
-			if (NativeVersion.IsAtLeast(9))
+			if (PlatformVersion.IsAtLeast(9))
 				TableView.CellLayoutMarginsFollowReadableWidth = false;
 
 			_usingLargeTitles = usingLargeTitles;

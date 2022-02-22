@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.TextColor = Element.TextColor.ToNative();
+				ie.TextColor = Element.TextColor.ToPlatform();
 			}
 		}
 
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.PlaceholderColor = Element.PlaceholderColor.ToNative();
+				ie.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
 			}
 		}
 

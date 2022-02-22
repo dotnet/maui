@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class HandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((DependencyObject)viewHandler.NativeView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
+			((AccessibilityView)((DependencyObject)viewHandler.PlatformView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
 			== AccessibilityView.Content;
 
 		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)

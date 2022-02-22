@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
-		AppCompatRadioButton? PlatformRadioButton => (NativeView as AppCompatRadioButton);
+		AppCompatRadioButton? PlatformRadioButton => (PlatformView as AppCompatRadioButton);
 
-		protected override AppCompatRadioButton CreateNativeView()
+		protected override AppCompatRadioButton CreatePlatformView()
 		{
 			return new AppCompatRadioButton(Context)
 			{
@@ -16,13 +16,13 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(View nativeView)
+		protected override void ConnectHandler(View platformView)
 		{
 			if (PlatformRadioButton != null)
 				PlatformRadioButton.CheckedChange += OnCheckChanged;
 		}
 
-		protected override void DisconnectHandler(View nativeView)
+		protected override void DisconnectHandler(View platformView)
 		{
 			if (PlatformRadioButton != null)
 				PlatformRadioButton.CheckedChange -= OnCheckChanged;
@@ -61,18 +61,18 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton)
-		{ 
-			handler.PlatformRadioButton?.UpdateStrokeColor(radioButton); 
+		{
+			handler.PlatformRadioButton?.UpdateStrokeColor(radioButton);
 		}
 
 		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton)
-		{ 
+		{
 			handler.PlatformRadioButton?.UpdateStrokeThickness(radioButton);
 		}
 
 		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton)
-		{ 
-			handler.PlatformRadioButton?.UpdateCornerRadius(radioButton); 
+		{
+			handler.PlatformRadioButton?.UpdateCornerRadius(radioButton);
 		}
 
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)

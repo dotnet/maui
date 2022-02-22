@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.PlaceholderColor = Element.TitleColor.ToNative();
+				ie.PlaceholderColor = Element.TitleColor.ToPlatform();
 			}
 		}
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.TextColor = Element.TextColor.ToNative();
+				ie.TextColor = Element.TextColor.ToPlatform();
 			}
 		}
 
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
 			}
 		}
 
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				_dialog.AlignmentX = -1;
 				_dialog.AlignmentY = -1;
 				_dialog.Title = Element.Title;
-				_dialog.TitleColor = Element.TitleColor.ToNative();
+				_dialog.TitleColor = Element.TitleColor.ToPlatform();
 				_dialog.Dismissed += OnDialogDismissed;
 				_dialog.BackButtonPressed += (object senders, EventArgs es) =>
 				{

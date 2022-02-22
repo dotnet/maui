@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		ColorStateList? _defaultPlaceholderColors;
 
-		protected override AppCompatEditText CreateNativeView()
+		protected override AppCompatEditText CreatePlatformView()
 		{
 			var editText = new AppCompatEditText(Context)
 			{
@@ -27,62 +27,65 @@ namespace Microsoft.Maui.Handlers
 			return editText;
 		}
 
-		protected override void ConnectHandler(AppCompatEditText nativeView)
+		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			nativeView.TextChanged += OnTextChanged;
-			nativeView.FocusChange += OnFocusedChange;
+			platformView.TextChanged += OnTextChanged;
+			platformView.FocusChange += OnFocusedChange;
 		}
 
-		protected override void DisconnectHandler(AppCompatEditText nativeView)
+		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
-			nativeView.TextChanged -= OnTextChanged;
-			nativeView.FocusChange -= OnFocusedChange;
+			platformView.TextChanged -= OnTextChanged;
+			platformView.FocusChange -= OnFocusedChange;
 		}
 
-		public static void MapBackground(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateBackground(editor);
+		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateBackground(editor);
 
-		public static void MapText(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateText(editor);
+		public static void MapText(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateText(editor);
 
-		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateTextColor(editor);
+		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateTextColor(editor);
 
-		public static void MapPlaceholder(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdatePlaceholder(editor);
+		public static void MapPlaceholder(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdatePlaceholder(editor);
 
-		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdatePlaceholderColor(editor, handler._defaultPlaceholderColors);
+		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor)
+		{
+			if (handler is EditorHandler platformHandler)
+				handler.PlatformView?.UpdatePlaceholderColor(editor, platformHandler._defaultPlaceholderColors);
+		}
 
-		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateCharacterSpacing(editor);
+		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateCharacterSpacing(editor);
 
-		public static void MapMaxLength(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateMaxLength(editor);
+		public static void MapMaxLength(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateMaxLength(editor);
 
-		public static void MapIsReadOnly(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateIsReadOnly(editor);
+		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateIsReadOnly(editor);
 
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
+		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
 
-		public static void MapFont(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
+		public static void MapFont(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
 
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 
-		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateVerticalTextAlignment(editor);
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateVerticalTextAlignment(editor);
 
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateKeyboard(editor);
+		public static void MapKeyboard(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateKeyboard(editor);
 
-		public static void MapCursorPosition(EditorHandler handler, ITextInput editor) =>
-			handler.NativeView?.UpdateCursorPosition(editor);
+		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor) =>
+			handler.PlatformView?.UpdateCursorPosition(editor);
 
-		public static void MapSelectionLength(EditorHandler handler, ITextInput editor) =>
-			handler.NativeView?.UpdateSelectionLength(editor);
+		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) =>
+			handler.PlatformView?.UpdateSelectionLength(editor);
 
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
 			VirtualView?.UpdateText(e);

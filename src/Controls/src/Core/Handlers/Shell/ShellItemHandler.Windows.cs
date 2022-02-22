@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_mainLevelTabs = new ObservableCollection<NavigationViewItemViewModel>();
 		}
 
-		protected override MauiNavigationView CreateNativeElement()
+		protected override MauiNavigationView CreatePlatformElement()
 		{
 			var platformView = new MauiNavigationView()
 			{
@@ -53,10 +53,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			return platformView;
 		}
 
-		protected override void ConnectHandler(MauiNavigationView nativeView)
+		protected override void ConnectHandler(MauiNavigationView platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.SelectionChanged += OnNavigationTabChanged;
+			base.ConnectHandler(platformView);
+			platformView.SelectionChanged += OnNavigationTabChanged;
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -159,30 +159,30 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			});
 
-			if (NativeView.SelectedItem != selectedItem)
-				NativeView.SelectedItem = selectedItem;
+			if (PlatformView.SelectedItem != selectedItem)
+				PlatformView.SelectedItem = selectedItem;
 
 			if (!hasTabs)
 			{
-				NativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+				PlatformView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 			}
 			else
 			{
-				NativeView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+				PlatformView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
 			}
 		}
 
 		void UpdateSearchHandler()
 		{
-			if(NativeView.AutoSuggestBox == null)
-				NativeView.AutoSuggestBox = new Microsoft.UI.Xaml.Controls.AutoSuggestBox() { Width = 300 };
+			if(PlatformView.AutoSuggestBox == null)
+				PlatformView.AutoSuggestBox = new Microsoft.UI.Xaml.Controls.AutoSuggestBox() { Width = 300 };
 
 			if (VirtualView.Parent is not Shell shell)
 				return;
 
 			_currentSearchHandler = shell.GetEffectiveValue<SearchHandler?>(Shell.SearchHandlerProperty, null);
 
-			var AutoSuggestBox = NativeView.AutoSuggestBox;
+			var AutoSuggestBox = PlatformView.AutoSuggestBox;
 			AutoSuggestBox.TextChanged += OnSearchBoxTextChanged;
 			AutoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
 			AutoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
@@ -242,9 +242,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentSearchHandler != null)
 			{
 				if (_currentSearchHandler.QueryIcon is FileImageSource fis)
-					NativeView.AutoSuggestBox.QueryIcon = new BitmapIcon() { UriSource = new Uri("ms-appx:///" + fis.File) };
+					PlatformView.AutoSuggestBox.QueryIcon = new BitmapIcon() { UriSource = new Uri("ms-appx:///" + fis.File) };
 				else
-					NativeView.AutoSuggestBox.QueryIcon = new SymbolIcon(Symbol.Find);
+					PlatformView.AutoSuggestBox.QueryIcon = new SymbolIcon(Symbol.Find);
 			}
 		}
 
@@ -261,8 +261,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				handler._shellSectionHandler ??= (ShellSectionHandler)item.CurrentItem.ToHandler(handler.MauiContext!);
 
-				if (handler._shellSectionHandler.NativeView != (FrameworkElement)handler.NativeView.Content)
-					handler.NativeView.Content = handler._shellSectionHandler.NativeView;
+				if (handler._shellSectionHandler.PlatformView != (FrameworkElement)handler.PlatformView.Content)
+					handler.PlatformView.Content = handler._shellSectionHandler.PlatformView;
 
 				if (handler._shellSectionHandler.VirtualView != item.CurrentItem)
 					handler._shellSectionHandler.SetVirtualView(item.CurrentItem);
@@ -276,13 +276,13 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (appearance is IShellAppearanceElement a)
 			{
 				// This means the template hasn't been applied yet
-				if (NativeView.TopNavArea == null)
+				if (PlatformView.TopNavArea == null)
 				{
-					NativeView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+					PlatformView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 
 					void OnApplyTemplateFinished(object? sender, EventArgs e)
 					{
-						NativeView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+						PlatformView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 						ApplyAppearance();
 					}
 				}
@@ -293,8 +293,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				void ApplyAppearance()
 				{
-					NativeView.UpdateTopNavAreaBackground(a.EffectiveTabBarBackgroundColor?.AsPaint());
-					NativeView.UpdateTopNavigationViewItemTextColor(a.EffectiveTabBarForegroundColor?.AsPaint());
+					PlatformView.UpdateTopNavAreaBackground(a.EffectiveTabBarBackgroundColor?.AsPaint());
+					PlatformView.UpdateTopNavigationViewItemTextColor(a.EffectiveTabBarForegroundColor?.AsPaint());
 				}
 			}
 		}

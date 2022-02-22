@@ -297,14 +297,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool PageIsInThisContext(IView page)
 			{
-				var nativeView = page.ToPlatform(MauiContext);
+				var platformView = page.ToPlatform(MauiContext);
 
-				if (nativeView.Context == null)
+				if (platformView.Context == null)
 				{
 					return false;
 				}
 
-				return nativeView.Context.GetActivity()?.Equals(Activity) ?? false;
+				return platformView.Context.GetActivity()?.Equals(Activity) ?? false;
 			}
 
 			// This is a proxy dialog builder class to support both pre-appcompat and appcompat dialogs for Alert,

@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 				return new Java.Lang.String(title);
 
 			var spannableTitle = new SpannableString(title ?? string.Empty);
-			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToNative()), 0, spannableTitle.Length(), SpanTypes.ExclusiveExclusive);
+			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToPlatform()), 0, spannableTitle.Length(), SpanTypes.ExclusiveExclusive);
 			return spannableTitle;
 		}
 	}

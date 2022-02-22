@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Platform
 
 			// TODO ezhart 2021-07-12 The previous version of this checked _renderer.Element.InputTransparent; we don't have acces to that here,
 			// and I'm not sure it even applies. We need to determine whether touch events will get here at all if we've marked the ScrollView InputTransparent
-			// We _should_ be able to deal with it at the handler level by force-setting an OnTouchListener for the NativeView that always returns false; then we
+			// We _should_ be able to deal with it at the handler level by force-setting an OnTouchListener for the PlatformView that always returns false; then we
 			// can just stop worrying about it here because the touches _can't_ reach this.
 
 			// set the start point for the bidirectional scroll; 

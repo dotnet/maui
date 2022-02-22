@@ -17,6 +17,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsEnabled { get; set; } = true;
 
+		public bool IsFocused { get; set; }
+
 		public List<StubBase> Children { get; set; }
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
@@ -111,6 +113,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public void InvalidateMeasure()
+		{
+		}
+
+		public bool Focus() => false;
+
+		public void Unfocus()
 		{
 		}
 

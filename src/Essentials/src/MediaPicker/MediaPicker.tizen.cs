@@ -5,34 +5,34 @@ using System.Text;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class MediaPicker
+	public partial class MediaPickerImplementation : IMediaPicker
 	{
-		static bool PlatformIsCaptureSupported
+		public bool IsCaptureSupported
 			   => true;
 
-		static async Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+		public async Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> await FilePicker.PickAsync(new PickOptions
 			{
 				PickerTitle = options?.Title,
 				FileTypes = FilePickerFileType.Images
 			});
 
-		static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
-			=> PlatformMediaAsync(options, true);
+		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
+			=> MediaAsync(options, true);
 
-		static async Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
+		public async Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> await FilePicker.PickAsync(new PickOptions
 			{
 				PickerTitle = options?.Title,
 				FileTypes = FilePickerFileType.Videos
 			});
 
-		static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
-			=> PlatformMediaAsync(options, false);
+		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
+			=> MediaAsync(options, false);
 
-		static async Task<FileResult> PlatformMediaAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult> MediaAsync(MediaPickerOptions options, bool photo)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 

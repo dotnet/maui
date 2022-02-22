@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Essentials
 
 		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 			 => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+			 => throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />

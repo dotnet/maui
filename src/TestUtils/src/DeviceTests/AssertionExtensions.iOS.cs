@@ -179,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToNative());
+			AssertContainsColor(view, expectedColor.ToPlatform());
 
 		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor)
 		{
@@ -198,7 +198,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static UILineBreakMode ToNative(this LineBreakMode mode) =>
+		public static UILineBreakMode ToPlatform(this LineBreakMode mode) =>
 			mode switch
 			{
 				LineBreakMode.NoWrap => UILineBreakMode.Clip,

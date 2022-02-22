@@ -35,12 +35,13 @@
     <MacosTargetFrameworkVersion>10.14</MacosTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion>30.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041</WindowsTargetFrameworkVersion>
+    <Windows2TargetFrameworkVersion>10.0.20348</Windows2TargetFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- the real TFMs -->
     <MauiPlatforms>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-maccatalyst;net$(_MauiDotNetVersion)-android</MauiPlatforms>
-    <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion)</WindowsMauiPlatforms>
+    <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion);net$(_MauiDotNetVersion)-windows$(Windows2TargetFrameworkVersion)</WindowsMauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
 
     <!-- Work around the IDE not properly handling the NU1703 warning -->

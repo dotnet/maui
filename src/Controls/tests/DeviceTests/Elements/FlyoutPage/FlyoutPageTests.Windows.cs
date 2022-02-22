@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
 			{
-				Assert.NotNull(handler.NativeView.PaneFooter);
+				Assert.NotNull(handler.PlatformView.PaneFooter);
 				return Task.CompletedTask;
 			});
 		}

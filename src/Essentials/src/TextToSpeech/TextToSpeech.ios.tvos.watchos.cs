@@ -5,17 +5,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using AVFoundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class TextToSpeech
+	public partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		static readonly Lazy<AVSpeechSynthesizer> speechSynthesizer = new Lazy<AVSpeechSynthesizer>();
 
-		internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
+		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
 			Task.FromResult(AVSpeechSynthesisVoice.GetSpeechVoices()
 				.Select(v => new Locale(v.Language, null, v.Name, v.Identifier)));
 
-		internal static async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		public Task SpeakAsync(string text, CancellationToken cancelToken)
+			=> SpeakAsync(text, default, cancelToken);
+
+		public async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
 		{
 			using (var speechUtterance = GetSpeechUtterance(text, options))
 			{
