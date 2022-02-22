@@ -7,28 +7,57 @@ using Security;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface ISecAccessibleSecureStorage : ISecureStorage
+	{
+		SecAccessible DefaultAccessible { get; set; }
+		Task SetAsync(string key, string value, SecAccessible accessible);
+	}
+
 	public static partial class SecureStorage
 	{
 		public static SecAccessible DefaultAccessible
 		{
-			get { return Implementations.SecureStorageImplementation.DefaultAccessible; }
-			set { Implementations.SecureStorageImplementation.DefaultAccessible = value; }
+			get
+			{ 
+				if (Current is ISecAccessibleSecureStorage secAccessibleSecureStorage)
+				{
+					return secAccessibleSecureStorage.DefaultAccessible;
+				}
+
+				throw new NotImplementedException();
+			}
+			set
+			{
+				if (Current is ISecAccessibleSecureStorage secAccessibleSecureStorage)
+				{
+					secAccessibleSecureStorage.DefaultAccessible = value;
+				}
+
+				throw new NotImplementedException();
+			}
 		}
 
-		public static Task SetAsync(string key, string value, SecAccessible accessible) =>
-			Implementations.SecureStorageImplementation.SetAsync(key, value, accessible);
+		public static Task SetAsync(string key, string value, SecAccessible accessible)
+		{
+			if (Current is ISecAccessibleSecureStorage secAccessibleSecureStorage)
+			{
+				return secAccessibleSecureStorage.SetAsync(key, value, accessible);
+			}
+
+			throw new NotImplementedException();
+		}
 	}
 }
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class SecureStorageImplementation : ISecureStorage
+	public partial class SecureStorageImplementation : ISecAccessibleSecureStorage
 	{
 		static string Alias => SecureStorage.Alias;
 
-		public static SecAccessible DefaultAccessible { get; set; }
+		public SecAccessible DefaultAccessible { get; set; }
 
-		public static Task SetAsync(string key, string value, SecAccessible accessible)
+		public Task SetAsync(string key, string value, SecAccessible accessible)
 		{
 			if (string.IsNullOrWhiteSpace(key))
 				throw new ArgumentNullException(nameof(key));
