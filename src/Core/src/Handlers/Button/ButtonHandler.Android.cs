@@ -32,13 +32,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MaterialButton CreatePlatformView()
 		{
-			MaterialButton platformButton = new MauiMaterialButton(Context)
+			MauiMaterialButton platformButton = new MauiMaterialButton(Context)
 			{
 				IconGravity = MaterialButton.IconGravityTextStart,
 				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
 				IconTint = TransparentColorStateList,
 				SoundEffectsEnabled = false
 			};
+
+			platformButton.SetVirtualView(VirtualView);
 
 			return platformButton;
 		}

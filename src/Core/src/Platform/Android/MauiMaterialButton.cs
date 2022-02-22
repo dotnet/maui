@@ -1,17 +1,36 @@
 ﻿using Android.Content;
+using Android.Views;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiMaterialButton : MaterialButton
+	public class MauiMaterialButton : MaterialButton, IMauiButton
 	{
 		// Currently Material doesn't have any bottom gravity options
 		// so we just move the layout to the bottom using
 		// SetCompoundDrawablesRelative during Layout
 		internal const int IconGravityBottom = 9999;
+
+		IView? _button;
+
 		public MauiMaterialButton(Context context) : base(context)
 		{
+		}
+
+		public void SetVirtualView(IView button)
+		{
+			_button = button;
+		}
+
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			bool inputTransparent = _button != null && _button.InputTransparent;
+
+			if (!Enabled || (inputTransparent && Enabled))
+				return false;
+
+			return base.OnTouchEvent(e);
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)

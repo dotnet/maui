@@ -10,10 +10,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatRadioButton CreatePlatformView()
 		{
-			return new AppCompatRadioButton(Context)
+			var platformView = new MauiCompatRadioButton(Context)
 			{
 				SoundEffectsEnabled = false
 			};
+
+			platformView.SetVirtualView(VirtualView);
+
+			return platformView;
 		}
 
 		protected override void ConnectHandler(View platformView)
