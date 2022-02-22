@@ -47,41 +47,6 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState activationState)
 		{
 			var window = new Window(Services.GetRequiredService<Page>());
-
-			var menuBarItem = new MenuBarItem() { Text = "Top Item" };
-			menuBarItem.Add(new MenuFlyoutItem() { Text = "First Child" });
-			menuBarItem.Add(new MenuFlyoutSubItem()
-			{
-				new MenuFlyoutItem()
-				{
-					Text = "Flyout Item",
-					IconImageSource = "dotnet_bot.png"
-				},
-
-				new MenuFlyoutItem()
-				{
-					Text = "Flyout Item 2",
-					IconImageSource = "dotnet_bot.png"
-				}
-			});
-
-			(menuBarItem[1] as MenuFlyoutSubItem).Text = "Second Child";
-
-			var fileBarItem = new MenuBarItem { Text = "File" };
-			fileBarItem.Add(new MenuFlyoutItem() { Text = " Extra File item" });
-
-			window.MenuBar = new MenuBar()
-			{
-				fileBarItem,
-				menuBarItem,
-				new MenuBarItem() { Text = "Edit" },
-				new MenuBarItem() { Text = "Open" },
-				new MenuBarItem() { Text = "View" },
-				new MenuBarItem() { Text = "Close" },				
-			};
-
-			
-
 			window.Title = ".NET MAUI Samples Gallery";
 			return window;
 		}

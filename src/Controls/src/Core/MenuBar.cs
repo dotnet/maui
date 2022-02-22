@@ -1,11 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Windows.Input;
-using Microsoft.Maui.Controls.StyleSheets;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -41,6 +36,15 @@ namespace Microsoft.Maui.Controls
 		public void Add(IMenuBarItem item)
 		{
 			_menus.Add(item);
+			Invalidate();
+		}
+		
+		internal void ReplaceWith(IReadOnlyList<IMenuBarItem> menuBarItems)
+		{
+			_menus.Clear();
+			foreach (var menuItem in menuBarItems)
+				_menus.Add(menuItem);
+
 			Invalidate();
 		}
 

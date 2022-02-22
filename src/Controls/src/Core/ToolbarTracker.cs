@@ -7,15 +7,83 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class ToolbarTracker
+	internal class ToolbarTracker : MenuItemTracker<ToolbarItem>
+	{
+		ToolBarItemComparer _toolBarItemComparer;
+		protected override IList<ToolbarItem> GetMenuItems(Page page) =>
+			page.ToolbarItems;
+
+		protected override IComparer<ToolbarItem> CreateComparer() =>
+			_toolBarItemComparer ??= new ToolBarItemComparer();
+
+		class ToolBarItemComparer : IComparer<ToolbarItem>
+		{
+			public int Compare(ToolbarItem x, ToolbarItem y) => x.Priority.CompareTo(y.Priority);
+		}
+	}
+
+	internal class MenuBarTracker : MenuItemTracker<MenuBarItem>
+	{
+		MenuBarItemComparer _Comparer;
+		MenuBar _menuBar;
+		Element _parent;
+		string _handlerProperty;
+
+		public MenuBarTracker(Element parent, string handlerProperty)
+		{
+			_parent = parent;
+			_handlerProperty = handlerProperty;
+			CollectionChanged += OnMenuBarItemCollectionChanged;
+		}
+
+		void OnMenuBarItemCollectionChanged(object sender, EventArgs e)
+		{
+			_parent?.Handler?.UpdateValue(_handlerProperty);
+		}
+
+		public MenuBar MenuBar
+		{
+			get
+			{
+				var menuBarItems = ToolbarItems;
+				if (menuBarItems.Count == 0)
+					return null;
+
+				_menuBar ??= new MenuBar();
+				_menuBar.ReplaceWith(ToolbarItems);
+
+				if (_menuBar.Parent != _parent)
+					_menuBar.Parent = _parent;
+
+				return _menuBar;
+			}
+		}
+
+
+		protected override IList<MenuBarItem> GetMenuItems(Page page) =>
+			page.MenuBarItems;
+
+		protected override IComparer<MenuBarItem> CreateComparer() =>
+			_Comparer ??= new MenuBarItemComparer();
+
+		class MenuBarItemComparer : IComparer<MenuBarItem>
+		{
+			public int Compare(MenuBarItem x, MenuBarItem y) => x.Priority.CompareTo(y.Priority);
+		}
+	}
+
+	internal abstract class MenuItemTracker<TMenuItem>
+		where TMenuItem : BaseMenuItem
 	{
 		int _flyoutDetails;
 		Page _target;
-		ToolBarItemComparer _toolBarItemComparer;
-		public ToolbarTracker()
+		public MenuItemTracker()
 		{
-			_toolBarItemComparer = new ToolBarItemComparer();
 		}
+
+		protected abstract IList<TMenuItem> GetMenuItems(Page page);
+
+		protected abstract IComparer<TMenuItem> CreateComparer();
 
 		public IEnumerable<Page> AdditionalTargets { get; set; }
 
@@ -25,7 +93,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public bool SeparateFlyoutPage { get; set; }
-
 
 		public Page Target
 		{
@@ -44,24 +111,24 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public IEnumerable<ToolbarItem> ToolbarItems
+		public IReadOnlyList<TMenuItem> ToolbarItems
 		{
 			get
 			{
 				if (Target == null)
-					return new ToolbarItem[0];
+					return new TMenuItem[0];
 
 				// I realize this is sorting on every single get but we don't have 
 				// a mechanism in place currently to invalidate a stored version of this
 
-				List<ToolbarItem> returnValue = GetCurrentToolbarItems(Target);
+				List<TMenuItem> returnValue = GetCurrentToolbarItems(Target);
 
 				if (AdditionalTargets != null)
 					foreach (var item in AdditionalTargets)
-						foreach (var toolbarItem in item.ToolbarItems)
-							returnValue.Add(toolbarItem);
+						foreach (var menuITem in GetMenuItems(item))
+							returnValue.Add(menuITem);
 
-				returnValue.Sort(_toolBarItemComparer);
+				returnValue.Sort(CreateComparer());
 				return returnValue;
 			}
 		}
@@ -71,10 +138,10 @@ namespace Microsoft.Maui.Controls
 		void EmitCollectionChanged()
 			=> CollectionChanged?.Invoke(this, EventArgs.Empty);
 
-		List<ToolbarItem> GetCurrentToolbarItems(Page page)
+		List<TMenuItem> GetCurrentToolbarItems(Page page)
 		{
-			var result = new List<ToolbarItem>();
-			result.AddRange(page.ToolbarItems);
+			var result = new List<TMenuItem>();
+			result.AddRange(GetMenuItems(page));
 
 			if (page is FlyoutPage)
 			{
@@ -190,11 +257,6 @@ namespace Microsoft.Maui.Controls
 			page.DescendantAdded -= OnChildAdded;
 			page.DescendantRemoved -= OnChildRemoved;
 			page.PropertyChanged -= OnPropertyChanged;
-		}
-
-		class ToolBarItemComparer : IComparer<ToolbarItem>
-		{
-			public int Compare(ToolbarItem x, ToolbarItem y) => x.Priority.CompareTo(y.Priority);
 		}
 	}
 }
