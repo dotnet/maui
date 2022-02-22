@@ -5,16 +5,16 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppActions
+	public partial class AppActionsImplementation : IAppActions
 	{
-		internal const string Type = "XE_APP_ACTION_TYPE";
+		public string Type => "XE_APP_ACTION_TYPE";
 
-		internal static bool PlatformIsSupported
+		public bool IsSupported
 			=> Platform.HasOSVersion(9, 0);
 
-		static Task<IEnumerable<AppAction>> PlatformGetAsync()
+		public Task<IEnumerable<AppAction>> GetAsync()
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Essentials
 			return Task.FromResult(UIApplication.SharedApplication.ShortcutItems.Select(s => s.ToAppAction()));
 		}
 
-		static Task PlatformSetAsync(IEnumerable<AppAction> actions)
+		public Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -32,6 +32,14 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
+		public Task SetAsync(params AppAction[] actions)
+		{	
+			return SetAsync(actions.AsEnumerable<AppAction>());
+		}
+	}
+
+	internal static partial class AppActionsExtensions
+	{
 		internal static AppAction ToAppAction(this UIApplicationShortcutItem shortcutItem)
 		{
 			string id = null;
@@ -45,7 +53,7 @@ namespace Microsoft.Maui.Essentials
 			return new AppAction(id, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle, icon);
 		}
 
-		static UIApplicationShortcutItem ToShortcutItem(this AppAction action)
+		internal static UIApplicationShortcutItem ToShortcutItem(this AppAction action)
 		{
 			var keys = new List<NSString>();
 			var values = new List<NSObject>();
@@ -62,11 +70,12 @@ namespace Microsoft.Maui.Essentials
 			}
 
 			return new UIApplicationShortcutItem(
-				AppActions.Type,
+				action.Type,
 				action.Title,
 				action.Subtitle,
 				action.Icon != null ? UIApplicationShortcutIcon.FromTemplateImageName(action.Icon) : null,
 				new NSDictionary<NSString, NSObject>(keys.ToArray(), values.ToArray()));
 		}
+
 	}
 }

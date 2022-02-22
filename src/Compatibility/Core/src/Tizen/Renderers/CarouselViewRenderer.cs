@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var visibility = Element.HorizontalScrollBarVisibility;
 			if (visibility == ScrollBarVisibility.Default)
 				visibility = ScrollBarVisibility.Never;
-			Control.HorizontalScrollBarVisiblePolicy = visibility.ToNative();
+			Control.HorizontalScrollBarVisiblePolicy = visibility.ToPlatform();
 		}
 
 		protected override void UpdateVerticalScrollBarVisibility()
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var visibility = Element.VerticalScrollBarVisibility;
 			if (visibility == ScrollBarVisibility.Default)
 				visibility = ScrollBarVisibility.Never;
-			Control.VerticalScrollBarVisiblePolicy = visibility.ToNative();
+			Control.VerticalScrollBarVisiblePolicy = visibility.ToPlatform();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

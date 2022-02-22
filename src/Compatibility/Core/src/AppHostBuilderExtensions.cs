@@ -116,7 +116,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CheckBox), typeof(CheckBoxRenderer));
 #if !WINDOWS
-					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
 #if !(MACCATALYST || MACOS)
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
 #endif
@@ -144,6 +143,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 					handlers.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
 					handlers.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
+					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 				});

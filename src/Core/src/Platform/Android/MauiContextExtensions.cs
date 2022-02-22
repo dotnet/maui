@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Platform
 			throw new InvalidOperationException("Unable to find Application Services");
 		}
 
-		public static Android.App.Activity GetNativeWindow(this IMauiContext mauiContext) =>
+		public static Android.App.Activity GetPlatformWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<Android.App.Activity>();
 	}
 }

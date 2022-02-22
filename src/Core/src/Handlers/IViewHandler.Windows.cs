@@ -3,9 +3,9 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui
 {
-	public interface INativeViewHandler : IViewHandler
+	public interface IPlatformViewHandler : IViewHandler
 	{
-		new FrameworkElement? NativeView { get; }
+		new FrameworkElement? PlatformView { get; }
 		new FrameworkElement? ContainerView { get; }
 	}
 }

@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	internal static class AlignmentExtensions
 	{
 		[PortHandler]
-		internal static Microsoft.UI.Xaml.TextAlignment ToNativeTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection = default(EffectiveFlowDirection))
+		internal static Microsoft.UI.Xaml.TextAlignment ToPlatformTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection = default(EffectiveFlowDirection))
 		{
 			var isLtr = flowDirection.IsLeftToRight();
 			switch (alignment)
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
         [PortHandler]
-		internal static VerticalAlignment ToNativeVerticalAlignment(this TextAlignment alignment)
+		internal static VerticalAlignment ToPlatformVerticalAlignment(this TextAlignment alignment)
 		{
 			switch (alignment)
 			{
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 
 		[PortHandler]
-		internal static HorizontalAlignment ToNativeHorizontalAlignment(this TextAlignment alignment)
+		internal static HorizontalAlignment ToPlatformHorizontalAlignment(this TextAlignment alignment)
 		{
 			switch (alignment)
 			{

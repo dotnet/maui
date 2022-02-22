@@ -1,11 +1,11 @@
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIButton;
+using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
-using NativeView = Google.Android.Material.Button.MaterialButton;
+using PlatformView = Google.Android.Material.Button.MaterialButton;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Controls.Button;
+using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -51,6 +51,6 @@ namespace Microsoft.Maui.Handlers
 
 		IButton IButtonHandler.VirtualView => VirtualView;
 
-		NativeView IButtonHandler.NativeView => NativeView;
+		PlatformView IButtonHandler.PlatformView => PlatformView;
 	}
 }

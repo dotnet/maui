@@ -22,7 +22,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class NavigationRenderer : UINavigationController, INativeViewHandler
+	public class NavigationRenderer : UINavigationController, IPlatformViewHandler
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
 		bool _appeared;
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateHideNavigationBarSeparator();
 			UpdateUseLargeTitles();
 
-			if (NativeVersion.Supports(NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it
@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_ignorePopCall = true;
 			_ = page.ToPlatform(MauiContext);
-			var renderer = (INativeViewHandler)page.Handler;
+			var renderer = (IPlatformViewHandler)page.Handler;
 			if (renderer == null || renderer.ViewController == null)
 				return false;
 
@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return true;
 
 			_ = page.ToPlatform(MauiContext);
-			var renderer = (INativeViewHandler)page.Handler;
+			var renderer = (IPlatformViewHandler)page.Handler;
 			if (renderer == null || renderer.ViewController == null)
 				return false;
 
@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the control adheres to changes in UI theme
-			if (NativeVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (PlatformVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				UpdateBackgroundColor();
 		}
 
@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			pack.UpdateTitleArea(page);
 
-			var pageRenderer = (INativeViewHandler)page.Handler;
+			var pageRenderer = (IPlatformViewHandler)page.Handler;
 			pack.View.AddSubview(pageRenderer.ViewController.View);
 			pack.AddChildViewController(pageRenderer.ViewController);
 			pageRenderer.ViewController.DidMoveToParentViewController(pack);
@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var tcs = new TaskCompletionSource<bool>();
 
 			_ = page.ToPlatform(MauiContext);
-			var renderer = (INativeViewHandler)page.Handler;
+			var renderer = (IPlatformViewHandler)page.Handler;
 			var parentViewController = renderer.ViewController.ParentViewController as ParentingViewController;
 			if (parentViewController == null)
 				throw new NotSupportedException("ParentingViewController parent could not be found. Please file a bug.");
@@ -466,7 +466,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_defaultNavBarShadowImage == null)
 				_defaultNavBarShadowImage = NavigationBar.ShadowImage;
 
-			if (NativeVersion.IsAtLeast(13))
+			if (PlatformVersion.IsAtLeast(13))
 			{
 				if (shouldHide)
 				{
@@ -489,7 +489,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					NavigationBar.ShadowImage = _defaultNavBarShadowImage;
 			}
 
-			if (!NativeVersion.IsAtLeast(11))
+			if (!PlatformVersion.IsAtLeast(11))
 			{
 				// For iOS 10 and lower, you need to set the background image.
 				// If you set this for iOS11, you'll remove the background color.
@@ -513,7 +513,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateUseLargeTitles()
 		{
-			if (NativeVersion.IsAtLeast(11) && NavPage != null)
+			if (PlatformVersion.IsAtLeast(11) && NavPage != null)
 				NavigationBar.PrefersLargeTitles = NavPage.OnThisPlatform().PrefersLargeTitles();
 		}
 
@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void InsertPageBefore(Page page, Page before)
 		{
-			if (before.Handler is not INativeViewHandler nvh)
+			if (before.Handler is not IPlatformViewHandler nvh)
 				throw new ArgumentNullException("before");
 			if (page == null)
 				throw new ArgumentNullException("page");
@@ -566,7 +566,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void RemovePage(Page page)
 		{
-			if (page?.Handler is not INativeViewHandler nvh)
+			if (page?.Handler is not IPlatformViewHandler nvh)
 				throw new ArgumentNullException("page");
 			if (page == Current)
 				throw new NotSupportedException(); // should never happen as NavPage protects against this
@@ -620,7 +620,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateBackgroundColor()
 		{
-			var color = Element.BackgroundColor == null ? Maui.Platform.ColorExtensions.BackgroundColor : Element.BackgroundColor.ToNative();
+			var color = Element.BackgroundColor == null ? Maui.Platform.ColorExtensions.BackgroundColor : Element.BackgroundColor.ToPlatform();
 			View.BackgroundColor = color;
 		}
 
@@ -628,7 +628,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
 
-			if (NativeVersion.IsAtLeast(13))
+			if (PlatformVersion.IsAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
 
@@ -642,7 +642,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
-					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToNative();
+					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
 
 				var barBackgroundBrush = NavPage.BarBackground;
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
@@ -657,7 +657,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Set navigation bar background color
 				NavigationBar.BarTintColor = barBackgroundColor == null
 					? UINavigationBar.Appearance.BarTintColor
-					: barBackgroundColor.ToNative();
+					: barBackgroundColor.ToPlatform();
 
 				var barBackgroundBrush = NavPage.BarBackground;
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
@@ -673,24 +673,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var globalTitleTextAttributes = UINavigationBar.Appearance.TitleTextAttributes;
 			var titleTextAttributes = new UIStringAttributes
 			{
-				ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToNative(),
+				ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 				Font = globalTitleTextAttributes?.Font
 			};
 
 			// Determine new large title text attributes via global static data
 			var largeTitleTextAttributes = titleTextAttributes;
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
 				var globalLargeTitleTextAttributes = UINavigationBar.Appearance.LargeTitleTextAttributes;
 
 				largeTitleTextAttributes = new UIStringAttributes
 				{
-					ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToNative(),
+					ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 					Font = globalLargeTitleTextAttributes?.Font
 				};
 			}
 
-			if (NativeVersion.IsAtLeast(13))
+			if (PlatformVersion.IsAtLeast(13))
 			{
 				NavigationBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
 				NavigationBar.CompactAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
@@ -705,7 +705,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				NavigationBar.TitleTextAttributes = titleTextAttributes;
 
-				if (NativeVersion.IsAtLeast(11))
+				if (PlatformVersion.IsAtLeast(11))
 					NavigationBar.LargeTitleTextAttributes = largeTitleTextAttributes;
 			}
 
@@ -716,7 +716,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 				? UINavigationBar.Appearance.TintColor
-				: iconColor.ToNative();
+				: iconColor.ToPlatform();
 		}
 
 		void SetStatusBarStyle()
@@ -727,7 +727,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
 			{
 				// Use dark text color for status bar
-				if (NativeVersion.IsAtLeast(13))
+				if (PlatformVersion.IsAtLeast(13))
 				{
 					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
 				}
@@ -1181,7 +1181,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void SetupDefaultNavigationBarAppearance()
 			{
-				if (!NativeVersion.IsAtLeast(13))
+				if (!PlatformVersion.IsAtLeast(13))
 					return;
 
 				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
@@ -1297,7 +1297,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				// on iOS 10 if the user hasn't set the back button text
 				// we set it to an empty string so it's consistent with iOS 11
-				if (!NativeVersion.IsAtLeast(11) && !isBackButtonTextSet)
+				if (!PlatformVersion.IsAtLeast(11) && !isBackButtonTextSet)
 					backButtonText = "";
 
 				// First page and we have a flyout detail to contend with
@@ -1383,7 +1383,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!_navigation.TryGetTarget(out n))
 					return;
 
-				if (!NativeVersion.IsAtLeast(11) || n._parentFlyoutPage != null)
+				if (!PlatformVersion.IsAtLeast(11) || n._parentFlyoutPage != null)
 					UpdateTitleArea(Child);
 			}
 
@@ -1445,7 +1445,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void UpdateLargeTitles()
 			{
 				var page = Child;
-				if (page != null && NativeVersion.IsAtLeast(11))
+				if (page != null && PlatformVersion.IsAtLeast(11))
 				{
 					var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
 					switch (largeTitleDisplayMode)
@@ -1465,28 +1465,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()
 			{
-				if (Child?.Handler is INativeViewHandler ivh)
+				if (Child?.Handler is IPlatformViewHandler ivh)
 					return ivh.ViewController.GetSupportedInterfaceOrientations();
 				return base.GetSupportedInterfaceOrientations();
 			}
 
 			public override UIInterfaceOrientation PreferredInterfaceOrientationForPresentation()
 			{
-				if (Child?.Handler is INativeViewHandler ivh)
+				if (Child?.Handler is IPlatformViewHandler ivh)
 					return ivh.ViewController.PreferredInterfaceOrientationForPresentation();
 				return base.PreferredInterfaceOrientationForPresentation();
 			}
 
 			public override bool ShouldAutorotate()
 			{
-				if (Child?.Handler is INativeViewHandler ivh)
+				if (Child?.Handler is IPlatformViewHandler ivh)
 					return ivh.ViewController.ShouldAutorotate();
 				return base.ShouldAutorotate();
 			}
 
 			public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 			{
-				if (Child?.Handler is INativeViewHandler ivh)
+				if (Child?.Handler is IPlatformViewHandler ivh)
 					return ivh.ViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 				return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 			}
@@ -1508,7 +1508,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
-			return (Current.Handler as INativeViewHandler)?.ViewController;
+			return (Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
@@ -1520,23 +1520,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IView IViewHandler.VirtualView => Element;
 
-		object IElementHandler.NativeView => NativeView;
+		object IElementHandler.PlatformView => NativeView;
 
 		Maui.IElement IElementHandler.VirtualView => Element;
 
 		IMauiContext IElementHandler.MauiContext => _mauiContext;
 
-		UIView INativeViewHandler.NativeView => NativeView;
+		UIView IPlatformViewHandler.PlatformView => NativeView;
 
-		UIView INativeViewHandler.ContainerView => null;
+		UIView IPlatformViewHandler.ContainerView => null;
 
-		UIViewController INativeViewHandler.ViewController => this;
+		UIViewController IPlatformViewHandler.ViewController => this;
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			_viewHandlerWrapper.GetDesiredSize(widthConstraint, heightConstraint);
 
-		void IViewHandler.NativeArrange(Rectangle rect) =>
-			_viewHandlerWrapper.NativeArrange(rect);
+		void IViewHandler.PlatformArrange(Rectangle rect) =>
+			_viewHandlerWrapper.PlatformArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
 		{
@@ -1604,7 +1604,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void LayoutSubviews()
 			{
-				if (!NativeVersion.IsAtLeast(11))
+				if (!PlatformVersion.IsAtLeast(11))
 				{
 					for (int i = 0; i < this.Subviews.Length; i++)
 					{
@@ -1638,13 +1638,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			View _view;
 			MauiControlsNavigationBar _bar;
-			INativeViewHandler _child;
+			IPlatformViewHandler _child;
 			UIImageView _icon;
 			bool _disposed;
 
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
 			{
-				if (NativeVersion.IsAtLeast(11))
+				if (PlatformVersion.IsAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -1659,7 +1659,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					_view = view;
 					var platformView = view.ToPlatform(view.FindMauiContext());
-					_child = (INativeViewHandler)view.Handler;
+					_child = (IPlatformViewHandler)view.Handler;
 					AddSubview(platformView);
 				}
 
@@ -1691,7 +1691,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (Superview != null)
 					{
-						if (!NativeVersion.IsAtLeast(11))
+						if (!PlatformVersion.IsAtLeast(11))
 						{
 							value.Y = Superview.Bounds.Y;
 
@@ -1746,7 +1746,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					Rectangle layoutBounds = new Rectangle(IconWidth, 0, Bounds.Width - IconWidth, height);
 
-					_child.NativeArrangeHandler(layoutBounds);
+					_child.PlatformArrangeHandler(layoutBounds);
 				}
 				else if (_icon != null && Superview != null)
 				{
@@ -1768,7 +1768,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (_child != null)
 					{
-						_child.NativeView.RemoveFromSuperview();
+						_child.PlatformView.RemoveFromSuperview();
 						_child.DisconnectHandler();
 						_child = null;
 					}

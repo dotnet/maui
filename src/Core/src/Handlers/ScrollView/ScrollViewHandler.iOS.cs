@@ -10,32 +10,32 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>
 	{
-		protected override UIScrollView CreateNativeView()
+		protected override UIScrollView CreatePlatformView()
 		{
 			return new UIScrollView();
 		}
 
-		protected override void ConnectHandler(UIScrollView nativeView)
+		protected override void ConnectHandler(UIScrollView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.Scrolled += Scrolled;
-			nativeView.ScrollAnimationEnded += ScrollAnimationEnded;
+			platformView.Scrolled += Scrolled;
+			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
 		}
 
-		protected override void DisconnectHandler(UIScrollView nativeView)
+		protected override void DisconnectHandler(UIScrollView platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.Scrolled -= Scrolled;
-			nativeView.ScrollAnimationEnded -= ScrollAnimationEnded;
+			platformView.Scrolled -= Scrolled;
+			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = this.ToPlatform();
+			var platformView = this.ToPlatform();
 
-			if (nativeView == null || VirtualView == null)
+			if (platformView == null || VirtualView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
@@ -47,11 +47,11 @@ namespace Microsoft.Maui.Handlers
 			var hasExplicitWidth = explicitWidth >= 0;
 			var hasExplicitHeight = explicitHeight >= 0;
 
-			var sizeThatFits = nativeView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
+			var sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
 
 			var size = new Size(
-				sizeThatFits.Width > 0 ? sizeThatFits.Width : NativeView.ContentSize.Width,
-				sizeThatFits.Height > 0 ? sizeThatFits.Height : NativeView.ContentSize.Height);
+				sizeThatFits.Width > 0 ? sizeThatFits.Width : PlatformView.ContentSize.Width,
+				sizeThatFits.Height > 0 ? sizeThatFits.Height : PlatformView.ContentSize.Height);
 
 			return new Size(hasExplicitWidth ? explicitWidth : size.Width,
 				hasExplicitHeight ? explicitHeight : size.Height);
@@ -64,31 +64,31 @@ namespace Microsoft.Maui.Handlers
 
 		void Scrolled(object? sender, EventArgs e)
 		{
-			VirtualView.HorizontalOffset = NativeView.ContentOffset.X;
-			VirtualView.VerticalOffset = NativeView.ContentOffset.Y;
+			VirtualView.HorizontalOffset = PlatformView.ContentOffset.X;
+			VirtualView.VerticalOffset = PlatformView.ContentOffset.Y;
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.NativeView == null || handler.MauiContext == null)
+			if (handler.PlatformView == null || handler.MauiContext == null)
 				return;
 
-			handler.NativeView.UpdateContent(scrollView.PresentedContent, handler.MauiContext);
+			handler.PlatformView.UpdateContent(scrollView.PresentedContent, handler.MauiContext);
 		}
 
 		public static void MapContentSize(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView.UpdateContentSize(scrollView.ContentSize);
+			handler.PlatformView.UpdateContentSize(scrollView.ContentSize);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
+			handler.PlatformView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
 		}
 
 		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.NativeView?.UpdateVerticalScrollBarVisibility(scrollView.VerticalScrollBarVisibility);
+			handler.PlatformView?.UpdateVerticalScrollBarVisibility(scrollView.VerticalScrollBarVisibility);
 		}
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.NativeView.SetContentOffset(new CoreGraphics.CGPoint(request.HoriztonalOffset, request.VerticalOffset), !request.Instant);
+				handler.PlatformView.SetContentOffset(new CoreGraphics.CGPoint(request.HoriztonalOffset, request.VerticalOffset), !request.Instant);
 
 				if (request.Instant)
 				{
