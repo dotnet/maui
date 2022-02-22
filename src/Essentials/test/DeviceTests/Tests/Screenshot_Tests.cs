@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			return Utils.OnMainThread(async () =>
 			{
-				if (PlatformVersion.IsAtLeast(13))
+				if (CanExecuteTest())
 				{
 					await Task.Delay(100);
 					ScreenshotResult mediaFile = await Screenshot.CaptureAsync();
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			return Utils.OnMainThread(async () =>
 			{
-				if (PlatformVersion.IsAtLeast(13))
+				if (CanExecuteTest())
 				{
 					await Task.Delay(100);
 					ScreenshotResult mediaFile = await Screenshot.CaptureAsync();
@@ -37,6 +37,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					Assert.True(png.Length > 0);
 				}
 			});
+		}
+
+		static bool CanExecuteTest()
+		{
+#if __IOS__
+			return PlatformVersion.IsAtLeast(13);
+#else
+			return true;
+#endif
 		}
 	}
 }
