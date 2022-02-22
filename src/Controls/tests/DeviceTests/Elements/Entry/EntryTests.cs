@@ -1,19 +1,20 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.Button)]
-	public partial class ButtonTests : HandlerTestBase
+	[Category(TestCategory.Entry)]
+	public partial class EntryTests : HandlerTestBase
 	{
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
 		{
-			var control = new Button() { Text = text, TextTransform = transform };
-			var platformText = await GetNativeText(await CreateHandlerAsync<ButtonHandler>(control));
+			var control = new Entry() { Text = text, TextTransform = transform };
+			var platformText = await GetPlatformText(await CreateHandlerAsync<EntryHandler>(control));
 			Assert.Equal(expected, platformText);
 		}
 
@@ -21,10 +22,10 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TextTransformCases))]
 		public async Task TextTransformUpdated(string text, TextTransform transform, string expected)
 		{
-			var control = new Button() { Text = text };
-			var handler = await CreateHandlerAsync<ButtonHandler>(control);
+			var control = new Entry() { Text = text };
+			var handler = await CreateHandlerAsync<EntryHandler>(control);
 			await InvokeOnMainThreadAsync(() => control.TextTransform = transform);
-			var platformText = await GetNativeText(handler);
+			var platformText = await GetPlatformText(handler);
 			Assert.Equal(expected, platformText);
 		}
 	}
