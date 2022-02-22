@@ -14,7 +14,7 @@ $slnMac = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
-& dotnet build $csproj -bl:$logsDirectory/dotnet-$configuration.binlog
+#& dotnet build $csproj -bl:$logsDirectory/dotnet-$configuration.binlog
 
 # Full path to dotnet folder
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/

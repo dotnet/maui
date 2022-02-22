@@ -16,8 +16,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			public bool ClipsToBounds { get; set; }
 
-			#region IView stuff
 
+			#region IView stuff
+			
 			public string AutomationId { get; }
 			public FlowDirection FlowDirection { get; }
 			public LayoutAlignment HorizontalLayoutAlignment { get; }

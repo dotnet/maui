@@ -260,46 +260,59 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.IsPresented = DrawerLayout.IsDrawerVisible(_flyoutView);
 		}
 
-		public static void MapDetail(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.UpdateDetail();
+			if (handler is FlyoutViewHandler platformHandler)
+				platformHandler.UpdateDetail();
 		}
 
-		public static void MapFlyout(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyout(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.UpdateFlyout();
+			if (handler is FlyoutViewHandler platformHandler)
+				platformHandler.UpdateFlyout();
 		}
 
-		public static void MapFlyoutBehavior(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyoutBehavior(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.UpdateFlyoutBehavior();
+			if (handler is FlyoutViewHandler platformHandler)
+				platformHandler.UpdateFlyoutBehavior();
 		}
 
-		public static void MapIsPresented(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapIsPresented(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.UpdateIsPresented();
+			if (handler is FlyoutViewHandler platformHandler)
+				platformHandler.UpdateIsPresented();
 		}
 
-		public static void MapFlyoutWidth(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyoutWidth(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			var nativeFlyoutView = handler._flyoutView;
-			if (nativeFlyoutView?.LayoutParameters == null)
-				return;
+			if (handler is FlyoutViewHandler platformHandler)
+			{
+				var nativeFlyoutView = platformHandler._flyoutView;
+				if (nativeFlyoutView?.LayoutParameters == null)
+					return;
 
-			nativeFlyoutView.LayoutParameters.Width = (int)handler.FlyoutWidth;
+				nativeFlyoutView.LayoutParameters.Width = (int)platformHandler.FlyoutWidth;
+			}
 		}
 
-		public static void MapToolbar(FlyoutViewHandler handler, IFlyoutView view)
+		public static void MapToolbar(IFlyoutViewHandler handler, IFlyoutView view)
 		{
 			ViewHandler.MapToolbar(handler, view);
 
-			if (handler.VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && handler.VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
-				th.SetupWithDrawerLayout(handler.DrawerLayout);
+			if (handler is FlyoutViewHandler platformHandler &&
+				handler.VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout &&
+				handler.VirtualView is IToolbarElement te &&
+				te.Toolbar?.Handler is ToolbarHandler th)
+			{
+				th.SetupWithDrawerLayout(platformHandler.DrawerLayout);
+			}
 		}
 
-		public static void MapIsGestureEnabled(FlyoutViewHandler handler, IFlyoutView view)
+		public static void MapIsGestureEnabled(IFlyoutViewHandler handler, IFlyoutView view)
 		{
-			handler.UpdateFlyoutBehavior();
+			if (handler is FlyoutViewHandler platformHandler)
+				platformHandler.UpdateFlyoutBehavior();
 		}
 	}
 }
