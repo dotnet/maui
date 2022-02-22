@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Platform
 		public MauiWebChromeClient(WebViewHandler handler)
 		{
 			_handler = handler ?? throw new ArgumentNullException("handler");
+
+			SetContext(_handler.Context);
 		}
 
 		public override bool OnShowFileChooser(WebView webView, IValueCallback filePathCallback, FileChooserParams fileChooserParams)
@@ -53,7 +55,7 @@ namespace Microsoft.Maui.Platform
 				filePathCallback.OnReceiveValue(result);
 			};
 
-			_requestCodes = _requestCodes ?? new List<int>();
+			_requestCodes ??= new List<int>();
 
 			int newRequestCode = ActivityResultCallbackRegistry.RegisterActivityResultCallback(callback);
 
@@ -68,6 +70,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (disposing)
 				UnregisterCallbacks();
+
 			base.Dispose(disposing);
 		}
 
@@ -76,11 +79,14 @@ namespace Microsoft.Maui.Platform
 			return FileChooserParams.ParseResult((int)resultCode, data);
 		}
 
-		internal void SetContext(Context thisActivity)
+		void SetContext(Context thisActivity)
 		{
 			_activity = thisActivity as Activity;
 
 			if (_activity == null)
+				_activity = Essentials.Platform.CurrentActivity;
+
+			if(_activity == null)
 				_handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
 		}
 	}

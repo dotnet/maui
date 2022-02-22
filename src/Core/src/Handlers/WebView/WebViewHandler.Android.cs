@@ -19,23 +19,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AWebView CreatePlatformView()
 		{
-			var platformWebView =  new MauiWebView(Context!)
+			var platformView =  new MauiWebView(Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
 			};
 
-			_webViewClient = GetWebViewClient();
-			platformWebView.SetWebViewClient(_webViewClient);
+			platformView.Settings.JavaScriptEnabled = true;
+			platformView.Settings.DomStorageEnabled = true;
+			platformView.Settings.SetSupportMultipleWindows(true);
 
-			_webChromeClient = GetMauiWebChromeClient();
-			_webChromeClient.SetContext(Context);
-			platformWebView.SetWebChromeClient(_webChromeClient);
-
-			platformWebView.Settings.JavaScriptEnabled = true;
-			platformWebView.Settings.DomStorageEnabled = true;
-			platformWebView.Settings.SetSupportMultipleWindows(true);
-
-			return platformWebView;
+			return platformView;
 		}
 
 		public override void SetVirtualView(IView view)
