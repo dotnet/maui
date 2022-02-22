@@ -108,10 +108,16 @@ stages:
             - pwsh: |
                 [xml] $fileXml = Get-Content "eng\Versions.props"
                 $DotNetVersion = $fileXml.SelectSingleNode("Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion").InnerText
-                echo "Installing .NET $DotNetVersion"
+                $DotNetVersionBand = $fileXml.SelectSingleNode("Project/PropertyGroup/DotNetVersionBand").InnerText
 
+                echo "Installing .NET $DotNetVersion"
                 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
                 & .\dotnet-install.ps1 -Version $DotNetVersion -InstallDir "$env:DOTNET_ROOT" -Verbose
+
+                echo "Removing signing"
+                & "${env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\signtool.exe" remove /s "$env:DOTNET_ROOT\sdk\$DotNetVersionBand\dotnet.dll"
+
+                echo "Listing installed SDKs"
                 & dotnet --list-sdks
               displayName: install .NET
               errorActionPreference: stop
