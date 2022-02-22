@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 			throw new NotImplementedException();
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
+		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
 			throw new NotImplementedException();
 		}

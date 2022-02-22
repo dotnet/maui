@@ -31,9 +31,13 @@ namespace Microsoft.Maui.Handlers
 			return _controlsNavigationController.View;
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
+		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
-			arg1.NavigationStack = (arg3 as NavigationRequest)!.NavigationStack;
+			if (arg1 is NavigationViewHandler platformHandler && arg3 is NavigationRequest navigationRequest)
+			{
+				platformHandler.NavigationStack = navigationRequest.NavigationStack;
+			}
+
 			//if (arg3 is NavigationRequest args)
 			//	arg1.OnPushRequested(args);
 		}
