@@ -1,14 +1,11 @@
-<Type Name="ScreenshotResult" FullName="Microsoft.Maui.Essentials.ScreenshotResult">
-  <TypeSignature Language="C#" Value="public class ScreenshotResult" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ScreenshotResult extends System.Object" />
-  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Essentials.ScreenshotResult" />
+<Type Name="ScreenshotResult" FullName="Microsoft.Maui.Essentials.IScreenshotResult">
+  <TypeSignature Language="C#" Value="public interface IScreenshotResult" />
+  <TypeSignature Language="ILAsm" Value=".class public interface auto ansi abstract IScreenshotResult" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Essentials.IScreenshotResult" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </AssemblyInfo>
-  <Base>
-    <BaseTypeName>System.Object</BaseTypeName>
-  </Base>
   <Interfaces />
   <Docs>
     <summary>To be added.</summary>
@@ -16,9 +13,9 @@
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public ScreenshotResult (int width, int height, Windows.Storage.Streams.IBuffer pixels);" />
+      <MemberSignature Language="C#" Value="public IScreenshotResult (int width, int height, Windows.Storage.Streams.IBuffer pixels);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(int32 width, int32 height, class Windows.Storage.Streams.IBuffer pixels) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.ScreenshotResult.#ctor(System.Int32,System.Int32,Windows.Storage.Streams.IBuffer)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.IScreenshotResult.#ctor(System.Int32,System.Int32,Windows.Storage.Streams.IBuffer)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
@@ -40,7 +37,7 @@
     <Member MemberName="Height">
       <MemberSignature Language="C#" Value="public int Height { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance int32 Height" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.ScreenshotResult.Height" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.IScreenshotResult.Height" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
@@ -58,7 +55,7 @@
     <Member MemberName="OpenReadAsync">
       <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;System.IO.Stream&gt; OpenReadAsync (Microsoft.Maui.Essentials.ScreenshotFormat format = Microsoft.Maui.Essentials.ScreenshotFormat.Png);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; OpenReadAsync(valuetype Microsoft.Maui.Essentials.ScreenshotFormat format) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.ScreenshotResult.OpenReadAsync(Microsoft.Maui.Essentials.ScreenshotFormat)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.IScreenshotResult.OpenReadAsync(Microsoft.Maui.Essentials.ScreenshotFormat)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
@@ -80,7 +77,7 @@
     <Member MemberName="Width">
       <MemberSignature Language="C#" Value="public int Width { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance int32 Width" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.ScreenshotResult.Width" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.IScreenshotResult.Width" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>

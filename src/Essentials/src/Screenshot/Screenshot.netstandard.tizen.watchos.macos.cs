@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotResult']/Docs" />
 	internal partial class ScreenshotResult
 	{
 		ScreenshotResult()

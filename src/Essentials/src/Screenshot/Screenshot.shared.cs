@@ -13,12 +13,16 @@ namespace Microsoft.Maui.Essentials
 		Task<IScreenshotResult> CaptureAsync();
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.IScreenshotResult']/Docs" />
 	public interface IScreenshotResult
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='Width']/Docs" />
 		int Width { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='Height']/Docs" />
 		int Height { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
 		Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png);
 	}
 
@@ -61,16 +65,12 @@ namespace Microsoft.Maui.Essentials
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotResult']/Docs" />
 	internal partial class ScreenshotResult : IScreenshotResult
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="//Member[@MemberName='Width']/Docs" />
 		public int Width { get; }
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="//Member[@MemberName='Height']/Docs" />
+		
 		public int Height { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
 		public Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png)
 			=> PlatformOpenReadAsync(format);
 	}
