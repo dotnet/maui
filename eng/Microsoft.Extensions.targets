@@ -18,55 +18,47 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
-        Version="$(MicrosoftExtensionsConfigurationPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Abstractions"
-        Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Json"
-        Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
-        Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection.Abstractions"
-        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Abstractions"
-        Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.Extensions.Hosting"
-        Version="$(MicrosoftExtensionsHostingPackageVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.Extensions.Hosting.Abstractions"
-        Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
-        Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging"
-        Version="$(MicrosoftExtensionsLoggingPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Console"
-        Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Debug"
-        Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Primitives"
-        Version="$(MicrosoftExtensionsPrimitivesPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.WindowsAppSDK"
@@ -107,21 +99,11 @@
     />
     <PackageReference
         Update="System.CodeDom"
-        Version="$(SystemCodeDomPackageVersion)"
+        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Web.WebView2"
         Version="$(_MicrosoftWebWebView2Version)"
     />
   </ItemGroup>
-
-  <!-- Workaround for https://github.com/dotnet/sdk/issues/18148 where an analyzer from a new version of a package
-       is not found in the older version of that same package. So we just remove usage of the analyzer entirely
-       because we don't use it in this repo.  -->
-  <Target Name="RemoveLoggingAnalyzer" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'Microsoft.Extensions.Logging.Generators'" />
-      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'System.Text.Json.SourceGeneration' and '$(BuildForLegacy)' == 'true'" />
-    </ItemGroup>
-  </Target>
 </Project>

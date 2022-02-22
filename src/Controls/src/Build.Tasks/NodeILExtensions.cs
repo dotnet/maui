@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
+				foreach (var (t, tc) in TypeConversionExtensions.KnownConverters)
 				{
 					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
 					{
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
+				foreach (var (t, tc) in TypeConversionExtensions.KnownConverters)
 				{
 					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
 					{

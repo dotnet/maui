@@ -28,16 +28,27 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
 	static class TypeConversionExtensions
 	{
+		internal static Dictionary<Type, Type> KnownConverters = new Dictionary<Type, Type>
+		{
+			{ typeof(Font), typeof(FontTypeConverter) }
+		};
+
+		private static Dictionary<Type, Func<object>> KnownConverterFactories = new()
+		{
+			{ typeof(Font), () => new FontTypeConverter() }
+		};
+
 		internal static object ConvertTo(this object value, Type toType, Func<ParameterInfo> pinfoRetriever,
 			IServiceProvider serviceProvider, out Exception exception)
 		{
@@ -67,11 +78,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				var converterTypeName = toType.GetTypeInfo().CustomAttributes.GetTypeConverterTypeName();
 				if (minfoRetriever != null && (memberInfo = minfoRetriever()) != null)
 					converterTypeName = memberInfo.CustomAttributes.GetTypeConverterTypeName() ?? converterTypeName;
-				if (converterTypeName == null && TypeConverterAttribute.KnownConverters.TryGetValue(toType, out var convertertype))
-					return Activator.CreateInstance(convertertype);
+				if (converterTypeName == null && KnownConverterFactories.TryGetValue(toType, out var converterFactory))
+					return converterFactory();
 				if (converterTypeName == null)
 					return null;
-				convertertype = Type.GetType(converterTypeName);
+				var convertertype = Type.GetType(converterTypeName);
 				return Activator.CreateInstance(convertertype);
 			};
 
@@ -92,7 +103,11 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		//Don't change the name or the signature of this, it's used by XamlC
-		public static object ConvertTo(this object value, Type toType, Type convertertype, IServiceProvider serviceProvider)
+		public static object ConvertTo(
+			this object value, 
+			Type toType,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type convertertype, 
+			IServiceProvider serviceProvider)
 		{
 			Exception exception = null;
 			object ret = null;
