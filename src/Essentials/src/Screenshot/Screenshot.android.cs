@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			var view = Platform.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
 			if (view == null)
-				throw new NullReferenceException("Unable to find the main window.");
+				throw new InvalidOperationException("Unable to find the main window.");
 
 			var result = new ScreenshotResult(view.Render());
 
