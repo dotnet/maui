@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageButtonHandler : ViewHandler<IImageButton, Button>
 	{
-		Image _image;
+		Image? _image;
 
 		PointerEventHandler? _pointerPressedHandler;
 
@@ -35,8 +35,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 
-			_image.ImageOpened += OnImageOpened;
-			_image.ImageFailed += OnImageFailed;
+			if (_image != null)
+			{
+				_image.ImageOpened += OnImageOpened;
+				_image.ImageFailed += OnImageFailed;
+			}
 
 			platformView.Click += OnClick;
 			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
@@ -46,8 +49,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(Button platformView)
 		{
-			_image.ImageOpened -= OnImageOpened;
-			_image.ImageFailed -= OnImageFailed;
+			if (_image != null)
+			{
+				_image.ImageOpened -= OnImageOpened;
+				_image.ImageFailed -= OnImageFailed;
+			}
 
 			platformView.Click -= OnClick;
 			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
