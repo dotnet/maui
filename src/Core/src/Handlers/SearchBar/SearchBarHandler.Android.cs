@@ -49,6 +49,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(searchBar, DefaultBackground);
 		}
 
+		// This is a Android-specific mapping
+		public static void MapIsEnabled(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateIsEnabled(searchBar, handler.QueryEditor);
+		}
+	
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateText(searchBar);
@@ -111,11 +117,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
-
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
 			VirtualView.SearchButtonPressed();
-			// TODO: Clear focus
+			PlatformView?.ClearFocus();
 			e.Handled = true;
 		}
 
