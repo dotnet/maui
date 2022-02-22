@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Platform
 	public partial class WrapperView : ViewGroup
 	{
 		Lazy<SkiaGraphicsView> _drawableCanvas;
+		Lazy<MauiClipperView> _clipperView;
 		NView? _content;
 		MauiDrawable _mauiDrawable;
 
@@ -28,7 +29,26 @@ namespace Microsoft.Maui.Platform
 				return view;
 			});
 
+			_clipperView = new Lazy<MauiClipperView>(() =>
+			{
+				var clipper = new MauiClipperView();
+				clipper.Show();
+				Children.Add(clipper);
+				SetupClipperView(clipper);
+				return clipper;
+			});
+
 			LayoutUpdated += OnLayout;
+		}
+
+		public NView? Content
+		{
+			get => _content;
+			set
+			{
+				UpdateContent(value, _content);
+				_content = value;
+			}
 		}
 
 		public void UpdateBackground(Paint? paint)
@@ -57,6 +77,10 @@ namespace Microsoft.Maui.Platform
 
 		partial void ClipChanged()
 		{
+			if (_clipperView.IsValueCreated || Clip != null)
+			{
+				_clipperView.Value.Clip = Clip;
+			}
 		}
 
 		void UpdateDrawableCanvas(bool isShadowUpdated)
@@ -66,8 +90,6 @@ namespace Microsoft.Maui.Platform
 				UpdateDrawableCanvasGeometry();
 			}
 
-			// TODO
-			//_mauiDrawable.Bounds = GetDrawableBounds();
 			_drawableCanvas.Value.Invalidate();
 		}
 
@@ -78,29 +100,50 @@ namespace Microsoft.Maui.Platform
 				Content.UpdateBounds(new Rect(0, 0, Size.Width, Size.Height));
 			}
 
+			if (_clipperView.IsValueCreated)
+			{
+				_clipperView.Value.UpdateBounds(new Rect(0, 0, Size.Width, Size.Height));
+			}
+
 			if (_drawableCanvas.IsValueCreated)
 			{
 				UpdateDrawableCanvas(true);
 			}
 		}
 
-		public NView? Content
+		void SetupClipperView(MauiClipperView clipper)
 		{
-			get => _content;
-			set
+			if (_content != null)
 			{
-				if (_content != value)
+				Children.Remove(_content);
+				clipper.Add(_content);
+			}
+		}
+
+		void UpdateContent(NView? newValue, NView? oldValue)
+		{
+			// remove content from WrapperView
+			if (oldValue != null)
+			{
+				if (_clipperView.IsValueCreated)
 				{
-					if (_content != null)
-					{
-						Children.Remove(_content);
-						_content = null;
-					}
-					_content = value;
-					if (_content != null)
-					{
-						Children.Add(_content);
-					}
+					_clipperView.Value.Remove(oldValue);
+				}
+				else
+				{
+					Children.Remove(oldValue);
+				}
+			}
+
+			if (newValue != null)
+			{
+				if (_clipperView.IsValueCreated)
+				{
+					_clipperView.Value.Add(newValue);
+				}
+				else
+				{
+					Children.Add(newValue);
 				}
 			}
 		}
@@ -112,19 +155,6 @@ namespace Microsoft.Maui.Platform
 				var bounds = new Rect(0, 0, SizeWidth, SizeHeight);
 				_drawableCanvas.Value.UpdateBounds(bounds.ToDP().ExpandTo(Shadow).ToPixel());
 			}
-		}
-
-		Rectangle GetDrawableBounds()
-		{
-			var drawablePosition = _drawableCanvas.Value.Position;
-			var borderThickness = _mauiDrawable.Border?.StrokeThickness ?? 0;
-			var padding = (borderThickness / 2).ToScaledPixel();
-			var left = - drawablePosition.X + padding;
-			var top = - drawablePosition.Y + padding;
-			var width = SizeWidth - (padding * 2);
-			var height = SizeHeight - (padding * 2);
-
-			return new Rect(left, top, width, height).ToDP();
 		}
 	}
 }
