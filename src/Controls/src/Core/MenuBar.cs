@@ -38,8 +38,8 @@ namespace Microsoft.Maui.Controls
 			_menus.Add(item);
 			Invalidate();
 		}
-		
-		internal void ReplaceWith(IReadOnlyList<IMenuBarItem> menuBarItems)
+
+		internal void ReplaceWith(IList<MenuBarItem> menuBarItems)
 		{
 			_menus.Clear();
 			foreach (var menuItem in menuBarItems)

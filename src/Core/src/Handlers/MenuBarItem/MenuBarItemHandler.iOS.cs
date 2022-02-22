@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Handlers
 		void Rebuild()
 		{
 			UIMenuSystem
-						.MainSystem
-						.SetNeedsRebuild();
+				.MainSystem
+				.SetNeedsRebuild();
 		}
 	}
 }

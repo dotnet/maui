@@ -38,25 +38,25 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapAdd(IMenuFlyoutSubItemHandler handler, IMenuElement layout, object? arg)
 		{
-			if (arg is MenuBarItemHandlerUpdate args)
+			if (arg is MenuFlyoutSubItemHandlerUpdate args)
 			{
-				handler.Add(args.MenuElement);
+				handler.Add(args.MenuFlyoutSubItem);
 			}
 		}
 
 		public static void MapRemove(IMenuFlyoutSubItemHandler handler, IMenuElement layout, object? arg)
 		{
-			if (arg is MenuBarItemHandlerUpdate args)
+			if (arg is MenuFlyoutSubItemHandlerUpdate args)
 			{
-				handler.Remove(args.MenuElement);
+				handler.Remove(args.MenuFlyoutSubItem);
 			}
 		}
 
 		public static void MapInsert(IMenuFlyoutSubItemHandler handler, IMenuElement layout, object? arg)
 		{
-			if (arg is MenuBarItemHandlerUpdate args)
+			if (arg is MenuFlyoutSubItemHandlerUpdate args)
 			{
-				handler.Insert(args.Index, args.MenuElement);
+				handler.Insert(args.Index, args.MenuFlyoutSubItem);
 			}
 		}
 
