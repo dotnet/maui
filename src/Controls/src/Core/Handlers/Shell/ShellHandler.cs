@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WINDOWS
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Platform;
@@ -12,7 +13,6 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<Shell, ShellHandler> Mapper =
 				new PropertyMapper<Shell, ShellHandler>(ElementMapper)
 				{
-#if WINDOWS
 					[nameof(IToolbarElement.Toolbar)] = (handler, view) => ViewHandler.MapToolbar(handler, view),
 					[nameof(IFlyoutView.Flyout)] = MapFlyout,
 					[nameof(IFlyoutView.IsPresented)] = MapIsPresented,
@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Controls.Handlers
 					[nameof(Shell.FlyoutHeaderTemplate)] = MapFlyoutHeader,
 					[nameof(Shell.Items)] = MapItems,
 					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
-#endif
 				};
 
 		public static CommandMapper<Shell, ShellHandler> CommandMapper =
@@ -39,3 +38,4 @@ namespace Microsoft.Maui.Controls.Handlers
 		}
 	}
 }
+#endif

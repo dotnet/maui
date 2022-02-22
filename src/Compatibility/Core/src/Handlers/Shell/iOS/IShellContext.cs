@@ -1,7 +1,7 @@
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Platform.Compatibility
+namespace Microsoft.Maui.Controls.Platform.Compatibility.Compatibility
 {
 	public interface IShellContext
 	{
