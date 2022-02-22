@@ -11,9 +11,9 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler
+	public partial class LabelHandler : ILabelHandler
 	{
-		public static IPropertyMapper<ILabel, LabelHandler> LabelMapper = new PropertyMapper<ILabel, LabelHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ILabel, ILabelHandler> LabelMapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
 #if WINDOWS || __IOS__
 			[nameof(ILabel.Background)] = MapBackground,
@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
 		};
 
+		public static CommandMapper<IActivityIndicator, ILabelHandler> CommandMapper = new(ViewCommandMapper)
+		{
+		};
+
 		static LabelHandler()
 		{
 #if __IOS__
@@ -41,12 +45,14 @@ namespace Microsoft.Maui.Handlers
 
 		public LabelHandler() : base(LabelMapper)
 		{
-
 		}
 
 		public LabelHandler(IPropertyMapper? mapper = null) : base(mapper ?? LabelMapper)
 		{
-
 		}
+
+		ILabel ILabelHandler.VirtualView => VirtualView;
+
+		PlatformView ILabelHandler.PlatformView => PlatformView;
 	}
 }
