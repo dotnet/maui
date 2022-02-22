@@ -50,16 +50,6 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		protected virtual WebViewClient GetWebViewClient()
-		{
-			return new MauiWebViewClient(this);
-		}
-
-		protected virtual MauiWebChromeClient GetMauiWebChromeClient()
-		{
-			return new MauiWebChromeClient(this);
-		}
-
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
 			ProcessSourceWhenReady(handler, webView);
