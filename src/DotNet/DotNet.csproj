@@ -118,6 +118,7 @@
     <_WorkloadIds Include="macos" />
     <_WorkloadIds Include="ios" />
     <_WorkloadIds Include="tvos" />
+    <_WorkloadIds Include="tizen" />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloadManifests"
@@ -139,6 +140,7 @@
     -->
     <ItemGroup>
       <_WorkloadFiles Include="$(_WorkloadManifestDir)microsoft.net.*/*/data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(_WorkloadManifestDir)samsung.net.sdk.*/*/data/WorkloadManifest.*" />
     </ItemGroup>
     <CopyWorkloadFiles
         Files="@(_WorkloadFiles)"
