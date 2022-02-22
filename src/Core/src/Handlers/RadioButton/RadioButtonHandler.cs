@@ -1,8 +1,18 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿#if __IOS__ || MACCATALYST
+using PlatformView = Microsoft.Maui.Platform.ContentView;
+#elif MONOANDROID
+using PlatformView = AndroidX.AppCompat.Widget.AppCompatRadioButton;
+#elif WINDOWS
+using PlatformView = Microsoft.Maui.Platform.MauiRadioButton;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
+namespace Microsoft.Maui.Handlers
 {
-	public partial class RadioButtonHandler
+	public partial class RadioButtonHandler : IRadioButtonHandler
 	{
-		public static IPropertyMapper<IRadioButton, RadioButtonHandler> Mapper = new PropertyMapper<IRadioButton, RadioButtonHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IRadioButton, IRadioButtonHandler> Mapper = new PropertyMapper<IRadioButton, IRadioButtonHandler>(ViewHandler.ViewMapper)
 		{
 #if ANDROID
 			[nameof(IRadioButton.Background)] = MapBackground,
@@ -19,12 +29,14 @@
 
 		public RadioButtonHandler() : base(Mapper)
 		{
-
 		}
 
 		public RadioButtonHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		IRadioButton IRadioButtonHandler.VirtualView => VirtualView;
+
+		PlatformView IRadioButtonHandler.PlatformView => PlatformView;
 	}
 }
