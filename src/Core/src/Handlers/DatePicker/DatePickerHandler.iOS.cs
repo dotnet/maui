@@ -81,12 +81,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateFormat(datePicker, handler._picker);
+			var picker = (handler as DatePickerHandler)?._picker;
+			handler.PlatformView?.UpdateFormat(datePicker, picker);
 		}
 
 		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateDate(datePicker, handler._picker);
+			var picker = (handler as DatePickerHandler)?._picker;
+			handler.PlatformView?.UpdateDate(datePicker, picker);
 		}
 
 		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
