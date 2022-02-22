@@ -1,8 +1,6 @@
 trigger:
   branches:
     include:
-    - main
-    - release/*
     - loc
   tags:
     include:

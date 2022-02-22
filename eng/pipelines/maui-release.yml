@@ -1,4 +1,8 @@
 trigger:
+  branches:
+    include:
+    - main
+    - release/*
   tags:
     include:
     - '*'
