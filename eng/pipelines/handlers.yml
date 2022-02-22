@@ -320,5 +320,3 @@ stages:
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
     - template: common/sign.yml                                     # Sign only using the private server
-    - template: common/insertion.yml                                # Insert on VS and SDK
-
