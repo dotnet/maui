@@ -68,7 +68,7 @@ stages:
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
         # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ 'latest', '14.5', '13.7', '12.4', '11.4' ]
+        iosVersions: [ 'latest', '14.5', '13.7', '12.4' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       projects:
         - name: essentials

@@ -29,12 +29,11 @@ stages:
                 pool:
                   name: ${{ parameters.androidVmPool }}
                   vmImage: ${{ parameters.androidVmImage }}
-                  ${{ if startsWith(parameters.androidVmPool, 'VSEng-VSMac-Xamarin-Shared') }}:
-                    demands:
-                      - macOS.Name -equals BigSur
-                      - macOS.Architecture -equals x64
-                      - Agent.HasDevices -equals False
-                      - Agent.IsPaired -equals False
+                  demands:
+                    - macOS.Name -equals BigSur
+                    - macOS.Architecture -equals x64
+                    - Agent.HasDevices -equals False
+                    - Agent.IsPaired -equals False
                 variables:
                   ${{ if ge(api, 24) }}:
                     ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
@@ -64,12 +63,11 @@ stages:
                 pool:
                   name: ${{ parameters.iosVmPool }}
                   vmImage: ${{ parameters.iosVmImage }}
-                  ${{ if startsWith(parameters.iosVmPool, 'VSEng-VSMac-Xamarin-Shared') }}:
-                    demands:
-                      - macOS.Name -equals BigSur
-                      - macOS.Architecture -equals x64
-                      - Agent.HasDevices -equals False
-                      - Agent.IsPaired -equals False
+                  demands:
+                    - macOS.Name -equals BigSur
+                    - macOS.Architecture -equals x64
+                    - Agent.HasDevices -equals False
+                    - Agent.IsPaired -equals False
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                 steps:

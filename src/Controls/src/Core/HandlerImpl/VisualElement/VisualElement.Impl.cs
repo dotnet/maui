@@ -17,10 +17,20 @@ namespace Microsoft.Maui.Controls
 			get => Bounds;
 			set
 			{
+				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
+					return;
+
+				BatchBegin();
+
 				X = value.X;
 				Y = value.Y;
 				Width = value.Width;
 				Height = value.Height;
+
+				SizeAllocated(Width, Height);
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+
+				BatchCommit();
 			}
 		}
 
@@ -148,6 +158,12 @@ namespace Microsoft.Maui.Controls
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 			return DesiredSize;
+		}
+
+		bool IView.IsFocused
+		{
+			get => (bool)GetValue(IsFocusedProperty);
+			set => SetValueCore(IsFocusedPropertyKey, value);
 		}
 
 		Maui.FlowDirection IView.FlowDirection
