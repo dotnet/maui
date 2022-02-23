@@ -11,6 +11,10 @@ namespace Microsoft.Maui.Essentials
 	{
 		bool IsSupported { get; }
 
+		bool IsMonitoring { get; }
+
+		SensorSpeed SensorSpeed { get; }
+
 		void Start(SensorSpeed sensorSpeed);
 
 		void Stop();
@@ -29,6 +33,9 @@ namespace Microsoft.Maui.Essentials
 
 		public static bool IsSupported 
 			=> Current.IsSupported;
+
+		public static SensorSpeed SensorSpeed
+			=> Current.SensorSpeed;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring { get; private set; }
