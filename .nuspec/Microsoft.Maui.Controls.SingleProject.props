@@ -35,7 +35,7 @@
         IsDefaultItem="true"
     />
     <ImageAsset
-        Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.json"
+        Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.svg;$(iOSProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectiOSExcludes)"
         Link="%(RecursiveDir)%(FileName)%(Extension)"
         Visible="false"
@@ -70,7 +70,7 @@
         IsDefaultItem="true"
     />
     <ImageAsset
-        Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.png;$(MacCatalystProjectFolder)**/*.xcassets/*/*.jpg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.pdf;$(MacCatalystProjectFolder)**/*.xcassets/**/*.json"
+        Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.png;$(MacCatalystProjectFolder)**/*.xcassets/*/*.jpg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.pdf;$(MacCatalystProjectFolder)**/*.xcassets/**/*.svg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectMacCatalystExcludes)"
         Link="%(RecursiveDir)%(FileName)%(Extension)"
         Visible="false"
