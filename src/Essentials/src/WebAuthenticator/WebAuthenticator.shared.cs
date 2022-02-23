@@ -14,11 +14,12 @@ namespace Microsoft.Maui.Essentials
 		Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl);
 
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions);
+	}
 
-#if IOS || MACCATALYST
+	public interface IPlatformWebAuthenticatorCallback
+	{
+#if IOS || MACCATALYST || MACOS
 		bool OpenUrlCallback(Uri uri);
-#elif MACOS
-		bool OpenUrlCallback(global::Foundation.NSUrl uri);
 #elif ANDROID
 		bool OnResumeCallback(global::Android.Content.Intent intent);
 #endif
@@ -35,15 +36,20 @@ namespace Microsoft.Maui.Essentials
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions);
 
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || MACOS
 		internal static bool OpenUrl(Uri uri)
-			=> Current.OpenUrlCallback(uri);
-#elif MACOS
-		internal static bool OpenUrl(global::Foundation.NSUrl uri)
-			=> Current.OpenUrlCallback(uri);
+		{
+			if (Current is IPlatformWebAuthenticatorCallback c)
+				return c.OpenUrlCallback(uri);
+			return false;
+		}
 #elif ANDROID
 		internal static bool OnResume(global::Android.Content.Intent intent)
-			=> Current.OnResumeCallback(intent);
+		{
+			if (Current is IPlatformWebAuthenticatorCallback c)
+				return c.OnResumeCallback(intent);
+			return false;
+		}
 #endif
 
 #nullable enable

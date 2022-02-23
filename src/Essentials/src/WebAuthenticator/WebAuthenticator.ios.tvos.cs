@@ -15,7 +15,7 @@ using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class WebAuthenticatorImplementation : IWebAuthenticator
+	public class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 #if __IOS__
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;

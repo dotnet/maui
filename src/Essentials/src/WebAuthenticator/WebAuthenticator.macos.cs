@@ -6,7 +6,7 @@ using Foundation;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class WebAuthenticatorImplementation : IWebAuthenticator
+	public class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
 		const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return await tcsResponse.Task;
 		}
 
-		public bool OpenUrlCallback(NSUrl uri)
+		public bool OpenUrlCallback(Uri uri)
 		{
 			// If we aren't waiting on a task, don't handle the url
 			if (tcsResponse?.Task?.IsCompleted ?? true)
