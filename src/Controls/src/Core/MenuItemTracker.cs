@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls
 			if (page is FlyoutPage)
 				_flyoutDetails++;
 
-			((ObservableCollection<ToolbarItem>)page.ToolbarItems).CollectionChanged += OnCollectionChanged;
+			((ObservableCollection<TMenuItem>)GetMenuItems(page)).CollectionChanged += OnCollectionChanged;
 			page.PropertyChanged += OnPropertyChanged;
 		}
 
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls
 			if (page is FlyoutPage)
 				_flyoutDetails++;
 
-			((ObservableCollection<ToolbarItem>)page.ToolbarItems).CollectionChanged += OnCollectionChanged;
+			((ObservableCollection<TMenuItem>)GetMenuItems(page)).CollectionChanged += OnCollectionChanged;
 			page.Descendants().OfType<Page>().ForEach(RegisterChildPage);
 
 			page.DescendantAdded += OnChildAdded;
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls
 			if (page is FlyoutPage)
 				_flyoutDetails--;
 
-			((ObservableCollection<ToolbarItem>)page.ToolbarItems).CollectionChanged -= OnCollectionChanged;
+			((ObservableCollection<TMenuItem>)GetMenuItems(page)).CollectionChanged -= OnCollectionChanged;
 			page.PropertyChanged -= OnPropertyChanged;
 		}
 
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls
 			if (page is FlyoutPage)
 				_flyoutDetails--;
 
-			((ObservableCollection<ToolbarItem>)page.ToolbarItems).CollectionChanged -= OnCollectionChanged;
+			((ObservableCollection<TMenuItem>)GetMenuItems(page)).CollectionChanged -= OnCollectionChanged;
 			page.Descendants().OfType<Page>().ForEach(UnregisterChildPage);
 
 			page.DescendantAdded -= OnChildAdded;

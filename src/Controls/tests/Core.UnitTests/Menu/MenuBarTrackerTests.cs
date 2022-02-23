@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Core.UnitTests
+namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 {
 	[TestFixture]
 	public class MenuBarTrackerTests : BaseTestFixture
@@ -88,6 +88,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(tracker.ToolbarItems.Count() == 2);
 			Assert.True(tracker.ToolbarItems.First() == subPage2.MenuBarItems[0]);
 			Assert.True(tracker.ToolbarItems.Last() == subPage2.MenuBarItems[1]);
+			Assert.IsTrue(changed);
 		}
 
 		[Test]
@@ -201,6 +202,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tracker.Target = null;
 
 			Assert.False(tracker.ToolbarItems.Any());
+		}
+
+		[Test]
+		public void AddingMenuBarItemsFireCollectionChanged()
+		{
+			var tracker = new MenuBarTracker();
+
+			var menubaritem1 = new MenuBarItem();
+			var menubarItem2 = new MenuBarItem();
+
+			var subPage1 = new ContentPage
+			{
+				MenuBarItems = { menubaritem1 }
+			};
+
+			tracker.Target = new NavigationPage(subPage1);
+
+			bool changed = false;
+			tracker.CollectionChanged += (sender, args) => changed = true;
+
+			subPage1.MenuBarItems.Add(menubarItem2);
+			Assert.IsTrue(changed);
 		}
 	}
 }

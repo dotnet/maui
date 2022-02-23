@@ -31,7 +31,13 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuFlyoutSubItemHandler.Insert)] = MapInsert,
 		};
 
-		public MenuFlyoutSubItemHandler() : base(Mapper, CommandMapper)
+
+		public MenuFlyoutSubItemHandler() : this(Mapper, CommandMapper)
+		{
+
+		}
+
+		public MenuFlyoutSubItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
 		{
 
 		}
@@ -40,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is MenuFlyoutSubItemHandlerUpdate args)
 			{
-				handler.Add(args.MenuFlyoutSubItem);
+				handler.Add(args.MenuElement);
 			}
 		}
 
@@ -48,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is MenuFlyoutSubItemHandlerUpdate args)
 			{
-				handler.Remove(args.MenuFlyoutSubItem);
+				handler.Remove(args.MenuElement);
 			}
 		}
 
@@ -56,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is MenuFlyoutSubItemHandlerUpdate args)
 			{
-				handler.Insert(args.Index, args.MenuFlyoutSubItem);
+				handler.Insert(args.Index, args.MenuElement);
 			}
 		}
 
@@ -68,5 +74,12 @@ namespace Microsoft.Maui.Handlers
 		IMenuFlyoutSubItem IMenuFlyoutSubItemHandler.VirtualView => VirtualView;
 
 		PlatformView IMenuFlyoutSubItemHandler.PlatformView => PlatformView;
+
+		private protected override void OnDisconnectHandler(object platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+			foreach (var item in VirtualView)
+				item?.Handler?.DisconnectHandler();
+		}
 	}
 }

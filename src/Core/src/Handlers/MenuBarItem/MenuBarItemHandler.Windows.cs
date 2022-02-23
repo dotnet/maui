@@ -8,10 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, MenuBarItem>, IMenuBarItemHandler
 	{
-		public MenuBarItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
-		{
-		}
-
 		protected override MenuBarItem CreatePlatformElement()
 		{
 			return new MenuBarItem();

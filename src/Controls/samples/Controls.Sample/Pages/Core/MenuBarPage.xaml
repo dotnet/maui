@@ -30,6 +30,7 @@
     <views:BasePage.Content>
         <VerticalStackLayout Margin="12">
             <Label x:Name="menuLabel" Text="You clicked on Menu Item:"></Label>
+            <Button Text="Toggle Menu Bar Item" Clicked="ToggleMenuBarItem"></Button>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

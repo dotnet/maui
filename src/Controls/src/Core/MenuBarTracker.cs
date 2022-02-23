@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Controls
 
 		public MenuBarTracker(Element parent, string handlerProperty)
 		{
+			_menuBar = new MenuBar();
+			_menuBar.Parent = parent;
 			_parent = parent;
 			_handlerProperty = handlerProperty;
 			CollectionChanged += OnMenuBarItemCollectionChanged;
@@ -24,7 +26,17 @@ namespace Microsoft.Maui.Controls
 		void OnMenuBarItemCollectionChanged(object sender, EventArgs e)
 		{
 			if (_handlerProperty != null)
+			{
+				// For now we just reset the entire menu if users modify the menubar
+				// collection
+				//if (_parent is IMenuBarElement mbe &&
+				//	mbe.MenuBar?.Handler != null)
+				//{
+				//	mbe.MenuBar.Handler.DisconnectHandler();
+				//}
+
 				_parent?.Handler?.UpdateValue(_handlerProperty);
+			}
 		}
 
 		public MenuBar MenuBar
@@ -35,11 +47,7 @@ namespace Microsoft.Maui.Controls
 				if (menuBarItems.Count == 0)
 					return null;
 
-				_menuBar ??= new MenuBar();
 				_menuBar.ReplaceWith(ToolbarItems);
-
-				if (_menuBar.Parent != _parent)
-					_menuBar.Parent = _parent;
 
 				return _menuBar;
 			}

@@ -30,7 +30,12 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuBarHandler.Insert)] = MapInsert,
 		};
 
-		public MenuBarHandler() : base(Mapper, CommandMapper)
+		public MenuBarHandler() : this(Mapper, CommandMapper)
+		{
+
+		}
+
+		public MenuBarHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
 		{
 
 		}
@@ -67,5 +72,12 @@ namespace Microsoft.Maui.Handlers
 		IMenuBar IMenuBarHandler.VirtualView => VirtualView;
 
 		PlatformView IMenuBarHandler.PlatformView => PlatformView;
+
+		private protected override void OnDisconnectHandler(object platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+			foreach (var item in VirtualView)
+				item?.Handler?.DisconnectHandler();
+		}
 	}
 }

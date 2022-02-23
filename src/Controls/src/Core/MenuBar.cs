@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,10 +25,12 @@ namespace Microsoft.Maui.Controls
 		public IMenuBarItem this[int index]
 		{
 			get { return _menus[index]; }
-			set { _menus[index] = value; }
+			set
+			{
+				RemoveAt(index);
+				Insert(index, value);
+			}
 		}
-
-		public void Invalidate() => OnPropertyChanged();
 
 		public int Count => _menus.Count;
 
@@ -35,23 +38,28 @@ namespace Microsoft.Maui.Controls
 
 		public void Add(IMenuBarItem item)
 		{
+			var index = _menus.Count;
 			_menus.Add(item);
-			Invalidate();
+			NotifyHandler(nameof(IMenuBarHandler.Add), index, item);
+
+			// Take care of the Element internal bookkeeping
+			if (item is Element element)
+			{
+				OnChildAdded(element);
+			}
 		}
 
 		internal void ReplaceWith(IList<MenuBarItem> menuBarItems)
 		{
-			_menus.Clear();
+			Clear();
 			foreach (var menuItem in menuBarItems)
-				_menus.Add(menuItem);
-
-			Invalidate();
+				Add(menuItem);
 		}
 
 		public void Clear()
 		{
-			_menus.Clear();
-			Invalidate();
+			for (int i = _menus.Count - 1; i >= 0; i--)
+				RemoveAt(i);
 		}
 
 		public bool Contains(IMenuBarItem item)
@@ -77,25 +85,56 @@ namespace Microsoft.Maui.Controls
 		public void Insert(int index, IMenuBarItem item)
 		{
 			_menus.Insert(index, item);
-			Invalidate();
+			NotifyHandler(nameof(IMenuBarHandler.Insert), index, item);
+
+			// Take care of the Element internal bookkeeping
+			if (item is Element element)
+			{
+				OnChildAdded(element);
+			}
 		}
 
 		public bool Remove(IMenuBarItem item)
 		{
+			var index = _menus.IndexOf(item);
 			var result = _menus.Remove(item);
-			Invalidate();
+			NotifyHandler(nameof(IMenuBarHandler.Remove), index, item);
+
+			// Take care of the Element internal bookkeeping
+			if (item is Element element)
+			{
+				OnChildRemoved(element, index);
+			}
+
 			return result;
 		}
 
 		public void RemoveAt(int index)
 		{
+			var item = _menus[index];
+
+			if (index < 0)
+				return;
+
 			_menus.RemoveAt(index);
-			Invalidate();
+			NotifyHandler(nameof(IMenuBarHandler.Remove), index, item);
+
+			// Take care of the Element internal bookkeeping
+			if (item is Element element)
+			{
+				OnChildRemoved(element, index);
+			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _menus.GetEnumerator();
+		}
+
+		void NotifyHandler(string action, int index, IMenuBarItem view)
+		{
+			var args = new Maui.Handlers.MenuBarHandlerUpdate(index, view);
+			Handler?.Invoke(action, args);
 		}
 	}
 }
