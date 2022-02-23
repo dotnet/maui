@@ -1,7 +1,7 @@
 ﻿#if __IOS__ || MACCATALYST
 using PlatformView = Microsoft.Maui.Platform.ContentView;
 #elif MONOANDROID
-using PlatformView = AndroidX.AppCompat.Widget.AppCompatRadioButton;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.MauiRadioButton;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
