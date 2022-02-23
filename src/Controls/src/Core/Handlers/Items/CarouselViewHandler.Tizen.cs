@@ -2,11 +2,18 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Handlers;
+using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
+
+		protected override TCollectionView CreatePlatformView()
+		{
+			throw new NotImplementedException();
+		}
+
 		//TODO : Need to impl
 		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView) { }
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView) { }

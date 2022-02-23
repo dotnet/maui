@@ -21,18 +21,5 @@ namespace Microsoft.Maui.Handlers
 				//TODO : Need to implementation
 			}
 		}
-
-		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
-		{
-			handler.PlatformView?.RequestNewWindow(application, args as OpenWindowRequest);
-		}
-
-		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
-		{
-			if (args is IWindow window)
-			{
-				//TODO : Need to implementation
-			}
-		}
 	}
 }

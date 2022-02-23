@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			view.Parent = Element;
 
-			var native = view.ToNative(MauiContext, true);
+			var native = view.ToPlatform(MauiContext);
 			_nativeMauiTable[native] = view;
 			return native;
 		}
@@ -153,11 +153,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_headerCache.Parent = Element;
 
-				if (_headerCache.Handler is INativeViewHandler nativeHandler)
+				if (_headerCache.Handler is IPlatformViewHandler nativeHandler)
 					nativeHandler.Dispose();
 				_headerCache.Handler = null;
 				_headerCache.MeasureInvalidated += OnHeaderFooterMeasureInvalidated;
-				return _headerCache.ToNative(MauiContext, true);
+				return _headerCache.ToPlatform(MauiContext);
 			}
 			return null;
 		}
@@ -174,11 +174,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_footerCache != null)
 			{
 				_footerCache.Parent = Element;
-				if (_footerCache.Handler is INativeViewHandler nativeHandler)
+				if (_footerCache.Handler is IPlatformViewHandler nativeHandler)
 					nativeHandler.Dispose();
 				_footerCache.Handler = null;
 				_footerCache.MeasureInvalidated += OnHeaderFooterMeasureInvalidated;
-				return _footerCache.ToNative(MauiContext, true);
+				return _footerCache.ToPlatform(MauiContext);
 			}
 			return null;
 		}
@@ -188,9 +188,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UnBinding(native);
 			if (_nativeMauiTable.TryGetValue(native, out View? view))
 			{
-				if (view.Handler is INativeViewHandler handler)
+				if (view.Handler is IPlatformViewHandler handler)
 				{
-					_nativeMauiTable.Remove(handler.NativeView!);
+					_nativeMauiTable.Remove(handler.PlatformView!);
 					handler.Dispose();
 					view.Handler = null;
 				}
@@ -253,12 +253,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				view = (View)ItemTemplate.CreateContent();
 			}
 
-			using var handler = (INativeViewHandler)view.Handler!;
+			using var handler = (IPlatformViewHandler)view.Handler!;
 			view.Parent = Element;
 			if (Count > index)
 				view.BindingContext = this[index];
 
-			view.ToNative(MauiContext, true);
+			view.ToPlatform(MauiContext);
 			return view.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins).Request.ToPixel();
 		}
 

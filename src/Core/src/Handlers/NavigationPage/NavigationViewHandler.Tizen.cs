@@ -6,9 +6,9 @@ using Tizen.UIExtensions.NUI;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, NavigationStack>, IPlatformViewHandler
+		ViewHandler<IStackNavigationView, NavigationStack>, IPlatformViewHandler
 	{
-		public INavigationView NavigationView => ((INavigationView)VirtualView);
+		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
 
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 

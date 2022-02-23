@@ -26,6 +26,15 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
+		[MissingMapper]
+		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+
+		[MissingMapper]
+		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+
+		[MissingMapper]
+		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+
 		void OnReleased(object? sender, EventArgs e)
 		{
 			VirtualView?.Released();

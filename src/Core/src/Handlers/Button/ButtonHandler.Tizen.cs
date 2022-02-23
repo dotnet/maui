@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(Button platformView)
 		{
-			nativeView.TouchEvent += OnTouch;
-			nativeView.Clicked += OnButtonClicked;
-			base.ConnectHandler(nativeView);
+			platformView.TouchEvent += OnTouch;
+			platformView.Clicked += OnButtonClicked;
+			base.ConnectHandler(platformView);
 		}
 
 		private bool OnTouch(object source, View.TouchEventArgs e)
@@ -69,19 +69,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				return Task.CompletedTask;
 			}
-			return handler.ImageSourceLoader.UpdateImageSourceAsync();
-		}
-
-		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
-			MapImageSourceAsync(handler, image).FireAndForget(handler);
-
-		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
-		{
-			if (image.ImageSource == null)
-			{
-				return Task.CompletedTask;
-			}
-
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 

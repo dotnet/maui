@@ -1,10 +1,10 @@
-﻿using ElmSharp;
+﻿using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ToolbarHandler : ElementHandler<IToolbar, Toolbar>
+	public partial class ToolbarHandler : ElementHandler<IToolbar, NView>
 	{
-		protected override Toolbar CreatePlatformElement()
+		protected override NView CreatePlatformElement()
 		{
 			throw new System.NotImplementedException();
 		}

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateProgressColor(this ProgressBar platformProgressBar, IProgress progress)
 		{
-			platformProgressBar.ProgressColor = progress.ProgressColor.ToNative();
+			platformProgressBar.ProgressColor = progress.ProgressColor.ToPlatform();
 		}
 
 		public static void UpdateProgressColor(this ProgressBar platformProgressBar, IProgress progress)

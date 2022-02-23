@@ -1,7 +1,5 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
-using ERect = ElmSharp.Rect;
-using ESize = ElmSharp.Size;
 using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
 using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
@@ -12,27 +10,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DPExtensions
 	{
-		public static Rect ToDP(this ERect rect)
-		{
-			return new Rect(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
-		}
-
-		public static ERect ToEFLPixel(this Rect rect)
-		{
-			return new ERect(ConvertToScaledPixel(rect.X), ConvertToScaledPixel(rect.Y), ConvertToScaledPixel(rect.Width), ConvertToScaledPixel(rect.Height));
-		}
-
-		public static Size ToDP(this ESize size)
-		{
-			return new Size(ConvertToScaledDP(size.Width), ConvertToScaledDP(size.Height));
-		}
-
-		public static ESize ToEFLPixel(this Size size)
-		{
-			return new ESize(ConvertToScaledPixel(size.Width), ConvertToScaledPixel(size.Height));
-		}
-
-		public static Rect ToDP(this TRect rect)
+		public static Rectangle ToDP(this TRect rect)
 		{
 			return new Rect(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
 		}

@@ -5,19 +5,19 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SwitchExtensions
 	{
-		public static void UpdateIsOn(this Switch nativeCheck, ISwitch view)
+		public static void UpdateIsOn(this Switch platformCheck, ISwitch view)
 		{
-			nativeCheck.IsToggled = view.IsOn;
+			platformCheck.IsToggled = view.IsOn;
 		}
 
-		public static void UpdateTrackColor(this Switch nativeCheck, ISwitch view)
+		public static void UpdateTrackColor(this Switch platformCheck, ISwitch view)
 		{
-			nativeCheck.OnColor = view.TrackColor.ToNative();
+			platformCheck.OnColor = view.TrackColor.ToPlatform();
 		}
 
-		public static void UpdateThumbColor(this Switch nativeCheck, ISwitch view)
+		public static void UpdateThumbColor(this Switch platformCheck, ISwitch view)
 		{
-			nativeCheck.ThumbColor = view.ThumbColor.ToNative();
+			platformCheck.ThumbColor = view.ThumbColor.ToPlatform();
 		}
 	}
 }

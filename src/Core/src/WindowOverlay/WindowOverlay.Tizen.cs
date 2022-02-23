@@ -1,5 +1,6 @@
 ﻿using Tizen.UIExtensions.NUI.GraphicsView;
 using Point = Microsoft.Maui.Graphics.Point;
+using Window = Tizen.NUI.Window;
 
 namespace Microsoft.Maui
 {
@@ -15,21 +16,21 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var platformWindow = Window.Content?.ToPlatform() as Window;
-			if (platformWindow == null)
-				return false;
+			//var platformWindow = Window.Content?.ToPlatform() as Window;
+			//if (platformWindow == null)
+			//	return false;
 
-			var handler = Window.Handler as WindowHandler;
-			if (handler?.MauiContext == null)
-				return false;
+			//var handler = Window.Handler as WindowHandler;
+			//if (handler?.MauiContext == null)
+			//	return false;
 
-			_graphicsView = new SkiaGraphicsView();
-			_graphicsView.Drawable = this;
+			//_graphicsView = new SkiaGraphicsView();
+			//_graphicsView.Drawable = this;
 			
 			// TODO
 
-			IsNativeViewInitialized = true;
-			return IsNativeViewInitialized;
+			IsPlatformViewInitialized = true;
+			return IsPlatformViewInitialized;
 		}
 
 		public void Invalidate()

@@ -5,65 +5,82 @@ namespace Microsoft.Maui.Platform
 {
 	public static class EditorExtensions
 	{
-		public static void UpdateText(this Editor nativeEditor, IText editor)
+		public static void UpdateText(this Editor platformEditor, IText editor)
 		{
-			if (nativeEditor.Text != editor.Text)
-				nativeEditor.Text = editor.Text ?? "";
+			if (platformEditor.Text != editor.Text)
+				platformEditor.Text = editor.Text ?? "";
 		}
 
-		public static void UpdateTextColor(this Editor nativeEditor, ITextStyle editor)
+		public static void UpdateTextColor(this Editor platformEditor, ITextStyle editor)
 		{
-			nativeEditor.TextColor = editor.TextColor.ToNative();
+			platformEditor.TextColor = editor.TextColor.ToPlatform();
 		}
 
-		public static void UpdateHorizontalTextAlignment(this Editor nativeEditor, ITextAlignment editor)
+		public static void UpdateHorizontalTextAlignment(this Editor platformEditor, ITextAlignment editor)
 		{
-			nativeEditor.HorizontalTextAlignment = editor.HorizontalTextAlignment.ToNative();
+			platformEditor.HorizontalTextAlignment = editor.HorizontalTextAlignment.ToPlatform();
 		}
 
-		public static void UpdateFont(this Editor nativeEditor, ITextStyle textStyle, IFontManager fontManager)
+		public static void UpdateFont(this Editor platformEditor, ITextStyle textStyle, IFontManager fontManager)
 		{
-			nativeEditor.FontSize = textStyle.Font.Size > 0 ? textStyle.Font.Size.ToScaledPoint() : 25d.ToScaledPoint();
-			nativeEditor.FontAttributes = textStyle.Font.GetFontAttributes();
-			nativeEditor.FontFamily = fontManager.GetFontFamily(textStyle.Font.Family) ?? "";
+			platformEditor.FontSize = textStyle.Font.Size > 0 ? textStyle.Font.Size.ToScaledPoint() : 25d.ToScaledPoint();
+			platformEditor.FontAttributes = textStyle.Font.GetFontAttributes();
+			platformEditor.FontFamily = fontManager.GetFontFamily(textStyle.Font.Family) ?? "";
 		}
 
-		public static void UpdatePlaceholder(this Editor nativeEditor, ITextInput editor)
+		public static void UpdatePlaceholder(this Editor platformEditor, ITextInput editor)
 		{
-			nativeEditor.Placeholder = editor.Placeholder ?? string.Empty;
+			platformEditor.Placeholder = editor.Placeholder ?? string.Empty;
 		}
 
-		public static void UpdatePlaceholder(this Editor nativeEditor, string placeholder)
+		public static void UpdatePlaceholder(this Editor platformEditor, string placeholder)
 		{
-			nativeEditor.Placeholder = placeholder;
+			platformEditor.Placeholder = placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this Editor nativeEditor, ITextInput editor)
+		public static void UpdatePlaceholderColor(this Editor platformEditor, ITextInput editor)
 		{
-			nativeEditor.PlaceholderColor = editor.PlaceholderColor.ToNative();
+			platformEditor.PlaceholderColor = editor.PlaceholderColor.ToPlatform();
 		}
 
-		public static void UpdatePlaceholderColor(this Editor nativeEditor, GColor color)
+		public static void UpdatePlaceholderColor(this Editor platformEditor, GColor color)
 		{
-			nativeEditor.PlaceholderColor = color.ToNative();
+			platformEditor.PlaceholderColor = color.ToPlatform();
 		}
 
-		public static void UpdateIsReadOnly(this Editor nativeEditor, ITextInput editor)
+		public static void UpdateIsReadOnly(this Editor platformEditor, ITextInput editor)
 		{
-			nativeEditor.IsReadOnly = editor.IsReadOnly;
+			platformEditor.IsReadOnly = editor.IsReadOnly;
 		}
 
-		public static void UpdateIsTextPredictionEnabled(this Editor nativeEditor, ITextInput editor)
+		public static void UpdateIsTextPredictionEnabled(this Editor platformEditor, ITextInput editor)
 		{
-			nativeEditor.IsTextPredictionEnabled = editor.IsTextPredictionEnabled;
+			platformEditor.IsTextPredictionEnabled = editor.IsTextPredictionEnabled;
 		}
 
-		public static void UpdateMaxLength(this Editor nativeEditor, ITextInput editor) =>
-			nativeEditor.MaxLength = editor.MaxLength;
+		public static void UpdateMaxLength(this Editor platformEditor, ITextInput editor) =>
+			platformEditor.MaxLength = editor.MaxLength;
 
-		public static void UpdateKeyboard(this Editor nativeEditor, ITextInput editor)
+		public static void UpdateCursorPosition(this Editor platformEditor, ITextInput entry)
 		{
-			nativeEditor.Keyboard = editor.Keyboard.ToNative();
+			platformEditor.PrimaryCursorPosition = entry.CursorPosition;
+		}
+
+		public static void UpdateSelectionLength(this Editor platformEditor, ITextInput entry)
+		{
+			if (entry.SelectionLength == 0)
+			{
+				platformEditor.SelectNone();
+			}
+			else
+			{
+				platformEditor.SelectText(entry.CursorPosition, entry.CursorPosition + entry.SelectionLength);
+			}
+		}
+
+		public static void UpdateKeyboard(this Editor platformEditor, ITextInput editor)
+		{
+			platformEditor.Keyboard = editor.Keyboard.ToPlatform();
 		}
 	}
 }

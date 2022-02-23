@@ -60,13 +60,13 @@ namespace Microsoft.Maui.Handlers
 				return VirtualView == null || double.IsNaN(VirtualView.Width) || double.IsNaN(VirtualView.Height) ? Size.Zero : new Size(VirtualView.Width, VirtualView.Height);
 			}
 
-			int availableWidth = widthConstraint.ToScaledPixel();
-			int availableHeight = heightConstraint.ToScaledPixel();
+			double availableWidth = widthConstraint.ToScaledPixel();
+			double availableHeight = heightConstraint.ToScaledPixel();
 
 			if (availableWidth < 0)
-				availableWidth = int.MaxValue;
+				availableWidth = double.PositiveInfinity;
 			if (availableHeight < 0)
-				availableHeight = int.MaxValue;
+				availableHeight = double.PositiveInfinity;
 
 			var explicitWidth = VirtualView.Width;
 			var explicitHeight = VirtualView.Height;

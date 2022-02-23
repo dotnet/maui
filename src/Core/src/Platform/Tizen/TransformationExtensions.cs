@@ -9,33 +9,33 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateTransformation(this NView platformView, IView? view)
 		{
-			if (view == null || nativeView == null)
+			if (view == null || platformView == null)
 				return;
 
-			nativeView.UpdateTranslate(view);
-			nativeView.UpdateScale(view);
-			nativeView.UpdateRotation(view);
+			platformView.UpdateTranslate(view);
+			platformView.UpdateScale(view);
+			platformView.UpdateRotation(view);
 		}
 
-		public static void UpdateTranslate(this NView nativeView, IView view)
+		public static void UpdateTranslate(this NView platformView, IView view)
 		{
 			var frame = view.Frame;
 			frame.X += view.TranslationX;
 			frame.Y += view.TranslationY;
-			nativeView.UpdateBounds(frame.ToPixel());
+			platformView.UpdateBounds(frame.ToPixel());
 		}
 
-		public static void UpdateScale(this NView nativeView, IView view)
+		public static void UpdateScale(this NView platformView, IView view)
 		{
 			var scale = view.Scale;
 			var scaleX = view.ScaleX * scale;
 			var scaleY = view.ScaleY * scale;
 
-			nativeView.ScaleX = (float)scaleX;
-			nativeView.ScaleY = (float)scaleY;
+			platformView.ScaleX = (float)scaleX;
+			platformView.ScaleY = (float)scaleY;
 		}
 
-		public static void UpdateRotation(this NView nativeView, IView view)
+		public static void UpdateRotation(this NView platformView, IView view)
 		{
 			var rotationX = view.RotationX;
 			var rotationY = view.RotationY;
@@ -47,8 +47,8 @@ namespace Microsoft.Maui.Platform
 			var xRotation = new Rotation(new Radian(DegreeToRadian((float)rotationX)), PositionAxis.X);
 			var yRotation = new Rotation(new Radian(DegreeToRadian((float)rotationY)), PositionAxis.Y);
 			var totalRotation = zRotation * xRotation * yRotation;
-			nativeView.Orientation = totalRotation;
-			nativeView.PivotPoint = new Position((float)anchorX, (float)anchorY, 0);
+			platformView.Orientation = totalRotation;
+			platformView.PivotPoint = new Position((float)anchorX, (float)anchorY, 0);
 
 			float DegreeToRadian(float degree)
 			{

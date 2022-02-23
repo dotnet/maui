@@ -3,11 +3,11 @@ using ContentViewGroup = Microsoft.Maui.Platform.ContentViewGroup;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorder, ContentViewGroup>
+	public partial class BorderHandler : ViewHandler<IBorderView, ContentViewGroup>
 	{
 		IPlatformViewHandler? _contentHandler;
 
-		protected override ContentViewGroup CreateNativeView()
+		protected override ContentViewGroup CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 

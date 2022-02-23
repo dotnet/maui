@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 		IViewHandler? _handler;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 		protected View? View => Element as View;
-		protected NView? NativeView => _handler?.GetWrappedNativeView();
+		protected NView? NativeView => _handler?.ToPlatform();
 
 
 		public IGestureRecognizer Recognizer { get; private set; }

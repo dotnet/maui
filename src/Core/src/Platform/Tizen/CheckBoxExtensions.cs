@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 			// For the moment, we're only supporting solid color Paint
 			if (check.Foreground is SolidPaint solid)
 			{
-				platformCheck.Color = solid.Color.ToNative();
+				platformCheck.Color = solid.Color.ToPlatform();
 			}
 		}
 	}

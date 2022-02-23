@@ -12,16 +12,16 @@ namespace Microsoft.Maui.Handlers
 		};
 
 		[MissingMapper]
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker) { }
 
 		[MissingMapper]
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker) { }
 
 		[MissingMapper]
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker) { }
 
 		[MissingMapper]
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker) { }
 
 		[MissingMapper]
 		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker) { }

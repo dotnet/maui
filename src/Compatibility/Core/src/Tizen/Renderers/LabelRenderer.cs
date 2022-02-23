@@ -45,12 +45,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				var nativeSpan = new TSpan
 				{
 					Text = span.Text,
-					FontAttributes = span.FontAttributes.ToNative(),
+					FontAttributes = span.FontAttributes.ToPlatform(),
 					FontFamily = span.FontFamily,
 					FontSize = span.FontSize.ToPoint(),
-					ForegroundColor = span.TextColor.ToNative(),
-					BackgroundColor = span.BackgroundColor.ToNative(),
-					TextDecorations = span.TextDecorations.ToNative(),
+					ForegroundColor = span.TextColor.ToPlatform(),
+					BackgroundColor = span.BackgroundColor.ToPlatform(),
+					TextDecorations = span.TextDecorations.ToPlatform(),
 					LineHeight = span.LineHeight,
 				};
 				nativeString.Spans.Add(nativeSpan);
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateTextDecorations()
 		{
-			Control.TextDecorations = Element.TextDecorations.ToNative();
+			Control.TextDecorations = Element.TextDecorations.ToPlatform();
 		}
 
 		void UpdateFormattedText()
@@ -78,31 +78,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		void UpdateTextColor()
 		{
 			if (Element.TextColor.IsDefault())
-				Control.TextColor = Colors.Black.ToNative();
+				Control.TextColor = Colors.Black.ToPlatform();
 			else
-				Control.TextColor = Element.TextColor.ToNative();
+				Control.TextColor = Element.TextColor.ToPlatform();
 		}
 
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
 		}
 
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToNative();
+			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToPlatform();
 		}
 
 		void UpdateFontProperties()
 		{
 			Control.FontSize = Element.FontSize.ToPoint();
-			Control.FontAttributes = Element.FontAttributes.ToNative();
+			Control.FontAttributes = Element.FontAttributes.ToPlatform();
 			Control.FontFamily = Element.FontFamily;
 		}
 
 		void UpdateLineBreakMode()
 		{
-			Control.LineBreakMode = Element.LineBreakMode.ToNative();
+			Control.LineBreakMode = Element.LineBreakMode.ToPlatform();
 		}
 
 		void UpdateLineHeight()

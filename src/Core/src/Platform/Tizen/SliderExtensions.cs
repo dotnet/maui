@@ -30,10 +30,10 @@ namespace Microsoft.Maui.Platform
 			if (slider.MinimumTrackColor == null)
 			{
 				if (defaultMinTrackColor != null)
-					platformSlider.MinimumTrackColor = defaultMinTrackColor.ToNative();
+					platformSlider.MinimumTrackColor = defaultMinTrackColor.ToPlatform();
 			}
 			else
-				platformSlider.MinimumTrackColor = slider.MinimumTrackColor.ToNative();
+				platformSlider.MinimumTrackColor = slider.MinimumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider)
@@ -46,11 +46,11 @@ namespace Microsoft.Maui.Platform
 			if (slider.MaximumTrackColor == null)
 			{
 				if (defaultMaxTrackColor != null)
-					platformSlider.MaximumTrackColor = defaultMaxTrackColor.ToNative();
+					platformSlider.MaximumTrackColor = defaultMaxTrackColor.ToPlatform();
 			}
 			else
 			{
-				platformSlider.MaximumTrackColor = slider.MaximumTrackColor.ToNative();
+				platformSlider.MaximumTrackColor = slider.MaximumTrackColor.ToPlatform();
 			}
 		}
 
@@ -64,11 +64,11 @@ namespace Microsoft.Maui.Platform
 			if (slider.ThumbColor == null)
 			{
 				if (defaultThumbColor != null)
-					platformSlider.ThumbColor = defaultThumbColor.ToNative();
+					platformSlider.ThumbColor = defaultThumbColor.ToPlatform();
 			}
 			else
 			{
-				platformSlider.ThumbColor = slider.ThumbColor.ToNative();
+				platformSlider.ThumbColor = slider.ThumbColor.ToPlatform();
 			}
 		}
 	}

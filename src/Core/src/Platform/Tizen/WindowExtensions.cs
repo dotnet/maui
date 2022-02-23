@@ -12,30 +12,30 @@ namespace Microsoft.Maui
 		static Dictionary<Window, Func<bool>> s_windowBackButtonPressedHandler = new Dictionary<Window, Func<bool>>();
 		static Dictionary<Window, Action> s_windowCloseRequestHandler = new Dictionary<Window, Action>();
 
-		public static void SetContent(this Window nativeWindow, View content)
+		public static void SetContent(this Window platformWindow, View content)
 		{
 			content.HeightSpecification = LayoutParamPolicies.MatchParent;
 			content.WidthSpecification = LayoutParamPolicies.MatchParent;
 			content.HeightResizePolicy = ResizePolicyType.FillToParent;
 			content.WidthResizePolicy = ResizePolicyType.FillToParent;
 
-			if (s_modalStacks.ContainsKey(nativeWindow))
+			if (s_modalStacks.ContainsKey(platformWindow))
 			{
-				var modalStack = s_modalStacks[nativeWindow];
+				var modalStack = s_modalStacks[platformWindow];
 				modalStack.Clear();
 				modalStack.Push(content, true);
 			}
 		}
 
-		public static void Initialize(this Window nativeWindow)
+		public static void Initialize(this Window platformWindow)
 		{
-			nativeWindow.AddAvailableOrientation(Window.WindowOrientation.Landscape);
-			nativeWindow.AddAvailableOrientation(Window.WindowOrientation.LandscapeInverse);
-			nativeWindow.AddAvailableOrientation(Window.WindowOrientation.Portrait);
-			nativeWindow.AddAvailableOrientation(Window.WindowOrientation.PortraitInverse);
-			nativeWindow.Resized += (s, e) => OnRotate(nativeWindow);
+			platformWindow.AddAvailableOrientation(Window.WindowOrientation.Landscape);
+			platformWindow.AddAvailableOrientation(Window.WindowOrientation.LandscapeInverse);
+			platformWindow.AddAvailableOrientation(Window.WindowOrientation.Portrait);
+			platformWindow.AddAvailableOrientation(Window.WindowOrientation.PortraitInverse);
+			platformWindow.Resized += (s, e) => OnRotate(platformWindow);
 
-			nativeWindow.KeyEvent += (s, e) =>
+			platformWindow.KeyEvent += (s, e) =>
 			{
 				if (e.Key.State == Key.StateType.Down && (e.Key.KeyPressedName == "XF86Back" || e.Key.KeyPressedName == "Escape"))
 				{
@@ -44,11 +44,11 @@ namespace Microsoft.Maui
 						Popup.CloseLast();
 						return;
 					}
-					OnBackButtonPressed(nativeWindow);
+					OnBackButtonPressed(platformWindow);
 				}
 			};
 
-			var modalStack = s_modalStacks[nativeWindow] = new NavigationStack
+			var modalStack = s_modalStacks[platformWindow] = new NavigationStack
 			{
 				HeightSpecification = LayoutParamPolicies.MatchParent,
 				WidthSpecification = LayoutParamPolicies.MatchParent,
@@ -57,40 +57,40 @@ namespace Microsoft.Maui
 				PushAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)p,
 				PopAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)(1 - p)
 			};
-			nativeWindow.GetDefaultLayer().Add(modalStack);
+			platformWindow.GetDefaultLayer().Add(modalStack);
 		}
 
-		public static NavigationStack? GetModalStack(this Window window)
+		public static NavigationStack? GetModalStack(this Window platformWindow)
 		{
-			if (s_modalStacks.ContainsKey(window))
-				return s_modalStacks[window];
+			if (s_modalStacks.ContainsKey(platformWindow))
+				return s_modalStacks[platformWindow];
 			return null;
 		}
 
-		public static void SetWindowCloseRequestHandler(this Window window, Action handler)
+		public static void SetWindowCloseRequestHandler(this Window platformWindow, Action handler)
 		{
-			s_windowCloseRequestHandler[window] = handler;
+			s_windowCloseRequestHandler[platformWindow] = handler;
 		}
 
-		public static void SetBackButtonPressedHandler(this Window window, Func<bool> handler)
+		public static void SetBackButtonPressedHandler(this Window platformWindow, Func<bool> handler)
 		{
-			s_windowBackButtonPressedHandler[window] = handler;
+			s_windowBackButtonPressedHandler[platformWindow] = handler;
 		}
 
-		static void OnRotate(Window window)
+		static void OnRotate(Window platformWindow)
 		{
 		}
 
-		static void OnBackButtonPressed(Window window)
+		static void OnBackButtonPressed(Window platformWindow)
 		{
-			if (s_windowBackButtonPressedHandler.ContainsKey(window))
+			if (s_windowBackButtonPressedHandler.ContainsKey(platformWindow))
 			{
-				if (s_windowBackButtonPressedHandler[window].Invoke())
+				if (s_windowBackButtonPressedHandler[platformWindow].Invoke())
 					return;
 			}
 
-			if (s_windowCloseRequestHandler.ContainsKey(window))
-				s_windowCloseRequestHandler[window].Invoke();
+			if (s_windowCloseRequestHandler.ContainsKey(platformWindow))
+				s_windowCloseRequestHandler[platformWindow].Invoke();
 		}
 
 	}

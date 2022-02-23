@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Platform
 			UpdateDrawableCanvas(false);
 		}
 
-		public void UpdateBorder(IBorder border)
+		public void UpdateBorder(IBorderStroke border)
 		{
 			_mauiDrawable.Border = border;
 			UpdateShape(border.Shape);

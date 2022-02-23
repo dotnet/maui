@@ -5,18 +5,18 @@
 		protected override MauiSearchBar CreatePlatformView() => new();
 
 
-		protected override void ConnectHandler(MauiSearchBar nativeView)
+		protected override void ConnectHandler(MauiSearchBar platformView)
 		{
-			nativeView.Entry.TextChanged += OnTextChanged;
-			nativeView.SearchButtonPressed += OnSearchButtonPressed;
-			base.ConnectHandler(nativeView);
+			platformView.Entry.TextChanged += OnTextChanged;
+			platformView.SearchButtonPressed += OnSearchButtonPressed;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiSearchBar nativeView)
+		protected override void DisconnectHandler(MauiSearchBar platformView)
 		{
-			nativeView.Entry.TextChanged -= OnTextChanged;
-			nativeView.SearchButtonPressed -= OnSearchButtonPressed;
-			base.DisconnectHandler(nativeView);
+			platformView.Entry.TextChanged -= OnTextChanged;
+			platformView.SearchButtonPressed -= OnSearchButtonPressed;
+			base.DisconnectHandler(platformView);
 		}
 
 		// TODO: NET7 make this public
@@ -100,11 +100,9 @@
 			VirtualView.Text = PlatformView.Entry.Text;
 		}
 
-
 		void OnSearchButtonPressed(object? sender, System.EventArgs e)
 		{
 			VirtualView?.SearchButtonPressed();
 		}
-
 	}
 }

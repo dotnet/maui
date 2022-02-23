@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			View emptyView = (View)ItemTemplate.CreateContent();
 
-			if (emptyView.Handler is INativeViewHandler nativeHandler)
-				nativeHandler.Dispose();
+			if (emptyView.Handler is IPlatformViewHandler platformHandler)
+				platformHandler.Dispose();
 
 			emptyView.Handler = null;
 			if (emptyView != (Element as ItemsView)?.EmptyView)
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			layout.Parent = Element;
 			_createdEmptyView = layout;
 
-			return layout.ToNative(MauiContext, true);
+			return layout.ToPlatform(MauiContext);
 		}
 
 		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)

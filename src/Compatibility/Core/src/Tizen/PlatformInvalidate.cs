@@ -9,12 +9,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public void Invalidate(VisualElement visualElement)
 		{
 			var renderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform.GetRenderer(visualElement);
-			if (renderer == null || !renderer.NativeView.IsRealized)
+			if (renderer == null || renderer.NativeView == null)
 			{
 				return;
 			}
 
-			renderer.NativeView.MarkChanged();
+			renderer.NativeView.Layout?.RequestLayout();
 		}
 	}
 }

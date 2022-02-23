@@ -1,6 +1,4 @@
-using System;
 using Microsoft.Maui.Graphics;
-using Tizen.UIExtensions.Common;
 
 namespace Microsoft.Maui
 {

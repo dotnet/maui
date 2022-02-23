@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			wrapperView.UpdateMauiDrawable(border);
 		}
 
-		internal static void UpdateMauiDrawable(this WrapperView wrapperView, IBorder border)
+		internal static void UpdateMauiDrawable(this WrapperView wrapperView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 			if (!hasBorder)

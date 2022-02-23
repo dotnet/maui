@@ -1,7 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
 using TLog = Tizen.UIExtensions.Common.Log;
 using TColor = Tizen.UIExtensions.Common.Color;
-using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Platform
 {

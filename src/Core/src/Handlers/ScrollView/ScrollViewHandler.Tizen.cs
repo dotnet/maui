@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollView>
 	{
 
-		INativeViewHandler? _contentHandler;
+		IPlatformViewHandler? _contentHandler;
 
 		protected override ScrollView CreatePlatformView() => new();
 
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ScrollView platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			platformView.Scrolling -= OnScrolled;
 			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
 			platformView.Relayout -= OnRelayout;
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void UpdateContent(INativeViewHandler? content)
+		void UpdateContent(IPlatformViewHandler? content)
 		{
 			if (_contentHandler != null)
 			{
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (_contentHandler != null)
 			{
-				NativeView.ContentContainer.Add(_contentHandler.PlatformView);
+				PlatformView.ContentContainer.Add(_contentHandler.PlatformView);
 			} 
 			UpdateContentSize();
 		}
@@ -79,14 +79,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.MauiContext == null || scrollView.PresentedContent == null)
+			if (handler.MauiContext == null || scrollView.PresentedContent == null || handler is not ScrollViewHandler sHandler)
 			{
 				return;
 			}
 			scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 			if (scrollView.PresentedContent.Handler is IPlatformViewHandler thandler)
 			{
-				handler.UpdateContent(thandler);
+				sHandler.UpdateContent(thandler);
 			}
 		}
 

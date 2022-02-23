@@ -24,32 +24,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateItemsSource();
+			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateItemsSource();
 		}
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateHorizontalScrollBarVisibility();
+			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateHorizontalScrollBarVisibility();
 		}
 
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateVerticalScrollBarVisibility();
+			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateVerticalScrollBarVisibility();
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateAdaptor();
+			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateAdaptor();
 		}
 
 		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateAdaptor();
+			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateAdaptor();
 		}
 
 		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.NativeView as MauiCollectionView<TItemsView>).UpdateAdaptor();
+			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateAdaptor();
 		}
 
 		[MissingMapper]
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateVisibility(itemsView);
+			handler.PlatformView.UpdateVisibility(itemsView);
 		}
 
 		[MissingMapper]

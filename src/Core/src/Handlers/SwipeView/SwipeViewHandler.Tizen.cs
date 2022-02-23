@@ -1,12 +1,12 @@
 using System;
-using ElmSharp;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeViewHandler : ViewHandler<ISwipeView, EvasObject>
+	public partial class SwipeViewHandler : ViewHandler<ISwipeView, NView>
 	{
 		// TODO : Need to implement
-		protected override EvasObject CreatePlatformView()
+		protected override NView CreatePlatformView()
 		{
 			throw new NotImplementedException();
 		}

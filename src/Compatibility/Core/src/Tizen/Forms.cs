@@ -231,28 +231,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (options?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers(options);
 
-			string profile = TDeviceInfo.Profile;
-			if (profile == "mobile")
-			{
-				Device.SetIdiom(TargetIdiom.Phone);
-			}
-			else if (profile == "tv")
-			{
-				Device.SetIdiom(TargetIdiom.TV);
-			}
-			else if (profile == "desktop")
-			{
-				Device.SetIdiom(TargetIdiom.Desktop);
-			}
-			else if (profile == "wearable")
-			{
-				Device.SetIdiom(TargetIdiom.Watch);
-			}
-			else
-			{
-				Device.SetIdiom(TargetIdiom.Unsupported);
-			}
-
 			if (options != null)
 			{
 				PlatformType = options.PlatformType;

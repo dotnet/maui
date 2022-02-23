@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			VirtualView.DragStarted();
-			VirtualView.Value = NativeView.Value;
+			VirtualView.Value = PlatformView.Value;
 			VirtualView.DragCompleted();
 		}
 	}

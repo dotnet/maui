@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(CheckBox platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			platformView.ValueChanged -= OnStateChanged;
 		}
 

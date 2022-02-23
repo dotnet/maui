@@ -54,22 +54,22 @@ namespace Microsoft.Maui.Platform
 			platformEntry.Placeholder = entry.Placeholder ?? string.Empty;
 		}
 
-		public static void UpdatePlaceholder(this Entry nativeEntry, string placeholder)
+		public static void UpdatePlaceholder(this Entry platformEntry, string placeholder)
 		{
-			nativeEntry.Placeholder = placeholder;
+			platformEntry.Placeholder = placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this Entry nativeEntry, ITextInput entry)
+		public static void UpdatePlaceholderColor(this Entry platformEntry, ITextInput entry)
 		{
 			platformEntry.PlaceholderColor = entry.PlaceholderColor.ToPlatform();
 		}
 
-		public static void UpdatePlaceholderColor(this Entry nativeEntry, GColor color)
+		public static void UpdatePlaceholderColor(this Entry platformEntry, GColor color)
 		{
-			nativeEntry.PlaceholderColor = color.ToNative();
+			platformEntry.PlaceholderColor = color.ToPlatform();
 		}
 
-		public static void UpdateIsReadOnly(this Entry nativeEntry, ITextInput entry)
+		public static void UpdateIsReadOnly(this Entry platformEntry, ITextInput entry)
 		{
 			platformEntry.IsReadOnly = entry.IsReadOnly;
 		}
@@ -79,28 +79,28 @@ namespace Microsoft.Maui.Platform
 			platformEntry.IsTextPredictionEnabled = entry.IsTextPredictionEnabled;
 		}
 
-		public static void UpdateMaxLength(this Entry nativeEntry, ITextInput entry) =>
-			nativeEntry.MaxLength = entry.MaxLength;
+		public static void UpdateMaxLength(this Entry platformEntry, ITextInput entry) =>
+			platformEntry.MaxLength = entry.MaxLength;
 
-		public static void UpdateKeyboard(this Entry nativeEntry, ITextInput entry)
+		public static void UpdateKeyboard(this Entry platformEntry, ITextInput entry)
 		{
-			nativeEntry.Keyboard = entry.Keyboard.ToNative();
+			platformEntry.Keyboard = entry.Keyboard.ToPlatform();
 		}
 
-		public static void UpdateCursorPosition(this Entry nativeEntry, IEntry entry)
+		public static void UpdateCursorPosition(this Entry platformEntry, IEntry entry)
 		{
-			nativeEntry.PrimaryCursorPosition = entry.CursorPosition;
+			platformEntry.PrimaryCursorPosition = entry.CursorPosition;
 		}
 
-		public static void UpdateSelectionLength(this Entry nativeEntry, IEntry entry)
+		public static void UpdateSelectionLength(this Entry platformEntry, IEntry entry)
 		{
 			if (entry.SelectionLength == 0)
 			{
-				nativeEntry.SelectNone();
+				platformEntry.SelectNone();
 			}
 			else
 			{
-				nativeEntry.SelectText(entry.CursorPosition, entry.CursorPosition + entry.SelectionLength);
+				platformEntry.SelectText(entry.CursorPosition, entry.CursorPosition + entry.SelectionLength);
 			}
 		}
 

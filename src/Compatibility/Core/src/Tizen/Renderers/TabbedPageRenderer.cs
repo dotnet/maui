@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TabbedPage> e)
 		{
-			if (NativeView == null)
+			if (NativeView == null && e.NewElement != null)
 			{
 				SetNativeView(new NView
 				{
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					Color = GColors.Transparent,
 				};
 
-				var grid = new GridLayout
+				var grid = new Grid
 				{
 					RowDefinitions =
 					{
@@ -179,8 +179,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 						}
 					}
 				};
-				grid.Add(label, 0, 0);
-				grid.Add(_bar, 0, 1);
+				grid.Children.Add(label, 0, 0);
+				grid.Children.Add(_bar, 0, 1);
 				Content = grid;
 
 				var groups = new VisualStateGroupList();

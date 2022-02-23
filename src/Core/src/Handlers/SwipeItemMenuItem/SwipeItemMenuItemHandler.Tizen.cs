@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ElmSharp;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Handlers
 {
 	//TODO : Need to implement
-	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, EvasObject>
+	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, NView>
 	{
-		protected override EvasObject CreatePlatformElement()
+		protected override NView CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
-		void OnSetImageSource(EvasObject? obj)
+		void OnSetImageSource(NView? obj)
 		{
 			throw new NotImplementedException();
 		}

@@ -40,24 +40,24 @@ namespace Microsoft.Maui.Handlers
 
 		protected override Entry CreatePlatformView() => new MauiEntry();
 
-		protected override void ConnectHandler(Entry nativeView)
+		protected override void ConnectHandler(Entry platformView)
 		{
-			nativeView.KeyEvent += OnKeyEvent;
-			nativeView.CursorPositionChanged += OnCursorPositionChanged;
-			nativeView.SelectionChanged += OnSelectionChanged;
-			nativeView.SelectionCleared += OnSelectionCleared;
-			nativeView.TextChanged += OnTextChanged;
-			base.ConnectHandler(nativeView);
+			platformView.KeyEvent += OnKeyEvent;
+			platformView.CursorPositionChanged += OnCursorPositionChanged;
+			platformView.SelectionChanged += OnSelectionChanged;
+			platformView.SelectionCleared += OnSelectionCleared;
+			platformView.TextChanged += OnTextChanged;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Entry nativeView)
+		protected override void DisconnectHandler(Entry platformView)
 		{
-			nativeView.KeyEvent -= OnKeyEvent;
-			nativeView.CursorPositionChanged -= OnCursorPositionChanged;
-			nativeView.SelectionChanged -= OnSelectionChanged;
-			nativeView.SelectionCleared -= OnSelectionCleared;
-			nativeView.TextChanged -= OnTextChanged;
-			base.DisconnectHandler(nativeView);
+			platformView.KeyEvent -= OnKeyEvent;
+			platformView.CursorPositionChanged -= OnCursorPositionChanged;
+			platformView.SelectionChanged -= OnSelectionChanged;
+			platformView.SelectionCleared -= OnSelectionCleared;
+			platformView.TextChanged -= OnTextChanged;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry)
@@ -66,56 +66,56 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform()?.UpdateBackground(entry);
 		}
 
-		public static void MapText(EntryHandler handler, IEntry entry) =>
+		public static void MapText(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateText(entry);
 
-		public static void MapTextColor(EntryHandler handler, IEntry entry) =>
+		public static void MapTextColor(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateTextColor(entry);
 
-		public static void MapIsPassword(EntryHandler handler, IEntry entry) =>
+		public static void MapIsPassword(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsPassword(entry);
 
-		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry) =>
+		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
 
-		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry) =>
+		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry) =>
 			handler?.PlatformView?.UpdateVerticalTextAlignment(entry);
 
-		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) =>
+		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(entry);
 
-		public static void MapMaxLength(EntryHandler handler, IEntry entry) =>
+		public static void MapMaxLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateMaxLength(entry);
 
-		public static void MapPlaceholder(EntryHandler handler, IEntry entry) =>
+		public static void MapPlaceholder(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdatePlaceholder(entry);
 
-		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry) =>
+		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdatePlaceholderColor(entry);
 
-		public static void MapFont(EntryHandler handler, IEntry entry) =>
+		public static void MapFont(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateFont(entry, handler.GetRequiredService<IFontManager>());
 
-		public static void MapIsReadOnly(EntryHandler handler, IEntry entry) =>
+		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsReadOnly(entry);
 
-		public static void MapKeyboard(EntryHandler handler, IEntry entry) =>
+		public static void MapKeyboard(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateKeyboard(entry);
 
-		public static void MapReturnType(EntryHandler handler, IEntry entry) =>
+		public static void MapReturnType(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateReturnType(entry);
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry) { }
+		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) { }
 
-		public static void MapCursorPosition(EntryHandler handler, IEntry entry) =>
+		public static void MapCursorPosition(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateCursorPosition(entry);
 
-		public static void MapSelectionLength(EntryHandler handler, IEntry entry) =>
+		public static void MapSelectionLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateSelectionLength(entry);
 
 		[MissingMapper]
-		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry) { }
+		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) { }
 
 		bool OnKeyEvent(object? source, NView.KeyEventArgs e)
 		{
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCursorPositionChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
 			VirtualView.CursorPosition = PlatformView.PrimaryCursorPosition;

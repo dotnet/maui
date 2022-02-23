@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override Stepper CreatePlatformView() => new Stepper();
 
-		protected override void ConnectHandler(Stepper nativeView)
+		protected override void ConnectHandler(Stepper platformView)
 		{
 			platformView!.ValueChanged += OnValueChanged;
 		}

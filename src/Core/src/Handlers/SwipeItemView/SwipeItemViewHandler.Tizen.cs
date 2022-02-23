@@ -3,15 +3,13 @@ using PlatformView = Microsoft.Maui.Platform.ContentCanvas;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentCanvas>, ISwipeItemViewHandler
+	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, LayoutViewGroup>
 	{
 		IPlatformViewHandler? _contentHandler;
 
-		protected override ContentCanvas CreatePlatformView()
+		protected override LayoutViewGroup CreatePlatformView()
 		{
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
-
-			var view = new ContentCanvas(PlatformParent, VirtualView)
+			var view = new LayoutViewGroup(VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
@@ -47,7 +45,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Children.Add(view.ToPlatform(MauiContext));
 				if (view.Handler is IPlatformViewHandler thandler)
 				{
-					thandler?.SetParent(this);
 					_contentHandler = thandler;
 				}
 			}

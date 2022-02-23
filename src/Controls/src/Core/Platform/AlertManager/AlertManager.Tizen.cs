@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 			try
 			{
 				// placeholder should not be empty string, if not layout is broken
-				var popup = new PromptPopup(args.Title, args.Message, args.Accept, args.Cancel, args.Placeholder ?? " ", args.MaxLength, args.Keyboard.ToNative(), args.InitialValue);
+				var popup = new PromptPopup(args.Title, args.Message, args.Accept, args.Cancel, args.Placeholder ?? " ", args.MaxLength, args.Keyboard.ToPlatform(), args.InitialValue);
 				args.SetResult(await popup.Open());
 			}
 			catch (TaskCanceledException)

@@ -10,67 +10,67 @@ namespace Microsoft.Maui.Handlers
 			IsReadOnly = true
 		};
 
-		protected override void ConnectHandler(NEntry nativeView)
+		protected override void ConnectHandler(NEntry platformView)
 		{
-			nativeView.TouchEvent += OnTouch;
-			base.ConnectHandler(nativeView);
+			platformView.TouchEvent += OnTouch;
+			base.ConnectHandler(platformView);
 		}
 		protected override void DisconnectHandler(NEntry platformView)
 		{
 			platformView.TouchEvent -= OnTouch;
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		// Uncomment me on NET7 [Obsolete]
-		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => handler.Reload();
+		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
 
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView.UpdateTitleColor(picker);
+			handler.PlatformView.UpdateTitleColor(picker);
 		}
 
 		public static void MapFont(IPickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView.UpdateFont(picker, fontManager);
+			handler.PlatformView.UpdateFont(picker, fontManager);
 		}
 
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView.UpdateHorizontalTextAlignment(picker);
+			handler.PlatformView.UpdateHorizontalTextAlignment(picker);
 		}
 
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView.UpdateVerticalTextAlignment(picker);
+			handler.PlatformView.UpdateVerticalTextAlignment(picker);
 		}
 
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView.UpdateTextColor(picker);
+			handler.PlatformView.UpdateTextColor(picker);
 		}
 
 		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView.UpdateTitle(picker);
+			handler.PlatformView.UpdateTitle(picker);
 		}
 
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView.UpdateSelectedIndex(picker);
+			handler.PlatformView.UpdateSelectedIndex(picker);
 		}
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker) { }
+		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker) { }
 
-		void Reload()
+		static void Reload(IPickerHandler handler)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (handler.VirtualView == null || handler.PlatformView == null)
 				return;
 
-			NativeView.UpdatePicker(VirtualView);
+			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 
 		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)

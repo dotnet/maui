@@ -17,22 +17,6 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 		}
 
-		public override void SetVirtualView(IView view)
-		{
-			base.SetVirtualView(view);
-			PlatformView?.SetElement((Shell)view, MauiContext);
-		}
-
-		protected override ShellView CreatePlatformView()
-		{
-			if (DeviceInfo.DeviceType == DeviceType.TV)
-			{
-				return new TVShellView(PlatformParent);
-			}
-			else
-			{
-				return new ShellView(PlatformParent);
-			}
-		}
+		protected override NView CreatePlatformView() => new();
 	}
 }

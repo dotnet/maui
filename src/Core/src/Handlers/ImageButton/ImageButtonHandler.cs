@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 		IImage IImageHandler.VirtualView => VirtualView;
 
 		PlatformImageView IImageHandler.PlatformView =>
-#if __IOS__ || TIZEN
+#if __IOS__
 			PlatformView.ImageView;
 #elif WINDOWS
 			PlatformView.GetContent<PlatformImageView>() ?? throw new InvalidOperationException("ImageButton did not contain an Image element.");
