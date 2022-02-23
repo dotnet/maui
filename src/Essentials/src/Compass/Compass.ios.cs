@@ -12,17 +12,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public bool ShouldDisplayHeadingCalibration { get; set; } = false;
 
-		public bool IsSupported =>
+		bool PlatformIsSupported =>
 			CLLocationManager.HeadingAvailable;
-
-		public bool IsMonitoring { get; set; }
 
 		CLLocationManager locationManager;
 
-		public void Start(SensorSpeed sensorSpeed)
-			=> Start(sensorSpeed, false);
-
-		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			locationManager = new CLLocationManager();
 			locationManager.ShouldDisplayHeadingCalibration += LocationManagerShouldDisplayHeadingCalibration;
@@ -55,10 +50,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 		void LocationManagerUpdatedHeading(object sender, CLHeadingUpdatedEventArgs e)
 		{
 			var data = new CompassData(e.NewHeading.MagneticHeading);
-			Compass.OnChanged(data);
+			RaiseReadingChanged(data);
 		}
 
-		public void Stop()
+		void PlatformStop()
 		{
 			if (locationManager == null)
 				return;

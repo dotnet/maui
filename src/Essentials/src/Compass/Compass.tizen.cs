@@ -5,33 +5,33 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class CompassImplementation : ICompass
 	{
-		public TizenCompass DefaultSensor =>
+		static TizenCompass DefaultSensor =>
 			(TizenCompass)Platform.GetDefaultSensor(SensorType.Compass);
 
-		public bool IsSupported =>
+		bool PlatformIsSupported =>
 			TizenCompass.IsSupported;
 
-		public bool IsMonitoring { get; set; }
+		TizenCompass sensor;
 
-		public void Start(SensorSpeed sensorSpeed)
-			=> Start(sensorSpeed, false);
-
-		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
-			DefaultSensor.Interval = sensorSpeed.ToPlatform();
-			DefaultSensor.DataUpdated += DataUpdated;
-			DefaultSensor.Start();
+			sensor = DefaultSensor;
+
+			sensor.Interval = sensorSpeed.ToPlatform();
+			sensor.DataUpdated += DataUpdated;
+			sensor.Start();
 		}
 
-		public void Stop()
+		void PlatformStop()
 		{
-			DefaultSensor.DataUpdated -= DataUpdated;
-			DefaultSensor.Stop();
+			sensor.DataUpdated -= DataUpdated;
+			sensor.Stop();
+			sensor = null;
 		}
 
 		void DataUpdated(object sender, OrientationSensorDataUpdatedEventArgs e)
 		{
-			Compass.OnChanged(new CompassData(e.Azimuth));
+			RaiseReadingChanged(new CompassData(e.Azimuth));
 		}
 	}
 }

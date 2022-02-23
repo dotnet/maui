@@ -12,20 +12,15 @@ namespace Microsoft.Maui.Essentials.Implementations
 		internal const uint NormalInterval = 33;
 
 		// keep around a reference so we can stop this same instance
-		static WindowsCompass sensor;
+		WindowsCompass sensor;
 
-		internal static WindowsCompass DefaultCompass =>
+		static WindowsCompass DefaultCompass =>
 			WindowsCompass.GetDefault();
 
-		public bool IsSupported =>
+		bool PlatformIsSupported =>
 			DefaultCompass != null;
 
-		public bool IsMonitoring { get; set; }
-
-		public void Start(SensorSpeed sensorSpeed)
-			=> Start(sensorSpeed, false);
-
-		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			sensor = DefaultCompass;
 
@@ -48,10 +43,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 		void CompassReportedInterval(object sender, CompassReadingChangedEventArgs e)
 		{
 			var data = new CompassData(e.Reading.HeadingMagneticNorth);
-			Compass.OnChanged(data);
+			RaiseReadingChanged(data);
 		}
 
-		public void Stop()
+		void PlatformStop()
 		{
 			sensor.ReadingChanged -= CompassReportedInterval;
 			sensor.ReportInterval = 0;

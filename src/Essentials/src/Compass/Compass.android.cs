@@ -6,30 +6,25 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class CompassImplementation : ICompass
 	{
-		public bool IsSupported =>
+		bool PlatformIsSupported =>
 			Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null &&
 			Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
 
-		public bool IsMonitoring { get; set; }
-		
 		SensorListener listener;
 		Sensor magnetometer;
 		Sensor accelerometer;
 
-		public void Start(SensorSpeed sensorSpeed)
-			=> Start(sensorSpeed, false);
-
-		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			var delay = sensorSpeed.ToPlatform();
 			accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
 			magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
-			listener = new SensorListener(accelerometer.Name, magnetometer.Name, delay, applyLowPassFilter);
+			listener = new SensorListener(accelerometer.Name, magnetometer.Name, delay, applyLowPassFilter, RaiseReadingChanged);
 			Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
 			Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
 		}
 
-		public void Stop()
+		void PlatformStop()
 		{
 			if (listener == null)
 				return;
@@ -55,11 +50,14 @@ namespace Microsoft.Maui.Essentials.Implementations
 		string accelerometer;
 		bool applyLowPassFilter;
 
-		internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay, bool applyLowPassFilter)
+		Action<CompassData> callback;
+
+		internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay, bool applyLowPassFilter, Action<CompassData> callback)
 		{
 			this.magnetometer = magnetometer;
 			this.accelerometer = accelerometer;
 			this.applyLowPassFilter = applyLowPassFilter;
+			this.callback = callback;
 		}
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, SensorStatus accuracy)
@@ -96,7 +94,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				var azimuthInDegress = (Java.Lang.Math.ToDegrees(azimuthInRadians) + 360.0) % 360.0;
 
 				var data = new CompassData(azimuthInDegress);
-				Compass.OnChanged(data);
+				callback?.Invoke(data);
 				lastMagnetometerSet = false;
 				lastAccelerometerSet = false;
 			}
