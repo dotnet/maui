@@ -20,7 +20,10 @@ namespace Microsoft.Maui.Essentials
 		void Stop();
 
 		event EventHandler<CompassChangedEventArgs> ReadingChanged;
+	}
 
+	public interface IPlatformCompass
+	{
 #if IOS || MACCATALYST
 		bool ShouldDisplayHeadingCalibration { get; set; }
 #endif
@@ -56,8 +59,17 @@ namespace Microsoft.Maui.Essentials
 #if IOS || MACCATALYST
 		public static bool ShouldDisplayHeadingCalibration
 		{
-			get => Current.ShouldDisplayHeadingCalibration;
-			set => Current.ShouldDisplayHeadingCalibration = value;
+			get
+			{
+				if (Current is IPlatformCompass c)
+					return c.ShouldDisplayHeadingCalibration;
+				return false;
+			}
+			set
+			{
+				if (Current is IPlatformCompass c)
+					c.ShouldDisplayHeadingCalibration = value;
+			}
 		}
 #endif
 
