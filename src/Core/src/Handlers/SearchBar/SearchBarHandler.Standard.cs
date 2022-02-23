@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
+		public object? QueryEditor => throw new NotImplementedException();
+
 		public static void MapText(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapPlaceholder(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapPlaceholderColor(IViewHandler handler, ISearchBar searchBar) { }
