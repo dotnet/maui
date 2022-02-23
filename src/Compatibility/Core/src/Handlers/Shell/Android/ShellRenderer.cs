@@ -45,17 +45,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IShellFlyoutContentRenderer IShellContext.CreateShellFlyoutContentRenderer()
 		{
-			return CreateShellFlyoutContentView();
+			return CreateShellFlyoutContentRenderer();
 		}
 
 		IShellItemRenderer IShellContext.CreateShellItemRenderer(ShellItem shellItem)
 		{
-			return CreateShellItemView(shellItem);
+			return CreateShellItemRenderer(shellItem);
 		}
 
 		IShellSectionRenderer IShellContext.CreateShellSectionRenderer(ShellSection shellSection)
 		{
-			return CreateShellSectionView(shellSection);
+			return CreateShellSectionRenderer(shellSection);
 		}
 
 		IShellToolbarTracker IShellContext.CreateTrackerForToolbar(AToolbar toolbar)
@@ -140,23 +140,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return new ShellContentFragment(this, page);
 		}
 
-		protected virtual IShellFlyoutContentRenderer CreateShellFlyoutContentView()
+		protected virtual IShellFlyoutContentRenderer CreateShellFlyoutContentRenderer()
 		{
 			return new ShellFlyoutTemplatedContentRenderer(this);
 			//return new ShellFlyoutContentView(this, AndroidContext);
 		}
 
-		protected virtual IShellFlyoutRenderer CreateShellFlyoutView()
+		protected virtual IShellFlyoutRenderer CreateShellFlyoutRenderer()
 		{
 			return new ShellFlyoutRenderer(this, AndroidContext);
 		}
 
-		protected virtual IShellItemRenderer CreateShellItemView(ShellItem shellItem)
+		protected virtual IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
 		{
 			return new ShellItemRenderer(this);
 		}
 
-		protected virtual IShellSectionRenderer CreateShellSectionView(ShellSection shellSection)
+		protected virtual IShellSectionRenderer CreateShellSectionRenderer(ShellSection shellSection)
 		{
 			return new ShellSectionRenderer(this);
 		}
@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Profile.FrameBegin();
 
 			Profile.FramePartition("Flyout");
-			_flyoutView = CreateShellFlyoutView();
+			_flyoutView = CreateShellFlyoutRenderer();
 
 			Profile.FramePartition("Frame");
 			_frameLayout = new CustomFrameLayout(AndroidContext)
@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Profile.FramePartition("CreateShellItemView");
 			var previousView = _currentView;
-			_currentView = CreateShellItemView(newItem);
+			_currentView = CreateShellItemRenderer(newItem);
 			_currentView.ShellItem = newItem;
 			var fragment = _currentView.Fragment;
 
