@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		const long twoMinutes = 120000;
 		static readonly string[] ignoredProviders = new string[] { LocationManager.PassiveProvider, "local_database" };
 
-		public async Task<Location> LastKnownLocationAsync()
+		public async Task<Location> GetLastKnownLocationAsync()
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
@@ -35,13 +35,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return bestLocation?.ToLocation();
 		}
 
-		public async Task<Location> LocationAsync()
-			=> await LocationAsync(new GeolocationRequest(), default);
-
-		public async Task<Location> LocationAsync(GeolocationRequest request)
-			=> await LocationAsync(request ?? new GeolocationRequest(), default);
-
-		public async Task<Location> LocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
@@ -59,7 +53,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			// if no providers exist, we can't get a location
 			// let's punt and try to get the last known location
 			if (string.IsNullOrEmpty(providerInfo.Provider))
-				return await LastKnownLocationAsync();
+				return await GetLastKnownLocationAsync();
 
 			var tcs = new TaskCompletionSource<AndroidLocation>();
 

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class GeolocationImplementation : IGeolocation
 	{
-		public async Task<Location> LastKnownLocationAsync()
+		public async Task<Location> GetLastKnownLocationAsync()
 		{
 			// no need for permissions as AllowFallbackToConsentlessPositions
 			// will allow the device to return a location regardless
@@ -23,13 +23,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return location?.Coordinate?.ToLocation();
 		}
 
-		public async Task<Location> LocationAsync()
-			=> await LocationAsync(new GeolocationRequest(), default);
-
-		public async Task<Location> LocationAsync(GeolocationRequest request)
-			=> await LocationAsync(request ?? new GeolocationRequest(), default);
-
-		public async Task<Location> LocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 

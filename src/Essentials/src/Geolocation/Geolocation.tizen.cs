@@ -6,11 +6,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class GeolocationImplementation : IGeolocation
 	{
-		static Location lastKnownLocation = new Location();
+		Location lastKnownLocation = new Location();
 
-		static Task<Location> LastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
+		public Task<Location> GetLastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
 
-		static async Task<Location> LocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 

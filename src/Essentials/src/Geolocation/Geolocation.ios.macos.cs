@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class GeolocationImplementation : IGeolocation
 	{
-		public async Task<Location> LastKnownLocationAsync()
+		public async Task<Location> GetLastKnownLocationAsync()
 		{
 			if (!CLLocationManager.LocationServicesEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
@@ -22,13 +22,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return location?.ToLocation();
 		}
 
-		public async Task<Location> LocationAsync()
-			=> await LocationAsync(new GeolocationRequest(), default);
-
-		public async Task<Location> LocationAsync(GeolocationRequest request)
-			=> await LocationAsync(request ?? new GeolocationRequest(), default);
-
-		public async Task<Location> LocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			if (!CLLocationManager.LocationServicesEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
