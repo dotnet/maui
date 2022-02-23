@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Essentials
 
 		bool IsMonitoring { get; }
 
+		SensorSpeed SensorSpeed { get; }
+
 		void Start(SensorSpeed sensorSpeed);
 
 		void Stop();
@@ -34,6 +36,9 @@ namespace Microsoft.Maui.Essentials
 
 		public static bool IsSupported 
 			=> Current.IsSupported;
+
+		public static SensorSpeed SensorSpeed
+			=> Current.SensorSpeed;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
