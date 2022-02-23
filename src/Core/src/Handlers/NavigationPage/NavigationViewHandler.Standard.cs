@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class NavigationViewHandler :
-		ViewHandler<IStackNavigationView, object>
+	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, object>
 	{
 		protected override object CreatePlatformView()
 		{

@@ -1,16 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Maui.Handlers;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class NavigationViewHandler :
-		ViewHandler<IStackNavigationView, Frame>
+	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, Frame>
 	{
 		StackNavigationManager? _navigationManager;
 		protected override Frame CreatePlatformView()

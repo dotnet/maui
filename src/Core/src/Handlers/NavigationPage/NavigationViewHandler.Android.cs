@@ -2,12 +2,10 @@
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Fragment.App;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class NavigationViewHandler :
-		ViewHandler<IStackNavigationView, View>
+	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, View>
 	{
 		StackNavigationManager? _stackNavigationManager;
 		internal StackNavigationManager? StackNavigationManager => _stackNavigationManager;
