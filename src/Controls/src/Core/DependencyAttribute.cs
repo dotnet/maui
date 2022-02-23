@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,11 +8,13 @@ namespace Microsoft.Maui.Controls
 	public sealed class DependencyAttribute : Attribute
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyAttribute.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public DependencyAttribute(Type implementorType)
+		public DependencyAttribute(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type implementorType)
 		{
 			Implementor = implementorType;
 		}
 
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal Type Implementor { get; private set; }
 	}
 }

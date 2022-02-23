@@ -3,63 +3,61 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, UIPageControl>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, MauiPageControl>
 	{
-		MauiPageControl? UIPager => PlatformView as MauiPageControl;
+		protected override MauiPageControl CreatePlatformView() => new MauiPageControl();
 
-		protected override UIPageControl CreatePlatformView() => new MauiPageControl();
-
-		protected override void ConnectHandler(UIPageControl platformView)
+		protected override void ConnectHandler(MauiPageControl platformView)
 		{
 			base.ConnectHandler(platformView);
-			UIPager?.SetIndicatorView(VirtualView);
+			PlatformView?.SetIndicatorView(VirtualView);
 			UpdateIndicator();
 		}
 
-		protected override void DisconnectHandler(UIPageControl platformView)
+		protected override void DisconnectHandler(MauiPageControl platformView)
 		{
 			base.DisconnectHandler(platformView);
-			UIPager?.SetIndicatorView(null);
+			PlatformView?.SetIndicatorView(null);
 		}
 
-		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
+		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UIPager?.UpdateIndicatorCount();
+			handler.PlatformView?.UpdateIndicatorCount();
 		}
 
-		public static void MapPosition(IndicatorViewHandler handler, IIndicatorView indicator)
+		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UIPager?.UpdatePosition();
+			handler.PlatformView?.UpdatePosition();
 		}
 
-		public static void MapHideSingle(IndicatorViewHandler handler, IIndicatorView indicator)
+		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.PlatformView?.UpdateHideSingle(indicator);
 		}
 
-		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator)
+		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UIPager?.UpdateIndicatorCount();
+			handler.PlatformView?.UpdateIndicatorCount();
 		}
 
-		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator)
+		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UIPager?.UpdateIndicatorSize(indicator);
+			handler.PlatformView?.UpdateIndicatorSize(indicator);
 		}
 
-		public static void MapIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator)
+		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.PlatformView?.UpdatePagesIndicatorTintColor(indicator);
 		}
 
-		public static void MapSelectedIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator)
+		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.PlatformView?.UpdateCurrentPagesIndicatorTintColor(indicator);
 		}
 
-		public static void MapIndicatorShape(IndicatorViewHandler handler, IIndicatorView indicator)
+		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UIPager?.UpdateIndicatorShape(indicator);
+			handler.PlatformView?.UpdateIndicatorShape(indicator);
 		}
 
 		void UpdateIndicator()

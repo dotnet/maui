@@ -1,3 +1,5 @@
+using System.Data.Common;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -58,6 +60,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
 			[nameof(IView.Frame)] = MapFrame,
 			[nameof(IView.ZIndex)] = MapZIndex,
+			[nameof(IView.Focus)] = MapFocus,
+			[nameof(IView.Unfocus)] = MapUnfocus,
 		};
 
 		bool _hasContainer;
@@ -306,6 +310,24 @@ namespace Microsoft.Maui.Handlers
 			{
 				layout.Handler?.Invoke(nameof(ILayoutHandler.UpdateZIndex), view);
 			}
+		}
+
+		public static void MapFocus(IViewHandler handler, IView view, object? args)
+		{
+			if (args is FocusRequest request)
+			{
+				if (handler.PlatformView == null)
+				{
+					return;
+				}
+
+				((PlatformView?)handler.PlatformView)?.Focus(request);
+			}
+		}
+
+		public static void MapUnfocus(IViewHandler handler, IView view, object? args)
+		{
+			((PlatformView?)handler.PlatformView)?.Unfocus(view);
 		}
 	}
 }
