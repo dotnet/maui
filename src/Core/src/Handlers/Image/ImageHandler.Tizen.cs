@@ -33,10 +33,10 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>
-			handler.TypedPlatformView?.UpdateAspect(image);
+			handler.PlatformView?.UpdateAspect(image);
 
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
-			handler.TypedPlatformView?.UpdateIsAnimationPlaying(image);
+			handler.PlatformView?.UpdateIsAnimationPlaying(image);
 
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView == null)
 				return Task.CompletedTask;
 
-			handler.TypedPlatformView.Clear();
+			handler.PlatformView.Clear();
 			return handler.SourceLoader.UpdateImageSourceAsync();
 		}
 

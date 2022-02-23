@@ -13,8 +13,8 @@ using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
-using PlatformView = Tizen.UIExtensions.ElmSharp.Image;
 using PlatformImageView = Tizen.UIExtensions.ElmSharp.Image;
+using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformImageView = System.Object;

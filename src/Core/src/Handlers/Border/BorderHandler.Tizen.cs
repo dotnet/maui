@@ -41,9 +41,10 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
-		public static void MapContent(BorderHandler handler, IBorderView border)
+		public static void MapContent(IBorderHandler handler, IBorderView border)
 		{
-			handler.UpdateContent();
+			if (handler is BorderHandler borderHandler)
+				borderHandler.UpdateContent();
 		}
 
 		void UpdateContent()
