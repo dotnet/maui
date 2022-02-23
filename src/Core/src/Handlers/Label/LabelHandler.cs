@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ILabelHandler
 	{
-		public static IPropertyMapper<ILabel, ILabelHandler> LabelMapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
 #if WINDOWS || __IOS__
 			[nameof(ILabel.Background)] = MapBackground,
@@ -39,15 +39,15 @@ namespace Microsoft.Maui.Handlers
 		static LabelHandler()
 		{
 #if __IOS__
-			LabelMapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
+			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
 #endif
 		}
 
-		public LabelHandler() : base(LabelMapper)
+		public LabelHandler() : base(Mapper)
 		{
 		}
 
-		public LabelHandler(IPropertyMapper? mapper = null) : base(mapper ?? LabelMapper)
+		public LabelHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
 		}
 
