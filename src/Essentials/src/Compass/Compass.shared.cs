@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Essentials
 		public static bool IsSupported 
 			=> Current.IsSupported;
 
+		public static bool IsMonitoring
+			=> Current.IsMonitoring;
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][0]/Docs" />
 		public static void Start(SensorSpeed sensorSpeed) => Start(sensorSpeed, true);
 
