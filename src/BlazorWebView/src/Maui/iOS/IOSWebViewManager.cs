@@ -181,18 +181,41 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
+				var callbackArgs = new ExternalLinkNavigationEventArgs(new Uri(navigationAction.Request.Url.ToString()));
+
 				// TargetFrame is null for navigation to a new window (`_blank`)
 				if (navigationAction.TargetFrame is null)
 				{
-					// Open in a new browser window
-					UIApplication.SharedApplication.OpenUrl(navigationAction.Request.Url);
+					// Open in a new browser window regardless of ExternalLinkNavigationPolicy
+					callbackArgs.ExternalLinkNavigationPolicy = ExternalLinkNavigationPolicy.OpenInExternalBrowser;
+				}
+				else if (callbackArgs.Uri.Host == BlazorWebView.AppHostAddress)
+				{
+					callbackArgs.ExternalLinkNavigationPolicy = ExternalLinkNavigationPolicy.OpenInWebView;
+				}
+				else
+				{
+					_webView.ExternalNavigationStarting?.Invoke(callbackArgs);
+				}
+
+				var url = new NSUrl(callbackArgs.Uri.ToString());
+
+				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+				{
+					UIApplication.SharedApplication.OpenUrl(url);
+				}
+
+				if (callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.OpenInWebView)
+				{
+					// Cancel any further navigation as we've either opened the link in the external browser
+					// or canceled the underlying navigation action.
 					decisionHandler(WKNavigationActionPolicy.Cancel);
 					return;
 				}
 
-				if (navigationAction.TargetFrame.MainFrame)
+				if (navigationAction.TargetFrame!.MainFrame)
 				{
-					_currentUri = navigationAction.Request.Url;
+					_currentUri = url;
 				}
 
 				decisionHandler(WKNavigationActionPolicy.Allow);
