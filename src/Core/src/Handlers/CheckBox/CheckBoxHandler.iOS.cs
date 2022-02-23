@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected virtual float MinimumSize => 44f;
 
-		protected override MauiCheckBox CreateNativeView()
+		protected override MauiCheckBox CreatePlatformView()
 		{
 			return new MauiCheckBox
 			{
@@ -15,28 +15,28 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(MauiCheckBox nativeView)
+		protected override void ConnectHandler(MauiCheckBox platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.CheckedChanged += OnCheckedChanged;
+			platformView.CheckedChanged += OnCheckedChanged;
 		}
 
-		protected override void DisconnectHandler(MauiCheckBox nativeView)
+		protected override void DisconnectHandler(MauiCheckBox platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.CheckedChanged -= OnCheckedChanged;
+			platformView.CheckedChanged -= OnCheckedChanged;
 		}
 
-		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
+		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCheckedChanged(object? sender, EventArgs e)
 		{
-			if (sender is MauiCheckBox nativeView && VirtualView != null)
+			if (sender is MauiCheckBox platformView && VirtualView != null)
 			{
-				VirtualView.IsChecked = nativeView.IsChecked;
+				VirtualView.IsChecked = platformView.IsChecked;
 			}
 		}
 	}

@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 using Windows.Devices.Haptics;
 using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class HapticFeedback
+	public partial class HapticFeedbackImplementation : IHapticFeedback
 	{
 		const string vibrationDeviceApiType = "Windows.Devices.Haptics.VibrationDevice";
 
-		internal static bool IsSupported => true;
+		public bool IsSupported => true;
 
-		static async void PlatformPerform(HapticFeedbackType type)
+		public async void Perform(HapticFeedbackType type)
 		{
 			try
 			{

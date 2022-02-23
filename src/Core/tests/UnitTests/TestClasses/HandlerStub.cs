@@ -15,20 +15,20 @@ namespace Microsoft.Maui.UnitTests
 		{
 		}
 
-		protected override object CreateNativeView()
+		protected override object CreatePlatformView()
 		{
 			return new object();
 		}
 
-		protected override void ConnectHandler(object nativeView)
+		protected override void ConnectHandler(object platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			ConnectHandlerCount++;
 		}
 
-		protected override void DisconnectHandler(object nativeView)
+		protected override void DisconnectHandler(object platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			DisconnectHandlerCount++;
 		}
 	}

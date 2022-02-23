@@ -7,16 +7,16 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract partial class VisualElementRenderer<TElement> : UIView, INativeViewHandler, IElementHandler
+	public abstract partial class VisualElementRenderer<TElement> : UIView, IPlatformViewHandler, IElementHandler
 		where TElement : Element, IView
 	{
-		object? IElementHandler.NativeView => Subviews.Length > 0 ? Subviews[0] : null;
+		object? IElementHandler.PlatformView => Subviews.Length > 0 ? Subviews[0] : null;
 
 		public virtual UIViewController? ViewController => null;
 
 		static partial void ProcessAutoPackage(Maui.IElement element)
 		{
-			if (element?.Handler?.NativeView is not UIView viewGroup)
+			if (element?.Handler?.PlatformView is not UIView viewGroup)
 				return;
 
 			viewGroup.ClearSubviews();

@@ -33,13 +33,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var windowOverlay = new WindowOverlay(window) as IWindowOverlay;
 
 			// If not processed by a window, should be false.
-			Assert.False(windowOverlay.IsNativeViewInitialized);
+			Assert.False(windowOverlay.IsPlatformViewInitialized);
 
 			// First time inserted, should be true.
 			Assert.True(window.AddOverlay(windowOverlay));
 
 			// Should now be initialized.
-			Assert.True(windowOverlay.IsNativeViewInitialized);
+			Assert.True(windowOverlay.IsPlatformViewInitialized);
 
 			Assert.True(window.Overlays.Count > 0);
 
@@ -53,13 +53,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(window.RemoveOverlay(windowOverlay));
 
 			// Window was uninitialized, should be false.
-			Assert.False(windowOverlay.IsNativeViewInitialized);
+			Assert.False(windowOverlay.IsPlatformViewInitialized);
 
 			// Second time inserted, should be true.
 			Assert.True(window.AddOverlay(windowOverlay));
 
 			// Should now be initialized again.
-			Assert.True(windowOverlay.IsNativeViewInitialized);
+			Assert.True(windowOverlay.IsPlatformViewInitialized);
 		}
 
 		[Test]

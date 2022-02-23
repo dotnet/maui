@@ -7,20 +7,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		bool _trackerAllowDrop;
 
-		protected override void ConnectHandler(ListViewBase nativeView)
+		protected override void ConnectHandler(ListViewBase platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.DragItemsStarting += HandleDragItemsStarting;
-			nativeView.DragItemsCompleted += HandleDragItemsCompleted;
+			platformView.DragItemsStarting += HandleDragItemsStarting;
+			platformView.DragItemsCompleted += HandleDragItemsCompleted;
 		}
 
-		protected override void DisconnectHandler(ListViewBase nativeView)
+		protected override void DisconnectHandler(ListViewBase platformView)
 		{
-			nativeView.DragItemsStarting -= HandleDragItemsStarting;
-			nativeView.DragItemsCompleted -= HandleDragItemsCompleted;
+			platformView.DragItemsStarting -= HandleDragItemsStarting;
+			platformView.DragItemsCompleted -= HandleDragItemsCompleted;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		void HandleDragItemsStarting(object sender, DragItemsStartingEventArgs e)

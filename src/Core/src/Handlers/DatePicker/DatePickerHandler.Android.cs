@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 
 		DatePickerDialog? _dialog;
 
-		protected override MauiDatePicker CreateNativeView()
+		protected override MauiDatePicker CreatePlatformView()
 		{
 			var mauiDatePicker = new MauiDatePicker(Context)
 			{
@@ -29,20 +29,20 @@ namespace Microsoft.Maui.Handlers
 
 		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
 
-		protected override void ConnectHandler(MauiDatePicker nativeView)
+		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			SetupDefaults(nativeView);
+			SetupDefaults(platformView);
 		}
 
-		void SetupDefaults(MauiDatePicker nativeView)
+		void SetupDefaults(MauiDatePicker platformView)
 		{
-			_defaultBackground = nativeView.Background;
-			_defaultTextColors = nativeView.TextColors;
+			_defaultBackground = platformView.Background;
+			_defaultTextColors = platformView.TextColors;
 		}
 
-		protected override void DisconnectHandler(MauiDatePicker nativeView)
+		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			if (_dialog != null)
 			{
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		protected virtual DatePickerDialog CreateDatePickerDialog(int year, int month, int day)
@@ -69,46 +69,50 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// This is a Android-specific mapping
-		public static void MapBackground(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateBackground(datePicker, handler._defaultBackground);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateBackground(datePicker, platformHandler._defaultBackground);
 		}
 
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFormat(datePicker);
+			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMinimumDate(datePicker, handler._dialog);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
 		}
 
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMaximumDate(datePicker, handler._dialog);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
 		}
 
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(datePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColors);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateTextColor(datePicker, platformHandler._defaultTextColors);
 		}
 
 		void ShowPickerDialog()

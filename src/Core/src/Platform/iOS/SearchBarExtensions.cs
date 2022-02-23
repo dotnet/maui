@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 
 			textField.AttributedPlaceholder = foregroundColor == null
 				? new NSAttributedString(placeholder)
-				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToNative());
+				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToPlatform());
 
 			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
 		}
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 			if (textField == null)
 				return;
 
-			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToNative();
+			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToPlatform();
 		}
 
 		public static void UpdateMaxLength(this UISearchBar uiSearchBar, ISearchBar searchBar)
@@ -70,6 +70,11 @@ namespace Microsoft.Maui.Platform
 
 			if (currentControlText?.Length > maxLength)
 				uiSearchBar.Text = currentControlText.Substring(0, maxLength);
+		}
+
+		public static void UpdateIsReadOnly(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.UserInteractionEnabled = !searchBar.IsReadOnly;
 		}
 
 		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar,
@@ -92,9 +97,9 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToNative(), UIControlState.Normal);
-				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToNative(), UIControlState.Highlighted);
-				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToNative(), UIControlState.Disabled);
+				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Normal);
+				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Highlighted);
+				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Disabled);
 			}
 		}
 

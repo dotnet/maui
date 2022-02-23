@@ -6,15 +6,15 @@ using Android.Net;
 using Android.OS;
 using Debug = System.Diagnostics.Debug;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class Connectivity
+	public partial class ConnectivityImplementation : IConnectivity
 	{
 		static ConnectivityBroadcastReceiver conectivityReceiver;
 		static Intent connectivityIntent = new Intent(Platform.EssentialsConnectivityChanged);
 		static EssentialsNetworkCallback networkCallback;
 
-		static void StartListeners()
+		public void StartListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.NetworkState>();
 
@@ -32,12 +32,12 @@ namespace Microsoft.Maui.Essentials
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
+			conectivityReceiver = new ConnectivityBroadcastReceiver(Connectivity.OnConnectivityChanged);
 
 			Platform.AppContext.RegisterReceiver(conectivityReceiver, filter);
 		}
 
-		static void StopListeners()
+		public void StopListeners()
 		{
 			if (conectivityReceiver == null)
 				return;
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Essentials
 			conectivityReceiver.Dispose();
 			conectivityReceiver = null;
 		}
-		static void RegisterNetworkCallback()
+		void RegisterNetworkCallback()
 		{
 			if (!Platform.HasApiLevelN)
 				return;
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Essentials
 			manager.RegisterNetworkCallback(request, networkCallback);
 		}
 
-		static void UnregisterNetworkCallback()
+		void UnregisterNetworkCallback()
 		{
 			if (!Platform.HasApiLevelN)
 				return;
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Essentials
 		static NetworkAccess IsBetterAccess(NetworkAccess currentAccess, NetworkAccess newAccess) =>
 			newAccess > currentAccess ? newAccess : currentAccess;
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{

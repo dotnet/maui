@@ -11,45 +11,45 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? DefaultOffTrackColor;
 		static UIColor? DefaultThumbColor;
 
-		protected override UISwitch CreateNativeView()
+		protected override UISwitch CreatePlatformView()
 		{
 			return new UISwitch(RectangleF.Empty);
 		}
 
-		protected override void ConnectHandler(UISwitch nativeView)
+		protected override void ConnectHandler(UISwitch platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.ValueChanged += OnControlValueChanged;
+			platformView.ValueChanged += OnControlValueChanged;
 		}
 
-		protected override void DisconnectHandler(UISwitch nativeView)
+		protected override void DisconnectHandler(UISwitch platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.ValueChanged -= OnControlValueChanged;
+			platformView.ValueChanged -= OnControlValueChanged;
 		}
 
-		void SetupDefaults(UISwitch nativeView)
+		void SetupDefaults(UISwitch platformView)
 		{
 			DefaultOnTrackColor = UISwitch.Appearance.OnTintColor;
-			DefaultOffTrackColor = nativeView.GetOffTrackColor();
+			DefaultOffTrackColor = platformView.GetOffTrackColor();
 			DefaultThumbColor = UISwitch.Appearance.ThumbTintColor;
 		}
 
 		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsOn(view);
+			handler.PlatformView?.UpdateIsOn(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, DefaultOnTrackColor, DefaultOffTrackColor);
+			handler.PlatformView?.UpdateTrackColor(view, DefaultOnTrackColor, DefaultOffTrackColor);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateThumbColor(view, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(view, DefaultThumbColor);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs e)
@@ -57,8 +57,8 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
-			if (NativeView != null)
-				VirtualView.IsOn = NativeView.On;
+			if (PlatformView != null)
+				VirtualView.IsOn = PlatformView.On;
 		}
 	}
 }
