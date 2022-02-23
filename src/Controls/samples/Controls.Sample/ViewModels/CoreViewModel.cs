@@ -32,6 +32,12 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(FlyoutPageGallery), "FlyoutPage",
 				"Demonstrates using a Flyout Page."),
+				
+			new SectionModel(typeof(FocusPage), "Focus Management",
+				"Focus and onfocus views, detect when a view gains focus and more."),
+
+			new SectionModel(typeof(FocusPage), "Focus Management",
+				"Focus and onfocus views, detect when a view gains focus and more."),
 
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),

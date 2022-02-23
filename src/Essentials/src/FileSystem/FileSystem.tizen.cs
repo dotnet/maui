@@ -15,13 +15,28 @@ namespace Microsoft.Maui.Essentials
 
 		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult((Stream)File.OpenRead(file));
+		}
+
+		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult(File.Exists(file));
+		}
+
+		static string PlatformGetFullAppPackageFilePath(string filename)
+		{
 			if (string.IsNullOrWhiteSpace(filename))
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = filename.Replace('\\', Path.DirectorySeparatorChar);
-			Stream fs = File.OpenRead(Path.Combine(Application.Current.DirectoryInfo.Resource, filename));
-			return Task.FromResult(fs);
+			filename = NormalizePath(filename);
+
+			return Path.Combine(Application.Current.DirectoryInfo.Resource, filename);
 		}
+
+		static string NormalizePath(string filename) =>
+			filename.Replace('\\', Path.DirectorySeparatorChar);
 	}
 
 	public partial class FileBase

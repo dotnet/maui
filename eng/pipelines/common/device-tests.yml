@@ -5,6 +5,7 @@ parameters:
   iosVmImage: '$(iosTestsVmImage)'
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
+  provisionatorChannel: 'latest'
   projects:
     - name: name
       desc: Human Description
@@ -28,10 +29,11 @@ stages:
                 pool:
                   name: ${{ parameters.androidVmPool }}
                   vmImage: ${{ parameters.androidVmImage }}
-                  ${{ if startsWith(parameters.androidVmPool, 'VSEng-VSMac-Xamarin-Shared') }}:
-                    demands:
-                      - macOS.Name -equals BigSur
-                      - macOS.Architecture -equals x64
+                  demands:
+                    - macOS.Name -equals BigSur
+                    - macOS.Architecture -equals x64
+                    - Agent.HasDevices -equals False
+                    - Agent.IsPaired -equals False
                 variables:
                   ${{ if ge(api, 24) }}:
                     ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
@@ -44,6 +46,7 @@ stages:
                       platform: android
                       path: ${{ project.android }}
                       device: android-emulator-32_${{ api }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -60,10 +63,11 @@ stages:
                 pool:
                   name: ${{ parameters.iosVmPool }}
                   vmImage: ${{ parameters.iosVmImage }}
-                  ${{ if startsWith(parameters.iosVmPool, 'VSEng-VSMac-Xamarin-Shared') }}:
-                    demands:
-                      - macOS.Name -equals BigSur
-                      - macOS.Architecture -equals x64
+                  demands:
+                    - macOS.Name -equals BigSur
+                    - macOS.Architecture -equals x64
+                    - Agent.HasDevices -equals False
+                    - Agent.IsPaired -equals False
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                 steps:
@@ -75,3 +79,4 @@ stages:
                         device: ios-simulator-64
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}

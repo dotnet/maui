@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class GeometryExtensions
 	{
-		public static WMedia.Geometry ToNative(this Geometry geometry)
+		public static WMedia.Geometry ToPlatform(this Geometry geometry)
 		{
 			WMedia.Geometry wGeometry = null;
 
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Controls.Platform
 				LineGeometry lineGeometry = geometry as LineGeometry;
 				wGeometry = new WMedia.LineGeometry
 				{
-					StartPoint = lineGeometry.StartPoint.ToNative(),
-					EndPoint = lineGeometry.EndPoint.ToNative()
+					StartPoint = lineGeometry.StartPoint.ToPlatform(),
+					EndPoint = lineGeometry.EndPoint.ToPlatform()
 				};
 			}
 			else if (geometry is RectangleGeometry)
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Platform
 				EllipseGeometry ellipseGeometry = geometry as EllipseGeometry;
 				wGeometry = new WMedia.EllipseGeometry
 				{
-					Center = ellipseGeometry.Center.ToNative(),
+					Center = ellipseGeometry.Center.ToPlatform(),
 					RadiusX = ellipseGeometry.RadiusX,
 					RadiusY = ellipseGeometry.RadiusY
 				};
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				foreach (Geometry children in geometryGroup.Children)
 				{
-					WMedia.Geometry winChild = children.ToNative();
+					WMedia.Geometry winChild = children.ToPlatform();
 					(wGeometry as WMedia.GeometryGroup).Children.Add(winChild);
 				}
 			}
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					WMedia.PathFigure wPathFigure = new WMedia.PathFigure
 					{
-						StartPoint = xamPathFigure.StartPoint.ToNative(),
+						StartPoint = xamPathFigure.StartPoint.ToPlatform(),
 						IsFilled = xamPathFigure.IsFilled,
 						IsClosed = xamPathFigure.IsClosed
 					};
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							WMedia.LineSegment winSegment = new WMedia.LineSegment
 							{
-								Point = lineSegment.Point.ToNative()
+								Point = lineSegment.Point.ToPlatform()
 							};
 
 							wPathFigure.Segments.Add(winSegment);
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							foreach (var point in polyLineSegment.Points)
 							{
-								wSegment.Points.Add(point.ToNative());
+								wSegment.Points.Add(point.ToPlatform());
 							}
 
 							wPathFigure.Segments.Add(wSegment);
@@ -107,9 +107,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 							WMedia.BezierSegment wSegment = new WMedia.BezierSegment
 							{
-								Point1 = bezierSegment.Point1.ToNative(),
-								Point2 = bezierSegment.Point2.ToNative(),
-								Point3 = bezierSegment.Point3.ToNative()
+								Point1 = bezierSegment.Point1.ToPlatform(),
+								Point2 = bezierSegment.Point2.ToPlatform(),
+								Point3 = bezierSegment.Point3.ToPlatform()
 							};
 
 							wPathFigure.Segments.Add(wSegment);
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							foreach (var point in polyBezierSegment.Points)
 							{
-								wSegment.Points.Add(point.ToNative());
+								wSegment.Points.Add(point.ToPlatform());
 							}
 
 							wPathFigure.Segments.Add(wSegment);
@@ -135,8 +135,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 							WMedia.QuadraticBezierSegment wSegment = new WMedia.QuadraticBezierSegment
 							{
-								Point1 = quadraticBezierSegment.Point1.ToNative(),
-								Point2 = quadraticBezierSegment.Point2.ToNative()
+								Point1 = quadraticBezierSegment.Point1.ToPlatform(),
+								Point2 = quadraticBezierSegment.Point2.ToPlatform()
 							};
 
 							wPathFigure.Segments.Add(wSegment);
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							foreach (var point in polyQuadraticBezierSegment.Points)
 							{
-								wSegment.Points.Add(point.ToNative());
+								wSegment.Points.Add(point.ToPlatform());
 							}
 
 							wPathFigure.Segments.Add(wSegment);
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 								RotationAngle = arcSegment.RotationAngle,
 								IsLargeArc = arcSegment.IsLargeArc,
 								SweepDirection = arcSegment.SweepDirection == SweepDirection.Clockwise ? WMedia.SweepDirection.Clockwise : WMedia.SweepDirection.Counterclockwise,
-								Point = arcSegment.Point.ToNative()
+								Point = arcSegment.Point.ToPlatform()
 							};
 
 							wPathFigure.Segments.Add(wSegment);

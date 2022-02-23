@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void MaybeInvalidate()
 		{
-			if (Element.IsInNativeLayout)
+			if (Element.IsInPlatformLayout)
 				return;
 
 			var parent = (FrameworkElement)Container.Parent;
