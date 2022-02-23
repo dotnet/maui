@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_canvas = canvas;
 		}
 
+		[PortHandler]
 		public override bool DispatchTouchEvent(MotionEvent e)
 		{
 			if (e.Action == MotionEventActions.Down)

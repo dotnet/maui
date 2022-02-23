@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -11,7 +12,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ControlTemplate.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
-		public ControlTemplate(Type type) : base(type)
+		public ControlTemplate(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+			: base(type)
 		{
 		}
 

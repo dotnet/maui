@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Hosting
 	public static partial class AppHostBuilderExtensions
 	{
 		internal static MauiAppBuilder ConfigureCompatibilityLifecycleEvents(this MauiAppBuilder builder) =>
-			   builder.ConfigureLifecycleEvents(events => events.AddAndroid(OnConfigureLifeCycle));
+			builder.ConfigureLifecycleEvents(events => events.AddAndroid(OnConfigureLifeCycle));
 
 		static void OnConfigureLifeCycle(IAndroidLifecycleBuilder android)
 		{

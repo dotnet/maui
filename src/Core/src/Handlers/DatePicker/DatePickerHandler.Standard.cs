@@ -4,14 +4,14 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker) { }
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker) { }
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker) { }
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker) { }
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker) { }
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker) { }
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker) { }
 	}
 }

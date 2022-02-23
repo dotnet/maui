@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls
 			else if (page is IPageContainer<Page>)
 			{
 				var container = (IPageContainer<Page>)page;
-				if (container.CurrentPage != null)
+				if (container.CurrentPage != null && container.CurrentPage != container)
 					result.AddRange(GetCurrentToolbarItems(container.CurrentPage));
 			}
 

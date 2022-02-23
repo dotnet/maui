@@ -37,7 +37,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public MethodBody Body { get; private set; }
 
 		public ModuleDefinition Module { get; private set; }
-		public bool DefineDebug { get; internal set; }
 		public string XamlFilePath { get; internal set; }
 	}
 }

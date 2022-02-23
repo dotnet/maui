@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeContent = window.Content.ToUIViewController(handler.MauiContext);
 
-			handler.NativeView.RootViewController = nativeContent;
+			handler.PlatformView.RootViewController = nativeContent;
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();

@@ -3,17 +3,17 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
 
 #if __IOS__ || MACCATALYST
-using NativeImage = UIKit.UIImage;
-using NativeView = UIKit.UIView;
+using PlatformImage = UIKit.UIImage;
+using PlatformView = UIKit.UIView;
 #elif MONOANDROID
-using NativeImage = Android.Graphics.Drawables.Drawable;
-using NativeView = Android.Views.View;
+using PlatformImage = Android.Graphics.Drawables.Drawable;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
-using NativeImage = System.Object;
+using PlatformView = System.Object;
+using PlatformImage = System.Object;
 #endif
 
 namespace Microsoft.Maui.Platform
@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Platform
 			_imageSourceServiceProvider ??= Handler.GetRequiredService<IImageSourceServiceProvider>();
 
 		readonly Func<IImageSourcePart?> _imageSourcePart;
-		Action<NativeImage?>? SetImage { get; }
-		NativeView? NativeView => Handler.NativeView as NativeView;
+		Action<PlatformImage?>? SetImage { get; }
+		PlatformView? PlatformView => Handler.PlatformView as PlatformView;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 		public ImageSourcePartLoader(
 			IElementHandler handler,
 			Func<IImageSourcePart?> imageSourcePart,
-			Action<NativeImage?> setImage)
+			Action<PlatformImage?> setImage)
 		{
 			Handler = handler;
 			_imageSourcePart = imageSourcePart;
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Platform
 
 		public async Task UpdateImageSourceAsync()
 		{
-			if (NativeView != null)
+			if (PlatformView != null)
 			{
 				var token = this.SourceManager.BeginLoad();
 				var imageSource = _imageSourcePart();
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 				if (imageSource != null)
 				{
 #if __IOS__ || __ANDROID__ || WINDOWS
-					var result = await imageSource.UpdateSourceAsync(NativeView, ImageSourceServiceProvider, SetImage!, token)
+					var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
 						.ConfigureAwait(false);
 
 					SourceManager.CompleteLoad(result);

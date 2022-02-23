@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content;
 using AndroidX.Security.Crypto;
 using Javax.Crypto;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			lock (locker)
 			{
-				using (var editor = Preferences.GetSharedPreferences(Alias).Edit())
+				using (var editor = PreferencesImplementation.GetSharedPreferences(Alias).Edit())
 				{
 					editor.Clear().Apply();
 				}

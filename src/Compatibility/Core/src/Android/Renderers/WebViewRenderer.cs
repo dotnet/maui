@@ -195,8 +195,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
+		[PortHandler]
 		Uri CreateUriForCookies(string url)
 		{
 			if (url == null)
@@ -218,6 +220,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return null;
 		}
 
+		[PortHandler]
 		CookieCollection GetCookiesFromNativeStore(string url)
 		{
 			CookieContainer existingCookies = new CookieContainer();
@@ -234,6 +237,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return existingCookies.GetCookies(uri);
 		}
 
+		[PortHandler]
 		void InitialCookiePreloadIfNecessary(string url)
 		{
 			var myCookieJar = Element.Cookies;
@@ -260,6 +264,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		internal void SyncNativeCookiesToElement(string url)
 		{
 			var myCookieJar = Element.Cookies;
@@ -284,7 +289,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			SyncNativeCookies(url);
 		}
-
+		
+		[PortHandler]
 		void SyncNativeCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
