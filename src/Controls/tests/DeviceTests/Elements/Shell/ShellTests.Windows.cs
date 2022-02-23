@@ -27,15 +27,17 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 10
 			};
 
-			var shell = new Shell()
-			{
-				FlyoutHeader = label,
-				Items =
+			var shell = await InvokeOnMainThreadAsync<Shell>(() => { 
+				return new Shell()
+				{
+					FlyoutHeader = label,
+					Items =
 				{
 					new ContentPage()
 				},
-				FlyoutBehavior = FlyoutBehavior.Locked
-			};
+					FlyoutBehavior = FlyoutBehavior.Locked
+				};
+			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
 			{
