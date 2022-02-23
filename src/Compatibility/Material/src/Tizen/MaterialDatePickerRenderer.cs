@@ -38,11 +38,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Tizen
 			{
 				if (Element.TextColor.IsDefault)
 				{
-					mp.PlaceholderColor = _defaultTitleColor.ToNative();
+					mp.PlaceholderColor = _defaultTitleColor.ToPlatform();
 				}
 				else
 				{
-					mp.PlaceholderColor = Element.TextColor.ToNative();
+					mp.PlaceholderColor = Element.TextColor.ToPlatform();
 				}
 			}
 		}

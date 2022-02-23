@@ -11,9 +11,9 @@ namespace Microsoft.Maui
 			// Even though <null> is technically different to "", it has no
 			// functional difference to apps. Thus, hide it.
 			var mauiText = textInput.Text ?? string.Empty;
-			var nativeText = text ?? string.Empty;
-			if (mauiText != nativeText)
-				textInput.Text = nativeText;
+			var platformText = text ?? string.Empty;
+			if (mauiText != platformText)
+				textInput.Text = platformText;
 		}
 
 #if __IOS__

@@ -85,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), (handler) =>
 			{
 				var navView = GetMauiNavigationView(tabbedPage.Handler.MauiContext);
-				var platformBrush = (WSolidColorBrush)((Paint)tabbedPage.BarBackground).ToNative();
+				var platformBrush = (WSolidColorBrush)((Paint)tabbedPage.BarBackground).ToPlatform();
 				Assert.Equal(platformBrush.Color, ((WSolidColorBrush)navView.TopNavArea.Background).Color);
 				return Task.CompletedTask;
 			});
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 				window.Page = CreateBasicTabbedPage();
 
 				// wait for new handler to finish loading
-				await ((INativeViewHandler)window.Page.Handler).NativeView.OnLoadedAsync();
+				await ((IPlatformViewHandler)window.Page.Handler).PlatformView.OnLoadedAsync();
 				var navView = GetMauiNavigationView(window.Page.Handler.MauiContext);
 
 				// make sure root view is displaying as top tabs

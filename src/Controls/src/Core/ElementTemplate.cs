@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -10,13 +11,17 @@ namespace Microsoft.Maui.Controls
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 		Element _parent;
 		bool _canRecycle; // aka IsDeclarative
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		readonly Type _type;
 
 		internal ElementTemplate()
 		{
 		}
 
-		internal ElementTemplate(Type type) : this()
+		internal ElementTemplate(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+			: this()
 		{
 			if (type == null)
 				throw new ArgumentNullException("type");
@@ -39,6 +44,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool CanRecycle => _canRecycle;
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal Type Type => _type;
 
 		Element IElement.Parent

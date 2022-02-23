@@ -1,17 +1,23 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
+	public partial class VibrationImplementation : IVibration
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Vibration']/Docs" />
-	public static partial class Vibration
 	{
-		internal static bool IsSupported
+		public bool IsSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformVibrate(TimeSpan duration)
+		public void Vibrate() 
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformCancel()
+		public void Vibrate(double duration) 
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public void Vibrate(TimeSpan duration)
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public void Cancel()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class ItemContentView : ViewGroup
 	{
-		protected INativeViewHandler Content;
+		protected IPlatformViewHandler Content;
 		internal IView View => Content?.VirtualView;
 		Size? _size;
 		Action<Size> _reportMeasure;
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void RealizeContent(View view, ItemsView itemsView)
 		{
 			Content = CreateHandler(view, itemsView);
-			AddView(Content.NativeView);
+			AddView(Content.PlatformView);
 
 			//TODO: RUI IS THIS THE BEST WAY TO CAST? 
 			(View as VisualElement).MeasureInvalidated += ElementMeasureInvalidated;
@@ -39,9 +39,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				(View as VisualElement).MeasureInvalidated -= ElementMeasureInvalidated;
 			}
 
-			if (Content?.NativeView != null)
+			if (Content?.PlatformView != null)
 			{
-				RemoveView(Content.NativeView);
+				RemoveView(Content.PlatformView);
 			}
 
 			Content = null;
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateContentLayout()
 		{
 			VisualElement mauiControlsView = (View as VisualElement);
-			AView aview = Content.NativeView;
+			AView aview = Content.PlatformView;
 
 			if (mauiControlsView == null || aview == null)
 				return;
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var width = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Width));
 			var height = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Height));
 
-			Content.NativeView.Layout(x, y, width, height);
+			Content.PlatformView.Layout(x, y, width, height);
 
 			if ((aview is LayoutViewGroup || aview is ContentViewGroup || aview is CoordinatorLayout || aview is FragmentContainerView) && width == 0 && height == 0)
 			{
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		static INativeViewHandler CreateHandler(View view, ItemsView itemsView) =>
+		static IPlatformViewHandler CreateHandler(View view, ItemsView itemsView) =>
 			TemplateHelpers.GetHandler(view, itemsView.FindMauiContext());
 	}
 }

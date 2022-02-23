@@ -4,7 +4,7 @@ using Foundation;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class PreferencesImplementation:IPreferences
+	public class PreferencesImplementation : IPreferences
 	{
 		static readonly object locker = new object();
 

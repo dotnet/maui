@@ -57,26 +57,26 @@ namespace Microsoft.Maui
 			}
 		}
 
-		NativeMethods.WindowProc? newWndProc = null;
+		PlatformMethods.WindowProc? newWndProc = null;
 		IntPtr oldWndProc = IntPtr.Zero;
 
 		void SubClassingWin32()
 		{
-			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnNativeWindowSubclassed>(
-				del => del(this, new WindowsNativeWindowSubclassedEventArgs(WindowHandle)));
+			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformWindowSubclassed>(
+				del => del(this, new WindowsPlatformWindowSubclassedEventArgs(WindowHandle)));
 
-			newWndProc = new NativeMethods.WindowProc(NewWindowProc);
-			oldWndProc = NativeMethods.SetWindowLongPtr(WindowHandle, NativeMethods.WindowLongFlags.GWL_WNDPROC, newWndProc);
+			newWndProc = new PlatformMethods.WindowProc(NewWindowProc);
+			oldWndProc = PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, newWndProc);
 
 			IntPtr NewWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
 			{
-				if (msg == WindowsNativeMessageIds.WM_SETTINGCHANGE || msg == WindowsNativeMessageIds.WM_THEMECHANGE)
+				if (msg == WindowsPlatformMessageIds.WM_SETTINGCHANGE || msg == WindowsPlatformMessageIds.WM_THEMECHANGE)
 					MauiWinUIApplication.Current.Application?.ThemeChanged();
 
-				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnNativeMessage>(
-					m => m.Invoke(this, new WindowsNativeMessageEventArgs(hWnd, msg, wParam, lParam)));
+				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
+					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(hWnd, msg, wParam, lParam)));
 
-				return NativeMethods.CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
+				return PlatformMethods.CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
 			}
 		}
 

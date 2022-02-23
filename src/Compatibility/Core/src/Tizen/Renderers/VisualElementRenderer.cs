@@ -649,7 +649,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			if (NativeView is Widget)
 			{
-				(NativeView as Widget).BackgroundColor = Element.BackgroundColor.ToNative();
+				(NativeView as Widget).BackgroundColor = Element.BackgroundColor.ToPlatform();
 			}
 			else
 			{
