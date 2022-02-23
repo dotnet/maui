@@ -80,7 +80,7 @@ namespace Microsoft.Maui.UnitTests
 			collection.TryAddSingleton<IMauiHandlersFactory>(new MauiHandlersFactory(null));
 			collection.TryAddSingleton<IFooService, FooService>();
 
-			var provider = new MauiFactory(collection, false);
+			var provider = new MauiFactory(collection);
 
 			handlerStub.SetMauiContext(new HandlersContextStub(provider));
 

@@ -386,7 +386,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var defaultContext = base.GetInvalidationContext(preferredAttributes, originalAttributes);
 					return defaultContext;
 				}
-				catch (MonoTouchException ex) when (ex.Name == "NSRangeException")
+				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
 				{
 					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
 				}
