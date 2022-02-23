@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<microsoft.maui.controls.platform.ShellFlyoutLayout
+<microsoft.maui.controls.platform.compatibility.ShellFlyoutLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:app="http://schemas.android.com/apk/res-auto"
 		android:layout_width="match_parent"
@@ -16,4 +16,4 @@
 			app:elevation="0dp"
 			android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-</microsoft.maui.controls.platform.ShellFlyoutLayout>
+</microsoft.maui.controls.platform.compatibility.ShellFlyoutLayout>
