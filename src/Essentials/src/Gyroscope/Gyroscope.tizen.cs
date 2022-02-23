@@ -5,28 +5,32 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class GyroscopeImplementation : IGyroscope
 	{
-		internal static TizenGyroscope DefaultSensor =>
+		static TizenGyroscope DefaultSensor =>
 			(TizenGyroscope)Platform.GetDefaultSensor(SensorType.Gyroscope);
 
-		public bool IsSupported =>
+		bool PlatformIsSupported =>
 			TizenGyroscope.IsSupported;
 
-		public void Start(SensorSpeed sensorSpeed)
+		TizenGyroscope sensor;
+
+		public void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			DefaultSensor.Interval = sensorSpeed.ToPlatform();
-			DefaultSensor.DataUpdated += DataUpdated;
-			DefaultSensor.Start();
+			sensor = DefaultSensor;
+			sensor.Interval = sensorSpeed.ToPlatform();
+			sensor.DataUpdated += DataUpdated;
+			sensor.Start();
 		}
 
-		public void Stop()
+		public void PlatformStop()
 		{
-			DefaultSensor.DataUpdated -= DataUpdated;
-			DefaultSensor.Stop();
+			sensor.DataUpdated -= DataUpdated;
+			sensor.Stop();
+			sensor = null;
 		}
 
-		static void DataUpdated(object sender, GyroscopeDataUpdatedEventArgs e)
+		void DataUpdated(object sender, GyroscopeDataUpdatedEventArgs e)
 		{
-			Gyroscope.OnChanged(new GyroscopeData(e.X, e.Y, e.Z));
+			RaiseReadingChanged(new GyroscopeData(e.X, e.Y, e.Z));
 		}
 	}
 }

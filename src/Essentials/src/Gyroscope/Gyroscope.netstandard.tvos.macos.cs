@@ -3,13 +3,13 @@ namespace Microsoft.Maui.Essentials.Implementations
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Gyroscope']/Docs" />
 	public partial class GyroscopeImplementation : IGyroscope
 	{
-		public bool IsSupported =>
+		bool PlatformIsSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void Start(SensorSpeed sensorSpeed) =>
+		void PlatformStart(SensorSpeed sensorSpeed) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void Stop() =>
+		void PlatformStop() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

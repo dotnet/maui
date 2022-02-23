@@ -1,3 +1,4 @@
+using System;
 using Android.Hardware;
 using Android.Runtime;
 
@@ -5,22 +6,22 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class GyroscopeImplementation : IGyroscope
 	{
-		public bool IsSupported =>
+		bool PlatformIsSupported =>
 			   Platform.SensorManager?.GetDefaultSensor(SensorType.Gyroscope) != null;
 
-		static GyroscopeListener listener;
-		static Sensor gyroscope;
+		GyroscopeListener listener;
+		Sensor gyroscope;
 
-		public void Start(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
-			listener = new GyroscopeListener();
+			listener = new GyroscopeListener(RaiseReadingChanged);
 			gyroscope = Platform.SensorManager.GetDefaultSensor(SensorType.Gyroscope);
 			Platform.SensorManager.RegisterListener(listener, gyroscope, delay);
 		}
 
-		public void Stop()
+		void PlatformStop()
 		{
 			if (listener == null || gyroscope == null)
 				return;
@@ -33,9 +34,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 	class GyroscopeListener : Java.Lang.Object, ISensorEventListener
 	{
-		internal GyroscopeListener()
+		internal GyroscopeListener(Action<GyroscopeData> callback)
 		{
+			Callback = callback;
 		}
+
+		readonly Action<GyroscopeData> Callback;
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
 		{
@@ -47,7 +51,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				return;
 
 			var data = new GyroscopeData(e.Values[0], e.Values[1], e.Values[2]);
-			Gyroscope.OnChanged(data);
+			Callback?.Invoke(data);
 		}
 	}
 }

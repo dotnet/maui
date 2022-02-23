@@ -10,79 +10,38 @@ namespace Microsoft.Maui.Essentials
 	{
 		bool IsSupported { get; }
 
+		bool IsMonitoring { get; }
+
 		void Start(SensorSpeed sensorSpeed);
 
 		void Stop();
+
+		event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Gyroscope']/Docs" />
 	public static partial class Gyroscope
 	{
-		static bool useSyncContext;
-
-		public static event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
+		public static event EventHandler<GyroscopeChangedEventArgs> ReadingChanged
+		{
+			add => Current.ReadingChanged += value;
+			remove => Current.ReadingChanged -= value;
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring { get; private set; }
+		public static bool IsMonitoring
+			=> Current.IsMonitoring;
 
 		public static bool IsSupported 
 			=> Current.IsSupported;
-			
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
-		{
-			if (!Current.IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (IsMonitoring)
-				throw new InvalidOperationException("Gyroscope has already been started.");
-
-			IsMonitoring = true;
-			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
-
-			try
-			{
-				Current.Start(sensorSpeed);
-			}
-			catch
-			{
-				IsMonitoring = false;
-				throw;
-			}
-		}
+			=> Current.Start(sensorSpeed);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public static void Stop()
-		{
-			if (!Current.IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (!IsMonitoring)
-				return;
-
-			IsMonitoring = false;
-
-			try
-			{
-				Current.Stop();
-			}
-			catch
-			{
-				IsMonitoring = true;
-				throw;
-			}
-		}
-
-		internal static void OnChanged(GyroscopeData reading) =>
-			OnChanged(new GyroscopeChangedEventArgs(reading));
-
-		internal static void OnChanged(GyroscopeChangedEventArgs e)
-		{
-			if (useSyncContext)
-				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
-			else
-				ReadingChanged?.Invoke(null, e);
-		}
+			=> Current.Stop();
 
 #nullable enable
 		static IGyroscope? currentImplementation;
@@ -149,5 +108,74 @@ namespace Microsoft.Maui.Essentials
 			$"{nameof(AngularVelocity.X)}: {AngularVelocity.X}, " +
 			$"{nameof(AngularVelocity.Y)}: {AngularVelocity.Y}, " +
 			$"{nameof(AngularVelocity.Z)}: {AngularVelocity.Z}";
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class GyroscopeImplementation : IGyroscope
+	{
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+
+		public event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
+
+		public bool IsMonitoring { get; private set; }
+
+		public bool IsSupported => PlatformIsSupported;
+
+		public void Start(SensorSpeed sensorSpeed)
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Gyroscope has already been started.");
+
+			IsMonitoring = true;
+
+			try
+			{
+				PlatformStart(sensorSpeed);
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop']/Docs" />
+		public void Stop()
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
+			try
+			{
+				PlatformStop();
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
+		}
+
+		void RaiseReadingChanged(GyroscopeData data)
+		{
+			var args = new GyroscopeChangedEventArgs(data);
+
+			if (UseSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, args));
+			else
+				ReadingChanged?.Invoke(null, args);
+		}
 	}
 }
