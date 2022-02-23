@@ -1,14 +1,20 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Email']/Docs" />
-	public static partial class Email
+	public partial class EmailImplementation : IEmail
 	{
-		internal static bool IsComposeSupported =>
+		public bool IsComposeSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task PlatformComposeAsync(EmailMessage message) =>
+		public Task ComposeAsync(EmailMessage message) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public Task ComposeAsync(string subject, string body, params string[] to) 
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public Task ComposeAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 

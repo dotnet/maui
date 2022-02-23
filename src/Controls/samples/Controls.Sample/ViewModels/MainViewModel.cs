@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample.ViewModels
 		{
 #if NET6_0_OR_GREATER
 			new SectionModel(typeof(BlazorPage), "Blazor",
-				"The BlazorWebView control allow to easily embed Blazor content with native UI."),
+				"The BlazorWebView control allow to easily embed Razor components into native UI."),
 #endif
 
 			new SectionModel(typeof(CompatibilityPage), "Compatibility",
