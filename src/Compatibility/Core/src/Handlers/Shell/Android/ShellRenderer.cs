@@ -8,6 +8,7 @@ using Android.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -18,10 +19,13 @@ using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 
-namespace Microsoft.Maui.Controls.Platform.Compatibility
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class ShellRenderer : IShellContext, IAppearanceObserver
+	public class ShellRenderer : IShellContext, IAppearanceObserver, IPlatformViewHandler
 	{
+		public static IPropertyMapper<Shell, ShellRenderer> Mapper = new PropertyMapper<Shell, ShellRenderer>(ViewHandler.ElementMapper);
+		public static CommandMapper<Shell, ShellRenderer> CommandMapper = new CommandMapper<Shell, ShellRenderer>(ViewHandler.ElementCommandMapper);
+
 
 		#region IShellContext
 
@@ -39,17 +43,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return CreateFragmentForPage(page);
 		}
 
-		IShellFlyoutContentRenderer IShellContext.CreateShellFlyoutContentView()
+		IShellFlyoutContentRenderer IShellContext.CreateShellFlyoutContentRenderer()
 		{
 			return CreateShellFlyoutContentView();
 		}
 
-		IShellItemRenderer IShellContext.CreateShellItemView(ShellItem shellItem)
+		IShellItemRenderer IShellContext.CreateShellItemRenderer(ShellItem shellItem)
 		{
 			return CreateShellItemView(shellItem);
 		}
 
-		IShellSectionRenderer IShellContext.CreateShellSectionView(ShellSection shellSection)
+		IShellSectionRenderer IShellContext.CreateShellSectionRenderer(ShellSection shellSection)
 		{
 			return CreateShellSectionView(shellSection);
 		}
@@ -109,9 +113,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		//bool _disposed;
 		IShellFlyoutRenderer _flyoutView;
 		FrameLayout _frameLayout;
+		IMauiContext _mauiContext;
 
 		//event EventHandler<VisualElementChangedEventArgs> _elementChanged;
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
+
+		public ShellRenderer()
+		{
+
+		}
 
 		public ShellRenderer(Context context)
 		{
@@ -120,7 +130,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 
 
-		protected Context AndroidContext { get; }
+		protected Context AndroidContext { get; private set; }
 		protected Shell Element { get; private set; }
 		FragmentManager FragmentManager =>
 			Element.FindMauiContext().GetFragmentManager();
@@ -333,6 +343,56 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			Profile.FrameEnd("UpdtStatBarClr");
+		}
+
+
+
+		bool IViewHandler.HasContainer { get => false; set { } }
+
+		object IViewHandler.ContainerView => null;
+
+		IView IViewHandler.VirtualView => Element;
+
+		object IElementHandler.PlatformView => _flyoutView.AndroidView;
+
+		Maui.IElement IElementHandler.VirtualView => Element;
+
+		IMauiContext IElementHandler.MauiContext => _mauiContext;
+
+		AView IPlatformViewHandler.PlatformView => _flyoutView.AndroidView;
+
+		AView IPlatformViewHandler.ContainerView => null;
+
+		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) => new Size(100, 100);
+
+		void IViewHandler.PlatformArrange(Rectangle rect)
+		{
+			//TODO I don't think we need this
+		}
+
+		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
+		{
+			_mauiContext = mauiContext;
+			AndroidContext = mauiContext.Context;
+		}
+
+		void IElementHandler.SetVirtualView(Maui.IElement view)
+		{
+			SetVirtualView((Shell)view);
+		}
+
+		void IElementHandler.UpdateValue(string property)
+		{
+			Mapper.UpdateProperty(this, Element, property);
+		}
+
+		void IElementHandler.Invoke(string command, object args)
+		{
+			CommandMapper.Invoke(this, Element, command, args);
+		}
+
+		void IElementHandler.DisconnectHandler()
+		{
 		}
 
 		class SplitDrawable : Drawable

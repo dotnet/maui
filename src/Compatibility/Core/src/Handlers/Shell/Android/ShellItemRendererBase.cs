@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual IShellObservableFragment GetOrCreateFragmentForTab(ShellSection shellSection)
 		{
-			var renderer = ShellContext.CreateShellSectionView(shellSection);
+			var renderer = ShellContext.CreateShellSectionRenderer(shellSection);
 			renderer.ShellSection = shellSection;
 			return renderer;
 		}
@@ -331,12 +331,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			switch (navSource)
 			{
 				case ShellNavigationSource.Push:
-					t.SetCustomAnimations(Resource.Animation.enterfromright, Resource.Animation.exittoleft);
+					t.SetCustomAnimations(Controls.Compatibility.Resource.Animation.enterfromright, Controls.Compatibility.Resource.Animation.exittoleft);
 					break;
 
 				case ShellNavigationSource.Pop:
 				case ShellNavigationSource.PopToRoot:
-					t.SetCustomAnimations(Resource.Animation.enterfromleft, Resource.Animation.exittoright);
+					t.SetCustomAnimations(Controls.Compatibility.Resource.Animation.enterfromleft, Controls.Compatibility.Resource.Animation.exittoright);
 					break;
 
 				case ShellNavigationSource.ShellSectionChanged:

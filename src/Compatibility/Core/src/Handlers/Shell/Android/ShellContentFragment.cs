@@ -131,9 +131,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_page = ((IShellContentController)_shellContent).GetOrCreateContent();
 			}
 
-			_root = inflater.Inflate(Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
+			_root = inflater.Inflate(Controls.Compatibility.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
-			_toolbar = _root.FindViewById<AToolbar>(Resource.Id.shellcontent_toolbar);
+			_toolbar = _root.FindViewById<AToolbar>(Controls.Compatibility.Resource.Id.shellcontent_toolbar);
 			_page.ToPlatform(MauiContext);
 			_viewhandler = (IPlatformViewHandler)_page.Handler;
 

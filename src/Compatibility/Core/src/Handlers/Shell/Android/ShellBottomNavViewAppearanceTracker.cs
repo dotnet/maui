@@ -7,6 +7,7 @@ using AndroidX.AppCompat.Content.Res;
 using AndroidX.Core.View;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.Shape;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;

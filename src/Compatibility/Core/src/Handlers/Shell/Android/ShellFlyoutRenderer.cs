@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_content = content;
 
 			Profile.FramePartition("Create ContentRenderer");
-			_flyoutContent = context.CreateShellFlyoutContentView();
+			_flyoutContent = context.CreateShellFlyoutContentRenderer();
 
 			// Depending on what you read the right edge of the drawer should be Max(56dp, actionBarSize)
 			// from the right edge of the screen. Fine. Well except that doesn't account

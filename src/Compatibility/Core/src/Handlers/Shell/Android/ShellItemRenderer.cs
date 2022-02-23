@@ -63,9 +63,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnCreateView(inflater, container, savedInstanceState);
 
-			_outerLayout = inflater.Inflate(Resource.Layout.bottomtablayout, null);
-			_bottomView = _outerLayout.FindViewById<BottomNavigationView>(Resource.Id.bottomtab_tabbar);
-			_navigationArea = _outerLayout.FindViewById<FrameLayout>(Resource.Id.bottomtab_navarea);
+			_outerLayout = inflater.Inflate(Controls.Compatibility.Resource.Layout.bottomtablayout, null);
+			_bottomView = _outerLayout.FindViewById<BottomNavigationView>(Controls.Compatibility.Resource.Id.bottomtab_tabbar);
+			_navigationArea = _outerLayout.FindViewById<FrameLayout>(Controls.Compatibility.Resource.Id.bottomtab_navarea);
 
 			_bottomView.SetBackgroundColor(Colors.White.ToPlatform());
 			_bottomView.SetOnItemSelectedListener(this);
