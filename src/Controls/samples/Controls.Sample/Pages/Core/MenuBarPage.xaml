@@ -9,13 +9,21 @@
             <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action"></MenuFlyoutItem>
         </MenuBarItem>
         <MenuBarItem Text="File">
-            <MenuFlyoutItem Clicked="ItemClicked" Text="Custom File"></MenuFlyoutItem>
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Custom File">
+                <MenuFlyoutItem.IconImageSource>
+                        <FontImageSource
+                            FontAutoScalingEnabled="False"
+                            FontFamily = "Ionicons" 
+                            Glyph = "&#xf30c;">
+                        </FontImageSource>
+                    </MenuFlyoutItem.IconImageSource>
+            </MenuFlyoutItem>
         </MenuBarItem>
         <MenuBarItem Text="Custom Menu">
             <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1"></MenuFlyoutItem>
             <MenuFlyoutSubItem Clicked="ItemClicked" Text="Sub Menu 1">
-                <MenuFlyoutItem Clicked="ItemClicked" Text="Flyout item 1"></MenuFlyoutItem>
-                <MenuFlyoutItem Clicked="ItemClicked" Text="Flyout item 2"></MenuFlyoutItem>
+                <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1"></MenuFlyoutItem>
+                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2"></MenuFlyoutItem>
             </MenuFlyoutSubItem>
         </MenuBarItem>
     </views:BasePage.MenuBarItems>

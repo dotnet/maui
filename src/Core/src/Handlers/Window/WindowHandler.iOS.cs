@@ -32,7 +32,14 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
-					_ = mb.MenuBar?.ToHandler(handler.MauiContext!);
+					// The handlers that are part of MenuBar
+					// are only relevant while the menu is being built
+					// because you can only build a menu while the
+					// `AppDelegate.BuildMenu` override is running
+					mb.MenuBar?.Handler?.DisconnectHandler();
+					mb.MenuBar?
+						.ToHandler(handler.MauiContext!)?
+						.DisconnectHandler();
 				}
 			}
 		}

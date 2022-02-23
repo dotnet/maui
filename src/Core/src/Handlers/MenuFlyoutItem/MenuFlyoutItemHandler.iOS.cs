@@ -9,20 +9,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuFlyoutItemHandler
 	{
-		static int i = 0;
 		static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();
 
 		protected override UIMenuElement CreatePlatformElement()
 		{
+			int index = menus.Count;
 			UIImage? uiImage = VirtualView.Source.GetPlatformMenuImage(MauiContext!);
-			var selector = new Selector($"MenuItem{i++}:");
+			var selector = new Selector($"MenuItem{index}:");
 			var command = UICommand.Create(
 				title: VirtualView.Text,
 				uiImage,
 				selector,
-				new NSString($"{i}"));
+				new NSString($"{index}"));
 
-			menus[i] = VirtualView;
+			menus[index] = VirtualView;
 			return command;
 		}
 
