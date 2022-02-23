@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Handlers
 				?? throw new InvalidOperationException("Menu has not been initialized yet on the Application");
 		}
 
-
-
 		public override void SetVirtualView(IElement view)
 		{
 			base.SetVirtualView(view);
@@ -81,11 +79,11 @@ namespace Microsoft.Maui.Handlers
 			Rebuild();
 		}
 
-		void Rebuild()
+		internal static void Rebuild()
 		{
 			UIMenuSystem
-						.MainSystem
-						.SetNeedsRebuild();
+				.MainSystem
+				.SetNeedsRebuild();
 		}
 	}
 }

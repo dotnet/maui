@@ -11,7 +11,20 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override UIMenu CreatePlatformElement()
 		{
-			return VirtualView.ToPlatformMenu(VirtualView.Text, MauiContext!);
+			IUIMenuBuilder? uIMenuBuilder = null;
+
+			if (VirtualView.Parent?.Handler?.PlatformView is IUIMenuBuilder builder)
+			{
+				uIMenuBuilder = builder;
+			}
+
+			return
+				VirtualView
+					.ToPlatformMenu(
+						VirtualView.Text,
+						null,
+						MauiContext!,
+						uIMenuBuilder);
 		}
 
 		public void Add(IMenuElement view)
@@ -36,9 +49,7 @@ namespace Microsoft.Maui.Handlers
 
 		void Rebuild()
 		{
-			UIMenuSystem
-				.MainSystem
-				.SetNeedsRebuild();
+			MenuBarHandler.Rebuild();
 		}
 	}
 }

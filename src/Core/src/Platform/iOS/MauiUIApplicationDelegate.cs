@@ -138,24 +138,5 @@ namespace Microsoft.Maui
 		public IServiceProvider Services { get; protected set; } = null!;
 
 		public IApplication Application { get; protected set; } = null!;
-
-		internal IUIMenuBuilder? MenuBuilder { get; private set; }
-		public override void BuildMenu(IUIMenuBuilder builder)
-		{
-			base.BuildMenu(builder);
-
-			MenuBuilder = builder;
-
-			var window = Window ?? this.GetWindow() ??
-				UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
-
-			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
-			MenuBuilder = null;
-		}
-
-		public override bool CanPerform(Selector action, NSObject? withSender)
-		{
-			return true;
-		}
 	}
 }

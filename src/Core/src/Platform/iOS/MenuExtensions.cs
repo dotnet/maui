@@ -3,28 +3,61 @@ using UIKit;
 using Foundation;
 using ObjCRuntime;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Platform
 {
-	internal static class MenuExtensions
+	public static class MenuExtensions
 	{
-		public static string GetIdentifier(this UIMenu uIMenu)
+		internal static UIImage? GetPlatformMenuImage(this IImageSource? imageSource, IMauiContext mauiContext)
+		{
+			if (imageSource == null)
+				return null;
+
+			if (imageSource is IFileImageSource fileImageSource)
+				return fileImageSource.GetPlatformImage();
+
+			if (imageSource is IFontImageSource fontImageSource)
+			{
+				var fontManager = mauiContext.Services.GetRequiredService<IFontManager>();
+				return fontImageSource.GetPlatformImage(fontManager, 1);
+			}
+
+			throw new InvalidOperationException("MenuItems on Catalyst currently only support Font and File Images");
+		}
+
+		public static void SendClicked(this UICommand uICommand)
+		{
+			MenuFlyoutItemHandler.Execute(uICommand);
+		}
+
+		internal static string GetIdentifier(this UIMenu uIMenu)
 		{
 			return (NSString)uIMenu.PerformSelector(new Selector("identifier"));
 		}
 
-		public static UIMenu ToPlatformMenu(
+		internal static UIMenu ToPlatformMenu(
 			this IList<IMenuElement> menuElements,
 			string title,
-			IMauiContext mauiContext)
+			IImageSource? imageSource,
+			IMauiContext mauiContext,
+			IUIMenuBuilder? uIMenuBuilder)
 		{
+			uIMenuBuilder = uIMenuBuilder ??
+				MauiUIApplicationDelegate.Current.MenuBuilder!;
+
 			UIMenu? platformMenu = null;
+			UIImage? uiImage = imageSource.GetPlatformMenuImage(mauiContext);
+
+			// You can't have two menus at the same level with the same title
+			// This locates an existing menu and then will just merge the users
+			// menu into it
 			if (Enum.TryParse(typeof(UIMenuIdentifier), title, out object? result))
 			{
 				if (result != null)
 				{
 					platformMenu =
-						MauiUIApplicationDelegate.Current.MenuBuilder?.GetMenu(((UIMenuIdentifier)result).GetConstant());
+						uIMenuBuilder.GetMenu(((UIMenuIdentifier)result).GetConstant());
 				}
 			}
 
@@ -37,26 +70,26 @@ namespace Microsoft.Maui.Platform
 				platformMenuElements[i] = menuElement;
 			}
 
+			// This means we are merging into an existing menu
 			if (platformMenu != null)
 			{
 				if (platformMenuElements.Length > 0)
 				{
 					var menuContainer =
-						UIMenu.Create(String.Empty, null,
+						UIMenu.Create(String.Empty,
+							uiImage,
 							UIMenuIdentifier.None,
 							UIMenuOptions.DisplayInline,
 							platformMenuElements);
 
-					MauiUIApplicationDelegate
-									.Current
-									.MenuBuilder?
-									.InsertChildMenuAtStart(menuContainer, platformMenu.GetIdentifier());
+					uIMenuBuilder.InsertChildMenuAtStart(menuContainer, platformMenu.GetIdentifier());
 				}
 			}
 			else
 			{
+				// This means we are creating our own new menu/submenu
 				platformMenu =
-					UIMenu.Create(title, null, UIMenuIdentifier.None,
+					UIMenu.Create(title, uiImage, UIMenuIdentifier.None,
 						UIMenuOptions.SingleSelection, platformMenuElements);
 			}
 
