@@ -8,25 +8,30 @@ namespace Microsoft.Maui.Essentials.Implementations
 		static TizenRotationVectorSensor DefaultSensor
 			=> (TizenRotationVectorSensor)Platform.GetDefaultSensor(SensorType.OrientationSensor);
 
-		public bool IsSupported
+		bool PlatformIsSupported
 			=> TizenRotationVectorSensor.IsSupported;
 
-		public void Start(SensorSpeed sensorSpeed)
+		TizenRotationVectorSensor sensor;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			DefaultSensor.Interval = sensorSpeed.ToPlatform();
-			DefaultSensor.DataUpdated += DataUpdated;
-			DefaultSensor.Start();
+			sensor = DefaultSensor;
+
+			sensor.Interval = sensorSpeed.ToPlatform();
+			sensor.DataUpdated += DataUpdated;
+			sensor.Start();
 		}
 
-		public void Stop()
+		void PlatformStop()
 		{
-			DefaultSensor.DataUpdated -= DataUpdated;
-			DefaultSensor.Stop();
+			sensor.DataUpdated -= DataUpdated;
+			sensor.Stop();
+			sensor = null;
 		}
 
-		static void DataUpdated(object sender, RotationVectorSensorDataUpdatedEventArgs e)
+		void DataUpdated(object sender, RotationVectorSensorDataUpdatedEventArgs e)
 		{
-			OnChanged(new OrientationSensorData(e.X, e.Y, e.Z, e.W));
+			RaiseReadingChanged(new OrientationSensorData(e.X, e.Y, e.Z, e.W));
 		}
 	}
 }

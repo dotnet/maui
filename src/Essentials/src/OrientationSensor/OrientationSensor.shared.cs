@@ -14,14 +14,18 @@ namespace Microsoft.Maui.Essentials
 		void Start(SensorSpeed sensorSpeed);
 
 		void Stop();
+
+		event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensor']/Docs" />
 	public static partial class OrientationSensor
 	{
-		static bool useSyncContext;
-
-		public static event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
+		public static event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged
+		{
+			add => Current.ReadingChanged += value;
+			remove => Current.ReadingChanged -= value;
+		}
 
 		public static bool IsSupported 
 			=> Current.IsSupported;
@@ -31,59 +35,11 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
-		{
-			if (!Current.IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (IsMonitoring)
-				throw new InvalidOperationException("Orientation sensor has already been started.");
-
-			IsMonitoring = true;
-			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
-
-			try
-			{
-				Current.Start(sensorSpeed);
-			}
-			catch
-			{
-				IsMonitoring = false;
-				throw;
-			}
-		}
+			=> Current.Start(sensorSpeed);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public static void Stop()
-		{
-			if (!Current.IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (!IsMonitoring)
-				return;
-
-			IsMonitoring = false;
-
-			try
-			{
-				Current.Stop();
-			}
-			catch
-			{
-				IsMonitoring = true;
-				throw;
-			}
-		}
-
-		internal static void OnChanged(OrientationSensorData reading) =>
-			OnChanged(new OrientationSensorChangedEventArgs(reading));
-
-		internal static void OnChanged(OrientationSensorChangedEventArgs e)
-		{
-			if (useSyncContext)
-				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
-			else
-				ReadingChanged?.Invoke(null, e);
-		}
+			=> Current.Stop();
 
 #nullable enable
 		static IOrientationSensor? currentImplementation;
@@ -151,5 +107,77 @@ namespace Microsoft.Maui.Essentials
 			$"{nameof(Orientation.Y)}: {Orientation.Y}, " +
 			$"{nameof(Orientation.Z)}: {Orientation.Z}, " +
 			$"{nameof(Orientation.W)}: {Orientation.W}";
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class OrientationSensorImplementation : IOrientationSensor
+	{
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+
+		public event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
+
+		public bool IsSupported
+			=> PlatformIsSupported;
+
+		public bool IsMonitoring { get; private set; }
+
+		public void Start(SensorSpeed sensorSpeed)
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Orientation sensor has already been started.");
+
+			IsMonitoring = true;
+			SensorSpeed = sensorSpeed;
+
+			try
+			{
+				PlatformStart(sensorSpeed);
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop']/Docs" />
+		public void Stop()
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
+			try
+			{
+				PlatformStop();
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
+		}
+
+		internal void RaiseReadingChanged(OrientationSensorData reading)
+		{
+			var args = new OrientationSensorChangedEventArgs(reading);
+			
+			if (UseSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, args));
+			else
+				ReadingChanged?.Invoke(null, args);
+		}
+
 	}
 }

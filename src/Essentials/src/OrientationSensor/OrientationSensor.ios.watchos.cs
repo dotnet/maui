@@ -7,10 +7,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class OrientationSensorImplementation : IOrientationSensor
 	{
-		public bool IsSupported =>
+		bool PlatformIsSupported =>
 			Platform.MotionManager?.DeviceMotionAvailable ?? false;
 
-		public void Start(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var manager = Platform.MotionManager;
 			manager.DeviceMotionUpdateInterval = sensorSpeed.ToPlatform();
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			manager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, Platform.GetCurrentQueue(), DataUpdated);
 		}
 
-		static void DataUpdated(CMDeviceMotion data, NSError error)
+		void DataUpdated(CMDeviceMotion data, NSError error)
 		{
 			if (data == null)
 				return;
@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 			// so that the final quaternion will take us from the earth frame in .NET MAUI convention to the phone frame
 			q = Quaternion.Multiply(qz90, q);
 			var rotationData = new OrientationSensorData(q.X, q.Y, q.Z, q.W);
-			OrientationSensor.OnChanged(rotationData);
+			RaiseReadingChanged(rotationData);
 		}
 
-		public void Stop() =>
+		void PlatformStop() =>
 			Platform.MotionManager?.StopDeviceMotionUpdates();
 	}
 }
