@@ -206,7 +206,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private void LaunchUri(Uri uri)
 		{
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			Process.Start(@"C:\Program Files\Internet Explorer\iexplore.exe", uri.ToString());
+			using (var launchBrowser = new Process())
+			{
+				launchBrowser.StartInfo.UseShellExecute = true;
+				launchBrowser.StartInfo.FileName = uri.ToString();
+				launchBrowser.Start();
+			}
 #elif WEBVIEW2_MAUI
 					
 			_ = Launcher.LaunchUriAsync(uri);
