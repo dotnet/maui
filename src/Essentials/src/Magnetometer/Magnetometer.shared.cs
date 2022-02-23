@@ -31,7 +31,8 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring { get; private set; }
+		public static bool IsMonitoring
+			=> Current.IsMonitoring;
 
 		public static bool IsSupported 
 			=> Current.IsSupported;
