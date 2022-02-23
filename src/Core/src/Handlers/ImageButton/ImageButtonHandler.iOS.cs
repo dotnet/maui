@@ -44,17 +44,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.PlatformView as UIButton)?.UpdateStrokeColor(buttonStroke);
+			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
 		}
 
 		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.PlatformView as UIButton)?.UpdateStrokeThickness(buttonStroke);
+			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
 		}
 
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.PlatformView as UIButton)?.UpdateCornerRadius(buttonStroke);
+			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
 		}
 
 		void OnButtonTouchUpInside(object? sender, EventArgs e)
