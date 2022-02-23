@@ -16,19 +16,34 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public Task<Stream> OpenAppPackageFileAsync(string filename)
 		{
-			if (filename == null)
-				throw new ArgumentNullException(nameof(filename));
-
-			filename = filename.Replace('\\', Path.DirectorySeparatorChar);
-			var root = NSBundle.MainBundle.BundlePath;
-#if MACCATALYST || MACOS
-            root = Path.Combine(root, "Contents", "Resources");
-#endif
-			var file = Path.Combine(root, filename);
+			var file = PlatformGetFullAppPackageFilePath(filename);
 			return Task.FromResult((Stream)File.OpenRead(file));
 		}
 
-		string GetDirectory(NSSearchPathDirectory directory)
+		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult(File.Exists(file));
+		}
+
+		static string PlatformGetFullAppPackageFilePath(string filename)
+		{
+			if (filename == null)
+				throw new ArgumentNullException(nameof(filename));
+
+			filename = NormalizePath(filename);
+
+			var root = NSBundle.MainBundle.BundlePath;
+#if MACCATALYST || MACOS
+			root = Path.Combine(root, "Contents", "Resources");
+#endif
+			return Path.Combine(root, filename);
+		}
+
+		static string NormalizePath(string filename) =>
+			filename.Replace('\\', Path.DirectorySeparatorChar);
+
+		static string GetDirectory(NSSearchPathDirectory directory)
 		{
 			var dirs = NSSearchPath.GetDirectories(directory, NSSearchPathDomain.User);
 			if (dirs == null || dirs.Length == 0)
@@ -53,9 +68,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 			// ios does not like the extensions
 			extension = extension?.TrimStart('.');
 
-			var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
-			var mimeTypes = UTType.CopyAllTags(id, UTType.TagClassMIMEType);
-			return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
+			// var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
+			// var mimeTypes = UTType.CopyAllTags(id, UniformTypeIdentifiers.UTTagClass.MimeType.ToString());
+			// return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
+
+			return extension;
 		}
 
 		internal void Init(FileBase file)

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
 			var textAlign = (TextAlignment)value;
-			return textAlign.ToNativeTextAlignment();
+			return textAlign.ToPlatformTextAlignment();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

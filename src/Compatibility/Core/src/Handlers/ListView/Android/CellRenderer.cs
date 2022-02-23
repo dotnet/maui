@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected Cell Cell { get; set; }
 
-		protected override AView CreateNativeElement()
+		protected override AView CreatePlatformElement()
 		{
 			var creationArgs = VirtualView.ConvertView;
 			VirtualView.ConvertView = null;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (item.Parent is View parentView)
 				ParentView = parentView;
 
-			if (parent == null && ParentView?.Handler?.NativeView is ViewGroup platformParent)
+			if (parent == null && ParentView?.Handler?.PlatformView is ViewGroup platformParent)
 				parent = platformParent;
 
 			Performance.Start(out string reference);
@@ -108,20 +108,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
-		protected void WireUpForceUpdateSizeRequested(Cell cell, AView nativeCell)
+		protected void WireUpForceUpdateSizeRequested(Cell cell, AView platformCell)
 		{
 			ICellController cellController = cell;
 			cellController.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
 
 			_onForceUpdateSizeRequested = (sender, e) =>
 			{
-				if (nativeCell.Handle == IntPtr.Zero)
+				if (platformCell.Handle == IntPtr.Zero)
 					return;
 				// RenderHeight may not be changed, but that's okay, since we
 				// don't actually use the height argument in the OnMeasure override.
-				nativeCell.Measure(nativeCell.Width, (int)cell.RenderHeight);
-				nativeCell.SetMinimumHeight(nativeCell.MeasuredHeight);
-				nativeCell.SetMinimumWidth(nativeCell.MeasuredWidth);
+				platformCell.Measure(platformCell.Width, (int)cell.RenderHeight);
+				platformCell.SetMinimumHeight(platformCell.MeasuredHeight);
+				platformCell.SetMinimumWidth(platformCell.MeasuredWidth);
 			};
 
 			cellController.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;

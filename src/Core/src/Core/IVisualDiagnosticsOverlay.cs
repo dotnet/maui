@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		bool EnableElementSelector { get; set; }
 
 		/// <summary>
-		/// Gets the offset point used to adjust the native drawing bounds for a given Adorner.
+		/// Gets the offset point used to adjust the platform drawing bounds for a given Adorner.
 		/// Used when the underlying operating system may not give exact placement for where elements are.
 		/// Ex. Android and the Status Bar.
 		/// </summary>

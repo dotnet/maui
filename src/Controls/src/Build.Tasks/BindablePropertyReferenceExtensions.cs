@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return typeConverter;
 
 			propertyType = propertyType ?? staticGetter?.ReturnType;
-			foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
+			foreach (var (t, tc) in TypeConversionExtensions.KnownConverters)
 			{
 				if (TypeRefComparer.Default.Equals(module.ImportReference(t), propertyType))
 					return module.ImportReference(tc);

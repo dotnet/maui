@@ -1,73 +1,66 @@
 using System;
 using System.Numerics;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
+
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IOrientationSensor
+	{
+		bool IsSupported { get; }
+
+		bool IsMonitoring { get; }
+
+		SensorSpeed SensorSpeed { get; }
+
+		void Start(SensorSpeed sensorSpeed);
+
+		void Stop();
+
+		event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensor']/Docs" />
 	public static partial class OrientationSensor
 	{
-		static bool useSyncContext;
+		public static event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged
+		{
+			add => Current.ReadingChanged += value;
+			remove => Current.ReadingChanged -= value;
+		}
 
-		public static event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
+		public static bool IsSupported 
+			=> Current.IsSupported;
+
+		public static SensorSpeed SensorSpeed
+			=> Current.SensorSpeed;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring { get; private set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
-		{
-			if (!IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (IsMonitoring)
-				throw new InvalidOperationException("Orientation sensor has already been started.");
-
-			IsMonitoring = true;
-			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
-
-			try
-			{
-				PlatformStart(sensorSpeed);
-			}
-			catch
-			{
-				IsMonitoring = false;
-				throw;
-			}
-		}
+			=> Current.Start(sensorSpeed);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public static void Stop()
-		{
-			if (!IsSupported)
-				throw new FeatureNotSupportedException();
+			=> Current.Stop();
 
-			if (!IsMonitoring)
-				return;
+#nullable enable
+		static IOrientationSensor? currentImplementation;
+#nullable disable
 
-			IsMonitoring = false;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IOrientationSensor Current =>
+			currentImplementation ??= new OrientationSensorImplementation();
 
-			try
-			{
-				PlatformStop();
-			}
-			catch
-			{
-				IsMonitoring = true;
-				throw;
-			}
-		}
-
-		internal static void OnChanged(OrientationSensorData reading) =>
-			OnChanged(new OrientationSensorChangedEventArgs(reading));
-
-		internal static void OnChanged(OrientationSensorChangedEventArgs e)
-		{
-			if (useSyncContext)
-				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
-			else
-				ReadingChanged?.Invoke(null, e);
-		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(IOrientationSensor? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensorChangedEventArgs']/Docs" />
@@ -121,5 +114,77 @@ namespace Microsoft.Maui.Essentials
 			$"{nameof(Orientation.Y)}: {Orientation.Y}, " +
 			$"{nameof(Orientation.Z)}: {Orientation.Z}, " +
 			$"{nameof(Orientation.W)}: {Orientation.W}";
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class OrientationSensorImplementation : IOrientationSensor
+	{
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+
+		public event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
+
+		public bool IsSupported
+			=> PlatformIsSupported;
+
+		public bool IsMonitoring { get; private set; }
+
+		public void Start(SensorSpeed sensorSpeed)
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Orientation sensor has already been started.");
+
+			IsMonitoring = true;
+			SensorSpeed = sensorSpeed;
+
+			try
+			{
+				PlatformStart(sensorSpeed);
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop']/Docs" />
+		public void Stop()
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
+			try
+			{
+				PlatformStop();
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
+		}
+
+		internal void RaiseReadingChanged(OrientationSensorData reading)
+		{
+			var args = new OrientationSensorChangedEventArgs(reading);
+			
+			if (UseSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, args));
+			else
+				ReadingChanged?.Invoke(null, args);
+		}
+
 	}
 }

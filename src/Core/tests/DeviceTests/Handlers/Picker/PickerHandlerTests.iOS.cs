@@ -21,19 +21,19 @@ namespace Microsoft.Maui.DeviceTests
 				TitleColor = xplatTitleColor
 			};
 
-			var expectedValue = xplatTitleColor.ToNative();
+			var expectedValue = xplatTitleColor.ToPlatform();
 
 			var values = await GetValueAsync(picker, (handler) =>
 			{
 				return new
 				{
 					ViewValue = picker.TitleColor,
-					NativeViewValue = GetNativeTitleColor(handler)
+					PlatformViewValue = GetNativeTitleColor(handler)
 				};
 			});
 
 			Assert.Equal(xplatTitleColor, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "Text Color Initializes Correctly")]
@@ -49,23 +49,23 @@ namespace Microsoft.Maui.DeviceTests
 				SelectedIndex = 1
 			};
 
-			var expectedValue = xplatTitleColor.ToNative();
+			var expectedValue = xplatTitleColor.ToPlatform();
 
 			var values = await GetValueAsync(picker, (handler) =>
 			{
 				return new
 				{
 					ViewValue = picker.TextColor,
-					NativeViewValue = GetNativeTextColor(handler)
+					PlatformViewValue = GetNativeTextColor(handler)
 				};
 			});
 
 			Assert.Equal(xplatTitleColor, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			pickerHandler.NativeView;
+			pickerHandler.PlatformView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Text;

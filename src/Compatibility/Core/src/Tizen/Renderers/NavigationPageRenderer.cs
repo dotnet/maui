@@ -228,14 +228,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Text = Title,
 				HorizontalTextAlignment = Native.TextAlignment.Center,
-				ForegroundColor = Element.BarTextColor.ToNative()
+				ForegroundColor = Element.BarTextColor.ToPlatform()
 			};
 			return span.GetMarkupText();
 		}
 
 		void UpdateBarBackgroundColor(NaviItem item)
 		{
-			item.TitleBarBackgroundColor = Element.BarBackgroundColor.ToNative();
+			item.TitleBarBackgroundColor = Element.BarBackgroundColor.ToPlatform();
 		}
 
 		void UpdateNavigationBar(Page page, NaviItem item = null)

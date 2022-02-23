@@ -1,12 +1,12 @@
 #nullable enable
 #if __IOS__ || MACCATALYST
-using NativeView = Microsoft.Maui.Platform.LayoutView;
+using PlatformView = Microsoft.Maui.Platform.LayoutView;
 #elif __ANDROID__
-using NativeView = Microsoft.Maui.Platform.LayoutViewGroup;
+using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 #elif WINDOWS
-using NativeView = Microsoft.Maui.Platform.LayoutPanel;
+using PlatformView = Microsoft.Maui.Platform.LayoutPanel;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -42,12 +42,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
-			((NativeView?)handler.NativeView)?.UpdateBackground(layout);
+			((PlatformView?)handler.PlatformView)?.UpdateBackground(layout);
 		}
 
 		public static void MapClipsToBounds(ILayoutHandler handler, ILayout layout)
 		{
-			((NativeView?)handler.NativeView)?.UpdateClipsToBounds(layout);
+			((PlatformView?)handler.PlatformView)?.UpdateClipsToBounds(layout);
 		}
 
 		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)

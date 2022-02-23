@@ -17,16 +17,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override CGSize Measure()
 		{
-			if (NativeHandler?.VirtualView == null)
+			if (PlatformHandler?.VirtualView == null)
 			{
 				return CGSize.Empty;
 			}
 
-			var measure = NativeHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
+			var measure = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
 
 
-			var width = NativeHandler.VirtualView.Width > 0
-				? NativeHandler.VirtualView.Width : measure.Width;
+			var width = PlatformHandler.VirtualView.Width > 0
+				? PlatformHandler.VirtualView.Width : measure.Width;
 
 			return new CGSize(width, ConstrainedDimension);
 		}
