@@ -115,9 +115,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			// aapt resource value: 0x7F0B006F
 			public static int shellcontent = 2131427439;
-			
-			// aapt resource value: 0x7F0B0070
-			public static int shellrootlayout = 2131427440;
 
 			// aapt resource value: 0x7F0B0072
 			public static int tabbar = 2131427442;
