@@ -5,28 +5,32 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class MagnetometerImplementation : IMagnetometer
 	{
-		public TizenMagnetometer DefaultSensor =>
+		static TizenMagnetometer DefaultSensor =>
 			(TizenMagnetometer)Platform.GetDefaultSensor(SensorType.Magnetometer);
 
-		internal static bool IsSupported =>
+		bool PlatformIsSupported =>
 			TizenMagnetometer.IsSupported;
 
-		public void Start(SensorSpeed sensorSpeed)
+		TizenMagnetometer sensor;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			DefaultSensor.Interval = sensorSpeed.ToPlatform();
-			DefaultSensor.DataUpdated += DataUpdated;
-			DefaultSensor.Start();
+			sensor = DefaultSensor;
+			sensor.Interval = sensorSpeed.ToPlatform();
+			sensor.DataUpdated += DataUpdated;
+			sensor.Start();
 		}
 
-		public void Stop()
+		void PlatformStop()
 		{
-			DefaultSensor.DataUpdated -= DataUpdated;
-			DefaultSensor.Stop();
+			sensor.DataUpdated -= DataUpdated;
+			sensor.Stop();
+			sensor = null;
 		}
 
-		static void DataUpdated(object sender, MagnetometerDataUpdatedEventArgs e)
+		void DataUpdated(object sender, MagnetometerDataUpdatedEventArgs e)
 		{
-			Magnetometer.OnChanged(new MagnetometerData(e.X, e.Y, e.Z));
+			RaiseReadingChanged(new MagnetometerData(e.X, e.Y, e.Z));
 		}
 	}
 }

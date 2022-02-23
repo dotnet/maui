@@ -8,19 +8,27 @@ namespace Microsoft.Maui.Essentials
 {
 	public interface IMagnetometer
 	{
-		bool IsSupported { get; } 
+		bool IsSupported { get; }
+
+		bool IsMonitoring { get; }
+
+		SensorSpeed SensorSpeed { get; }
 
 		void Start(SensorSpeed sensorSpeed);
 
 		void Stop();
+
+		event EventHandler<MagnetometerChangedEventArgs> ReadingChanged;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Magnetometer']/Docs" />
 	public static partial class Magnetometer
 	{
-		static bool useSyncContext;
-
-		public static event EventHandler<MagnetometerChangedEventArgs> ReadingChanged;
+		public static event EventHandler<MagnetometerChangedEventArgs> ReadingChanged
+		{
+			add => Current.ReadingChanged += value;
+			remove => Current.ReadingChanged -= value;
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring { get; private set; }
@@ -28,61 +36,16 @@ namespace Microsoft.Maui.Essentials
 		public static bool IsSupported 
 			=> Current.IsSupported;
 
+		public static SensorSpeed SensorSpeed
+			=> Current.SensorSpeed;
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
-		{
-			if (!Current.IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (IsMonitoring)
-				throw new InvalidOperationException("Magnetometer has already been started.");
-
-			IsMonitoring = true;
-			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
-
-			try
-			{
-				Current.Start(sensorSpeed);
-			}
-			catch
-			{
-				IsMonitoring = false;
-				throw;
-			}
-		}
+			=> Current.Start(sensorSpeed);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public static void Stop()
-		{
-			if (!Current.IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (!IsMonitoring)
-				return;
-
-			IsMonitoring = false;
-
-			try
-			{
-				Current.Stop();
-			}
-			catch
-			{
-				IsMonitoring = true;
-				throw;
-			}
-		}
-
-		internal static void OnChanged(MagnetometerData reading) =>
-			OnChanged(new MagnetometerChangedEventArgs(reading));
-
-		internal static void OnChanged(MagnetometerChangedEventArgs e)
-		{
-			if (useSyncContext)
-				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
-			else
-				ReadingChanged?.Invoke(null, e);
-		}
+			=> Current.Stop();
 
 #nullable enable
 		static IMagnetometer? currentImplementation;
@@ -149,5 +112,74 @@ namespace Microsoft.Maui.Essentials
 			$"{nameof(MagneticField.X)}: {MagneticField.X}, " +
 			$"{nameof(MagneticField.Y)}: {MagneticField.Y}, " +
 			$"{nameof(MagneticField.Z)}: {MagneticField.Z}";
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class MagnetometerImplementation : IMagnetometer
+	{
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+		public event EventHandler<MagnetometerChangedEventArgs> ReadingChanged;
+
+		public bool IsMonitoring { get; private set; }
+
+		public bool IsSupported => PlatformIsSupported;
+
+		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+
+		public void Start(SensorSpeed sensorSpeed)
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Magnetometer has already been started.");
+
+			IsMonitoring = true;
+
+			try
+			{
+				PlatformStart(sensorSpeed);
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='Stop']/Docs" />
+		public void Stop()
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
+			try
+			{
+				PlatformStop();
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
+		}
+
+		void RaiseReadingChanged(MagnetometerData data)
+		{
+			var args = new MagnetometerChangedEventArgs(data);
+
+			if (UseSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(this, args));
+			else
+				ReadingChanged?.Invoke(this, args);
+		}
 	}
 }
