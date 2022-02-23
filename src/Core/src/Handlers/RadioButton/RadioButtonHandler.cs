@@ -27,6 +27,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IRadioButton.CornerRadius)] = MapCornerRadius,
 		};
 
+		public static CommandMapper<IRadioButton, IRadioButtonHandler> CommandMapper = new(ViewCommandMapper)
+		{
+		};
+
 		public RadioButtonHandler() : base(Mapper)
 		{
 		}
