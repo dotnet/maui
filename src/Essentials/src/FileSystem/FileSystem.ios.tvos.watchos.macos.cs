@@ -8,19 +8,19 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class FileSystemImplementation : IFileSystem
 	{
-		public string CacheDirectory
+		string PlatformCacheDirectory
 			=> GetDirectory(NSSearchPathDirectory.CachesDirectory);
 
-		public string AppDataDirectory
+		string PlatformAppDataDirectory
 			=> GetDirectory(NSSearchPathDirectory.LibraryDirectory);
 
-		public Task<Stream> OpenAppPackageFileAsync(string filename)
+		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{
 			var file = PlatformGetFullAppPackageFilePath(filename);
 			return Task.FromResult((Stream)File.OpenRead(file));
 		}
 
-		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
 		{
 			var file = PlatformGetFullAppPackageFilePath(filename);
 			return Task.FromResult(File.Exists(file));
@@ -54,7 +54,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return dirs[0];
 		}
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	public partial class FileBase
 	{
 		internal FileBase(NSUrl file)
@@ -63,7 +66,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			FileName = NSFileManager.DefaultManager.DisplayName(file?.Path);
 		}
 
-		internal static string GetContentType(string extension)
+		string PlatformGetContentType(string extension)
 		{
 			// ios does not like the extensions
 			extension = extension?.TrimStart('.');
@@ -75,11 +78,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return extension;
 		}
 
-		internal void Init(FileBase file)
+		void PlatformInit(FileBase file)
 		{
 		}
 
-		internal virtual Task<Stream> OpenReadAsync() =>
+		internal virtual Task<Stream> PlatformOpenReadAsync() =>
 			Task.FromResult((Stream)File.OpenRead(FullPath));
 	}
 }

@@ -7,19 +7,19 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class FileSystemImplementation : IFileSystem
 	{
-		string CacheDirectory
+		string PlatformCacheDirectory
 			=> Application.Current.DirectoryInfo.Cache;
 
-		string AppDataDirectory
+		string PlatformAppDataDirectory
 			=> Application.Current.DirectoryInfo.Data;
 
-		public Task<Stream> OpenAppPackageFileAsync(string filename)
+		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{
 			var file = PlatformGetFullAppPackageFilePath(filename);
 			return Task.FromResult((Stream)File.OpenRead(file));
 		}
 
-		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
 		{
 			var file = PlatformGetFullAppPackageFilePath(filename);
 			return Task.FromResult(File.Exists(file));
@@ -38,20 +38,23 @@ namespace Microsoft.Maui.Essentials.Implementations
 		static string NormalizePath(string filename) =>
 			filename.Replace('\\', Path.DirectorySeparatorChar);
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	public partial class FileBase
 	{
-		static string GetContentType(string extension)
+		string PlatformGetContentType(string extension)
 		{
 			extension = extension.TrimStart('.');
 			return Tizen.Content.MimeType.MimeUtil.GetMimeType(extension);
 		}
 
-		internal void Init(FileBase file)
+		void PlatformInit(FileBase file)
 		{
 		}
 
-		internal virtual async Task<Stream> OpenReadAsync()
+		internal virtual async Task<Stream> PlatformOpenReadAsync()
 		{
 			await Permissions.RequestAsync<Permissions.StorageRead>();
 

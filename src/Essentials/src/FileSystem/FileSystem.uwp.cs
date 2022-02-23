@@ -8,13 +8,13 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class FileSystemImplementation : IFileSystem
 	{
-		string CacheDirectory
+		string PlatformCacheDirectory
 			=> ApplicationData.Current.LocalCacheFolder.Path;
 
-		string AppDataDirectory
+		string PlatformAppDataDirectory
 			=> ApplicationData.Current.LocalFolder.Path;
 
-		public Task<Stream> OpenAppPackageFileAsync(string filename)
+		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
 		{
 			var file = PlatformGetFullAppPackageFilePath(filename);
 			return Task.FromResult(File.Exists(file));
@@ -63,7 +63,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 		internal static string NormalizePath(string path)
 			=> path.Replace('/', Path.DirectorySeparatorChar);
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	public partial class FileBase
 	{
 		internal FileBase(IStorageFile file)
@@ -73,7 +76,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			ContentType = file?.ContentType;
 		}
 
-		internal void Init(FileBase file)
+		void PlatformInit(FileBase file)
 		{
 			File = file.File;
 		}
@@ -81,9 +84,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 		internal IStorageFile File { get; set; }
 
 		// we can't do anything here, but Windows will take care of it
-		internal static string GetContentType(string extension) => null;
+		string PlatformGetContentType(string extension) => null;
 
-		internal virtual Task<Stream> OpenReadAsync() =>
+		internal virtual Task<Stream> PlatformOpenReadAsync() =>
 			File.OpenStreamForReadAsync();
 	}
 

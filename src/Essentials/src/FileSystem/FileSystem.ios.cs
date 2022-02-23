@@ -10,9 +10,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class FileSystemImplementation : IFileSystem
+	public partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
 	{
-		internal static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
+		public async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
 		{
 			if (urls == null || urls.Length == 0)
 				return Array.Empty<FileResult>();
@@ -47,7 +47,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return await tcs.Task;
 		}
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	class BookmarkDataFileResult : FileResult
 	{
 		NSData bookmark;
@@ -80,7 +83,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
 		}
 
-		internal override Task<Stream> OpenReadAsync()
+		internal override Task<Stream> PlatformOpenReadAsync()
 		{
 			var url = NSUrl.FromBookmarkData(bookmark, 0, null, out var isStale, out var error);
 
@@ -169,7 +172,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
 		}
 
-		internal override Task<Stream> OpenReadAsync()
+		internal override Task<Stream> PlatformOpenReadAsync()
 		{
 			Stream fileStream = File.OpenRead(FullPath);
 
@@ -191,7 +194,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			FileName = FullPath;
 		}
 
-		internal override Task<Stream> OpenReadAsync()
+		internal override Task<Stream> PlatformOpenReadAsync()
 		{
 			data ??= uiImage.AsPNG();
 
@@ -212,7 +215,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			FileName = originalFilename;
 		}
 
-		internal override Task<Stream> OpenReadAsync()
+		internal override Task<Stream> PlatformOpenReadAsync()
 		{
 			var tcsStream = new TaskCompletionSource<Stream>();
 

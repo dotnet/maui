@@ -7,17 +7,31 @@ using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
-	public interface IFileSystem	
+	public interface IFileSystem
 	{
 		string CacheDirectory { get; }
 
-		string AppDataDirectory { get;}
+		string AppDataDirectory { get; }
 
-		Task<Stream> OpenAppPackageFileAsync(string filename);		
+		Task<Stream> OpenAppPackageFileAsync(string filename);
+
+		Task<bool> AppPackageFileExistsAsync(string filename);
+	}
+
+	public interface IPlatformFileSystem
+	{
+#if ANDROID
+		Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName);
+
+		string EnsurePhysicalPath(Android.Net.Uri uri, bool requireExtendedAccess = true);
+#endif
+#if IOS || MACCATALYST
+		Task<FileResult[]> EnsurePhysicalFileResultsAsync(params Foundation.NSUrl[] urls);
+#endif
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
-	public static partial class FileSystem
+	public static class FileSystem
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='CacheDirectory']/Docs" />
 		public static string CacheDirectory
@@ -32,7 +46,22 @@ namespace Microsoft.Maui.Essentials
 			=> Current.OpenAppPackageFileAsync(filename);
 
 		public static Task<bool> AppPackageFileExistsAsync(string filename)
-			=> PlatformAppPackageFileExistsAsync(filename);
+			=> Current.AppPackageFileExistsAsync(filename);
+
+
+#if ANDROID
+		internal static  Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName)
+			=> (Current as IPlatformFileSystem)?.GetTemporaryFile(root, fileName);
+
+		internal static string EnsurePhysicalPath(Android.Net.Uri uri, bool requireExtendedAccess = true)
+			=> (Current as IPlatformFileSystem)?.EnsurePhysicalPath(uri, requireExtendedAccess);
+#endif
+
+#if IOS || MACCATALYST
+		internal static Task<FileResult[]> EnsurePhysicalFileResultsAsync(params Foundation.NSUrl[] urls)
+			=> (Current as IPlatformFileSystem)?.EnsurePhysicalFileResultsAsync(urls);
+#endif
+
 
 		internal static class MimeTypes
 		{
@@ -145,7 +174,7 @@ namespace Microsoft.Maui.Essentials
 			FullPath = file.FullPath;
 			ContentType = file.ContentType;
 			FileName = file.FileName;
-			Init(file);
+			PlatformInit(file);
 		}
 
 		internal FileBase(string fullPath, string contentType)
@@ -175,7 +204,7 @@ namespace Microsoft.Maui.Essentials
 			var ext = Path.GetExtension(FullPath);
 			if (!string.IsNullOrWhiteSpace(ext))
 			{
-				var content = GetContentType(ext);
+				var content = PlatformGetContentType(ext);
 				if (!string.IsNullOrWhiteSpace(content))
 					return content;
 			}
@@ -208,7 +237,7 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
 		public Task<Stream> OpenReadAsync()
-			=> Current.OpenReadAsync();
+			=> PlatformOpenReadAsync();
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ReadOnlyFile']/Docs" />
@@ -258,5 +287,23 @@ namespace Microsoft.Maui.Essentials
 			: base(file)
 		{
 		}
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class FileSystemImplementation
+	{
+		public string CacheDirectory
+			=> PlatformCacheDirectory;
+
+		public string AppDataDirectory
+			=> PlatformAppDataDirectory;
+
+		public Task<Stream> OpenAppPackageFileAsync(string filename)
+			=> PlatformOpenAppPackageFileAsync(filename);
+
+		public Task<bool> AppPackageFileExistsAsync(string filename)
+			=> PlatformAppPackageFileExistsAsync(filename);
 	}
 }
