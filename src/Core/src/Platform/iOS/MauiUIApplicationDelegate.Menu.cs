@@ -32,6 +32,13 @@ namespace Microsoft.Maui
 			return true;
 		}
 
+		/* The Selector for every single MenuElement has to be unique. If you try to reuse the same selector
+		 * Then Catalyst will only ever create one MenuItem for the last menu item you added.
+		 * Because we can't dynamically export these selectors we end up with this large file of premade ones.
+		 * If users try to add too many menu items they will get an exception guiding them how to add their own 
+		 * selectors
+		 */
+
 		[Export("MenuItem0:")]
 		internal void MenuItem0(UICommand uICommand)
 		{
