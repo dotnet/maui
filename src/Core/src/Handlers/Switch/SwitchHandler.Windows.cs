@@ -8,47 +8,47 @@ namespace Microsoft.Maui.Handlers
 	{
 		WResourceDictionary? _originalResources;
 
-		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
+		protected override ToggleSwitch CreatePlatformView() => new ToggleSwitch();
 
-		void SetupDefaults(ToggleSwitch nativeView)
+		void SetupDefaults(ToggleSwitch platformView)
 		{
-			_originalResources = nativeView?.CloneResources();
+			_originalResources = platformView?.CloneResources();
 		}
 
 		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsToggled(view);
+			handler.PlatformView?.UpdateIsToggled(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, handler._originalResources);
+			handler.PlatformView?.UpdateTrackColor(view, handler._originalResources);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateThumbColor(view, handler._originalResources);
+			handler.PlatformView?.UpdateThumbColor(view, handler._originalResources);
 		}
 
-		protected override void DisconnectHandler(ToggleSwitch nativeView)
+		protected override void DisconnectHandler(ToggleSwitch platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.Toggled -= OnToggled;
+			base.DisconnectHandler(platformView);
+			platformView.Toggled -= OnToggled;
 		}
 
-		protected override void ConnectHandler(ToggleSwitch nativeView)
+		protected override void ConnectHandler(ToggleSwitch platformView)
 		{
-			base.ConnectHandler(nativeView);
-			SetupDefaults(nativeView);
-			nativeView.Toggled += OnToggled;
+			base.ConnectHandler(platformView);
+			SetupDefaults(platformView);
+			platformView.Toggled += OnToggled;
 		}
 
 		void OnToggled(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.IsOn = NativeView.IsOn;
+			VirtualView.IsOn = PlatformView.IsOn;
 		}
 	}
 }

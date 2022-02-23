@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
 			if (_previousFrame != Frame)
@@ -92,8 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);
-					if (Forms.IsiOS9OrNewer)
-						tv.CellLayoutMarginsFollowReadableWidth = false;
+					tv.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
 					{

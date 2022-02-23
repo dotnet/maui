@@ -1,21 +1,21 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
-	public static partial class Preferences
+	public class PreferencesImplementation : IPreferences
 	{
-		static bool PlatformContainsKey(string key, string sharedName) =>
+		public bool ContainsKey(string key, string sharedName) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformRemove(string key, string sharedName) =>
+		public void Remove(string key, string sharedName) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformClear(string sharedName) =>
+		public void Clear(string sharedName) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformSet<T>(string key, T value, string sharedName) =>
+		public void Set<T>(string key, T value, string sharedName) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static T PlatformGet<T>(string key, T defaultValue, string sharedName) =>
+		public T Get<T>(string key, T defaultValue, string sharedName) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

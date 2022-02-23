@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ShapeViewHandler : ViewHandler<IShapeView, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapShape(IViewHandler handler, IShapeView shapeView) { }
 		public static void MapAspect(IViewHandler handler, IShapeView shapeView) { }

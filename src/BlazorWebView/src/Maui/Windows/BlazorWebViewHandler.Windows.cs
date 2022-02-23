@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		private WebView2WebViewManager? _webviewManager;
 
-		protected override WebView2Control CreateNativeView()
+		protected override WebView2Control CreatePlatformView()
 		{
 			return new WebView2Control();
 		}
 
-		protected override void DisconnectHandler(WebView2Control nativeView)
+		protected override void DisconnectHandler(WebView2Control platformView)
 		{
 			if (_webviewManager != null)
 			{
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				return;
 			}
-			if (NativeView == null)
+			if (PlatformView == null)
 			{
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
 			}
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new WinUIWebViewManager(NativeView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
+			_webviewManager = new WinUIWebViewManager(PlatformView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
 
 			if (RootComponents != null)
 			{

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				defaultbrush = getter();
 			}
 
-			setter(color.ToNative());
+			setter(color.ToPlatform());
 		}
 
 		public static void UpdateBrush(Brush brush, ref WBrush defaultbrush, Func<WBrush> getter, Action<WBrush> setter)

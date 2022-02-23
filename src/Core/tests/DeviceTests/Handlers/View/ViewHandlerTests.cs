@@ -11,8 +11,8 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.View)]
 	public partial class ViewHandlerTests : HandlerTestBase<StubBaseHandler, StubBase>
 	{
-		[Fact(DisplayName = "NativeArrange triggers MapFrame")]
-		public async Task NativeArrangeTriggersMapFrame()
+		[Fact(DisplayName = "PlatformArrange triggers MapFrame")]
+		public async Task PlatformArrangeTriggersMapFrame()
 		{
 			var didUpdateFrame = 0;
 
@@ -33,8 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(1, didUpdateFrame);
 		}
 
-		[Fact(DisplayName = "Subsequint NativeArrange triggers MapFrame")]
-		public async Task SubsequintNativeArrangeTriggersMapFrame()
+		[Fact(DisplayName = "Subsequint PlatformArrange triggers MapFrame")]
+		public async Task SubsequintPlatformArrangeTriggersMapFrame()
 		{
 			var didUpdateFrame = 0;
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				InitializeViewHandler(view, handler);
 
-				handler.NativeArrange(new Rectangle(0, 0, 100, 100));
+				handler.PlatformArrange(new Rectangle(0, 0, 100, 100));
 			});
 
 			Assert.Equal(2, didUpdateFrame);

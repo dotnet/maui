@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_queryTextBox == null)
 				return;
 
-			_queryTextBox.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			_queryTextBox.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		void UpdateVerticalTextAlignment()
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_queryTextBox == null)
 				return;
 
-			_queryTextBox.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
+			_queryTextBox.VerticalContentAlignment = Element.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		void UpdateCancelButtonColor()
@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			
 			if (!backgroundColor.IsDefault())
 			{
-				_queryTextBox.Background = backgroundColor.ToNative();
+				_queryTextBox.Background = backgroundColor.ToPlatform();
 			}
 			else
 			{

@@ -64,13 +64,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var oldBackground = bottomView.Background;
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
-			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Colors.Transparent.ToNative();
+			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Colors.Transparent.ToPlatform();
 			AColor newColor;
 
 			if (color == null)
-				newColor = ShellView.DefaultBottomNavigationViewBackgroundColor.ToNative();
+				newColor = ShellView.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
 			else
-				newColor = color.ToNative();
+				newColor = color.ToPlatform();
 
 			if (menuView == null)
 			{
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 
 			var baseCSL = AppCompatResources.GetColorStateList(context, mTypedValue.ResourceId);
-			var colorPrimary = (ShellView.IsDarkTheme) ? AColor.White : ShellView.DefaultBackgroundColor.ToNative();
+			var colorPrimary = (ShellView.IsDarkTheme) ? AColor.White : ShellView.DefaultBackgroundColor.ToPlatform();
 			int defaultColor = baseCSL.DefaultColor;
 			var disabledcolor = baseCSL.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray);
 
@@ -126,15 +126,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var disabledInt = disabledColor == null ?
 				defaultList.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray) :
-				disabledColor.ToNative().ToArgb();
+				disabledColor.ToPlatform().ToArgb();
 
 			var checkedInt = titleColor == null ?
 				defaultList.GetColorForState(new[] { R.Attribute.StateChecked }, AColor.Black) :
-				titleColor.ToNative().ToArgb();
+				titleColor.ToPlatform().ToArgb();
 
 			var defaultColor = unselectedColor == null ?
 				defaultList.DefaultColor :
-				unselectedColor.ToNative().ToArgb();
+				unselectedColor.ToPlatform().ToArgb();
 
 			return MakeColorStateList(checkedInt, disabledInt, defaultColor);
 		}

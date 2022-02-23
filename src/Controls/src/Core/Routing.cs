@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -210,7 +211,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][0]/Docs" />
-		public static void RegisterRoute(string route, Type type)
+		public static void RegisterRoute(
+			string route,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
 			RegisterRoute(route, new TypeRouteFactory(type));
 		}
@@ -244,9 +247,11 @@ namespace Microsoft.Maui.Controls
 
 		class TypeRouteFactory : RouteFactory
 		{
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 			readonly Type _type;
 
-			public TypeRouteFactory(Type type)
+			public TypeRouteFactory(
+				[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 			{
 				_type = type;
 			}
