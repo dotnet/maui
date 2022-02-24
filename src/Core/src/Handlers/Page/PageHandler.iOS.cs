@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 
-		public static void MapBackgroundImageSource(PageHandler handler, IContentView page)
+		public static void MapBackgroundImageSource(IPageHandler handler, IContentView page)
 		{
 			if (page is not IViewBackgroundImagePart viewBackgroundImagePart)
 				return;
