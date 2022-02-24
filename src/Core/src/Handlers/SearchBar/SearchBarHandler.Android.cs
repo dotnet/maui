@@ -61,8 +61,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPlaceholderColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			if (handler is SearchBarHandler platformHandler)
-				platformHandler.PlatformView?.UpdatePlaceholderColor(searchBar, DefaultPlaceholderTextColors, platformHandler._editText);
+			handler.PlatformView?.UpdatePlaceholderColor(searchBar, DefaultPlaceholderTextColors, handler.QueryEditor);
 		}
 
 		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
