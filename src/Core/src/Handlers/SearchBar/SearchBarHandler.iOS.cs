@@ -70,6 +70,11 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public static void MapIsEnabled(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateIsEnabled(searchBar);
+		}
+		
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateText(searchBar);

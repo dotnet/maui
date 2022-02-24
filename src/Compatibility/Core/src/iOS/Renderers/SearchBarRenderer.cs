@@ -309,6 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		void UpdateIsEnabled()
 		{
 			Control.UserInteractionEnabled = Element.IsEnabled;

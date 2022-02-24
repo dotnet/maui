@@ -1,11 +1,15 @@
 ﻿using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
+		public static void UpdateIsEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.UserInteractionEnabled = searchBar.IsEnabled;
+		}
+		
 		public static void UpdateText(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.Text = searchBar.Text;
