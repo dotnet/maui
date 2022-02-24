@@ -145,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var navItem = GetNavigationViewItems(navView).ToList()[0];
 				Assert.Equal("Page 1", navItem.Content);
-				handler.VirtualView.Children[0].Title = "New Page Name";
+				(handler.VirtualView as TabbedPage).Children[0].Title = "New Page Name";
 				Assert.Equal("New Page Name", navItem.Content);
 				return Task.CompletedTask;
 			});
@@ -188,13 +188,13 @@ namespace Microsoft.Maui.DeviceTests
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var items = GetNavigationViewItems(navView).ToList();
 				Assert.Single(items);
-				handler.VirtualView.Children.Add(new ContentPage());
+				(handler.VirtualView as TabbedPage).Children.Add(new ContentPage());
 
 				// Wait for the navitem to propagate
 				await Task.Delay(100);
 				items = GetNavigationViewItems(navView).ToList();
 				Assert.Equal(2, items.Count);
-				handler.VirtualView.Children.RemoveAt(1);
+				(handler.VirtualView as TabbedPage).Children.RemoveAt(1);
 
 				// Wait for the navitem to propagate
 				await Task.Delay(100);
