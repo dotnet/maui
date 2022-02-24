@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var expectedColor = Color.FromArgb(colorHex);
 
-				await handler.TypedPlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
@@ -136,6 +136,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				await handler.PlatformView.AssertContainsColor(color);
 			});
+
+			await Task.Delay(1000);
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
 			Assert.NotNull(exception);

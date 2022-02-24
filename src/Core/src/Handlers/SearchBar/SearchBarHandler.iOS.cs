@@ -176,12 +176,14 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEditingEnded(object? sender, EventArgs e)
 		{
-			// TODO: UnFocus.
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void OnEditingStarted(object? sender, EventArgs e)
 		{
-			// TODO: Focus.
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
 		}
 	}
 }

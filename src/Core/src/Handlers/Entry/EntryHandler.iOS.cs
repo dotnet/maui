@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiTextField platformView)
 		{
 			platformView.ShouldReturn = OnShouldReturn;
+			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingChanged += OnEditingChanged;
 			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingDidEnd += OnEditingEnded;
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiTextField platformView)
 		{
+			platformView.EditingDidBegin -= OnEditingBegan;
 			platformView.EditingChanged -= OnEditingChanged;
 			platformView.EditingDidBegin -= OnEditingBegan;
 			platformView.EditingDidEnd -= OnEditingEnded;
@@ -34,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 		}
 
-		public static void MapText(EntryHandler handler, IEntry entry)
+		public static void MapText(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateText(entry);
 
@@ -42,58 +44,58 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, entry);
 		}
 
-		public static void MapTextColor(EntryHandler handler, IEntry entry) =>
+		public static void MapTextColor(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateTextColor(entry);
 
-		public static void MapIsPassword(EntryHandler handler, IEntry entry) =>
+		public static void MapIsPassword(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsPassword(entry);
 
-		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry) =>
+		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
 
-		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry) =>
+		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry) =>
 			handler?.PlatformView?.UpdateVerticalTextAlignment(entry);
 
-		public static void MapIsSpellCheckEnabled(EntryHandler handler, IEntry entry) =>	
+		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) =>	
 			handler.PlatformView?.UpdateIsSpellCheckEnabled(entry);
 
-		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) =>
+		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(entry);
 
-		public static void MapMaxLength(EntryHandler handler, IEntry entry) =>
+		public static void MapMaxLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateMaxLength(entry);
 
-		public static void MapPlaceholder(EntryHandler handler, IEntry entry) =>
+		public static void MapPlaceholder(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdatePlaceholder(entry);
 
-		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry) =>
+		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdatePlaceholder(entry);
 
-		public static void MapIsReadOnly(EntryHandler handler, IEntry entry) =>
+		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsReadOnly(entry);
 
-		public static void MapKeyboard(EntryHandler handler, IEntry entry) =>
+		public static void MapKeyboard(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateKeyboard(entry);
 
-		public static void MapReturnType(EntryHandler handler, IEntry entry) =>
+		public static void MapReturnType(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateReturnType(entry);
 
-		public static void MapFont(EntryHandler handler, IEntry entry) =>
+		public static void MapFont(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateFont(entry, handler.GetRequiredService<IFontManager>());
 
-		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry) =>
+		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateCharacterSpacing(entry);
 
-		public static void MapCursorPosition(EntryHandler handler, IEntry entry) =>
+		public static void MapCursorPosition(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateCursorPosition(entry);
 
-		public static void MapSelectionLength(EntryHandler handler, IEntry entry) =>
+		public static void MapSelectionLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateSelectionLength(entry);
 
-		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry) =>
+		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateClearButtonVisibility(entry);
 
-		public static void MapFormatting(EntryHandler handler, IEntry entry)
+		public static void MapFormatting(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateMaxLength(entry);
 
@@ -116,9 +118,6 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		void OnEditingChanged(object? sender, EventArgs e) =>
-			VirtualView.UpdateText(PlatformView.Text);
-
 		void OnEditingBegan(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || PlatformView == null)
@@ -126,8 +125,11 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView?.UpdateSelectionLength(VirtualView);
 
-			// TODO: Update IsFocused property
+			VirtualView.IsFocused = true;
 		}
+
+		void OnEditingChanged(object? sender, EventArgs e) =>
+			VirtualView.UpdateText(PlatformView.Text);
 
 		void OnEditingEnded(object? sender, EventArgs e)
 		{
@@ -135,8 +137,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			VirtualView.UpdateText(PlatformView.Text);
-
-			// TODO: Update IsFocused property
+			VirtualView.IsFocused = false;
 		}
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>
