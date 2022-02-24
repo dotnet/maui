@@ -9,7 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
+	public partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
 	{
 		AuthManager authManager;
 
