@@ -9,9 +9,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 	public partial class SecureStorageImplementation : ISecureStorage
 	{
 		static readonly object locker = new object();
-		static string Alias => SecureStorage.Alias;
 
-		public Task<string> GetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
 			return Task.Run(() =>
 			{
@@ -39,7 +38,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			});
 		}
 
-		public Task SetAsync(string key, string data)
+		Task PlatformSetAsync(string key, string data)
 		{
 			return Task.Run(() =>
 			{
@@ -61,7 +60,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			});
 		}
 
-		public bool Remove(string key)
+		bool PlatformRemove(string key)
 		{
 			lock (locker)
 			{
@@ -74,7 +73,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return true;
 		}
 
-		public void RemoveAll()
+		void PlatformRemoveAll()
 		{
 			lock (locker)
 			{

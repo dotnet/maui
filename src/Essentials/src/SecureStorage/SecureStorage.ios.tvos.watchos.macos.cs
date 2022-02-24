@@ -5,56 +5,10 @@ using System.Threading.Tasks;
 using Foundation;
 using Security;
 
-namespace Microsoft.Maui.Essentials
-{
-	public interface ISecAccessibleSecureStorage : ISecureStorage
-	{
-		SecAccessible DefaultAccessible { get; set; }
-		Task SetAsync(string key, string value, SecAccessible accessible);
-	}
-
-	public static partial class SecureStorage
-	{
-		public static SecAccessible DefaultAccessible
-		{
-			get
-			{ 
-				if (Current is ISecAccessibleSecureStorage secAccessibleSecureStorage)
-				{
-					return secAccessibleSecureStorage.DefaultAccessible;
-				}
-
-				throw new NotImplementedException();
-			}
-			set
-			{
-				if (Current is ISecAccessibleSecureStorage secAccessibleSecureStorage)
-				{
-					secAccessibleSecureStorage.DefaultAccessible = value;
-				}
-
-				throw new NotImplementedException();
-			}
-		}
-
-		public static Task SetAsync(string key, string value, SecAccessible accessible)
-		{
-			if (Current is ISecAccessibleSecureStorage secAccessibleSecureStorage)
-			{
-				return secAccessibleSecureStorage.SetAsync(key, value, accessible);
-			}
-
-			throw new NotImplementedException();
-		}
-	}
-}
-
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class SecureStorageImplementation : ISecAccessibleSecureStorage
+	public partial class SecureStorageImplementation : ISecureStorage, IPlatformSecureStorage
 	{
-		static string Alias => SecureStorage.Alias;
-
 		public SecAccessible DefaultAccessible { get; set; }
 
 		public Task SetAsync(string key, string value, SecAccessible accessible)
@@ -71,7 +25,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return Task.CompletedTask;
 		}
 
-		public Task<string> GetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
 			var kc = new KeyChain(DefaultAccessible);
 			var value = kc.ValueForKey(key, Alias);
@@ -79,17 +33,17 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return Task.FromResult(value);
 		}
 
-		public Task SetAsync(string key, string data) =>
+		Task PlatformSetAsync(string key, string data) =>
 			SetAsync(key, data, DefaultAccessible);
 
-		public bool Remove(string key)
+		bool PlatformRemove(string key)
 		{
 			var kc = new KeyChain(DefaultAccessible);
 
 			return kc.Remove(key, Alias);
 		}
 
-		public void RemoveAll()
+		void PlatformRemoveAll()
 		{
 			var kc = new KeyChain(DefaultAccessible);
 

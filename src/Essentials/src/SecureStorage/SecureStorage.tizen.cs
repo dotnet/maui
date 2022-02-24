@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class SecureStorageImplementation : ISecureStorage
 	{
-		public Task<string> GetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
 			try
 			{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		public Task SetAsync(string key, string data)
+		Task PlatformSetAsync(string key, string data)
 		{
 			try
 			{
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		public void RemoveAll()
+		void PlatformRemoveAll()
 		{
 			try
 			{
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		public bool Remove(string key)
+		bool PlatformRemove(string key)
 		{
 			try
 			{

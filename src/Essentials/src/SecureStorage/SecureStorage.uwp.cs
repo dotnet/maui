@@ -9,9 +9,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public partial class SecureStorageImplementation : ISecureStorage
 	{
-		static string Alias => SecureStorage.Alias;
-
-		public async Task<string> GetAsync(string key)
+		async Task<string> PlatformGetAsync(string key)
 		{
 			var settings = GetSettings(Alias);
 
@@ -27,7 +25,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return Encoding.UTF8.GetString(buffer.ToArray());
 		}
 
-		public async Task SetAsync(string key, string data)
+		async Task PlatformSetAsync(string key, string data)
 		{
 			var settings = GetSettings(Alias);
 
@@ -43,7 +41,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			settings.Values[key] = encBytes;
 		}
 
-		public bool Remove(string key)
+		bool PlatformRemove(string key)
 		{
 			var settings = GetSettings(Alias);
 
@@ -56,7 +54,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return false;
 		}
 
-		public void RemoveAll()
+		void PlatformRemoveAll()
 		{
 			var settings = GetSettings(Alias);
 
