@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Web.Http;
@@ -31,29 +30,29 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapSource(WebViewHandler handler, IWebView webView)
+		public static void MapSource(IWebViewHandler handler, IWebView webView)
 		{
 			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 
 			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
-		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			handler.PlatformView?.UpdateGoBack(webView);
 		}
 
-		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
-		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			handler.PlatformView?.UpdateReload(webView);
 		}
 
-		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is not string script)
 				return;
@@ -233,7 +232,7 @@ namespace Microsoft.Maui.Handlers
 			return null;
 		}
 
-		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 
+		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg) 
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
