@@ -12,6 +12,20 @@
     <RazorComponent Include="**\*.razor" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--
+      Web assets (js, css, etc under wwwroot) and .razor files are represented as Content items in the Razor SDK, but run foul of
+      checks in the Android and iOS SDK. This annotates these items with metadata that prevents them from being bundled / examined.
+    -->
+    <Content Update="@(Content->WithMetadataValue('WebContentItem', 'true'))"
+      ExcludeFromContentCheck="true"
+      PublishFolderType="None" />
+
+    <Content Update="@(Content->WithMetadataValue('Extension', '.razor'))"
+      ExcludeFromContentCheck="true"
+      PublishFolderType="None" />
+  </ItemGroup>
+
   <PropertyGroup>
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>

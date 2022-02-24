@@ -18,7 +18,7 @@ using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
 	/// <summary>
-	/// A Windows Presentation Foundation (WPF) control for hosting Blazor web components locally in Windows desktop applications.
+	/// A Windows Presentation Foundation (WPF) control for hosting Razor components locally in Windows desktop applications.
 	/// </summary>
 	public class BlazorWebView : Control, IAsyncDisposable
 	{
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		/// <summary>
 		/// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
-		/// This property must be set to a valid value for the Blazor components to start.
+		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		public string HostPage
 		{
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		/// <summary>
 		/// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
-		/// This property must be set to a valid value for the Blazor components to start.
+		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		public IServiceProvider Services
 		{
@@ -218,7 +218,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// <returns>Returns a <see cref="IFileProvider"/> for static assets.</returns>
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
-			return new PhysicalFileProvider(contentRootDir);
+			if (Directory.Exists(contentRootDir))
+			{
+				// Typical case after publishing, or if you're copying content to the bin dir in development for some nonstandard reason
+				return new PhysicalFileProvider(contentRootDir);
+			}
+			else
+			{
+				// Typical case in development, as the files come from Microsoft.AspNetCore.Components.WebView.StaticContentProvider
+				// instead and aren't copied to the bin dir
+				return new NullFileProvider();
+			}
 		}
 
 		private void CheckDisposed()
@@ -231,9 +241,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		protected virtual async ValueTask DisposeAsyncCore()
 		{
-			// Dispose this component's contents that user-written disposal logic and Blazor disposal logic will complete
-			// first. Then dispose the WebView2 control. This order is critical because once the WebView2 is disposed it
-			// will prevent and Blazor code from working because it requires the WebView to exist.
+			// Dispose this component's contents that user-written disposal logic and Razor component disposal logic will
+			// complete first. Then dispose the WebView2 control. This order is critical because once the WebView2 is
+			// disposed it will prevent and Razor component code from working because it requires the WebView to exist.
 			if (_webviewManager != null)
 			{
 				await _webviewManager.DisposeAsync()

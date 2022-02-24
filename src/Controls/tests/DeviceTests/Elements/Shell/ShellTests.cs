@@ -46,13 +46,16 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task DetailsViewUpdates()
 		{
 			SetupBuilder();
-			var shell = new Shell()
-			{
-				Items =
-				{
-					new ContentPage()
-				}
-			};
+
+			var shell = await InvokeOnMainThreadAsync<Shell>(() => {
+				return new Shell()
+					{
+						Items =
+						{
+							new ContentPage()
+						}
+					};
+			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
 			{

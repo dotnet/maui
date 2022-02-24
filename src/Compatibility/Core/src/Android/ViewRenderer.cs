@@ -77,6 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			control.Measure(widthMeasureSpec, heightMeasureSpec);
 		}
 
+		[PortHandler("Partially ported")]
 		void AView.IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
 			if (Element is Entry || Element is SearchBar || Element is Editor)
@@ -266,6 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetNativeControl(control, this);
 		}
 
+		[PortHandler]
 		protected virtual void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			if (Control == null)

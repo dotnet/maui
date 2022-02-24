@@ -12,6 +12,8 @@ using CoreMotion;
 using CoreMotion;
 #endif
 
+using Microsoft.Maui.Essentials.Implementations;
+
 namespace Microsoft.Maui.Essentials
 {
 	public static partial class Platform

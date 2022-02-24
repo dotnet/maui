@@ -1,18 +1,28 @@
 ﻿#nullable enable
+#if __IOS__ || MACCATALYST
+using PlatformView = Microsoft.Maui.Platform.ContentView;
+#elif MONOANDROID
+using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
+#elif WINDOWS
+using PlatformView = Microsoft.Maui.Platform.ContentPanel;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ContentViewHandler
+	public partial class ContentViewHandler : IContentViewHandler
 	{
-		public static IPropertyMapper<IContentView, ContentViewHandler> ContentViewMapper = new PropertyMapper<IContentView, ContentViewHandler>(ViewMapper)
+		public static IPropertyMapper<IContentView, IContentViewHandler> Mapper = new PropertyMapper<IContentView, IContentViewHandler>(ViewMapper)
 		{
 			[nameof(IContentView.Content)] = MapContent,
 		};
 
-		public static CommandMapper<IPicker, PickerHandler> ContentViewCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IPicker, IContentViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 
-		public ContentViewHandler() : base(ContentViewMapper, ContentViewCommandMapper)
+		public ContentViewHandler() : base(Mapper, CommandMapper)
 		{
 
 		}
@@ -22,9 +32,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public ContentViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? ContentViewMapper)
+		public ContentViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		IContentView IContentViewHandler.VirtualView => VirtualView;
+
+		PlatformView IContentViewHandler.PlatformView => PlatformView;
 	}
 }
