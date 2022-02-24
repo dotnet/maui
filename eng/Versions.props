@@ -44,8 +44,7 @@
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.2.22102.8</MicrosoftTemplateEngineTasksVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Macios is ahead of the SDK we're using currently -->
-    <DotNetVersionBandMaciOS>6.0.300</DotNetVersionBandMaciOS>
+    <DotNetVersionBandMaciOS>6.0.200</DotNetVersionBandMaciOS>
     <!-- Match the first three version numbers and append 00 -->
     <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetPreviewVersionBand>
     <DotNetVersionBandMaciOS Condition=" '$(DotNetVersionBandMaciOS)' == '' ">$(DotNetPreviewVersionBand)</DotNetVersionBandMaciOS>
