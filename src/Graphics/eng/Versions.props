@@ -2,18 +2,20 @@
   <!--Package versions-->
   <PropertyGroup>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.200-rtm.22078.8</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.200-rtm.22107.3</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>6.0.2-mauipre.1.22075.3</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.3</MicrosoftNETCoreAppRefPackageVersion>
+    <!-- dotnet/emsdk -->
+    <MicrosoftNETWorkloadEmscriptenPackageVersion>6.0.2</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.53</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.95</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftiOSSdkPackageVersion>15.2.300-preview.14.200</MicrosoftiOSSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.2.300-preview.14.200</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.1.300-preview.14.200</MicrosoftmacOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.2.300-preview.14.200</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.2.302-preview.14.40</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.2.302-preview.14.40</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.1.302-preview.14.40</MicrosoftmacOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.2.302-preview.14.40</MicrosofttvOSSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
+    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.2</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
     <!-- <DotNetVersionBandMonoToolchain></DotNetVersionBandMonoToolchain> -->
     <DotNetVersionBandEmscripten>6.0.100</DotNetVersionBandEmscripten>
     <!-- <DotNetVersionBandAndroid></DotNetVersionBandAndroid> -->
@@ -22,5 +24,6 @@
   <PropertyGroup>
     <!-- NOTE: temporarily hardcode 6.0.100, until we have new branding on dotnet/runtime packs -->
     <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.200</DotNetVersionBand>
+    <DotNetVersionBandApple>6.0.300</DotNetVersionBandApple>
   </PropertyGroup>
 </Project>
