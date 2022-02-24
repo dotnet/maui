@@ -21,6 +21,10 @@ namespace Microsoft.Maui.Handlers
 #endif
 		};
 
+		public static CommandMapper<IWindow, IWindowHandler> CommandMapper = new(ElementCommandMapper)
+		{
+		};
+
 		public WindowHandler()
 			: base(Mapper)
 		{
