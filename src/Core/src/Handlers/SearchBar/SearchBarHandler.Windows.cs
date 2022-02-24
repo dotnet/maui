@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 					searchBar,
 					platformHandler._defaultPlaceholderColorBrush,
 					platformHandler._defaultPlaceholderColorFocusBrush,
-					platformHandler._queryTextBox);
+					handler.QueryEditor);
 			}
 		}
 
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 					searchBar,
 					platformHandler._defaultTextColorBrush,
 					platformHandler._defaultTextColorFocusBrush,
-					platformHandler._queryTextBox);
+					handler.QueryEditor);
 			}
 		}
 
