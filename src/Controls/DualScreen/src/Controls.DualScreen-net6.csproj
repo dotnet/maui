@@ -50,7 +50,7 @@
     <Compile Remove="DualScreenInfo.netstandard.cs" />
     <Compile Remove="IFoldableContext.netstandard.cs" />
     <AndroidResource Include="Resources\xml\*.xml" />
-    <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" Version="1.0.0.3-beta02" />
+    <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" Version="1.0.0.7" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj">
     </ProjectReference>
   </ItemGroup>

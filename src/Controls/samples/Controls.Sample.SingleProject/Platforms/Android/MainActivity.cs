@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Droid
 	public class MainActivity : MauiAppCompatActivity, AndroidX.Core.Util.IConsumer
 		, Microsoft.Maui.Controls.DualScreen.IFoldableContext
 	{
-		WindowInfoRepositoryCallbackAdapter wir;
+		WindowInfoTrackerCallbackAdapter wir;
 		IWindowMetricsCalculator wmc;
 
 		#region IFoldableContext properties
@@ -46,14 +46,14 @@ namespace Maui.Controls.Sample.Droid
 			Microsoft.Maui.Controls.DualScreen.DualScreenService.Init(this);
 			base.OnCreate(savedInstanceState);
 
-			wir = new WindowInfoRepositoryCallbackAdapter(WindowInfoRepository.Companion.GetOrCreate(this));
+			wir = new WindowInfoTrackerCallbackAdapter(WindowInfoTracker.Companion.GetOrCreate(this));
 			wmc = WindowMetricsCalculator.Companion.OrCreate; // HACK: source method is `getOrCreate`, binding generator munges this badly :(
 		}
 
 		protected override void OnStart()
 		{
 			base.OnStart();
-			wir.AddWindowLayoutInfoListener(runOnUiThreadExecutor(), this); // `this` is the IConsumer implementation
+			wir.AddWindowLayoutInfoListener(this, runOnUiThreadExecutor(), this); // `this` is the IConsumer implementation
 		}
 
 		protected override void OnStop()

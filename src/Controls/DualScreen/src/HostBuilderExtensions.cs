@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			builder.Services.AddScoped(typeof(IFoldableContext), typeof(DualScreenServiceImpl));
 
 			var consumer = new Consumer();
-			AndroidX.Window.Java.Layout.WindowInfoRepositoryCallbackAdapter wir = null;
+			AndroidX.Window.Java.Layout.WindowInfoTrackerCallbackAdapter wir = null;
 
 			builder.ConfigureLifecycleEvents(lc =>
 			{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 								typeof(IFoldableContext)));
 
 						// FUTURE USE
-						wir.AddWindowLayoutInfoListener(/*activity,*/runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
+						wir.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
 					})
 					.OnStop((activity) =>
 					{
@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 					.OnCreate((activity, bundle) =>
 					{
 						// FUTURE USE
-						wir = new AndroidX.Window.Java.Layout.WindowInfoRepositoryCallbackAdapter(
-						AndroidX.Window.Layout.WindowInfoRepository.Companion.GetOrCreate(
+						wir = new AndroidX.Window.Java.Layout.WindowInfoTrackerCallbackAdapter(
+						AndroidX.Window.Layout.WindowInfoTracker.Companion.GetOrCreate(
 							activity));
 					});
 				});
