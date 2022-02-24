@@ -23,36 +23,43 @@ namespace Microsoft.Maui.Handlers
 		protected override WKWebView CreatePlatformView() =>
 			new MauiWKWebView(RectangleF.Empty, this);
 
-		public static void MapWKUIDelegate(WebViewHandler handler, IWebView webView)
+		public static void MapWKUIDelegate(IWebViewHandler handler, IWebView webView)
 		{
-			handler.PlatformView.UIDelegate = handler._delegate ??= new MauiWebViewUIDelegate();
+			if (handler is WebViewHandler platformHandler)
+				handler.PlatformView.UIDelegate = platformHandler._delegate ??= new MauiWebViewUIDelegate();
 		}
 
-		public static void MapSource(WebViewHandler handler, IWebView webView)
+		public static void MapSource(IWebViewHandler handler, IWebView webView)
 		{
 			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 
 			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
-		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			handler.PlatformView?.UpdateGoBack(webView);
 		}
 
-		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
-		public static async void MapReload(WebViewHandler handler, IWebView webView, object? arg)
+		public static async void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			var platformHandler = handler as WebViewHandler;
+			if (platformHandler == null)
+			{
+				return;
+			}
+
 			try
 			{
 				var url = ((MauiWKWebView)handler.PlatformView).CurrentUrl;
 
 				if (url != null)
-					await handler.SyncPlatformCookiesAsync(url);
+					await platformHandler.SyncPlatformCookiesAsync(url);
 			}
 			catch (Exception exc)
 			{
@@ -62,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateReload(webView);
 		}
 
-		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is not string script)
 				return;
@@ -502,7 +509,7 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
