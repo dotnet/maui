@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -9,13 +8,17 @@ namespace Microsoft.Maui.Controls
 	public class VisualAttribute : Attribute
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualAttribute.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public VisualAttribute(string key, Type visual)
+		public VisualAttribute(
+			string key,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type visual)
 		{
 			this.Key = key;
 			this.Visual = visual;
 		}
 
 		internal string Key { get; }
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal Type Visual { get; }
 	}
 }

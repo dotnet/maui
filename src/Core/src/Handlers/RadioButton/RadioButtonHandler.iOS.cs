@@ -1,5 +1,4 @@
 ﻿using System;
-using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {

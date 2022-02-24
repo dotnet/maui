@@ -1,26 +1,27 @@
+using System;
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Magnetometer
+	public partial class MagnetometerImplementation : IMagnetometer
 	{
-		internal static bool IsSupported =>
+		bool PlatformIsSupported =>
 			   Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
 
-		static MagnetometerListener listener;
-		static Sensor magnetometer;
+		MagnetometerListener listener;
+		Sensor magnetometer;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
-			listener = new MagnetometerListener();
+			listener = new MagnetometerListener(RaiseReadingChanged);
 			magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
 			Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
 			if (listener == null || magnetometer == null)
 				return;
@@ -33,9 +34,12 @@ namespace Microsoft.Maui.Essentials
 
 	class MagnetometerListener : Java.Lang.Object, ISensorEventListener
 	{
-		internal MagnetometerListener()
+		internal MagnetometerListener(Action<MagnetometerData> callback)
 		{
+			DataCallback = callback;
 		}
+
+		readonly Action<MagnetometerData> DataCallback;
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
 		{
@@ -47,7 +51,7 @@ namespace Microsoft.Maui.Essentials
 				return;
 
 			var data = new MagnetometerData(e.Values[0], e.Values[1], e.Values[2]);
-			Magnetometer.OnChanged(data);
+			DataCallback?.Invoke(data);
 		}
 	}
 }

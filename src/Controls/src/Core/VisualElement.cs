@@ -769,7 +769,13 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			if (FocusChangeRequested == null)
-				return false;
+			{
+				FocusRequest focusRequest = new FocusRequest(false);
+
+				Handler?.Invoke(nameof(IView.Focus), focusRequest);
+
+				return focusRequest.IsFocused;
+			}
 
 			var arg = new FocusRequestArgs { Focus = true };
 			FocusChangeRequested(this, arg);
@@ -864,6 +870,7 @@ namespace Microsoft.Maui.Controls
 			if (!IsFocused)
 				return;
 
+			Handler?.Invoke(nameof(IView.Unfocus));
 			FocusChangeRequested?.Invoke(this, new FocusRequestArgs());
 		}
 
