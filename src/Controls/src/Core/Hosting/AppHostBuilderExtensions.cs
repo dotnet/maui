@@ -51,6 +51,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 			handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
 
@@ -60,7 +61,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
 
 #if ANDROID || IOS
-			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 #if WINDOWS || ANDROID
