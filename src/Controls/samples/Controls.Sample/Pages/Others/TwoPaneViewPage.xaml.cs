@@ -18,9 +18,6 @@
 			WideModeConfiguration.ItemsSource = System.Enum.GetValues(typeof(TwoPaneViewWideModeConfiguration));
 
 			OnReset(null, null);
-			//twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
-			//Pane1Length.Value = 0.5;
-			//Pane2Length.Value = 0.5;
 		}
 
 		private void PaneLength_ValueChanged(object sender, Microsoft.Maui.Controls.ValueChangedEventArgs e)
@@ -45,7 +42,7 @@
 
 		private void Current_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			spanLabel.Text += "Spanmode:" + DualScreenInfo.Current.SpanMode;
+			spanLabel.Text += "Spanmode: " + DualScreenInfo.Current.SpanMode;
 		}
 
 		protected override void OnDisappearing()
@@ -57,17 +54,18 @@
 		{
 			System.Diagnostics.Debug.Write("TwoPaneViewPage.Current_HingeAngleChanged - " + e.HingeAngleInDegrees, "JWM");
 
-			hingeLabel.Text = e.HingeAngleInDegrees + " degrees";
+			hingeLabel.Text = "Hinge angle: " + e.HingeAngleInDegrees + " degrees";
 		}
 
 		void OnReset(object sender, System.EventArgs e)
 		{
-			//twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
 			PanePriority.SelectedIndex = 0;
 			Pane1Length.Value = 0.5;
 			Pane2Length.Value = 0.5;
 			TallModeConfiguration.SelectedIndex = 1;
 			WideModeConfiguration.SelectedIndex = 1;
+			MinTallModeHeight.Value = 0;
+			MinWideModeWidth.Value = 0;
 		}
 	}
 }
