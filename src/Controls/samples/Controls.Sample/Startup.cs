@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
-			appBuilder.UseMauiApp<XamlApp>();
+			appBuilder.UseMauiApp<Issue4169.App>();
 			var services = appBuilder.Services;
 
 			if (UseMauiGraphicsSkia)

@@ -1,14 +1,9 @@
-using Foundation;
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
-using ObjCRuntime;
-using UIKit;
+﻿using Foundation;
 
-namespace Maui.Controls.Sample.MacCatalyst
+namespace Issue4169;
+
+[Register("AppDelegate")]
+public class AppDelegate : MauiUIApplicationDelegate
 {
-	[Register("AppDelegate")]
-	public class AppDelegate : MauiUIApplicationDelegate
-	{
-		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
-	}
+	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 }
