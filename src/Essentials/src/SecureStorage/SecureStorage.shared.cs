@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	{
 #if !NETSTANDARD
 		// Special Alias that is only used for Secure Storage. All others should use: Preferences.GetPrivatePreferencesSharedName
-		static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
+		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
 #endif
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='GetAsync']/Docs" />
