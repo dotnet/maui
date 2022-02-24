@@ -17,20 +17,20 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using System.Collections.ObjectModel;
 
-namespace Microsoft.Maui.Controls.Handlers
+namespace Microsoft.Maui.Controls
 {
-	public partial class TabbedPageHandler : ViewHandler<TabbedPage, FrameworkElement>
+	public partial class TabbedPage
 	{
 		MauiNavigationView? _navigationView;
 		NavigationRootManager? _navigationRootManager;
-		TabbedPage? _previousView;
 		WFrame? _navigationFrame;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
+		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
-		protected override FrameworkElement CreatePlatformView()
+		FrameworkElement CreatePlatformView()
 		{
 			_navigationFrame = new WFrame();
-			if (VirtualView.FindParentOfType<FlyoutPage>() != null)
+			if (this.FindParentOfType<FlyoutPage>() != null)
 			{
 				_navigationView = new MauiNavigationView()
 				{
@@ -50,13 +50,34 @@ namespace Microsoft.Maui.Controls.Handlers
 				return _navigationView;
 			}
 
-			_navigationRootManager = MauiContext?.GetNavigationRootManager();
+			_navigationRootManager = MauiContext.GetNavigationRootManager();
+
 			return _navigationFrame;
 		}
 
-		private protected override void OnConnectHandler(FrameworkElement platformView)
+		static FrameworkElement? OnCreatePlatformView(ViewHandler<ITabbedView, FrameworkElement> arg)
 		{
-			base.OnConnectHandler(platformView);
+			if (arg.VirtualView is TabbedPage tabbedPage)
+				return tabbedPage.CreatePlatformView();
+
+			return null;
+		}
+
+		protected override void OnHandlerChanging(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChanging(args);
+
+			if (args.OldHandler == null && args.NewHandler != null)
+				OnConnectHandler();
+			else if (args.OldHandler != null && args.NewHandler == null)
+				OnDisconnectHandler(args.OldHandler.PlatformView as FrameworkElement);
+		}
+
+		void OnConnectHandler()
+		{
+			Appearing += OnTabbedPageAppearing;
+			Disappearing += OnTabbedPageDisappearing;
+
 			NavigationFrame.Navigated += OnNavigated;
 
 			// If CreatePlatformView didn't set the NavigationView then that means we are using the
@@ -89,7 +110,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		private protected override void OnDisconnectHandler(FrameworkElement platformView)
+		void OnDisconnectHandler(FrameworkElement? platformView)
 		{
 			if (_navigationView != null)
 			{
@@ -97,33 +118,17 @@ namespace Microsoft.Maui.Controls.Handlers
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
 			}
 
-			((WFrame)platformView).Navigated -= OnNavigated;
-			VirtualView.Appearing -= OnTabbedPageAppearing;
-			VirtualView.Disappearing -= OnTabbedPageDisappearing;
+			if (platformView is WFrame wFrame)
+				wFrame.Navigated -= OnNavigated;
+
+			Appearing -= OnTabbedPageAppearing;
+			Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
 
 			_navigationView = null;
 			_navigationRootManager = null;
-			_previousView = null;
 			_navigationFrame = null;
-
-			base.OnDisconnectHandler(platformView);
-		}
-
-		public override void SetVirtualView(IView view)
-		{
-			if (_previousView != null)
-			{
-				_previousView.Appearing -= OnTabbedPageAppearing;
-				_previousView.Disappearing -= OnTabbedPageDisappearing;
-			}
-
-			base.SetVirtualView(view);
-
-			_previousView = VirtualView;
-			VirtualView.Appearing += OnTabbedPageAppearing;
-			VirtualView.Disappearing += OnTabbedPageDisappearing;
 		}
 
 		void OnTabbedPageAppearing(object? sender, EventArgs e)
@@ -146,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnNavigationViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			if (_navigationView != null)
-				VirtualView.Arrange(_navigationView);
+				this.Arrange(_navigationView);
 		}
 
 		void SetupNavigationView()
@@ -173,18 +178,20 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_navigationView == null)
 				return;
 
-			UpdateValue(nameof(TabbedPage.BarBackground));
-			UpdateValue(nameof(TabbedPage.ItemsSource));
-			UpdateValue(nameof(TabbedPage.BarTextColor));
-			UpdateValue(nameof(TabbedPage.SelectedTabColor));
-			UpdateValue(nameof(TabbedPage.UnselectedTabColor));
+			Handler?.UpdateValue(nameof(TabbedPage.BarBackground));
+			Handler?.UpdateValue(nameof(TabbedPage.ItemsSource));
+			Handler?.UpdateValue(nameof(TabbedPage.BarTextColor));
+			Handler?.UpdateValue(nameof(TabbedPage.SelectedTabColor));
+			Handler?.UpdateValue(nameof(TabbedPage.UnselectedTabColor));
 
 			_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
 
-			if (_navigationView.SelectedItem is NavigationViewItemViewModel vm && vm.Data != VirtualView.CurrentPage)
-				UpdateValue(nameof(TabbedPage.CurrentPage));
+			if (_navigationView.SelectedItem is NavigationViewItemViewModel vm && vm.Data != CurrentPage)
+			{
+				Handler?.UpdateValue(nameof(TabbedPage.CurrentPage));
+			}
 			else
-				NavigateToPage(VirtualView.CurrentPage);
+				NavigateToPage(CurrentPage);
 		}
 
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -199,7 +206,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		void NavigateToPage(Page page)
 		{
 			FrameNavigationOptions navOptions = new FrameNavigationOptions();
-			VirtualView.CurrentPage = page;
+			CurrentPage = page;
 			navOptions.IsNavigationStackEnabled = false;
 			NavigationFrame.NavigateToType(typeof(WPage), null, navOptions);
 		}
@@ -217,7 +224,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				return;
 
 			WContentPresenter? presenter;
-			IView _currentPage = VirtualView.CurrentPage;
+			IView _currentPage = CurrentPage;
 
 			if (page.Content == null)
 			{
@@ -248,48 +255,48 @@ namespace Microsoft.Maui.Controls.Handlers
 				UpdateCurrentPageContent(page);
 		}
 
-		public static void MapBarBackground(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)
 		{
-			handler._navigationView?.UpdateTopNavAreaBackground(view.BarBackground ?? view.BarBackgroundColor?.AsPaint());
+			view._navigationView?.UpdateTopNavAreaBackground(view.BarBackground ?? view.BarBackgroundColor?.AsPaint());
 		}
 
-		public static void MapBarBackgroundColor(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapBarBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
 		{
 			MapBarBackground(handler, view);
 		}
 
-		public static void MapBarTextColor(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapBarTextColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			handler._navigationView?.UpdateTopNavigationViewItemTextColor(view.BarTextColor?.AsPaint());
+			view._navigationView?.UpdateTopNavigationViewItemTextColor(view.BarTextColor?.AsPaint());
 		}
 
-		public static void MapUnselectedTabColor(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapUnselectedTabColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			handler._navigationView?.UpdateTopNavigationViewItemBackgroundUnselectedColor(view.UnselectedTabColor?.AsPaint());
+			view._navigationView?.UpdateTopNavigationViewItemBackgroundUnselectedColor(view.UnselectedTabColor?.AsPaint());
 		}
 
-		public static void MapSelectedTabColor(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapSelectedTabColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			handler._navigationView?.UpdateTopNavigationViewItemBackgroundSelectedColor(view.SelectedTabColor?.AsPaint());
+			view._navigationView?.UpdateTopNavigationViewItemBackgroundSelectedColor(view.SelectedTabColor?.AsPaint());
 		}
 
-		public static void MapItemsSource(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapItemsSource(ITabbedViewHandler handler, TabbedPage view)
 		{
-			if (handler._navigationView != null)
+			if (view._navigationView != null)
 			{
 				ObservableCollection<NavigationViewItemViewModel> items;
 
-				if (handler._navigationView.MenuItemsSource is ObservableCollection<NavigationViewItemViewModel> source)
+				if (view._navigationView.MenuItemsSource is ObservableCollection<NavigationViewItemViewModel> source)
 				{
 					items = source;
 				}
 				else
 				{
 					items = new ObservableCollection<NavigationViewItemViewModel>();
-					handler._navigationView.MenuItemsSource = items;
+					view._navigationView.MenuItemsSource = items;
 				}
 
-				items.SyncItems(handler.VirtualView.Children,
+				items.SyncItems(view.Children,
 					(vm, page) =>
 					{
 						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
@@ -304,25 +311,25 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		public static void MapItemTemplate(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapItemTemplate(ITabbedViewHandler handler, TabbedPage view)
 		{
-			handler.UpdateCurrentPageContent();
+			view.UpdateCurrentPageContent();
 		}
 
-		public static void MapSelectedItem(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapSelectedItem(ITabbedViewHandler handler, TabbedPage view)
 		{
-			handler.UpdateCurrentPageContent();
+			view.UpdateCurrentPageContent();
 		}
 
-		public static void MapCurrentPage(TabbedPageHandler handler, TabbedPage view)
+		internal static void MapCurrentPage(ITabbedViewHandler handler, TabbedPage view)
 		{
-			if (handler._navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			if (view._navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> items)
 			{
 				foreach (var item in items)
 				{
 					if (item.Data == view.CurrentPage)
 					{
-						handler._navigationView.SelectedItem = item;
+						view._navigationView.SelectedItem = item;
 					}
 				}
 			}

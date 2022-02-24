@@ -5,7 +5,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.TabbedPage']/Docs" />
-	public partial class TabbedPage
+	public partial class TabbedPage : ITabbedView
 	{
 		private protected override void OnHandlerChangedCore()
 		{
