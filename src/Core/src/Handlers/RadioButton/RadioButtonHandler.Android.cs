@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
-		AppCompatRadioButton? PlatformRadioButton => (PlatformView as AppCompatRadioButton);
+		static AppCompatRadioButton? GetPlatformRadioButton(IRadioButtonHandler handler) => handler.PlatformView as AppCompatRadioButton;
 
 		protected override AppCompatRadioButton CreatePlatformView()
 		{
@@ -18,61 +18,63 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
-			if (PlatformRadioButton != null)
-				PlatformRadioButton.CheckedChange += OnCheckChanged;
+			AppCompatRadioButton? platformRadioButton = GetPlatformRadioButton(this);
+			if (platformRadioButton != null)
+				platformRadioButton.CheckedChange += OnCheckChanged;
 		}
 
 		protected override void DisconnectHandler(View platformView)
 		{
-			if (PlatformRadioButton != null)
-				PlatformRadioButton.CheckedChange -= OnCheckChanged;
+			AppCompatRadioButton? platformRadioButton = GetPlatformRadioButton(this);
+			if (platformRadioButton != null)
+				platformRadioButton.CheckedChange -= OnCheckChanged;
 		}
 
-		public static void MapBackground(RadioButtonHandler handler, IRadioButton radioButton)
+		public static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.PlatformRadioButton?.UpdateBackground(radioButton);
+			GetPlatformRadioButton(handler)?.UpdateBackground(radioButton);
 		}
 
-		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
+		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.PlatformRadioButton?.UpdateIsChecked(radioButton);
+			GetPlatformRadioButton(handler)?.UpdateIsChecked(radioButton);
 		}
 
-		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton)
+		public static void MapContent(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.PlatformRadioButton?.UpdateContent(radioButton);
+			GetPlatformRadioButton(handler)?.UpdateContent(radioButton);
 		}
 
-		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle)
+		public static void MapTextColor(IRadioButtonHandler handler, ITextStyle textStyle)
 		{
-			handler.PlatformRadioButton?.UpdateTextColor(textStyle);
+			GetPlatformRadioButton(handler)?.UpdateTextColor(textStyle);
 		}
 
-		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle)
+		public static void MapCharacterSpacing(IRadioButtonHandler handler, ITextStyle textStyle)
 		{
-			handler.PlatformRadioButton?.UpdateCharacterSpacing(textStyle);
+			GetPlatformRadioButton(handler)?.UpdateCharacterSpacing(textStyle);
 		}
 
-		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle)
+		public static void MapFont(IRadioButtonHandler handler, ITextStyle textStyle)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.PlatformRadioButton?.UpdateFont(textStyle, fontManager);
+			GetPlatformRadioButton(handler)?.UpdateFont(textStyle, fontManager);
 		}
 
-		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton)
+		public static void MapStrokeColor(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.PlatformRadioButton?.UpdateStrokeColor(radioButton);
+			GetPlatformRadioButton(handler)?.UpdateStrokeColor(radioButton);
 		}
 
-		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton)
+		public static void MapStrokeThickness(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.PlatformRadioButton?.UpdateStrokeThickness(radioButton);
+			GetPlatformRadioButton(handler)?.UpdateStrokeThickness(radioButton);
 		}
 
-		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton)
+		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.PlatformRadioButton?.UpdateCornerRadius(radioButton);
+			GetPlatformRadioButton(handler)?.UpdateCornerRadius(radioButton);
 		}
 
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)

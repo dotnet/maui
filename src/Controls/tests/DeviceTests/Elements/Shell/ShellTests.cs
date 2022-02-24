@@ -12,6 +12,9 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
+#if ANDROID
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {

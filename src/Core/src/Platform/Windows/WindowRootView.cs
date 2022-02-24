@@ -13,10 +13,11 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		public StackPanel? RootStackPanel { get; private set; }
 		public Image? AppFontIcon { get; private set; }
 		public TextBlock? AppTitle { get; private set; }
 		public RootNavigationView? NavigationViewControl { get; private set; }
-		public FrameworkElement? AppTitleBar { get; private set; } 
+		public FrameworkElement? AppTitleBar { get; private set; }
 		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
 		bool _hasTitleBarImage = false;
 		internal event EventHandler? OnApplyTemplateFinished;
@@ -25,11 +26,12 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnApplyTemplate()
 		{
-			base.OnApplyTemplate();			
-			
+			base.OnApplyTemplate();
+
 			AppTitleBar = (FrameworkElement)GetTemplateChild("AppTitleBar");
 			AppFontIcon = (Image)GetTemplateChild("AppFontIcon");
 			AppTitle = (TextBlock)GetTemplateChild("AppTitle");
+			RootStackPanel = (StackPanel)GetTemplateChild("RootStackPanel");
 
 			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 
@@ -43,7 +45,7 @@ namespace Microsoft.Maui.Platform
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
-			if(newContent is RootNavigationView mnv)
+			if (newContent is RootNavigationView mnv)
 			{
 				NavigationViewControl = mnv;
 				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
@@ -117,7 +119,7 @@ namespace Microsoft.Maui.Platform
 			{
 				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 			}
-			else if(NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+			else if (NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
 			{
 				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 			}
@@ -129,14 +131,14 @@ namespace Microsoft.Maui.Platform
 			{
 				AppTitleBar.Margin = new WThickness(expandedIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 			}
-						
+
 			// If the AppIcon loads correctly then we set a margin for the text from the image
 			if (_hasTitleBarImage)
 			{
-				if(AppTitle != null)
+				if (AppTitle != null)
 					AppTitle.Margin = new WThickness(12, 0, 0, 0);
 
-				if(AppFontIcon != null)
+				if (AppFontIcon != null)
 					AppFontIcon.Visibility = UI.Xaml.Visibility.Visible;
 			}
 			else

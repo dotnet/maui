@@ -15,7 +15,5 @@ namespace Microsoft.Maui.Controls.Internals
 		OSAppTheme RequestedTheme { get; }
 
 		void StartTimer(TimeSpan interval, Func<bool> callback);
-
-		SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint);
 	}
 }

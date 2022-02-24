@@ -15,20 +15,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class GridTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void ThrowsOnNullAdd()
 		{
@@ -2108,7 +2094,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		//Issue 1893
 		public void EditorSpanningOnMultipleAutoRows()
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: GetResizableSize);
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = GetResizableSize;
 
 			var grid0 = new Grid
 			{
@@ -2155,7 +2141,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void WidthBoundRequestRespected()
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: GetResizableSize);
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = GetResizableSize;
 
 			var grid = new Grid
 			{

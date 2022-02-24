@@ -198,14 +198,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return element != null;
 		}
 
-		internal static Task ApplyDrawableAsync(this IShellContext shellContext, BindableObject bindable, BindableProperty imageSourceProperty, Action<Drawable> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			_ = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
-			var renderer = shellContext as IVisualElementRenderer ?? throw new InvalidOperationException($"The shell context {shellContext.GetType()} must be a {typeof(IVisualElementRenderer)}.");
-
-			return renderer.ApplyDrawableAsync(bindable, imageSourceProperty, shellContext.AndroidContext, onSet, onLoading, cancellationToken);
-		}
-
 		internal static Task ApplyDrawableAsync(this IVisualElementRenderer renderer,
 										  BindableProperty imageSourceProperty,
 										  Context context,

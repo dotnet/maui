@@ -54,6 +54,12 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
+
+			handlersCollection.AddHandler<MenuBar, MenuBarHandler>();
+			handlersCollection.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
+			handlersCollection.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
+			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
+
 #if ANDROID || IOS
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
@@ -66,8 +72,8 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
-#endif
 			handlersCollection.AddHandler<Shell, ShellHandler>();
+#endif
 #endif
 #if IOS
 			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
