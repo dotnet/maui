@@ -532,15 +532,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
 			Device.FlowDirection = FlowDirection.LeftToRight;
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
 		}
 
 		static void AddExplicitLTRToScrollView(ScrollView parent, View child)

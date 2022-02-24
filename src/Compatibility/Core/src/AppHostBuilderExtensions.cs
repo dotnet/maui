@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<PlatformInvalidate>();
 			DependencyService.Register<FontNamedSizeService>();
+			DependencyService.Register<PlatformSizeService>();
 #endif
 
 			builder.ConfigureCompatibilityLifecycleEvents();

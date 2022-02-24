@@ -11,20 +11,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ControlTemplateTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		public class ContentControl : StackLayout
 		{
 			public ContentControl()

@@ -905,12 +905,18 @@ namespace Microsoft.Maui.Controls
 		protected void OnChildrenReordered()
 			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
 
+		IPlatformSizeService _platformSizeService;
+
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
-			return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
+			if (Handler != null)
+				return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
+
+			_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
+			return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)

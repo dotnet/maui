@@ -11,13 +11,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ImageSourceTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
 		[Test]
 		public void TestConstructors()
 		{
