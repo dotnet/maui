@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Essentials
 {
 	public interface IWebAuthenticator
 	{
-		Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl);
-
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions);
 	}
 
@@ -30,7 +28,7 @@ namespace Microsoft.Maui.Essentials
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync']/Docs" />
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
-			=> Current.AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
+			=> AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync']/Docs" />
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
@@ -54,14 +52,12 @@ namespace Microsoft.Maui.Essentials
 
 #nullable enable
 		static IWebAuthenticator? currentImplementation;
-#nullable disable
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IWebAuthenticator Current =>
 			currentImplementation ??= new WebAuthenticatorImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
 		public static void SetCurrent(IWebAuthenticator? implementation) =>
 			currentImplementation = implementation;
 #nullable disable

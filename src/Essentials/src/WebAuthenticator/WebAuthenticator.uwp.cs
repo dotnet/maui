@@ -14,9 +14,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 {
 	public class WebAuthenticatorImplementation : IWebAuthenticator
 	{
-		public Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
-			=> AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
-
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
 			var url = webAuthenticatorOptions?.Url;

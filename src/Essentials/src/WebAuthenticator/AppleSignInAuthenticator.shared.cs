@@ -29,14 +29,12 @@ namespace Microsoft.Maui.Essentials
 
 #nullable enable
 		static IAppleSignInAuthenticator? currentImplementation;
-#nullable disable
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IAppleSignInAuthenticator Current =>
 			currentImplementation ??= new AppleSignInAuthenticatorImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
 		public static void SetCurrent(IAppleSignInAuthenticator? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
