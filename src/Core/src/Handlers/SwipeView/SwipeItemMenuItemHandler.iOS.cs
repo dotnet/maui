@@ -19,29 +19,29 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		public static void MapTextColor(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			var color = view.GetTextColor();
 			if (color != null)
 				handler.PlatformView.SetTitleColor(color.ToPlatform(), UIControlState.Normal);
 		}
 
-		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view) { }
+		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 
-		public static void MapFont(SwipeItemMenuItemHandler handler, ITextStyle view) { }
+		public static void MapFont(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 
-		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		public static void MapText(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.PlatformView.RestorationIdentifier = view.Text;
 			handler.PlatformView.SetTitle(view.Text, UIControlState.Normal);
 		}
 
-		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.PlatformView.UpdateBackground(view.Background);
 		}
 
-		public static void MapVisibility(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
