@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
 
 		/// <summary>
-		/// The backing store for the <see cref="Services"/> property.
+		/// The backing store for the <see cref="ExternalNavigationStarting"/> property.
 		/// </summary>
-		public static readonly DependencyProperty OnExternalNavigationStartingProperty = DependencyProperty.Register(
-			name: nameof(OnExternalNavigationStarting),
+		public static readonly DependencyProperty ExternalNavigationStartingProperty = DependencyProperty.Register(
+			name: nameof(ExternalNavigationStarting),
 			propertyType: typeof(EventHandler<ExternalLinkNavigationEventArgs>),
 			ownerType: typeof(BlazorWebView));
 		#endregion
@@ -110,10 +110,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// Allows customizing how external links are opened.
 		/// Opens external links in the system browser by default.
 		/// </summary>
-		public EventHandler<ExternalLinkNavigationEventArgs> OnExternalNavigationStarting
+		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting
 		{
-			get => (EventHandler<ExternalLinkNavigationEventArgs>)GetValue(OnExternalNavigationStartingProperty);
-			set => SetValue(OnExternalNavigationStartingProperty, value);
+			get => (EventHandler<ExternalLinkNavigationEventArgs>)GetValue(ExternalNavigationStartingProperty);
+			set => SetValue(ExternalNavigationStartingProperty, value);
 		}
 
 		/// <summary>
@@ -189,13 +189,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
-			_webviewManager = new WebView2WebViewManager(_webview,
+			_webviewManager = new WebView2WebViewManager(
+				_webview,
 				Services,
 				ComponentsDispatcher,
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => OnExternalNavigationStarting?.Invoke(this, args));
+				(args) => ExternalNavigationStarting?.Invoke(this, args));
+
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously

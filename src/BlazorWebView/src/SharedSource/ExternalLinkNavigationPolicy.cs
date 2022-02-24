@@ -3,8 +3,8 @@
 	/// <summary>
 	/// Link handling policy for anchor tags <![CDATA[<a>]]> within a Blazor WebView.
 	/// 
-	/// `_blank` target links will always open in the default browser
-	/// regardless of the policy.
+	/// Anchor tags with target="_blank" will always open in the default
+	/// browser and the ExternalNavigationStarting event won't be called.
 	/// </summary>
 	public enum ExternalLinkNavigationPolicy
 	{
@@ -14,7 +14,7 @@
 		OpenInExternalBrowser,
 
 		/// <summary>
-		/// Opens anchor tags <![CDATA[<a>]]> in the WebView. This is not recommended.
+		/// Opens anchor tags <![CDATA[<a>]]> in the WebView. This is not recommended unless the content of the URL is fully trusted.
 		/// </summary>
 		OpenInWebView,
 

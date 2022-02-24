@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
 				{
-					LaunchUri(uri);
+					LaunchUriInExternalBrowser(uri);
 				}
 
 				args.Cancel = callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.OpenInWebView;
@@ -198,12 +198,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// The ExternalLinkCallback is not invoked.
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
-				LaunchUri(uri);
+				LaunchUriInExternalBrowser(uri);
 				args.Handled = true;
 			}
 		}
 
-		private void LaunchUri(Uri uri)
+		private void LaunchUriInExternalBrowser(Uri uri)
 		{
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			using (var launchBrowser = new Process())
@@ -213,7 +213,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				launchBrowser.Start();
 			}
 #elif WEBVIEW2_MAUI
-					
 			_ = Launcher.LaunchUriAsync(uri);
 #endif
 		}

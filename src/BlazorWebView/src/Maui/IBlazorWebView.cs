@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
 
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// Allows customizing how external links are opened.
 		/// Opens external links in the system browser by default.
 		/// </summary>
-		event EventHandler<ExternalLinkNavigationEventArgs>? OnExternalNavigationStarting;
+		event EventHandler<ExternalLinkNavigationEventArgs>? ExternalNavigationStarting;
 
 		/// <summary>
 		/// Creates a file provider for static assets used in the <see cref="BlazorWebView"/>. The default implementation

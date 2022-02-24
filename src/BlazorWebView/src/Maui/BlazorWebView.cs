@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <inheritdoc/>
-		public event EventHandler<ExternalLinkNavigationEventArgs>? OnExternalNavigationStarting;
+		public event EventHandler<ExternalLinkNavigationEventArgs>? ExternalNavigationStarting;
 
 		/// <inheritdoc/>
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
@@ -32,9 +31,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 		}
 
-		internal void ExternalNavigationStarting(ExternalLinkNavigationEventArgs args)
+		internal void NotifyExternalNavigationStarting(ExternalLinkNavigationEventArgs args)
 		{
-			OnExternalNavigationStarting?.Invoke(this, args);
+			ExternalNavigationStarting?.Invoke(this, args);
 		}
 	}
 }
