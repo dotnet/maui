@@ -38,17 +38,17 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		public static void MapIsRefreshing(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateIsRefreshing();
+		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> (handler as RefreshViewHandler)?.UpdateIsRefreshing();
 
-		public static void MapContent(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateContent();
+		public static void MapContent(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateContent(handler);
 
-		public static void MapRefreshColor(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateRefreshColor();
+		public static void MapRefreshColor(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateRefreshColor(handler);
 
-		public static void MapRefreshViewBackground(RefreshViewHandler handler, IView view)
-			=> handler.UpdateBackground();
+		public static void MapRefreshViewBackground(IRefreshViewHandler handler, IView view)
+			=> UpdateBackground(handler);
 
 		void UpdateIsRefreshing()
 		{
@@ -61,30 +61,29 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.RequestRefresh();
 		}
 
-		void UpdateContent()
+		static void UpdateContent(IRefreshViewHandler handler)
 		{
-			PlatformView.Content = VirtualView.Content.ToPlatform(MauiContext!);
+			handler.PlatformView.Content =
+				handler.VirtualView.Content.ToPlatform(handler.MauiContext!);
 		}
 
-		void UpdateRefreshColor()
+		static void UpdateRefreshColor(IRefreshViewHandler handler)
 		{
-			if (VirtualView == null || PlatformView?.Visualizer == null)
+			if (handler.VirtualView == null || handler.PlatformView?.Visualizer == null)
 				return;
 
-			PlatformView.Visualizer.Foreground = VirtualView.RefreshColor != null	
-				? VirtualView.RefreshColor.ToPlatform()	
+			handler.PlatformView.Visualizer.Foreground = handler.VirtualView.RefreshColor != null	
+				? handler.VirtualView.RefreshColor.ToPlatform()	
 				: (WBrush)UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 		}
 
-		void UpdateBackground()
+		static void UpdateBackground(IRefreshViewHandler handler)
 		{
-			if (VirtualView == null || PlatformView?.Visualizer == null)
+			if (handler.PlatformView?.Visualizer == null)
 				return;
 
-			if (VirtualView.Background != null)
-				PlatformView.Visualizer.Background = VirtualView.Background.ToPlatform();
-			else
-				PlatformView.Visualizer.Background = Colors.White.ToPlatform();
+			if (handler.VirtualView.Background != null)
+				handler.PlatformView.Visualizer.Background = handler.VirtualView.Background.ToPlatform();
 		}
 
 		// Telling the refresh to start before the control has been sized
