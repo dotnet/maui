@@ -7,22 +7,22 @@ using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Launcher
+	public partial class LauncherImplementation
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri) =>
+		Task<bool> PlatformCanOpenAsync(Uri uri) =>
 			Task.FromResult(UIApplication.SharedApplication.CanOpenUrl(WebUtils.GetNativeUrl(uri)));
 
-		static Task PlatformOpenAsync(Uri uri) =>
+		Task<bool> PlatformOpenAsync(Uri uri) =>
 			PlatformOpenAsync(WebUtils.GetNativeUrl(uri));
 
-		internal static Task<bool> PlatformOpenAsync(NSUrl nativeUrl) =>
+		Task<bool> PlatformOpenAsync(NSUrl nativeUrl) =>
 			Platform.HasOSVersion(10, 0)
 				? UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions())
 				: Task.FromResult(UIApplication.SharedApplication.OpenUrl(nativeUrl));
 
-		static Task<bool> PlatformTryOpenAsync(Uri uri)
+		Task<bool> PlatformTryOpenAsync(Uri uri)
 		{
 			var nativeUrl = WebUtils.GetNativeUrl(uri);
 
@@ -33,9 +33,9 @@ namespace Microsoft.Maui.Essentials
 		}
 
 #if __IOS__
-		static UIDocumentInteractionController documentController;
+		UIDocumentInteractionController documentController;
 
-		static Task PlatformOpenAsync(OpenFileRequest request)
+		Task<bool> PlatformOpenAsync(OpenFileRequest request)
 		{
 			documentController = new UIDocumentInteractionController()
 			{
@@ -60,11 +60,11 @@ namespace Microsoft.Maui.Essentials
 			}
 
 			documentController.PresentOpenInMenu(rect, view, true);
-			return Task.CompletedTask;
+			return Task.FromResult(true);
 		}
 
 #else
-		static Task PlatformOpenAsync(OpenFileRequest request) =>
+		Task PlatformOpenAsync(OpenFileRequest request) =>
 			throw new FeatureNotSupportedException();
 #endif
 	}
