@@ -6,7 +6,11 @@ variables:
   provisionator.path: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
   provisionator.vs: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
   provisionator.extraArguments: '--v'
-  signingCondition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+  signingCondition: or(eq(variables['Sign'], 'true'),
+                       or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+                          or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') )
+                          )
+                      )
 
 parameters:
   - name: BuildConfigurations
@@ -62,7 +66,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main # still defaults to master even though main is the main branch
+      ref: refs/heads/main
 
 stages:
   - stage: windows
@@ -203,19 +207,29 @@ stages:
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: ${{ variables['signingCondition'] }}
+            condition: and(succeeded(), ${{ variables['signingCondition'] }} )
 
     - stage: sbom
       displayName: 'Software Bill of Materials'
-      ${{ if not(variables['signingCondition']) }}:
-        dependsOn: [ 'windows' ]
-      ${{ if variables['signingCondition'] }}:
-        dependsOn: [ 'nuget_signing' ]
+      dependsOn: [ 'windows', 'nuget_signing' ]
+      condition: succeeded('windows')
       jobs:
       - template: compliance/sbom/job.v1.yml@xamarin-templates
         parameters:
+          jobName: SBOM_PR
+          jobDisplayName: 'Software Bill of Materials (PR)'
           artifactNames: ['nuget']
-          ${{ if variables['signingCondition'] }}:
-            artifactMap: ['nuget/signed']
+          artifactMap: ['nuget/Release']
           packageName: 'Microsoft Maui Graphics'
           packageFilter: '*.nupkg'
+          condition: not(${{ variables['signingCondition'] }})                    # Executed when signing is not enabled such as for pull request builds (PRs)
+
+      - template: compliance/sbom/job.v1.yml@xamarin-templates
+        parameters:
+          jobName: SBOM_CI
+          jobDisplayName: 'Software Bill of Materials (CI)'
+          artifactNames: ['nuget']
+          artifactMap: ['nuget/signed']
+          packageName: 'Microsoft Maui Graphics'
+          packageFilter: '*.nupkg'
+          condition: and(succeeded(), ${{ variables['signingCondition'] }} )      # Executed when signing is enabled such as for continuous integration builds (CIs)
