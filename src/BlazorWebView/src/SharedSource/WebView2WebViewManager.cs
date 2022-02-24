@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		public WebView2WebViewManager(
 			WebView2Control webview!!, 
@@ -151,6 +152,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			_webview.CoreWebView2.WebMessageReceived += (s, e) => MessageReceived(new Uri(e.Source), e.TryGetWebMessageAsString());
 		}
 
+		/// <summary>
+		/// Handles outbound URL requests.
+		/// </summary>
+		/// <param name="eventArgs">The <see cref="CoreWebView2WebResourceRequestedEventArgs"/>.</param>
 		protected virtual Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF

@@ -11,11 +11,25 @@ using WebKit;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// An implementation of <see cref="WebViewManager"/> that uses the <see cref="WKWebView"/> browser control
+	/// to render web content.
+	/// </summary>
 	public class IOSWebViewManager : WebViewManager
 	{
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly WKWebView _webview;
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="IOSWebViewManager"/>
+		/// </summary>
+		/// <param name="blazorMauiWebViewHandler">The <see cref="BlazorWebViewHandler"/>.</param>
+		/// <param name="webview">The <see cref="WKWebView"/> to render web content in.</param>
+		/// <param name="provider">The <see cref="IServiceProvider"/> for the application.</param>
+		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance instance that can marshal calls to the required thread or sync context.</param>
+		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
+		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
 		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
 			: base(services, dispatcher, new Uri(BlazorWebViewHandler.AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
