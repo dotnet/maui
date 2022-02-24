@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 			if (_rootView.AppTitleBar != null)
 			{
 				var platformWindow = _mauiContext.GetPlatformWindow();
-				platformWindow.ExtendsContentIntoTitleBar = true;
+				platformWindow.ExtendsContentIntoTitleBar = false;
 				UpdateAppTitleBar(true);
 			}
 
