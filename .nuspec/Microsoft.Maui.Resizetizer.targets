@@ -41,6 +41,10 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GetMauiAssetPath" />
 
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GeneratePackageAppxManifest" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -53,11 +57,13 @@
         <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
         <_MauiSplashInputsFile>$(IntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
         <_MauiSplashStampFile>$(IntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
+        <_MauiManifestStampFile>$(IntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
 
         <_ResizetizerIntermediateOutputRoot>$(IntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
         <_MauiIntermediateImages>$(_ResizetizerIntermediateOutputRoot)r\</_MauiIntermediateImages>
         <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
         <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
+        <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
         <_MauiIntermediateColors>$(_MauiIntermediateSplashScreen)maui_colors.xml</_MauiIntermediateColors>
         <_MauiIntermediateDrawable>$(_MauiIntermediateSplashScreen)maui_splash_image.xml</_MauiIntermediateDrawable>
         <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
@@ -162,6 +168,11 @@
             $(ProcessMauiFontsBeforeTargets);
             AssignTargetPaths;
         </ProcessMauiFontsBeforeTargets>
+
+        <MauiGeneratePackageAppxManifestDependsOnTargets>
+            $(MauiGeneratePackageAppxManifestDependsOnTargets);
+            ResizetizeCollectItems;
+        </MauiGeneratePackageAppxManifestDependsOnTargets>
     </PropertyGroup>
 
     <!-- WPF -->
@@ -546,6 +557,40 @@
         </ItemGroup>
     </Target>
 
+    <!-- This is required because the "CalculateAppxGenerateProjectPriEnabled" target explicitly depends
+         on "_ValidatePresenceOfAppxManifestItems" and we need to get in before then. -->
+    <Target Name="_ValidatePresenceOfAppxManifestItemsBeforeTarget"
+            BeforeTargets="_ValidatePresenceOfAppxManifestItems"
+            DependsOnTargets="MauiGeneratePackageAppxManifest" />
+
+    <Target Name="MauiGeneratePackageAppxManifest"
+            DependsOnTargets="$(MauiGeneratePackageAppxManifestDependsOnTargets)"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest)"
+            Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)Package.appxmanifest">
+
+        <GeneratePackageAppxManifest
+            IntermediateOutputPath="$(_MauiIntermediateManifest)"
+            AppxManifest="@(AppxManifest)"
+            GeneratedFilename="Package.appxmanifest"
+            ApplicationId="$(ApplicationId)"
+            ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
+            ApplicationVersion="$(ApplicationVersion)"
+            ApplicationTitle="$(ApplicationTitle)"
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            SplashScreen="@(MauiSplashScreen)" />
+
+        <!-- replace user manifest -->
+        <ItemGroup>
+            <AppxManifest Remove="@(AppxManifest)" />
+            <AppxManifest Include="$(_MauiIntermediateManifest)Package.appxmanifest" />
+        </ItemGroup>
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+            <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
+    </Target>
 
     <Target Name="_CleanResizetizer">
         <RemoveDir Directories="$(_ResizetizerIntermediateOutputRoot)" Condition="Exists ('$(_ResizetizerIntermediateOutputRoot)' )" />
