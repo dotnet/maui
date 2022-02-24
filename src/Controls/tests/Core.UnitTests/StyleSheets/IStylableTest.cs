@@ -13,6 +13,12 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			Device.PlatformServices = new MockPlatformServices();
 		}
 
+		[TearDown]
+		public void TearDown()
+		{
+			Device.PlatformServices = null;
+		}
+
 		[TestCase]
 		public void GetPropertyDefinedOnParent()
 		{

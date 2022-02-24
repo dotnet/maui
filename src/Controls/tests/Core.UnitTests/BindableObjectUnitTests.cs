@@ -74,18 +74,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class BindableObjectUnitTests : BaseTestFixture
 	{
-		[SetUp]
-		public void Setup()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void BindingContext()
 		{

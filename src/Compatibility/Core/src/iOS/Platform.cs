@@ -218,7 +218,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (renderView == null || renderView.NativeView == null)
 			{
 				if (view is IView iView)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(
+						"Someone called Platform.GetNativeSize instead of going through the Handler.");
+
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
+				}
 
 				Performance.Stop(reference);
 				return new SizeRequest(Size.Zero);
