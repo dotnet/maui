@@ -147,6 +147,10 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
+
+#if ANDROID
+					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
+#endif
 				});
 
 			builder.AddMauiCompat();

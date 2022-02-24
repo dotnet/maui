@@ -53,6 +53,9 @@
 
     <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\shellcontent.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" />
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
   <ItemGroup>
