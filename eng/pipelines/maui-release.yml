@@ -86,6 +86,9 @@ stages:
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/sign.yml                                     # Sign only using the private server
     - template: common/insertion.yml                                # Insert on VS and SDK
+      parameters:
+        poolName: $(windowsNet6VmPool)
+        mImage: $(windowsNet6VmImage)
 
 
 

@@ -15,7 +15,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(EditorAutoSizeOption.Disabled)]
 		[InlineData(EditorAutoSizeOption.TextChanges)]
-#endif
 		public async Task AutoSizeInitializesCorrectly(EditorAutoSizeOption option)
 		{
 			var editor = new Editor
@@ -47,6 +46,27 @@ namespace Microsoft.Maui.DeviceTests
 				else
 					Assert.True(initialHeight < editor.Height);
 			});
+		}
+#endif
+
+		[Theory]
+		[ClassData(typeof(TextTransformCases))]
+		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
+		{
+			var control = new Editor() { Text = text , TextTransform = transform };
+			var platformText = await GetPlatformText(await CreateHandlerAsync<EditorHandler>(control));
+			Assert.Equal(expected, platformText);
+		}
+
+		[Theory]
+		[ClassData(typeof(TextTransformCases))]
+		public async Task TextTransformUpdated(string text, TextTransform transform, string expected)
+		{
+			var control = new Editor() { Text = text };
+			var handler = await CreateHandlerAsync<EditorHandler>(control);
+			await InvokeOnMainThreadAsync(() => control.TextTransform = transform);
+			var platformText = await GetPlatformText(handler);
+			Assert.Equal(expected, platformText);
 		}
 	}
 }

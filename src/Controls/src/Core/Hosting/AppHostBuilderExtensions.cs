@@ -98,6 +98,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			FlyoutPage.RemapForControls();
 			Toolbar.RemapForControls();
 			Window.RemapForControls();
+			Editor.RemapForControls();
+			Entry.RemapForControls();
+			SearchBar.RemapForControls();
 
 			return builder;
 		}

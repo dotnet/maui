@@ -30,20 +30,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = handler.TypedVirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			handler.TypedPlatformView.UpdateContent(view, handler.MauiContext);
+			handler.PlatformView.UpdateContent(view, handler.MauiContext);
 		}
 
 		public static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.TypedPlatformView.UpdateIsSwipeEnabled(swipeView);
+			handler.PlatformView.UpdateIsSwipeEnabled(swipeView);
 			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.TypedPlatformView.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
+			handler.PlatformView.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
 		}
 
 		public static void MapRequestOpen(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			handler.TypedPlatformView.ProgrammaticallyOpenSwipeItem(request.OpenSwipeItem, request.Animated);
+			handler.PlatformView.ProgrammaticallyOpenSwipeItem(request.OpenSwipeItem, request.Animated);
 		}
 
 		public static void MapRequestClose(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-			handler.TypedPlatformView.ResetSwipe(request.Animated);
+			handler.PlatformView.ResetSwipe(request.Animated);
 		}
 
 		public static void MapLeftItems(ISwipeViewHandler handler, ISwipeView view)
