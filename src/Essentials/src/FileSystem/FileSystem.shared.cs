@@ -50,16 +50,31 @@ namespace Microsoft.Maui.Essentials
 
 
 #if ANDROID
-		internal static  Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName)
-			=> (Current as IPlatformFileSystem)?.GetTemporaryFile(root, fileName);
+		internal static Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName)
+		{
+			if (Current is IPlatformFileSystem p)
+				return p.GetTemporaryFile(root, fileName);
+			
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+		}
 
 		internal static string EnsurePhysicalPath(Android.Net.Uri uri, bool requireExtendedAccess = true)
-			=> (Current as IPlatformFileSystem)?.EnsurePhysicalPath(uri, requireExtendedAccess);
+		{
+			if (Current is IPlatformFileSystem p)
+				return p.EnsurePhysicalPath(uri, requireExtendedAccess);
+			
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+		}
 #endif
 
 #if IOS || MACCATALYST
 		internal static Task<FileResult[]> EnsurePhysicalFileResultsAsync(params Foundation.NSUrl[] urls)
-			=> (Current as IPlatformFileSystem)?.EnsurePhysicalFileResultsAsync(urls);
+		{
+			if (Current is IPlatformFileSystem p)
+				return p.EnsurePhysicalFileResultsAsync(urls);
+
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+		}
 #endif
 
 
