@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			var url = Email.GetMailToUri(message);
 			var nsurl = NSUrl.FromString(url);
-			await Launcher.PlatformOpenAsync(nsurl);
+			await Launcher.OpenAsync(nsurl);
 		}
 	}
 }
