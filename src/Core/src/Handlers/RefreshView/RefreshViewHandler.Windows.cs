@@ -7,20 +7,20 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class RefreshViewHandler : ViewHandler<IRefreshView, MauiRefreshContainer>
+	public partial class RefreshViewHandler : ViewHandler<IRefreshView, RefreshContainer>
 	{
 		bool _isLoaded;
 		Deferral? _refreshCompletionDeferral;
 
-		protected override MauiRefreshContainer CreatePlatformView()
+		protected override RefreshContainer CreatePlatformView()
 		{
-			return new MauiRefreshContainer
+			return new RefreshContainer
 			{
 				PullDirection = RefreshPullDirection.TopToBottom
 			};
 		}
 
-		protected override void ConnectHandler(MauiRefreshContainer nativeView)
+		protected override void ConnectHandler(RefreshContainer nativeView)
 		{
 			nativeView.Loaded += OnLoaded;
 			nativeView.RefreshRequested += OnRefresh;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(MauiRefreshContainer nativeView)
+		protected override void DisconnectHandler(RefreshContainer nativeView)
 		{
 			nativeView.Loaded -= OnLoaded;
 			nativeView.RefreshRequested -= OnRefresh;
@@ -61,8 +61,10 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.RequestRefresh();
 		}
 
-		void UpdateContent() =>
-			PlatformView.UpdateContent(VirtualView.Content, MauiContext);
+		void UpdateContent()
+		{
+			PlatformView.Content = VirtualView.Content.ToPlatform(MauiContext!);
+		}
 
 		void UpdateRefreshColor()
 		{
