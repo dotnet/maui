@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = handler.TypedVirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 		}
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)

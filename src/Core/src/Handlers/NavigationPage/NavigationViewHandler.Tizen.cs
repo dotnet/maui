@@ -37,9 +37,12 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigationView arg2, object? arg3)
+		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigationView arg2, object? arg3)
 		{
-			arg1.NavigationStack = (arg3 as NavigationRequest)!.NavigationStack;
+			if (arg1 is NavigationViewHandler platformHandler && arg3 is NavigationRequest navigationRequest)
+			{
+				platformHandler.NavigationStack = navigationRequest.NavigationStack;
+			}
 			//if (arg3 is NavigationRequest args)
 			//	arg1.OnPushRequested(args);
 		}
@@ -146,11 +149,11 @@ namespace Microsoft.Maui.Handlers
 		//	//handler.UpdateTitle(view.CurrentPage); 
 		//}
 
-		public static void MapBarBackground(NavigationViewHandler handler, INavigationView view) { }
+		public static void MapBarBackground(INavigationViewHandler handler, INavigationView view) { }
 
-		public static void MapTitleIcon(NavigationViewHandler handler, INavigationView view) { }
+		public static void MapTitleIcon(INavigationViewHandler handler, INavigationView view) { }
 
-		public static void MapTitleView(NavigationViewHandler handler, INavigationView view) { }
+		public static void MapTitleView(INavigationViewHandler handler, INavigationView view) { }
 
 		//void NavigationBarPropertyChangedHandler(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		//{

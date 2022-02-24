@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PageHandler : ContentViewHandler
 	{
-		public static void MapBackground(PageHandler handler, IContentView page)
+		public static void MapBackground(IPageHandler handler, IContentView page)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
 			if (page.Background != null && handler.PlatformView.BackgroundColor != EColor.Transparent)
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTitle(PageHandler handler, IContentView page) { }
+		public static void MapTitle(IPageHandler handler, IContentView page) { }
 		
 		protected override ContentCanvas CreatePlatformView()
 		{
