@@ -12,7 +12,7 @@ using Windows.Security.Authentication.Web;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class WebAuthenticatorImplementation : IWebAuthenticator
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator
 	{
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{

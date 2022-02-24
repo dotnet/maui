@@ -5,7 +5,7 @@ using AndroidX.Browser.CustomTabs;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 		TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
 		Uri currentRedirectUri = null;

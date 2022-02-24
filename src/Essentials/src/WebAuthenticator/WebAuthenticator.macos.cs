@@ -6,7 +6,7 @@ using Foundation;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	public class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
 		const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
