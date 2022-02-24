@@ -26,6 +26,7 @@ using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 #elif WEBVIEW2_MAUI
+using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
 #elif WEBVIEW2_MAUI
 		private protected CoreWebView2Environment? _coreWebView2Environment;
-		private readonly Action<ExternalLinkNavigationEventArgs>? _externalNavigationStarting;
+		private readonly BlazorWebViewHandler _blazorWebViewHandler;
 #endif
 
 		/// <summary>
@@ -75,13 +76,18 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting
 #elif WEBVIEW2_MAUI
-			Action<ExternalLinkNavigationEventArgs>? externalNavigationStarting
+			BlazorWebViewHandler blazorWebViewHandler
 #endif
 		)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_webview = webview;
+			
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			_externalNavigationStarting = externalNavigationStarting;
+#elif WEBVIEW2_MAUI
+			_blazorWebViewHandler = blazorWebViewHandler;
+#endif
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -181,7 +187,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) && uri.Host != AppHostAddress)
 			{
 				var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
+				
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 				_externalNavigationStarting?.Invoke(callbackArgs);
+#elif WEBVIEW2_MAUI
+				_blazorWebViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
+#endif
 
 				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
 				{

@@ -10,11 +10,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		public static readonly PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
 		{
-			// Note the order of the initialization matters. We must set the ExternalNavigationStarting action before starting the core webview.
-			[nameof(IBlazorWebView.ExternalNavigationStarting)] = MapNotifyExternalNavigationStarting,
-
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
+			[nameof(IBlazorWebView.ExternalNavigationStarting)] = MapNotifyExternalNavigationStarting,
 		};
 
 		public BlazorWebViewHandler() : base(BlazorWebViewMapper)

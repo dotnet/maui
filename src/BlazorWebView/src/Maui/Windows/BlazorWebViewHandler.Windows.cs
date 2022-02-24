@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				VirtualView.JSComponents,
 				hostPageRelativePath,
 				contentRootDir,
-				ExternalNavigationStarting);
+				this);
 
 			if (RootComponents != null)
 			{

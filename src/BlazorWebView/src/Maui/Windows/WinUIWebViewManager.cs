@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
 			string contentRootDir,
-			Action<ExternalLinkNavigationEventArgs>? externalNavigationStarting)
-			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath, externalNavigationStarting)
+			BlazorWebViewHandler webViewHandler)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath, webViewHandler)
 		{
 			_webview = webview;
 			_hostPageRelativePath = hostPageRelativePath;
