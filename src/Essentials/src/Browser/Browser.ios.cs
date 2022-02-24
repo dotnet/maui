@@ -6,11 +6,11 @@ using ObjCRuntime;
 using SafariServices;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Browser
+	public static partial class BrowserImplementation
 	{
-		static async Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchOptions options)
+		static async Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options)
 		{
 			switch (options.LaunchMode)
 			{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Essentials
 					await vc.PresentViewControllerAsync(sfViewController, true);
 					break;
 				case BrowserLaunchMode.External:
-					return await Launcher.PlatformOpenAsync(uri);
+					return await Launcher.OpenAsync(uri);
 			}
 
 			return true;

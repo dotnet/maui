@@ -6,11 +6,16 @@ using Android.Content.PM;
 using AndroidUri = Android.Net.Uri;
 using Uri = System.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Launcher
+	public partial class LauncherImplementation : ILauncher
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri)
+		public Task<bool> CanOpenAsync(string uri)
+		{
+			return CanOpenAsync(new Uri(uri));
+		}
+
+		public Task<bool> CanOpenAsync(Uri uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
 
@@ -22,7 +27,12 @@ namespace Microsoft.Maui.Essentials
 			return Task.FromResult(supportedResolvedInfos.Any());
 		}
 
-		static Task PlatformOpenAsync(Uri uri)
+		public Task OpenAsync(string uri)
+		{
+			return OpenAsync(new Uri(uri));
+		}
+
+		public Task OpenAsync(Uri uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
@@ -36,7 +46,7 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
-		static Task PlatformOpenAsync(OpenFileRequest request)
+		public Task OpenAsync(OpenFileRequest request)
 		{
 			var contentUri = Platform.GetShareableFileUri(request.File);
 
@@ -57,12 +67,17 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
-		static async Task<bool> PlatformTryOpenAsync(Uri uri)
+		public Task<bool> TryOpenAsync(string uri)
 		{
-			var canOpen = await PlatformCanOpenAsync(uri);
+			return TryOpenAsync(new Uri(uri));
+		}
+
+		public async Task<bool> TryOpenAsync(Uri uri)
+		{
+			var canOpen = await CanOpenAsync(uri);
 
 			if (canOpen)
-				await PlatformOpenAsync(uri);
+				await OpenAsync(uri);
 
 			return canOpen;
 		}

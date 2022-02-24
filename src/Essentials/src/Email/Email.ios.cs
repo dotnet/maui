@@ -7,9 +7,9 @@ using MessageUI;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Email
+	public static partial class EmailImplementation
 	{
 		internal static bool IsComposeSupported =>
 #if !(MACCATALYST || MACOS)
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 			false;
 #endif
 
-		static Task PlatformComposeAsync(EmailMessage message)
+		static Task ComposeAsync(EmailMessage message)
 		{
 #if !(MACCATALYST || MACOS)
 			if (MFMailComposeViewController.CanSendMail)
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			var url = GetMailToUri(message);
 			var nsurl = NSUrl.FromString(url);
-			await Launcher.PlatformOpenAsync(nsurl);
+			await Launcher.OpenAsync(nsurl);
 		}
 	}
 }

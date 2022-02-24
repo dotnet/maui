@@ -5,29 +5,44 @@ using Windows.Storage;
 using Windows.System;
 using WinLauncher = Windows.System.Launcher;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Launcher
+	public partial class LauncherImplementation : ILauncher
 	{
-		static async Task<bool> PlatformCanOpenAsync(Uri uri)
+		public async Task<bool> CanOpenAsync(string uri)
+		{
+			return await CanOpenAsync(new Uri(uri));
+		}
+
+		public async Task<bool> CanOpenAsync(Uri uri)
 		{
 			var supported = await WinLauncher.QueryUriSupportAsync(uri, LaunchQuerySupportType.Uri);
 			return supported == LaunchQuerySupportStatus.Available;
 		}
 
-		static Task PlatformOpenAsync(Uri uri) =>
+		public async Task OpenAsync(string uri)
+		{
+			return await OpenAsync(new Uri(uri));
+		}
+
+		public Task OpenAsync(Uri uri) =>
 			WinLauncher.LaunchUriAsync(uri).AsTask();
 
-		static async Task PlatformOpenAsync(OpenFileRequest request)
+		public async Task OpenAsync(OpenFileRequest request)
 		{
 			var storageFile = request.File.File ?? await StorageFile.GetFileFromPathAsync(request.File.FullPath);
 
 			await WinLauncher.LaunchFileAsync(storageFile).AsTask();
 		}
 
-		static async Task<bool> PlatformTryOpenAsync(Uri uri)
+		public async Task<bool> TryOpenAsync(string uri)
 		{
-			var canOpen = await PlatformCanOpenAsync(uri);
+			return await TryOpenAsync(new Uri(uri));
+		}
+
+		public async Task<bool> TryOpenAsync(Uri uri)
+		{
+			var canOpen = await CanOpenAsync(uri);
 
 			if (canOpen)
 				return await WinLauncher.LaunchUriAsync(uri).AsTask();

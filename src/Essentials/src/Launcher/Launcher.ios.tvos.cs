@@ -3,31 +3,45 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Launcher
+	public partial class LauncherImplementation : ILauncher
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri) =>
+		public Task<bool> CanOpenAsync(string uri)
+		{
+			return CanOpenAsync(new Uri(uri));
+		}
+
+		public Task<bool> CanOpenAsync(Uri uri) =>
 			Task.FromResult(UIApplication.SharedApplication.CanOpenUrl(WebUtils.GetNativeUrl(uri)));
 
-		static Task PlatformOpenAsync(Uri uri) =>
-			PlatformOpenAsync(WebUtils.GetNativeUrl(uri));
+		public Task OpenAsync(string uri)
+		{
+			return OpenAsync(new Uri(uri));
+		}
 
-		internal static Task<bool> PlatformOpenAsync(NSUrl nativeUrl) =>
+		public Task OpenAsync(Uri uri) =>
+			OpenAsync(WebUtils.GetNativeUrl(uri));
+
+		public Task<bool> OpenAsync(NSUrl nativeUrl) =>
 			Platform.HasOSVersion(10, 0)
 				? UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions())
 				: Task.FromResult(UIApplication.SharedApplication.OpenUrl(nativeUrl));
 
-		static Task<bool> PlatformTryOpenAsync(Uri uri)
+		public Task<bool> TryOpenAsync(string uri)
+		{			
+			return TryOpenAsync(new Uri(uri));
+		}
+
+		public Task<bool> TryOpenAsync(Uri uri)
 		{
 			var nativeUrl = WebUtils.GetNativeUrl(uri);
 
 			if (UIApplication.SharedApplication.CanOpenUrl(nativeUrl))
-				return PlatformOpenAsync(nativeUrl);
+				return OpenAsync(nativeUrl);
 
 			return Task.FromResult(false);
 		}
@@ -35,7 +49,7 @@ namespace Microsoft.Maui.Essentials
 #if __IOS__
 		static UIDocumentInteractionController documentController;
 
-		static Task PlatformOpenAsync(OpenFileRequest request)
+		public Task OpenAsync(OpenFileRequest request)
 		{
 			documentController = new UIDocumentInteractionController()
 			{
@@ -64,7 +78,7 @@ namespace Microsoft.Maui.Essentials
 		}
 
 #else
-		static Task PlatformOpenAsync(OpenFileRequest request) =>
+		public Task OpenAsync(OpenFileRequest request) =>
 			throw new FeatureNotSupportedException();
 #endif
 	}
