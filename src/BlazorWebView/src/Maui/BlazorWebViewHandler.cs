@@ -19,14 +19,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		};
 
 		/// <summary>
-		/// Intiailizes a new instance of <see cref="BlazorWebViewHandler"/> with default mappings.
+		/// Initializes a new instance of <see cref="BlazorWebViewHandler"/> with default mappings.
 		/// </summary>
 		public BlazorWebViewHandler() : base(BlazorWebViewMapper)
 		{
 		}
 
 		/// <summary>
-		/// Iniitializes a new isntance of <see cref="BlazorWebViewHandler"/> using the specified mappings.
+		/// Initializes a new instance of <see cref="BlazorWebViewHandler"/> using the specified mappings.
 		/// </summary>
 		/// <param name="mapper">The property mappings.</param>
 		public BlazorWebViewHandler(PropertyMapper? mapper) : base(mapper ?? BlazorWebViewMapper)
