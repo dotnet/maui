@@ -139,11 +139,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = Tizen;
 				return true;
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Device.RuntimePlatform == Device.UWP && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (Device.RuntimePlatform == Device.WPF && WPF != s_notset)
 			{
 				value = WPF;

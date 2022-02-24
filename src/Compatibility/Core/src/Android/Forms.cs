@@ -230,7 +230,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var androidServices = new AndroidPlatformServices(activity);
 
 			Device.PlatformServices = androidServices;
-
+			
 			Profile.FramePartition("RegisterAll");
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)

@@ -38,8 +38,8 @@ namespace Microsoft.Maui.Controls
 				case FormsDevice.iOS:
 					SetActive(FormsDevice.RuntimePlatform == FormsDevice.iOS);
 					break;
-				case FormsDevice.UWP:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.UWP);
+				case FormsDevice.WinUI:
+					SetActive(FormsDevice.RuntimePlatform == FormsDevice.WinUI);
 					break;
 			}
 		}
