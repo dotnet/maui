@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 					LaunchUriInExternalBrowser(uri);
 				}
 
-				args.Cancel = callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.OpenInWebView;
+				args.Cancel = callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.InsecureOpenInWebView;
 			}
 		}
 

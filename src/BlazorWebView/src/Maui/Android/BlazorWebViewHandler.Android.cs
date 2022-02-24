@@ -1,6 +1,7 @@
 using System;
 using Android.Webkit;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 using static Android.Views.ViewGroup;
 using Path = System.IO.Path;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #pragma warning restore 618
 			};
 
-			// To allow overriding ExternalLinkMode.OpenInWebView and open links in browser with a _blank target
+			// To allow overriding ExternalLinkMode.InsecureOpenInWebView and open links in browser with a _blank target
 			blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
 
 			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: true);

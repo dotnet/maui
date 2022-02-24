@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				else if (callbackArgs.Uri.Host == BlazorWebView.AppHostAddress)
 				{
-					callbackArgs.ExternalLinkNavigationPolicy = ExternalLinkNavigationPolicy.OpenInWebView;
+					callbackArgs.ExternalLinkNavigationPolicy = ExternalLinkNavigationPolicy.InsecureOpenInWebView;
 				}
 				else
 				{
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					UIApplication.SharedApplication.OpenUrl(url);
 				}
 
-				if (callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.OpenInWebView)
+				if (callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.InsecureOpenInWebView)
 				{
 					// Cancel any further navigation as we've either opened the link in the external browser
 					// or canceled the underlying navigation action.

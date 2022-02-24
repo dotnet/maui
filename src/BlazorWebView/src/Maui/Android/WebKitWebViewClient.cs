@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						_webViewHandler.Context.StartActivity(intent);
 					}
 
-					if (callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.OpenInWebView)
+					if (callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.InsecureOpenInWebView)
 					{
 						return true;
 					}
