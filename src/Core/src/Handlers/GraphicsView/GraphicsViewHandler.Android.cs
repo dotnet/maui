@@ -12,18 +12,18 @@ namespace Microsoft.Maui.Handlers
 			return new PlatformGraphicsView(Context);
 		}
 
-		protected override void ConnectHandler(PlatformGraphicsView nativeView)
+		protected override void ConnectHandler(PlatformGraphicsView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.Touch += OnTouch;
+			platformView.Touch += OnTouch;
 		}
 
-		protected override void DisconnectHandler(PlatformGraphicsView nativeView)
+		protected override void DisconnectHandler(PlatformGraphicsView platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.Touch -= OnTouch;
+			platformView.Touch -= OnTouch;
 		}
 
 		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)
