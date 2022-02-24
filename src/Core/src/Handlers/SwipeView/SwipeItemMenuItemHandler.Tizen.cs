@@ -13,17 +13,17 @@ namespace Microsoft.Maui.Handlers
 			throw new NotImplementedException();
 		}
 
-		public static void MapTextColor(SwipeItemMenuItemHandler handler, ITextStyle view) { }
+		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 
-		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view) { }
+		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 
-		public static void MapFont(SwipeItemMenuItemHandler handler, ITextStyle view) { }
+		public static void MapFont(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 
-		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
+		public static void MapText(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
-		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
+		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
-		public static void MapVisibility(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
+		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
 		void OnSetImageSource(EvasObject? obj)
 		{
