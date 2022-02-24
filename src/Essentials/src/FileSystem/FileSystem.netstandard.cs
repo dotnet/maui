@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Essentials
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		void PlatformInit(FileBase file)
-		{
-		}
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
