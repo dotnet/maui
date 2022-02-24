@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// <summary>
 		/// External <see cref="Uri">URI</see> to be navigated to.
 		/// </summary>
-		public Uri Uri { get; set; }
+		public Uri Uri { get; }
 
 		/// <summary>
 		/// The policy to use when opening external links from the webview.

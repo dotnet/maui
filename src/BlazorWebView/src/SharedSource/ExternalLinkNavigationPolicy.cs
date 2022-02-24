@@ -16,7 +16,7 @@
 
 		/// <summary>
 		/// Allows navigation to external links within the Blazor WebView.
-		/// This navigation policy can introduce security concerns and should not be enabled unless you can ensure all external links are fully trusted
+		/// This navigation policy can introduce security concerns and should not be enabled unless you can ensure all external links are fully trusted.
 		/// </summary>
 		InsecureOpenInWebView,
 
