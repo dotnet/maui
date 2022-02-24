@@ -139,8 +139,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		LayoutHandler CreateLayoutHandler(Action<string, ILayoutHandler, Maui.ILayout, LayoutHandlerUpdate?>? action)
 		{
 			var handler = new NonThrowingLayoutHandler(
-				LayoutHandler.LayoutMapper,
-				new CommandMapper<Maui.ILayout, ILayoutHandler>(LayoutHandler.LayoutCommandMapper)
+				LayoutHandler.Mapper,
+				new CommandMapper<Maui.ILayout, ILayoutHandler>(LayoutHandler.CommandMapper)
 				{
 					[nameof(ILayoutHandler.Add)] = (h, l, a) => action?.Invoke(nameof(ILayoutHandler.Add), h, l, (LayoutHandlerUpdate?)a),
 					[nameof(ILayoutHandler.Remove)] = (h, l, a) => action?.Invoke(nameof(ILayoutHandler.Remove), h, l, (LayoutHandlerUpdate?)a),
