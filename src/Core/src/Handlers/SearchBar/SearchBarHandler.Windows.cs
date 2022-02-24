@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 		MauiSearchTextBox? _queryTextBox;
 		MauiCancelButton? _cancelButton;
 
+		public MauiSearchTextBox? QueryEditor => _queryTextBox;
+
 		protected override AutoSuggestBox CreatePlatformView() => new AutoSuggestBox
 		{
 			AutoMaximizeSuggestionArea = false,
@@ -39,66 +41,87 @@ namespace Microsoft.Maui.Handlers
 			platformView.TextChanged -= OnTextChanged;
 		}
 
-		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateText(searchBar);
 		}
 
-		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdatePlaceholder(searchBar);
 		}
 			
-		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapVerticalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar, handler.QueryEditor);
 		}
 
-		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapPlaceholderColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdatePlaceholderColor(searchBar, handler._defaultPlaceholderColorBrush, handler._defaultPlaceholderColorFocusBrush, handler._queryTextBox);
+			if (handler is SearchBarHandler platformHandler)
+			{
+				handler.PlatformView?.UpdatePlaceholderColor(
+					searchBar,
+					platformHandler._defaultPlaceholderColorBrush,
+					platformHandler._defaultPlaceholderColorFocusBrush,
+					handler.QueryEditor);
+			}
 		}
 
-		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapHorizontalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar, handler.QueryEditor);
 		}
 
-		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(searchBar, fontManager);
 		}
 
-		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(searchBar);
 		}
 
-		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateTextColor(searchBar, handler._defaultTextColorBrush, handler._defaultTextColorFocusBrush, handler._queryTextBox);
+			if (handler is SearchBarHandler platformHandler)
+			{
+				handler.PlatformView?.UpdateTextColor(
+					searchBar,
+					platformHandler._defaultTextColorBrush,
+					platformHandler._defaultTextColorFocusBrush,
+					handler.QueryEditor);
+			}
 		}
 
-		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) 
+		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar) 
 		{
-			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar, handler.QueryEditor);
 		}
 
-		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateMaxLength(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateMaxLength(searchBar, handler.QueryEditor);
 		}
 
-		public static void MapIsReadOnly(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateIsReadOnly(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateIsReadOnly(searchBar, handler.QueryEditor);
 		}
 
-		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateCancelButtonColor(searchBar, handler._cancelButton, handler._defaultDeleteButtonBackgroundColorBrush, handler._defaultDeleteButtonForegroundColorBrush);
+			if (handler is SearchBarHandler platformHandler)
+			{
+				handler.PlatformView?.UpdateCancelButtonColor(
+					searchBar,
+					platformHandler._cancelButton,
+					platformHandler._defaultDeleteButtonBackgroundColorBrush,
+					platformHandler._defaultDeleteButtonForegroundColorBrush);
+			}
 		}
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
