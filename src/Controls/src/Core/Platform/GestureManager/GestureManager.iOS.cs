@@ -625,8 +625,11 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 				_addedFlags |= UIAccessibilityTrait.Button;
-				_defaultAccessibilityRespondsToUserInteraction = _platformView.AccessibilityRespondsToUserInteraction;
-				_platformView.AccessibilityRespondsToUserInteraction = true;
+				if (PlatformVersion.IsAtLeast(13))
+				{
+					_defaultAccessibilityRespondsToUserInteraction = _platformView.AccessibilityRespondsToUserInteraction;
+					_platformView.AccessibilityRespondsToUserInteraction = true;
+				}
 			}
 
 			for (int i = 0; i < ElementGestureRecognizers.Count; i++)
@@ -735,8 +738,11 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits &= ~_addedFlags;
 
-				if (_defaultAccessibilityRespondsToUserInteraction != null)
-					_platformView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
+				if (PlatformVersion.IsAtLeast(13))
+				{
+					if (_defaultAccessibilityRespondsToUserInteraction != null)
+						_platformView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
+				}
 			}
 
 			_addedFlags = UIAccessibilityTrait.None;
