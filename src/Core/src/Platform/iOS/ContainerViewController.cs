@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Platform
 			View!.AddSubview(currentPlatformView);
 
 			if (view is IView v && v.Background == null)
-				View.BackgroundColor = UIColor.SystemBackgroundColor;
+				View.BackgroundColor = UIColor.SystemBackground;
 		}
 
 		protected virtual UIView CreatePlatformView(IElement view)

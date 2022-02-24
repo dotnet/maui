@@ -29,32 +29,33 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 		}
 
-		public static void MapTextColor(SwipeItemMenuItemHandler handler, ITextStyle view)
+		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view)
 		{
 			(handler.PlatformView as TextView)?.UpdateTextColor(view);
 		}
 
-		public static void MapCharacterSpacing(SwipeItemMenuItemHandler handler, ITextStyle view)
+		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view)
 		{
 			(handler.PlatformView as TextView)?.UpdateCharacterSpacing(view);
 		}
 
-		public static void MapFont(SwipeItemMenuItemHandler handler, ITextStyle view)
+		public static void MapFont(ISwipeItemMenuItemHandler handler, ITextStyle view)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			(handler.PlatformView as TextView)?.UpdateFont(view, fontManager);
 		}
 
-		public static void MapText(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		public static void MapText(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 
 			(handler.PlatformView as TextView)?.UpdateTextPlainText(view);
 
-			handler.UpdateSize();
+			if (handler is SwipeItemMenuItemHandler platformHandler)
+				platformHandler.UpdateSize();
 		}
 
-		public static void MapBackground(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.PlatformView.UpdateBackground(handler.VirtualView.Background);
 
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapVisibility(SwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)

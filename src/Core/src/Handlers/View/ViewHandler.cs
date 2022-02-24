@@ -1,3 +1,5 @@
+using System.Data.Common;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;

@@ -2,14 +2,14 @@ using System.Threading.Tasks;
 using AppKit;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Email
+	public partial class EmailImplementation : IEmail
 	{
-		internal static bool IsComposeSupported =>
+		public bool IsComposeSupported =>
 			MainThread.InvokeOnMainThread(() => NSWorkspace.SharedWorkspace.UrlForApplication(NSUrl.FromString("mailto:")) != null);
 
-		static Task PlatformComposeAsync(EmailMessage message)
+		public Task ComposeAsync(EmailMessage message)
 		{
 			var url = GetMailToUri(message);
 

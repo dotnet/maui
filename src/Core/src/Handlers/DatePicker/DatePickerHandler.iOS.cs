@@ -78,41 +78,44 @@ namespace Microsoft.Maui.Handlers
 			_defaultTextColor = platformView.TextColor;
 		}
 
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateMinimumDate(datePicker, handler._picker);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._picker);
 		}
 
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateMaximumDate(datePicker, handler._picker);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._picker);
 		}
 
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(datePicker, handler._defaultTextColor);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateTextColor(datePicker, platformHandler._defaultTextColor);
 		}
 
 		void OnStarted(object? sender, EventArgs eventArgs)

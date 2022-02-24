@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LayoutHandler : ILayoutHandler
 	{
-		public static IPropertyMapper<ILayout, ILayoutHandler> LayoutMapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
+		public static IPropertyMapper<ILayout, ILayoutHandler> Mapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
 		{
 			[nameof(ILayout.Background)] = MapBackground,
 			[nameof(ILayout.ClipsToBounds)] = MapClipsToBounds,
 		};
 
-		public static CommandMapper<ILayout, ILayoutHandler> LayoutCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<ILayout, ILayoutHandler> CommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(ILayoutHandler.Add)] = MapAdd,
 			[nameof(ILayoutHandler.Remove)] = MapRemove,
@@ -29,16 +29,19 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILayoutHandler.UpdateZIndex)] = MapUpdateZIndex,
 		};
 
-		public LayoutHandler() : base(LayoutMapper, LayoutCommandMapper)
+		public LayoutHandler() : base(Mapper, CommandMapper)
 		{
-
 		}
 
 		public LayoutHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
-			: base(mapper ?? LayoutMapper, commandMapper ?? LayoutCommandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 
 		}
+
+		ILayout ILayoutHandler.VirtualView => VirtualView;
+
+		PlatformView ILayoutHandler.PlatformView => PlatformView;
 
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
