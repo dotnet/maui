@@ -19,8 +19,8 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
       - name: Release
-        poolName: $(macOSXNet6VmPool)
-        vmImage: $(macOSXNet6VmImage)
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmPool)
 
 trigger:
   branches:
@@ -105,14 +105,6 @@ stages:
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
-
-            # - pwsh: |
-            #     & dotnet vs where --prop=InstallationPath
-            #   displayName: list vs installs
-
-            # - pwsh: echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
-            #   displayName: Select JDK 11
-
             - pwsh: |
                 [xml] $fileXml = Get-Content "eng\Versions.props"
                 $DotNetVersion = $fileXml.SelectSingleNode("Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion").InnerText
@@ -129,11 +121,6 @@ stages:
                 & dotnet --list-sdks
               displayName: install .NET
               errorActionPreference: stop
-
-            #- pwsh: |
-            #    rm $env:DOTNET_ROOT\metadata\workloads\6.0.200\installertype\msi
-            #  displayName: don't use msi .net
-            #  errorActionPreference: stop
 
             - pwsh: |
                 dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT" -p:InstallDotNet=false
@@ -152,8 +139,6 @@ stages:
                 dir "C:\Program Files (x86)\Windows Kits\10\References\"
               displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
               condition: eq(variables['provisioningWindowsSdk'], 'true')
-
-           
 
             - pwsh: |
                 # $VS_ROOT = (& dotnet vs where --prop=InstallationPath)[0]
