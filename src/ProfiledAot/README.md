@@ -11,8 +11,10 @@ sure to build with `--configuration=Release`.
 
 Run the `Record` target on each project:
 
-    $ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -p:App=maui
-    $ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -p:App=maui-blazor
+```bash
+$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -p:App=maui
+$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -p:App=maui-blazor
+```
 
 You can also use `-r android-x64`, if you'd prefer an x86_64 emulator.
 
@@ -34,38 +36,47 @@ Build MAUI again with `--configuration=Release` (see
 
 Create a new project and run it:
 
-    $ mkdir foo && cd foo
-    $ ../bin/dotnet/dotnet new maui
-    $ ../bin/dotnet/dotnet build -c Release -t:Run -f net6.0-android
+```bash
+$ mkdir foo && cd foo
+$ ../bin/dotnet/dotnet new maui
+$ ../bin/dotnet/dotnet build -c Release -t:Run -f net6.0-android
+```
 
 Run the app a few times and make sure you get good launch times:
 
-    $ adb logcat -d | grep Displayed
-    02-22 15:50:50.502  1802  1962 I ActivityTaskManager: Displayed com.companyname.foo/crc64808a40cc7e533249.MainActivity: +477ms
-    02-22 15:50:51.703  1802  1962 I ActivityTaskManager: Displayed com.companyname.foo/crc64808a40cc7e533249.MainActivity: +477ms
-    02-22 15:50:52.926  1802  1962 I ActivityTaskManager: Displayed com.companyname.foo/crc64808a40cc7e533249.MainActivity: +477ms
+```bash
+$ adb logcat -d | grep Displayed
+02-22 15:50:50.502  1802  1962 I ActivityTaskManager: Displayed com.companyname.foo/crc64808a40cc7e533249.MainActivity: +477ms
+02-22 15:50:51.703  1802  1962 I ActivityTaskManager: Displayed com.companyname.foo/crc64808a40cc7e533249.MainActivity: +477ms
+02-22 15:50:52.926  1802  1962 I ActivityTaskManager: Displayed com.companyname.foo/crc64808a40cc7e533249.MainActivity: +477ms
+```
 
 You can also use [profile-android.ps1][1] in this repo, or [profile.ps1][2].
 
 To verify what methods are AOT'd, clear the log and enable AOT logging:
 
-    $ adb logcat -c
-    $ adb shell setprop debug.mono.log default,timing=bare,assembly,mono_log_level=debug,mono_log_mask=aot
+```bash
+$ adb logcat -c
+$ adb shell setprop debug.mono.log default,timing=bare,assembly,mono_log_level=debug,mono_log_mask=aot
+```
 
 Restart the app, and you should be able to see messages like:
 
-    $ adb logcat -d | grep AOT
-    02-23 09:03:46.327 10401 10401 D Mono    : AOT: FOUND method Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView:.ctor () [0x6f9efd0150 - 
+```bash
+$ adb logcat -d | grep AOT
+02-23 09:03:46.327 10401 10401 D Mono    : AOT: FOUND method Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView:.ctor () [0x6f9efd0150 - 
 0x6f9efd0340 0x6f9efd260c]
+```
 
 Look for any suspicious `AOT NOT FOUND` messages.
 
 Note that it is expected that some methods will say `(wrapper)`:
 
-    02-23 09:03:46.327 10401 10401 D Mono    : AOT NOT FOUND: (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr).
-    02-23 09:03:46.334 10401 10401 D Mono    : AOT NOT FOUND: (wrapper managed-to-native) System.Diagnostics.Debugger:IsAttached_internal ().
-    02-23 09:03:46.367 10401 10401 D Mono    : AOT NOT FOUND: (wrapper native-to-managed) Android.Runtime.JNINativeWrapper:Wrap_JniMarshal_PPL_V 
-(intptr,intptr,intptr).
+```bash
+02-23 09:03:46.327 10401 10401 D Mono    : AOT NOT FOUND: (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr).
+02-23 09:03:46.334 10401 10401 D Mono    : AOT NOT FOUND: (wrapper managed-to-native) System.Diagnostics.Debugger:IsAttached_internal ().
+02-23 09:03:46.367 10401 10401 D Mono    : AOT NOT FOUND: (wrapper native-to-managed) Android.Runtime.JNINativeWrapper:Wrap_JniMarshal_PPL_V (intptr,intptr,intptr).
+```
 
 [0]: ../../.github/DEVELOPMENT.md#compile-using-a-local-bindotnet
 [1]: ../../eng/scripts/profile-android.ps1
