@@ -15,13 +15,14 @@ namespace Microsoft.Maui.Platform
 
 			if (mauiDrawable == null && borderShape == null)
 				return;
-			mauiDrawable.SetBorderBrush(border.Stroke);
-			mauiDrawable.SetBorderWidth(border.StrokeThickness);
+			
+			mauiDrawable?.SetBorderBrush(border.Stroke);
+			mauiDrawable?.SetBorderWidth(border.StrokeThickness);
 			platformView.UpdateStrokeDashPattern(border);
 			platformView.UpdateStrokeDashOffset(border);
-			mauiDrawable.SetBorderMiterLimit(border.StrokeMiterLimit);
-			mauiDrawable.SetBorderLineCap(border.StrokeLineCap);
-			mauiDrawable.SetBorderLineJoin(border.StrokeLineJoin);
+			mauiDrawable?.SetBorderMiterLimit(border.StrokeMiterLimit);
+			mauiDrawable?.SetBorderLineCap(border.StrokeLineCap);
+			mauiDrawable?.SetBorderLineJoin(border.StrokeLineJoin);
 
 		}
 
