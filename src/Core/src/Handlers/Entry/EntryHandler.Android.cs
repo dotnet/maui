@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
-			var nativeEntry = new AppCompatEditText(Context);
+			var nativeEntry = new MauiEditText(Context);
 			_defaultPlaceholderColors = nativeEntry.HintTextColors;
 			return nativeEntry;
 		}
