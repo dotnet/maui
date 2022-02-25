@@ -117,29 +117,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 #else
-		static bool? s_isSierraOrNewer;
-
-		internal static bool IsSierraOrNewer
-		{
-			get
-			{
-				if (!s_isSierraOrNewer.HasValue)
-					s_isSierraOrNewer = NSProcessInfo.ProcessInfo.IsOperatingSystemAtLeastVersion(new NSOperatingSystemVersion(10, 12, 0));
-				return s_isSierraOrNewer.Value;
-			}
-		}
-
-		static bool? s_isHighSierraOrNewer;
-
-		internal static bool IsHighSierraOrNewer
-		{
-			get
-			{
-				if (!s_isHighSierraOrNewer.HasValue)
-					s_isHighSierraOrNewer = NSProcessInfo.ProcessInfo.IsOperatingSystemAtLeastVersion(new NSOperatingSystemVersion(10, 13, 0));
-				return s_isHighSierraOrNewer.Value;
-			}
-		}
 
 		static bool? s_isMojaveOrNewer;
 
@@ -148,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isMojaveOrNewer.HasValue)
-					s_isMojaveOrNewer = NSProcessInfo.ProcessInfo.IsOperatingSystemAtLeastVersion(new NSOperatingSystemVersion(10, 14, 0));
+					s_isMojaveOrNewer = OperatingSystem.IsMacOSVersionAtLeast (10, 14);
 				return s_isMojaveOrNewer.Value;
 			}
 		}
