@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 				_navigationView = new MauiNavigationView()
 				{
 					Content = _navigationFrame,
-					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal,
+					PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
 					IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
 					IsSettingsVisible = false,
 					IsPaneToggleButtonVisible = false
@@ -86,6 +86,9 @@ namespace Microsoft.Maui.Controls
 
 		void OnConnectHandler()
 		{
+			if (this.HasAppeared)
+				OnTabbedPageAppearing(this, EventArgs.Empty);
+
 			Appearing += OnTabbedPageAppearing;
 			Disappearing += OnTabbedPageDisappearing;
 
@@ -137,6 +140,7 @@ namespace Microsoft.Maui.Controls
 			if (_navigationView != null)
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
 
+			OnTabbedPageDisappearing(this, EventArgs.Empty);
 			_navigationView = null;
 			_navigationRootManager = null;
 			_navigationFrame = null;

@@ -34,14 +34,18 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Header Visible When Pushing To TabbedPage")]
-		public async Task HeaderVisibleWhenPushingToTabbedPage()
+		[Fact(DisplayName = "Toolbar Visible When Pushing To TabbedPage")]
+		public async Task ToolbarVisibleWhenPushingToTabbedPage()
 		{
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
+				// When the current active page is a TabbedPage then
+				// we put to toolbar inside the PaneFooter so it's
+				// to the right of the tabs
+
 				await navPage.PushAsync(CreateBasicTabbedPage());
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var header = (WFrameworkElement)navView.PaneFooter;
