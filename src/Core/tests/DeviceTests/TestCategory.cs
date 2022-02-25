@@ -14,6 +14,7 @@
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
 		public const string FlyoutView = "FlyoutView";
+		public const string Fonts = "Fonts";
 		public const string GraphicsView = "GraphicsView";
 		public const string Image = "Image";
 		public const string ImageButton = "ImageButton";
