@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Handlers
 			_dialog?.Hide();
 		}
 
-		void OnMainDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
+		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
 		{
 			DatePickerDialog? currentDialog = _dialog;
 
