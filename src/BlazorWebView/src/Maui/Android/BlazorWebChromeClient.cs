@@ -1,12 +1,11 @@
-﻿
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Net;
 using Android.OS;
 using Android.Webkit;
+using Microsoft.Maui;
 using Microsoft.Maui.Essentials;
 using File = Java.IO.File;
 
@@ -36,52 +35,43 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return base.OnShowFileChooser(view, filePathCallback, fileChooserParams);
 			}
 
-			_ = CallFilePickerAsync(filePathCallback, fileChooserParams);
+			CallFilePickerAsync(filePathCallback, fileChooserParams).FireAndForget();
 			return true;
 		}
 
 		private static async Task CallFilePickerAsync(IValueCallback filePathCallback, FileChooserParams? fileChooserParams)
 		{
 			var pickOptions = GetPickOptions(fileChooserParams);
+			var fileResults = fileChooserParams?.Mode == ChromeFileChooserMode.OpenMultiple ?
+					await FilePicker.PickMultipleAsync(pickOptions) :
+					new[] { await FilePicker.PickAsync(pickOptions) };
 
-			if (fileChooserParams?.Mode == ChromeFileChooserMode.OpenMultiple)
-			{
-				var files = await FilePicker.PickMultipleAsync(pickOptions);
-				if (files is null)
-				{
-					// Task was cancelled, return null to original callback
-					filePathCallback.OnReceiveValue(null);
-					return;
-				}
-
-				var androidUris = files!
-					.Where(f => f is not null)
-					.Select(f => new File(f.FullPath))
-					.Select(Uri.FromFile)
-					.Where(u => u is not null)
-					.Select(u => u!)
-					.ToArray();
-				filePathCallback.OnReceiveValue(androidUris);
-				return;
-			}
-
-			var file = await FilePicker.PickAsync(pickOptions);
-			if (file is null)
+			if (fileResults?.All(f => f is null) ?? true)
 			{
 				// Task was cancelled, return null to original callback
 				filePathCallback.OnReceiveValue(null);
 				return;
 			}
 
-			var androidFile = new File(file!.FullPath);
-			var androidFileUri = Uri.FromFile(androidFile);
-			if (androidFileUri is null)
+			var fileUris = new List<Uri>(fileResults.Count());
+			foreach (var fileResult in fileResults)
 			{
-				filePathCallback.OnReceiveValue(null);
-				return;
+				if (fileResult is null)
+				{
+					continue;
+				}
+
+				var javaFile = new File(fileResult.FullPath);
+				var androidUri = Uri.FromFile(javaFile);
+
+				if (androidUri is not null)
+				{
+					fileUris.Add(androidUri);
+				}
 			}
 
-			filePathCallback.OnReceiveValue(new Uri[] { androidFileUri! });
+			filePathCallback.OnReceiveValue(fileUris.ToArray());
+			return;
 		}
 
 		private static PickOptions? GetPickOptions(FileChooserParams? fileChooserParams)

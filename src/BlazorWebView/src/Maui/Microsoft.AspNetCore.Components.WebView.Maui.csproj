@@ -15,7 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)"/>
+    <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)" />
+    <Compile Include="..\..\..\Core\src\TaskExtensions.cs" Link="Utilities\TaskExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

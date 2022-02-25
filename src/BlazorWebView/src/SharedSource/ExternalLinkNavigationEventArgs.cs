@@ -3,8 +3,7 @@
 namespace Microsoft.AspNetCore.Components.WebView
 {
 	/// <summary>
-	/// Used to provide information about an external link (<![CDATA[<a>]]>)
-	/// clicked within a Blazor WebView.
+	/// Used to provide information about a link (<![CDATA[<a>]]>) clicked within a Blazor WebView.
 	/// 
 	/// Anchor tags with target="_blank" will always open in the default
 	/// browser and the ExternalNavigationStarting event won't be called.
