@@ -16,8 +16,12 @@ parameters:
   - name: BuildConfigurations
     type: object
     default:
-      - Debug
-      - Release
+      - name: Debug
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
+      - name: Release
+        poolName: $(macOSXNet6VmPool)
+        vmImage: $(macOSXNet6VmImage)
 
 trigger:
   branches:
@@ -73,13 +77,14 @@ stages:
     displayName: Build Windows
     jobs:
       - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-        - job: win_hosted_${{ BuildConfiguration }}
+        - job: win_hosted_${{ BuildConfiguration.name }}
           workspace:
             clean: all
-          displayName: Build Windows Phase (${{ BuildConfiguration }})
+          displayName: Build Windows Phase (${{ BuildConfiguration.name }})
           timeoutInMinutes: 60
           pool:
-            vmImage: windows-2022
+            name: ${{ BuildConfiguration.poolName }}
+            vmImage: ${{ BuildConfiguration.vmImage }}
           steps:
 
             - template: /eng/pipelines/common/provision.yml
