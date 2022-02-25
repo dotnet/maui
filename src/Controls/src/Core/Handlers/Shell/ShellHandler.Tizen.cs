@@ -6,6 +6,16 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class ShellHandler : ViewHandler<Shell, ShellView>
 	{
+		public static PropertyMapper<Shell, ShellHandler> Mapper =
+				new PropertyMapper<Shell, ShellHandler>(ElementMapper);
+
+		public static CommandMapper<Shell, ShellHandler> CommandMapper =
+				new CommandMapper<Shell, ShellHandler>(ElementCommandMapper);
+
+		public ShellHandler() : base(Mapper, CommandMapper)
+		{
+		}
+
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);

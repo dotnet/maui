@@ -27,33 +27,33 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
+		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
 			handler.PlatformView?.UpdateIsChecked(radioButton);
 		}
 
 		[MissingMapper]
-		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapContent(IRadioButtonHandler handler, IRadioButton radioButton) { }
 
-		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle)
+		public static void MapTextColor(IRadioButtonHandler handler, ITextStyle textStyle)
 		{
 			handler.PlatformView?.UpdateTextColor(textStyle);
 		}
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle) { }
+		public static void MapCharacterSpacing(IRadioButtonHandler handler, ITextStyle textStyle) { }
 
 		[MissingMapper]
-		public static void MapFont(RadioButtonHandler handler, ITextStyle textStyle) { }
+		public static void MapFont(IRadioButtonHandler handler, ITextStyle textStyle) { }
 
 		[MissingMapper]
-		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapStrokeColor(IRadioButtonHandler handler, IRadioButton radioButton) { }
 
 		[MissingMapper]
-		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapStrokeThickness(IRadioButtonHandler handler, IRadioButton radioButton) { }
 
 		[MissingMapper]
-		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton) { }
 
 		void OnValueChanged(object? sender, EventArgs e)
 		{

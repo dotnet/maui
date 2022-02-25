@@ -7,6 +7,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchBar>
 	{
+		EditfieldEntry? _editor;
+
+		public EditfieldEntry? QueryEditor => _editor;
+
 		protected override SearchBar CreatePlatformView()
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
@@ -16,6 +20,8 @@ namespace Microsoft.Maui.Handlers
 				IsSingleLine = true
 			};
 			searchBar.SetInputPanelReturnKeyType(InputPanelReturnKeyType.Search);
+
+			_editor = searchBar;
 			return searchBar;
 		}
 
@@ -37,66 +43,66 @@ namespace Microsoft.Maui.Handlers
 			platformView.EntryLayoutUnfocused -= OnUnfocused;
 		}
 
-		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateText(searchBar);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, searchBar);
 		}
-		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdatePlaceholder(searchBar);
 		}
 
-		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapPlaceholderColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdatePlaceholderColor(searchBar);
 		}
 
-		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(searchBar, fontManager);
 		}
 
-		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapHorizontalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
-		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapVerticalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar);
 		}
 
-		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateTextColor(searchBar);
 		}
 
-		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateMaxLength(searchBar);
 		}
 
-		public static void MapIsReadOnly(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateIsReadOnly(searchBar);
 		}
 
-		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar);
 		}
 
-		public static void MapKeyboard(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateKeyboard(searchBar);
 		}
 
-		public static void MapFormatting(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapFormatting(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			// Update all of the attributed text formatting properties
 			// Setting any of those may have removed text alignment settings,
@@ -105,13 +111,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
-		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar) { }
 
 		string? MaxLengthFilter(EEntry searchBar, string s)
 		{
