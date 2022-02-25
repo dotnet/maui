@@ -64,8 +64,7 @@ Restart the app, and you should be able to see messages like:
 
 ```bash
 $ adb logcat -d | grep AOT
-02-23 09:03:46.327 10401 10401 D Mono    : AOT: FOUND method Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView:.ctor () [0x6f9efd0150 - 
-0x6f9efd0340 0x6f9efd260c]
+02-23 09:03:46.327 10401 10401 D Mono    : AOT: FOUND method Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView:.ctor () [0x6f9efd0150 - 0x6f9efd0340 0x6f9efd260c]
 ```
 
 Look for any suspicious `AOT NOT FOUND` messages.
