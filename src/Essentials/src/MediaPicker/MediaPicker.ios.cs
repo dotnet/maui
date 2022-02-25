@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
 
 			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
-			if (pickExisting && !Platform.HasOSVersion(11, 0))
+			if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0))
 				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
 
 			if (!pickExisting)
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			PHAsset phAsset = null;
 			NSUrl assetUrl = null;
 
-			if (Platform.HasOSVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 			{
 				assetUrl = info[UIImagePickerController.ImageUrl] as NSUrl;
 
@@ -147,13 +147,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			if (phAsset == null || assetUrl == null)
 				return null;
 
-			string originalFilename;
-
-			if (Platform.HasOSVersion(9, 0))
-				originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
-			else
-				originalFilename = phAsset.ValueForKey(new NSString("filename")) as NSString;
-
+			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
 			return new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 		}
 

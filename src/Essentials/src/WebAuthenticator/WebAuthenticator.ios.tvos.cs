@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		static bool VerifyHasUrlSchemeOrDoesntRequire(string scheme)
 		{
 			// iOS11+ uses sfAuthenticationSession which handles its own url routing
-			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast (11, 0))
 				return true;
 
 			return AppInfoImplementation.VerifyHasUrlScheme(scheme);
