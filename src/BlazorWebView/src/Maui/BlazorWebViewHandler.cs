@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
-		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
+		private static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
 			handler.HostPage = webView.HostPage;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
-		public static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
+		private static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
 			handler.RootComponents = webView.RootComponents;
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
-		public static void MapNotifyExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
+		private static void MapNotifyExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
 			if (webView is BlazorWebView bwv)
