@@ -1,75 +1,57 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
-using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using Android.Widget;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.DualScreen
-{	public class ScreenHelper
+{
+	public class ScreenHelper
 	{
+		/// <summary>
+		///                         Surface Duo             Surface Duo2
+		/// Dual-portrait (wide)    1350, 0 - 1434, 1800    1344, 0 - 1410, 1892
+		/// Dual-landscape (tall)   0, 1350 - 1800, 1434    0, 1344 - 1892, 1410
+		/// </summary>
 		public Rectangle FoldingFeatureBounds { get; set; } = Rectangle.Zero;
+		/// <summary>
+		///                         Surface Duo          Surface Duo2
+		/// Dual-portrait (wide)    0, 0 - 2784, 1800    0, 0 - 2754, 1892
+		/// Dual-landscape (tall)   0, 0 - 1800, 2784    0, 0 - 1892, 2754
+		/// </summary>
 		public Rectangle WindowBounds { get; set; } = Rectangle.Zero;
+		/// <summary>
+		/// Whether the app is spanned across a hinge or fold
+		/// </summary>
 		public bool IsSpanned { get; set; }
-		public Activity Activity { get; set; }
+		/// <summary>
+		/// Removed public access for this property, we no longer expose the underlying activity
+		/// </summary>
+		Activity Activity { get; set; }
+		/// <summary>
+		/// Need to pass the density up from the UseDualScreen HostBuilderExtension
+		/// so we can calculate dp from pixels for layout measuring
+		/// </summary>
+		float screenDensity = 1f;
 		
 
 		public ScreenHelper() {
-			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - no Activity");
+			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - no IFoldableContext");
 		}
 		public ScreenHelper(IFoldableContext activity)
 		{
-			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - WITH Activity");
+			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - WITH IFoldableContext");
 			Activity = activity as Activity;
+			screenDensity = activity.ScreenDensity;
 		}
 
-		//TODO: FOLDABLE remove this implementation
-		//[Obsolete("shouldnt care")]
-		//public static bool IsDualScreenDevice(IFoldableContext context)
-		//{
-		//	return true; //HACK:FOLDABLE			context.isSeparating;
-		//	//return context.PackageManager.HasSystemFeature("com.microsoft.device.display.displaymask");
-		//}
 		public bool Initialize(IFoldableContext activity)
 		{
 			Activity = activity as Activity;
-			//if (!IsDualScreenDevice(activity))
-			//	return false;
-			//WindowBounds = activity.WindowBounds;
-
-			//try
-			//{
-			//	Activity = activity as Activity;
-			//	if (activity.isSeparating)
-			//		FoldingFeatureBounds = activity.FoldingFeatureBounds;
-			//	//HACK:DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
-			//	//HACK:if (DisplayMask == null)
-			//	//    return false;
-			//}
-			//catch (Java.Lang.NoSuchMethodError ex)
-			//{
-			//	ex.PrintStackTrace();
-			//	return false;
-			//}
-			//catch (Java.Lang.RuntimeException ex)
-			//{
-			//	ex.PrintStackTrace();
-			//	return false;
-			//}
-			//catch (Java.Lang.NoClassDefFoundError ex)
-			//{
-			//	ex.PrintStackTrace();
-			//	return false;
-			//}
-
+			screenDensity = activity.ScreenDensity;
 			return true;
 		}
 
@@ -80,35 +62,38 @@ namespace Microsoft.Maui.Controls.DualScreen
 			//HACK:=> DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
 			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds;
 			WindowBounds = (Activity as IFoldableContext).WindowBounds;
+			screenDensity = (Activity as IFoldableContext).ScreenDensity;
 		}
 
-
+		/// <summary>
+		/// NOTE: we don't use rotation any more, instead checks window height and width
+		/// since rotation assumed Surface Duo orientations and didn't always work
+		/// for other foldable devices
+		/// </summary>
 		public SurfaceOrientation GetRotation()
 			=> GetRotation(Activity);
 
 		[Obsolete("No longer used with rotation parameter")]
 		Rect GetHinge(SurfaceOrientation rotation)
 		{
-			// Hinge's coordinates of its 4 edges in different mode
-			// Double Landscape Rect(0, 1350 - 1800, 1434)
-			// Double Portrait  Rect(1350, 0 - 1434, 1800)
-			//HACK:var boundings = DisplayMask.GetBoundingRectsForRotation(rotation);
-//			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds; // TODO get for rotation!!!!???
+			// Hinge's coordinates of its 4 edges in different mode (Surface Duo 1 & 2 sizes)
+			// Double Portrait  Rect(1350, 0 - 1434, 1800)     Rect(1344, 0 - 1410, 1892)
+			// Double Landscape Rect(0, 1350 - 1800, 1434)     Rect(0, 1344 - 1892, 1410)
 
-			//HACK:if (boundings.Count <= 0)
 			if (FoldingFeatureBounds == Rectangle.Zero)
 				return new Rect();
 
 			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Right, (int)FoldingFeatureBounds.Bottom);
-			//HACK:[0];  used to expect multiple - TODO maybe reinstate this?
 		}
 
+		/// <summary>
+		/// Passed from UseDualScreen HostBuilderExtension
+		/// </summary>
 		Rect GetHinge()
 		{
-			// Hinge's coordinates of its 4 edges in different mode
-			// Double Landscape Rect(0, 1350 - 1800, 1434)
-			// Double Portrait  Rect(1350, 0 - 1434, 1800)
-//			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds; // TODO get for rotation!!!!???
+			// Hinge's coordinates of its 4 edges in different mode on Surface Duo 1
+			// Double Portrait  Rect(1350, 0 - 1434, 1800)     Rect(1344, 0 - 1410, 1892)
+			// Double Landscape Rect(0, 1350 - 1800, 1434)     Rect(0, 1344 - 1892, 1410)
 
 			if (FoldingFeatureBounds == Rectangle.Zero)
 				return new Rect();
@@ -116,12 +101,12 @@ namespace Microsoft.Maui.Controls.DualScreen
 			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Right, (int)FoldingFeatureBounds.Bottom);
 		}
 
+		/// <summary>
+		/// Passed from UseDualScreen HostBuilderExtension
+		/// </summary>
 		Rect GetWindowRect()
 		{
-			//HACK:FOLDABLE
 			var windowRect = new Rect(0, 0, (int)WindowBounds.Width, (int)WindowBounds.Height);
-
-			//HACK:Activity.WindowManager.DefaultDisplay.GetRectSize(windowRect); ;
 			return windowRect;
 		}
 
@@ -129,8 +114,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			get
 			{
-				//var rotation = GetRotation();
-				var hinge = GetHinge(); //GetHinge(rotation);
+				var hinge = GetHinge();
 				var windowRect = GetWindowRect();
 
 				// Make sure hinge isn't null and window rect
@@ -150,7 +134,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 
 		public Rect GetHingeBounds()
-			=> GetHinge();//HACK:FOLDABLE GetRotation());
+			=> GetHinge();
 
 		public Rect GetHingeBoundsDip()
 			=> RectPixelsToDip(GetHingeBounds());
@@ -164,8 +148,19 @@ namespace Microsoft.Maui.Controls.DualScreen
 			return rotation;
 		}
 
+		/// <summary>
+		/// Convert pixel values to dp using the density/scaling factor
+		/// from UseDualScreen HostBuilderExtension
+		/// </summary>
+		/// <remarks>
+		/// Previously accessed the Activity context directly but we no 
+		/// longer pass the activity context to this class
+		/// //var density = Activity?.Resources?.DisplayMetrics?.Density ?? 1;
+		/// </remarks>
 		double PixelsToDip(double px)
-			=> px / Activity?.Resources?.DisplayMetrics?.Density ?? 1;
+		{
+			return px / screenDensity;
+		}
 
 		Rect RectPixelsToDip(Rect rect)
 			=> new Rect((int)PixelsToDip(rect.Left), (int)PixelsToDip(rect.Top), (int)PixelsToDip(rect.Right), (int)PixelsToDip(rect.Bottom));

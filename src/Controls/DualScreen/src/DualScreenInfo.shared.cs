@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.DualScreen
@@ -138,6 +136,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				return new Rectangle[0];
 
 			//TODO: check the assumptions behind IsLandscape on other foldables
+			//TODO: especially Samsung Galaxy Flip which is tall & narrow with horizontal fold
 			if(IsLandscape)
 				return new[] { guide.Pane1, new Rectangle(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
 			else

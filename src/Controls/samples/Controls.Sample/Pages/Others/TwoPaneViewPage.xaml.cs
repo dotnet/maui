@@ -3,6 +3,16 @@
 	using Microsoft.Maui;
 	using Microsoft.Maui.Controls.DualScreen;
 
+	/// <summary>
+	/// Sample demonstrating the use of TwoPaneView control and 
+	/// hinge angle sensing for Surface Duo and other foldable Android devices.
+	/// </summary>
+	/// <remarks>
+	/// Requires the Microsoft.Maui.Controls.DualScreen NuGet package.
+	/// 
+	/// Uses the Jetpack Window Manager Android library from Google for dual-screen capabilities,
+	/// which is bound in the Xamarin.AndroidX.Window.WindowJava NuGet package.
+	/// </remarks>
 	public partial class TwoPaneViewPage
 	{
 		public TwoPaneViewPage()

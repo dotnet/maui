@@ -31,26 +31,47 @@ namespace Microsoft.Maui.Controls.DualScreen
 			DualScreenServiceImpl.Init(activity);
 		}
 
-		internal class DualScreenServiceImpl : IDualScreenService, IFoldableContext //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
+		internal class DualScreenServiceImpl : IDualScreenService, IFoldableContext
 		{
+			#region IFoldableContext properties
 			public bool isSeparating { get { return _isSpanned; } set { _isSpanned = value; } }
 			public Rectangle FoldingFeatureBounds { get { return _hingeDp; } set { _hingeDp = value; } }
-			public Rectangle WindowBounds { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+			public float ScreenDensity { get; set; }
+			public Rectangle WindowBounds { 
+				get { return _windowBounds; } 
+				set 
+				{ 
+					_windowBounds = value;
+					global::Android.Util.Log.Info("JWM2", $"=== FoldingFeatureChanged?.Invoke isSeparating:{isSeparating} window:{WindowBounds}");
+					FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Controls.DualScreen.FoldEventArgs()
+					{
+						isSeparating = isSeparating,
+						FoldingFeatureBounds = FoldingFeatureBounds,
+						WindowBounds = WindowBounds
+					});
+				}
+			}
+
+
+			bool _isSpanned = false;
+			Rectangle _hingeDp = Rectangle.Zero;
+			Rectangle _windowBounds = Rectangle.Zero;
+			#endregion
+			static IFoldableContext _mainActivity;
+
+			#region Hinge
+			object _hingeAngleLock = new object();
+			HingeSensor _singleUseHingeSensor;
+			TaskCompletionSource<int> _gettingHingeAngle;
+			static DualScreenServiceImpl _HingeService; 
+			static HingeSensor DefaultHingeSensor;
+			#endregion
 
 			ScreenHelper _helper;
-			HingeSensor _singleUseHingeSensor;
-			static IFoldableContext _mainActivity;
-			static DualScreenServiceImpl _HingeService;
 			bool _isLandscape;
 			Size _pixelScreenSize;
-			object _hingeAngleLock = new object();
-			TaskCompletionSource<int> _gettingHingeAngle;
-			bool _isSpanned;
-			Rectangle _hingeDp = Rectangle.Zero;
-
-			internal static Activity MainActivity => (_mainActivity as Activity);
-
-			static HingeSensor DefaultHingeSensor;
+			
+			
 			readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 
 			public event EventHandler<FoldEventArgs> OnLayoutChanged;
@@ -60,7 +81,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			public DualScreenServiceImpl()
 			{
 				//HACK:FOLDABLE 
-				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ctor - Android detected");
+				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ctor - Android detected default ctor");
 
 				_HingeService = this;
 				if (_mainActivity != null)
@@ -82,16 +103,35 @@ namespace Microsoft.Maui.Controls.DualScreen
 				_helper.WindowBounds = ea.WindowBounds;
 				_helper.IsSpanned = ea.isSeparating;
 
-				using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+				_pixelScreenSize = new Size(ea.WindowBounds.Width, ea.WindowBounds.Height);
+
+				if (_mainActivity is Activity)
 				{
-					var scalingFactor = display.Density;
-					_pixelScreenSize = new Size(ea.WindowBounds.Width, ea.WindowBounds.Height);
+					using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+					{
+						var scalingFactor = display.Density;
+						
+						var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
+
+						if (newSize != ScaledScreenSize)
+						{
+							ScaledScreenSize = newSize;
+						}
+					}
+				}
+				else
+				{
+					global::Android.Util.Log.Debug("JWM2", "NO ScaledScreenSize because no density available");
+					var scalingFactor = 2.5;
 					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
 
 					if (newSize != ScaledScreenSize)
 					{
 						ScaledScreenSize = newSize;
 					}
+
+					global::Android.Util.Log.Debug("JWM2", "                             ScaledScreenSize:" + ScaledScreenSize);
+					global::Android.Util.Log.Debug("JWM2", "                             _isLandscape:" + _isLandscape);
 				}
 
 				//HACK:FOLDABLE fix this?
@@ -127,6 +167,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				//HACK:FOLDABLE Hinge service is set up for every device - figure out how to NOT do that (based on hinge existing?)
 				_HingeService._helper = screenHelper;
+				if (_mainActivity is Activity)
 				_HingeService.SetupHingeSensors(_mainActivity as Activity);
 
 				_HingeService?.Update();
@@ -174,22 +215,42 @@ namespace Microsoft.Maui.Controls.DualScreen
 				global::Android.Util.Log.Debug("JWM", "                             _hingeDp:" + _hingeDp);
 
 
+
+
 				//HACK:FOLDABLE
-				using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+				_pixelScreenSize = new Size(WindowBounds.Width, WindowBounds.Height);
+				if (_mainActivity is Activity)
 				{
-					var scalingFactor = display.Density;
-					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
+					using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+					{
+						var scalingFactor = display.Density;
+						_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
+						var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
+
+						if (newSize != ScaledScreenSize)
+						{
+							ScaledScreenSize = newSize;
+							//screenChanged = true;
+						}
+					}
+
+					global::Android.Util.Log.Debug("JWM", "                             ScaledScreenSize:" + ScaledScreenSize);
+					global::Android.Util.Log.Debug("JWM", "                             _isLandscape:" + _isLandscape);
+				}
+				else
+				{
+					global::Android.Util.Log.Debug("JWM2", "No scaledscreensize" + _isLandscape);
+					var scalingFactor = 2.5;
 					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
 
 					if (newSize != ScaledScreenSize)
 					{
 						ScaledScreenSize = newSize;
-						//screenChanged = true;
 					}
-				}
 
-				global::Android.Util.Log.Debug("JWM", "                             ScaledScreenSize:" + ScaledScreenSize);
-				global::Android.Util.Log.Debug("JWM", "                             _isLandscape:" + _isLandscape);
+					global::Android.Util.Log.Debug("JWM2", "                             ScaledScreenSize:" + ScaledScreenSize);
+					global::Android.Util.Log.Debug("JWM2", "                             _isLandscape:" + _isLandscape);
+				}
 			}
 
 			public bool IsSpanned => _isSpanned;
@@ -213,7 +274,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			public Rectangle GetHinge() => _hingeDp;
 			public bool IsLandscape
-			{ //=> _isLandscape;
+			{
 				get {
 					if (_mainActivity == null)
 						return false;
@@ -227,8 +288,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			public Point? GetLocationOnScreen(VisualElement visualElement)
 			{
-				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
-				//var androidView = view?.View;
 				var androidView = visualElement.Handler?.NativeView as AView;
 
 				if (!androidView.IsAlive())
@@ -244,8 +303,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (action == null)
 					return null;
 
-				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
-				//var androidView = view?.View;
 				var androidView = visualElement.Handler?.NativeView as AView;
 
 				if (androidView == null || !androidView.IsAlive())
@@ -265,8 +322,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					return;
 
 				DualScreenGlobalLayoutListener ggl = null;
-				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
-				//var androidView = view?.View;
+
 				var androidView = visualElement.Handler?.NativeView as AView;
 
 				if (androidView == null || !(table.TryGetValue(androidView, out ggl)))
@@ -450,6 +506,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			void ConfigurationChanged(object sender, EventArgs e)
 			{
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ConfigurationChanged IGNORE ConfigurationChanged");
+				//TODO: do we need to update the screen here???
 				return;
 				////if (IsDuo)
 				////{
@@ -488,8 +545,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			void StartListeningForHingeChanges()
 			{
-				//if (!IsDuo)
-				//	return;
+				if (_singleUseHingeSensor is null)
+					return;
 
 				_singleUseHingeSensor.OnSensorChanged += OnSensorChanged;
 				_singleUseHingeSensor.StartListening();
@@ -497,8 +554,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			void StopListeningForHingeChanges()
 			{
-				//if (!IsDuo)
-				//	return;
+				if (_singleUseHingeSensor is null)
+					return;
 
 				_singleUseHingeSensor.OnSensorChanged -= OnSensorChanged;
 				_singleUseHingeSensor.StopListening();

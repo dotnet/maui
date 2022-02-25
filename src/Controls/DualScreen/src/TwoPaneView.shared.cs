@@ -201,14 +201,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 			try
 			{ 
 				InvalidateMeasure();
-
-				//HACK:FOLDABLE this does not _do_ anything...
-				//_twoPaneViewLayoutGuide.UpdateLayouts();
-				//this.InvalidateMeasure();
-				//Device.BeginInvokeOnMainThread(() =>
-				//{
-				//	this.InvalidateMeasure();
-				//});
 			}
 			catch (Exception) {
 				
@@ -230,7 +222,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-
 		void OnTwoPaneViewLayoutGuide(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (_twoPaneViewLayoutGuide.Pane1 == _layoutGuidePane1 &&
@@ -248,26 +239,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			_layoutGuideHinge = _twoPaneViewLayoutGuide.Hinge;
 			_layoutGuideIsLandscape = _twoPaneViewLayoutGuide.IsLandscape;
 
-			//UpdateMode(Width, Height);
 			InvalidateMeasure();
 		}
-
-
-		//protected override void OnSizeAllocated(double width, double height)
-		//{
-		//	if (!_updatingMode &&
-		//		width > 0 &&
-		//		height > 0 &&
-		//		width != _previousWidth &&
-		//		height != _previousHeight)
-		//	{
-		//		_previousWidth = width;
-		//		_previousHeight = height;
-		//		UpdateMode(false);
-		//	}
-
-		//	base.OnSizeAllocated(width, height);
-		//}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
@@ -277,7 +250,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 			{
 				sizeRequest = base.MeasureOverride(widthConstraint, heightConstraint);
 			}
-
 			return sizeRequest;
 		}
 
@@ -285,47 +257,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			return base.ArrangeOverride(bounds);
 		}
-
-		//protected override Size ArrangeOverride(Rectangle bounds)
-		//{
-		//	if (_updatingMode)
-		//		return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to be void
-
-		//	if (_hasMeasured)
-		//	{
-		//		if (!_updatingMode &&
-		//			 bounds.Width > 0 &&
-		//			 bounds.Height > 0 &&
-		//			 bounds.Width != _previousWidth &&
-		//			 bounds.Height != _previousHeight)
-		//		{
-		//			UpdateMode(false);
-		//		}
-
-		//		return base.ArrangeOverride(bounds);
-		//	}
-		//	else
-		//	{
-		//		UpdateMode(bounds.Width, bounds.Height);
-		//		return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to not exist
-		//	}
-
-		//}
-		//HACK:FOLDABLE was LayoutChildren, temporarily updated to ArrangeOverride
-		//protected override void LayoutChildren(double x, double y, double width, double height)
-		//{
-		//	if (_updatingMode)
-		//		return;
-
-		//	if (_hasMeasured)
-		//	{
-		//		base.LayoutChildren(x, y, width, height);
-		//	}
-		//	else
-		//	{
-		//		UpdateMode();
-		//	}
-		//}
 
 		void UpdateMode(bool invalidateLayout = true)
 		{

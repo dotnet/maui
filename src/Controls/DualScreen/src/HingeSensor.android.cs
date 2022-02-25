@@ -8,8 +8,12 @@ namespace Microsoft.Maui.Controls.DualScreen
 {
 	public partial class HingeSensor
 	{
-		//HACK:FOLDABLE Change to generic hinge sensor name for other device types
+		// This string can ONLY detect the hinge on Microsoft Surface Duo devices
+		// and must be used with a comparison to the sensor.StringType
 		//const string HINGE_SENSOR_TYPE = "microsoft.sensor.hinge_angle";
+
+		// This string will detect hinge sensors on other foldable devices
+		// and should be used with a comparison to the sensor.Name
 		const string HINGE_SENSOR_NAME = "Hinge";
 
 		SensorManager sensorManager;
@@ -24,8 +28,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			var sensors = sensorManager.GetSensorList(SensorType.All);
 
-			//HACK:FOLDABLE Change to generic hinge sensor name for other device types
+			// Replaced "microsoft.sensor.hinge_angle"-specific comparison
 			//hingeSensor = sensors.FirstOrDefault(s => s.StringType.Equals(HINGE_SENSOR_TYPE, StringComparison.OrdinalIgnoreCase));
+			// Use generic "hinge" sensor name for a variety of folding device types
 			hingeSensor = sensors.FirstOrDefault(s => s.Name.Contains(HINGE_SENSOR_NAME, StringComparison.InvariantCultureIgnoreCase));
 		}
 

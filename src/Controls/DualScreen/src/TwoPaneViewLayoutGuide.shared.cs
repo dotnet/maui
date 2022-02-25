@@ -211,7 +211,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 
 		Rectangle GetContainerArea(double width, double height)
-		{System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.UpdateLayouts ", "JWM");
+		{
+			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.GetContainerArea {width},{height}", "JWM");
 			Rectangle containerArea;
 			if (_layout == null)
 			{
@@ -253,7 +254,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			_layoutHeight = height;
 
 			Rectangle containerArea = GetContainerArea(width, height);
-			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.containerArea {containerArea}", "JWM");
+			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.UpdateLayouts containerArea {containerArea}", "JWM");
 			if (containerArea.Width <= 0)
 			{
 				return;
@@ -354,15 +355,12 @@ namespace Microsoft.Maui.Controls.DualScreen
 			var properties = _pendingPropertyChanges.ToList();
 			_pendingPropertyChanges.Clear();
 
-			System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.UpdateLayouts ", "JWM");
-
 			foreach (var property in properties)
 			{
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
 			}
 		}
 
-		//HACK:FOLDABLE this method was munged because Landscape was changed to equal Wide
 		bool IsInMultipleRegions(Rectangle layoutBounds)
 		{
 			bool isInMultipleRegions = false;
