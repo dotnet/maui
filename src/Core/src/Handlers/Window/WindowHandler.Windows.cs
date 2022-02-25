@@ -30,8 +30,12 @@ namespace Microsoft.Maui.Handlers
 			// Retrieve current extended style
 			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
 
-			extended_style &= (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
-			if (extended_style == (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL)
+			// https://docs.microsoft.com/en-us/windows/win32/directwrite/how-to-ensure-text-is-displayed-with-the-correct-reading-direction
+			var layoutRTL = extended_style & (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+			var readingRTL = extended_style & (long)PlatformMethods.ExtendedWindowStyles.WS_EX_RTLREADING;
+
+			if (layoutRTL == (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL ||
+				readingRTL == (long)PlatformMethods.ExtendedWindowStyles.WS_EX_RTLREADING)
 			{
 				VirtualView.SetDeviceFlowDirection(FlowDirection.RightToLeft);
 			}

@@ -104,6 +104,7 @@ namespace Microsoft.Maui.Platform
 		[Flags]
 		public enum ExtendedWindowStyles : uint
 		{
+			WS_EX_RTLREADING = 0x00002000,
 			WS_EX_LAYOUTRTL = 0x00400000
 		}
 	}
