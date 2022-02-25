@@ -111,6 +111,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 		}
 
+		/// <summary>
+		/// Allows customizing how external links are opened.
+		/// Opens external links in the system browser by default.
+		/// </summary>
 		[Category("Action")]
 		[Description("Allows customizing how external links are opened. Opens external links in the system browser by default.")]
 		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting;
