@@ -25,7 +25,7 @@
 
 	<ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(MauiUseDefaultAotProfile)' != 'false'">
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui.aotprofile" />
-		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" Condition=" '$(UsingMicrosoftNETSdkRazor)' == 'true' " />
+		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->
