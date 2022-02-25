@@ -63,6 +63,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #endif
 		}
 
+		/// <summary>
+		/// Maps the <see cref="IBlazorWebView.ExternalNavigationStarting"/> property to the specified handler.
+		/// </summary>
+		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
+		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapNotifyExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
