@@ -6,6 +6,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
+		private protected override void OnConnectHandler(object platformView)
+		{
+			base.OnConnectHandler(platformView);
+			VirtualView.SetDeviceFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) { }
 
 		public static void MapContent(IWindowHandler handler, IWindow window)

@@ -7,6 +7,17 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, Activity>
 	{
+		private protected override void OnConnectHandler(object platformView)
+		{
+			base.OnConnectHandler(platformView);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(17) &&
+				PlatformView?.Resources?.Configuration != null)
+			{
+				VirtualView.SetDeviceFlowDirection(PlatformView.Resources.Configuration.LayoutDirection.ToFlowDirection());
+			}
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) { }
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
