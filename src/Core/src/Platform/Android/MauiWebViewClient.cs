@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Platform
 			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
 
 			if (navigate)
-				_handler.VirtualView.Navigated(_handler.CurrentWebNavigationEvent, GetValidUrl(url), _navigationResult);
+				_handler.VirtualView.Navigated(_handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
 
 			_handler.SyncPlatformCookiesToVirtualView(url);
 
@@ -75,14 +75,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			base.OnReceivedError(view, request, error);
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			base.Dispose(disposing);
-
-			if (disposing)
-				_handler = null;
 		}
 
 		bool NavigatingCanceled(string? url) => _handler?.NavigatingCanceled(url) ?? true;

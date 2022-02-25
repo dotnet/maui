@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		internal WebNavigationEvent CurrentWebNavigationEvent
+		internal WebNavigationEvent CurrentNavigationEvent
 		{
 			get => _eventState;
 			set => _eventState = value;
@@ -75,23 +75,25 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.PlatformView.CanGoBack())
-				handler.CurrentWebNavigationEvent = WebNavigationEvent.Back;
+			if (handler.PlatformView.CanGoBack() && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Back;
 						
 			handler.PlatformView.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.PlatformView.CanGoForward())
-				handler.CurrentWebNavigationEvent = WebNavigationEvent.Forward;
+			if (handler.PlatformView.CanGoForward() && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
 
 			handler.PlatformView.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.CurrentWebNavigationEvent = WebNavigationEvent.Refresh;
+			if (handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Refresh;
+			
 			handler.PlatformView.UpdateReload(webView);
 
 			string? url = handler.PlatformView.Url?.ToString();
@@ -128,14 +130,14 @@ namespace Microsoft.Maui.Handlers
 				return false;
 
 			// TODO: Sync Cookies
-			bool cancel = VirtualView.Navigating(CurrentWebNavigationEvent, url);
+			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
 			PlatformView?.UpdateCanGoBackForward(VirtualView);
 			UrlCanceled = cancel ? null : url;
 
 			return cancel;
 		}
 
-		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
+		static void ProcessSourceWhenReady(IWebViewHandler handler, IWebView webView)
 		{
 			//We want to load the source after making sure the mapper for webclients
 			//and settings were called already
