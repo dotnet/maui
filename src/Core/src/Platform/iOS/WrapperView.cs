@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Platform
 				ShadowLayer.Frame = Bounds;
 
 			if (BorderView != null)
-				BringSubviewToFront(BorderView);
+				BorderView.Frame = Bounds;
 
 			SetClip();
 			SetShadow();
