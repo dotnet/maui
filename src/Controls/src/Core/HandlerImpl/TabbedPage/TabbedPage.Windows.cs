@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls
 		MauiNavigationView? _navigationView;
 		NavigationRootManager? _navigationRootManager;
 		WFrame? _navigationFrame;
+		bool _callConnectHandler;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
 		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewMinimalContentGridBorderThickness", null);
-
+				
 				return _navigationView;
 			}
 
@@ -63,14 +64,24 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		protected override void OnHandlerChanging(HandlerChangingEventArgs args)
+		private protected override void OnHandlerChangedCore()
 		{
-			base.OnHandlerChanging(args);
-
-			if (args.OldHandler == null && args.NewHandler != null)
+			base.OnHandlerChangedCore();
+			if(_callConnectHandler)
+			{
 				OnConnectHandler();
-			else if (args.OldHandler != null && args.NewHandler == null)
+			}
+			_callConnectHandler = false;
+		}
+
+		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
+		{
+			_callConnectHandler = false;
+
+			if (args.OldHandler != null && args.NewHandler == null)
 				OnDisconnectHandler(args.OldHandler.PlatformView as FrameworkElement);
+			else if (args.OldHandler == null && args.NewHandler != null)
+				_callConnectHandler = true;
 		}
 
 		void OnConnectHandler()

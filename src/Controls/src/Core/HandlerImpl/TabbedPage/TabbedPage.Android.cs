@@ -32,10 +32,8 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		protected override void OnHandlerChanging(HandlerChangingEventArgs args)
+		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
-			base.OnHandlerChanging(args);
-
 			if (args.OldHandler != null && args.NewHandler == null)
 				DisconnectHandler();
 		}
