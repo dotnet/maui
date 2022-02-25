@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				{
 					// See https://github.com/dotnet/winforms/issues/4631 for discussion. `Control.BeginInvoke` in WinForms
 					// does not wait for Tasks returned by the delegate. We will have to simulate this using a TCS and wait for
-					// both execution of `workItem` and the dispatcher to complete it's internal operation.
+					// both execution of `workItem` and the dispatcher to complete its internal operation.
 					// additional APIs are exposed by WinForms.
 
 					var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
