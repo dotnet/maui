@@ -43,6 +43,10 @@
 
       <Content Remove="@(_ContentToUpdate)" />
       <Content Include="@(_ContentToUpdate)" ExcludeFromContentCheck="true" PublishFolderType="None" />
+
+      <!-- Remove other extraneous files -->
+      <Content Remove="global.json" />
+      <Content Remove="Properties\launchSettings.json" />
     </ItemGroup>
   </Target>
 

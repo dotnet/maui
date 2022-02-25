@@ -62,8 +62,4 @@
 		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<Content Remove="Properties\launchSettings.json" />
-	</ItemGroup>
-
 </Project>
