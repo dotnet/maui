@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 						consumer.SetFoldableContext(foldContext); // so that we can update it on each message
 
 						// HACK: Not sure this is the best way to pass info
-						Microsoft.Maui.Controls.DualScreen.DualScreenService.Init(foldContext as IFoldableContext);
+						Microsoft.Maui.Controls.DualScreen.DualScreenService.Init(foldContext, activity);
 
 						wit.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
 					})

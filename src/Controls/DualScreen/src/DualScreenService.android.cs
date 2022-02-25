@@ -24,11 +24,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		}
 
-		public static void Init(IFoldableContext activity)
+		public static void Init(IFoldableContext foldableInfo, Activity activity=null)
 		{
 			global::Android.Util.Log.Debug("JWM", "DualScreenService.Init - Android detected");
 			DependencyService.Register<DualScreenServiceImpl>();
-			DualScreenServiceImpl.Init(activity);
+			DualScreenServiceImpl.Init(foldableInfo, activity);
 		}
 
 		internal class DualScreenServiceImpl : IDualScreenService, IFoldableContext
@@ -141,14 +141,14 @@ namespace Microsoft.Maui.Controls.DualScreen
 				FoldingFeatureChanged?.Invoke(sender, ea);
 			}
 
-			public static void Init(IFoldableContext activity)
+			public static void Init(IFoldableContext foldableInfo, Activity activity = null)
 			{
 				//HACK:FOLDABLE 
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Init - Android detected");
 
 				if (_HingeService == null)
 				{
-					_mainActivity = activity;
+					_mainActivity = foldableInfo;//activity;
 					return;
 				}
 
@@ -158,17 +158,17 @@ namespace Microsoft.Maui.Controls.DualScreen
 					return;
 				}
 
-				_mainActivity = activity;
+				_mainActivity = foldableInfo;//activity;
 
 				if (_mainActivity == null)
 					return;
 
-				var screenHelper = _HingeService._helper ?? new ScreenHelper(activity);
+				var screenHelper = _HingeService._helper ?? new ScreenHelper(foldableInfo);
 
 				//HACK:FOLDABLE Hinge service is set up for every device - figure out how to NOT do that (based on hinge existing?)
 				_HingeService._helper = screenHelper;
-				if (_mainActivity is Activity)
-				_HingeService.SetupHingeSensors(_mainActivity as Activity);
+				if (activity is Activity)
+					_HingeService.SetupHingeSensors(activity);
 
 				_HingeService?.Update();
 			}
