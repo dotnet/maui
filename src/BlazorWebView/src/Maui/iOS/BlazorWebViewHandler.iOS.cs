@@ -11,7 +11,7 @@ using RectangleF = CoreGraphics.CGRect;
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	/// <summary>
-	/// A <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
+	/// The iOS and Mac Catalyst <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
 	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WKWebView>
 	{
