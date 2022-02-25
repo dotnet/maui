@@ -18,10 +18,23 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual float MinimumSize => 44f;
 
+		internal WebNavigationEvent _lastBackForwardEvent;
 		WKUIDelegate? _delegate;
+		
+		protected override WKWebView CreatePlatformView()
+		{
+			var nativeWebView = new MauiWKWebView(RectangleF.Empty, this)
+			{
+				NavigationDelegate = new MauiWebViewNavigationDelegate(this)
+			};
+			return nativeWebView;
+		}
 
-		protected override WKWebView CreatePlatformView() =>
-			new MauiWKWebView(RectangleF.Empty, this);
+		internal WebNavigationEvent CurrentNavigationEvent
+		{
+			get => _lastBackForwardEvent;
+			set => _lastBackForwardEvent = value;
+		}
 
 		public static void MapWKUIDelegate(IWebViewHandler handler, IWebView webView)
 		{
@@ -38,11 +51,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.PlatformView.CanGoBack && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Back;
+
 			handler.PlatformView?.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.PlatformView.CanGoForward && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
+
 			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
@@ -65,6 +84,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning(exc, "Syncing Existing Cookies Failed");
 			}
+
+			if (handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Refresh;
 
 			handler.PlatformView?.UpdateReload(webView);
 		}
