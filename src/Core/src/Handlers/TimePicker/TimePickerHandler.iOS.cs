@@ -48,41 +48,43 @@ namespace Microsoft.Maui.Handlers
 			DefaultTextColor = platformView.TextColor;
 		}
 
-		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateFormat(timePicker);
 		}
 
-		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
-		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
 		}
 
-		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFont(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColor);
 		}
 
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)

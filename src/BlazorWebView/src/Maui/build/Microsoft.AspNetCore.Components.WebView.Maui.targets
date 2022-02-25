@@ -17,15 +17,32 @@
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
   </PropertyGroup>
 
-  <Target Name="ConvertStaticWebAssetsToMauiAssets" BeforeTargets="GetMauiItems;ResizetizeCollectItems" DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+  <Target Name="ConvertStaticWebAssetsToMauiAssets"
+      BeforeTargets="GetMauiItems;ResizetizeCollectItems;_CollectBundleResources;_CollectHotRestartBundleResources;_CheckForContent"
+      DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_MauiStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
+
     <ItemGroup>
       <MauiAsset Include="%(_MauiStaticWebAssetWithTargetPath.Identity)">
         <Link>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</Link>
         <TargetPath>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</TargetPath>
       </MauiAsset>
+    </ItemGroup>
+
+    <!-- Update Content files that are managed by the Razor SDK to opt out of iOS and Android content-checks -->
+    <ItemGroup>
+      <!-- .razor.css scoped css files -->
+      <_ContentNotScopedCssFiles Include="@(Content)" Exclude="@(ScopedCssInput)" />
+      <_ContentToUpdate Include="@(Content)" Exclude="@(_ContentNotScopedCssFiles)" />
+
+      <!-- .razor files -->
+      <_ContentToUpdate Include="@(Content->WithMetadataValue('Extension', '.razor'))" />
+
+      <Content Remove="@(_ContentToUpdate)" />
+      <Content Include="@(_ContentToUpdate)" ExcludeFromContentCheck="true" PublishFolderType="None" />
     </ItemGroup>
   </Target>
 

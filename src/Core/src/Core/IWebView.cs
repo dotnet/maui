@@ -1,3 +1,4 @@
+﻿using System.Net;
 ﻿using System.Threading.Tasks;
 
 namespace Microsoft.Maui
@@ -11,6 +12,11 @@ namespace Microsoft.Maui
 		/// Provide the data for a WebView.
 		/// </summary>
 		IWebViewSource Source { get; }
+
+		/// <summary>
+		/// When set this will act as a sync for cookies.
+		/// </summary>
+		CookieContainer Cookies { get; }
 
 		/// <summary>
 		/// Gets a value that indicates whether the user can navigate to previous pages.

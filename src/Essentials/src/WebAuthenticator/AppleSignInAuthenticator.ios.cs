@@ -7,13 +7,13 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class AppleSignInAuthenticator
+	public partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
 	{
-		static AuthManager authManager;
+		AuthManager authManager;
 
-		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Options options)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
 		{
 			if (DeviceInfo.Version.Major < 13)
 				throw new FeatureNotSupportedException();

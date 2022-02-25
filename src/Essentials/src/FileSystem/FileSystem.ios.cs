@@ -8,11 +8,11 @@ using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class FileSystem
+	public partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
 	{
-		internal static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
+		public async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
 		{
 			if (urls == null || urls.Length == 0)
 				return Array.Empty<FileResult>();
@@ -47,7 +47,10 @@ namespace Microsoft.Maui.Essentials
 			return await tcs.Task;
 		}
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	class BookmarkDataFileResult : FileResult
 	{
 		NSData bookmark;

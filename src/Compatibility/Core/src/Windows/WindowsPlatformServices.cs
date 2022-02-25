@@ -46,11 +46,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			CompositionTarget.Rendering += renderingFrameEventHandler;
 		}
 
-		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
-		}
-
 		void UISettingsColorValuesChanged(UISettings sender, object args)
 		{
 			Application.Current.Dispatcher.DispatchIfRequired(() =>

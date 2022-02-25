@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnPageFinished(WebView? view, string? url)
 		{
-			if (_handler?.VirtualView == null || url == WebViewHandler.AssetBaseUrl)
+			if (_handler?.VirtualView == null || string.IsNullOrWhiteSpace(url) || url == WebViewHandler.AssetBaseUrl)
 				return;
 
 			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
@@ -55,6 +55,8 @@ namespace Microsoft.Maui.Platform
 
 			if (navigate)
 				_handler.VirtualView.Navigated(_handler.CurrentWebNavigationEvent, GetValidUrl(url), _navigationResult);
+
+			_handler.SyncPlatformCookiesToVirtualView(url);
 
 			if (_handler != null)
 				_handler.PlatformView.UpdateCanGoBackForward(_handler.VirtualView);
@@ -91,6 +93,14 @@ namespace Microsoft.Maui.Platform
 				return string.Empty;
 
 			return url;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				_handler = null;
+
+			base.Dispose(disposing);
 		}
 	}
 }

@@ -22,8 +22,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
 
-		public WinUIWebViewManager(WebView2Control webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath, string contentRootDir)
-			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath)
+		public WinUIWebViewManager(
+			WebView2Control webview,
+			IServiceProvider services,
+			Dispatcher dispatcher,
+			IFileProvider fileProvider,
+			JSComponentConfigurationStore jsComponents,
+			string hostPageRelativePath,
+			string contentRootDir,
+			BlazorWebViewHandler webViewHandler)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath, webViewHandler)
 		{
 			_webview = webview;
 			_hostPageRelativePath = hostPageRelativePath;

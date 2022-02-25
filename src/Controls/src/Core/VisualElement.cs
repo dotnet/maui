@@ -769,7 +769,13 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			if (FocusChangeRequested == null)
-				return false;
+			{
+				FocusRequest focusRequest = new FocusRequest(false);
+
+				Handler?.Invoke(nameof(IView.Focus), focusRequest);
+
+				return focusRequest.IsFocused;
+			}
 
 			var arg = new FocusRequestArgs { Focus = true };
 			FocusChangeRequested(this, arg);
@@ -864,6 +870,7 @@ namespace Microsoft.Maui.Controls
 			if (!IsFocused)
 				return;
 
+			Handler?.Invoke(nameof(IView.Unfocus));
 			FocusChangeRequested?.Invoke(this, new FocusRequestArgs());
 		}
 
@@ -898,12 +905,18 @@ namespace Microsoft.Maui.Controls
 		protected void OnChildrenReordered()
 			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
 
+		IPlatformSizeService _platformSizeService;
+
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
-			return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
+			if (Handler != null)
+				return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
+
+			_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
+			return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)

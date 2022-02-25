@@ -7,13 +7,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class EntryCellTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
 		[Test]
 		public void EntryCellXAlignBindingMatchesHorizontalTextAlignmentBinding()
 		{

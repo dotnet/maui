@@ -47,7 +47,6 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState activationState)
 		{
 			var window = new Window(Services.GetRequiredService<Page>());
-
 			window.Title = ".NET MAUI Samples Gallery";
 			return window;
 		}

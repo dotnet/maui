@@ -6,8 +6,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check) { }
+		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check) { }
 
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check) { }
+		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check) { }
 	}
 }

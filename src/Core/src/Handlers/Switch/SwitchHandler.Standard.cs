@@ -6,8 +6,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		public static void MapIsOn(SwitchHandler handler, ISwitch view) { }
-		public static void MapTrackColor(SwitchHandler handler, ISwitch view) { }
-		public static void MapThumbColor(SwitchHandler handler, ISwitch view) { }
+		public static void MapIsOn(ISwitchHandler handler, ISwitch view) { }
+		public static void MapTrackColor(ISwitchHandler handler, ISwitch view) { }
+		public static void MapThumbColor(ISwitchHandler handler, ISwitch view) { }
 	}
 }

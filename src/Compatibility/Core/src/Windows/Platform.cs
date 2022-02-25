@@ -270,9 +270,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer elementRenderer = GetRenderer(element);
 				if (elementRenderer != null)
 					return elementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
-				
+
 				if (element is IView iView)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(
+						"Someone called Platform.GetNativeSize instead of going through the Handler.");
+
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
+				}
 			}
 
 			return new SizeRequest();

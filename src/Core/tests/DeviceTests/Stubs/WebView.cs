@@ -1,3 +1,4 @@
+﻿using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
@@ -5,6 +6,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	public class WebViewStub : StubBase, IWebView
 	{
 		public IWebViewSource Source { get; set; }
+		public CookieContainer Cookies { get; }
 		public bool CanGoBack { get; set; }
 		public bool CanGoForward { get; set; }
 

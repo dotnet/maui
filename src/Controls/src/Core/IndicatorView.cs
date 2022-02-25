@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -128,10 +129,18 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
+		IPlatformSizeService _platformSizeService;
+
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (IndicatorTemplate == null)
-				return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
+			{
+				if (Handler != null)
+					return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
+
+				_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
+				return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
+			}
 			else
 				return base.OnMeasure(widthConstraint, heightConstraint);
 		}

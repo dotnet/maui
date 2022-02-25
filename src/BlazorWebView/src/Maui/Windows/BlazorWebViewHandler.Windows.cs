@@ -57,8 +57,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
-
-			_webviewManager = new WinUIWebViewManager(PlatformView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath, contentRootDir);
+      
+			_webviewManager = new WinUIWebViewManager(
+				PlatformView,
+				Services!,
+				ComponentsDispatcher,
+				fileProvider,
+				VirtualView.JSComponents,
+				hostPageRelativePath,
+				contentRootDir,
+				this);
 
 			if (RootComponents != null)
 			{

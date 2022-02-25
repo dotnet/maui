@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
@@ -6,10 +8,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public partial class BlazorWebViewHandler
 	{
-		public static PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewHandler.ViewMapper)
+		public static readonly PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
+			[nameof(IBlazorWebView.ExternalNavigationStarting)] = MapNotifyExternalNavigationStarting,
 		};
 
 		public BlazorWebViewHandler() : base(BlazorWebViewMapper)
@@ -40,8 +43,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #endif
 		}
 
+		public static void MapNotifyExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
+		{
+#if !NETSTANDARD
+			if (webView is BlazorWebView bwv)
+			{
+				handler.ExternalNavigationStarting = bwv.NotifyExternalNavigationStarting;
+			}
+#endif
+		}
+
 #if !NETSTANDARD
 		private string? HostPage { get; set; }
+		internal Action<ExternalLinkNavigationEventArgs>? ExternalNavigationStarting;
 
 		private RootComponentsCollection? _rootComponents;
 		private RootComponentsCollection? RootComponents
