@@ -1,10 +1,17 @@
 ﻿using System;
 using Foundation;
+using ObjCRuntime;
 using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiWebViewNavigationDelegate : WKNavigationDelegate
+	// Use interface instead of base class here
+	// https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455641-webview?language=objc#discussion
+	// The newer policy method is implemented in the base class
+	// and the doc remarks state the older policy method is not called
+	// if the newer one is implemented, but the new one is v13+
+	// so we'd like to stick with the older one for now
+	public class MauiWebViewNavigationDelegate : NSObject, IWKNavigationDelegate
 	{
 		readonly WebViewHandler _handler;
 		WebNavigationEvent _lastEvent;
@@ -14,7 +21,8 @@ namespace Microsoft.Maui.Platform
 			_handler = handler ?? throw new ArgumentNullException("handler");
 		}
 
-		public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
+		[Export("webView:didFinishNavigation:")]
+		public void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			if (_handler == null)
 				return;
@@ -40,7 +48,8 @@ namespace Microsoft.Maui.Platform
 			_handler?.PlatformView.UpdateCanGoBackForward(virtualView);
 		}
 
-		public override void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
+		[Export("webView:didFailNavigation:withError:")]
+		public void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			if (_handler == null)
 				return;
@@ -57,7 +66,8 @@ namespace Microsoft.Maui.Platform
 			_handler.PlatformView?.UpdateCanGoBackForward(virtualView);
 		}
 
-		public override void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
+		[Export("webView:didFailProvisionalNavigation:withError:")]
+		public void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			if (_handler == null)
 				return;
@@ -76,7 +86,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// https://stackoverflow.com/questions/37509990/migrating-from-uiwebview-to-wkwebview
-		public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
+		[Export("webView:decidePolicyForNavigationAction:decisionHandler:")]
+		public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 		{
 			if (_handler == null)
 				return;
