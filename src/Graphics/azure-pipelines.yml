@@ -151,6 +151,7 @@ stages:
                 .\winsdksetup.exe /norestart /quiet | Out-Null
                 dir "C:\Program Files (x86)\Windows Kits\10\References\"
               displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
+              condition: eq(variables['provisioningWindowsSdk'], 'true')
 
             - pwsh: |
                 & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe' /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration.name }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}.binlog
