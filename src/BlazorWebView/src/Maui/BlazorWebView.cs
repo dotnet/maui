@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		/// <summary>
 		/// Gets or sets the path to the HTML file to render.
+		/// <para>This is an app relative path to the file such as <c>wwwroot\index.html</c></para>
 		/// </summary>
 		public string? HostPage { get; set; }
 
