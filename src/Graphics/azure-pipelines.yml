@@ -154,7 +154,7 @@ stages:
               displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
 
             - pwsh: |
-                & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe' /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
+                & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe' /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration.name }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
               displayName: build classic solutions
 
             - pwsh: |
@@ -168,7 +168,7 @@ stages:
               errorActionPreference: stop
 
             - pwsh: |
-                & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
+                & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}-net6.binlog
               displayName: build net6 solutions
 
             - task: NuGetCommand@2
@@ -176,8 +176,8 @@ stages:
               inputs:
                 command: 'pack'
                 packagesToPack: '**\Microsoft.Maui.*.nuspec'
-                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
-                configuration: ${{ BuildConfiguration }}
+                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}'
+                configuration: ${{ BuildConfiguration.name }}
                 basePath: '$(System.DefaultWorkingDirectory)'
                 versioningScheme : 'byEnvVar'
                 versionEnvVar: 'BUILD_BUILDNUMBER'
@@ -187,7 +187,7 @@ stages:
               inputs:
                 Contents: |
                   **/SignList.xml
-                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
+                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}'
                 flattenFolders: true
 
             - task: PublishBuildArtifacts@1
