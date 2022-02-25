@@ -11,9 +11,13 @@ public partial class FontManagerTests : TestBase
 	[Theory]
 	[InlineData("dokdo_regular", "dokdo_regular.ttf")]
 	[InlineData("dokdo_regular.ttf", "dokdo_regular.ttf")]
+	[InlineData("dokdo_regular#dokdo", "dokdo_regular.ttf")]
+	[InlineData("dokdo_regular.ttf#dokdo", "dokdo_regular.ttf")]
 	[InlineData("myalias", "dokdo_regular.ttf")]
 	[InlineData("insubfolder", "Fonts/insubfolder.ttf")]
 	[InlineData("insubfolder.ttf", "Fonts/insubfolder.ttf")]
+	[InlineData("insubfolder#insubfolder", "Fonts/insubfolder.ttf")]
+	[InlineData("insubfolder.ttf#insubfolder", "Fonts/insubfolder.ttf")]
 	public void CanLoadFonts(string fontName, string assetName)
 	{
 		var fontWeight = FontWeight.Regular;
