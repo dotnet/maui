@@ -7,6 +7,9 @@
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
+       
+    </PropertyGroup>
+    <PropertyGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
         <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
     </PropertyGroup>
     <PropertyGroup>
