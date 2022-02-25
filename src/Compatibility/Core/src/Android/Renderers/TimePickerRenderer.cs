@@ -143,6 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_dialog.Show();
 		}
 
+		[PortHandler]
 		void OnCancelButtonClicked(object sender, EventArgs e)
 		{
 			Element.Unfocus();

@@ -1,10 +1,12 @@
-﻿using Android.Widget;
+﻿using Android.Views;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, AppCompatCheckBox>
 	{
+		CheckBoxFocusChangeListener FocusChangeListener { get; } = new CheckBoxFocusChangeListener();
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 
 		protected override AppCompatCheckBox CreatePlatformView()
@@ -21,12 +23,18 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(AppCompatCheckBox platformView)
 		{
+			FocusChangeListener.Handler = this;
+			platformView.OnFocusChangeListener = FocusChangeListener;
+
 			ChangeListener.Handler = this;
 			platformView.SetOnCheckedChangeListener(ChangeListener);
 		}
 
 		protected override void DisconnectHandler(AppCompatCheckBox platformView)
 		{
+			FocusChangeListener.Handler = null;
+			platformView.OnFocusChangeListener = null;
+
 			ChangeListener.Handler = null;
 			platformView.SetOnCheckedChangeListener(null);
 		}
@@ -47,10 +55,33 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateForeground(check);
 		}
 
+		void OnFocusChanged(bool isFocused)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = isFocused;
+		}
+	
 		void OnCheckedChanged(bool isChecked)
 		{
 			if (VirtualView != null)
 				VirtualView.IsChecked = isChecked;
+		}
+
+		internal class CheckBoxFocusChangeListener : Java.Lang.Object, View.IOnFocusChangeListener
+		{
+			public CheckBoxHandler? Handler { get; set; }
+
+			public CheckBoxFocusChangeListener()
+			{
+			}
+
+			public void OnFocusChange(View? v, bool hasFocus)
+			{
+				if (Handler == null)
+					return;
+
+				Handler.OnFocusChanged(hasFocus);
+			}
 		}
 
 		internal class CheckedChangeListener : Java.Lang.Object, CompoundButton.IOnCheckedChangeListener

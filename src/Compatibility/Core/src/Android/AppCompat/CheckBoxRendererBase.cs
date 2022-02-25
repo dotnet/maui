@@ -244,6 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			CompoundButtonCompat.SetButtonTintMode(Control, mode);
 		}
 
+		[PortHandler]
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
 			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);

@@ -158,9 +158,15 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.DismissEvent += (sender, args) =>
 				{
+					if (VirtualView != null)
+						VirtualView.IsFocused = false;
+
 					_dialog?.Dispose();
 					_dialog = null;
 				};
+
+				if (VirtualView != null)
+					VirtualView.IsFocused = true;
 
 				_dialog.Show();
 			}

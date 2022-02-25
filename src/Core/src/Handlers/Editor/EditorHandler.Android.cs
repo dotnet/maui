@@ -1,4 +1,5 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
-			var editText = new AppCompatEditText(Context)
+			var editText = new MauiEditText(Context)
 			{
 				ImeOptions = ImeAction.Done,
 				Gravity = GravityFlags.Top,
@@ -31,12 +32,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
+
+			if (platformView is IMauiEditText mauiEditText)
+			{
+				mauiEditText.OnKeyboardBackPressed += OnKeyboardBackPressed;
+			}
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
+
+			if (platformView is IMauiEditText mauiEditText)
+			{
+				mauiEditText.OnKeyboardBackPressed -= OnKeyboardBackPressed;
+			}
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
@@ -94,6 +105,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (!e.HasFocus)
 				VirtualView?.Completed();
+		}
+
+		void OnKeyboardBackPressed(object? sender, EventArgs eventArgs)
+		{
+			VirtualView?.Completed();
+			PlatformView?.ClearFocus();
 		}
 	}
 }

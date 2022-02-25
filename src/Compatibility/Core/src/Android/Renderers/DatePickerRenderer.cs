@@ -112,6 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return dialog;
 		}
 
+		[PortHandler]
 		void DeviceInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
 			DatePickerDialog currentDialog = _dialog;
@@ -148,6 +149,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_dialog.Show();
 		}
 
+		[PortHandler]
 		void OnCancelButtonClicked(object sender, EventArgs e)
 		{
 			Element.Unfocus();

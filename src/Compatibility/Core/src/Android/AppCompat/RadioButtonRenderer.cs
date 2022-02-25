@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		AView ITabStop.TabStop => this;
 
+		[PortHandler]
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
 			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);

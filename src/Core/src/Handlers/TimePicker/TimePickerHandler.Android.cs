@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog != null)
 			{
 				_dialog.Hide();
+				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog = null;
 			}
 		}
@@ -42,9 +43,18 @@ namespace Microsoft.Maui.Handlers
 					return;
 
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
+				VirtualView.IsFocused = false;
+
+				if (_dialog != null)
+				{
+					_dialog.CancelEvent -= OnCancelButtonClicked;
+					_dialog = null;
+				}
 			}
 
 			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
+			
+			dialog.CancelEvent += OnCancelButtonClicked;
 
 			return dialog;
 		}
@@ -102,17 +112,36 @@ namespace Microsoft.Maui.Handlers
 		// to be lost). Not useful until we have orientation changed events.
 		void ShowPickerDialog(int hour, int minute)
 		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+
 			_dialog = CreateTimePickerDialog(hour, minute);
 			_dialog.Show();
 		}
 
 		void HidePickerDialog()
 		{
-			_dialog?.Hide();
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
+
+			if (_dialog != null)
+			{
+				_dialog.Hide();
+				_dialog.CancelEvent -= OnCancelButtonClicked;
+			}
+
 			_dialog = null;
 		}
 
 		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
 			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
+
+		void OnCancelButtonClicked(object? sender, EventArgs e)
+		{
+			if(VirtualView == null)
+				return;
+
+			VirtualView.Unfocus();
+		}
 	}
 }

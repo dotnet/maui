@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
+		RadioButtonFocusChangeListener FocusChangeListener { get; } = new RadioButtonFocusChangeListener();
+
 		static AppCompatRadioButton? GetPlatformRadioButton(IRadioButtonHandler handler) => handler.PlatformView as AppCompatRadioButton;
 
 		protected override AppCompatRadioButton CreatePlatformView()
@@ -18,6 +20,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
+			FocusChangeListener.Handler = this;
+			platformView.OnFocusChangeListener = FocusChangeListener;
+
 			AppCompatRadioButton? platformRadioButton = GetPlatformRadioButton(this);
 			if (platformRadioButton != null)
 				platformRadioButton.CheckedChange += OnCheckChanged;
@@ -25,6 +30,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
+			FocusChangeListener.Handler = null;
+			platformView.OnFocusChangeListener = null;
+
 			AppCompatRadioButton? platformRadioButton = GetPlatformRadioButton(this);
 			if (platformRadioButton != null)
 				platformRadioButton.CheckedChange -= OnCheckChanged;
@@ -77,12 +85,35 @@ namespace Microsoft.Maui.Handlers
 			GetPlatformRadioButton(handler)?.UpdateCornerRadius(radioButton);
 		}
 
+		void OnFocusChanged(bool isFocused)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = isFocused;
+		}
+
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)
 		{
 			if (VirtualView == null)
 				return;
 
 			VirtualView.IsChecked = e.IsChecked;
+		}
+
+		public class RadioButtonFocusChangeListener : Java.Lang.Object, View.IOnFocusChangeListener
+		{
+			public RadioButtonHandler? Handler { get; set; }
+
+			public RadioButtonFocusChangeListener()
+			{
+			}
+
+			public void OnFocusChange(View? v, bool hasFocus)
+			{
+				if (Handler == null)
+					return;
+
+				Handler.OnFocusChanged(hasFocus);
+			}
 		}
 	}
 }
