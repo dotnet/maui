@@ -12,23 +12,23 @@ using Microsoft.Maui.Controls.Platform;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
 
-		public static readonly BindableProperty MenuBarProperty = BindableProperty.Create(
-			nameof(MenuBar), typeof(MenuBar), typeof(Window), default(MenuBar));
-
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanged: OnPageChanged);
+
+		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
+		FlowDirection _deviceFlowDirection;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -148,6 +148,57 @@ namespace Microsoft.Maui.Controls
 
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
+
+
+		IFlowDirectionController FlowController => this;
+
+		public FlowDirection FlowDirection
+		{
+			get { return (FlowDirection)GetValue(FlowDirectionProperty); }
+			set { SetValue(FlowDirectionProperty, value); }
+		}
+
+		EffectiveFlowDirection _effectiveFlowDirection = default(EffectiveFlowDirection);
+		EffectiveFlowDirection IFlowDirectionController.EffectiveFlowDirection
+		{
+			get => _effectiveFlowDirection;
+			set => SetEffectiveFlowDirection(value, true);
+		}
+
+		double IFlowDirectionController.Width => (Page as VisualElement)?.Width ?? 0;
+
+		void SetEffectiveFlowDirection(EffectiveFlowDirection value, bool fireFlowDirectionPropertyChanged)
+		{
+			if (value == _effectiveFlowDirection)
+				return;
+
+			_effectiveFlowDirection = value;
+
+			if (fireFlowDirectionPropertyChanged)
+				OnPropertyChanged(FlowDirectionProperty.PropertyName);
+
+		}
+
+		static void FlowDirectionChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			var self = (IFlowDirectionController)bindable;
+
+			if (self.EffectiveFlowDirection.IsExplicit() && oldValue == newValue)
+				return;
+
+			var newFlowDirection = ((FlowDirection)newValue).ToEffectiveFlowDirection(isExplicit: true);
+			self.EffectiveFlowDirection = newFlowDirection;
+		}
+
+		static void FlowDirectionChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			PropertyPropagationExtensions.PropagatePropertyChanged(
+				FlowDirectionProperty.PropertyName, 
+				(Element)bindable, 
+				((IElementController)bindable).LogicalChildren);
+		}
+
+		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 
 		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
@@ -276,6 +327,22 @@ namespace Microsoft.Maui.Controls
 			Backgrounding?.Invoke(this, new BackgroundingEventArgs(state));
 			OnBackgrounding(state);
 		}
+
+		void IWindow.SetDeviceFlowDirection(FlowDirection direction)
+		{
+			if (FlowDirection == FlowDirection.MatchParent)
+			{
+				FlowController.EffectiveFlowDirection = direction.ToEffectiveFlowDirection(true);
+
+				PropertyPropagationExtensions.PropagatePropertyChanged(FlowDirectionProperty.PropertyName
+					, this, ((IElementController)this).LogicalChildren);
+			}
+
+			_deviceFlowDirection = direction;
+		}
+
+		FlowDirection IWindow.FlowDirection =>
+			_effectiveFlowDirection.ToFlowDirection();
 
 		// Currently this returns MainPage + ModalStack
 		// Depending on how we want this to show up inside LVT

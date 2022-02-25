@@ -27,16 +27,6 @@ namespace Microsoft.Maui.Platform
 
 			winuiWndow.SetWindowHandler(window, mauiContext);
 
-			var WindowHandle = winuiWndow.WindowHandle;
-			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
-
-			var thing = extended_style | (long)PlatformMethods.WindowStyle.WS_EX_LAYOUTRTL;
-
-			PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, (long)thing);
-
-			extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
-
-
 			applicationContext.Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
 
 			winuiWndow.Activate();

@@ -24,13 +24,28 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			platformView.Content = _rootPanel;
+
+			var WindowHandle = PlatformView.GetWindowHandle();
+
+			// Retrieve current extended style
+			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
+
+			extended_style &= (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+			if (extended_style == (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL)
+			{
+				VirtualView.SetDeviceFlowDirection(FlowDirection.RightToLeft);
+			}
+			else
+			{
+				VirtualView.SetDeviceFlowDirection(FlowDirection.LeftToRight);
+			}
 		}
 
 		protected override void DisconnectHandler(UI.Xaml.Window platformView)
-		{			
+		{
 			MauiContext
 				?.GetNavigationRootManager()
-				?.Disconnect();			
+				?.Disconnect();
 
 			_rootPanel?.Children?.Clear();
 			platformView.Content = null;
@@ -72,6 +87,24 @@ namespace Microsoft.Maui.Handlers
 				var windowManager = handler.MauiContext.GetNavigationRootManager();
 				windowManager.SetMenuBar(mb.MenuBar);
 			}
+		}
+
+		public static void MapFlowDirection(IWindowHandler handler, IWindow view)
+		{
+			if (view.FlowDirection == FlowDirection.MatchParent)
+				return;
+
+			var WindowHandle = handler.PlatformView.GetWindowHandle();
+
+			// Retrieve current extended style
+			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
+
+			if (view.FlowDirection == FlowDirection.RightToLeft)
+				extended_style = extended_style | (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+			else
+				extended_style = extended_style & ~((long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL);
+
+			PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, extended_style);
 		}
 	}
 }

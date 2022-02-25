@@ -68,14 +68,6 @@ namespace Microsoft.Maui
 			newWndProc = new PlatformMethods.WindowProc(NewWindowProc);
 			oldWndProc = PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, newWndProc);
 
-			//var extended_style = (PlatformMethods.WindowStyle)PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
-
-			//var thing = extended_style | PlatformMethods.WindowStyle.WS_EX_LAYOUTRTL;
-			
-			//PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, (long)thing);
-
-			//extended_style = (PlatformMethods.WindowStyle)PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
-
 			IntPtr NewWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
 			{
 				if (msg == WindowsPlatformMessageIds.WM_SETTINGCHANGE || msg == WindowsPlatformMessageIds.WM_THEMECHANGE)
