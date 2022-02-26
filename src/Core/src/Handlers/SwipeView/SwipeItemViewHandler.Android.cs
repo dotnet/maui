@@ -1,28 +1,28 @@
 ﻿using System;
-using Android.Views;
-using Microsoft.Maui.Graphics;
-using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
-using ATextAlignment = Android.Views.TextAlignment;
-using AView = Android.Views.View;
+using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 
 namespace Microsoft.Maui.Handlers
 {
-	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentViewGroup>
+	public interface ISwipeItemViewHandler : IViewHandler
 	{
+		new ISwipeItemView VirtualView { get; }
+		new PlatformView PlatformView { get; }
+	}
 
-		public static IPropertyMapper<ISwipeItemView, SwipeItemViewHandler> Mapper = new PropertyMapper<ISwipeItemView, SwipeItemViewHandler>(ViewHandler.ViewMapper)
+	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, PlatformView>, ISwipeItemViewHandler
+	{
+		public static IPropertyMapper<ISwipeItemView, ISwipeItemViewHandler> Mapper = new PropertyMapper<ISwipeItemView, ISwipeItemViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(ISwipeItemView.Content)] = MapContent,
 			[nameof(ISwipeItemView.Visibility)] = MapVisibility
 		};
 
-		public static CommandMapper<ISwipeItemView, ISwipeViewHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
+		public static CommandMapper<ISwipeItemView, ISwipeItemViewHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
 		{
 		};
 
 		public SwipeItemViewHandler() : base(Mapper, CommandMapper)
 		{
-
 		}
 
 		protected SwipeItemViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
@@ -32,8 +32,11 @@ namespace Microsoft.Maui.Handlers
 
 		public SwipeItemViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		ISwipeItemView ISwipeItemViewHandler.VirtualView => VirtualView;
+
+		PlatformView ISwipeItemViewHandler.PlatformView => PlatformView;
 
 		protected override ContentViewGroup CreatePlatformView()
 		{
@@ -73,12 +76,13 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.AddView(view.ToPlatform(MauiContext));
 		}
 
-		public static void MapContent(SwipeItemViewHandler handler, ISwipeItemView page)
+		public static void MapContent(ISwipeItemViewHandler handler, ISwipeItemView page)
 		{
-			handler.UpdateContent();
+			if (handler is SwipeItemViewHandler platformHandler)
+				platformHandler.UpdateContent();
 		}
 
-		public static void MapVisibility(SwipeItemViewHandler handler, ISwipeItemView view)
+		public static void MapVisibility(ISwipeItemViewHandler handler, ISwipeItemView view)
 		{
 			var swipeView = handler.PlatformView?.Parent.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)

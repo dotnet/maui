@@ -1,23 +1,28 @@
 ﻿using System;
+using PlatformView = Microsoft.Maui.Platform.ContentView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentView>
+	public interface ISwipeItemViewHandler : IViewHandler
 	{
+		new ISwipeItemView VirtualView { get; }
+		new PlatformView PlatformView { get; }
+	}
 
-		public static IPropertyMapper<ISwipeItemView, SwipeItemViewHandler> Mapper = new PropertyMapper<ISwipeItemView, SwipeItemViewHandler>(ViewHandler.ViewMapper)
+	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentView>, ISwipeItemViewHandler
+	{
+		public static IPropertyMapper<ISwipeItemView, ISwipeItemViewHandler> Mapper = new PropertyMapper<ISwipeItemView, ISwipeItemViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(ISwipeItemView.Content)] = MapContent,
 			[nameof(ISwipeItemView.Visibility)] = MapVisibility
 		};
 
-		public static CommandMapper<ISwipeItemView, ISwipeViewHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
+		public static CommandMapper<ISwipeItemView, ISwipeItemViewHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
 		{
 		};
 
 		public SwipeItemViewHandler() : base(Mapper, CommandMapper)
 		{
-
 		}
 
 		protected SwipeItemViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
@@ -27,8 +32,11 @@ namespace Microsoft.Maui.Handlers
 
 		public SwipeItemViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		ISwipeItemView ISwipeItemViewHandler.VirtualView => VirtualView;
+
+		PlatformView ISwipeItemViewHandler.PlatformView => PlatformView;
 
 		protected override ContentView CreatePlatformView()
 		{
@@ -62,12 +70,13 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.AddSubview(view.ToPlatform(MauiContext));
 		}
 
-		public static void MapContent(SwipeItemViewHandler handler, ISwipeItemView page)
+		public static void MapContent(ISwipeItemViewHandler handler, ISwipeItemView page)
 		{
-			handler.UpdateContent();
+			if (handler is SwipeItemViewHandler platformHandler)
+				platformHandler.UpdateContent();
 		}
 
-		public static void MapVisibility(SwipeItemViewHandler handler, ISwipeItemView view)
+		public static void MapVisibility(ISwipeItemViewHandler handler, ISwipeItemView view)
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
