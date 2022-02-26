@@ -3,12 +3,6 @@ using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 
 namespace Microsoft.Maui.Handlers
 {
-	public interface ISwipeItemViewHandler : IViewHandler
-	{
-		new ISwipeItemView VirtualView { get; }
-		new PlatformView PlatformView { get; }
-	}
-
 	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, PlatformView>, ISwipeItemViewHandler
 	{
 		public static IPropertyMapper<ISwipeItemView, ISwipeItemViewHandler> Mapper = new PropertyMapper<ISwipeItemView, ISwipeItemViewHandler>(ViewHandler.ViewMapper)
