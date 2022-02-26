@@ -335,6 +335,7 @@ namespace Microsoft.Maui.Controls
 
 			if (FlowDirection == FlowDirection.MatchParent && mauiContext != null)
 			{
+				Device.FlowDirection = mauiContext.GetFlowDirection();
 				FlowController.EffectiveFlowDirection = mauiContext.GetFlowDirection().ToEffectiveFlowDirection(true);
 			}
 		}
