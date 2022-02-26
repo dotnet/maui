@@ -23,6 +23,8 @@
     <!-- HACK: WinUI seems to have issues without this -->
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
+    <!-- Disable the Trim Analyzer until we can get all warnings resolved: https://github.com/dotnet/maui/issues/1962 -->
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <!-- version number information -->

@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			{ typeof(Font), typeof(FontTypeConverter) }
 		};
 
-		private static Dictionary<Type, Func<object>> KnownConverterFactories = new()
+		private static Dictionary<Type, Func<TypeConverter>> KnownConverterFactories = new()
 		{
 			{ typeof(Font), () => new FontTypeConverter() }
 		};
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		internal static object ConvertTo(this object value, Type toType, Func<MemberInfo> minfoRetriever,
 			IServiceProvider serviceProvider, out Exception exception)
 		{
-			Func<object> getConverter = () =>
+			Func<TypeConverter> getConverter = () =>
 			{
 				MemberInfo memberInfo;
 
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (converterTypeName == null)
 					return null;
 				var convertertype = Type.GetType(converterTypeName);
-				return Activator.CreateInstance(convertertype);
+				return (TypeConverter)Activator.CreateInstance(convertertype);
 			};
 
 			return ConvertTo(value, toType, getConverter, serviceProvider, out exception);
@@ -113,19 +113,19 @@ namespace Microsoft.Maui.Controls.Xaml
 			object ret = null;
 			if (convertertype == null)
 			{
-				ret = value.ConvertTo(toType, (Func<object>)null, serviceProvider, out exception);
+				ret = value.ConvertTo(toType, (Func<TypeConverter>)null, serviceProvider, out exception);
 				if (exception != null)
 					throw exception;
 				return ret;
 			}
-			Func<object> getConverter = () => Activator.CreateInstance(convertertype);
+			Func<TypeConverter> getConverter = () => (TypeConverter)Activator.CreateInstance(convertertype);
 			ret = value.ConvertTo(toType, getConverter, serviceProvider, out exception);
 			if (exception != null)
 				throw exception;
 			return ret;
 		}
 
-		internal static object ConvertTo(this object value, Type toType, Func<object> getConverter,
+		internal static object ConvertTo(this object value, Type toType, Func<TypeConverter> getConverter,
 			IServiceProvider serviceProvider, out Exception exception)
 		{
 			exception = null;
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (value is string str)
 			{
 				//If there's a [TypeConverter], use it
-				object converter;
+				TypeConverter converter;
 				try
 				{ //minforetriver can fail
 					converter = getConverter?.Invoke();
@@ -157,22 +157,20 @@ namespace Microsoft.Maui.Controls.Xaml
 					exception = e as XamlParseException ?? new XamlParseException($"Type converter failed: {e.Message}", serviceProvider, e);
 					return null;
 				}
-				var converterType = converter?.GetType();
-				if (converterType != null)
+
+				if (converter != null)
 				{
-					var convertFromStringInvariant = converterType.GetRuntimeMethod("ConvertFromInvariantString",
-						new[] { typeof(string) });
-					if (convertFromStringInvariant != null)
-						try
-						{
-							return convertFromStringInvariant.Invoke(converter, new object[] { str });
-						}
-						catch (Exception e)
-						{
-							exception = new XamlParseException("Type conversion failed", serviceProvider, e);
-							return null;
-						}
+					try
+					{
+						return converter.ConvertFromInvariantString(str);
+					}
+					catch (Exception e)
+					{
+						exception = new XamlParseException("Type conversion failed", serviceProvider, e);
+						return null;
+					}
 				}
+
 				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
 
 				//If the type is nullable, as the value is not null, it's safe to assume we want the built-in conversion
