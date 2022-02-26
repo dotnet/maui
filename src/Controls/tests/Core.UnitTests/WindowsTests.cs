@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var app = new TestApp();
 			var window = app.CreateWindow();
-			(window as IWindow).SetDeviceFlowDirection(FlowDirection.RightToLeft);
+			window.FlowDirection = FlowDirection.RightToLeft;
 
 			Assert.IsTrue((window.Page as IFlowDirectionController)
 				.EffectiveFlowDirection
@@ -22,25 +22,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsTrue((window.Page as IFlowDirectionController)
 				.EffectiveFlowDirection
 				.IsRightToLeft());
-		}
-
-		[Test]
-		public void FlowDirectionOverridesDeviceFlow()
-		{
-			var app = new TestApp();
-			var window = app.CreateWindow();
-			(window as IWindow).SetDeviceFlowDirection(FlowDirection.RightToLeft);
-			window.FlowDirection = FlowDirection.LeftToRight;
-
-			Assert.IsTrue((window.Page as IFlowDirectionController)
-				.EffectiveFlowDirection
-				.IsLeftToRight());
-
-			window.Page = new ContentPage();
-
-			Assert.IsTrue((window.Page as IFlowDirectionController)
-				.EffectiveFlowDirection
-				.IsLeftToRight());
 		}
 
 		[Test]

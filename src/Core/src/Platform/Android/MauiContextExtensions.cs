@@ -10,6 +10,9 @@ namespace Microsoft.Maui.Platform
 	{
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(17))
+				return FlowDirection.LeftToRight;
+
 			var config = mauiContext?.Context?.Resources?.Configuration;
 			if (config == null)
 				return FlowDirection.LeftToRight;

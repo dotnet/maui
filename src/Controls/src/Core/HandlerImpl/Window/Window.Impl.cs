@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Controls
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
-		FlowDirection _deviceFlowDirection;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -149,7 +148,6 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
-
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection
@@ -193,8 +191,8 @@ namespace Microsoft.Maui.Controls
 		static void FlowDirectionChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			PropertyPropagationExtensions.PropagatePropertyChanged(
-				FlowDirectionProperty.PropertyName, 
-				(Element)bindable, 
+				FlowDirectionProperty.PropertyName,
+				(Element)bindable,
 				((IElementController)bindable).LogicalChildren);
 		}
 
@@ -328,21 +326,18 @@ namespace Microsoft.Maui.Controls
 			OnBackgrounding(state);
 		}
 
-		void IWindow.SetDeviceFlowDirection(FlowDirection direction)
+		FlowDirection IWindow.FlowDirection => _effectiveFlowDirection.ToFlowDirection();
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
-			if (FlowDirection == FlowDirection.MatchParent)
+			base.OnHandlerChangingCore(args);
+			var mauiContext = args?.NewHandler?.MauiContext;
+
+			if (FlowDirection == FlowDirection.MatchParent && mauiContext != null)
 			{
-				FlowController.EffectiveFlowDirection = direction.ToEffectiveFlowDirection(true);
-
-				PropertyPropagationExtensions.PropagatePropertyChanged(FlowDirectionProperty.PropertyName
-					, this, ((IElementController)this).LogicalChildren);
+				FlowController.EffectiveFlowDirection = mauiContext.GetFlowDirection().ToEffectiveFlowDirection(true);
 			}
-
-			_deviceFlowDirection = direction;
 		}
-
-		FlowDirection IWindow.FlowDirection =>
-			_effectiveFlowDirection.ToFlowDirection();
 
 		// Currently this returns MainPage + ModalStack
 		// Depending on how we want this to show up inside LVT

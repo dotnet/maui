@@ -77,8 +77,6 @@ namespace Microsoft.Maui
 		/// <returns>Whether or not the back navigation was handled.</returns>
 		bool BackButtonClicked();
 
-		void SetDeviceFlowDirection(FlowDirection direction);
-
 		FlowDirection FlowDirection { get; }
 	}
 }

@@ -8,6 +8,26 @@ namespace Microsoft.Maui.Platform
 	{
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
+			// TODO MAUI NEed to test what the right way to do this is
+			//var WindowHandle = PlatformView.GetWindowHandle();
+
+			//// Retrieve current extended style
+			//var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
+
+			//// https://docs.microsoft.com/en-us/windows/win32/directwrite/how-to-ensure-text-is-displayed-with-the-correct-reading-direction
+			//var layoutRTL = extended_style & (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+			//var readingRTL = extended_style & (long)PlatformMethods.ExtendedWindowStyles.WS_EX_RTLREADING;
+
+			//if (layoutRTL == (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL ||
+			//	readingRTL == (long)PlatformMethods.ExtendedWindowStyles.WS_EX_RTLREADING)
+			//{
+			//	VirtualView.SetDeviceFlowDirection(FlowDirection.RightToLeft);
+			//}
+			//else
+			//{
+			//	VirtualView.SetDeviceFlowDirection(FlowDirection.LeftToRight);
+			//}
+
 			string resourceFlowDirection = ResourceManager.Current.DefaultContext.QualifierValues["LayoutDirection"];
 			if (resourceFlowDirection == "LTR")
 				return FlowDirection.LeftToRight;
