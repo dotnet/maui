@@ -58,8 +58,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 		public void OnConfigurationChanged(Configuration newConfig)
 			=> Update();
 
-		public void Update() {
-			//HACK:=> DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
+		public void Update() 
+		{
 			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds;
 			WindowBounds = (Activity as IFoldableContext).WindowBounds;
 			screenDensity = (Activity as IFoldableContext).ScreenDensity;

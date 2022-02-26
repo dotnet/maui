@@ -17,10 +17,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 		internal IDualScreenService DualScreenService { 
 			get
 				{
-				//HACK:FOLDABLE System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.DualScreenService - property getter " + _dualScreenService, "JWM");
-				var ds = _dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
-				
-				return ds;
+					//HACK:FOLDABLE System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.DualScreenService - property getter " + _dualScreenService, "JWM");
+					var ds = _dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
+					return ds;
 				}
 			}
 
@@ -394,7 +393,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					isInMultipleRegions = true;
 				}
 			}
-			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.IsInMultipleRegions {layoutBounds} == {isInMultipleRegions}", "JWM");
+			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.IsInMultipleRegions:{isInMultipleRegions} layoutBounds:{layoutBounds} == ", "JWM");
 			return isInMultipleRegions;
 		}
 
@@ -403,7 +402,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			if (!IsInMultipleRegions(GetScreenRelativeBounds(width, height)))
 				return TwoPaneViewMode.SinglePane;
 
-			if (DualScreenService.IsLandscape)
+			//HACK: if (DualScreenService.IsLandscape) this is wrong for Fold and Flip devices
+			if (width > height)
 				return TwoPaneViewMode.Wide;
 
 			return TwoPaneViewMode.Tall;

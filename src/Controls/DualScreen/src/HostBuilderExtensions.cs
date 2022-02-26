@@ -31,13 +31,17 @@ namespace Microsoft.Maui.Controls.DualScreen
 				{
 					android.OnConfigurationChanged((activity, configuration) =>
 					{
-						global::Android.Util.Log.Debug("JWM2", "~~~ HostBuilder.ConfigurationChanged");
+						global::Android.Util.Log.Debug("JWM2", "~~~ HostBuilder.OnConfigurationChanged");
+						// set window size after rotation
 						var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
+						global::Android.Util.Log.Debug("JWM2", $"~~~                               bounds:{bounds}");
 						var rect = new Rectangle(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
 						consumer.SetWindowSize(rect);
 					})
 					.OnStart((activity) =>
 					{
+						global::Android.Util.Log.Debug("JWM2", "~~~ HostBuilder.OnStart");
+
 						var foldContext = activity.GetWindow().Handler.MauiContext.Services.GetService(
 								typeof(IFoldableContext)) as IFoldableContext;
 
@@ -45,11 +49,19 @@ namespace Microsoft.Maui.Controls.DualScreen
 						foldContext.ScreenDensity = screenDensity;
 
 						consumer.SetFoldableContext(foldContext); // so that we can update it on each message
+																  
+						// HACK: set window size first time - confirm if required
+						var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
+						global::Android.Util.Log.Debug("JWM2", $"---                               bounds:{bounds}");
+						var rect = new Rectangle(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
+						consumer.SetWindowSize(rect);
 
 						// HACK: Not sure this is the best way to pass info
 						Microsoft.Maui.Controls.DualScreen.DualScreenService.Init(foldContext, activity);
 
 						wit.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
+
+						global::Android.Util.Log.Debug("JWM2", $"~~~ HostBuilder.OnStart foldContext:{foldContext}");
 					})
 					.OnStop((activity) =>
 					{

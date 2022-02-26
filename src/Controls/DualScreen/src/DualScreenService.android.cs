@@ -57,7 +57,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			Rectangle _hingeDp = Rectangle.Zero;
 			Rectangle _windowBounds = Rectangle.Zero;
 			#endregion
-			static IFoldableContext _mainActivity;
+			static Activity _mainActivity;
+			static IFoldableContext _foldableInfo;
 
 			#region Hinge
 			object _hingeAngleLock = new object();
@@ -84,10 +85,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ctor - Android detected default ctor");
 
 				_HingeService = this;
-				if (_mainActivity != null)
+				if (_foldableInfo != null)
 				{ 
-					Init(_mainActivity);
-					(_mainActivity as IFoldableContext).FoldingFeatureChanged += DualScreenServiceImpl_FoldingFeatureChanged;
+					Init(_foldableInfo, _mainActivity);
+					_foldableInfo.FoldingFeatureChanged += DualScreenServiceImpl_FoldingFeatureChanged;
 				}
 			}
 
@@ -121,7 +122,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				}
 				else
 				{
-					global::Android.Util.Log.Debug("JWM2", "NO ScaledScreenSize because no density available");
+					global::Android.Util.Log.Debug("JWM2", $"FoldingFeatureChanged, no Activity, ScreenDensity:{ScreenDensity}");
 					var scalingFactor = 2.5;
 					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
 
@@ -143,12 +144,15 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			public static void Init(IFoldableContext foldableInfo, Activity activity = null)
 			{
+				if (_foldableInfo == null)
+					_foldableInfo = foldableInfo;
+
 				//HACK:FOLDABLE 
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Init - Android detected");
 
 				if (_HingeService == null)
 				{
-					_mainActivity = foldableInfo;//activity;
+					_mainActivity = activity;
 					return;
 				}
 
@@ -158,7 +162,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					return;
 				}
 
-				_mainActivity = foldableInfo;//activity;
+				_mainActivity = activity;
 
 				if (_mainActivity == null)
 					return;
@@ -167,8 +171,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				//HACK:FOLDABLE Hinge service is set up for every device - figure out how to NOT do that (based on hinge existing?)
 				_HingeService._helper = screenHelper;
-				if (activity is Activity)
-					_HingeService.SetupHingeSensors(activity);
+				_HingeService.SetupHingeSensors(_mainActivity);
 
 				_HingeService?.Update();
 			}
@@ -230,7 +233,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 						if (newSize != ScaledScreenSize)
 						{
 							ScaledScreenSize = newSize;
-							//screenChanged = true;
 						}
 					}
 
@@ -239,9 +241,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 				}
 				else
 				{
-					global::Android.Util.Log.Debug("JWM2", "No scaledscreensize" + _isLandscape);
-					var scalingFactor = 2.5;
-					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
+					global::Android.Util.Log.Debug("JWM2", $"Use HostBuilderExtension density:{ScreenDensity} landscape:" + _isLandscape);
+					var newSize = new Size(_pixelScreenSize.Width / 2.5, _pixelScreenSize.Height / 2.5);
 
 					if (newSize != ScaledScreenSize)
 					{
@@ -273,6 +274,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 
 			public Rectangle GetHinge() => _hingeDp;
+			/// <summary>
+			/// I question whether we should be basing anything on landscape-ness, and 
+			/// instead should be using the orientation of the hinge
+			/// </summary>
 			public bool IsLandscape
 			{
 				get {
@@ -280,7 +285,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 						return false;
 					else
 					{
-						return (_mainActivity.WindowBounds.Width >= _mainActivity.WindowBounds.Height);
+						using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
+						{
+							return (display.WidthPixels >= display.HeightPixels);
+						}
 					}
 				}
 				
