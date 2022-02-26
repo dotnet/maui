@@ -3,35 +3,8 @@ using PlatformView = Microsoft.Maui.Platform.ContentView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentView>, ISwipeItemViewHandler
+	public partial class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentView>, ISwipeItemViewHandler
 	{
-		public static IPropertyMapper<ISwipeItemView, ISwipeItemViewHandler> Mapper = new PropertyMapper<ISwipeItemView, ISwipeItemViewHandler>(ViewHandler.ViewMapper)
-		{
-			[nameof(ISwipeItemView.Content)] = MapContent,
-			[nameof(ISwipeItemView.Visibility)] = MapVisibility
-		};
-
-		public static CommandMapper<ISwipeItemView, ISwipeItemViewHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
-		{
-		};
-
-		public SwipeItemViewHandler() : base(Mapper, CommandMapper)
-		{
-		}
-
-		protected SwipeItemViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? CommandMapper)
-		{
-		}
-
-		public SwipeItemViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
-		{
-		}
-
-		ISwipeItemView ISwipeItemViewHandler.VirtualView => VirtualView;
-
-		PlatformView ISwipeItemViewHandler.PlatformView => PlatformView;
-
 		protected override ContentView CreatePlatformView()
 		{
 			return new ContentView
