@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 
 namespace Maui.Controls.Sample.Pages
@@ -84,6 +85,39 @@ namespace Maui.Controls.Sample.Pages
 				counter++;
 				timerLabel.Text = $"I am on a 3 second timer! {counter} ticks => {later - now}";
 			};
+		}
+
+		bool keepRunning;
+
+		void OnObsoleteClicked(object sender, EventArgs e)
+		{
+			if (keepRunning)
+			{
+				keepRunning = false;
+				obsoleteLabel.Text = "Stopping!";
+				return;
+			}
+
+			var now = DateTime.Now;
+			var counter = 0;
+
+			keepRunning = true;
+			Device.StartTimer(TimeSpan.FromSeconds(3), () =>
+			{
+				if (!keepRunning)
+				{
+					obsoleteLabel.Text = "Stopped!";
+					return false;
+				}
+
+				var later = DateTime.Now;
+				counter++;
+				obsoleteLabel.Text = $"I am on a 3 second timer! {counter} ticks => {later - now}";
+
+				return true;
+			});
+
+			obsoleteLabel.Text = "Started!";
 		}
 	}
 }

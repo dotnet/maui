@@ -24,6 +24,11 @@
             <Button Text="3 Second Timer (Start/Stop)" Clicked="OnTimerClicked" />
             <Label x:Name="timerLabel" Text="..." />
 
+            <Label Text="OBSOLETE ZONE ALERT!" />
+            <Label Text="Some old code still works:" />
+            <Button Text="Device.StartTimer(3s)  (Start/Stop)" Clicked="OnObsoleteClicked" />
+            <Label x:Name="obsoleteLabel" Text="..." />
+
         </StackLayout>
     </ScrollView>
 
