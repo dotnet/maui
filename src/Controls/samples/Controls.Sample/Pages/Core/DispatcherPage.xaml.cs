@@ -13,35 +13,35 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnFailAccessClicked(object sender, EventArgs e)
 		{
-			await Task.Run(async () =>
+			try
 			{
-				try
+				await Task.Run(() =>
 				{
-					failLabel.Text = "This was a fail!";
-				}
-				catch (Exception ex)
-				{
-					await DisplayAlert("EXCEPTION", ex.Message, "OK");
-				}
-			});
+					failLabel.Text = "Oops!";
+				});
+			}
+			catch (Exception ex)
+			{
+				await DisplayAlert("EXCEPTION", ex.Message, "OK");
+			}
 		}
 
 		async void OnAccessClicked(object sender, EventArgs e)
 		{
-			await Task.Run(async () =>
+			try
 			{
-				await happyLabel.Dispatcher.DispatchAsync(async () =>
+				await Task.Run(async () =>
 				{
-					try
+					await happyLabel.Dispatcher.DispatchAsync(() =>
 					{
 						happyLabel.Text = "This was a success!";
-					}
-					catch (Exception ex)
-					{
-						await DisplayAlert("EXCEPTION", ex.Message, "OK");
-					}
+					});
 				});
-			});
+			}
+			catch (Exception ex)
+			{
+				await DisplayAlert("EXCEPTION", ex.Message, "OK");
+			}
 		}
 
 		void OnLaterClicked(object sender, EventArgs e)
