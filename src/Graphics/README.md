@@ -49,7 +49,7 @@ Xamarin.Forms          | Dependent on native platform support (noted above) |
 * Fonts - You can access fonts with a common API
 * Attributed text - You can draw attributed text with a common API
 * Bitmaps - You can create and draw on bitmap images with a common API
-* PDF - You can create PDF's using a common API
+* PDF - You can create PDFs using a common API
 
 # Known Limitations
 * Attributed text is not currently supported with SkiaSharp
