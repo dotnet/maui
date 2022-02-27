@@ -327,19 +327,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				_context = context;
 			}
 
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				var handler = new Handler(Looper.MainLooper);
-				handler.PostDelayed(() =>
-				{
-					if (callback())
-						StartTimer(interval, callback);
-
-					handler.Dispose();
-					handler = null;
-				}, (long)interval.TotalMilliseconds);
-			}
-
 			public OSAppTheme RequestedTheme
 			{
 				get
