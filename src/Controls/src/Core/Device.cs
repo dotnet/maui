@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls
 			StartTimer(dispatcher, interval, callback);
 		}
 
-		private static void StartTimer(IDispatcher dispatcher, TimeSpan interval, Func<bool> callback)
+		internal static void StartTimer(IDispatcher dispatcher, TimeSpan interval, Func<bool> callback)
 		{
 			_ = callback ?? throw new ArgumentNullException(nameof(callback));
 

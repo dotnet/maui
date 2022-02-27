@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Dispatching
 				return;
 
 			_timer.Tick += OnTimerTick;
+
+			_timer.Start();
 		}
 
 		public void Stop()
@@ -77,7 +79,9 @@ namespace Microsoft.Maui.Dispatching
 			if (!IsRunning)
 				return;
 
-			_timer.Tick += OnTimerTick;
+			_timer.Tick -= OnTimerTick;
+
+			_timer.Stop();
 		}
 
 		void OnTimerTick(DispatcherQueueTimer sender, object args) =>
