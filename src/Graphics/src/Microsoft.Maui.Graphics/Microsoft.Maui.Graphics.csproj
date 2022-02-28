@@ -1,16 +1,12 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.23">
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;tizen40</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid12.0;Xamarin.Mac20;tizen40</TargetFrameworks>
         <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
-       
-    </PropertyGroup>
-    <PropertyGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
-        <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
     </PropertyGroup>
     <PropertyGroup>
         <PackageId>Microsoft.Maui.Graphics</PackageId>
