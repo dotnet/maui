@@ -56,7 +56,17 @@ namespace Microsoft.Maui.Controls
 
 		// [Obsolete]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
-		public static FlowDirection FlowDirection { get; internal set; }
+		public static FlowDirection FlowDirection
+		{
+			get
+			{
+				if (Application.Current?.Windows?.Count > 0)
+					return Application.Current.Windows[0]?.Handler?.MauiContext?.GetFlowDirection() ??
+						 FlowDirection.LeftToRight;
+
+				return FlowDirection.LeftToRight;
+			}
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='PlatformServices']/Docs" />
 		internal static IPlatformServices PlatformServices

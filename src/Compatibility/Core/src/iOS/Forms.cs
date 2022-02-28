@@ -168,33 +168,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-#if __MOBILE__
-			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
-#else
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				// Subscribe to notifications in OS Theme changes
-				NSDistributedNotificationCenter.GetDefaultCenter().AddObserver((NSString)"AppleInterfaceThemeChangedNotification", (n) =>
-				{
-					var interfaceStyle = NSUserDefaults.StandardUserDefaults.StringForKey("AppleInterfaceStyle");
-
-					var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
-					NSApplication.SharedApplication.Appearance = aquaAppearance;
-
-					Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? OSAppTheme.Dark : OSAppTheme.Light));
-				});
-			}
-
-			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
-
-			if (IsMojaveOrNewer)
-			{
-				var interfaceStyle = NSUserDefaults.StandardUserDefaults.StringForKey("AppleInterfaceStyle");
-				var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
-				NSApplication.SharedApplication.Appearance = aquaAppearance;
-			}
-#endif
 			var platformServices = new IOSPlatformServices();
 
 			Device.PlatformServices = platformServices;

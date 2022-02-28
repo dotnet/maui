@@ -238,8 +238,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("Epilog");
 
-			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
-
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();
 
