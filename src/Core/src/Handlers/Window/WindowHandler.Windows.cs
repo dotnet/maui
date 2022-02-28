@@ -76,20 +76,18 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFlowDirection(IWindowHandler handler, IWindow view)
 		{
-			if (view.FlowDirection == FlowDirection.MatchParent)
-				return;
-
 			var WindowHandle = handler.PlatformView.GetWindowHandle();
 
 			// Retrieve current extended style
 			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
-
+			var updated_style = extended_style;
 			if (view.FlowDirection == FlowDirection.RightToLeft)
-				extended_style = extended_style | (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+				updated_style = extended_style | (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
 			else
-				extended_style = extended_style & ~((long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL);
+				updated_style = extended_style & ~((long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL);
 
-			PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, extended_style);
+			if (updated_style != extended_style)
+				PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, updated_style);
 		}
 	}
 }

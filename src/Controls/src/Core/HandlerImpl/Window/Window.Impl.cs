@@ -326,7 +326,24 @@ namespace Microsoft.Maui.Controls
 			OnBackgrounding(state);
 		}
 
-		FlowDirection IWindow.FlowDirection => _effectiveFlowDirection.ToFlowDirection();
+		FlowDirection IWindow.FlowDirection
+		{
+			get
+			{
+				// If the user has set the root page to be RTL
+				// Then we want the window to also reflect RTL
+				// We don't want to force the user to reach into the window
+				// in order to enable RTL Window features on WinUI
+				if (FlowDirection == FlowDirection.MatchParent &&
+					Page is IFlowDirectionController controller &&
+					controller.EffectiveFlowDirection.IsExplicit())
+				{
+					return controller.EffectiveFlowDirection.ToFlowDirection();
+				}
+
+				return _effectiveFlowDirection.ToFlowDirection();
+			}
+		}
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
@@ -376,6 +393,8 @@ namespace Microsoft.Maui.Controls
 				if (newPage.Handler != null)
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
 			}
+
+			window?.Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
 			{
