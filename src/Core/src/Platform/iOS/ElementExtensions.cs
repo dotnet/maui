@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 		// If < iOS 13 or the Info.plist does not have a scene manifest entry we need to assume no multi window, and no UISceneDelegate.
 		// We cannot check for iPads/Mac because even on the iPhone it uses the scene delegate if one is specified in the manifest.
 		public static bool HasSceneManifest(this IUIApplicationDelegate platformApplication) =>
-			OperatingSystem.IsIOSVersionAtLeast(13, 0) &&
+			(OperatingSystem.IsIOSVersionAtLeast(13, 0) || OperatingSystem.IsTvOSVersionAtLeast(13,0)) &&
 			NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString(UIApplicationSceneManifestKey));
 	}
 }

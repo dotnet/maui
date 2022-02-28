@@ -15,7 +15,7 @@ using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
 	/// <summary>
-	/// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
+	/// A Windows Forms control for hosting Razor components locally in Windows desktop applications.
 	/// </summary>
 	public class BlazorWebView : ContainerControl
 	{
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
 		/// <summary>
 		/// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
-		/// This property must be set to a valid value for the Blazor components to start.
+		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		[Category("Behavior")]
 		[Description(@"Path to the host page within the application's static files. Example: wwwroot\index.html.")]
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
 		/// <summary>
 		/// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
-		/// This property must be set to a valid value for the Blazor components to start.
+		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		[Browsable(false)]
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -110,6 +110,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				OnServicesPropertyChanged();
 			}
 		}
+
+		/// <summary>
+		/// Allows customizing how external links are opened.
+		/// Opens external links in the system browser by default.
+		/// </summary>
+		[Category("Action")]
+		[Description("Allows customizing how external links are opened. Opens external links in the system browser by default.")]
+		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting;
 
 		private void OnHostPagePropertyChanged() => StartWebViewCoreIfPossible();
 
@@ -124,7 +132,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		private void StartWebViewCoreIfPossible()
 		{
 			// We never start the Blazor code in design time because it doesn't make sense to run
-			// a Blazor component in the designer.
+			// a Razor component in the designer.
 			if (IsAncestorSiteInDesignMode)
 			{
 				return;
@@ -154,7 +162,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
-			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(
+				_webview,
+				Services,
+				ComponentsDispatcher,
+				fileProvider,
+				RootComponents.JSComponents,
+				hostPageRelativePath,
+				(args) => ExternalNavigationStarting?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{
@@ -217,9 +232,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			if (disposing)
 			{
 				// Dispose this component's contents and block on completion so that user-written disposal logic and
-				// Blazor disposal logic will complete first. Then call base.Dispose(), which will dispose the WebView2
-				// control. This order is critical because once the WebView2 is disposed it will prevent and Blazor
-				// code from working because it requires the WebView to exist.
+				// Razor component disposal logic will complete first. Then call base.Dispose(), which will dispose
+				// the WebView2 control. This order is critical because once the WebView2 is disposed it will prevent
+				// Razor component code from working because it requires the WebView to exist.
 				_webviewManager?
 					.DisposeAsync()
 					.AsTask()

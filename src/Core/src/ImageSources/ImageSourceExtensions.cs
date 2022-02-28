@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-#if __IOS__ || MACCATALYST
+#if IOS || MACCATALYST
 using PlatformImage = UIKit.UIImage;
 #elif MONOANDROID
 using PlatformImage = Android.Graphics.Drawables.Drawable;
@@ -16,7 +16,7 @@ using PlatformImage = System.Object;
 
 namespace Microsoft.Maui
 {
-	public static class ImageSourceExtensions
+	public static partial class ImageSourceExtensions
 	{
 		public static void LoadImage(this IImageSource? source, IMauiContext mauiContext, Action<IImageSourceServiceResult<PlatformImage>?>? finished = null)
 		{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			if (imageSource == null)
 				return Task.FromResult<IImageSourceServiceResult<PlatformImage>?>(null);
 
-#if __IOS__ || MACCATALYST
+#if IOS || MACCATALYST
 			return imageSourceService.GetImageAsync(imageSource);
 #elif MONOANDROID
 			return imageSourceService.GetDrawableAsync(imageSource, mauiContext.Context!);

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -7,12 +6,12 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		public static void MapSource(IViewHandler handler, IWebView webView) { }
+		public static void MapSource(IWebViewHandler handler, IWebView webView) { }
 
-		public static void MapGoBack(IViewHandler handler, IWebView webView, object? arg) { }
-		public static void MapGoForward(IViewHandler handler, IWebView webView, object? arg) { }
-		public static void MapReload(IViewHandler handler, IWebView webView, object? arg) { }
-		public static void MapEval(IViewHandler handler, IWebView webView, object? arg) { }
-		public static void MapEvaluateJavaScriptAsync(IViewHandler handler, IWebView webView, object? arg) { }
+		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg) { }
+		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg) { }
+		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg) { }
+		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg) { }
+		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg) { }
 	}
 }

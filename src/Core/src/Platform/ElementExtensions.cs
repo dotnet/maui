@@ -170,5 +170,31 @@ namespace Microsoft.Maui.Platform
 			element.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow() ??
 			throw new InvalidOperationException("IWindow not found");
 #endif
+
+		internal static T? FindParentOfType<T>(this IElement element, bool includeThis = false)
+	where T : IElement
+		{
+			if (includeThis && element is T view)
+				return view;
+
+			foreach (var parent in element.GetParentsPath())
+			{
+				if (parent is T parentView)
+					return parentView;
+			}
+
+			return default;
+		}
+
+		static IEnumerable<IElement?> GetParentsPath(this IElement self)
+		{
+			IElement? current = self;
+
+			while (current != null && current is not IApplication)
+			{
+				current = current.Parent;
+				yield return current;
+			}
+		}
 	}
 }

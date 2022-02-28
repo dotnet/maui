@@ -12,6 +12,9 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
+#if ANDROID
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -46,13 +49,16 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task DetailsViewUpdates()
 		{
 			SetupBuilder();
-			var shell = new Shell()
-			{
-				Items =
-				{
-					new ContentPage()
-				}
-			};
+
+			var shell = await InvokeOnMainThreadAsync<Shell>(() => {
+				return new Shell()
+					{
+						Items =
+						{
+							new ContentPage()
+						}
+					};
+			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
 			{
