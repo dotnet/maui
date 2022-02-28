@@ -9,6 +9,9 @@ using TWebView = Tizen.WebView.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// The Tizen <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
+	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WebViewContainer>
 	{
 		private const string AppOrigin = "http://0.0.0.0/";
@@ -47,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			HostPage != null &&
 			Services != null;
 
+		/// <inheritdoc />
 		protected override WebViewContainer CreatePlatformView()
 		{
 			TChromium.Initialize();
@@ -55,6 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return new WebViewContainer(NativeParent!);
 		}
 
+		/// <inheritdoc />
 		protected override void ConnectHandler(WebViewContainer platformView)
 		{
 			_interceptRequestCallback = OnRequestInterceptCallback;
@@ -64,13 +69,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			NativeWebView.GetSettings().JavaScriptEnabled = true;
 		}
 
+		/// <inheritdoc />
 		protected override void DisconnectHandler(WebViewContainer platformView)
 		{
 			NativeWebView.LoadFinished -= OnLoadFinished;
 			base.DisconnectHandler(platformView);
 		}
 
-		public void PostMessageFromJS(JavaScriptMessage message)
+		private void PostMessageFromJS(JavaScriptMessage message)
 		{
 			if (message is null)
 			{

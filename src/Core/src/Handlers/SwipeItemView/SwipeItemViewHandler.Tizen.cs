@@ -1,36 +1,11 @@
 ﻿using System;
-using Microsoft.Maui.Platform;
+using PlatformView = Microsoft.Maui.Platform.ContentCanvas;
 
 namespace Microsoft.Maui.Handlers
 {
-	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentCanvas>
+	public partial class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentCanvas>, ISwipeItemViewHandler
 	{
 		IPlatformViewHandler? _contentHandler;
-
-		public static IPropertyMapper<ISwipeItemView, SwipeItemViewHandler> Mapper = new PropertyMapper<ISwipeItemView, SwipeItemViewHandler>(ViewHandler.ViewMapper)
-		{
-			[nameof(ISwipeItemView.Content)] = MapContent,
-			[nameof(ISwipeItemView.Visibility)] = MapVisibility
-		};
-
-		public static CommandMapper<ISwipeItemView, ISwipeViewHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
-		{
-		};
-
-		public SwipeItemViewHandler() : base(Mapper, CommandMapper)
-		{
-
-		}
-
-		protected SwipeItemViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? CommandMapper)
-		{
-		}
-
-		public SwipeItemViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
-		{
-
-		}
 
 		protected override ContentCanvas CreatePlatformView()
 		{
@@ -79,12 +54,13 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapContent(SwipeItemViewHandler handler, ISwipeItemView page)
+		public static void MapContent(ISwipeItemViewHandler handler, ISwipeItemView page)
 		{
-			handler.UpdateContent();
+			if (handler is SwipeItemViewHandler platformHandler)
+				platformHandler.UpdateContent();
 		}
 
-		public static void MapVisibility(SwipeItemViewHandler handler, ISwipeItemView view)
+		public static void MapVisibility(ISwipeItemViewHandler handler, ISwipeItemView view)
 		{
 			//TODO : need to update
 			//var swipeView = handler.PlatformView.GetParentOfType<EvasObject>();

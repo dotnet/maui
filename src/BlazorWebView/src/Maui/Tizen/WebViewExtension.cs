@@ -4,7 +4,10 @@ using TWebView = Tizen.WebView.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-    public static class WebViewExtension
+	/// <summary>
+	/// WebViewExtension
+	/// </summary>
+    internal static class WebViewExtension
     {
         public const string ChromiumEwk = "libchromium-ewk.so";
 

@@ -8,6 +8,10 @@ using TWebView = Tizen.WebView.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// An implementation of <see cref="WebViewManager"/> that uses the Tizen WebView browser control
+	/// to render web content.
+	/// </summary>
 	public class TizenWebViewManager : WebViewManager
 	{
 		private const string AppOrigin = "http://0.0.0.0/";
@@ -15,8 +19,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly TWebView _webview;
 
-		public TizenWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, TWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+		/// <summary>
+		/// Initializes a new instance of <see cref="TizenWebViewManager"/>
+		/// </summary>
+		/// <param name="blazorMauiWebViewHandler">The <see cref="BlazorWebViewHandler"/>.</param>
+		/// <param name="webview">A wrapper to access platform-specific WebView APIs.</param>
+		/// <param name="provider">The <see cref="IServiceProvider"/> for the application.</param>
+		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance instance that can marshal calls to the required thread or sync context.</param>
+		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
+		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
+		public TizenWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, TWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+			: base(provider, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler ?? throw new ArgumentNullException(nameof(blazorMauiWebViewHandler));
 			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
