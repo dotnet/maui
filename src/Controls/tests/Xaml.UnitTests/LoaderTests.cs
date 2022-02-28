@@ -395,9 +395,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void StaticResourceLookForApplicationResources()
 		{
-			Device.PlatformServices = new MockPlatformServices();
 			Application.Current = null;
-
 			Application.Current = new MyApp();
 			var xaml = @"
 				<ContentView

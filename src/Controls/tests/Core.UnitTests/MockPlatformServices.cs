@@ -17,11 +17,6 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class MockPlatformServices : Internals.IPlatformServices
-	{
-		public OSAppTheme RequestedTheme { get; set; }
-	}
-
 	internal class MockDeserializer : Internals.IDeserializer
 	{
 		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
@@ -245,6 +240,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		public DeviceType DeviceType { get; set; }
+	}
+
+	class MockAppInfo : IAppInfo
+	{
+		public string PackageName { get; set; }
+
+		public string Name { get; set; }
+
+		public string VersionString { get; set; }
+
+		public Version Version { get; set; }
+
+		public string BuildString { get; set; }
+
+		public void ShowSettingsUI()
+		{
+		}
+
+		public AppTheme RequestedTheme { get; set; }
+
+		public AppPackagingModel PackagingModel { get; set; }
 	}
 
 	class MockPlatformSizeService : IPlatformSizeService

@@ -45,13 +45,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void SetUp()
 			{
 				Bz27299ViewModelLocator.Count = 0;
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
 			}
 
 			[TestCase(true)]
