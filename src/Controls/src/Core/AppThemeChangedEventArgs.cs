@@ -6,10 +6,10 @@ namespace Microsoft.Maui.Controls
 	public class AppThemeChangedEventArgs : EventArgs
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppThemeChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public AppThemeChangedEventArgs(OSAppTheme appTheme) =>
+		public AppThemeChangedEventArgs(OppTheme appTheme) =>
 			RequestedTheme = appTheme;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppThemeChangedEventArgs.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
-		public OSAppTheme RequestedTheme { get; }
+		public AppTheme RequestedTheme { get; }
 	}
 }

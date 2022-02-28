@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static readonly Color DefaultUnselectedColor = Color.FromRgba(255, 255, 255, 180);
 		internal static Color DefaultBottomNavigationViewBackgroundColor => ResolveThemeColor(Colors.White, Color.FromArgb("#1B3147"));
 
-		internal static bool IsDarkTheme => (Application.Current?.RequestedTheme == OSAppTheme.Dark);
+		internal static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
 
 		static Color ResolveThemeColor(Color light, Color dark)
 		{

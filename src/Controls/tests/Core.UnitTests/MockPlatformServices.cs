@@ -17,11 +17,6 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class MockPlatformServices : Internals.IPlatformServices
-	{
-		public OSAppTheme RequestedTheme { get; set; }
-	}
-
 	internal class MockDeserializer : Internals.IDeserializer
 	{
 		public Task<IDictionary<string, object>> DeserializePropertiesAsync()

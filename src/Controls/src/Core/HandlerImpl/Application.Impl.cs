@@ -108,7 +108,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='ThemeChanged']/Docs" />
 		public void ThemeChanged()
 		{
-			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
+			if (UserAppTheme != AppTheme.Unspecified)
+				return;
+
+			TriggerThemeChangedActual(new AppThemeChangedEventArgs(RequestedTheme));
 		}
 
 		protected virtual Window CreateWindow(IActivationState? activationState)

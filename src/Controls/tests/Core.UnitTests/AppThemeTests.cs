@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetAppThemeColor(Label.TextColorProperty, Colors.Green, Colors.Red);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 
-			SetAppTheme(OSAppTheme.Dark);
+			SetAppTheme(AppTheme.Dark);
 
 			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetOnAppTheme(Label.TextColorProperty, Colors.Green, Colors.Red);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 
-			SetAppTheme(OSAppTheme.Dark);
+			SetAppTheme(AppTheme.Dark);
 
 			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
@@ -56,12 +56,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetBinding(Label.TextColorProperty, new AppThemeBinding { Light = Colors.Green, Dark = Colors.Red });
 			Assert.AreEqual(Colors.Green, label.TextColor);
 
-			SetAppTheme(OSAppTheme.Dark);
+			SetAppTheme(AppTheme.Dark);
 
 			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
 
-		void SetAppTheme(OSAppTheme theme)
+		void SetAppTheme(AppTheme theme)
 		{
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = theme;
 			Application.Current.TriggerThemeChanged(new AppThemeChangedEventArgs(theme));

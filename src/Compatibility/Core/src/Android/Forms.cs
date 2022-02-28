@@ -317,32 +317,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return base.VisitMember(node);
 			}
 		}
-
-		class AndroidPlatformServices : IPlatformServices
-		{
-			readonly Context _context;
-
-			public AndroidPlatformServices(Context context)
-			{
-				_context = context;
-			}
-
-			public OSAppTheme RequestedTheme
-			{
-				get
-				{
-					var nightMode = _context.Resources.Configuration.UiMode & UiMode.NightMask;
-					switch (nightMode)
-					{
-						case UiMode.NightYes:
-							return OSAppTheme.Dark;
-						case UiMode.NightNo:
-							return OSAppTheme.Light;
-						default:
-							return OSAppTheme.Unspecified;
-					};
-				}
-			}
-		}
 	}
 }

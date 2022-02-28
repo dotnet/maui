@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
 					NSApplication.SharedApplication.Appearance = aquaAppearance;
 
-					Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? OSAppTheme.Dark : OSAppTheme.Light));
+					Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? AppTheme.Dark : AppTheme.Light));
 				});
 			}
 
@@ -233,88 +233,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				return base.VisitMember(node);
 			}
-		}
-
-		class IOSPlatformServices : IPlatformServices
-		{
-			public OSAppTheme RequestedTheme
-			{
-				get
-				{
-#if __IOS__ || __TVOS__
-					if (!IsiOS13OrNewer)
-						return OSAppTheme.Unspecified;
-					var uiStyle = GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-						UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
-
-					switch (uiStyle)
-					{
-						case UIUserInterfaceStyle.Light:
-							return OSAppTheme.Light;
-						case UIUserInterfaceStyle.Dark:
-							return OSAppTheme.Dark;
-						default:
-							return OSAppTheme.Unspecified;
-					};
-#else
-					return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
-#endif
-				}
-			}
-
-#if __MACOS__
-			bool AppearanceIsDark()
-			{
-				if (IsMojaveOrNewer)
-				{
-					var appearance = NSApplication.SharedApplication.EffectiveAppearance;
-					var matchedAppearance = appearance.FindBestMatch(new string[] { NSAppearance.NameAqua, NSAppearance.NameDarkAqua });
-
-					return matchedAppearance == NSAppearance.NameDarkAqua;
-				}
-				else
-				{
-					return false;
-				}
-			}
-#endif
-
-#if __IOS__ || __TVOS__
-
-			static UIViewController GetCurrentUIViewController() =>
-				GetCurrentViewController(false);
-
-			static UIViewController GetCurrentViewController(bool throwIfNull = true)
-			{
-				UIViewController viewController = null;
-
-				var window = UIApplication.SharedApplication.GetKeyWindow();
-
-				if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-					viewController = window.RootViewController;
-
-				if (viewController == null)
-				{
-					window = UIApplication.SharedApplication
-						.Windows
-						.OrderByDescending(w => w.WindowLevel)
-						.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
-
-					if (window == null && throwIfNull)
-						throw new InvalidOperationException("Could not find current view controller.");
-					else
-						viewController = window?.RootViewController;
-				}
-
-				while (viewController?.PresentedViewController != null)
-					viewController = viewController.PresentedViewController;
-
-				if (throwIfNull && viewController == null)
-					throw new InvalidOperationException("Could not find current view controller.");
-
-				return viewController;
-			}
-#endif
 		}
 	}
 }

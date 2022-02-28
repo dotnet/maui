@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='UserAppTheme']/Docs" />
-		public OSAppTheme UserAppTheme
+		public AppTheme UserAppTheme
 		{
 			get => _userAppTheme;
 			set
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
-		public OSAppTheme RequestedTheme => UserAppTheme == OSAppTheme.Unspecified ? Device.PlatformServices.RequestedTheme : UserAppTheme;
+		public AppTheme RequestedTheme => AppInfo.RequestedTheme;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AccentColor']/Docs" />
 		public static Color? AccentColor { get; set; }
@@ -197,18 +197,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool _themeChangedFiring;
-		OSAppTheme _lastAppTheme;
-		OSAppTheme _userAppTheme = OSAppTheme.Unspecified;
-
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='TriggerThemeChanged']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void TriggerThemeChanged(AppThemeChangedEventArgs args)
-		{
-			if (UserAppTheme != OSAppTheme.Unspecified)
-				return;
-			TriggerThemeChangedActual(args);
-		}
+		AppTheme _lastAppTheme;
+		AppTheme _userAppTheme = AppTheme.Unspecified;
 
 		void TriggerThemeChangedActual(AppThemeChangedEventArgs args)
 		{
