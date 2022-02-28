@@ -58,6 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 #if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
+					handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
 #endif
 				});
 
@@ -110,11 +111,11 @@ namespace Microsoft.Maui.DeviceTests
 				// which update properties don't crash. 
 
 				var aView = viewHandler.PlatformView as Android.Views.View;
-				if(aView.LayoutParameters == null)
+				if (aView.LayoutParameters == null)
 				{
-					aView.LayoutParameters = 
+					aView.LayoutParameters =
 						new Android.Views.ViewGroup.LayoutParams(
-							Android.Views.ViewGroup.LayoutParams.WrapContent, 
+							Android.Views.ViewGroup.LayoutParams.WrapContent,
 							Android.Views.ViewGroup.LayoutParams.WrapContent);
 				}
 #endif
