@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			get
 			{
-				if (!Platform.HasOSVersion(13, 0))
+				if ((OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) || (OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0)))
 					return AppTheme.Unspecified;
 
 				var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Essentials.Implementations
         {
 			get
 			{
-				if (DeviceInfo.Version >= new Version(10, 14))
+				if (OperatingSystem.IsMacOSVersionAtLeast(10, 14))
 				{
 					var app = NSAppearance.CurrentAppearance?.FindBestMatch(new string[]
 					{

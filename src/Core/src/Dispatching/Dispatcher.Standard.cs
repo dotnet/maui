@@ -13,6 +13,12 @@ namespace Microsoft.Maui.Dispatching
 
 		bool DispatchImplementation(Action action) =>
 			throw new NotImplementedException();
+
+		bool DispatchDelayedImplementation(TimeSpan delay, Action action) =>
+			throw new NotImplementedException();
+
+		IDispatcherTimer CreateTimerImplementation() =>
+			throw new NotImplementedException();
 	}
 
 	public partial class DispatcherProvider

@@ -8,18 +8,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class TableSectionTests : BaseTestFixture
 	{
-		[SetUp]
-		public void Setup()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void Constructor()
 		{

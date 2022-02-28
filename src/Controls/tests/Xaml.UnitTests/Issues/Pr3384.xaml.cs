@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
-				Device.PlatformServices = new MockPlatformServices();
 			}
 
 			[TearDown]
@@ -37,7 +36,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				DispatcherProvider.SetCurrent(null);
 				DeviceInfo.SetCurrent(null);
-				Device.PlatformServices = null;
 			}
 
 			[TestCase(false)]
