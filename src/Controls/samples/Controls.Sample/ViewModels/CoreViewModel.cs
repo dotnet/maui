@@ -27,6 +27,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ClipPage), "Clip",
 				"Defines the outline of the contents of an element."),
 
+			new SectionModel(typeof(DispatcherPage), "Dispatcher",
+				"Managing UI thread access with dispatchers and timers."),
+
 			new SectionModel(typeof(EffectsPage), "Effects",
 				"Apply Effects to a View."),
 

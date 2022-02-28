@@ -19,26 +19,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
-		readonly IDispatcher _dispatcher;
-
-		public MockPlatformServices(IDispatcher dispatcher = null)
-		{
-			_dispatcher = dispatcher ?? new MockDispatcher();
-		}
-
-		public void StartTimer(TimeSpan interval, Func<bool> callback)
-		{
-			Timer timer = null;
-			TimerCallback onTimeout = o => _dispatcher.Dispatch(() =>
-			{
-				if (callback())
-					return;
-
-				timer.Dispose();
-			});
-			timer = new Timer(onTimeout, null, interval, interval);
-		}
-
 		public OSAppTheme RequestedTheme { get; set; }
 	}
 
@@ -147,6 +127,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			action();
 			return true;
 		}
+
+		public bool DispatchDelayed(TimeSpan delay, Action action) =>
+			throw new NotImplementedException();
+
+		public IDispatcherTimer CreateTimer() =>
+			throw new NotImplementedException();
 	}
 
 	class MockDeviceInfo : IDeviceInfo

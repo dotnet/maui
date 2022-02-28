@@ -3,36 +3,16 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests.Dispatching
+namespace Microsoft.Maui.DeviceTests
 {
-	// All these tests should run in a separate thread/task to avoid polluting the other tests.
-	// This is only because the dispatcher and dispatcher provider are both "static" classes.
-	// Technically these tests are useless because they cannot test shipping code as they are
-	// none of the platforms. However, they sort of do test the test dispatcher...
-	[Category(TestCategory.Core, TestCategory.Dispatching)]
-	public class DispatcherTests : IDisposable
+	[Category(TestCategory.Dispatcher)]
+	public class DispatcherTests : TestBase
 	{
-		DispatcherProviderStub _dispatcherProvider;
-
-		public DispatcherTests()
-		{
-			_dispatcherProvider = new DispatcherProviderStub();
-			DispatcherProvider.SetCurrent(_dispatcherProvider);
-		}
-
-		public void Dispose()
-		{
-			DispatcherProvider.SetCurrent(null);
-			_dispatcherProvider.Dispose();
-		}
-
 		// just a check to make sure the test dispatcher is working
 		[Fact]
 		public Task TestImplementationHasDispatcher() =>
-			DispatcherTest.Run(() =>
+			InvokeOnMainThreadAsync(() =>
 			{
-				Assert.False(DispatcherProviderStubOptions.SkipDispatcherCreation);
-
 				var dispatcher = Dispatcher.GetForCurrentThread();
 
 				Assert.NotNull(dispatcher);
@@ -41,11 +21,8 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 		[Fact]
 		public Task BackgroundThreadDoesNotHaveDispatcher() =>
-			DispatcherTest.Run(() =>
+			Task.Run(() =>
 			{
-				// act like the real world
-				DispatcherProviderStubOptions.SkipDispatcherCreation = true;
-
 				var dispatcher = Dispatcher.GetForCurrentThread();
 
 				Assert.Null(dispatcher);
@@ -53,15 +30,13 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 		[Fact]
 		public Task BackgroundThreadDoesNotGetDispatcherFromMainThread() =>
-			DispatcherTest.Run(async () =>
+			InvokeOnMainThreadAsync(async () =>
 			{
 				var dispatcher = Dispatcher.GetForCurrentThread();
 				Assert.NotNull(dispatcher);
 
 				await Task.Run(() =>
 				{
-					DispatcherProviderStubOptions.SkipDispatcherCreation = true;
-
 					var dispatcher = Dispatcher.GetForCurrentThread();
 					Assert.Null(dispatcher);
 				});
@@ -69,7 +44,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 		[Fact]
 		public Task SameDispatcherForSameThread() =>
-			DispatcherTest.Run(() =>
+			InvokeOnMainThreadAsync(() =>
 			{
 				var dispatcher1 = Dispatcher.GetForCurrentThread();
 				var dispatcher2 = Dispatcher.GetForCurrentThread();
@@ -79,7 +54,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 		[Fact]
 		public Task DifferentDispatcherForDifferentThread() =>
-			DispatcherTest.Run(async () =>
+			InvokeOnMainThreadAsync(async () =>
 			{
 				var outerId = Environment.CurrentManagedThreadId;
 				var dispatcher1 = Dispatcher.GetForCurrentThread();
@@ -95,8 +70,29 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 			});
 
 		[Fact]
+		public Task DispatchDelayedPostsOnCorrectDispatcher() =>
+			InvokeOnMainThreadAsync(async () =>
+			{
+				var dispatcher = Dispatcher.GetForCurrentThread();
+
+				var tcs = new TaskCompletionSource<IDispatcher>();
+
+				var result = dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+				{
+					var innerDispatcher = Dispatcher.GetForCurrentThread();
+					tcs.SetResult(innerDispatcher);
+				});
+
+				Assert.True(result);
+
+				var innerDispatcher = await tcs.Task;
+
+				Assert.Same(dispatcher, innerDispatcher);
+			});
+
+		[Fact]
 		public Task DispatchDelayedIsNotImmediate() =>
-			DispatcherTest.Run(async () =>
+			InvokeOnMainThreadAsync(async () =>
 			{
 				var dispatcher = Dispatcher.GetForCurrentThread();
 
@@ -120,7 +116,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 		[Fact]
 		public Task CreateTimerIsNotNull() =>
-			DispatcherTest.Run(() =>
+			InvokeOnMainThreadAsync(() =>
 			{
 				var dispatcher = Dispatcher.GetForCurrentThread();
 
@@ -131,7 +127,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 		[Fact]
 		public Task CreateTimerNonRepeatingDoesNotRepeat() =>
-			DispatcherTest.Run(async () =>
+			InvokeOnMainThreadAsync(async () =>
 			{
 				var dispatcher = Dispatcher.GetForCurrentThread();
 
@@ -160,7 +156,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 		[Fact]
 		public Task CreateTimerRepeatingRepeats() =>
-			DispatcherTest.Run(async () =>
+			InvokeOnMainThreadAsync(async () =>
 			{
 				var dispatcher = Dispatcher.GetForCurrentThread();
 

@@ -27,25 +27,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_uiSettings.ColorValuesChanged += UISettingsColorValuesChanged;
 		}
 
-		public void StartTimer(TimeSpan interval, Func<bool> callback)
-		{
-			var timerTick = 0L;
-			var stopWatch = new Stopwatch();
-			stopWatch.Start();
-			void renderingFrameEventHandler(object sender, object args)
-			{
-				var newTimerTick = stopWatch.ElapsedMilliseconds / (long)interval.TotalMilliseconds;
-				if (newTimerTick == timerTick)
-					return;
-				timerTick = newTimerTick;
-				bool result = callback();
-				if (result)
-					return;
-				CompositionTarget.Rendering -= renderingFrameEventHandler;
-			}
-			CompositionTarget.Rendering += renderingFrameEventHandler;
-		}
-
 		void UISettingsColorValuesChanged(UISettings sender, object args)
 		{
 			Application.Current.Dispatcher.DispatchIfRequired(() =>

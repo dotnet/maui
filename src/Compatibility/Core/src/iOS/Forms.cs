@@ -237,28 +237,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		class IOSPlatformServices : IPlatformServices
 		{
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				NSTimer timer = NSTimer.CreateRepeatingTimer(interval, t =>
-				{
-					if (!callback())
-						t.Invalidate();
-				});
-				NSRunLoop.Main.AddTimer(timer, NSRunLoopMode.Common);
-			}
-
-			HttpClient GetHttpClient()
-			{
-				var proxy = CoreFoundation.CFNetwork.GetSystemProxySettings();
-				var handler = new HttpClientHandler();
-				if (!string.IsNullOrEmpty(proxy.HTTPProxy))
-				{
-					handler.Proxy = CoreFoundation.CFNetwork.GetDefaultProxy();
-					handler.UseProxy = true;
-				}
-				return new HttpClient(handler);
-			}
-
 			public OSAppTheme RequestedTheme
 			{
 				get
