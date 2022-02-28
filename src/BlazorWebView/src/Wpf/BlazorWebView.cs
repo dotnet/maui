@@ -18,7 +18,7 @@ using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
 	/// <summary>
-	/// A Windows Presentation Foundation (WPF) control for hosting Blazor web components locally in Windows desktop applications.
+	/// A Windows Presentation Foundation (WPF) control for hosting Razor components locally in Windows desktop applications.
 	/// </summary>
 	public class BlazorWebView : Control, IAsyncDisposable
 	{
@@ -48,9 +48,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			propertyType: typeof(IServiceProvider),
 			ownerType: typeof(BlazorWebView),
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
+
+		/// <summary>
+		/// The backing store for the <see cref="ExternalNavigationStarting"/> property.
+		/// </summary>
+		public static readonly DependencyProperty ExternalNavigationStartingProperty = DependencyProperty.Register(
+			name: nameof(ExternalNavigationStarting),
+			propertyType: typeof(EventHandler<ExternalLinkNavigationEventArgs>),
+			ownerType: typeof(BlazorWebView));
 		#endregion
 
-		private const string webViewTemplateChildName = "WebView";
+		private const string WebViewTemplateChildName = "WebView";
 		private WebView2Control _webview;
 		private WebView2WebViewManager _webviewManager;
 		private bool _isDisposed;
@@ -67,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			Template = new ControlTemplate
 			{
-				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), webViewTemplateChildName)
+				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
 			};
 		}
 
@@ -83,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		/// <summary>
 		/// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
-		/// This property must be set to a valid value for the Blazor components to start.
+		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		public string HostPage
 		{
@@ -99,8 +107,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			(RootComponentsCollection)GetValue(RootComponentsProperty);
 
 		/// <summary>
+		/// Allows customizing how external links are opened.
+		/// Opens external links in the system browser by default.
+		/// </summary>
+		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting
+		{
+			get => (EventHandler<ExternalLinkNavigationEventArgs>)GetValue(ExternalNavigationStartingProperty);
+			set => SetValue(ExternalNavigationStartingProperty, value);
+		}
+
+		/// <summary>
 		/// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
-		/// This property must be set to a valid value for the Blazor components to start.
+		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		public IServiceProvider Services
 		{
@@ -131,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (WebView2Control)GetTemplateChild(webViewTemplateChildName);
+				_webview = (WebView2Control)GetTemplateChild(WebViewTemplateChildName);
 				StartWebViewCoreIfPossible();
 			}
 		}
@@ -171,7 +189,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
-			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(
+				_webview,
+				Services,
+				ComponentsDispatcher,
+				fileProvider,
+				RootComponents.JSComponents,
+				hostPageRelativePath,
+				(args) => ExternalNavigationStarting?.Invoke(this, args));
+
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously
@@ -239,11 +265,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 		}
 
+		/// <summary>
+		/// Allows asynchronous disposal of the <see cref="BlazorWebView" />.
+		/// </summary>
 		protected virtual async ValueTask DisposeAsyncCore()
 		{
-			// Dispose this component's contents that user-written disposal logic and Blazor disposal logic will complete
-			// first. Then dispose the WebView2 control. This order is critical because once the WebView2 is disposed it
-			// will prevent and Blazor code from working because it requires the WebView to exist.
+			// Dispose this component's contents that user-written disposal logic and Razor component disposal logic will
+			// complete first. Then dispose the WebView2 control. This order is critical because once the WebView2 is
+			// disposed it will prevent and Razor component code from working because it requires the WebView to exist.
 			if (_webviewManager != null)
 			{
 				await _webviewManager.DisposeAsync()
@@ -255,6 +284,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			_webview = null;
 		}
 
+		/// <inheritdoc />
 		public async ValueTask DisposeAsync()
 		{
 			if (_isDisposed)
@@ -269,7 +299,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			// Suppress finalization.
 			GC.SuppressFinalize(this);
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize	
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 		}
 	}
 }

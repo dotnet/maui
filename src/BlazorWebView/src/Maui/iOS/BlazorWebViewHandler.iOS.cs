@@ -1,28 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Foundation;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using ObjCRuntime;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// The iOS and Mac Catalyst <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
+	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WKWebView>
 	{
 		private IOSWebViewManager? _webviewManager;
 
-		private const string AppOrigin = "app://0.0.0.0/";
+		internal const string AppOrigin = "app://" + BlazorWebView.AppHostAddress + "/";
 		private const string BlazorInitScript = @"
 			window.__receiveMessageCallbacks = [];
 			window.__dispatchMessageCallback = function(message) {
@@ -48,6 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 		";
 
+		/// <inheritdoc />
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
@@ -73,6 +69,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webviewManager?.MessageReceivedInternal(uri, message);
 		}
 
+		/// <inheritdoc />
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
 			platformView.StopLoading();

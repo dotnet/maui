@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				var root = FileProvider.GetTemporaryRootDirectory();
 
-				var tmpFile = FileSystem.GetEssentialsTemporaryFile(root, file.FileName);
+				var tmpFile = FileSystem.GetTemporaryFile(root, file.FileName);
 
 				System.IO.File.Copy(file.FullPath, tmpFile.CanonicalPath);
 

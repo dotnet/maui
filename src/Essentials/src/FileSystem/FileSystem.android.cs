@@ -6,9 +6,9 @@ using Android.Provider;
 using Android.Webkit;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class FileSystem
+	public partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
 	{
 		internal const string EssentialsFolderHash = "2203693cc04e0be7f4f024d5f9499e13";
 
@@ -31,16 +31,16 @@ namespace Microsoft.Maui.Essentials
 		internal const string UriAuthorityDownloads = "com.android.providers.downloads.documents";
 		internal const string UriAuthorityMedia = "com.android.providers.media.documents";
 
-		static string PlatformCacheDirectory
+		string PlatformCacheDirectory
 			=> Platform.AppContext.CacheDir.AbsolutePath;
 
-		static string PlatformAppDataDirectory
+		string PlatformAppDataDirectory
 			=> Platform.AppContext.FilesDir.AbsolutePath;
 
-		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename) =>
+		Task<Stream> PlatformOpenAppPackageFileAsync(string filename) =>
 			Task.FromResult(PlatformOpenAppPackageFile(filename));
 
-		static Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
 		{
 			try
 			{
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static Stream PlatformOpenAppPackageFile(string filename)
+		Stream PlatformOpenAppPackageFile(string filename)
 		{
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Essentials
 		static string NormalizePath(string filename) =>
 			filename.Replace('\\', Path.DirectorySeparatorChar);
 
-		internal static Java.IO.File GetEssentialsTemporaryFile(Java.IO.File root, string fileName)
+		public Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName)
 		{
 			// create the directory for all Essentials files
 			var rootDir = new Java.IO.File(root, EssentialsFolderHash);
@@ -92,7 +92,8 @@ namespace Microsoft.Maui.Essentials
 			return tmpFile;
 		}
 
-		internal static string EnsurePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
+
+		public string EnsurePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
 		{
 			// if this is a file, use that
 			if (uri.Scheme.Equals(UriSchemeFile, StringComparison.OrdinalIgnoreCase))
@@ -245,7 +246,7 @@ namespace Microsoft.Maui.Essentials
 			return null;
 		}
 
-		static string CacheContentFile(AndroidUri uri)
+		string CacheContentFile(AndroidUri uri)
 		{
 			if (!uri.Scheme.Equals(UriSchemeContent, StringComparison.OrdinalIgnoreCase))
 				return null;
@@ -270,7 +271,7 @@ namespace Microsoft.Maui.Essentials
 			var root = hasPermission
 				? Platform.AppContext.ExternalCacheDir
 				: Platform.AppContext.CacheDir;
-			var tmpFile = GetEssentialsTemporaryFile(root, filename);
+			var tmpFile = GetTemporaryFile(root, filename);
 
 			// copy to the destination
 			using var dstStream = File.Create(tmpFile.CanonicalPath);
@@ -381,8 +382,12 @@ namespace Microsoft.Maui.Essentials
 
 			return text;
 		}
-	}
 
+	}
+}
+
+namespace Microsoft.Maui.Essentials
+{
 	public partial class FileBase
 	{
 		internal FileBase(Java.IO.File file)
@@ -390,10 +395,10 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
-		internal static string PlatformGetContentType(string extension) =>
+		string PlatformGetContentType(string extension) =>
 			MimeTypeMap.Singleton.GetMimeTypeFromExtension(extension.TrimStart('.'));
 
-		internal void PlatformInit(FileBase file)
+		void PlatformInit(FileBase file)
 		{
 		}
 

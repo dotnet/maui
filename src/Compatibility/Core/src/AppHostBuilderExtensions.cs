@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<PlatformInvalidate>();
 			DependencyService.Register<FontNamedSizeService>();
+			DependencyService.Register<PlatformSizeService>();
 #endif
 
 			builder.ConfigureCompatibilityLifecycleEvents();
@@ -145,6 +146,10 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
 					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#endif
+
+#if ANDROID
+					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
 #endif
 				});
 

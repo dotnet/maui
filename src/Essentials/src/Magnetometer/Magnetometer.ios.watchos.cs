@@ -1,31 +1,31 @@
 using CoreMotion;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Magnetometer
+	public partial class MagnetometerImplementation : IMagnetometer
 	{
-		internal static bool IsSupported =>
+		bool PlatformIsSupported =>
 			Platform.MotionManager?.MagnetometerAvailable ?? false;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var manager = Platform.MotionManager;
 			manager.MagnetometerUpdateInterval = sensorSpeed.ToPlatform();
 			manager.StartMagnetometerUpdates(Platform.GetCurrentQueue(), DataUpdated);
 		}
 
-		static void DataUpdated(CMMagnetometerData data, NSError error)
+		void DataUpdated(CMMagnetometerData data, NSError error)
 		{
 			if (data == null)
 				return;
 
 			var field = data.MagneticField;
 			var magnetometerData = new MagnetometerData(field.X, field.Y, field.Z);
-			OnChanged(magnetometerData);
+			RaiseReadingChanged(magnetometerData);
 		}
 
-		internal static void PlatformStop() =>
+		void PlatformStop() =>
 			Platform.MotionManager?.StopMagnetometerUpdates();
 	}
 }

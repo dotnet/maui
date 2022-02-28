@@ -10,17 +10,23 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class LabelTests : HandlerTestBase
 	{
 		[Theory]
-		[InlineData("Hello There", TextTransform.None, "Hello There")]
-		[InlineData("Hello There", TextTransform.Uppercase, "HELLO THERE")]
-		[InlineData("Hello There", TextTransform.Lowercase, "hello there")]
-		public async Task TextTransformApplied(string text, TextTransform transform, string expected)
+		[ClassData(typeof(TextTransformCases))]
+		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
 		{
-			var label = new Label() { Text = text, TextTransform = transform };
-
-			var handler = await CreateHandlerAsync<LabelHandler>(label);
-
+			var control = new Label() { Text = text, TextTransform = transform };
+			var handler = await CreateHandlerAsync<LabelHandler>(control);
 			var platformText = await InvokeOnMainThreadAsync(() => TextForHandler(handler));
+			Assert.Equal(expected, platformText);
+		}
 
+		[Theory]
+		[ClassData(typeof(TextTransformCases))]
+		public async Task TextTransformUpdated(string text, TextTransform transform, string expected)
+		{
+			var control = new Label() { Text = text };
+			var handler = await CreateHandlerAsync<LabelHandler>(control);
+			await InvokeOnMainThreadAsync(() => control.TextTransform = transform);
+			var platformText = await InvokeOnMainThreadAsync(() => TextForHandler(handler));
 			Assert.Equal(expected, platformText);
 		}
 

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
-			var editText = new AppCompatEditText(Context)
+			var editText = new MauiEditText(Context)
 			{
 				ImeOptions = ImeAction.Done,
 				Gravity = GravityFlags.Top,

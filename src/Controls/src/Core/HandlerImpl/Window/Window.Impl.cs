@@ -8,15 +8,17 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
+
+		public static readonly BindableProperty MenuBarProperty = BindableProperty.Create(
+			nameof(MenuBar), typeof(MenuBar), typeof(Window), default(MenuBar));
 
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
@@ -26,6 +28,7 @@ namespace Microsoft.Maui.Controls
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
+		MenuBarTracker _menuBarTracker;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -49,6 +52,7 @@ namespace Microsoft.Maui.Controls
 			Navigation = new NavigationImpl(this);
 			InternalChildren.CollectionChanged += OnCollectionChanged;
 			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
+			_menuBarTracker = new MenuBarTracker(this, "MenuBar");
 		}
 
 		public Window(Page page)
@@ -56,6 +60,8 @@ namespace Microsoft.Maui.Controls
 		{
 			Page = page;
 		}
+
+		IMenuBar? IMenuBarElement.MenuBar => _menuBarTracker.MenuBar;
 
 		public string? Title
 		{
@@ -295,6 +301,7 @@ namespace Microsoft.Maui.Controls
 			{
 				window.InternalChildren.Add(newPage);
 				newPage.NavigationProxy.Inner = window.NavigationProxy;
+				window._menuBarTracker.Target = newPage;
 			}
 
 			window.ModalNavigationManager.SettingNewPage();

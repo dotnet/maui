@@ -29,5 +29,19 @@
 				Handler?.UpdateValue(nameof(IWebView.CanGoForward));
 			}
 		}
+
+		bool IWebView.Navigating(WebNavigationEvent evnt, string url)
+		{
+			var args = new WebNavigatingEventArgs(evnt, new UrlWebViewSource { Url = url }, url);
+			(this as IWebViewController)?.SendNavigating(args);
+
+			return args.Cancel;
+		}
+
+		void IWebView.Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result)
+		{
+			var args = new WebNavigatedEventArgs(evnt, new UrlWebViewSource { Url = url }, url, result);
+			(this as IWebViewController)?.SendNavigated(args);
+		}
 	}
 }

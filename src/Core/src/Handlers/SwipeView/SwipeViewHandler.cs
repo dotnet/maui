@@ -49,8 +49,8 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		ISwipeView ISwipeViewHandler.TypedVirtualView => VirtualView;
+		ISwipeView ISwipeViewHandler.VirtualView => VirtualView;
 
-		PlatformView ISwipeViewHandler.TypedPlatformView => PlatformView;
+		PlatformView ISwipeViewHandler.PlatformView => PlatformView;
 	}
 }

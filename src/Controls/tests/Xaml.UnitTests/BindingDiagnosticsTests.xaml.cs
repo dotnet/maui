@@ -24,10 +24,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 #endif
 		public class Tests
 		{
-			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
-
-			[TearDown] public void TearDown() => Device.PlatformServices = null;
-
 			[TestCase(false)]
 			//[TestCase(true)]
 			public void Test(bool useCompiledXaml)

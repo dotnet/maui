@@ -5,7 +5,7 @@
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
-	public static class QueryStringHelper
+	internal static class QueryStringHelper
 	{
 		public static string RemovePossibleQueryString(string? url)
 		{
