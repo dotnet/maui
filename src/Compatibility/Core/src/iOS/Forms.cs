@@ -172,9 +172,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 				NSApplication.SharedApplication.Appearance = aquaAppearance;
 			}
 #endif
-			var platformServices = new IOSPlatformServices();
 
-			Device.PlatformServices = platformServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers(context);

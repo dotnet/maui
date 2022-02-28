@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {

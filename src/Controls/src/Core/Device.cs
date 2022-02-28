@@ -12,6 +12,10 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="Type[@FullName='Microsoft.Maui.Controls.Device']/Docs" />
 	public static class Device
 	{
+		// this is just for those cases where the runtime needs to pre-load renderers
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static Assembly DefaultRendererAssembly { get; set; }
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='iOS']/Docs" />
 		public const string iOS = "iOS";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Android']/Docs" />

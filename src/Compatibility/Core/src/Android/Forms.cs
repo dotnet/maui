@@ -227,9 +227,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Profile.FramePartition("Device.PlatformServices");
 
-			var androidServices = new AndroidPlatformServices(activity);
-
-			Device.PlatformServices = androidServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			Profile.FramePartition("RegisterAll");
 
