@@ -48,11 +48,6 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 		}
 
-		internal void PlatformServicesSet()
-		{
-			_lastAppTheme = RequestedTheme;
-		}
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs" />
 		public void Quit()
 		{
@@ -198,7 +193,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool _themeChangedFiring;
-		AppTheme _lastAppTheme;
+		AppTheme _lastAppTheme = AppTheme.Unspecified;
 		AppTheme _userAppTheme = AppTheme.Unspecified;
 
 		void TriggerThemeChangedActual(AppThemeChangedEventArgs args)
