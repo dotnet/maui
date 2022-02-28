@@ -23,12 +23,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
+			AppInfo.SetCurrent(null);
 		}
 
 		[TearDown]
 		public virtual void TearDown()
 		{
 			MockPlatformSizeService.Current?.Reset();
+			AppInfo.SetCurrent(null);
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;

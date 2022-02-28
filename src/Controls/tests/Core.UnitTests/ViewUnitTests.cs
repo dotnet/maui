@@ -547,7 +547,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			task.Task.Wait();
 			Assert.False(task.Task.Result);
-			Device.PlatformServices = null;
 		}
 
 		[Test]
@@ -567,7 +566,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			task.Task.Wait();
 			Assert.AreEqual(2, task.Task.Result);
-			Device.PlatformServices = null;
 		}
 
 		[Test]

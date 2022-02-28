@@ -7,11 +7,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class AppThemeTests : BaseTestFixture
 	{
+		MockAppInfo mockAppInfo;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
+			AppInfo.SetCurrent(mockAppInfo = new MockAppInfo());
 			Application.Current = new MockApplication();
+		}
+
+		[TearDown]
+		public override void TearDown()
+		{
+			Application.Current = null;
+			base.TearDown();
 		}
 
 		[Test]
@@ -64,8 +74,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		void SetAppTheme(AppTheme theme)
 		{
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = theme;
-			Application.Current.TriggerThemeChanged(new AppThemeChangedEventArgs(theme));
+			mockAppInfo.RequestedTheme = theme;
+			Application.Current.ThemeChanged();
 		}
 	}
 }
