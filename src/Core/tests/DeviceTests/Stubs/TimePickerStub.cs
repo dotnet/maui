@@ -7,6 +7,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		TimeSpan _time;
 
+		public string Text { get; set; }
+
 		public string Format { get; set; }
 
 		public TimeSpan Time
