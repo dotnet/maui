@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
+﻿using Microsoft.Maui.Essentials;
+
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
 {
 	public class GradientsGallery : ContentPage
 	{

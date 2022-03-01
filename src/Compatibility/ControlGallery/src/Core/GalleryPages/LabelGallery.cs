@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {

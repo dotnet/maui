@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 #if UITEST
 using Xamarin.UITest;
