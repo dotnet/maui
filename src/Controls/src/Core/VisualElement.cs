@@ -174,10 +174,10 @@ namespace Microsoft.Maui.Controls
 			var transforms = ((string)newValue).Split(' ');
 			foreach (var transform in transforms)
 			{
-				if (string.IsNullOrEmpty(transform) || transform.IndexOf('(') < 0 || transform.IndexOf(')') < 0)
+				if (string.IsNullOrEmpty(transform) || transform.IndexOf("(", StringComparison.Ordinal) < 0 || transform.IndexOf(")", StringComparison.Ordinal) < 0)
 					throw new FormatException("Format for transform is 'none | transform(value) [transform(value) ]*'");
-				var transformName = transform.Substring(0, transform.IndexOf('('));
-				var value = transform.Substring(transform.IndexOf('(') + 1, transform.IndexOf(')') - transform.IndexOf('(') - 1);
+				var transformName = transform.Substring(0, transform.IndexOf("(", StringComparison.Ordinal));
+				var value = transform.Substring(transform.IndexOf("(", StringComparison.Ordinal) + 1, transform.IndexOf(")", StringComparison.Ordinal) - transform.IndexOf("(", StringComparison.Ordinal) - 1);
 				double translationX, translationY, scaleX, scaleY, rotateX, rotateY, rotate;
 				if (transformName.StartsWith("translateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationX))
 					bindable.SetValue(TranslationXProperty, translationX);

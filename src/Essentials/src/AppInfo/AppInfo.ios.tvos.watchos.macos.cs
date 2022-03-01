@@ -113,9 +113,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		internal static bool VerifyHasUrlScheme(string scheme)
 		{
-			var cleansed = scheme.Replace("://", string.Empty);
+			var cleansed = scheme.Replace("://", string.Empty, StringComparison.Ordinal);
 			var schemes = GetCFBundleURLSchemes().ToList();
-			return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.InvariantCultureIgnoreCase));
+			return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.OrdinalIgnoreCase));
 		}
 
 		internal static IEnumerable<string> GetCFBundleURLSchemes()

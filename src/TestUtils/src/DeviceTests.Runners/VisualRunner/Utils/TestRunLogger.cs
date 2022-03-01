@@ -54,7 +54,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				if (!string.IsNullOrEmpty(message))
 				{
 					_builder.Append(" : ");
-					_builder.Append(message.Replace("\r", "\\r").Replace("\n", "\\n"));
+					_builder.Append(message.Replace("\r", "\\r", StringComparison.Ordinal).Replace("\n", "\\n", StringComparison.Ordinal));
 				}
 
 				_builder.AppendLine();

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if WINDOWS_UWP || WINDOWS
 			Assert.Equal(10, DeviceInfo.Version.Major);
 			Assert.Equal(0, DeviceInfo.Version.Minor);
-			Assert.StartsWith("10.0", DeviceInfo.VersionString);
+			Assert.StartsWith("10.0", DeviceInfo.VersionString, StringComparison.Ordinal);
 #else
 			Assert.True(DeviceInfo.Version.Major > 0);
 #endif
@@ -40,10 +40,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (DeviceInfo.DeviceType == DeviceType.Virtual)
 			{
 				var isEmulator =
-					DeviceInfo.Model.Contains("sdk_gphone_x86") ||
-					DeviceInfo.Model.Contains("google_sdk") ||
-					DeviceInfo.Model.Contains("Emulator") ||
-					DeviceInfo.Model.Contains("Android SDK built for x86");
+					DeviceInfo.Model.Contains("sdk_gphone_x86", StringComparison.Ordinal) ||
+					DeviceInfo.Model.Contains("google_sdk", StringComparison.Ordinal) ||
+					DeviceInfo.Model.Contains("Emulator", StringComparison.Ordinal) ||
+					DeviceInfo.Model.Contains("Android SDK built for x86", StringComparison.Ordinal);
 
 				Assert.True(isEmulator);
 			}
