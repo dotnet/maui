@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls.Internals;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -7,12 +6,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, TextTransform tranform)
 		{
-			var dateText = platformDatePicker.GetDescendantByName<TextBlock>("DateText");
-
-			if (dateText == null)
-				return;
-
-			dateText.Text = TextTransformUtilites.GetTransformedText(datePicker.Text, tranform);
+			// TODO: Implement TextTransform property on Windows.
 		}
 	}
 }

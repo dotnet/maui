@@ -11,17 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		Task<string> GetPlatformText(DatePickerHandler datePickerHandler)
 		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var calendarDatePicker = GetPlatformControl(datePickerHandler);
-
-				var dateText = calendarDatePicker.GetDescendantByName<TextBlock>("DateText");
-
-				if (dateText == null)
-					return string.Empty;
-
-				return dateText.Text;
-			});
+			return InvokeOnMainThreadAsync(() => GetPlatformControl(datePickerHandler).Date.ToString());
 		}
 	}
 }
