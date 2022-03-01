@@ -62,11 +62,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (Application.Current?.Windows?.Count > 0)
-					return Application.Current.Windows[0]?.Handler?.MauiContext?.GetFlowDirection() ??
-						 FlowDirection.LeftToRight;
-
+#if WINDOWS || ANDROID || IOS
+				return AppInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft
+					? LayoutDirection.RightToLeft : LayoutDirection.LeftToRight;
+#else
 				return FlowDirection.LeftToRight;
+#endif
 			}
 		}
 
