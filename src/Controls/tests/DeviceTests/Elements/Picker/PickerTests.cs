@@ -12,8 +12,8 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TextTransformCases))]
 		public async Task TextTransformApplied(string text, TextTransform transform, string expected)
 		{
-			var picker = new Picker() { Text = text, TextTransform = transform };
-
+			var picker = new Picker() { TextTransform = transform };
+			((IPicker)picker).Text = text;
 			var platformText = await GetPlatformText(await CreateHandlerAsync<PickerHandler>(picker));
 
 			Assert.Equal(expected, platformText);

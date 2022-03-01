@@ -47,9 +47,9 @@ namespace Microsoft.Maui.Platform
 			platformPicker.Hint = picker.Title;
 
 			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
-				platformPicker.Text = null;
+				picker.Text = null;
 			else
-				platformPicker.Text = picker.GetItem(picker.SelectedIndex);
+				picker.Text = picker.GetItem(picker.SelectedIndex);
 		}
 	}
 }

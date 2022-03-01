@@ -13,6 +13,11 @@ namespace Microsoft.Maui
 		/// Gets the list of choices.
 		/// </summary>
 		IList<string> Items { get; }
+		
+		/// <summary>
+		/// Gets the selected Text for the Picker.
+		/// </summary>
+		string? Text { get; set; }
 
 		/// <summary>
 		/// Gets the title for the Picker.

@@ -5,7 +5,7 @@
 		public static IPropertyMapper<IPicker, PickerHandler> ControlsPickerMapper =
 			new PropertyMapper<Picker, PickerHandler>(PickerHandler.Mapper)
 			{
-				[nameof(Text)] = MapText,
+				//[nameof(IPicker.Text)] = MapText,
 				[nameof(TextTransform)] = MapText,
 			};
 

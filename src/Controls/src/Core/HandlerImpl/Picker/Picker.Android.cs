@@ -4,7 +4,7 @@
 	{
 		public static void MapText(PickerHandler handler, Picker picker)
 		{
-			Platform.EditTextExtensions.UpdateText(handler.PlatformView, picker);
+			Platform.MauiPickerExtensions.UpdateText(handler.PlatformView, picker, picker.TextTransform);
 		}
 	}
 }

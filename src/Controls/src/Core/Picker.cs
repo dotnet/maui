@@ -11,8 +11,16 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs" />
-	public partial class Picker : InputView, IFontElement, ITextAlignmentElement, IElementConfiguration<Picker>
+	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>
 	{
+		private string _text;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextColorProperty']/Docs" />
+		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs" />
+		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TitleProperty']/Docs" />
 		public static readonly BindableProperty TitleProperty =
 			BindableProperty.Create(nameof(Title), typeof(string), typeof(Picker), default(string));
@@ -54,6 +62,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='VerticalTextAlignmentProperty']/Docs" />
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextTransformProperty']/Docs" />
+		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='.ctor']/Docs" />
@@ -91,6 +102,17 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextTransform']/Docs" />
+		public TextTransform TextTransform
+		{
+			get => (TextTransform)GetValue(TextTransformProperty);
+			set => SetValue(TextTransformProperty, value);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs" />
+		public virtual string UpdateFormsText(string source, TextTransform textTransform)
+			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
 
@@ -114,6 +136,15 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
+		string IPicker.Text
+		{
+			get { return _text; }
+			set { _text = value; }
+		}
+
+		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue) =>
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='Items']/Docs" />
 		public IList<string> Items { get; } = new LockableObservableListWrapper();
 
@@ -136,6 +167,20 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return GetValue(SelectedItemProperty); }
 			set { SetValue(SelectedItemProperty, value); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextColor']/Docs" />
+		public Color TextColor
+		{
+			get { return (Color)GetValue(TextElement.TextColorProperty); }
+			set { SetValue(TextElement.TextColorProperty, value); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='CharacterSpacing']/Docs" />
+		public double CharacterSpacing
+		{
+			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
+			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='Title']/Docs" />
@@ -333,6 +378,15 @@ namespace Microsoft.Maui.Controls
 		public IPlatformElementConfiguration<T, Picker> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
+		{
+		}
+
+		void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
+		{
+			InvalidateMeasure();
 		}
 
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
