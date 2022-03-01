@@ -22,6 +22,34 @@ namespace Microsoft.Maui.Platform
 			static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, WindowLongFlags nIndex, WindowProc dwNewLong);
 		}
 
+		public static IntPtr SetWindowLongPtr(IntPtr hWnd, WindowLongFlags nIndex, long dwNewLong)
+		{
+			if (IntPtr.Size == 8)
+				return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
+			else
+				return new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong));
+
+			[DllImport("user32.dll", EntryPoint = "SetWindowLong")]
+			static extern int SetWindowLong32(IntPtr hWnd, WindowLongFlags nIndex, long dwNewLong);
+
+			[DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
+			static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, WindowLongFlags nIndex, long dwNewLong);
+		}
+
+		public static long GetWindowLongPtr(IntPtr hWnd, WindowLongFlags nIndex)
+		{
+			if (IntPtr.Size == 8)
+				return GetWindowLongPtr64(hWnd, nIndex);
+			else
+				return GetWindowLong32(hWnd, nIndex);
+
+			[DllImport("user32.dll", EntryPoint = "GetWindowLong")]
+			static extern int GetWindowLong32(IntPtr hWnd, WindowLongFlags nIndex);
+
+			[DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
+			static extern long GetWindowLongPtr64(IntPtr hWnd, WindowLongFlags nIndex);
+		}
+
 		[DllImport("user32.dll")]
 		public static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
@@ -71,6 +99,13 @@ namespace Microsoft.Maui.Platform
 			SWP_NOSIZE = 0x0001,
 			SWP_NOZORDER = 0x0004,
 			SWP_SHOWWINDOW = 0x0040,
+		}
+
+		[Flags]
+		public enum ExtendedWindowStyles : uint
+		{
+			WS_EX_RTLREADING = 0x00002000,
+			WS_EX_LAYOUTRTL = 0x00400000
 		}
 	}
 }

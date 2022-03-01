@@ -254,6 +254,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public string BuildString { get; set; }
 
+		public LayoutDirection RequestedLayoutDirection { get; set; }
+
 		public void ShowSettingsUI()
 		{
 		}

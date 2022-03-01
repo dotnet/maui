@@ -102,6 +102,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
+		public void App_RequestedLayoutDirection_Is_Correct()
+		{
+			Assert.Equal(LayoutDirection.LeftToRight, AppInfo.RequestedLayoutDirection);
+		}
+
+		[Fact]
 		public void App_Versions_Are_Correct()
 		{
 			Assert.Equal("1.0.1.0", AppInfo.VersionString);
