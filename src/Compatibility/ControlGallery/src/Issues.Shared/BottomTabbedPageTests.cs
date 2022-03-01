@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					},
 			};
 
-			if (Device.RuntimePlatform == Device.Android)
+			if (DeviceInfo.Platform == DevicePlatform.Android)
 			{
 				layout.Children.Insert(1, btnChangeBarItemColorText);
 				layout.Children.Insert(2, btnChangeBarSelectedItemColorText);

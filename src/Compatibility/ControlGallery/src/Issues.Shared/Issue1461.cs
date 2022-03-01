@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Title = string.Format("Flyout sample for {0}", state),
 				IconImageSource = "bank.png",
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(5, 60, 5, 5) : new Thickness(5),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(5, 60, 5, 5) : new Thickness(5),
 				Content =
 					new StackLayout
 					{

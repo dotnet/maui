@@ -112,14 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
-			}
-			else
-			{
-				CollectionChanged(args);
-			}
+			CollectionView.BeginInvokeOnMainThread(() => CollectionChanged(args));
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -298,7 +291,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionViewUpdated(NotifyCollectionChangedEventArgs args)
 		{
-			Device.BeginInvokeOnMainThread(() =>
+			CollectionView.BeginInvokeOnMainThread(() =>
 			{
 				CollectionViewUpdated?.Invoke(this, args);
 			});

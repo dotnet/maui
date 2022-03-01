@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			KeyboardFlags spellCheckForUwp = KeyboardFlags.None;
 
-			if (Device.RuntimePlatform == Device.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.UWP)
 			{
 				spellCheckForUwp = KeyboardFlags.Spellcheck;
 			}
@@ -67,17 +67,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeCharacter", FlagsToSet = KeyboardFlags.CapitalizeCharacter });
 			}
 
-			if (Device.RuntimePlatform == Device.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.UWP)
 			{
 				layout.Children.Add(new Label() { Text = "Capitalization settings only work when using touch keyboard" });
 				layout.Children.Add(new Label() { Text = "Character doesn't do anything on UWP" });
 			}
-			else if (Device.RuntimePlatform == Device.iOS)
+			else if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				layout.Children.Add(new Label() { Text = "All will use Sentence" });
 				layout.Children.Add(new Label() { Text = "No Keyboard will use Sentence" });
 			}
-			else if (Device.RuntimePlatform == Device.Android)
+			else if (DeviceInfo.Platform == DevicePlatform.Android)
 			{
 				layout.Children.Add(new Label() { Text = "All will use Sentence" });
 				layout.Children.Add(new Label() { Text = "No Keyboard will use None" });

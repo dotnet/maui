@@ -384,12 +384,14 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll']/Docs" />
+		[Obsolete]
 		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll']/Docs" />
+		[Obsolete]
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(

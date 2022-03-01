@@ -31,11 +31,13 @@ using TNativeView = AppKit.NSView;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[Obsolete]
 	public struct InitializationOptions
 	{
 		public InitializationFlags Flags;
 	}
 
+	[Obsolete]
 	public static class Forms
 	{
 		internal static IMauiContext MauiContext { get; private set; }

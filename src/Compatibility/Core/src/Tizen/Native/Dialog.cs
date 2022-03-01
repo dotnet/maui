@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		/// </summary>
 		public static Dialog CreateDialog(EvasObject parent, bool hasAcceptButton = false)
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new Watch.WatchDialog(Forms.NativeParent, hasAcceptButton);
 			}

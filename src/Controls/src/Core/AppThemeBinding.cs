@@ -8,7 +8,15 @@ namespace Microsoft.Maui.Controls
 		WeakReference<BindableObject> _weakTarget;
 		BindableProperty _targetProperty;
 
-		public AppThemeBinding() => Application.Current.RequestedThemeChanged += (o, e) => Device.BeginInvokeOnMainThread(() => ApplyCore());
+		public AppThemeBinding()
+		{
+			Application.Current.RequestedThemeChanged += OnThemeChanged;
+
+			void OnThemeChanged(object sender, AppThemeChangedEventArgs e)
+			{
+				Application.Current.FindDispatcher().DispatchIfRequired(() => ApplyCore());
+			}
+		}
 
 		internal override BindingBase Clone() => new AppThemeBinding
 		{

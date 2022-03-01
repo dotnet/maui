@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					break;
 				case ToolbarPlacement.Default:
 				default:
-					target = Device.Idiom == TargetIdiom.Phone ? bottomCommandBarArea : topCommandBarArea;
+					target = DeviceInfo.Idiom == DeviceIdiom.Phone ? bottomCommandBarArea : topCommandBarArea;
 					break;
 			}
 

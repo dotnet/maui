@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 				Text = "Reordering of grouped sources is not supported on Windows!",
 				FontSize = 24,
 				FontAttributes = FontAttributes.Bold,
-				IsVisible = (Device.RuntimePlatform == Device.UWP),
+				IsVisible = (DeviceInfo.Platform == DevicePlatform.UWP),
 				BackgroundColor = Colors.Red
 			};
 

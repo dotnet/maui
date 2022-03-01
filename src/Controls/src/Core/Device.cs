@@ -10,6 +10,7 @@ using Microsoft.Maui.Essentials;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="Type[@FullName='Microsoft.Maui.Controls.Device']/Docs" />
+	//[Obsolete]
 	public static class Device
 	{
 		// this is just for those cases where the runtime needs to pre-load renderers
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls
 		public const string tvOS = "tvOS";
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Idiom']/Docs" />
-		public static TargetIdiom Idiom
+		[Obsolete] public static TargetIdiom Idiom
 		{
 			get
 			{
@@ -62,37 +63,30 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
 		public static FlowDirection FlowDirection { get; internal set; }
 
-		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='IsInvokeRequired']/Docs" />
 		public static bool IsInvokeRequired =>
 			Application.Current.FindDispatcher().IsDispatchRequired;
 
-		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='BeginInvokeOnMainThread']/Docs" />
 		public static void BeginInvokeOnMainThread(Action action) =>
 			Application.Current.FindDispatcher().Dispatch(action);
 
-		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync']/Docs" />
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			Application.Current.FindDispatcher().DispatchAsync(func);
 
-		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][0]/Docs" />
 		public static Task InvokeOnMainThreadAsync(Action action) =>
 			Application.Current.FindDispatcher().DispatchAsync(action);
 
-		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync']/Docs" />
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask) =>
 			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
-		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync']/Docs" />
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask) =>
 			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
-		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetMainThreadSynchronizationContextAsync']/Docs" />
 		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
 			Application.Current.FindDispatcher().GetSynchronizationContextAsync();

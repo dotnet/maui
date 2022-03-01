@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uiSearchBar.ApplyKeyboard(keyboard);
 
 			// iPhone does not have an enter key on numeric keyboards
-			if (Device.Idiom == TargetIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
 			{
 				_numericAccessoryView = _numericAccessoryView ?? CreateNumericKeyboardAccessoryView();
 				_uiSearchBar.InputAccessoryView = _numericAccessoryView;

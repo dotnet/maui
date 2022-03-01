@@ -11,7 +11,7 @@ namespace Samples.View
 		public BasePage()
 		{
 			NavigationPage.SetBackButtonTitle(this, "Back");
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				NavigationPage.SetHasNavigationBar(this, false);
 		}
 

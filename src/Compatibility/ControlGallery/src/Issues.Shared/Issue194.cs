@@ -57,10 +57,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Title = "Page 9"
 			};
 
-			if (Device.RuntimePlatform == Device.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				// Create an overflow amount of tabs depending on device
-				if (Device.Idiom == TargetIdiom.Tablet)
+				if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				{
 					Children.Add(pageOne);
 					Children.Add(pageTwo);

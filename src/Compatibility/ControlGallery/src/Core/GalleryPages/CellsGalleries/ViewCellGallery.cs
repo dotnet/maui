@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		public UrlImageViewCellListPage()
 		{
-			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
+			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
 			var stringToImageSourceConverter = new GenericValueConverter(

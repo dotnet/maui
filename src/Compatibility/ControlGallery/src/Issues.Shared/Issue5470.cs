@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 			// android needs firebase for this to work, so skip it unless iOS
-			if (Device.RuntimePlatform == Device.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 				Application.Current.AppLinks.RegisterLink(GetEntry());
 
 			// Initialize ui here instead of ctor

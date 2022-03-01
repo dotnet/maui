@@ -1680,7 +1680,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (Superview?.Bounds.Height > 0)
 						return Superview.Bounds.Height;
 
-					return (Device.Idiom == TargetIdiom.Phone && DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
+					return (DeviceInfo.Idiom == DeviceIdiom.Phone && DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
 				}
 			}
 

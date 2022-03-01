@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			// NOTE: Currently the ability to programmatically enable/disable mixed content only exists on Android
 			// NOTE: Currently the ability to programmatically enable/disable zoom only exists on Android
-			if (Device.RuntimePlatform == Device.Android)
+			if (DeviceInfo.Platform == DevicePlatform.Android)
 			{
 				var mixedContentTestPage = "https://mixed-content-test.appspot.com/";
 

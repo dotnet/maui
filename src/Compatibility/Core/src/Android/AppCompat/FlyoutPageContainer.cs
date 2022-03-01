@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				//if we are showing the normal popover master doesn't have padding
 				supressPadding = isFlyoutPage;
 				//popover make the master smaller
-				width = isFlyoutPage && (DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape() || Device.Idiom == TargetIdiom.Tablet) ? DefaultWidthFlyout : width;
+				width = isFlyoutPage && (DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape() || DeviceInfo.Idiom == DeviceIdiom.Tablet) ? DefaultWidthFlyout : width;
 			}
 
 			double padding = supressPadding ? 0 : Context.FromPixels(TopPadding);

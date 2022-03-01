@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -107,42 +108,42 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		bool TryGetValueForPlatform(out object value)
 		{
-			if (Device.RuntimePlatform == Device.Android && Android != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Android && Android != s_notset)
 			{
 				value = Android;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.GTK && GTK != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Create("GTK") && GTK != s_notset)
 			{
 				value = GTK;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.iOS && iOS != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.iOS && iOS != s_notset)
 			{
 				value = iOS;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.macOS && macOS != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.macOS && macOS != s_notset)
 			{
 				value = macOS;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.MacCatalyst && MacCatalyst != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.MacCatalyst && MacCatalyst != s_notset)
 			{
 				value = MacCatalyst;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.Tizen && Tizen != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Tizen && Tizen != s_notset)
 			{
 				value = Tizen;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.UWP && UWP != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.UWP && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.WPF && WPF != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Create("WPF") && WPF != s_notset)
 			{
 				value = WPF;
 				return true;

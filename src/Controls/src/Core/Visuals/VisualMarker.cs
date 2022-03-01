@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
@@ -25,10 +26,10 @@ namespace Microsoft.Maui.Controls
 
 			var logger = Application.Current?.FindMauiContext()?.CreateLogger<IVisual>();
 			_warnedAboutMaterial = true;
-			if (Device.RuntimePlatform == Device.iOS || Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.Tizen)
-				logger?.LogWarning("Material needs to be registered on {RuntimePlatform} by calling FormsMaterial.Init() after the Microsoft.Maui.Controls.Forms.Init method call.", Device.RuntimePlatform);
+			if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.Tizen)
+				logger?.LogWarning("Material needs to be registered on {RuntimePlatform} by calling FormsMaterial.Init() after the Microsoft.Maui.Controls.Forms.Init method call.", DeviceInfo.Platform);
 			else
-				logger?.LogWarning("Material is currently not support on {RuntimePlatform}.", Device.RuntimePlatform);
+				logger?.LogWarning("Material is currently not support on {RuntimePlatform}.", DeviceInfo.Platform);
 		}
 
 		public sealed class MaterialVisual : IVisual { public MaterialVisual() { } }
