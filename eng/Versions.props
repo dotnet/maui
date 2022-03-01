@@ -44,9 +44,13 @@
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.2.22102.8</MicrosoftTemplateEngineTasksVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <DotNetVersionBandMaciOS>6.0.200</DotNetVersionBandMaciOS>
     <!-- Match the first three version numbers and append 00 -->
     <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetPreviewVersionBand>
-    <DotNetVersionBandMaciOS Condition=" '$(DotNetVersionBandMaciOS)' == '' ">$(DotNetPreviewVersionBand)</DotNetVersionBandMaciOS>
+    <!-- NOTE: temporarily hardcode these to 6.0.200 -->
+    <DotNetMauiManifestVersionBand>6.0.200</DotNetMauiManifestVersionBand>
+    <DotNetMonoManifestVersionBand>6.0.200</DotNetMonoManifestVersionBand>
+    <DotNetEmscriptenManifestVersionBand>6.0.200</DotNetEmscriptenManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>6.0.200</DotNetAndroidManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>6.0.200</DotNetMaciOSManifestVersionBand>
   </PropertyGroup>
 </Project>
