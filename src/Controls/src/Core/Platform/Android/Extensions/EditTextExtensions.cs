@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// Setting the text causes the cursor to reset to position zero
 			// so if we are transforming the text and then setting it to a 
 			// new value then we need to retain the cursor position
-			if (value == inputView.Text)
+			if (value == editText.Text)
 				return;
 
 			int selectionStart = 0;

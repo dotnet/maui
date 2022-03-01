@@ -29,8 +29,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformText);
 		}
 
-
-
 		[Fact]
 		public async Task CursorPositionDoesntResetWhenNativeTextValueChanges()
 		{
@@ -46,6 +44,27 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<EntryHandler>(textInput);
 				UpdateCursorStartPosition(handler, 5);
 				handler.UpdateValue(nameof(ITextInput.Text));
+				cursorPosition = GetCursorStartPosition(handler);
+			});
+
+			Assert.Equal(5, cursorPosition);
+		}
+
+		[Fact]
+		public async Task CursorPositionDoesntResetWhenApplyingTransform()
+		{
+			var textInput = new Entry()
+			{
+				Text = "Hello"
+			};
+
+
+			int cursorPosition = 0;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(textInput);
+				UpdateCursorStartPosition(handler, 5);
+				textInput.TextTransform = TextTransform.Uppercase;
 				cursorPosition = GetCursorStartPosition(handler);
 			});
 
