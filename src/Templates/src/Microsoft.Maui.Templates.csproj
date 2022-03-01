@@ -17,7 +17,7 @@
                 OutputFilename,
                 Regex.Replace(File.ReadAllText(InputFilename), MatchExpression, ReplacementText)
                 );
-            Console.WriteLine("Saved modified '{0}' to {1}'.", InputFilename, OutputFilename);
+            //Console.WriteLine("Saved modified '{0}' to {1}'.", InputFilename, OutputFilename);
           ]]>
       </Code>
     </Task>
@@ -41,8 +41,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TemplateJsonInput Include="templates\*\.template.config\template.in.json" />
-    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;templates\**\.gitignore;@(TemplateJsonInput)" />
+    <TemplateJsonInput Include="templates\*\.template.config\template.in.json">
+      <PackageDestination>$([System.String]::Concat(%(RelativeDir), 'template.json'))</PackageDestination>
+      <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), 'template.json'))</IntermediateLocation>
+    </TemplateJsonInput>
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput)" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
@@ -52,38 +55,37 @@
 
   <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions"
       Inputs="@(TemplateJsonInput)"
-      Outputs="@([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))">
+      Outputs="%(TemplateJsonInput.IntermediateLocation)">
 
-    <!-- Copy files to their output name -->
+     <!-- Copy files to their output name -->
     <Copy
         SourceFiles="%(TemplateJsonInput.Fullpath)"
-        DestinationFiles="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))" />
+        DestinationFiles="%(TemplateJsonInput.IntermediateLocation)" />
 
     <!-- Replace WinAppSDK version -->
     <ReplaceFileText
-        InputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
-        OutputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        InputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
         MatchExpression="WINDOWSAPPSDK_VERSION_VALUE"
         ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion)" />
 
     <!-- Replace Win2D version -->
     <ReplaceFileText
-        InputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
-        OutputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        InputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
         MatchExpression="WIN2D_VERSION_VALUE"
         ReplacementText="$(MicrosoftGraphicsWin2DPackageVersion)" />
 
     <!-- Replace .NET TFM version -->
     <ReplaceFileText
-        InputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
-        OutputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        InputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
         MatchExpression="DOTNET_TFM_VALUE"
         ReplacementText="$(_MauiDotNetTfm)" />
 
     <ItemGroup>
-      <FileWrites Include="@(TemplateJsonInput -> '$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))'" />
-      <Content Remove="@(TemplateJsonInput)" />
-      <Content Include="@(TemplateJsonInput -> '$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
+      <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
+      <Content Include="%(TemplateJsonInput.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateJsonInput.PackageDestination)" Pack="true" />
     </ItemGroup>
   </Target>
 
