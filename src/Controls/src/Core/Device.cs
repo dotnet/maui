@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 			{
 #if WINDOWS || ANDROID || IOS
 				return AppInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft
-					? LayoutDirection.RightToLeft : LayoutDirection.LeftToRight;
+					? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
 #else
 				return FlowDirection.LeftToRight;
 #endif
