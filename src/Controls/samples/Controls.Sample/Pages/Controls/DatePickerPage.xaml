@@ -19,7 +19,14 @@
             <Label
                 Text="TextColor"
                 Style="{StaticResource Headline}"/>
-            <DatePicker TextColor="Red"/>
+            <DatePicker 
+                TextColor="Red"/>   
+            <Label
+                Text="TextTransform"
+                Style="{StaticResource Headline}"/>
+            <DatePicker 
+                Format="MMM-dd-yyyy"
+                TextTransform="Uppercase"/>
         </VerticalStackLayout>
     </views:BasePage.Content>               
 </views:BasePage>

@@ -8,6 +8,11 @@ namespace Microsoft.Maui
 	public interface IDatePicker : IView, ITextStyle
 	{
 		/// <summary>
+		/// Gets the selected Text for the Picker.
+		/// </summary>
+		string? Text { get; set; }
+
+		/// <summary>
 		/// Gets the format of the date to display to the user. 
 		/// </summary>
 		string Format { get; set; }

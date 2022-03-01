@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
@@ -10,8 +9,11 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			var date = datePicker.Date;
+			DateTime date = datePicker.Date;
+			string format = datePicker.Format;
+
 			platformDatePicker.UpdateDate(date);
+			datePicker.Text = date.ToString(format);
 		}
 
 		public static void UpdateDate(this CalendarDatePicker platformDatePicker, DateTime dateTime)
