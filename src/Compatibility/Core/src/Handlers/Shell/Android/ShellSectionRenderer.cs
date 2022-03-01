@@ -147,7 +147,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			//_viewPager.AddOnPageChangeListener(this);
 			_viewPager.Id = AView.GenerateViewId();
 
-			_viewPager.Adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, MauiContext);
+			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
+			_viewPager.Adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
 			_viewPager.OverScrollMode = OverScrollMode.Never;
 
 			new TabLayoutMediator(_tablayout, _viewPager, this)
