@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Essentials
 			// Use Open instead of Import so that we can attempt to use the original file.
 			// If the file is from an external provider, then it will be downloaded.
 			using var documentPicker = new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
-			if (Platform.HasOSVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 				documentPicker.AllowsMultipleSelection = allowMultiple;
 			documentPicker.Delegate = new PickerDelegate
 			{

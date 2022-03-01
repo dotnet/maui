@@ -709,6 +709,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			WebView WebView => _renderer.WebView;
 			IWebViewController WebViewController => WebView;
 
+			[PortHandler]
 			public override void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 			{
 				var url = GetCurrentUrl();
@@ -719,6 +720,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_renderer.UpdateCanGoBackForward();
 			}
 
+			[PortHandler]
 			public override void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 			{
 				var url = GetCurrentUrl();
@@ -729,6 +731,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_renderer.UpdateCanGoBackForward();
 			}
 
+			[PortHandler("Partially ported")]
 			public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 			{
 				if (webView.IsLoading)
@@ -767,6 +770,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 			}
 
+			[PortHandler]
 			// https://stackoverflow.com/questions/37509990/migrating-from-uiwebview-to-wkwebview
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
@@ -808,6 +812,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				decisionHandler(args.Cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
 			}
 
+			[PortHandler]
 			string GetCurrentUrl()
 			{
 				return _renderer?.Url?.AbsoluteUrl?.ToString();

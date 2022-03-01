@@ -470,13 +470,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(Maui.Controls.VisualMarker.MatchParent, ((View)view).Visual);
 		}
 
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		static void AddExplicitLTRToScrollView(ScrollView parent, View child)
 		{
 			parent.Content = child;

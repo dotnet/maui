@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (target == _currentFragment)
 				return Task.FromResult(true);
 
-			var t = ChildFragmentManager.BeginTransaction();
+			var t = ChildFragmentManager.BeginTransactionEx();
 
 			if (animated)
 				SetupAnimation(navSource, t, page);
