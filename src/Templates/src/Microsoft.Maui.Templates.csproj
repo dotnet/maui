@@ -1,5 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <UsingTask TaskName="ReplaceFileText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <InputFilename ParameterType="System.String" Required="true" />
+      <OutputFilename ParameterType="System.String" Required="true" />
+      <MatchExpression ParameterType="System.String" Required="true" />
+      <ReplacementText ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+            File.WriteAllText(
+                OutputFilename,
+                Regex.Replace(File.ReadAllText(InputFilename), MatchExpression, ReplacementText)
+                );
+            Console.WriteLine("Saved modified '{0}' to {1}'.", InputFilename, OutputFilename);
+          ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <PackageType>Template</PackageType>
@@ -18,7 +41,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
+    <TemplateJsonInput Include="templates\*\.template.config\template.in.json" />
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;templates\**\.gitignore;@(TemplateJsonInput)" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
@@ -26,30 +50,40 @@
     <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
-  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions">
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions"
+      Inputs="@(TemplateJsonInput)"
+      Outputs="@([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))">
+
+    <!-- Copy files to their output name -->
+    <Copy
+        SourceFiles="%(TemplateJsonInput.Fullpath)"
+        DestinationFiles="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))" />
+
+    <!-- Replace WinAppSDK version -->
+    <ReplaceFileText
+        InputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        OutputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE"
+        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion)" />
+
+    <!-- Replace Win2D version -->
+    <ReplaceFileText
+        InputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        OutputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        MatchExpression="WIN2D_VERSION_VALUE"
+        ReplacementText="$(MicrosoftGraphicsWin2DPackageVersion)" />
+
+    <!-- Replace .NET TFM version -->
+    <ReplaceFileText
+        InputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        OutputFilename="$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))"
+        MatchExpression="DOTNET_TFM_VALUE"
+        ReplacementText="$(_MauiDotNetTfm)" />
+
     <ItemGroup>
-      <_TemplateJsonFile Include="templates\*\.template.config\template.json" />
-      <_TemplateJsonFileWithContent
-          Include="@(_TemplateJsonFile)"
-          Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
-              .Replace('WINDOWSAPPSDK_VERSION_VALUE', '$(MicrosoftWindowsAppSDKPackageVersion)')
-              .Replace('WIN2D_VERSION_VALUE', '$(MicrosoftGraphicsWin2DPackageVersion)'))" />
-      <_TemplateCsprojFile Include="templates\*\*.csproj" />
-      <_TemplateCsprojFileWithContent
-          Include="@(_TemplateCsprojFile)"
-          Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
-              .Replace('DOTNET_TFM_VALUE', '$(_MauiDotNetTfm)'))" />
-      <_TemplateReplacedFile Include="@(_TemplateJsonFile);@(_TemplateCsprojFile)" />
-      <_TemplateReplacedFileWithContent Include="@(_TemplateJsonFileWithContent);@(_TemplateCsprojFileWithContent)" />
-    </ItemGroup>
-    <WriteLinesToFile
-        File="@(_TemplateReplacedFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"
-        Lines="%(Contents)"
-        Overwrite="true" />
-    <ItemGroup>
-      <FileWrites Include="@(_TemplateReplacedFile -> '$(IntermediateOutputPath)%(Identity)')" />
-      <Content Remove="@(_TemplateReplacedFile)" />
-      <Content Include="@(_TemplateReplacedFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
+      <FileWrites Include="@(TemplateJsonInput -> '$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))'" />
+      <Content Remove="@(TemplateJsonInput)" />
+      <Content Include="@(TemplateJsonInput -> '$([System.String]::Copy('%(TemplateJsonInput.Fullpath)').Replace('template.in.json','template.json'))')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
     </ItemGroup>
   </Target>
 
