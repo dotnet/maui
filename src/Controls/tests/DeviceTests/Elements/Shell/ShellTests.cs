@@ -29,6 +29,9 @@ namespace Microsoft.Maui.DeviceTests
 				{
 #if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Image, ImageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
 #endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
@@ -36,9 +39,6 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
 					handlers.AddHandler<ShellContent, ShellContentHandler>();
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
 #endif
 				});
 			});

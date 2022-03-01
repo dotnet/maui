@@ -70,17 +70,9 @@ namespace Microsoft.Maui.Platform
 				if (fragmentManager == null)
 					throw new InvalidOperationException("If you're creating a new Navigation Root you need to use a new Fragment Manager");
 
-				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
+				scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
 			}
 
-			return scopedContext;
-		}
-
-		public static IMauiContext MakeScopededArgs<TArgs>(this IMauiContext mauiContext, TArgs args)
-			where TArgs : class
-		{
-			var scopedContext = new MauiContext(mauiContext.Services);
-			scopedContext.AddWeakSpecific(args);
 			return scopedContext;
 		}
 
