@@ -1,36 +1,36 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.23">
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;tizen40</TargetFrameworks>
-      <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
-      <PublishRepositoryUrl>true</PublishRepositoryUrl>
-      <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
-      <IncludeSymbols>true</IncludeSymbols>
-      <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PackageId>Microsoft.Maui.Graphics</PackageId>
-    <Product>Microsoft.Maui.Graphics</Product>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Mac\GraphicsMac.resx">
-      <CustomToolNamespace>Microsoft.Maui.Graphics.Platform</CustomToolNamespace>
-    </EmbeddedResource>
-  </ItemGroup>
-  <Import Project="..\targets\MultiTargeting.targets" />
-  <ItemGroup>
-    <None Update="Mac\GraphicsMac.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>GraphicsMac.resx</DependentUpon>
-    </None>
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid12.0;Xamarin.Mac20;tizen40</TargetFrameworks>
+        <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
+    </PropertyGroup>
+    <PropertyGroup>
+        <PackageId>Microsoft.Maui.Graphics</PackageId>
+        <Product>Microsoft.Maui.Graphics</Product>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+        <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Mac\GraphicsMac.resx">
+            <CustomToolNamespace>Microsoft.Maui.Graphics.Platform</CustomToolNamespace>
+        </EmbeddedResource>
+    </ItemGroup>
+    <Import Project="..\targets\MultiTargeting.targets" />
+    <ItemGroup>
+        <None Update="Mac\GraphicsMac.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>GraphicsMac.resx</DependentUpon>
+        </None>
+    </ItemGroup>
 </Project>

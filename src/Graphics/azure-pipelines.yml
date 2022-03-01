@@ -2,18 +2,25 @@ variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
   DotNet.Cli.Telemetry.OptOut: true
-  provisioningVS: true
   provisionator.path: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
   provisionator.vs: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
   provisionator.extraArguments: '--v'
-  signingCondition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+  signingCondition: or(eq(variables['Sign'], 'true'),
+                       or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+                          or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') )
+                          )
+                      )
 
 parameters:
   - name: BuildConfigurations
     type: object
     default:
-      - Debug
-      - Release
+      - name: Debug
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
+      - name: Release
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmPool)
 
 trigger:
   branches:
@@ -62,20 +69,21 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main # still defaults to master even though main is the main branch
+      ref: refs/heads/main
 
 stages:
   - stage: windows
     displayName: Build Windows
     jobs:
       - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-        - job: win_hosted_${{ BuildConfiguration }}
+        - job: win_hosted_${{ BuildConfiguration.name }}
           workspace:
             clean: all
-          displayName: Build Windows Phase (${{ BuildConfiguration }})
+          displayName: Build Windows Phase (${{ BuildConfiguration.name }})
           timeoutInMinutes: 60
           pool:
-            vmImage: windows-2022
+            name: ${{ BuildConfiguration.poolName }}
+            vmImage: ${{ BuildConfiguration.vmImage }}
           steps:
 
             - template: /eng/pipelines/common/provision.yml
@@ -97,14 +105,6 @@ stages:
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
-
-            - pwsh: |
-                & dotnet vs where --prop=InstallationPath
-              displayName: list vs installs
-
-            - pwsh: echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
-              displayName: Select JDK 11
-
             - pwsh: |
                 [xml] $fileXml = Get-Content "eng\Versions.props"
                 $DotNetVersion = $fileXml.SelectSingleNode("Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion").InnerText
@@ -122,11 +122,6 @@ stages:
               displayName: install .NET
               errorActionPreference: stop
 
-            #- pwsh: |
-            #    rm $env:DOTNET_ROOT\metadata\workloads\6.0.200\installertype\msi
-            #  displayName: don't use msi .net
-            #  errorActionPreference: stop
-
             - pwsh: |
                 dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT" -p:InstallDotNet=false
               displayName: install dotnet workloads
@@ -143,10 +138,7 @@ stages:
                 .\winsdksetup.exe /norestart /quiet | Out-Null
                 dir "C:\Program Files (x86)\Windows Kits\10\References\"
               displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
-
-            - pwsh: |
-                & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe' /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
-              displayName: build classic solutions
+              condition: eq(variables['provisioningWindowsSdk'], 'true')
 
             - pwsh: |
                 # $VS_ROOT = (& dotnet vs where --prop=InstallationPath)[0]
@@ -159,7 +151,11 @@ stages:
               errorActionPreference: stop
 
             - pwsh: |
-                & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
+                & $env:MSBUILD_EXE /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration.name }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}.binlog
+              displayName: build classic solutions~
+
+            - pwsh: |
+                & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration.name }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}-net6.binlog
               displayName: build net6 solutions
 
             - task: NuGetCommand@2
@@ -167,8 +163,8 @@ stages:
               inputs:
                 command: 'pack'
                 packagesToPack: '**\Microsoft.Maui.*.nuspec'
-                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
-                configuration: ${{ BuildConfiguration }}
+                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}'
+                configuration: ${{ BuildConfiguration.name }}
                 basePath: '$(System.DefaultWorkingDirectory)'
                 versioningScheme : 'byEnvVar'
                 versionEnvVar: 'BUILD_BUILDNUMBER'
@@ -178,7 +174,7 @@ stages:
               inputs:
                 Contents: |
                   **/SignList.xml
-                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
+                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}'
                 flattenFolders: true
 
             - task: PublishBuildArtifacts@1
@@ -203,19 +199,29 @@ stages:
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: ${{ variables['signingCondition'] }}
+            condition: and(succeeded(), ${{ variables['signingCondition'] }} )
 
     - stage: sbom
       displayName: 'Software Bill of Materials'
-      ${{ if not(variables['signingCondition']) }}:
-        dependsOn: [ 'windows' ]
-      ${{ if variables['signingCondition'] }}:
-        dependsOn: [ 'nuget_signing' ]
+      dependsOn: [ 'windows', 'nuget_signing' ]
+      condition: succeeded('windows')
       jobs:
       - template: compliance/sbom/job.v1.yml@xamarin-templates
         parameters:
+          jobName: SBOM_PR
+          jobDisplayName: 'Software Bill of Materials (PR)'
           artifactNames: ['nuget']
-          ${{ if variables['signingCondition'] }}:
-            artifactMap: ['nuget/signed']
+          artifactMap: ['nuget/Release']
           packageName: 'Microsoft Maui Graphics'
           packageFilter: '*.nupkg'
+          condition: not(${{ variables['signingCondition'] }})                    # Executed when signing is not enabled such as for pull request builds (PRs)
+
+      - template: compliance/sbom/job.v1.yml@xamarin-templates
+        parameters:
+          jobName: SBOM_CI
+          jobDisplayName: 'Software Bill of Materials (CI)'
+          artifactNames: ['nuget']
+          artifactMap: ['nuget/signed']
+          packageName: 'Microsoft Maui Graphics'
+          packageFilter: '*.nupkg'
+          condition: and(succeeded(), ${{ variables['signingCondition'] }} )      # Executed when signing is enabled such as for continuous integration builds (CIs)
