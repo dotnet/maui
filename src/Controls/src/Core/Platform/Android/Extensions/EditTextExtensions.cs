@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// This means the user is typing at the end of the string
 			if (selectionStart == value.Length)
 				selectionStart = value.Length;
-			// Users is typing at the start/middle of the string
+			// User is typing at the start/middle of the string
 			else
 				selectionStart = editText.SelectionStart;
 
