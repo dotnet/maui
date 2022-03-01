@@ -50,7 +50,7 @@
         <dependency id="SkiaSharp" version="2.88.0-preview.179"/>
         <dependency id="SkiaSharp.Views" version="2.88.0-preview.179"/>
       </group>
-      <group targetFramework="monoandroid10.0">
+      <group targetFramework="monoandroid12.0">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="SkiaSharp" version="2.88.0-preview.179"/>
         <dependency id="SkiaSharp.Views" version="2.88.0-preview.179"/>
@@ -89,8 +89,8 @@
 
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/xamarin.ios10/Microsoft.Maui.Graphics.Skia.dll" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.Skia.dll"/>
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/xamarin.ios10/Microsoft.Maui.Graphics.Skia.pdb" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.Skia.pdb"/>
-    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/monoandroid10.0/Microsoft.Maui.Graphics.Skia.dll" target="lib/monoandroid10.0/Microsoft.Maui.Graphics.Skia.dll"/>
-    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/monoandroid10.0/Microsoft.Maui.Graphics.Skia.pdb" target="lib/monoandroid10.0/Microsoft.Maui.Graphics.Skia.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/monoandroid12.0/Microsoft.Maui.Graphics.Skia.dll" target="lib/monoandroid12.0/Microsoft.Maui.Graphics.Skia.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/monoandroid12.0/Microsoft.Maui.Graphics.Skia.pdb" target="lib/monoandroid12.0/Microsoft.Maui.Graphics.Skia.pdb"/>
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/xamarin.mac20/Microsoft.Maui.Graphics.Skia.dll" target="lib/xamarin.mac20/Microsoft.Maui.Graphics.Skia.dll"/>
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/xamarin.mac20/Microsoft.Maui.Graphics.Skia.pdb" target="lib/xamarin.mac20/Microsoft.Maui.Graphics.Skia.pdb"/>
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/tizen40/Microsoft.Maui.Graphics.Skia.dll" target="lib/tizen40/Microsoft.Maui.Graphics.Skia.dll"/>

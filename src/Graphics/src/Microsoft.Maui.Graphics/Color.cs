@@ -738,208 +738,158 @@ namespace Microsoft.Maui.Graphics
 					return true;
 				}
 
-				string[] parts = value.Split('.');
-				if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Color"))
+				var namedColor = value?.ToLowerInvariant() switch
 				{
-					string namedColorStr = parts[parts.Length - 1];
+					"default" => default,
+					"aliceblue" => Colors.AliceBlue,
+					"antiquewhite" => Colors.AntiqueWhite,
+					"aqua" => Colors.Aqua,
+					"aquamarine" => Colors.Aquamarine,
+					"azure" => Colors.Azure,
+					"beige" => Colors.Beige,
+					"bisque" => Colors.Bisque,
+					"black" => Colors.Black,
+					"blanchedalmond" => Colors.BlanchedAlmond,
+					"blue" => Colors.Blue,
+					"blueViolet" => Colors.BlueViolet,
+					"brown" => Colors.Brown,
+					"burlywood" => Colors.BurlyWood,
+					"cadetblue" => Colors.CadetBlue,
+					"chartreuse" => Colors.Chartreuse,
+					"chocolate" => Colors.Chocolate,
+					"coral" => Colors.Coral,
+					"cornflowerblue" => Colors.CornflowerBlue,
+					"cornsilk" => Colors.Cornsilk,
+					"crimson" => Colors.Crimson,
+					"cyan" => Colors.Cyan,
+					"darkblue" => Colors.DarkBlue,
+					"darkcyan" => Colors.DarkCyan,
+					"darkgoldenrod" => Colors.DarkGoldenrod,
+					"darkgray" => Colors.DarkGray,
+					"darkgreen" => Colors.DarkGreen,
+					"darkkhaki" => Colors.DarkKhaki,
+					"darkmagenta" => Colors.DarkMagenta,
+					"darkolivegreen" => Colors.DarkOliveGreen,
+					"darkorange" => Colors.DarkOrange,
+					"darkorchid" => Colors.DarkOrchid,
+					"darkred" => Colors.DarkRed,
+					"darksalmon" => Colors.DarkSalmon,
+					"darkseagreen" => Colors.DarkSeaGreen,
+					"darkslateblue" => Colors.DarkSlateBlue,
+					"darkslategray" => Colors.DarkSlateGray,
+					"darkturquoise" => Colors.DarkTurquoise,
+					"darkviolet" => Colors.DarkViolet,
+					"deeppink" => Colors.DeepPink,
+					"deepskyblue" => Colors.DeepSkyBlue,
+					"dimgray" => Colors.DimGray,
+					"dodgerblue" => Colors.DodgerBlue,
+					"firebrick" => Colors.Firebrick,
+					"floralwhite" => Colors.FloralWhite,
+					"forestgreen" => Colors.ForestGreen,
+					"fuchsia" => Colors.Fuchsia,
+					"gainsboro" => Colors.Gainsboro,
+					"ghostwhite" => Colors.GhostWhite,
+					"gold" => Colors.Gold,
+					"goldenrod" => Colors.Goldenrod,
+					"gray" => Colors.Gray,
+					"green" => Colors.Green,
+					"greenyellow" => Colors.GreenYellow,
+					"honeydew" => Colors.Honeydew,
+					"hotpink" => Colors.HotPink,
+					"indianred" => Colors.IndianRed,
+					"indigo" => Colors.Indigo,
+					"ivory" => Colors.Ivory,
+					"khaki" => Colors.Khaki,
+					"lavender" => Colors.Lavender,
+					"lavenderblush" => Colors.LavenderBlush,
+					"lawngreen" => Colors.LawnGreen,
+					"lemonchiffon" => Colors.LemonChiffon,
+					"lightblue" => Colors.LightBlue,
+					"lightcoral" => Colors.LightCoral,
+					"lightcyan" => Colors.LightCyan,
+					"lightgoldenrodyellow" => Colors.LightGoldenrodYellow,
+					"lightgrey" => Colors.LightGrey,
+					"lightgray" => Colors.LightGray,
+					"lightgreen" => Colors.LightGreen,
+					"lightpink" => Colors.LightPink,
+					"lightsalmon" => Colors.LightSalmon,
+					"lightseagreen" => Colors.LightSeaGreen,
+					"lightskyblue" => Colors.LightSkyBlue,
+					"lightslategray" => Colors.LightSlateGray,
+					"lightsteelblue" => Colors.LightSteelBlue,
+					"lightyellow" => Colors.LightYellow,
+					"lime" => Colors.Lime,
+					"limegreen" => Colors.LimeGreen,
+					"linen" => Colors.Linen,
+					"magenta" => Colors.Magenta,
+					"maroon" => Colors.Maroon,
+					"mediumaquamarine" => Colors.MediumAquamarine,
+					"mediumblue" => Colors.MediumBlue,
+					"mediumorchid" => Colors.MediumOrchid,
+					"mediumpurple" => Colors.MediumPurple,
+					"mediumseagreen" => Colors.MediumSeaGreen,
+					"mediumslateblue" => Colors.MediumSlateBlue,
+					"mediumspringgreen" => Colors.MediumSpringGreen,
+					"mediumturquoise" => Colors.MediumTurquoise,
+					"mediumvioletred" => Colors.MediumVioletRed,
+					"midnightblue" => Colors.MidnightBlue,
+					"mintcream" => Colors.MintCream,
+					"mistyrose" => Colors.MistyRose,
+					"moccasin" => Colors.Moccasin,
+					"navajowhite" => Colors.NavajoWhite,
+					"navy" => Colors.Navy,
+					"oldlace" => Colors.OldLace,
+					"olive" => Colors.Olive,
+					"olivedrab" => Colors.OliveDrab,
+					"orange" => Colors.Orange,
+					"orangered" => Colors.OrangeRed,
+					"orchid" => Colors.Orchid,
+					"palegoldenrod" => Colors.PaleGoldenrod,
+					"palegreen" => Colors.PaleGreen,
+					"paleturquoise" => Colors.PaleTurquoise,
+					"palevioletred" => Colors.PaleVioletRed,
+					"papayawhip" => Colors.PapayaWhip,
+					"peachpuff" => Colors.PeachPuff,
+					"peru" => Colors.Peru,
+					"pink" => Colors.Pink,
+					"plum" => Colors.Plum,
+					"powderblue" => Colors.PowderBlue,
+					"purple" => Colors.Purple,
+					"red" => Colors.Red,
+					"rosybrown" => Colors.RosyBrown,
+					"royalblue" => Colors.RoyalBlue,
+					"saddlebrown" => Colors.SaddleBrown,
+					"salmon" => Colors.Salmon,
+					"sandybrown" => Colors.SandyBrown,
+					"seagreen" => Colors.SeaGreen,
+					"seashell" => Colors.SeaShell,
+					"sienna" => Colors.Sienna,
+					"silver" => Colors.Silver,
+					"skyblue" => Colors.SkyBlue,
+					"slateblue" => Colors.SlateBlue,
+					"slategray" => Colors.SlateGray,
+					"snow" => Colors.Snow,
+					"springgreen" => Colors.SpringGreen,
+					"steelblue" => Colors.SteelBlue,
+					"tan" => Colors.Tan,
+					"teal" => Colors.Teal,
+					"thistle" => Colors.Thistle,
+					"tomato" => Colors.Tomato,
+					"transparent" => Colors.Transparent,
+					"turquoise" => Colors.Turquoise,
+					"violet" => Colors.Violet,
+					"wheat" => Colors.Wheat,
+					"white" => Colors.White,
+					"whitesmoke" => Colors.WhiteSmoke,
+					"yellow" => Colors.Yellow,
+					"yellowgreen" => Colors.YellowGreen,
+					_ => null
+				};
 
-					var namedColor = namedColorStr?.ToLowerInvariant() switch
-					{
-						"default" => default,
-						"aliceblue" => Colors.AliceBlue,
-						"antiquewhite" => Colors.AntiqueWhite,
-						"aqua" => Colors.Aqua,
-						"aquamarine" => Colors.Aquamarine,
-						"azure" => Colors.Azure,
-						"beige" => Colors.Beige,
-						"bisque" => Colors.Bisque,
-						"black" => Colors.Black,
-						"blanchedalmond" => Colors.BlanchedAlmond,
-						"blue" => Colors.Blue,
-						"blueViolet" => Colors.BlueViolet,
-						"brown" => Colors.Brown,
-						"burlywood" => Colors.BurlyWood,
-						"cadetblue" => Colors.CadetBlue,
-						"chartreuse" => Colors.Chartreuse,
-						"chocolate" => Colors.Chocolate,
-						"coral" => Colors.Coral,
-						"cornflowerblue" => Colors.CornflowerBlue,
-						"cornsilk" => Colors.Cornsilk,
-						"crimson" => Colors.Crimson,
-						"cyan" => Colors.Cyan,
-						"darkblue" => Colors.DarkBlue,
-						"darkcyan" => Colors.DarkCyan,
-						"darkgoldenrod" => Colors.DarkGoldenrod,
-						"darkgray" => Colors.DarkGray,
-						"darkgreen" => Colors.DarkGreen,
-						"darkkhaki" => Colors.DarkKhaki,
-						"darkmagenta" => Colors.DarkMagenta,
-						"darkolivegreen" => Colors.DarkOliveGreen,
-						"darkorange" => Colors.DarkOrange,
-						"darkorchid" => Colors.DarkOrchid,
-						"darkred" => Colors.DarkRed,
-						"darksalmon" => Colors.DarkSalmon,
-						"darkseagreen" => Colors.DarkSeaGreen,
-						"darkslateblue" => Colors.DarkSlateBlue,
-						"darkslategray" => Colors.DarkSlateGray,
-						"darkturquoise" => Colors.DarkTurquoise,
-						"darkviolet" => Colors.DarkViolet,
-						"deeppink" => Colors.DeepPink,
-						"deepskyblue" => Colors.DeepSkyBlue,
-						"dimgray" => Colors.DimGray,
-						"dodgerblue" => Colors.DodgerBlue,
-						"firebrick" => Colors.Firebrick,
-						"floralwhite" => Colors.FloralWhite,
-						"forestgreen" => Colors.ForestGreen,
-						"fuchsia" => Colors.Fuchsia,
-						"gainsboro" => Colors.Gainsboro,
-						"ghostwhite" => Colors.GhostWhite,
-						"gold" => Colors.Gold,
-						"goldenrod" => Colors.Goldenrod,
-						"gray" => Colors.Gray,
-						"green" => Colors.Green,
-						"greenyellow" => Colors.GreenYellow,
-						"honeydew" => Colors.Honeydew,
-						"hotpink" => Colors.HotPink,
-						"indianred" => Colors.IndianRed,
-						"indigo" => Colors.Indigo,
-						"ivory" => Colors.Ivory,
-						"khaki" => Colors.Khaki,
-						"lavender" => Colors.Lavender,
-						"lavenderblush" => Colors.LavenderBlush,
-						"lawngreen" => Colors.LawnGreen,
-						"lemonchiffon" => Colors.LemonChiffon,
-						"lightblue" => Colors.LightBlue,
-						"lightcoral" => Colors.LightCoral,
-						"lightcyan" => Colors.LightCyan,
-						"lightgoldenrodyellow" => Colors.LightGoldenrodYellow,
-						"lightgrey" => Colors.LightGrey,
-						"lightgray" => Colors.LightGray,
-						"lightgreen" => Colors.LightGreen,
-						"lightpink" => Colors.LightPink,
-						"lightsalmon" => Colors.LightSalmon,
-						"lightseagreen" => Colors.LightSeaGreen,
-						"lightskyblue" => Colors.LightSkyBlue,
-						"lightslategray" => Colors.LightSlateGray,
-						"lightsteelblue" => Colors.LightSteelBlue,
-						"lightyellow" => Colors.LightYellow,
-						"lime" => Colors.Lime,
-						"limegreen" => Colors.LimeGreen,
-						"linen" => Colors.Linen,
-						"magenta" => Colors.Magenta,
-						"maroon" => Colors.Maroon,
-						"mediumaquamarine" => Colors.MediumAquamarine,
-						"mediumblue" => Colors.MediumBlue,
-						"mediumorchid" => Colors.MediumOrchid,
-						"mediumpurple" => Colors.MediumPurple,
-						"mediumseagreen" => Colors.MediumSeaGreen,
-						"mediumslateblue" => Colors.MediumSlateBlue,
-						"mediumspringgreen" => Colors.MediumSpringGreen,
-						"mediumturquoise" => Colors.MediumTurquoise,
-						"mediumvioletred" => Colors.MediumVioletRed,
-						"midnightblue" => Colors.MidnightBlue,
-						"mintcream" => Colors.MintCream,
-						"mistyrose" => Colors.MistyRose,
-						"moccasin" => Colors.Moccasin,
-						"navajowhite" => Colors.NavajoWhite,
-						"navy" => Colors.Navy,
-						"oldlace" => Colors.OldLace,
-						"olive" => Colors.Olive,
-						"olivedrab" => Colors.OliveDrab,
-						"orange" => Colors.Orange,
-						"orangered" => Colors.OrangeRed,
-						"orchid" => Colors.Orchid,
-						"palegoldenrod" => Colors.PaleGoldenrod,
-						"palegreen" => Colors.PaleGreen,
-						"paleturquoise" => Colors.PaleTurquoise,
-						"palevioletred" => Colors.PaleVioletRed,
-						"papayawhip" => Colors.PapayaWhip,
-						"peachpuff" => Colors.PeachPuff,
-						"peru" => Colors.Peru,
-						"pink" => Colors.Pink,
-						"plum" => Colors.Plum,
-						"powderblue" => Colors.PowderBlue,
-						"purple" => Colors.Purple,
-						"red" => Colors.Red,
-						"rosybrown" => Colors.RosyBrown,
-						"royalblue" => Colors.RoyalBlue,
-						"saddlebrown" => Colors.SaddleBrown,
-						"salmon" => Colors.Salmon,
-						"sandybrown" => Colors.SandyBrown,
-						"seagreen" => Colors.SeaGreen,
-						"seashell" => Colors.SeaShell,
-						"sienna" => Colors.Sienna,
-						"silver" => Colors.Silver,
-						"skyblue" => Colors.SkyBlue,
-						"slateblue" => Colors.SlateBlue,
-						"slategray" => Colors.SlateGray,
-						"snow" => Colors.Snow,
-						"springgreen" => Colors.SpringGreen,
-						"steelblue" => Colors.SteelBlue,
-						"tan" => Colors.Tan,
-						"teal" => Colors.Teal,
-						"thistle" => Colors.Thistle,
-						"tomato" => Colors.Tomato,
-						"transparent" => Colors.Transparent,
-						"turquoise" => Colors.Turquoise,
-						"violet" => Colors.Violet,
-						"wheat" => Colors.Wheat,
-						"white" => Colors.White,
-						"whitesmoke" => Colors.WhiteSmoke,
-						"yellow" => Colors.Yellow,
-						"yellowgreen" => Colors.YellowGreen,
-						_ => null
-					};
-
-					if (namedColor != null)
-					{
-						color = namedColor;
-						return true;
-					}
-
-					// Look for fields of Color or Colors matching the name
-					var field = typeof(Color).GetFields().FirstOrDefault(fi => fi.IsStatic && string.Equals(fi.Name, namedColorStr, StringComparison.OrdinalIgnoreCase));
-					if (field != null)
-					{
-						var fieldColor = field.GetValue(null) as Color;
-						if (fieldColor != null)
-						{
-							color = fieldColor;
-							return true;
-						}
-					}
-					field = typeof(Colors).GetFields().FirstOrDefault(fi => fi.IsStatic && string.Equals(fi.Name, namedColorStr, StringComparison.OrdinalIgnoreCase));
-					if (field != null)
-					{
-						var fieldColor = field.GetValue(null) as Color;
-						if (fieldColor != null)
-						{
-							color = fieldColor;
-							return true;
-						}
-					}
-
-					// Look for property of Color or Colors matching the name
-					var property = typeof(Color).GetProperties().FirstOrDefault(pi => string.Equals(pi.Name, namedColorStr, StringComparison.OrdinalIgnoreCase) && pi.CanRead && pi.GetMethod.IsStatic);
-					if (property != null)
-					{
-						var propColor = property.GetValue(null, null) as Color;
-						if (propColor != null)
-						{
-							color = propColor;
-							return true;
-						}
-					}
-					property = typeof(Colors).GetProperties().FirstOrDefault(pi => string.Equals(pi.Name, namedColorStr, StringComparison.OrdinalIgnoreCase) && pi.CanRead && pi.GetMethod.IsStatic);
-					if (property != null)
-					{
-						var propColor = property.GetValue(null, null) as Color;
-						if (propColor != null)
-						{
-							color = propColor;
-							return true;
-						}
-					}
+				if (namedColor != null)
+				{
+					color = namedColor;
+					return true;
 				}
 			}
 
