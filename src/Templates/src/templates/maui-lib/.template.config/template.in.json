@@ -34,6 +34,12 @@
     ],
     "preferNameDirectory": true,
     "symbols": {
+      "DotNetTfm": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "DOTNET_TFM",
+        "defaultValue": "DOTNET_TFM_VALUE"
+      }
     },
     "defaultName": "MauiLib1"
-  }
+}
