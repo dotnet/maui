@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task CursorPositionDoesntResetWhenApplyingTransform()
+		public async Task CursorPositionResetsToZeroAfterChangingText()
 		{
 			var textInput = new Entry()
 			{
@@ -64,11 +64,11 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<EntryHandler>(textInput);
 				UpdateCursorStartPosition(handler, 5);
-				textInput.TextTransform = TextTransform.Uppercase;
+				textInput.Text = "hel";
 				cursorPosition = GetCursorStartPosition(handler);
 			});
 
-			Assert.Equal(5, cursorPosition);
+			Assert.Equal(0, cursorPosition);
 		}
 	}
 }
