@@ -63,7 +63,7 @@ namespace GraphicsTester.Scenarios
 
 		private void FillRoundedWithDifferentXYRadius(ICanvas canvas)
 		{
-			RectangleF rect = new RectangleF(275, 400, 100, 100);
+			RectF rect = new RectF(275, 400, 100, 100);
 			canvas.FillRoundedRectangle(rect, xRadius: 20, yRadius: 40);
 		}
 	}

@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			set => _graphicsView = value;
 		}
 
-		public void Draw(CGContext coreGraphics, RectangleF dirtyRect)
+		public void Draw(CGContext coreGraphics, RectF dirtyRect)
 		{
 			_canvas.Context = coreGraphics;
 
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public void Invalidate(float x, float y, float w, float h)
 		{
-			_graphicsView?.SetNeedsDisplayInRect(new RectangleF(x, y, w, h));
+			_graphicsView?.SetNeedsDisplayInRect(new RectF(x, y, w, h));
 		}
 	}
 }

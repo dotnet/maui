@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Graphics
 			_commands.Add(canvas => canvas.SetFillPaint(paint, point1, point2));
 		}
 
-		public void SetFillPaint(Paint paint, RectangleF rectangle)
+		public void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			_commands.Add(canvas => canvas.SetFillPaint(paint, rectangle));
 		}

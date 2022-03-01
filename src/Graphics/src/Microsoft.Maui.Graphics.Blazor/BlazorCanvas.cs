@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 	public class BlazorCanvas : AbstractCanvas<BlazorCanvasState>
 	{
 		private readonly float[] _matrix = new float[6];
-		private RectangleF _bounds;
+		private RectF _bounds;
 		private CanvasRenderingContext2D _context;
 
 		public BlazorCanvas() : base(CreateNewState, CreateStateCopy)
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 		public void ClearRect(float x1, float y1, float width, float height)
 		{
 			_context.ClearRect(x1, y1, width, height);
-			_bounds = new RectangleF(x1, y1, width, height);
+			_bounds = new RectF(x1, y1, width, height);
 		}
 
 		protected override float PlatformStrokeSize { set => CurrentState.LineWidth = value; }
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.GlobalAlpha = alpha;
 		}
 
-		public override void SetFillPaint(Paint paint, RectangleF rectangle)
+		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint is SolidPaint solidPaint)
 			{
@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 		{
 			var finalCornerRadius = cornerRadius;
 
-			var rect = new RectangleF(x, y, width, height);
+			var rect = new RectF(x, y, width, height);
 
 			if (finalCornerRadius > rect.Width)
 			{

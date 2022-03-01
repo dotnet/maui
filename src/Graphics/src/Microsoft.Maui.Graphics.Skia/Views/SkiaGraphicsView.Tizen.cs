@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 			skiaCanvas.Clear();
 
 			_canvas.Canvas = skiaCanvas;
-			_drawable.Draw(_scalingCanvas, new RectangleF(0, 0, GetSurfaceSize().Width, GetSurfaceSize().Height));
+			_drawable.Draw(_scalingCanvas, new RectF(0, 0, GetSurfaceSize().Width, GetSurfaceSize().Height));
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 		private Color _strokeColor = Colors.Black;
 		private Color _fillColor = Colors.White;
 		private Paint _fillPaint;
-		private RectangleF _fillRectangle;
+		private RectF _fillRectangle;
 		private Color _fontColor = Colors.Black;
 		private float _alpha = 1;
 		private DoubleCollection _dashArray;
@@ -402,7 +402,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			return group;
 		}
 
-		internal void SetFillPaint(Paint paint, RectangleF rectangle)
+		internal void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			_fillColor = null;
 			_fillPaint = paint;

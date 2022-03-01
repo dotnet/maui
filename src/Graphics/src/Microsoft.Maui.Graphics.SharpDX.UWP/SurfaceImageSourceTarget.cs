@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		public SurfaceImageSource ImageSource => _surfaceImageSource;
 
 		/// <inveritdoc />
-		protected override Rect CurrentControlBounds => new Rect(0, 0, _pixelWidth, _pixelHeight);
+		protected override Windows.Foundation.Rect CurrentControlBounds => new Windows.Foundation.Rect(0, 0, _pixelWidth, _pixelHeight);
 
 		/// <summary>
 		///     Gets the relative position to use to draw on the surface.
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 				backBuffer = viewData.BackBuffer;
 				renderTargetView = viewData.RenderTargetView;
 				depthStencilView = viewData.DepthStencilView;
-				RenderTargetBounds = new Rect(viewData.Viewport.X, viewData.Viewport.Y, viewData.Viewport.Width,
+				RenderTargetBounds = new Windows.Foundation.Rect(viewData.Viewport.X, viewData.Viewport.Y, viewData.Viewport.Width,
 					viewData.Viewport.Height);
 				bitmapTarget = viewData.BitmapTarget;
 

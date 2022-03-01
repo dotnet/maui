@@ -7,28 +7,28 @@ namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class GraphicsExtensions
 	{
-		public static CGRect AsCGRect(this RectangleF target)
+		public static CGRect AsCGRect(this RectF target)
 		{
 			return new CGRect(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
 		}
 
-		public static CGRect AsCGRect(this Rectangle target)
+		public static CGRect AsCGRect(this Rect target)
 		{
 			return new CGRect(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
 		}
 
-		public static RectangleF AsRectangleF(this CGRect target)
+		public static RectF AsRectangleF(this CGRect target)
 		{
-			return new RectangleF(
+			return new RectF(
 				(float) target.Left,
 				(float) target.Top,
 				(float) Math.Abs(target.Width),
 				(float) Math.Abs(target.Height));
 		}
 
-		public static Rectangle AsRectangle(this CGRect target)
+		public static Rect AsRectangle(this CGRect target)
 		{
-			return new Rectangle(
+			return new Rect(
 				target.Left,
 				target.Top,
 				Math.Abs(target.Width),

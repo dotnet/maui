@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Graphics.Skia
 {
 	public class WDSkiaGraphicsView : SKElement
 	{
-		private RectangleF _dirtyRect;
+		private RectF _dirtyRect;
 		private IDrawable _drawable;
 		private ISkiaGraphicsRenderer _renderer;
 

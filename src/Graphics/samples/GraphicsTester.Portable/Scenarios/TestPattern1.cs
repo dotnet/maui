@@ -167,14 +167,14 @@ namespace GraphicsTester.Scenarios
 			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
 			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			var linearRectangleRectangle = new RectangleF(50, 700, 100, 50);
+			var linearRectangleRectangle = new RectF(50, 700, 100, 50);
 			canvas.SetFillPaint(linearGradientPaint, linearRectangleRectangle);
 			canvas.FillRectangle(linearRectangleRectangle);
 
 			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
 			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			var linearEllipseRectangle = new RectangleF(200, 700, 100, 50);
+			var linearEllipseRectangle = new RectF(200, 700, 100, 50);
 			canvas.SetFillPaint(linearGradientPaint, linearEllipseRectangle);
 			canvas.FillEllipse(linearEllipseRectangle);
 
@@ -182,7 +182,7 @@ namespace GraphicsTester.Scenarios
 			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
 			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			var linearRoundedRectangleRectangle = new RectangleF(350, 700, 100, 50);
+			var linearRoundedRectangleRectangle = new RectF(350, 700, 100, 50);
 			canvas.SetFillPaint(linearGradientPaint, linearRoundedRectangleRectangle);
 			canvas.FillRoundedRectangle(linearRoundedRectangleRectangle, 25);
 
@@ -195,7 +195,7 @@ namespace GraphicsTester.Scenarios
 			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
 			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			var linearPathRectangle = new RectangleF(500, 700, 200, 50);
+			var linearPathRectangle = new RectF(500, 700, 200, 50);
 			canvas.SetFillPaint(linearGradientPaint, linearPathRectangle);
 			canvas.FillPath(path);
 
@@ -212,14 +212,14 @@ namespace GraphicsTester.Scenarios
 			radialGradientPaint.Center = new Point(0.5, 0.5);
 			radialGradientPaint.Radius = 0.5;
 
-			var radialRectangleRectangle = new RectangleF(50, 800, 100, 50);
+			var radialRectangleRectangle = new RectF(50, 800, 100, 50);
 			canvas.SetFillPaint(radialGradientPaint, radialRectangleRectangle);
 			canvas.FillRectangle(radialRectangleRectangle);
 
 			radialGradientPaint.Center = new Point(0.5, 0.5);
 			radialGradientPaint.Radius = 0.5;
 
-			var radialEllipseRectangle = new RectangleF(200, 800, 100, 50);
+			var radialEllipseRectangle = new RectF(200, 800, 100, 50);
 			canvas.SetFillPaint(radialGradientPaint, radialEllipseRectangle);
 			canvas.FillEllipse(radialEllipseRectangle);
 
@@ -227,7 +227,7 @@ namespace GraphicsTester.Scenarios
 			radialGradientPaint.Center = new Point(0.5, 0.5);
 			radialGradientPaint.Radius = 0.5;
 
-			var radialRoundedRectangleRectangle = new RectangleF(350, 800, 100, 50);
+			var radialRoundedRectangleRectangle = new RectF(350, 800, 100, 50);
 			canvas.SetFillPaint(radialGradientPaint, radialRoundedRectangleRectangle);
 			canvas.FillRoundedRectangle(radialRoundedRectangleRectangle, 25);
 
@@ -240,7 +240,7 @@ namespace GraphicsTester.Scenarios
 			radialGradientPaint.Center = new Point(0.5, 0.5);
 			radialGradientPaint.Radius = 0.5;
 
-			var radialPathRectangle = new RectangleF(550, 800, 200, 50);
+			var radialPathRectangle = new RectF(550, 800, 200, 50);
 			canvas.SetFillPaint(radialGradientPaint, radialPathRectangle);
 			canvas.FillPath(path);
 

@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			if (_drawable == null) return;
 
-			var dirtyRect = new RectangleF(0, 0, _width, _height);
+			var dirtyRect = new RectF(0, 0, _width, _height);
 
 			_canvas.Canvas = androidCanvas;
 			if (_backgroundColor != null)

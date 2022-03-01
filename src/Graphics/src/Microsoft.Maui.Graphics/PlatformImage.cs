@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			stream.Dispose();
 		}
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			throw new PlatformNotSupportedException();
 		}

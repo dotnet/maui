@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			set => _backgroundColor = value;
 		}
 
-		public void Draw(System.Drawing.Graphics graphics, RectangleF dirtyRect)
+		public void Draw(System.Drawing.Graphics graphics, RectF dirtyRect)
 		{
 			try
 			{

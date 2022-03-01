@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 		public (SizeF offset, float blur, Color color) Shadow { get; set; }
 
-		public (Paint paint, RectangleF rectangle) FillPaint { get; set; }
+		public (Paint paint, RectF rectangle) FillPaint { get; set; }
 
 		public override void Dispose() {
 

@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			CurrentState.SetStrokeDashPattern(pattern, strokeSize);
 		}
 
-		public override void SetFillPaint(Paint paint, RectangleF rectangle)
+		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint == null)
 				paint = Colors.White.AsPaint();
@@ -656,7 +656,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (string.IsNullOrEmpty(value))
 				return;
 
-			var rect = new RectangleF(x, y, width, height);
+			var rect = new RectF(x, y, width, height);
 
 			var attributes = new StandardTextAttributes()
 			{

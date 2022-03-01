@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Graphics
 
 		public  void SetShadow(SizeF offset, float blur, Color color);
 
-		public  void SetFillPaint(Paint paint, RectangleF rectangle);
+		public  void SetFillPaint(Paint paint, RectF rectangle);
 
 		public  void DrawImage(IImage image, float x, float y, float width, float height);
 

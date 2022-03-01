@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics.Skia
 		ICanvas Canvas { get; }
 		IDrawable Drawable { get; set; }
 		Color BackgroundColor { get; set; }
-		void Draw(SKCanvas canvas, RectangleF dirtyRect);
+		void Draw(SKCanvas canvas, RectF dirtyRect);
 		void SizeChanged(int width, int height);
 		void Detached();
 		void Invalidate();

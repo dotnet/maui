@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Graphics.SharpDX.WindowsForms
 
 		IDrawable Drawable { get; set; }
 
-		void Draw(RectangleF dirtyRect);
+		void Draw(RectF dirtyRect);
 
 		void SizeChanged(int width, int height);
 

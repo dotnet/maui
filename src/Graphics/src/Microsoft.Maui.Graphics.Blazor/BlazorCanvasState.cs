@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 		private bool _fillDirty = true;
 		private Color _fillColor = Colors.White;
 		private Paint _fillPaint = null;
-		private RectangleF _fillRectangle;
+		private RectF _fillRectangle;
 
 		private bool _textDirty = true;
 		private Color _textColor = Colors.Black;
@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_textDirty = true;
 		}
 
-		internal void SetFillPaint(Paint paint, RectangleF rectangle)
+		internal void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			_fillColor = null;
 			_fillPaint = paint;

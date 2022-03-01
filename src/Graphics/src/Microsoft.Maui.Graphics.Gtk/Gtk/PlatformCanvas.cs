@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk
 			CurrentState.Shadow = (offset, blur, color);
 		}
 
-		public override void SetFillPaint(Paint paint, RectangleF rectangle)
+		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			CurrentState.FillPaint = (paint, rectangle);
 		}

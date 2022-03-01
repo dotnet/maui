@@ -6,7 +6,7 @@ using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Maui.Graphics.Text;
 using System;
 using System.Numerics;
-using Windows.Foundation;
+using WRect = Windows.Foundation.Rect;
 #if NETFX_CORE
 using WColors = global::Windows.UI.Colors;
 #else
@@ -29,7 +29,14 @@ namespace Microsoft.Maui.Graphics.Win2D
 		private Vector2 _linearGradientEndPoint;
 		private Vector2 _radialGradientCenter;
 		private float _radialGradientRadius;
+
+/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+Before:
 		private Rect _rect;
+After:
+		private global::Windows.Foundation.Rect _rect;
+*/
+		private WRect _rect;
 		private global::Windows.Foundation.Size _size;
 
 		private bool _bitmapPatternFills;
@@ -351,7 +358,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			CurrentState.SetShadow(offset, blur, color);
 		}
 
-		public override void SetFillPaint(Paint paint, RectangleF rectangle)
+		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint == null)
 			{
@@ -418,7 +425,14 @@ namespace Microsoft.Maui.Graphics.Win2D
 						{
 							ExtendX = CanvasEdgeBehavior.Wrap,
 							ExtendY = CanvasEdgeBehavior.Wrap,
+
+/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+Before:
 							SourceRectangle = new Rect(
+After:
+							SourceRectangle = new global::Windows.Foundation.Rect(
+*/
+							SourceRectangle = new WRect(
 									(pattern.Width - pattern.StepX) / 2,
 									(pattern.Height - pattern.StepY) / 2,
 									pattern.StepX,
@@ -499,7 +513,14 @@ namespace Microsoft.Maui.Graphics.Win2D
 			if (image is W2DImage platformImage)
 			{
 				SetRect(x, y, width, height);
+
+/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+Before:
 				Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
+After:
+				Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, global::Windows.Foundation.Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
+*/
+				Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, WRect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
 			}
 		}
 

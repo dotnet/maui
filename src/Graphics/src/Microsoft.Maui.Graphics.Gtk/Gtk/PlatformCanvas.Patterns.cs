@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 	public partial class PlatformCanvas {
 
-		public void DrawFillPaint(Cairo.Context? context, Paint? paint, RectangleF rectangle) {
+		public void DrawFillPaint(Cairo.Context? context, Paint? paint, RectF rectangle) {
 			if (paint == null || context == null)
 				return;
 
