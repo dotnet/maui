@@ -270,6 +270,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			// Desktop applications almost never want to show a URL preview when hovering over a link
 			_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+
+			// Automatically enable or disable web tools based on whether the debugger is attached.
+			_webview.CoreWebView2.Settings.AreDevToolsEnabled = System.Diagnostics.Debugger.IsAttached;
 		}
 	}
 }
