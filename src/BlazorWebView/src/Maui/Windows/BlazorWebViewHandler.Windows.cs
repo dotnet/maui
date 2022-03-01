@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webviewManager = new WinUIWebViewManager(
 				PlatformView,
 				Services!,
-				ComponentsDispatcher,
+				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
 				hostPageRelativePath,

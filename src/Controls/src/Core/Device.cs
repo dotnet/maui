@@ -122,35 +122,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='StartTimer']/Docs" />
-		[Obsolete("Use BindableObject.Dispatcher.CreateTimer() instead.")]
+		[Obsolete("Use BindableObject.Dispatcher.StartTimer() instead.")]
 		public static void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			_ = callback ?? throw new ArgumentNullException(nameof(callback));
 
 			var dispatcher = Application.Current.FindDispatcher();
 
-			StartTimer(dispatcher, interval, callback);
-		}
-
-		[Obsolete("Use BindableObject.Dispatcher.CreateTimer() instead.")]
-		internal static void StartTimer(IDispatcher dispatcher, TimeSpan interval, Func<bool> callback)
-		{
-			_ = callback ?? throw new ArgumentNullException(nameof(callback));
-
-			var timer = dispatcher.CreateTimer();
-			timer.Interval = interval;
-			timer.IsRepeating = true;
-			timer.Tick += OnTick;
-			timer.Start();
-
-			void OnTick(object sender, EventArgs e)
-			{
-				if (!callback())
-				{
-					timer.Tick -= OnTick;
-					timer.Stop();
-				}
-			}
+			dispatcher.StartTimer(interval, callback);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs" />

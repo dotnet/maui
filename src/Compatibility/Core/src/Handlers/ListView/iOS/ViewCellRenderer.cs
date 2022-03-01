@@ -180,14 +180,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var oldCell = _viewCell;
 				if (oldCell != null)
 				{
-					Device.BeginInvokeOnMainThread(oldCell.SendDisappearing);
+					BeginInvokeOnMainThread(oldCell.SendDisappearing);
 					oldCell.PropertyChanged -= ViewCellPropertyChanged;
 					oldCell.View.MeasureInvalidated -= OnMeasureInvalidated;
 				}
 
 				_viewCell = cell;
 				_viewCell.PropertyChanged += ViewCellPropertyChanged;
-				Device.BeginInvokeOnMainThread(_viewCell.SendAppearing);
+				BeginInvokeOnMainThread(_viewCell.SendAppearing);
 
 				IPlatformViewHandler renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))

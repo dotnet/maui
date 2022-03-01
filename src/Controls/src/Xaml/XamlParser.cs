@@ -289,13 +289,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				var prefix = kvp.Key;
 
-				string typeName = null, ns = null, asm = null, targetPlatform = null;
-				XmlnsHelper.ParseXmlns(kvp.Value, out typeName, out ns, out asm, out targetPlatform);
+				XmlnsHelper.ParseXmlns(kvp.Value, out _, out _, out _, out var targetPlatform);
 				if (targetPlatform == null)
 					continue;
+
 				try
 				{
-					if (targetPlatform != Device.RuntimePlatform)
+					if (targetPlatform != DeviceInfo.Platform.ToString())
 					{
 						// Special case for Windows backward compatibility
 						if (targetPlatform == "Windows" && DeviceInfo.Platform == DevicePlatform.UWP)

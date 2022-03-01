@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				parentViewController.Appearing -= appearing;
 				parentViewController.Disappearing -= disappearing;
 
-				Device.BeginInvokeOnMainThread(() => { tcs.SetResult(true); });
+				BeginInvokeOnMainThread(() => { tcs.SetResult(true); });
 			};
 
 			disappearing = (s, e) =>
@@ -396,7 +396,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				parentViewController.Appearing -= appearing;
 				parentViewController.Disappearing -= disappearing;
 
-				Device.BeginInvokeOnMainThread(() => { tcs.SetResult(false); });
+				BeginInvokeOnMainThread(() => { tcs.SetResult(false); });
 			};
 
 			parentViewController.Appearing += appearing;
@@ -585,7 +585,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				_removeControllers = ViewControllers.Remove(target);
 				ViewControllers = _removeControllers;
-				Device.BeginInvokeOnMainThread(() => { _removeControllers = null; });
+				BeginInvokeOnMainThread(() => { _removeControllers = null; });
 			}
 			else
 			{
