@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public bool IsDestroyed { get; set; }
 		public bool IsResumed { get; set; }
 		public bool IsStopped { get; set; }
+		public FlowDirection FlowDirection { get; set; }
 
 		public void Activated()
 		{
