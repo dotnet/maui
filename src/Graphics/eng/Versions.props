@@ -10,20 +10,19 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.95</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftiOSSdkPackageVersion>15.2.302-preview.14.40</MicrosoftiOSSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.2.302-preview.14.40</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.1.302-preview.14.40</MicrosoftmacOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.2.302-preview.14.40</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.2.302-preview.14.91</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.2.302-preview.14.91</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.1.302-preview.14.91</MicrosoftmacOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.2.302-preview.14.91</MicrosofttvOSSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.2</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
     <!-- <DotNetVersionBandMonoToolchain></DotNetVersionBandMonoToolchain> -->
-    <DotNetVersionBandEmscripten>6.0.100</DotNetVersionBandEmscripten>
+    <!-- <DotNetVersionBandEmscripten>6.0.200</DotNetVersionBandEmscripten> -->
     <!-- <DotNetVersionBandAndroid></DotNetVersionBandAndroid> -->
     <!-- <DotNetVersionBandApple></DotNetVersionBandApple> -->
   </PropertyGroup>
   <PropertyGroup>
     <!-- NOTE: temporarily hardcode 6.0.100, until we have new branding on dotnet/runtime packs -->
     <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.200</DotNetVersionBand>
-    <DotNetVersionBandApple>6.0.300</DotNetVersionBandApple>
   </PropertyGroup>
 </Project>
