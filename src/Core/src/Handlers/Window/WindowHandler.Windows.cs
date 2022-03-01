@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 
 			// Retrieve current extended style
 			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
-			var updated_style = extended_style;
+			long updated_style;
 			if (view.FlowDirection == FlowDirection.RightToLeft)
 				updated_style = extended_style | (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
 			else

@@ -18,5 +18,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public AppTheme RequestedTheme => throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public AppPackagingModel PackagingModel => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public LayoutDirection RequestedLayoutDirection => throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
