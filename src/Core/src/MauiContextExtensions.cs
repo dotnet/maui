@@ -69,7 +69,6 @@ namespace Microsoft.Maui
 				service.Initialize(scopedContext.Services);
 		}
 
-#if WINDOWS || ANDROID || IOS
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
 			var appInfo = AppInfo.Current;
@@ -79,10 +78,5 @@ namespace Microsoft.Maui
 
 			return FlowDirection.LeftToRight;
 		}
-#else
-		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext) =>
-			FlowDirection.LeftToRight;
-#endif
-
 	}
 }
