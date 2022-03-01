@@ -17,13 +17,12 @@
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.2</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
     <!-- <DotNetVersionBandMonoToolchain></DotNetVersionBandMonoToolchain> -->
-    <DotNetVersionBandEmscripten>6.0.100</DotNetVersionBandEmscripten>
+    <!-- <DotNetVersionBandEmscripten>6.0.200</DotNetVersionBandEmscripten> -->
     <!-- <DotNetVersionBandAndroid></DotNetVersionBandAndroid> -->
     <!-- <DotNetVersionBandApple></DotNetVersionBandApple> -->
   </PropertyGroup>
   <PropertyGroup>
     <!-- NOTE: temporarily hardcode 6.0.100, until we have new branding on dotnet/runtime packs -->
     <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.200</DotNetVersionBand>
-    <DotNetVersionBandApple>6.0.300</DotNetVersionBandApple>
   </PropertyGroup>
 </Project>
