@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(TimePicker platformView)
 		{
 			platformView.TimeChanged += OnControlTimeChanged;
+
+			SetupDefaults(platformView);
 		}
 
 		protected override void DisconnectHandler(TimePicker platformView)

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 			var time = timePicker.Time;
 			var format = timePicker.Format;
 
-			mauiTimePicker.Text = time.ToFormattedString(format, cultureInfo);
+			timePicker.Text = time.ToFormattedString(format, cultureInfo);
 
 			if (timePicker.Format?.Contains('H') == true)
 			{

@@ -21,6 +21,12 @@
                 Style="{StaticResource Headline}"/>
             <TimePicker
                 TextColor="Green"/>
+            <Label
+                Text="TextTransform (Lowercase)"
+                Style="{StaticResource Headline}"/>
+            <TimePicker
+                Format="T"
+                TextTransform="Lowercase"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
