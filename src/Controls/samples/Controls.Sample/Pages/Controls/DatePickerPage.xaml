@@ -22,7 +22,7 @@
             <DatePicker 
                 TextColor="Red"/>   
             <Label
-                Text="TextTransform"
+                Text="TextTransform (Uppercase)"
                 Style="{StaticResource Headline}"/>
             <DatePicker 
                 Format="MMM-dd-yyyy"
