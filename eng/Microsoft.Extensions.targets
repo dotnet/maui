@@ -83,19 +83,19 @@
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
-        Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)"
+        Version="$(MicrosoftAspNetCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
-        Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
+        Version="$(MicrosoftAspNetCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.Web"
-        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
+        Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" />
 
     <PackageReference
         Update="Microsoft.JSInterop"
-        Version="$(MicrosoftJSInteropPackageVersion)"
+        Version="$(MicrosoftAspNetCoreAppRefPackageVersion)"
     />
     <PackageReference
         Update="System.CodeDom"
