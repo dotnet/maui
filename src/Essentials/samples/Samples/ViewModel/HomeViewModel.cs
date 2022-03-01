@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Essentials;
@@ -285,13 +286,10 @@ namespace Samples.ViewModel
 		{
 			if (!string.IsNullOrWhiteSpace(filterText))
 			{
-				var lower = filterText.ToLowerInvariant();
 				samples = samples.Where(s =>
 				{
-					var tags = s.Tags
-						.Union(new[] { s.Name })
-						.Select(t => t.ToLowerInvariant());
-					return tags.Any(t => t.Contains(lower));
+					var tags = s.Tags.Union(new[] { s.Name });
+					return tags.Any(t => t.Contains(filterText, StringComparison.OrdinalIgnoreCase));
 				});
 			}
 

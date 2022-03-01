@@ -61,7 +61,11 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
 		public override int GetHashCode() =>
-			devicePlatform == null ? 0 : devicePlatform.GetHashCode();
+			devicePlatform == null ? 0 : devicePlatform.GetHashCode(
+					#if !NETSTANDARD2_0
+					StringComparison.Ordinal
+					#endif
+				);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() =>
