@@ -2,6 +2,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -372,7 +373,7 @@ namespace Microsoft.Maui.Controls
 				return (Brush)color;
 			}
 
-			if (Application.Current?.RequestedTheme == OSAppTheme.Dark)
+			if (Application.Current?.RequestedTheme == AppTheme.Dark)
 			{
 				return Brush.White;
 			}

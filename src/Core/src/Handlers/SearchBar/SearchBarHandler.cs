@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if __ANDROID__
 			[nameof(ISearchBar.Background)] = MapBackground,
+			[nameof(ISearchBar.IsEnabled)] = MapIsEnabled,
 #endif
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,

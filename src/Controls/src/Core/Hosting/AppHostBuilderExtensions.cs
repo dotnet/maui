@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
-			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
+			handlersCollection.AddHandler<TabbedPage,  TabbedViewHandler>();
 #if WINDOWS
 			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			builder.ConfigureImageSources(services =>
 			{
-				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
+				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.CreateLogger<FileImageSourceService>()));
 				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
 				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
 				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
@@ -107,6 +107,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			Editor.RemapForControls();
 			Entry.RemapForControls();
 			SearchBar.RemapForControls();
+			TabbedPage.RemapForControls();
 
 			return builder;
 		}

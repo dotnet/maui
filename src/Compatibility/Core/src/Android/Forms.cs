@@ -227,9 +227,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Profile.FramePartition("Device.PlatformServices");
 
-			var androidServices = new AndroidPlatformServices(activity);
-
-			Device.PlatformServices = androidServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			Profile.FramePartition("RegisterAll");
 
@@ -313,46 +311,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 						_results.Add(value);
 				}
 				return base.VisitMember(node);
-			}
-		}
-
-		class AndroidPlatformServices : IPlatformServices
-		{
-			readonly Context _context;
-
-			public AndroidPlatformServices(Context context)
-			{
-				_context = context;
-			}
-
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				var handler = new Handler(Looper.MainLooper);
-				handler.PostDelayed(() =>
-				{
-					if (callback())
-						StartTimer(interval, callback);
-
-					handler.Dispose();
-					handler = null;
-				}, (long)interval.TotalMilliseconds);
-			}
-
-			public OSAppTheme RequestedTheme
-			{
-				get
-				{
-					var nightMode = _context.Resources.Configuration.UiMode & UiMode.NightMask;
-					switch (nightMode)
-					{
-						case UiMode.NightYes:
-							return OSAppTheme.Dark;
-						case UiMode.NightNo:
-							return OSAppTheme.Light;
-						default:
-							return OSAppTheme.Unspecified;
-					};
-				}
 			}
 		}
 	}

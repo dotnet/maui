@@ -54,9 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 
-			var platformServices = new WindowsPlatformServices();
-
-			Device.PlatformServices = platformServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			if (mainWindow != null)
 			{
