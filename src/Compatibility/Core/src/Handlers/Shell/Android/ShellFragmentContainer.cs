@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void OnDestroy()
 		{
-			_page.Dispatcher.Dispatch(Dispose);
+			Activity.RunOnUiThread(Dispose);
 
 			base.OnDestroy();
 		}
