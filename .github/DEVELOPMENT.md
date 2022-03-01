@@ -40,7 +40,8 @@ dotnet workload install maui `
    --from-rollback-file https://aka.ms/dotnet/maui/main.json `
    --source https://aka.ms/dotnet6/nuget/index.json `
    --source https://api.nuget.org/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-3ba4b3f4/nuget/v3/index.json 
+   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-6dd808ff-1/nuget/v3/index.json `
+   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0/nuget/v3/index.json
 ```  
 
 If you are building maui yourself, then you probably want all the workloads:
@@ -50,7 +51,8 @@ dotnet workload install android ios maccatalyst tvos macos maui wasm-tools `
    --from-rollback-file https://aka.ms/dotnet/maui/main.json `
    --source https://aka.ms/dotnet6/nuget/index.json `
    --source https://api.nuget.org/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-3ba4b3f4/nuget/v3/index.json 
+   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-6dd808ff-1/nuget/v3/index.json `
+   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0/nuget/v3/index.json
 ```
 
 > NOTE: Zsh and Bash on macOS expect `\` instead for spanning commands over multiple lines.  The examples above are formatted for windows/powershell
