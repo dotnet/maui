@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					Color = GColors.Transparent,
 				};
 
-				var grid = new Grid
+				var grid = new Controls.Grid
 				{
 					RowDefinitions =
 					{
@@ -179,8 +179,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 						}
 					}
 				};
-				grid.Children.Add(label, 0, 0);
-				grid.Children.Add(_bar, 0, 1);
+				grid.Add(label, 0, 0);
+				grid.Add(_bar, 0, 1);
 				Content = grid;
 
 				var groups = new VisualStateGroupList();
