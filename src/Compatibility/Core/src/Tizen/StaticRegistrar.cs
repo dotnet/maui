@@ -141,7 +141,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			//Dependencies
 			DependencyService.Register<ISystemResourcesProvider, ResourcesProvider>();
-			DependencyService.Register<IDeserializer, Deserializer>();
 			DependencyService.Register<INativeBindingService, NativeBindingService>();
 			DependencyService.Register<INativeValueConverterService, NativeValueConverterService>();
 
