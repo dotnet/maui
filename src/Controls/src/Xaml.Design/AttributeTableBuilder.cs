@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls.Xaml.Design
 			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.BindingExtension", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.DataTemplateExtension", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension", new MarkupExtensionReturnTypeAttribute());
-			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.FontImageExtension", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.NullExtension", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.OnIdiomExtension", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.OnPlatformExtension", new MarkupExtensionReturnTypeAttribute());
