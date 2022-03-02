@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Platform
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 			var compositor = visual.Compositor;
 
-			var pathSize = new Graphics.Rectangle(0, 0, width, height);
+			var pathSize = new Graphics.Rect(0, 0, width, height);
 			var clipPath = clipGeometry.PathForBounds(pathSize);
 			var device = CanvasDevice.GetSharedDevice();
 			var geometry = clipPath.AsPath(device);
