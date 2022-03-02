@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls
 			if (js == null)
 				return null;
 
-			if (!js.Contains("'"))
+			if (js.IndexOf("'", StringComparison.Ordinal) == -1)
 				return js;
 
 			//get every quote in the string along with all the backslashes preceding it

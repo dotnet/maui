@@ -270,19 +270,6 @@ namespace Microsoft.Maui.Platform
 
 		public static UIImage? ConvertToImage(this UIView view)
 		{
-			if (!PlatformVersion.IsAtLeast(10))
-			{
-				UIGraphics.BeginImageContext(view.Frame.Size);
-				view.Layer.RenderInContext(UIGraphics.GetCurrentContext());
-				var image = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
-
-				if (image.CGImage == null)
-					return null;
-
-				return new UIImage(image.CGImage);
-			}
-
 			var imageRenderer = new UIGraphicsImageRenderer(view.Bounds.Size);
 
 			return imageRenderer.CreateImage((a) =>

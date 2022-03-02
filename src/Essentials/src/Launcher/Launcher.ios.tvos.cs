@@ -18,9 +18,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			PlatformOpenAsync(WebUtils.GetNativeUrl(uri));
 
 		Task<bool> PlatformOpenAsync(NSUrl nativeUrl) =>
-			Platform.HasOSVersion(10, 0)
-				? UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions())
-				: Task.FromResult(UIApplication.SharedApplication.OpenUrl(nativeUrl));
+			UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
 
 		Task<bool> PlatformTryOpenAsync(Uri uri)
 		{

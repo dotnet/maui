@@ -265,6 +265,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 		}
 
+		/// <summary>
+		/// Allows asynchronous disposal of the <see cref="BlazorWebView" />.
+		/// </summary>
 		protected virtual async ValueTask DisposeAsyncCore()
 		{
 			// Dispose this component's contents that user-written disposal logic and Razor component disposal logic will
@@ -281,6 +284,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			_webview = null;
 		}
 
+		/// <inheritdoc />
 		public async ValueTask DisposeAsync()
 		{
 			if (_isDisposed)
@@ -295,7 +299,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			// Suppress finalization.
 			GC.SuppressFinalize(this);
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize	
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 		}
 	}
 }

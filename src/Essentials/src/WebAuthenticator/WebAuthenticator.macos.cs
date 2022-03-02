@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			redirectUri = callbackUrl;
 			var scheme = redirectUri.Scheme;
 
-			if (DeviceInfo.Version >= new Version(10, 15))
+			if (OperatingSystem.IsMacOSVersionAtLeast(10, 15))
 			{
 				static void AuthSessionCallback(NSUrl cbUrl, NSError error)
 				{

@@ -10,14 +10,15 @@
 	<PropertyGroup>
 		<CompileDependsOn>
 			$(CompileDependsOn);
-			GenerateDebugCode;
+			_GenerateDebugCode;
 		</CompileDependsOn>
 	</PropertyGroup>
 
 	<!-- duplicate legacy InitializeComponent, create a ctor with bool param -->
 	<Target
 		Condition=" '$(DesignTimeBuild)' != 'True'"
-		Name="GenerateDebugCode"
+		Name="_GenerateDebugCode"
+		BeforeTargets="XamlC"
 		AfterTargets="AfterCompile">
 		<DebugXamlCTask 
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
