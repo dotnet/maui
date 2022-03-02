@@ -130,7 +130,7 @@ stages:
             - pwsh: |
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
                 # Fix sdk band version in Tizen script
-                ((Get-Content -path .\workload-install.ps1 -Raw) -replace 'DotnetVersionBand = "6.0.200"','DotnetVersionBand = "6.0.300"') | Set-Content -Path .\workload-install.ps1
+                ((Get-Content -path .\workload-install.ps1 -Raw) -replace 'DotnetVersionBand = "6.0.200"','DotnetVersionBand = "$DotNetVersionBand"') | Set-Content -Path .\workload-install.ps1
                 .\workload-install.ps1
               displayName: install tizen
 

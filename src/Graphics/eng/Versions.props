@@ -23,6 +23,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- NOTE: temporarily hardcode 6.0.100, until we have new branding on dotnet/runtime packs -->
-    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.200</DotNetVersionBand>
+    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.300</DotNetVersionBand>
   </PropertyGroup>
 </Project>
