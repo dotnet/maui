@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs" />
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>
 	{
-		private string _text;
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextColorProperty']/Docs" />
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
@@ -62,9 +60,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='VerticalTextAlignmentProperty']/Docs" />
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextTransformProperty']/Docs" />
-		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
-
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='.ctor']/Docs" />
@@ -102,15 +97,14 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextTransform']/Docs" />
-		public TextTransform TextTransform
+		TextTransform ITextElement.TextTransform
 		{
-			get => (TextTransform)GetValue(TextTransformProperty);
-			set => SetValue(TextTransformProperty, value);
+			get => TextTransform.Default;
+			set => _ = value;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs" />
-		public virtual string UpdateFormsText(string source, TextTransform textTransform)
+		string ITextElement.UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
@@ -134,12 +128,6 @@ namespace Microsoft.Maui.Controls
 		void HandleFontChanged()
 		{
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
-
-		string IPicker.Text
-		{
-			get { return _text; }
-			set { _text = value; }
 		}
 
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue) =>

@@ -45,11 +45,6 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdatePicker(this MauiPicker platformPicker, IPicker picker)
 		{
 			platformPicker.Hint = picker.Title;
-
-			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
-				picker.Text = null;
-			else
-				picker.Text = picker.GetItem(picker.SelectedIndex);
 		}
 	}
 }

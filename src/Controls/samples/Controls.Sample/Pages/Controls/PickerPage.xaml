@@ -63,19 +63,6 @@
                     </x:Array>
                 </Picker.ItemsSource>
             </Picker>
-            <Label
-                Text="TextTransform"
-                Style="{StaticResource Headline}"/>
-            <Picker TextTransform="Uppercase"
-                Title="Select an item">
-                <Picker.ItemsSource>
-                    <x:Array Type="{x:Type x:String}">
-                        <x:String>Item 1</x:String>
-                        <x:String>Item 2</x:String>
-                        <x:String>Item 3</x:String>
-                    </x:Array>
-                </Picker.ItemsSource>
-            </Picker>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

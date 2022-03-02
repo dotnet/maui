@@ -43,8 +43,6 @@ namespace Microsoft.Maui.Platform
 		{
 			var selectedIndex = picker.SelectedIndex;
 
-			picker.Text = selectedIndex == -1 ? "" : picker.GetItem(selectedIndex);
-
 			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
 
