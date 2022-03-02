@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 				// Make sure the underlying file exists
 				var realPath = Path.Combine(shareableUri.PathSegments.ToArray())
-					.Replace(expectedCache, expectedCacheDir);
+					.Replace(expectedCache, expectedCacheDir, StringComparison.Ordinal);
 				Assert.True(File.Exists(realPath));
 			}
 			finally
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 			// Make sure the underlying file exists
 			var realPath = Path.Combine(shareableUri.PathSegments.ToArray())
-				.Replace("external_cache", Platform.AppContext.ExternalCacheDir.AbsolutePath);
+				.Replace("external_cache", Platform.AppContext.ExternalCacheDir.AbsolutePath, StringComparison.Ordinal);
 			Assert.True(File.Exists(realPath));
 		}
 
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 #pragma warning restore CS0618 // Type or member is obsolete
 
 				// replace the real root with the providers "root"
-				var segements = Path.Combine(root.Replace(externalRoot, "external_files"), Path.GetFileName(file));
+				var segements = Path.Combine(root.Replace(externalRoot, "external_files", StringComparison.Ordinal), Path.GetFileName(file));
 
 				Assert.Equal(segements.Split(Path.DirectorySeparatorChar), shareableUri.PathSegments);
 			}

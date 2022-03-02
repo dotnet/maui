@@ -28,5 +28,56 @@ namespace Microsoft.Maui.DeviceTests
 			var platformText = await GetPlatformText(handler);
 			Assert.Equal(expected, platformText);
 		}
+
+		[Fact]
+		public async Task CursorPositionDoesntResetWhenNativeTextValueChanges()
+		{
+			var textInput = new Entry()
+			{
+				Text = "Hello"
+			};
+
+
+			int cursorPosition = 0;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(textInput);
+				UpdateCursorStartPosition(handler, 5);
+				handler.UpdateValue(nameof(ITextInput.Text));
+				cursorPosition = GetCursorStartPosition(handler);
+			});
+
+			Assert.Equal(5, cursorPosition);
+		}
+
+		[Fact]
+		public async Task CursorPositionResetsToZeroAfterChangingText()
+		{
+			var textInput = new Entry()
+			{
+				Text = "Hello"
+			};
+
+
+			int cursorPosition = 0;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(textInput);
+				UpdateCursorStartPosition(handler, 5);
+				textInput.Text = "hel";
+				cursorPosition = GetCursorStartPosition(handler);
+			});
+
+			// iOS won't reset your cursor position when changing the value.
+			// We could force iOS to act like winui/android
+			// but that starts to become a rabbit hole.
+			// If the developer cares they can use the cursor APIs
+			// to specifically move the cursor where they want it to be
+#if IOS
+			Assert.Equal(3, cursorPosition);
+#else
+			Assert.Equal(0, cursorPosition);
+#endif
+		}
 	}
 }

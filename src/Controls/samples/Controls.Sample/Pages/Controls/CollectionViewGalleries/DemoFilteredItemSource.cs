@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		private bool ItemMatches(string filter, CollectionViewGalleryTestItem item)
 		{
 			filter = filter ?? "";
-			return item.Caption.ToLower().Contains(filter?.ToLower());
+			return item.Caption.Contains(filter, StringComparison.OrdinalIgnoreCase);
 		}
 
 		public void FilterItems(string filter)

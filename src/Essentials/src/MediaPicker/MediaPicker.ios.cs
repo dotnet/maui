@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 				if (assetUrl != null)
 				{
-					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.InvariantCultureIgnoreCase))
+					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 						return new UIDocumentFileResult(assetUrl);
 
 					phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
