@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestSizeThatFits()
 		{
-			Device.PlatformServices = new MockPlatformServices(useRealisticLabelMeasure: true);
+			MockPlatformSizeService.Current.UseRealisticLabelMeasure = true;
 
 			var layout = new FlexLayout
 			{

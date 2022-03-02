@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -14,8 +15,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
-			[TearDown] public void TearDown() => Device.PlatformServices = null;
+			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 			[Test]
 			public void ControlTemplateFromStyle([Values(false, true)] bool useCompiledXaml)

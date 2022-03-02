@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
 using Android.Graphics;
 using Android.Util;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,6 @@ namespace Microsoft.Maui
 	{
 		static readonly string[] FontFolders = new[]
 		{
-			"",
 			"Fonts/",
 			"fonts/",
 		};
@@ -59,44 +59,48 @@ namespace Microsoft.Maui
 
 		Typeface? GetFromAssets(string fontName)
 		{
+			fontName = _fontRegistrar.GetFont(fontName) ?? fontName;
+
 			// First check Alias
-			if (_fontRegistrar.GetFont(fontName) is string fontPostScriptName)
-				return Typeface.CreateFromFile(fontPostScriptName);
+			var asset = LoadTypefaceFromAsset(fontName, warning: true);
+			if (asset != null)
+				return asset;
 
-			var isAssetFont = IsAssetFontFamily(fontName);
-			if (isAssetFont)
-				return LoadTypefaceFromAsset(fontName);
-
-			// copied text
 			var fontFile = FontFile.FromString(fontName);
-
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
 			{
-				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension()) is string fontPath)
-					return Typeface.CreateFromFile(fontPath);
+				return FindFont(fontFile.FileNameWithExtension());
 			}
 			else
 			{
 				foreach (var ext in FontFile.Extensions)
 				{
-					var formatted = fontFile.FileNameWithExtension(ext);
-					if (_fontRegistrar.GetFont(formatted) is string fontPath)
-						return Typeface.CreateFromFile(fontPath);
-
-					foreach (var folder in FontFolders)
-					{
-						formatted = $"{folder}{fontFile.FileNameWithExtension()}#{fontFile.PostScriptName}";
-						var result = LoadTypefaceFromAsset(formatted, false);
-						if (result != null)
-							return result;
-					}
+					var font = FindFont(fontFile.FileNameWithExtension(ext));
+					if (font != null)
+						return font;
 				}
 			}
 
 			return null;
 		}
 
-		Typeface? LoadTypefaceFromAsset(string fontfamily, bool warning = true)
+		Typeface? FindFont(string fileWithExtension)
+		{
+			var result = LoadTypefaceFromAsset(fileWithExtension, warning: false);
+			if (result != null)
+				return result;
+
+			foreach (var folder in FontFolders)
+			{
+				result = LoadTypefaceFromAsset(folder + fileWithExtension, warning: false);
+				if (result != null)
+					return result;
+			}
+
+			return null;
+		}
+
+		Typeface? LoadTypefaceFromAsset(string fontfamily, bool warning)
 		{
 			try
 			{
@@ -111,11 +115,6 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		bool IsAssetFontFamily(string name)
-		{
-			return name != null && (name.Contains(".ttf#") || name.Contains(".otf#"));
-		}
-
 		Typeface? CreateTypeface((string? fontFamilyName, FontWeight weight, bool italic) fontData)
 		{
 			var (fontFamily, weight, italic) = fontData;
@@ -126,17 +125,12 @@ namespace Microsoft.Maui
 
 			if (!string.IsNullOrWhiteSpace(fontFamily))
 			{
-				if (IsAssetFontFamily(fontFamily))
-				{
-					result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontFamily));
-				}
+				if (GetFromAssets(fontFamily) is Typeface typeface)
+					result = typeface;
+				else if (FontNameToFontFile(fontFamily) is string f && File.Exists(f))
+					result = Typeface.CreateFromFile(f);
 				else
-				{
-					if (GetFromAssets(fontFamily) is Typeface typeface)
-						result = typeface;
-					else
-						result = Typeface.Create(fontFamily, style);
-				}
+					result = Typeface.Create(fontFamily, style);
 			}
 
 			if (PlatformVersion.IsAtLeast(28))
@@ -164,11 +158,11 @@ namespace Microsoft.Maui
 		{
 			fontFamily ??= string.Empty;
 
-			int hashtagIndex = fontFamily.IndexOf('#');
+			int hashtagIndex = fontFamily.IndexOf("#", StringComparison.Ordinal);
 			if (hashtagIndex >= 0)
 				return fontFamily.Substring(0, hashtagIndex);
 
-			throw new InvalidOperationException($"Can't parse the {nameof(fontFamily)} {fontFamily}");
+			return fontFamily;
 		}
 	}
 }

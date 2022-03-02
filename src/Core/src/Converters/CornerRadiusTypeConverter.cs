@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Converters
 			if (strValue != null)
 			{
 				value = strValue.Trim();
-				if (strValue.Contains(","))
+				if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 				{ //Xaml
 					var cornerRadius = strValue.Split(',');
 					if (cornerRadius.Length == 4
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Converters
 						&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
 						return new CornerRadius(l);
 				}
-				else if (strValue.Trim().Contains(" "))
+				else if (strValue.Trim().IndexOf(" ", StringComparison.Ordinal) != -1)
 				{ //CSS
 					var cornerRadius = strValue.Split(' ');
 					if (cornerRadius.Length == 2

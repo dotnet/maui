@@ -1,12 +1,23 @@
 ﻿#nullable enable
+#if __IOS__ || MACCATALYST
+using PlatformView = Microsoft.Maui.Platform.MauiSearchBar;
+#elif MONOANDROID
+using PlatformView = AndroidX.AppCompat.Widget.SearchView;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.AutoSuggestBox;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler
+	public partial class SearchBarHandler : ISearchBarHandler
 	{
-		public static IPropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ISearchBar, ISearchBarHandler> Mapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(ViewHandler.ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(ISearchBar.Background)] = MapBackground,
+			[nameof(ISearchBar.IsEnabled)] = MapIsEnabled,
 #endif
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,
@@ -22,21 +33,27 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor
 		};
 
+		public static CommandMapper<ISearchBar, ISearchBarHandler> CommandMapper = new(ViewCommandMapper)
+		{
+		};
+
 		static SearchBarHandler()
 		{
 #if __IOS__
-			SearchBarMapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
+			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
 #endif
 		}
 
-		public SearchBarHandler() : base(SearchBarMapper)
+		public SearchBarHandler() : base(Mapper)
 		{
-
 		}
 
-		public SearchBarHandler(IPropertyMapper? mapper = null) : base(mapper ?? SearchBarMapper)
+		public SearchBarHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		ISearchBar ISearchBarHandler.VirtualView => VirtualView;
+
+		PlatformView ISearchBarHandler.PlatformView => PlatformView;
 	}
 }

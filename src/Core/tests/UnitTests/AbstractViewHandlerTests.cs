@@ -51,8 +51,8 @@ namespace Microsoft.Maui.UnitTests
 
 			var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IFooService>());
 
-			Assert.Contains("the context", ex.Message);
-			Assert.Contains("MauiContext", ex.Message);
+			Assert.Contains("the context", ex.Message, StringComparison.Ordinal);
+			Assert.Contains("MauiContext", ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -67,8 +67,8 @@ namespace Microsoft.Maui.UnitTests
 
 			var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IFooService>());
 
-			Assert.Contains("the service provider", ex.Message);
-			Assert.Contains("MauiContext", ex.Message);
+			Assert.Contains("the service provider", ex.Message, StringComparison.Ordinal);
+			Assert.Contains("MauiContext", ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]

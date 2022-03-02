@@ -14,5 +14,17 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Text);
 		}
+
+		int GetCursorStartPosition(EntryHandler entryHandler)
+		{
+			var control = GetPlatformControl(entryHandler);
+			return control.SelectionStart;
+		}
+
+		void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+		{
+			var control = GetPlatformControl(entryHandler);
+			control.SelectionStart = position;
+		}
 	}
 }

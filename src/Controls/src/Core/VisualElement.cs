@@ -174,10 +174,10 @@ namespace Microsoft.Maui.Controls
 			var transforms = ((string)newValue).Split(' ');
 			foreach (var transform in transforms)
 			{
-				if (string.IsNullOrEmpty(transform) || transform.IndexOf('(') < 0 || transform.IndexOf(')') < 0)
+				if (string.IsNullOrEmpty(transform) || transform.IndexOf("(", StringComparison.Ordinal) < 0 || transform.IndexOf(")", StringComparison.Ordinal) < 0)
 					throw new FormatException("Format for transform is 'none | transform(value) [transform(value) ]*'");
-				var transformName = transform.Substring(0, transform.IndexOf('('));
-				var value = transform.Substring(transform.IndexOf('(') + 1, transform.IndexOf(')') - transform.IndexOf('(') - 1);
+				var transformName = transform.Substring(0, transform.IndexOf("(", StringComparison.Ordinal));
+				var value = transform.Substring(transform.IndexOf("(", StringComparison.Ordinal) + 1, transform.IndexOf(")", StringComparison.Ordinal) - transform.IndexOf("(", StringComparison.Ordinal) - 1);
 				double translationX, translationY, scaleX, scaleY, rotateX, rotateY, rotate;
 				if (transformName.StartsWith("translateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationX))
 					bindable.SetValue(TranslationXProperty, translationX);
@@ -905,12 +905,18 @@ namespace Microsoft.Maui.Controls
 		protected void OnChildrenReordered()
 			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
 
+		IPlatformSizeService _platformSizeService;
+
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
-			return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
+			if (Handler != null)
+				return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
+
+			_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
+			return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)

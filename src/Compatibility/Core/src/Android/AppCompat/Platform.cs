@@ -7,6 +7,7 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -267,6 +268,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else if ((visualElementRenderer == null || visualElementRenderer is HandlerToRendererShim) && view is IView iView)
 			{
+				Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(
+					"Someone called Platform.GetNativeSize instead of going through the Handler.");
+
 				returnValue = iView.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 			}
 			else if (visualElementRenderer != null)

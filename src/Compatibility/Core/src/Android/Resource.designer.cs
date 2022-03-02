@@ -69,6 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public partial class Id
 		{
+			// aapt resource value: 0x7F080051
+			public static int main_appbar = 2131230801;
+
 			// aapt resource value: 0x7F080061
 			public static int bottomtab_navarea = 2131230817;
 
@@ -85,10 +88,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public static int main_viewpager = 2131230965;
 
 			// aapt resource value: 0x7F08010C
-			public static int maui_toolbar = 2131230988;
+			public static int main_toolbar = 2131230988;
 
 			// aapt resource value: 0x7F08017D
 			public static int shellcontent_toolbar = 2131231101;
+
+			// aapt resource value: 0x7F08017C
+			public static int shellcontent_appbar = 2131231100;
 
 			static Id()
 			{
@@ -109,9 +115,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			// aapt resource value: 0x7F0B006F
 			public static int shellcontent = 2131427439;
-			
-			// aapt resource value: 0x7F0B0070
-			public static int shellrootlayout = 2131427440;
 
 			// aapt resource value: 0x7F0B0072
 			public static int tabbar = 2131427442;

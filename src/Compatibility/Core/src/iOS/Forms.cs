@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS11OrNewer.HasValue)
-					s_isiOS11OrNewer = OperatingSystem.IsIOSVersionAtLeast(11, 0);
+					s_isiOS11OrNewer = OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast(11, 0);
 				return s_isiOS11OrNewer.Value;
 			}
 		}
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS12OrNewer.HasValue)
-					s_isiOS12OrNewer = OperatingSystem.IsIOSVersionAtLeast(12, 0);
+					s_isiOS12OrNewer = OperatingSystem.IsIOSVersionAtLeast(12, 0) || OperatingSystem.IsTvOSVersionAtLeast(12, 0);
 				return s_isiOS12OrNewer.Value;
 			}
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS13OrNewer.HasValue)
-					s_isiOS13OrNewer = OperatingSystem.IsIOSVersionAtLeast(13, 0);
+					s_isiOS13OrNewer = OperatingSystem.IsIOSVersionAtLeast(13, 0) || OperatingSystem.IsTvOSVersionAtLeast(13, 0);
 				return s_isiOS13OrNewer.Value;
 			}
 		}
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS14OrNewer.HasValue)
-					s_isiOS14OrNewer = OperatingSystem.IsIOSVersionAtLeast(14, 0);
+					s_isiOS14OrNewer = OperatingSystem.IsIOSVersionAtLeast(14, 0) || OperatingSystem.IsTvOSVersionAtLeast(14, 0);
 				return s_isiOS14OrNewer.Value;
 			}
 		}
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS15OrNewer.HasValue)
-					s_isiOS15OrNewer = OperatingSystem.IsIOSVersionAtLeast(15, 0);
+					s_isiOS15OrNewer = OperatingSystem.IsIOSVersionAtLeast(15, 0) || OperatingSystem.IsTvOSVersionAtLeast(15, 0);
 				return s_isiOS15OrNewer.Value;
 			}
 		}
@@ -117,29 +117,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 #else
-		static bool? s_isSierraOrNewer;
-
-		internal static bool IsSierraOrNewer
-		{
-			get
-			{
-				if (!s_isSierraOrNewer.HasValue)
-					s_isSierraOrNewer = NSProcessInfo.ProcessInfo.IsOperatingSystemAtLeastVersion(new NSOperatingSystemVersion(10, 12, 0));
-				return s_isSierraOrNewer.Value;
-			}
-		}
-
-		static bool? s_isHighSierraOrNewer;
-
-		internal static bool IsHighSierraOrNewer
-		{
-			get
-			{
-				if (!s_isHighSierraOrNewer.HasValue)
-					s_isHighSierraOrNewer = NSProcessInfo.ProcessInfo.IsOperatingSystemAtLeastVersion(new NSOperatingSystemVersion(10, 13, 0));
-				return s_isHighSierraOrNewer.Value;
-			}
-		}
 
 		static bool? s_isMojaveOrNewer;
 
@@ -148,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isMojaveOrNewer.HasValue)
-					s_isMojaveOrNewer = NSProcessInfo.ProcessInfo.IsOperatingSystemAtLeastVersion(new NSOperatingSystemVersion(10, 14, 0));
+					s_isMojaveOrNewer = OperatingSystem.IsMacOSVersionAtLeast (10, 14);
 				return s_isMojaveOrNewer.Value;
 			}
 		}
@@ -168,36 +145,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-#if __MOBILE__
-			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
-#else
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				// Subscribe to notifications in OS Theme changes
-				NSDistributedNotificationCenter.GetDefaultCenter().AddObserver((NSString)"AppleInterfaceThemeChangedNotification", (n) =>
-				{
-					var interfaceStyle = NSUserDefaults.StandardUserDefaults.StringForKey("AppleInterfaceStyle");
-
-					var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
-					NSApplication.SharedApplication.Appearance = aquaAppearance;
-
-					Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? OSAppTheme.Dark : OSAppTheme.Light));
-				});
-			}
-
-			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
-
-			if (IsMojaveOrNewer)
-			{
-				var interfaceStyle = NSUserDefaults.StandardUserDefaults.StringForKey("AppleInterfaceStyle");
-				var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
-				NSApplication.SharedApplication.Appearance = aquaAppearance;
-			}
-#endif
-			var platformServices = new IOSPlatformServices();
-
-			Device.PlatformServices = platformServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers(context);
@@ -256,115 +204,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				return base.VisitMember(node);
 			}
-		}
-
-		class IOSPlatformServices : IPlatformServices
-		{
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				NSTimer timer = NSTimer.CreateRepeatingTimer(interval, t =>
-				{
-					if (!callback())
-						t.Invalidate();
-				});
-				NSRunLoop.Main.AddTimer(timer, NSRunLoopMode.Common);
-			}
-
-			HttpClient GetHttpClient()
-			{
-				var proxy = CoreFoundation.CFNetwork.GetSystemProxySettings();
-				var handler = new HttpClientHandler();
-				if (!string.IsNullOrEmpty(proxy.HTTPProxy))
-				{
-					handler.Proxy = CoreFoundation.CFNetwork.GetDefaultProxy();
-					handler.UseProxy = true;
-				}
-				return new HttpClient(handler);
-			}
-
-			public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
-			{
-				return Platform.iOS.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
-			}
-
-			public OSAppTheme RequestedTheme
-			{
-				get
-				{
-#if __IOS__ || __TVOS__
-					if (!IsiOS13OrNewer)
-						return OSAppTheme.Unspecified;
-					var uiStyle = GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-						UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
-
-					switch (uiStyle)
-					{
-						case UIUserInterfaceStyle.Light:
-							return OSAppTheme.Light;
-						case UIUserInterfaceStyle.Dark:
-							return OSAppTheme.Dark;
-						default:
-							return OSAppTheme.Unspecified;
-					};
-#else
-					return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
-#endif
-				}
-			}
-
-#if __MACOS__
-			bool AppearanceIsDark()
-			{
-				if (IsMojaveOrNewer)
-				{
-					var appearance = NSApplication.SharedApplication.EffectiveAppearance;
-					var matchedAppearance = appearance.FindBestMatch(new string[] { NSAppearance.NameAqua, NSAppearance.NameDarkAqua });
-
-					return matchedAppearance == NSAppearance.NameDarkAqua;
-				}
-				else
-				{
-					return false;
-				}
-			}
-#endif
-
-#if __IOS__ || __TVOS__
-
-			static UIViewController GetCurrentUIViewController() =>
-				GetCurrentViewController(false);
-
-			static UIViewController GetCurrentViewController(bool throwIfNull = true)
-			{
-				UIViewController viewController = null;
-
-				var window = UIApplication.SharedApplication.GetKeyWindow();
-
-				if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-					viewController = window.RootViewController;
-
-				if (viewController == null)
-				{
-					window = UIApplication.SharedApplication
-						.Windows
-						.OrderByDescending(w => w.WindowLevel)
-						.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
-
-					if (window == null && throwIfNull)
-						throw new InvalidOperationException("Could not find current view controller.");
-					else
-						viewController = window?.RootViewController;
-				}
-
-				while (viewController?.PresentedViewController != null)
-					viewController = viewController.PresentedViewController;
-
-				if (throwIfNull && viewController == null)
-					throw new InvalidOperationException("Could not find current view controller.");
-
-				return viewController;
-			}
-#endif
 		}
 	}
 }

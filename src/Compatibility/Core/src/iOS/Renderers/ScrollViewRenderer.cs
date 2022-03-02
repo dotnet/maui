@@ -220,6 +220,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateHorizontalScrollBarVisibility();
 		}
 
+		[PortHandler]
 		void UpdateIsEnabled()
 		{
 			if (Element == null)

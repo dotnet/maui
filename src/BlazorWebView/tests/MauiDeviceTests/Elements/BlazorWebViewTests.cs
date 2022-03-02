@@ -12,7 +12,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 	public class BlazorWebViewTests : HandlerTestBase
 	{
 		[Fact]
-		public async Task BasicBlazorComponentClick()
+		public async Task BasicRazorComponentClick()
 		{
 			EnsureHandlerCreated(additionalCreationActions: appBuilder =>
 			{
