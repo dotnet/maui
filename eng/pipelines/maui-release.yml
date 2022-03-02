@@ -69,6 +69,8 @@ stages:
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
+            demands: 
+                - ImageOverride -equals server2022-VS2022-17-2-p1
             ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
               demands:
                 - macOS.Name -equals BigSur
