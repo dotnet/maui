@@ -428,6 +428,7 @@ namespace Microsoft.Maui.Platform
 			if (frameworkElement.IsLoaded())
 			{
 				action();
+				return new ActionDisposable(() => { });
 			}
 
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
@@ -451,6 +452,7 @@ namespace Microsoft.Maui.Platform
 			if (!view.IsLoaded())
 			{
 				action();
+				return new ActionDisposable(() => { });
 			}
 
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;

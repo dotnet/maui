@@ -178,6 +178,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (frameworkElement.IsLoaded)
 			{
 				action();
+				return;
 			}
 
 			EventHandler<System.EventArgs> loaded = null;
@@ -199,6 +200,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (!frameworkElement.IsLoaded)
 			{
 				action();
+				return;
 			}
 
 			EventHandler<System.EventArgs> unloaded = null;

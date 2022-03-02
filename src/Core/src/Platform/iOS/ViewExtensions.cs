@@ -440,11 +440,89 @@ namespace Microsoft.Maui.Platform
 			view.Arrange(platformFrame.ToRectangle());
 			return size;
 		}
-    
+
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
 
 		internal static IWindow? GetHostedWindow(this UIView? view)
 			=> GetHostedWindow(view?.Window);
+
+		internal static bool IsLoaded(this UIView uiView) =>
+			uiView.Window != null;
+
+		internal static IDisposable OnLoaded(this UIView uiView, Action action)
+		{
+			if (uiView.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			List<IDisposable> observers = new List<IDisposable>();
+			ActionDisposable disposable = new ActionDisposable(() =>
+			{
+				foreach (var thing in observers)
+					thing.Dispose();
+			});
+
+			observers.Add(uiView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("transform", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("position", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("zPosition", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("anchorPoint", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("anchorPointZ", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+
+			void OnLoadedCheck()
+			{
+				if (uiView.IsLoaded())
+				{
+					disposable.Dispose();
+					action();
+				}
+			};
+
+			return disposable;
+		}
+
+		internal static IDisposable OnUnloaded(this UIView uiView, Action action)
+		{
+
+			if (!uiView.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			List<IDisposable> observers = new List<IDisposable>();
+			ActionDisposable disposable = new ActionDisposable(() =>
+			{
+				foreach (var thing in observers)
+					thing.Dispose();
+			});
+
+			observers.Add(uiView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("transform", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("position", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("zPosition", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("anchorPoint", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("anchorPointZ", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+
+			void UnLoadedCheck()
+			{
+				if (!uiView.IsLoaded())
+				{
+					disposable.Dispose();
+					action();
+				}
+			};
+
+			return disposable;
+		}
 	}
 }

@@ -10,7 +10,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.VisualElement)]
-	public partial class VisualElementLoadedUnloadedTests : HandlerTestBase
+	public partial class VisualElementTests : HandlerTestBase
 	{
 #if ANDROID || WINDOWS
 		[Fact]
@@ -56,12 +56,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				parentLayout.Remove(layout);
 				await OnUnloadedAsync(layout);
+				await OnUnloadedAsync(editor);
 
 				Assert.True(loaded == 1);
 				Assert.True(unloaded == 1);
 
 				parentLayout.Add(layout);
 				await OnLoadedAsync(layout);
+				await OnLoadedAsync(editor);
 
 				Assert.True(loaded == 2);
 				Assert.True(unloaded == 1);
