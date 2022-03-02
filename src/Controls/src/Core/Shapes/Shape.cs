@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				brush.Parent = this;
 		}
 
-		PathF IShape.PathForBounds(Graphics.Rectangle viewBounds)
+		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
 			if (HeightRequest < 0 && WidthRequest < 0)
 				Frame = viewBounds;
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 #if !NETSTANDARD
 
-			RectangleF pathBounds = viewBounds;
+			RectF pathBounds = viewBounds;
 
 			try
 			{
