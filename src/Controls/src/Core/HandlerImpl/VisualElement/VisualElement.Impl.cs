@@ -321,5 +321,50 @@ namespace Microsoft.Maui.Controls
 			if (Shadow != null)
 				SetInheritedBindingContext(Shadow, BindingContext);
 		}
+
+
+		bool _isLoaded;
+		public bool IsLoaded => _isLoaded;
+
+		public event EventHandler<EventArgs> Loaded;
+
+		protected private void OnLoadedCore()
+		{
+			if (_isLoaded)
+				return;
+
+			_isLoaded = true;
+			Loaded?.Invoke(this, EventArgs.Empty);
+		}
+
+		public event EventHandler<EventArgs> Unloaded;
+		protected private void OnUnloadedCore()
+		{
+			if (!_isLoaded)
+				return;
+
+			_isLoaded = false;
+			Unloaded?.Invoke(this, EventArgs.Empty);
+		}
+
+		private protected override void OnWindowChanged(IWindow oldValue, IWindow newValue)
+		{
+			base.OnWindowChanged(oldValue, newValue);
+
+			if (oldValue is Element oldWindow)
+				oldWindow.HandlerChanged -= OnWindowHandlerChanged;
+
+			if (newValue is Element newWindow)
+				newWindow.HandlerChanged += OnWindowHandlerChanged;
+
+			HandlePlatformUnloadedLoaded();
+		}
+
+		void OnWindowHandlerChanged(object? sender, EventArgs e)
+		{
+			HandlePlatformUnloadedLoaded();
+		}
+
+		partial void HandlePlatformUnloadedLoaded();
 	}
 }

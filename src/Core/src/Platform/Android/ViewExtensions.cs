@@ -420,47 +420,61 @@ namespace Microsoft.Maui.Platform
 			return new Rectangle(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
 		}
 
+		internal static bool IsLoaded(this View frameworkElement) =>
+			frameworkElement.IsAttachedToWindow;
 
-		internal static void OnLoaded(this View frameworkElement, Action action)
+		internal static IDisposable OnLoaded(this View frameworkElement, Action action)
 		{
-			if (frameworkElement.IsAttachedToWindow)
+			if (frameworkElement.IsLoaded())
 			{
 				action();
 			}
 
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
-			routedEventHandler = (_, __) =>
+			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
-
+			});
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
 				action();
 			};
 
 			frameworkElement.ViewAttachedToWindow += routedEventHandler;
+			return disposable;
 		}
 
-		internal static void OnUnloaded(this View view, Action action)
+		internal static IDisposable OnUnloaded(this View view, Action action)
 		{
-			if (!view.IsAttachedToWindow)
+			if (!view.IsLoaded())
 			{
 				action();
 			}
 
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
-			routedEventHandler = (_, __) =>
+			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					view.ViewDetachedFromWindow -= routedEventHandler;
+			});
 
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
 				// This event seems to fire prior to the view actually being
 				// detached from the window
-				if (view.IsAttachedToWindow)
+				if (view.IsLoaded())
 				{
 					var q = Looper.MyLooper();
 					if (q != null)
 					{
-						new Handler(q).Post(action);
+						new Handler(q).Post(() =>
+						{
+							action.Invoke();
+						});
+
 						return;
 					}
 				}
@@ -469,6 +483,7 @@ namespace Microsoft.Maui.Platform
 			};
 
 			view.ViewDetachedFromWindow += routedEventHandler;
+			return disposable;
 		}
 
 		internal static IViewParent? GetParent(this View? view)

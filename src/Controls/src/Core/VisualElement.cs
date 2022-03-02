@@ -1166,7 +1166,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
 		void SetSize(double width, double height)

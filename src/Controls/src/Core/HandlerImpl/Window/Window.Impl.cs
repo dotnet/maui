@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		public Window()
 		{
+			SetWindow(this);
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
