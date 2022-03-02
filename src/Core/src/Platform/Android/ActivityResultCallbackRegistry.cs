@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 		static readonly ConcurrentDictionary<int, Action<Result, Intent>> ActivityResultCallbacks =
 			new ConcurrentDictionary<int, Action<Result, Intent>>();
 
-		static int NextActivityResultCallbackKey;
+		static int s_nextActivityResultCallbackKey;
 
 		public static void InvokeCallback(int requestCode, Result resultCode, Intent data)
 		{
@@ -27,15 +27,15 @@ namespace Microsoft.Maui.Platform
 
 		internal static int RegisterActivityResultCallback(Action<Result, Intent> callback)
 		{
-			int requestCode = NextActivityResultCallbackKey;
+			int requestCode = s_nextActivityResultCallbackKey;
 
 			while (!ActivityResultCallbacks.TryAdd(requestCode, callback))
 			{
-				NextActivityResultCallbackKey += 1;
-				requestCode = NextActivityResultCallbackKey;
+				s_nextActivityResultCallbackKey += 1;
+				requestCode = s_nextActivityResultCallbackKey;
 			}
 
-			NextActivityResultCallbackKey += 1;
+			s_nextActivityResultCallbackKey += 1;
 
 			return requestCode;
 		}
