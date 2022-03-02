@@ -45,8 +45,14 @@
   </PropertyGroup>
   <PropertyGroup>
     <DotNetVersionBandMaciOS>6.0.200</DotNetVersionBandMaciOS>
-    <!-- Match the first three version numbers and append 00 -->
-    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetPreviewVersionBand>
-    <DotNetVersionBandMaciOS Condition=" '$(DotNetVersionBandMaciOS)' == '' ">$(DotNetPreviewVersionBand)</DotNetVersionBandMaciOS>
+    <DotNetVersionBandAndroid>6.0.200</DotNetVersionBandAndroid>
+    <DotNetVersionBandEmscripten>6.0.200</DotNetVersionBandEmscripten>
+    <DotNetVersionBandMonoToolChain>6.0.200</DotNetVersionBandMonoToolChain>
+
+    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetVersionBand>
+    <DotNetVersionBandMaciOS Condition=" '$(DotNetVersionBandMaciOS)' == '' ">$(DotNetVersionBand)</DotNetVersionBandMaciOS>
+    <DotNetVersionBandAndroid Condition=" '$(DotNetVersionBandMaciOS)' == '' ">$(DotNetVersionBand)</DotNetVersionBandAndroid>
+    <DotNetVersionBandEmscripten Condition=" '$(DotNetVersionBandMaciOS)' == '' ">$(DotNetVersionBand)</DotNetVersionBandEmscripten>
+    <DotNetVersionBandMonoToolChain Condition=" '$(DotNetVersionBandMaciOS)' == '' ">$(DotNetVersionBand)</DotNetVersionBandMonoToolChain>
   </PropertyGroup>
 </Project>
