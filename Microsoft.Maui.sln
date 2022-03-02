@@ -194,7 +194,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.DeviceTests", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Sandbox", "src\Controls\samples\Controls.Sample.Sandbox\Maui.Controls.Sample.Sandbox.csproj", "{532ACF23-381B-4F54-AEA9-25B5485F9148}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.DualScreen-net6", "src\Controls\DualScreen\src\Controls.DualScreen-net6.csproj", "{71FFE8BF-EBE4-4078-8484-86C6EA685D14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.DualScreen", "src\Controls\DualScreen\src\Controls.DualScreen.csproj", "{71FFE8BF-EBE4-4078-8484-86C6EA685D14}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A9C514B9-1EE2-4A12-8E8A-CE16D87545C3}"
 EndProject
