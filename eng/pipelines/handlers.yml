@@ -131,7 +131,7 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if startsWith(PackPlatform.poolName, 'MAUI-DevDiv') }}:
+              ${{ if startsWith(BuildPlatform.poolName, 'MAUI-DevDiv') }}:
                 demands:
                   - ImageOverride -equals server2022-VS2022-17-2-p1
               ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
