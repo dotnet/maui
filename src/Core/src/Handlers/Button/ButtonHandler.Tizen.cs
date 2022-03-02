@@ -16,21 +16,6 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 		}
 
-		private bool OnTouch(object source, View.TouchEventArgs e)
-		{
-			var state = e.Touch.GetState(0);
-
-			if (state == Tizen.NUI.PointStateType.Down)
-			{
-				OnButtonPressed(source, e);
-			}
-			else if (state == Tizen.NUI.PointStateType.Up)
-			{
-				OnButtonReleased(source, e);
-			}
-			return false;
-		}
-
 		protected override void DisconnectHandler(Button nativeView)
 		{
 			nativeView.TouchEvent -= OnTouch;
@@ -90,8 +75,20 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke) { }
 
-		[MissingMapper]
-		public static void MapLineBreakMode(IButtonHandler handler, IButton button) { }
+		bool OnTouch(object source, View.TouchEventArgs e)
+		{
+			var state = e.Touch.GetState(0);
+
+			if (state == Tizen.NUI.PointStateType.Down)
+			{
+				OnButtonPressed(source, e);
+			}
+			else if (state == Tizen.NUI.PointStateType.Up)
+			{
+				OnButtonReleased(source, e);
+			}
+			return false;
+		}
 
 		void OnButtonClicked(object? sender, EventArgs e)
 		{
@@ -110,11 +107,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSetImageSource(ImageView? image)
 		{
-
-			// TODO need to implemention
 			if (image == null)
 				return;
 			PlatformView.Icon.ResourceUrl = image.ResourceUrl;
+			image.Dispose();
 		}
 	}
 }

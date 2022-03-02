@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Handlers
 			BackgroundColor = Tizen.NUI.Color.Red
 		};
 
-
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
 		}

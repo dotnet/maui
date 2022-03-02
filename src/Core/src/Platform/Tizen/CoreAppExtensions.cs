@@ -18,6 +18,20 @@ namespace Microsoft.Maui.Platform
 			throw new InvalidOperationException("Window Not Found");
 		}
 
+		public static IWindow? GetWindow(this Window? platformWindow)
+		{
+			if (platformWindow == null)
+				return null;
+
+			foreach (var window in MauiApplication.Current.Application.Windows)
+			{
+				if (window?.Handler?.PlatformView is Window win && win == platformWindow)
+					return window;
+			}
+
+			return null;
+		}
+
 		public static void RequestNewWindow(this CoreApplication platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)

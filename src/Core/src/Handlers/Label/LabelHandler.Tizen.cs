@@ -1,4 +1,3 @@
-using System;
 using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Handlers
@@ -16,9 +15,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateText(label);
-
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, label);
 		}
 
 		public static void MapTextColor(ILabelHandler handler, ILabel label)
@@ -45,15 +41,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 			handler.PlatformView?.UpdateFont(label, fontManager);
-		}
-
-		public static void MapFormatting(ILabelHandler handler, ILabel label)
-		{
-			// Update all of the attributed text formatting properties
-			// Setting any of those may have removed text alignment settings,
-			// so we need to make sure those are applied, too
-			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
-			handler.PlatformView?.UpdateTextDecorations(label);
 		}
 
 		[MissingMapper]

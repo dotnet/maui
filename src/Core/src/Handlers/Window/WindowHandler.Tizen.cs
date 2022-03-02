@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 			var platformContent = window.Content.ToContainerView(handler.MauiContext);
 
-			handler.MauiContext.GetModalStack().Push(platformContent);
+			handler.MauiContext.GetPlatformWindow().SetContent(platformContent);
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();

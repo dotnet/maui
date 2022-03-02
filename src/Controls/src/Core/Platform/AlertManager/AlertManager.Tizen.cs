@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Subscribe(Window window)
 		{
-			var nativeWindow = window?.MauiContext.GetNativeWindow();
+			var nativeWindow = window?.MauiContext.GetPlatformWindow();
 
 			if (Subscriptions.Any(s => s.Window == nativeWindow))
 				return;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Unsubscribe(Window window)
 		{
-			var nativeWindow = window?.MauiContext.GetNativeWindow();
+			var nativeWindow = window?.MauiContext.GetPlatformWindow();
 
 			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool PageIsInThisWindow(IView sender)
 		{
-			var window = sender.Handler?.MauiContext?.GetNativeWindow() ?? null;
+			var window = sender.Handler?.MauiContext?.GetPlatformWindow() ?? null;
 			return window == Window;
 		}
 	}

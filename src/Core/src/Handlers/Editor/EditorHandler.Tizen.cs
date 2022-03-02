@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(handler.ContainerView));
 			handler.ToPlatform()?.UpdateBackground(editor);
 		}
+
 		public static void MapText(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateText(editor);
 

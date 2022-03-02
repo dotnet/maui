@@ -4,7 +4,6 @@
 	{
 		protected override MauiSearchBar CreatePlatformView() => new();
 
-
 		protected override void ConnectHandler(MauiSearchBar platformView)
 		{
 			platformView.Entry.TextChanged += OnTextChanged;
@@ -80,9 +79,8 @@
 			handler.PlatformView?.Entry.UpdateKeyboard(searchBar);
 		}
 
-		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
-		{
-		}
+		[MissingMapper]
+		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar) { }
 
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{

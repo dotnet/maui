@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchEvent += OnTouch;
 			base.ConnectHandler(platformView);
 		}
+
 		protected override void DisconnectHandler(NEntry platformView)
 		{
 			platformView.TouchEvent -= OnTouch;

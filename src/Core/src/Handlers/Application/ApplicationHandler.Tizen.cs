@@ -1,4 +1,5 @@
 using Tizen.Applications;
+using Tizen.NUI;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is IWindow window)
 			{
-				//TODO : Need to implementation
+				(window.Handler?.PlatformView as Window)?.Dispose();
 			}
 		}
 	}

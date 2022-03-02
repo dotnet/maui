@@ -1,4 +1,3 @@
-using NView = Tizen.NUI.BaseComponents.View;
 using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Handlers

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Tizen.UIExtensions.NUI;
+﻿using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Platform
 {
@@ -9,6 +6,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Clear(this Image platformImage)
 		{
+			platformImage.ResourceUrl = null;
 		}
 
 		public static void UpdateAspect(this Image platformImage, IImage image)

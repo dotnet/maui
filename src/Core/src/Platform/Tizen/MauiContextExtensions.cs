@@ -10,6 +10,6 @@ namespace Microsoft.Maui.Platform
 			mauiContext.Services.GetRequiredService<Window>();
 
 		public static NavigationStack GetModalStack(this IMauiContext mauiContext) =>
-			mauiContext.GetNativeWindow().GetModalStack()!;
+			mauiContext.GetPlatformWindow().GetModalStack()!;
 	}
 }

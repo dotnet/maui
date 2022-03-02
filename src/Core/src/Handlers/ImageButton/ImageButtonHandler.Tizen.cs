@@ -10,20 +10,20 @@ namespace Microsoft.Maui.Handlers
 			return new MauiImageButton();
 		}
 
-		protected override void ConnectHandler(MauiImageButton nativeView)
+		protected override void ConnectHandler(MauiImageButton platformView)
 		{
-			nativeView.Clicked += OnClicked;
-			nativeView.Pressed += OnPressed;
-			nativeView.Released += OnReleased;
-			base.ConnectHandler(nativeView);
+			platformView.Clicked += OnClicked;
+			platformView.Pressed += OnPressed;
+			platformView.Released += OnReleased;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiImageButton nativeView)
+		protected override void DisconnectHandler(MauiImageButton platformView)
 		{
-			nativeView.Clicked -= OnClicked;
-			nativeView.Pressed -= OnPressed;
-			nativeView.Released -= OnReleased;
-			base.DisconnectHandler(nativeView);
+			platformView.Clicked -= OnClicked;
+			platformView.Pressed -= OnPressed;
+			platformView.Released -= OnReleased;
+			base.DisconnectHandler(platformView);
 		}
 
 		[MissingMapper]
