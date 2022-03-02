@@ -12,6 +12,10 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="Type[@FullName='Microsoft.Maui.Controls.Device']/Docs" />
 	public static class Device
 	{
+		// this is just for those cases where the runtime needs to pre-load renderers
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static Assembly DefaultRendererAssembly { get; set; }
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='iOS']/Docs" />
 		public const string iOS = "iOS";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Android']/Docs" />
@@ -28,8 +32,6 @@ namespace Microsoft.Maui.Controls
 		public const string WPF = "WPF";
 		public const string MacCatalyst = "MacCatalyst";
 		public const string tvOS = "tvOS";
-
-		static IPlatformServices s_platformServices;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Idiom']/Docs" />
 		public static TargetIdiom Idiom
@@ -54,26 +56,14 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs" />
 		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetFlowDirection']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetFlowDirection(FlowDirection value) => FlowDirection = value;
+		// [Obsolete]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
-		public static FlowDirection FlowDirection { get; internal set; }
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='PlatformServices']/Docs" />
-		internal static IPlatformServices PlatformServices
+		public static FlowDirection FlowDirection
 		{
 			get
 			{
-				if (s_platformServices == null)
-					throw new InvalidOperationException($"You must call Microsoft.Maui.Controls.Compatibility.Forms.Init(); prior to using this property ({nameof(PlatformServices)}).");
-				return s_platformServices;
-			}
-			set
-			{
-				s_platformServices = value;
-				if (s_platformServices != null)
-					Application.Current?.PlatformServicesSet();
+				return AppInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft
+					? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
 			}
 		}
 
@@ -127,7 +117,31 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='StartTimer']/Docs" />
 		public static void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
-			PlatformServices.StartTimer(interval, callback);
+			_ = callback ?? throw new ArgumentNullException(nameof(callback));
+
+			var dispatcher = Application.Current.FindDispatcher();
+
+			StartTimer(dispatcher, interval, callback);
+		}
+
+		internal static void StartTimer(IDispatcher dispatcher, TimeSpan interval, Func<bool> callback)
+		{
+			_ = callback ?? throw new ArgumentNullException(nameof(callback));
+
+			var timer = dispatcher.CreateTimer();
+			timer.Interval = interval;
+			timer.IsRepeating = true;
+			timer.Tick += OnTick;
+			timer.Start();
+
+			void OnTick(object sender, EventArgs e)
+			{
+				if (!callback())
+				{
+					timer.Tick -= OnTick;
+					timer.Stop();
+				}
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs" />

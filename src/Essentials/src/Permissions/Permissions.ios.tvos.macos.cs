@@ -92,11 +92,10 @@ namespace Microsoft.Maui.Essentials
 			};
 
 		static bool CheckOSVersionForPhotos()
-#if __MACOS__
-        => Platform.HasOSVersion(11, 0);
-#else
-		=> Platform.HasOSVersion(14, 0);
-#endif
-
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(14, 0) ||
+				OperatingSystem.IsMacOSVersionAtLeast(11, 0) ||
+				OperatingSystem.IsTvOSVersionAtLeast(14, 0);
+		}
 	}
 }

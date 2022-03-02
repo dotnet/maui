@@ -10,81 +10,12 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
-[assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
 [assembly: Dependency(typeof(MockFontNamedSizeService))]
+[assembly: Dependency(typeof(MockPlatformSizeService))]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class MockPlatformServices : Internals.IPlatformServices
-	{
-		readonly IDispatcher _dispatcher;
-		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
-		readonly bool useRealisticLabelMeasure;
-
-		public MockPlatformServices(
-			IDispatcher dispatcher = null,
-			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
-			bool useRealisticLabelMeasure = false)
-		{
-			_dispatcher = dispatcher ?? new MockDispatcher();
-			this.getNativeSizeFunc = getNativeSizeFunc;
-			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
-		}
-
-		public void StartTimer(TimeSpan interval, Func<bool> callback)
-		{
-			Timer timer = null;
-			TimerCallback onTimeout = o => _dispatcher.Dispatch(() =>
-			{
-				if (callback())
-					return;
-
-				timer.Dispose();
-			});
-			timer = new Timer(onTimeout, null, interval, interval);
-		}
-
-		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			if (getNativeSizeFunc != null)
-				return getNativeSizeFunc(view, widthConstraint, heightConstraint);
-			// EVERYTHING IS 100 x 20
-
-			var label = view as Label;
-			if (label != null && useRealisticLabelMeasure)
-			{
-				var letterSize = new Size(5, 10);
-				var w = label.Text.Length * letterSize.Width;
-				var h = letterSize.Height;
-				if (!double.IsPositiveInfinity(widthConstraint) && w > widthConstraint)
-				{
-					h = ((int)w / (int)widthConstraint) * letterSize.Height;
-					w = widthConstraint - (widthConstraint % letterSize.Width);
-
-				}
-				return new SizeRequest(new Size(w, h), new Size(Math.Min(10, w), h));
-			}
-
-			return new SizeRequest(new Size(100, 20));
-		}
-
-		public OSAppTheme RequestedTheme { get; set; }
-	}
-
-	internal class MockDeserializer : Internals.IDeserializer
-	{
-		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
-		{
-			return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>());
-		}
-
-		public Task SerializePropertiesAsync(IDictionary<string, object> properties)
-		{
-			return Task.FromResult(false);
-		}
-	}
-
 	internal class MockResourcesProvider : Internals.ISystemResourcesProvider
 	{
 		public Internals.IResourceDictionary GetSystemResources()
@@ -177,6 +108,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			action();
 			return true;
 		}
+
+		public bool DispatchDelayed(TimeSpan delay, Action action) =>
+			throw new NotImplementedException();
+
+		public IDispatcherTimer CreateTimer() =>
+			throw new NotImplementedException();
 	}
 
 	class MockDeviceInfo : IDeviceInfo
@@ -289,5 +226,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		public DeviceType DeviceType { get; set; }
+	}
+
+	class MockAppInfo : IAppInfo
+	{
+		public string PackageName { get; set; }
+
+		public string Name { get; set; }
+
+		public string VersionString { get; set; }
+
+		public Version Version { get; set; }
+
+		public string BuildString { get; set; }
+
+		public LayoutDirection RequestedLayoutDirection { get; set; }
+
+		public void ShowSettingsUI()
+		{
+		}
+
+		public AppTheme RequestedTheme { get; set; }
+
+		public AppPackagingModel PackagingModel { get; set; }
+	}
+
+	class MockPlatformSizeService : IPlatformSizeService
+	{
+		public static MockPlatformSizeService Current =>
+			DependencyService.Get<IPlatformSizeService>() as MockPlatformSizeService;
+
+		public bool UseRealisticLabelMeasure { get; set; }
+
+		public Func<VisualElement, double, double, SizeRequest> GetPlatformSizeFunc { get; set; }
+
+		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
+		{
+			if (GetPlatformSizeFunc != null)
+				return GetPlatformSizeFunc(view, widthConstraint, heightConstraint);
+
+			if (view is not Label label || !UseRealisticLabelMeasure)
+				return new SizeRequest(new Size(100, 20));
+
+			var letterSize = new Size(5, 10);
+			var w = label.Text.Length * letterSize.Width;
+			var h = letterSize.Height;
+			if (!double.IsPositiveInfinity(widthConstraint) && w > widthConstraint)
+			{
+				h = ((int)w / (int)widthConstraint) * letterSize.Height;
+				w = widthConstraint - (widthConstraint % letterSize.Width);
+			}
+
+			return new SizeRequest(new Size(w, h), new Size(Math.Min(10, w), h));
+		}
+
+		public void Reset()
+		{
+			UseRealisticLabelMeasure = false;
+			GetPlatformSizeFunc = null;
+		}
 	}
 }

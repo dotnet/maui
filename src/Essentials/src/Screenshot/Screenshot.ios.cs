@@ -21,31 +21,6 @@ namespace Microsoft.Maui.Essentials
 		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
 		static extern IntPtr IntPtr_objc_msgSend(IntPtr receiver, IntPtr selector);
 
-
-		static bool PlatformIsCaptureSupported =>
-			true;
-
-		static Task<ScreenshotResult> PlatformCaptureAsync()
-		{
-			var scenes = UIApplication.SharedApplication.ConnectedScenes;
-			var currentScene = scenes.ToArray().Where(n => n.ActivationState == UISceneActivationState.ForegroundActive).FirstOrDefault();
-			if (currentScene == null)
-				throw new InvalidOperationException("Unable to find current scene.");
-
-			var uiWindowScene = currentScene as UIWindowScene;
-			if (uiWindowScene == null)
-				throw new InvalidOperationException("Unable to find current uiwindow scene.");
-
-			var currentWindow = uiWindowScene.Windows.FirstOrDefault(n => n.IsKeyWindow);
-			if (currentWindow == null)
-				throw new InvalidOperationException("Unable to find current window.");
-
-			var image = currentWindow.Render(currentWindow.Layer, UIScreen.MainScreen.Scale);
-			var result = new ScreenshotResult(image);
-
-			return Task.FromResult(result);
-		}
-
 		public static byte[] RenderAsPng(this UIWindow window, object obj, nfloat scale, bool skipChildren = true)
 		{
 			using (var image = Render(window, obj, scale, skipChildren))
@@ -61,20 +36,6 @@ namespace Microsoft.Maui.Essentials
 		public static byte[] RenderAsPng(this UIImage image) => image.AsPNG().AsImageBytes();
 
 		public static byte[] RenderAsJpeg(this UIImage image) => image.AsJPEG().AsImageBytes();
-
-		static byte[] AsImageBytes(this NSData data)
-		{
-			try
-			{
-				var result = new byte[data.Length];
-				Marshal.Copy(data.Bytes, result, 0, (int)data.Length);
-				return result;
-			}
-			finally
-			{
-				data.Dispose();
-			}
-		}
 
 		public static UIImage Render(this UIWindow window, object obj, nfloat scale, bool skipChildren = true)
 		{
@@ -130,7 +91,22 @@ namespace Microsoft.Maui.Essentials
 			return image;
 		}
 
-		static bool TryRender(UIView view, CGContext ctx, ref Exception error)
+
+		static byte[] AsImageBytes(this NSData data)
+		{
+			try
+			{
+				var result = new byte[data.Length];
+				Marshal.Copy(data.Bytes, result, 0, (int)data.Length);
+				return result;
+			}
+			finally
+			{
+				data.Dispose();
+			}
+		}
+
+		internal static bool TryRender(UIView view, CGContext ctx, ref Exception error)
 		{
 			try
 			{
@@ -144,7 +120,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static bool TryRender(CALayer layer, CGContext ctx, bool skipChildren, ref Exception error)
+		internal static bool TryRender(CALayer layer, CGContext ctx, bool skipChildren, ref Exception error)
 		{
 			try
 			{
@@ -246,7 +222,38 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	public partial class ScreenshotResult
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class ScreenshotImplementation : IScreenshot
+	{
+		public bool IsCaptureSupported =>
+			true;
+
+		public Task<IScreenshotResult> CaptureAsync()
+		{
+			var scenes = UIApplication.SharedApplication.ConnectedScenes;
+			var currentScene = scenes.ToArray().Where(n => n.ActivationState == UISceneActivationState.ForegroundActive).FirstOrDefault();
+			if (currentScene == null)
+				throw new InvalidOperationException("Unable to find current scene.");
+
+			var uiWindowScene = currentScene as UIWindowScene;
+			if (uiWindowScene == null)
+				throw new InvalidOperationException("Unable to find current uiwindow scene.");
+
+			var currentWindow = uiWindowScene.Windows.FirstOrDefault(n => n.IsKeyWindow);
+			if (currentWindow == null)
+				throw new InvalidOperationException("Unable to find current window.");
+
+			var image = currentWindow.Render(currentWindow.Layer, UIScreen.MainScreen.Scale);
+			var result = new ScreenshotResult(image);
+
+			return Task.FromResult<IScreenshotResult>(result);
+		}
+	}
+
+	internal partial class ScreenshotResult
 	{
 		readonly UIImage bmp;
 

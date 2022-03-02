@@ -26,22 +26,22 @@ namespace Microsoft.Maui.Handlers
 			platformView.ValueChanged -= OnValueChanged;
 		}
 
-		public static void MapMinimum(StepperHandler handler, IStepper stepper)
+		public static void MapMinimum(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateMinimum(stepper);
 		}
 
-		public static void MapMaximum(StepperHandler handler, IStepper stepper)
+		public static void MapMaximum(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateMaximum(stepper);
 		}
 
-		public static void MapIncrement(StepperHandler handler, IStepper stepper)
+		public static void MapIncrement(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateIncrement(stepper);
 		}
 
-		public static void MapValue(StepperHandler handler, IStepper stepper)
+		public static void MapValue(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateValue(stepper);
 		}

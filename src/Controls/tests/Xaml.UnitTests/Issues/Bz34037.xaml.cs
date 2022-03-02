@@ -73,7 +73,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
 				Bz34037Converter0.Invoked = 0;
 				Bz34037Converter1.Invoked = 0;
 			}
@@ -81,7 +80,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
 				Application.Current = null;
 			}
 

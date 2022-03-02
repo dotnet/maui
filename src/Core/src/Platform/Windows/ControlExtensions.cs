@@ -45,5 +45,11 @@ namespace Microsoft.Maui.Platform
 				? defaultThickness ?? new UI.Xaml.Thickness()
 				: padding.ToPlatform();
 		}
+
+		public static void UpdateTextColor(this Control nativeControl, ITextStyle text) =>
+			nativeControl.UpdateProperty(Control.ForegroundProperty, text.TextColor);
+
+		public static void UpdateCharacterSpacing(this Control nativeControl, ITextStyle text) =>
+			nativeControl.CharacterSpacing = text.CharacterSpacing.ToEm();
 	}
 }

@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls
 				if (!q.Key.StartsWith(prefix, StringComparison.Ordinal))
 					continue;
 				var key = q.Key.Substring(prefix.Length);
-				if (key.Contains("."))
+				if (key.IndexOf(".", StringComparison.Ordinal) != -1)
 					continue;
 				filteredQuery.Add(key, q.Value);
 			}

@@ -7,20 +7,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	internal class BindingSystemTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		class BindableViewCell : ViewCell
 		{
 			public static readonly BindableProperty NameProperty =

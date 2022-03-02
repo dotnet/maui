@@ -12,34 +12,37 @@
     <RazorComponent Include="**\*.razor" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!--
-      Web assets (js, css, etc under wwwroot) and .razor files are represented as Content items in the Razor SDK, but run foul of
-      checks in the Android and iOS SDK. This annotates these items with metadata that prevents them from being bundled / examined.
-    -->
-    <Content Update="@(Content->WithMetadataValue('WebContentItem', 'true'))"
-      ExcludeFromContentCheck="true"
-      PublishFolderType="None" />
-
-    <Content Update="@(Content->WithMetadataValue('Extension', '.razor'))"
-      ExcludeFromContentCheck="true"
-      PublishFolderType="None" />
-  </ItemGroup>
-
   <PropertyGroup>
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
   </PropertyGroup>
 
-  <Target Name="ConvertStaticWebAssetsToMauiAssets" BeforeTargets="GetMauiItems;ResizetizeCollectItems" DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+  <Target Name="ConvertStaticWebAssetsToMauiAssets"
+      BeforeTargets="GetMauiItems;ResizetizeCollectItems;_CollectBundleResources;_CollectHotRestartBundleResources;_CheckForContent"
+      DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_MauiStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
+
     <ItemGroup>
       <MauiAsset Include="%(_MauiStaticWebAssetWithTargetPath.Identity)">
         <Link>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</Link>
         <TargetPath>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</TargetPath>
       </MauiAsset>
+    </ItemGroup>
+
+    <!-- Update Content files that are managed by the Razor SDK to opt out of iOS and Android content-checks -->
+    <ItemGroup>
+      <!-- .razor.css scoped css files -->
+      <_ContentNotScopedCssFiles Include="@(Content)" Exclude="@(ScopedCssInput)" />
+      <_ContentToUpdate Include="@(Content)" Exclude="@(_ContentNotScopedCssFiles)" />
+
+      <!-- .razor files -->
+      <_ContentToUpdate Include="@(Content->WithMetadataValue('Extension', '.razor'))" />
+
+      <Content Remove="@(_ContentToUpdate)" />
+      <Content Include="@(_ContentToUpdate)" ExcludeFromContentCheck="true" PublishFolderType="None" />
     </ItemGroup>
   </Target>
 

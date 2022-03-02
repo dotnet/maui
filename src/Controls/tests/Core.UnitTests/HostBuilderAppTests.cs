@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			using var app = builder.Build();
 
 			// Make sure we don't lose "MemoryConfigurationProvider" from GetDebugView() when wrapping the provider.
-			Assert.True(((IConfigurationRoot)app.Configuration).GetDebugView().Contains("foo=bar (MemoryConfigurationProvider)"));
+			Assert.True(((IConfigurationRoot)app.Configuration).GetDebugView().Contains("foo=bar (MemoryConfigurationProvider)", StringComparison.Ordinal));
 		}
 
 		[Test]

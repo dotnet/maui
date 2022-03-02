@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (hasBorder)
-				platformView.UpdateMauiDrawable(border);
+				platformView.UpdateBorderStroke(border);
 		}
 
 		public static void UpdateBackground(this AView platformView, IView view, Drawable? defaultBackground = null) =>
