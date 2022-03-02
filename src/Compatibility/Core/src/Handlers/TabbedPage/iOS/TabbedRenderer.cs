@@ -25,8 +25,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool? _defaultBarTranslucent;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
-		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(ViewHandler.ViewMapper);
-		public static CommandMapper<TabbedPage, TabbedRenderer> CommandMapper = new CommandMapper<TabbedPage, TabbedRenderer>(ViewHandler.ViewCommandMapper);
+		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
+		public static CommandMapper<TabbedPage, TabbedRenderer> CommandMapper = new CommandMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewCommandMapper);
+
 		ViewHandlerDelegator<TabbedPage> _viewHandlerWrapper;
 		Page Page => Element as Page;
 
@@ -153,17 +154,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			// Setting TabBarItem.Title in iOS 10 causes rendering bugs
 			// Work around this by creating a new UITabBarItem on each change
-			if (e.PropertyName == Page.TitleProperty.PropertyName && !PlatformVersion.IsAtLeast(10))
-			{
-				var page = (Page)sender;
-				var renderer = page.ToHandler(_mauiContext);
-				if (renderer == null)
-					return;
-
-				if (renderer.ViewController.TabBarItem != null)
-					renderer.ViewController.TabBarItem.Title = page.Title;
-			}
-			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && PlatformVersion.IsAtLeast(10))
+			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
 			{
 				var page = (Page)sender;
 
@@ -445,22 +436,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != null)
 			{
-				if (PlatformVersion.IsAtLeast(10))
-					TabBar.TintColor = Tabbed.SelectedTabColor.ToPlatform();
-				else
-					TabBar.SelectedImageTintColor = Tabbed.SelectedTabColor.ToPlatform();
-
+				TabBar.TintColor = Tabbed.SelectedTabColor.ToPlatform();
 			}
 			else
 			{
-				if (PlatformVersion.IsAtLeast(10))
-					TabBar.TintColor = UITabBar.Appearance.TintColor;
-				else
-					TabBar.SelectedImageTintColor = UITabBar.Appearance.SelectedImageTintColor;
+				TabBar.TintColor = UITabBar.Appearance.TintColor;
 			}
-
-			if (!PlatformVersion.IsAtLeast(10))
-				return;
 
 			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
 				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToPlatform();

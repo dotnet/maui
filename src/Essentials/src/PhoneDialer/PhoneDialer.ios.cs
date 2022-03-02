@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			ValidateOpen(number);
 
 			var nsUrl = CreateNsUrl(number);
-			await Launcher.PlatformOpenAsync(nsUrl);
+			await Launcher.OpenAsync(nsUrl);
 		}
 
 		static NSUrl CreateNsUrl(string number) => new NSUrl(new Uri($"tel:{number}").AbsoluteUri);

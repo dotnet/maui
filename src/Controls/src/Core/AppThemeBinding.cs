@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
@@ -79,9 +80,9 @@ namespace Microsoft.Maui.Controls
 			switch (Application.Current.RequestedTheme)
 			{
 				default:
-				case OSAppTheme.Light:
+				case AppTheme.Light:
 					return _isLightSet ? Light : Default;
-				case OSAppTheme.Dark:
+				case AppTheme.Dark:
 					return _isDarkSet ? Dark : Default;
 			}
 		}

@@ -22,33 +22,33 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
+		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
 			handler.PlatformView?.UpdateIsChecked(radioButton);
 		}
 
-		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle) =>
+		public static void MapTextColor(IRadioButtonHandler handler, ITextStyle textStyle) =>
 			handler.PlatformView?.UpdateTextColor(textStyle);
 
-		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle) =>
+		public static void MapCharacterSpacing(IRadioButtonHandler handler, ITextStyle textStyle) =>
 			handler.PlatformView?.UpdateCharacterSpacing(textStyle);
 
-		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton) =>
+		public static void MapContent(IRadioButtonHandler handler, IRadioButton radioButton) =>
 			handler.PlatformView?.UpdateContent(radioButton);
 
-		public static void MapFont(RadioButtonHandler handler, ITextStyle button)
+		public static void MapFont(IRadioButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 			handler.PlatformView?.UpdateFont(button, fontManager);
 		}
 
-		public static void MapStrokeColor(RadioButtonHandler handler, IRadioButton radioButton) =>
+		public static void MapStrokeColor(IRadioButtonHandler handler, IRadioButton radioButton) =>
 			handler.PlatformView?.UpdateStrokeColor(radioButton);
 
-		public static void MapStrokeThickness(RadioButtonHandler handler, IRadioButton radioButton) =>
+		public static void MapStrokeThickness(IRadioButtonHandler handler, IRadioButton radioButton) =>
 			handler.PlatformView?.UpdateStrokeThickness(radioButton);
 
-		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) =>
+		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton) =>
 			handler.PlatformView?.UpdateCornerRadius(radioButton);
 
 		void OnCheckedOrUnchecked(object? sender, RoutedEventArgs e)

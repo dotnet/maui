@@ -24,14 +24,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-				Device.PlatformServices = new MockPlatformServices();
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
-				Device.PlatformServices = null;
 			}
 
 			[TestCase(true), TestCase(false)]

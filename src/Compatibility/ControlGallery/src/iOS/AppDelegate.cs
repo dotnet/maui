@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		{
 			var isInTestCloud = Environment.GetEnvironmentVariable("XAMARIN_TEST_CLOUD");
 
-			return isInTestCloud != null && isInTestCloud.Equals("1");
+			return isInTestCloud != null && isInTestCloud.Equals("1", StringComparison.Ordinal);
 		}
 
 		public string GetTestCloudDeviceName()

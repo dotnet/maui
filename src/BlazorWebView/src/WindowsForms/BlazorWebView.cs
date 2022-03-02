@@ -111,6 +111,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 		}
 
+		/// <summary>
+		/// Allows customizing how external links are opened.
+		/// Opens external links in the system browser by default.
+		/// </summary>
+		[Category("Action")]
+		[Description("Allows customizing how external links are opened. Opens external links in the system browser by default.")]
+		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting;
+
 		private void OnHostPagePropertyChanged() => StartWebViewCoreIfPossible();
 
 		private void OnServicesPropertyChanged() => StartWebViewCoreIfPossible();
@@ -154,7 +162,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
-			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(
+				_webview,
+				Services,
+				ComponentsDispatcher,
+				fileProvider,
+				RootComponents.JSComponents,
+				hostPageRelativePath,
+				(args) => ExternalNavigationStarting?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{
