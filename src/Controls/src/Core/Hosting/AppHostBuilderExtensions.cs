@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
-			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
+			handlersCollection.AddHandler<TabbedPage,  TabbedViewHandler>();
 #if WINDOWS
 			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
@@ -107,6 +107,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			Editor.RemapForControls();
 			Entry.RemapForControls();
 			SearchBar.RemapForControls();
+			TabbedPage.RemapForControls();
 
 			return builder;
 		}

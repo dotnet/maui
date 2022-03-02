@@ -57,7 +57,7 @@ namespace Samples.View
 		Task OnNavigate(BaseViewModel vm, bool showModal)
 		{
 			var name = vm.GetType().Name;
-			name = name.Replace("ViewModel", "Page");
+			name = name.Replace("ViewModel", "Page", StringComparison.Ordinal);
 
 			var ns = GetType().Namespace;
 			var pageType = Type.GetType($"{ns}.{name}");

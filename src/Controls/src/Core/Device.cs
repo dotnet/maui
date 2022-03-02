@@ -56,11 +56,16 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs" />
 		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='SetFlowDirection']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetFlowDirection(FlowDirection value) => FlowDirection = value;
+		// [Obsolete]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
-		public static FlowDirection FlowDirection { get; internal set; }
+		public static FlowDirection FlowDirection
+		{
+			get
+			{
+				return AppInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft
+					? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+			}
+		}
 
 		//[Obsolete("Use BindableObject.Dispatcher instead.")]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='IsInvokeRequired']/Docs" />

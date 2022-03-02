@@ -27,10 +27,10 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		protected override void DisconnectHandler(UI.Xaml.Window platformView)
-		{			
+		{
 			MauiContext
 				?.GetNavigationRootManager()
-				?.Disconnect();			
+				?.Disconnect();
 
 			_rootPanel?.Children?.Clear();
 			platformView.Content = null;
@@ -72,6 +72,22 @@ namespace Microsoft.Maui.Handlers
 				var windowManager = handler.MauiContext.GetNavigationRootManager();
 				windowManager.SetMenuBar(mb.MenuBar);
 			}
+		}
+
+		public static void MapFlowDirection(IWindowHandler handler, IWindow view)
+		{
+			var WindowHandle = handler.PlatformView.GetWindowHandle();
+
+			// Retrieve current extended style
+			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
+			long updated_style;
+			if (view.FlowDirection == FlowDirection.RightToLeft)
+				updated_style = extended_style | (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+			else
+				updated_style = extended_style & ~((long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL);
+
+			if (updated_style != extended_style)
+				PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, updated_style);
 		}
 	}
 }

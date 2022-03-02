@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTime()
 		{
 			Control.Time = Element.Time;
-			if (Element.Format?.Contains('H') == true)
+			if (Element.Format?.Contains('H', StringComparison.Ordinal) == true)
 			{
 				Control.ClockIdentifier = "24HourClock";
 			}

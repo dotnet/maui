@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public bool Equals(Gh3539NamedColor other)
 		{
-			return Name.Equals(other.Name);
+			return Name.Equals(other.Name, StringComparison.Ordinal);
 		}
 
 		public int CompareTo(Gh3539NamedColor other)

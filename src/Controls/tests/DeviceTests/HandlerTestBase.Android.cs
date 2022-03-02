@@ -36,6 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				AViewGroup rootView = MauiContext.Context.GetActivity().Window.DecorView as AViewGroup;
+				var decorBackground = rootView.Background;
 				var linearLayoutCompat = new LinearLayoutCompat(MauiContext.Context);
 
 				var fragmentManager = MauiContext.GetFragmentManager();
@@ -74,6 +75,16 @@ namespace Microsoft.Maui.DeviceTests
 					await linearLayoutCompat.OnUnloadedAsync();
 					if (viewFragment.View != null)
 						await viewFragment.View.OnUnloadedAsync();
+
+					// This is mainly to remove changes to the decor view that shell imposes
+					if (decorBackground != rootView.Background)
+						rootView.Background = decorBackground;
+
+					// Unset the Support Action bar if the calling code has set the support action bar
+					if (MauiContext.Context.GetActivity() is AppCompatActivity aca)
+					{
+						aca.SetSupportActionBar(null);
+					}
 				}
 			});
 		}

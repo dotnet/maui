@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
-		Task<IDictionary<string, object>>? _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 		readonly Lazy<IResourceDictionary> _systemResources;
 
@@ -107,20 +106,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Properties']/Docs" />
-		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
-		public IDictionary<string, object> Properties
-		{
-			[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
-			get
-			{
-				if (_propertiesTask == null)
-				{
-					_propertiesTask = GetPropertiesAsync();
-				}
-
-				return _propertiesTask.Result;
-			}
-		}
+		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.", error: true)]
+		public IDictionary<string, object> Properties => throw new NotSupportedException("Properties API is obsolete, use Essentials.Preferences instead.");
 
 		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
@@ -250,20 +237,8 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<Page>? PageDisappearing;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SavePropertiesAsync']/Docs" />
-		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
-		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
-		public Task SavePropertiesAsync() =>
-			Dispatcher.DispatchIfRequiredAsync(async () =>
-			{
-				try
-				{
-					await SetPropertiesAsync();
-				}
-				catch (Exception exc)
-				{
-					this.FindMauiContext()?.CreateLogger<Application>()?.LogWarning(exc, "Exception while saving Application Properties");
-				}
-			});
+		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.", error: true)]
+		public Task SavePropertiesAsync() => throw new NotSupportedException("Properties API is obsolete, use Essentials.Preferences instead.");
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, Application> On<T>() where T : IConfigPlatform
@@ -333,22 +308,9 @@ namespace Microsoft.Maui.Controls
 			OnResume();
 		}
 
-		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
 		internal void SendSleep()
 		{
 			OnSleep();
-#pragma warning disable CS0618 // Type or member is obsolete
-			SavePropertiesAsync().FireAndForget();
-#pragma warning restore CS0618 // Type or member is obsolete
-		}
-
-		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
-		internal Task SendSleepAsync()
-		{
-			OnSleep();
-#pragma warning disable CS0618 // Type or member is obsolete
-			return SavePropertiesAsync();
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		internal void SendStart()
@@ -360,46 +322,11 @@ namespace Microsoft.Maui.Controls
 			OnStart();
 		}
 
-		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
-		async Task<IDictionary<string, object>> GetPropertiesAsync()
-		{
-			var deserializer = DependencyService.Get<IDeserializer>();
-			if (deserializer == null)
-			{
-				Current?.FindMauiContext()?.CreateLogger<Application>()?.LogWarning("No IDeserializer was found registered");
-				return new Dictionary<string, object>(4);
-			}
-
-			IDictionary<string, object> properties = await deserializer.DeserializePropertiesAsync().ConfigureAwait(false);
-			if (properties == null)
-				properties = new Dictionary<string, object>(4);
-
-			return properties;
-		}
-
 		internal void OnPageAppearing(Page page)
 			=> PageAppearing?.Invoke(this, page);
 
 		internal void OnPageDisappearing(Page page)
 			=> PageDisappearing?.Invoke(this, page);
-
-
-		[RequiresUnreferencedCode(TrimmerConstants.SerializerTrimmerWarning)]
-		async Task SetPropertiesAsync()
-		{
-			await SaveSemaphore.WaitAsync();
-			try
-			{
-#pragma warning disable CS0618 // Type or member is obsolete
-				await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
-			finally
-			{
-				SaveSemaphore.Release();
-			}
-
-		}
 
 		protected internal virtual void CleanUp()
 		{

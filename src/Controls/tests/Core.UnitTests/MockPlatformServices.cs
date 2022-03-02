@@ -10,26 +10,12 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
-[assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
 [assembly: Dependency(typeof(MockFontNamedSizeService))]
 [assembly: Dependency(typeof(MockPlatformSizeService))]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class MockDeserializer : Internals.IDeserializer
-	{
-		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
-		{
-			return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>());
-		}
-
-		public Task SerializePropertiesAsync(IDictionary<string, object> properties)
-		{
-			return Task.FromResult(false);
-		}
-	}
-
 	internal class MockResourcesProvider : Internals.ISystemResourcesProvider
 	{
 		public Internals.IResourceDictionary GetSystemResources()
@@ -253,6 +239,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public Version Version { get; set; }
 
 		public string BuildString { get; set; }
+
+		public LayoutDirection RequestedLayoutDirection { get; set; }
 
 		public void ShowSettingsUI()
 		{

@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 
 			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
-			if (strValue.Contains(":"))
+			if (strValue.IndexOf(":", StringComparison.Ordinal) != -1)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning("Can't resolve properties with xml namespace prefix.");
 				return null;
