@@ -6,6 +6,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class PickerStub : StubBase, IPicker
 	{
+		private string _text;
 		public string Title { get; set; }
 
 		public Color TitleColor { get; set; }
@@ -27,6 +28,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
 		public TextAlignment VerticalTextAlignment { get; set; }
+
+		string IPicker.Text { get => _text; set => _text = value; }
 
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 
