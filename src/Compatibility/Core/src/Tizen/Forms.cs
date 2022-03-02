@@ -359,7 +359,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				Utility.AppendGlobalFontPath(@"/usr/share/fonts");
 			}
 
-			Device.PlatformServices = new TizenPlatformServices();
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			if (options?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers(options);
