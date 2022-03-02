@@ -56,12 +56,11 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Controls.Shapes")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Controls")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
-[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/graphics", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Controls.Shapes")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Controls")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
-[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "Microsoft.Maui.Controls.Xaml", AssemblyName = "Microsoft.Maui.Controls.Xaml")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName = "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
@@ -71,6 +70,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "System", AssemblyName = "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
 
 [assembly: XmlnsPrefix("http://schemas.microsoft.com/dotnet/2021/maui", "maui")]
+[assembly: XmlnsPrefix("http://schemas.microsoft.com/dotnet/2021/maui/graphics", "graphics")]
 [assembly: XmlnsPrefix("http://schemas.microsoft.com/dotnet/2021/maui/design", "d")]
 
 [assembly: StyleProperty("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty))]
