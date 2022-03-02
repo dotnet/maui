@@ -45,7 +45,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Match the first three version numbers and append 00 -->
-    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetPreviewVersionBand>
+    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetVersionBand>
     <!-- NOTE: temporarily hardcode these to 6.0.200 -->
     <DotNetMauiManifestVersionBand>6.0.200</DotNetMauiManifestVersionBand>
     <DotNetMonoManifestVersionBand>6.0.200</DotNetMonoManifestVersionBand>
