@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Platform
 			return platformView.RenderAsImage(skipChildren, asPng);
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this IView view)
+		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView == null)
