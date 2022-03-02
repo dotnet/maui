@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 			platformRadioButton.IsChecked = radioButton.IsChecked;
 		}
 
-		public static void UpdateTextColor(this Button platformButton, ITextStyle button)
+		public static void UpdateTextColor(this Button platformButton, IRadioButton button)
 		{
 			var brush = button.TextColor?.ToPlatform();
 
