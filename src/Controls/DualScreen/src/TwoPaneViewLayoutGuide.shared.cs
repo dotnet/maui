@@ -158,6 +158,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 			set => SetProperty(ref _isLandscape, value);
 		}
 
+		/// <summary>
+		/// Determine whether SinglePane, Tall, or Wide
+		/// </summary>
 		public TwoPaneViewMode Mode
 		{
 			get
@@ -165,7 +168,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (_layoutWidth == -1)
 					return TwoPaneViewMode.SinglePane;
 
-				return GetTwoPaneViewMode(_layoutWidth, _layoutHeight);
+				var mode = GetTwoPaneViewMode(_layoutWidth, _layoutHeight, _hinge);
+				return mode;
 			}
 			private set
 			{
@@ -267,7 +271,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				locationOnScreen = containerArea;
 
 			bool isSpanned = IsInMultipleRegions(locationOnScreen);
-			bool hingeIsVertical = Hinge.Height >= Hinge.Width;
+			bool hingeIsVertical = Hinge.Height > Hinge.Width;
 
 			if (isSpanned)
 			{
@@ -292,7 +296,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 
 			else 
-			{   // not spanned
+			{   // NOT spanned
 				if (DualScreenService.IsLandscape)
 				{
 					// Check if part of the layout is underneath the hinge
@@ -347,7 +351,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			Pane1 = _newPane1;
 			Pane2 = _newPane2;
-			Mode = GetTwoPaneViewMode(width, height);
+			Mode = GetTwoPaneViewMode(width, height, _hinge);
 			Hinge = DualScreenService.GetHinge();
 			IsLandscape = DualScreenService.IsLandscape;
 
@@ -360,18 +364,24 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
+		/// <summary>
+		/// Determines whether the layoutBounds describes an area on both sides of
+		/// a hinge/fold
+		/// </summary>
+		/// <param name="layoutBounds">Coordinates of the view being tested</param>
+		/// <returns>true if layoutBounds intersects the hinge/fold</returns>
 		bool IsInMultipleRegions(Rectangle layoutBounds)
 		{
 			bool isInMultipleRegions = false;
 			var hinge = DualScreenService.GetHinge();
-			bool hingeIsVertical = Hinge.Height >= Hinge.Width;
+			bool hingeIsVertical = Hinge.Height > Hinge.Width;
 
-			if (hingeIsVertical) //DualScreenService.IsLandscape)
+			if (hingeIsVertical)
 			{
 				// Check that the control is over the split
 				if (layoutBounds.Y < hinge.Y && layoutBounds.Y + layoutBounds.Height > (hinge.Y + hinge.Height))
 				{
-					isInMultipleRegions = true;
+					isInMultipleRegions = true; // TODO: investigate cases where this is hit
 				}
 
 				// Check that the control is over the split
@@ -390,22 +400,49 @@ namespace Microsoft.Maui.Controls.DualScreen
 				// Check that the control is over the split
 				if (layoutBounds.X < hinge.X && layoutBounds.X + layoutBounds.Width > (hinge.X + hinge.Width))
 				{
-					isInMultipleRegions = true;
+					isInMultipleRegions = true; // TODO: investigate cases where this is hit
 				}
 			}
 			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.IsInMultipleRegions:{isInMultipleRegions} layoutBounds:{layoutBounds} == ", "JWM");
 			return isInMultipleRegions;
 		}
 
-		TwoPaneViewMode GetTwoPaneViewMode(double width, double height)
+		/// <summary>
+		/// Determines SinglePane, Wide, or Tall; which is used to lay out the underlying
+		/// Grid in a horizontal or vertical row.
+		/// </summary>
+		TwoPaneViewMode GetTwoPaneViewMode(double width, double height, Rectangle hinge)
 		{
+			// TODO: ideally this would also return SinglePane if isSeparating were false to mimic Samsung Flex Mode
 			if (!IsInMultipleRegions(GetScreenRelativeBounds(width, height)))
 				return TwoPaneViewMode.SinglePane;
 
-			//HACK: if (DualScreenService.IsLandscape) this is wrong for Fold and Flip devices
-			if (width > height)
+			// Hinge/fold orientation determines the direction to stack the views,
+			// NOT the portrait/landscape orientation of the screen's outer dimensions
+			if (hinge.Height > hinge.Width)
+			{
+				/* Vertical hinge/fold
+				  Surface Duo       Fold           Flip
+				 +------------+    +-------+    +-----------+
+				 |     ||     |    |   |   |    |     |     |
+				 |     ||     |    |   |   |    +-----------+
+				 |     ||     |	   |   |   |     
+				 +------------+	   +-------+     
+				  Landscape        Portrait     Landscape
+				 */
 				return TwoPaneViewMode.Wide;
-
+			}
+			/*   Horizontal hinge/fold
+			     Surface Duo     Fold          Flip
+			     +--------+    +--------+     +----+
+				 |        |    |        |     |    |
+			     |        |    |--------|     |    |
+				 |========|    |        |     |----| 
+				 |        |    +--------+     |    | 
+				 |        |                   |    |
+			     +--------+	                  +----+
+			      Portrait     Landscape      Portrait
+			 */
 			return TwoPaneViewMode.Tall;
 		}
 
