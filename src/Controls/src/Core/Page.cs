@@ -67,6 +67,10 @@ namespace Microsoft.Maui.Controls
 			toolbarItems.CollectionChanged += OnToolbarItemsCollectionChanged;
 			ToolbarItems = toolbarItems;
 
+			var menuBarItems = new ObservableCollection<MenuBarItem>();
+			menuBarItems.CollectionChanged += OnToolbarItemsCollectionChanged;
+			MenuBarItems = menuBarItems;
+
 			//if things were added in base ctor (through implicit styles), the items added aren't properly parented
 			if (InternalChildren.Count > 0)
 				InternalChildrenOnCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, InternalChildren));
@@ -122,6 +126,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ToolbarItems']/Docs" />
 		public IList<ToolbarItem> ToolbarItems { get; internal set; }
+
+		public IList<MenuBarItem> MenuBarItems { get; internal set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ContainerArea']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -330,6 +336,11 @@ namespace Microsoft.Maui.Controls
 			foreach (ToolbarItem toolbarItem in ToolbarItems)
 			{
 				SetInheritedBindingContext(toolbarItem, BindingContext);
+			}
+
+			foreach (MenuBarItem menubarItem in MenuBarItems)
+			{
+				SetInheritedBindingContext(menubarItem, BindingContext);
 			}
 
 			if (_titleView != null)

@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <Description>Build .NET MAUI applications with Blazor web UI in the BlazorWebView control.</Description>
     <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
@@ -15,7 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)"/>
+    <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)" />
+    <Compile Include="..\..\..\Core\src\TaskExtensions.cs" Link="Utilities\TaskExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

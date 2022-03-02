@@ -9,20 +9,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class LabelTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void TextAndAttributedTextMutuallyExclusive()
 		{
@@ -94,11 +80,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void LabelResizesWhenFontChanges()
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, w, h) =>
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, w, h) =>
 			{
 				var l = (Label)ve;
 				return new SizeRequest(new Size(l.FontSize, l.FontSize));
-			});
+			};
 
 			var label = new Label { IsPlatformEnabled = true };
 

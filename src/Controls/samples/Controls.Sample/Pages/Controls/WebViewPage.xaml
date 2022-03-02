@@ -15,7 +15,7 @@
                     x:Name="MauiWebView"
                     Source="https://github.com/dotnet/maui"
                     HeightRequest="300"
-                    WidthRequest="300" />
+                    HorizontalOptions="FillAndExpand" />
                 <Label
                     Text="Go Back"
                     Style="{StaticResource Headline}"/>

@@ -1518,8 +1518,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
-			if (PlatformVersion.IsAtLeast(9))
-				TableView.CellLayoutMarginsFollowReadableWidth = false;
+			TableView.CellLayoutMarginsFollowReadableWidth = false;
 
 			_usingLargeTitles = usingLargeTitles;
 

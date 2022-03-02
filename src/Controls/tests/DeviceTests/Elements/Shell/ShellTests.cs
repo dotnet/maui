@@ -12,6 +12,9 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
+#if ANDROID
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -26,6 +29,9 @@ namespace Microsoft.Maui.DeviceTests
 				{
 #if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Image, ImageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
 #endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
@@ -33,9 +39,6 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
 					handlers.AddHandler<ShellContent, ShellContentHandler>();
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
 #endif
 				});
 			});
@@ -46,13 +49,16 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task DetailsViewUpdates()
 		{
 			SetupBuilder();
-			var shell = new Shell()
-			{
-				Items =
-				{
-					new ContentPage()
-				}
-			};
+
+			var shell = await InvokeOnMainThreadAsync<Shell>(() => {
+				return new Shell()
+					{
+						Items =
+						{
+							new ContentPage()
+						}
+					};
+			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
 			{

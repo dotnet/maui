@@ -21,19 +21,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			base.Setup();
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, widthConstraint, heightConstraint) =>
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
 			{
 				if (widthConstraint < 30)
 					return new SizeRequest(new Size(40, 50));
 				return new SizeRequest(new Size(20, 100));
-			});
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
+			};
 		}
 
 		[Test]
@@ -544,7 +537,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void StartTimerSimple()
 		{
-			Device.PlatformServices = new MockPlatformServices();
 			var task = new TaskCompletionSource<bool>();
 
 			Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
@@ -555,13 +547,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			task.Task.Wait();
 			Assert.False(task.Task.Result);
-			Device.PlatformServices = null;
 		}
 
 		[Test]
 		public void StartTimerMultiple()
 		{
-			Device.PlatformServices = new MockPlatformServices();
 			var task = new TaskCompletionSource<int>();
 
 			int steps = 0;
@@ -576,7 +566,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			task.Task.Wait();
 			Assert.AreEqual(2, task.Task.Result);
-			Device.PlatformServices = null;
 		}
 
 		[Test]
@@ -695,12 +684,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void HeightRequestEffectsGetSizeRequest()
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, widthConstraint, heightConstraint) =>
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
 			{
 				if (heightConstraint < 30)
 					return new SizeRequest(new Size(40, 50));
 				return new SizeRequest(new Size(20, 100));
-			});
+			};
 
 			var view = new View();
 			view.IsPlatformEnabled = true;

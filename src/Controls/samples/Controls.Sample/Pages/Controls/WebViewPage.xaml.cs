@@ -10,6 +10,18 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
+		protected override void OnAppearing()
+		{
+			MauiWebView.Navigating += OnMauiWebViewNavigating;
+			MauiWebView.Navigated += OnMauiWebViewNavigated;
+		}
+
+		protected override void OnDisappearing()
+		{
+			MauiWebView.Navigating -= OnMauiWebViewNavigating;
+			MauiWebView.Navigated -= OnMauiWebViewNavigated;
+		}
+
 		void OnGoBackClicked(object sender, EventArgs args)
 		{
 			Debug.WriteLine($"CanGoBack {MauiWebView.CanGoBack}");
@@ -38,6 +50,16 @@ namespace Maui.Controls.Sample.Pages
 		void OnEvalClicked(object sender, EventArgs args)
 		{
 			MauiWebView.Eval("alert('text')");
+		}
+
+		void OnMauiWebViewNavigating(object sender, Microsoft.Maui.Controls.WebNavigatingEventArgs e)
+		{
+			Debug.WriteLine($"Navigating - Url: {e.Url}, Event: {e.NavigationEvent}");
+		}
+
+		void OnMauiWebViewNavigated(object sender, Microsoft.Maui.Controls.WebNavigatedEventArgs e)
+		{
+			Debug.WriteLine($"Navigated - Url: {e.Url}, Event: {e.NavigationEvent}, Result: {e.Result}");
 		}
 
 		async void OnEvalAsyncClicked(object sender, EventArgs args)

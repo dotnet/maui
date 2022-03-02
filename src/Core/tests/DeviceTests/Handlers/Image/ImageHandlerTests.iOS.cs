@@ -126,7 +126,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UIImageView GetPlatformImageView(IImageHandler imageHandler) =>
-			imageHandler.TypedPlatformView;
+			imageHandler.PlatformView;
 
 		bool GetNativeIsAnimationPlaying(IImageHandler imageHandler) =>
 			GetPlatformImageView(imageHandler).IsAnimating;

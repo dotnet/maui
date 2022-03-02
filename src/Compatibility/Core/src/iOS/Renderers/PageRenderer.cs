@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.IsiOS13OrNewer &&
 				previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle &&
 				UIApplication.SharedApplication.ApplicationState != UIApplicationState.Background)
-				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
+				Application.Current?.ThemeChanged();
 		}
 
 		bool ShouldUseSafeArea()
@@ -430,6 +430,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			NativeView?.SetNeedsLayout();
 		}
 
+		[PortHandler]
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
@@ -487,6 +488,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				NavigationItem.Title = Page.Title;
 		}
 
+		[PortHandler]
 		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
 		{
 			while (view != null)

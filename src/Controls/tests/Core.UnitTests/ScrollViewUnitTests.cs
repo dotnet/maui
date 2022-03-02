@@ -12,20 +12,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ScrollViewUnitTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void TestConstructor()
 		{
@@ -44,7 +30,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(ScrollOrientation.Both)]
 		public void GetsCorrectSizeRequestWithWrappingContent(ScrollOrientation orientation)
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: null, useRealisticLabelMeasure: true);
+			MockPlatformSizeService.Current.UseRealisticLabelMeasure = true;
 
 			var scrollView = new ScrollView
 			{

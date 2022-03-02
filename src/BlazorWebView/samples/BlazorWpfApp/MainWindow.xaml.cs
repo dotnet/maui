@@ -45,8 +45,4 @@ namespace BlazorWpfApp
 			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from native UI')");
 		}
 	}
-
-	// Workaround for compiler error "error MC3050: Cannot find the type 'local:Main'"
-	// It seems that, although WPF's design-time build can see Razor components, its runtime build cannot.
-	public partial class Main { }
 }

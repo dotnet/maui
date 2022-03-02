@@ -67,6 +67,26 @@ namespace Microsoft.Maui.Platform
 			platformView.Enabled = view.IsEnabled;
 		}
 
+		public static void Focus(this AView platformView, FocusRequest request)
+		{
+			// Android does the actual focus/unfocus work on the main looper
+			// So in case we're setting the focus in response to another control's un-focusing,
+			// we need to post the handling of it to the main looper so that it happens _after_ all the other focus
+			// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set here
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				if (platformView == null || platformView.IsDisposed())
+					return;
+
+				platformView?.RequestFocus();
+			});
+		}
+
+		public static void Unfocus(this AView platformView, IView view)
+		{
+			platformView.ClearFocus();
+		}
+
 		public static void UpdateVisibility(this AView platformView, IView view)
 		{
 			platformView.Visibility = view.Visibility.ToPlatformVisibility();
@@ -137,7 +157,7 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (hasBorder)
-				platformView.UpdateMauiDrawable(border);
+				platformView.UpdateBorderStroke(border);
 		}
 
 		public static void UpdateBackground(this AView platformView, IView view, Drawable? defaultBackground = null) =>

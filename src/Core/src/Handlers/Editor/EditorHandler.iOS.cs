@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiTextView platformView)
 		{
 			platformView.ShouldChangeText += OnShouldChangeText;
+			platformView.Started += OnStarted;
 			platformView.Ended += OnEnded;
 			platformView.TextSetOrChanged += OnTextPropertySet;
 		}
@@ -23,6 +24,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiTextView platformView)
 		{
 			platformView.ShouldChangeText -= OnShouldChangeText;
+			platformView.Started -= OnStarted;
 			platformView.Ended -= OnEnded;
 			platformView.TextSetOrChanged -= OnTextPropertySet;
 		}
@@ -30,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			new SizeRequest(new Size(widthConstraint, BaseHeight));
 
-		public static void MapText(EditorHandler handler, IEditor editor)
+		public static void MapText(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdateText(editor);
 
@@ -38,48 +40,48 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, editor);
 		}
 
-		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
+		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateTextColor(editor);
 
-		public static void MapPlaceholder(EditorHandler handler, IEditor editor) =>
+		public static void MapPlaceholder(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdatePlaceholder(editor);
 
-		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) =>
+		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdatePlaceholderColor(editor);
 
-		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor) =>
+		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 
-		public static void MapMaxLength(EditorHandler handler, IEditor editor) =>
+		public static void MapMaxLength(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateMaxLength(editor);
 
-		public static void MapIsReadOnly(EditorHandler handler, IEditor editor) =>
+		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateIsReadOnly(editor);
 
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) =>
+		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
 
-		public static void MapFont(EditorHandler handler, IEditor editor) =>
+		public static void MapFont(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
 
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor) =>
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 
 		[MissingMapper]
-		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor)
 		{
 		}
 
-		public static void MapCursorPosition(EditorHandler handler, IEditor editor) =>
+		public static void MapCursorPosition(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateCursorPosition(editor);
 
-		public static void MapSelectionLength(EditorHandler handler, IEditor editor) =>
+		public static void MapSelectionLength(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateSelectionLength(editor);
 
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) =>
+		public static void MapKeyboard(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateKeyboard(editor);
 
-		public static void MapFormatting(EditorHandler handler, IEditor editor)
+		public static void MapFormatting(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdateMaxLength(editor);
 
@@ -90,10 +92,20 @@ namespace Microsoft.Maui.Handlers
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString) =>
 			VirtualView.TextWithinMaxLength(textView.Text, range, replacementString);
 
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+		}
+
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			// TODO: Update IsFocused property
-			VirtualView.Completed();
+			if (VirtualView != null)
+			{
+				VirtualView.IsFocused = false;
+
+				VirtualView.Completed();
+			}
 		}
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>

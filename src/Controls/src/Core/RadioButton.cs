@@ -2,6 +2,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -281,11 +282,17 @@ namespace Microsoft.Maui.Controls
 			base.ChangeVisualState();
 		}
 
+		IPlatformSizeService _platformSizeService;
+
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-			if (UsingRenderer)
+			if (ControlTemplate == null)
 			{
-				return Device.PlatformServices.GetPlatformSize(this, widthConstraint, heightConstraint);
+				if (Handler != null)
+					return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
+
+				_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
+				return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
 			}
 
 			return base.OnMeasure(widthConstraint, heightConstraint);
@@ -322,11 +329,9 @@ namespace Microsoft.Maui.Controls
 			base.OnControlTemplateChanged(oldValue, newValue);
 		}
 
-		bool UsingRenderer => ControlTemplate == null;
-
 		void UpdateIsEnabled()
 		{
-			if (UsingRenderer)
+			if (ControlTemplate == null)
 			{
 				return;
 			}
@@ -368,7 +373,7 @@ namespace Microsoft.Maui.Controls
 				return (Brush)color;
 			}
 
-			if (Application.Current?.RequestedTheme == OSAppTheme.Dark)
+			if (Application.Current?.RequestedTheme == AppTheme.Dark)
 			{
 				return Brush.White;
 			}

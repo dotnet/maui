@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
-using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -24,6 +22,16 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			uiControl.Enabled = view.IsEnabled;
+		}
+
+		public static void Focus(this UIView platformView, FocusRequest request)
+		{
+			platformView.BecomeFirstResponder();
+		}
+
+		public static void Unfocus(this UIView platformView, IView view)
+		{
+			platformView.ResignFirstResponder();
 		}
 
 		public static void UpdateVisibility(this UIView platformView, IView view) =>
@@ -262,19 +270,6 @@ namespace Microsoft.Maui.Platform
 
 		public static UIImage? ConvertToImage(this UIView view)
 		{
-			if (!PlatformVersion.IsAtLeast(10))
-			{
-				UIGraphics.BeginImageContext(view.Frame.Size);
-				view.Layer.RenderInContext(UIGraphics.GetCurrentContext());
-				var image = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
-
-				if (image.CGImage == null)
-					return null;
-
-				return new UIImage(image.CGImage);
-			}
-
 			var imageRenderer = new UIGraphicsImageRenderer(view.Bounds.Size);
 
 			return imageRenderer.CreateImage((a) =>
