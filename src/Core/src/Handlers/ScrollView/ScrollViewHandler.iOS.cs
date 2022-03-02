@@ -81,6 +81,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateContentSize(scrollView.ContentSize);
 		}
 
+		public static void MapIsEnabled(IScrollViewHandler handler, IScrollView scrollView)
+		{
+			handler.PlatformView.UpdateIsEnabled(scrollView);
+		}
+
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.PlatformView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);

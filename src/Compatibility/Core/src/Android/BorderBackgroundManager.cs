@@ -219,17 +219,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			if (e.PropertyName.Equals(Button.BorderColorProperty.PropertyName) ||
-				e.PropertyName.Equals(Button.BorderWidthProperty.PropertyName) ||
-				e.PropertyName.Equals(Button.CornerRadiusProperty.PropertyName) ||
-				e.PropertyName.Equals(VisualElement.BackgroundColorProperty.PropertyName) ||
-				e.PropertyName.Equals(VisualElement.BackgroundProperty.PropertyName) ||
-				e.PropertyName.Equals(Specifics.Button.UseDefaultPaddingProperty.PropertyName) ||
-				e.PropertyName.Equals(Specifics.Button.UseDefaultShadowProperty.PropertyName) ||
-				e.PropertyName.Equals(Specifics.ImageButton.IsShadowEnabledProperty.PropertyName) ||
-				e.PropertyName.Equals(Specifics.ImageButton.ShadowColorProperty.PropertyName) ||
-				e.PropertyName.Equals(Specifics.ImageButton.ShadowOffsetProperty.PropertyName) ||
-				e.PropertyName.Equals(Specifics.ImageButton.ShadowRadiusProperty.PropertyName))
+			if (e.PropertyName.Equals(Button.BorderColorProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(Button.BorderWidthProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(Button.CornerRadiusProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(VisualElement.BackgroundColorProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(VisualElement.BackgroundProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(Specifics.Button.UseDefaultPaddingProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(Specifics.Button.UseDefaultShadowProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(Specifics.ImageButton.IsShadowEnabledProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(Specifics.ImageButton.ShadowColorProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(Specifics.ImageButton.ShadowOffsetProperty.PropertyName, StringComparison.Ordinal) ||
+				e.PropertyName.Equals(Specifics.ImageButton.ShadowRadiusProperty.PropertyName, StringComparison.Ordinal))
 			{
 				Reset();
 				UpdateDrawable();

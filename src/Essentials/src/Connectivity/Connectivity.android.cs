@@ -260,20 +260,19 @@ namespace Microsoft.Maui.Essentials.Implementations
 					if (string.IsNullOrWhiteSpace(typeName))
 						return ConnectionProfile.Unknown;
 
-					var typeNameLower = typeName.ToLowerInvariant();
-					if (typeNameLower.Contains("mobile"))
+					if (typeName.Contains("mobile", StringComparison.OrdinalIgnoreCase))
 						return ConnectionProfile.Cellular;
 
-					if (typeNameLower.Contains("wimax"))
+					if (typeName.Contains("wimax", StringComparison.OrdinalIgnoreCase))
 						return ConnectionProfile.Cellular;
 
-					if (typeNameLower.Contains("wifi"))
+					if (typeName.Contains("wifi", StringComparison.OrdinalIgnoreCase))
 						return ConnectionProfile.WiFi;
 
-					if (typeNameLower.Contains("ethernet"))
+					if (typeName.Contains("ethernet", StringComparison.OrdinalIgnoreCase))
 						return ConnectionProfile.Ethernet;
 
-					if (typeNameLower.Contains("bluetooth"))
+					if (typeName.Contains("bluetooth", StringComparison.OrdinalIgnoreCase))
 						return ConnectionProfile.Bluetooth;
 
 					return ConnectionProfile.Unknown;

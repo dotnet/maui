@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new FileImageSourceStub()));
 
-			Assert.Contains(nameof(IFileImageSource), ex.Message);
+			Assert.Contains(nameof(IFileImageSource), ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -58,8 +58,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new InvalidImageSourceStub()));
 
-			Assert.Contains(nameof(InvalidImageSourceStub), ex.Message);
-			Assert.Contains(nameof(IImageSource), ex.Message);
+			Assert.Contains(nameof(InvalidImageSourceStub), ex.Message, StringComparison.Ordinal);
+			Assert.Contains(nameof(IImageSource), ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]

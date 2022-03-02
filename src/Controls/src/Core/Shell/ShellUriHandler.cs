@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static Uri FormatUri(Uri path, Shell shell)
 		{
-			if (path.OriginalString.StartsWith("..") && shell?.CurrentState != null)
+			if (path.OriginalString.StartsWith("..", StringComparison.Ordinal) && shell?.CurrentState != null)
 			{
 				var pathAndQueryString = path.OriginalString.Split(new[] { '?' }, 2);
 				string pathPart = pathAndQueryString[0];
@@ -334,7 +334,12 @@ namespace Microsoft.Maui.Controls
 						var uri = ConvertToStandardFormat(shell, CreateUri(route));
 						if (uri.Equals(request))
 						{
-							throw new Exception($"Global routes currently cannot be the only page on the stack, so absolute routing to global routes is not supported. For now, just navigate to: {originalRequest.OriginalString.Replace("//", "")}");
+							#if NETSTANDARD2_0
+							var replaced = originalRequest.OriginalString.Replace("//", "");
+							#else
+							var replaced = originalRequest.OriginalString.Replace("//", "", StringComparison.Ordinal);
+							#endif
+							throw new Exception($"Global routes currently cannot be the only page on the stack, so absolute routing to global routes is not supported. For now, just navigate to: {replaced}");
 						}
 					}
 				}
@@ -535,7 +540,7 @@ namespace Microsoft.Maui.Controls
 				var collapsedRoutes = CollapsePath(routeKey, possibleRoutePath.SegmentsMatched, true);
 				var collapsedRoute = String.Join(_pathSeparator, collapsedRoutes);
 
-				if (routeKey.StartsWith("//"))
+				if (routeKey.StartsWith("//", StringComparison.Ordinal))
 				{
 					var routeKeyPaths =
 						routeKey.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries);
@@ -578,7 +583,7 @@ namespace Microsoft.Maui.Controls
 
 						var collapsedLeafRoute = String.Join(_pathSeparator, CollapsePath(routeKey, leafSearch.SegmentsMatched, true));
 
-						if (routeKey.StartsWith("//"))
+						if (routeKey.StartsWith("//", StringComparison.Ordinal))
 							collapsedLeafRoute = "//" + collapsedLeafRoute;
 
 						string segmentMatch = leafSearch.GetNextSegmentMatch(collapsedLeafRoute);

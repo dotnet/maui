@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					{
 						relativePath = _hostPageRelativePath;
 					}
-					relativePath = Path.Combine(_contentRootDir, relativePath.Replace("/", "\\"));
+					relativePath = Path.Combine(_contentRootDir, relativePath.Replace('/', '\\'));
 
 					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
 					if (winUIItem != null)

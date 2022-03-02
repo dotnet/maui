@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Xaml
 						return;
 					case XmlNodeType.Element:
 						// 1. Property Element.
-						if (reader.Name.Contains("."))
+						if (reader.Name.IndexOf(".", StringComparison.Ordinal) != -1)
 						{
 							XmlName name;
 							if (reader.Name.StartsWith(elementName + ".", StringComparison.Ordinal))
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 
 				var namespaceUri = reader.NamespaceURI;
-				if (reader.LocalName.Contains(".") && namespaceUri == "")
+				if (reader.LocalName.IndexOf(".", StringComparison.Ordinal) != -1 && namespaceUri == "")
 					namespaceUri = ((IXmlNamespaceResolver)reader).LookupNamespace("");
 				var propertyName = ParsePropertyName(new XmlName(namespaceUri, reader.LocalName));
 
