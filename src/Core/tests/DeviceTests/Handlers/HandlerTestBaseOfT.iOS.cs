@@ -213,8 +213,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected bool GetUserInteractionEnabled(IViewHandler viewHandler) 
 		{
-			var nativeView = (UIView)viewHandler.NativeView;
-			return nativeView.UserInteractionEnabled;
+			var platformView = (UIView)viewHandler.PlatformView;
+			return platformView.UserInteractionEnabled;
 		}
 	}
 }

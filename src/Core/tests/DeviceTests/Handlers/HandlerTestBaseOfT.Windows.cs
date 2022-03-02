@@ -254,8 +254,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected bool GetHitTestVisible(IViewHandler viewHandler)
 		{
-			var nativeView = (FrameworkElement)viewHandler.NativeView;
-			return nativeView.IsHitTestVisible;
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			return platformView.IsHitTestVisible;
 		}
 	}
 }
