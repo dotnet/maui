@@ -420,7 +420,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			for (int i = 0; i < ret.Length; i++)
 			{
-				ret[i] = check.ClassName.ToLower().Replace("elm_", "") + "/" + ret[i];
+				ret[i] = check.ClassName.ToLower().Replace("elm_", "", StringComparison.Ordinal) + "/" + ret[i];
 			}
 			return ret;
 		}

@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var alert = Dialog.CreateDialog(MauiContext.GetNativeParent(), (arguments.Accept != null));
 
 			alert.Title = arguments.Title;
-			var message = arguments.Message?.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace(Environment.NewLine, "<br>");
+			var message = arguments.Message?.Replace("&", "&amp;", StringComparison.Ordinal).Replace("<", "&lt;", StringComparison.Ordinal).Replace(">", "&gt;", StringComparison.Ordinal).Replace(Environment.NewLine, "<br>", StringComparison.Ordinal);
 			alert.Message = message;
 
 			var cancel = new EButton(alert) { Text = arguments.Cancel };

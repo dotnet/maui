@@ -50,9 +50,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 				var armv7 = Platform.GetFeatureInfo<bool>("platform.core.cpu.arch.armv7");
 				var x86 = Platform.GetFeatureInfo<bool>("platform.core.cpu.arch.x86");
 
-				if (arch != null && arch.Equals("armv7") && armv7 && !x86)
+				if (arch != null && arch.Equals("armv7", StringComparison.Ordinal) && armv7 && !x86)
 					return DeviceType.Physical;
-				else if (arch != null && arch.Equals("x86") && !armv7 && x86)
+				else if (arch != null && arch.Equals("x86", StringComparison.Ordinal) && !armv7 && x86)
 					return DeviceType.Virtual;
 				else
 					return DeviceType.Unknown;
