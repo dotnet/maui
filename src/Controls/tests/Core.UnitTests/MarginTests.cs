@@ -13,14 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (b, d, e) => new SizeRequest(new Size(100, 50)));
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (b, d, e) => new SizeRequest(new Size(100, 50));
 		}
 
 		[Test]

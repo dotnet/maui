@@ -394,7 +394,7 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			RegisterAll(
 				AppDomain.CurrentDomain.GetAssemblies(),
-				Device.PlatformServices.GetType().GetTypeInfo().Assembly,
+				Device.DefaultRendererAssembly,
 				attrTypes,
 				flags,
 				null,
@@ -411,16 +411,17 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			Profile.FrameBegin();
 
-
 			if (ExtraAssemblies != null)
 				assemblies = assemblies.Union(ExtraAssemblies).ToArray();
 
-			int indexOfExecuting = Array.IndexOf(assemblies, defaultRendererAssembly);
-
-			if (indexOfExecuting > 0)
+			if (defaultRendererAssembly != null)
 			{
-				assemblies[indexOfExecuting] = assemblies[0];
-				assemblies[0] = defaultRendererAssembly;
+				int indexOfExecuting = Array.IndexOf(assemblies, defaultRendererAssembly);
+				if (indexOfExecuting > 0)
+				{
+					assemblies[indexOfExecuting] = assemblies[0];
+					assemblies[0] = defaultRendererAssembly;
+				}
 			}
 
 			if (fontRegistrar == null)

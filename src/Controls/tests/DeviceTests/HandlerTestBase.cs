@@ -58,6 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 #if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
+					handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
 #endif
 				});
 
@@ -102,6 +103,23 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (element is IView view && handler is IViewHandler viewHandler)
 			{
+#if ANDROID
+				// If the Android views don't have LayoutParams set, updating some properties (e.g., Text)
+				// can run into issues when deciding whether a re-layout is required. Normally this isn't
+				// an issue because the LayoutParams get set when the view is added to a ViewGroup, but 
+				// since we're not doing that here, we need to ensure they have LayoutParams so that tests
+				// which update properties don't crash. 
+
+				var aView = viewHandler.PlatformView as Android.Views.View;
+				if (aView.LayoutParameters == null)
+				{
+					aView.LayoutParameters =
+						new Android.Views.ViewGroup.LayoutParams(
+							Android.Views.ViewGroup.LayoutParams.WrapContent,
+							Android.Views.ViewGroup.LayoutParams.WrapContent);
+				}
+#endif
+
 				view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
 				viewHandler.PlatformArrange(view.Frame);
 			}

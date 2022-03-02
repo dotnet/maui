@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				// we don't care that much about this being accurate
 				// the cookie container will split the cookies up more correctly
-				if (!cookie.Domain.Contains(domain) && !domain.Contains(cookie.Domain))
+				if (!cookie.Domain.Contains(domain, StringComparison.Ordinal) && !domain.Contains(cookie.Domain, StringComparison.Ordinal))
 					continue;
 
 				existingCookies.Add(cookie);
@@ -563,7 +563,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 						foreach (var deleteme in cookies)
 						{
-							if (record.DisplayName.Contains(deleteme.Domain) || deleteme.Domain.Contains(record.DisplayName))
+							if (record.DisplayName.Contains(deleteme.Domain, StringComparison.Ordinal) || deleteme.Domain.Contains(record.DisplayName, StringComparison.Ordinal))
 							{
 								WKWebsiteDataStore.DefaultDataStore.RemoveDataOfTypes(record.DataTypes,
 									  new[] { record }, () => { });
@@ -709,6 +709,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			WebView WebView => _renderer.WebView;
 			IWebViewController WebViewController => WebView;
 
+			[PortHandler]
 			public override void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 			{
 				var url = GetCurrentUrl();
@@ -719,6 +720,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_renderer.UpdateCanGoBackForward();
 			}
 
+			[PortHandler]
 			public override void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 			{
 				var url = GetCurrentUrl();
@@ -729,6 +731,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_renderer.UpdateCanGoBackForward();
 			}
 
+			[PortHandler("Partially ported")]
 			public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 			{
 				if (webView.IsLoading)
@@ -767,6 +770,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 			}
 
+			[PortHandler]
 			// https://stackoverflow.com/questions/37509990/migrating-from-uiwebview-to-wkwebview
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
@@ -808,12 +812,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				decisionHandler(args.Cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
 			}
 
+			[PortHandler]
 			string GetCurrentUrl()
 			{
 				return _renderer?.Url?.AbsoluteUrl?.ToString();
 			}
 		}
 
+		[PortHandler]
 		class CustomWebViewUIDelegate : WKUIDelegate
 		{
 			static string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");

@@ -46,5 +46,10 @@ namespace Microsoft.Maui.Platform
 				scrollView.ContentSize = nativeContentSize;
 			}
 		}
+
+		public static void UpdateIsEnabled(this UIScrollView nativeScrollView, IScrollView scrollView)
+		{
+			nativeScrollView.ScrollEnabled = scrollView.IsEnabled;
+		}
 	}
 }

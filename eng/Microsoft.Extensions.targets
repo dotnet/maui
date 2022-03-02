@@ -18,47 +18,47 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsServicingPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Abstractions"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Json"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection.Abstractions"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Abstractions"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsServicingPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Console"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Debug"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Primitives"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.WindowsAppSDK"
@@ -99,7 +99,7 @@
     />
     <PackageReference
         Update="System.CodeDom"
-        Version="$(MicrosoftNETCoreAppRefPackageVersion)"
+        Version="$(SystemCodeDomPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Web.WebView2"

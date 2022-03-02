@@ -7,20 +7,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class ButtonUnitTest
 		: CommandSourceTests<Button>
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void MeasureInvalidatedOnTextChange()
 		{

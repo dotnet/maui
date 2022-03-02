@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		public override void ObserveValue(NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context)
 		{
-			if (keyPath.ToString().Equals(TargetProperty, StringComparison.InvariantCultureIgnoreCase))
+			if (keyPath.ToString().Equals(TargetProperty, StringComparison.OrdinalIgnoreCase))
 				PropertyChanged?.Invoke(ofObject, new PropertyChangedEventArgs(TargetProperty));
 			else
 				base.ObserveValue(keyPath, ofObject, change, context);

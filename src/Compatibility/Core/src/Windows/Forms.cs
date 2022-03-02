@@ -50,15 +50,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			KnownColor.SetAccent(accent.ToColor());
 
-			Device.SetFlowDirection(mauiContext.GetFlowDirection());
-
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 
-			var platformServices = new WindowsPlatformServices();
-
-			Device.PlatformServices = platformServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			if (mainWindow != null)
 			{
