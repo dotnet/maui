@@ -10,6 +10,7 @@
     <DefineConstants>$(DefineConstants);WEBVIEW2_WPF</DefineConstants>
     <UseWPF>true</UseWPF>
     <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

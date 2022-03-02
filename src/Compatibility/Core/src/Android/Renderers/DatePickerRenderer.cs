@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				EditText.Text = date.ToShortDateString();
 			}
-			else if (Element.Format.Contains('/'))
+			else if (Element.Format.Contains('/', StringComparison.Ordinal))
 			{
 				EditText.Text = date.ToString(Element.Format, CultureInfo.InvariantCulture);
 			}

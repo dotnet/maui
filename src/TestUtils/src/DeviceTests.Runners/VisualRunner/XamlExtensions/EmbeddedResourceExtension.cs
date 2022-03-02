@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			if (Name == null)
 				return null;
 
-			var resourceName = "." + Name.Trim().Replace("/", ".").Replace("\\", ".");
+			var resourceName = "." + Name.Trim().Replace('/', '.').Replace('\\', '.');
 
 			var assembly = typeof(MauiVisualRunnerApp).Assembly;
 			foreach (var name in assembly.GetManifestResourceNames())

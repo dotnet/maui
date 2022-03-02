@@ -1,15 +1,22 @@
 ﻿using System;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui.Controls;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	public class BlazorWebView : Microsoft.Maui.Controls.View, IBlazorWebView
+	/// <summary>
+	/// A <see cref="View"/> that can render Blazor content.
+	/// </summary>
+	public class BlazorWebView : View, IBlazorWebView
 	{
 		internal const string AppHostAddress = "0.0.0.0";
 
 		private readonly JSComponentConfigurationStore _jSComponents = new();
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="BlazorWebView"/>.
+		/// </summary>
 		public BlazorWebView()
 		{
 			RootComponents = new RootComponentsCollection(_jSComponents);
@@ -17,8 +24,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		JSComponentConfigurationStore IBlazorWebView.JSComponents => _jSComponents;
 
+		/// <summary>
+		/// Gets or sets the path to the HTML file to render.
+		/// <para>This is an app relative path to the file such as <c>wwwroot\index.html</c></para>
+		/// </summary>
 		public string? HostPage { get; set; }
 
+		/// <inheritdoc />
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <inheritdoc/>

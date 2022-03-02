@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" TextTransform=""" + result + @""" />";
 
-			Device.PlatformServices = new MockPlatformServices();
 			var label = new Label().LoadFromXaml(xaml);
 
 			Assert.AreEqual(result, label.TextTransform);

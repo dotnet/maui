@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 
 #if WINDOWS
@@ -66,6 +67,16 @@ namespace Microsoft.Maui
 
 			foreach (var service in scopedServices)
 				service.Initialize(scopedContext.Services);
+		}
+
+		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
+		{
+			var appInfo = AppInfo.Current;
+
+			if (appInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft)
+				return FlowDirection.RightToLeft;
+
+			return FlowDirection.LeftToRight;
 		}
 	}
 }

@@ -10,6 +10,7 @@ using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static readonly Color DefaultUnselectedColor = Color.FromRgba(255, 255, 255, 180);
 		internal static Color DefaultBottomNavigationViewBackgroundColor => ResolveThemeColor(Colors.White, Color.FromArgb("#1B3147"));
 
-		internal static bool IsDarkTheme => (Application.Current?.RequestedTheme == OSAppTheme.Dark);
+		internal static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
 
 		static Color ResolveThemeColor(Color light, Color dark)
 		{
@@ -314,32 +315,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				navigationBarHeight = resources.GetDimensionPixelSize(resourceId);
 			}
-
-			// TODO Previewer Hack
-			if (decorView != null)
+			
+			// we are using the split drawable here to avoid GPU overdraw.
+			// All it really is is a drawable that only draws under the statusbar/bottom bar to make sure
+			// we dont draw over areas we dont need to. This has very limited benefits considering its
+			// only saving us a flat color fill BUT it helps people not freak out about overdraw.
+			AColor color;
+			if (appearance != null)
 			{
-				// we are using the split drawable here to avoid GPU overdraw.
-				// All it really is is a drawable that only draws under the statusbar/bottom bar to make sure
-				// we dont draw over areas we dont need to. This has very limited benefits considering its
-				// only saving us a flat color fill BUT it helps people not freak out about overdraw.
-				AColor color;
-				if (appearance != null)
-				{
-					color = appearance.BackgroundColor.ToPlatform(Color.FromArgb("#03A9F4"));
-				}
-				else
-				{
-					color = Color.FromArgb("#03A9F4").ToPlatform();
-				}
+				color = appearance.BackgroundColor.ToPlatform(Color.FromArgb("#03A9F4"));
+			}
+			else
+			{
+				color = Color.FromArgb("#03A9F4").ToPlatform();
+			}
 
-				if (!(decorView.Background is SplitDrawable splitDrawable) ||
-					splitDrawable.Color != color || splitDrawable.TopSize != statusBarHeight || splitDrawable.BottomSize != navigationBarHeight)
-				{
-					Profile.FramePartition("Create SplitDrawable");
-					var split = new SplitDrawable(color, statusBarHeight, navigationBarHeight);
-					Profile.FramePartition("SetBackground");
-					decorView.SetBackground(split);
-				}
+			if (!(decorView.Background is SplitDrawable splitDrawable) ||
+				splitDrawable.Color != color || splitDrawable.TopSize != statusBarHeight || splitDrawable.BottomSize != navigationBarHeight)
+			{
+				Profile.FramePartition("Create SplitDrawable");
+				var split = new SplitDrawable(color, statusBarHeight, navigationBarHeight);
+				Profile.FramePartition("SetBackground");
+				decorView.SetBackground(split);
 			}
 
 			Profile.FrameEnd("UpdtStatBarClr");

@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}
 
-		public OSAppTheme RequestedTheme => OSAppTheme.Unspecified;
+		public AppTheme RequestedTheme => AppTheme.Unspecified;
 
 		static MD5 CreateChecksum()
 		{

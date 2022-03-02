@@ -16,13 +16,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (b, d, e) => new SizeRequest(new Size(100, 50));
 		}
 
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void GetSizeRequestIncludesMargins()
 		{

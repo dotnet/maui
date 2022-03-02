@@ -7,15 +7,16 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiEditText : AppCompatEditText, IMauiEditText
 	{
-		public MauiEditText(Context context) : base(context)
-		{
-		}
-
 		event EventHandler? _onKeyboardBackPressed;
-		event EventHandler IMauiEditText.OnKeyboardBackPressed
+		event EventHandler? IMauiEditText.OnKeyboardBackPressed
 		{
 			add => _onKeyboardBackPressed += value;
 			remove => _onKeyboardBackPressed -= value;
+		}
+
+		public MauiEditText(Context context) : base(context)
+		{
+
 		}
 
 		public override bool OnKeyPreIme(Keycode keyCode, KeyEvent? e)
@@ -25,10 +26,9 @@ namespace Microsoft.Maui.Platform
 				return base.OnKeyPreIme(keyCode, e);
 			}
 
+			this.HideKeyboard();
 
 			_onKeyboardBackPressed?.Invoke(this, EventArgs.Empty);
-
-			// TODO: Hide Keyboard.
 
 			return true;
 		}

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -9,6 +10,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Editor)]
 	public partial class EditorTests : HandlerTestBase
 	{
+
 #if !IOS
 		// iOS is broken until this point
 		// https://github.com/dotnet/maui/issues/3425
@@ -31,10 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			await InvokeOnMainThreadAsync(() =>
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (_) =>
 			{
-				_ = CreateHandler<LayoutHandler>(layout);
-
 				layout.Arrange(new Graphics.Rectangle(Graphics.Point.Zero, layout.Measure(1000, 1000)));
 				var initialHeight = editor.Height;
 
@@ -45,6 +45,8 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(initialHeight, editor.Height);
 				else
 					Assert.True(initialHeight < editor.Height);
+
+				return Task.CompletedTask;
 			});
 		}
 #endif
@@ -53,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TextTransformCases))]
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
 		{
-			var control = new Editor() { Text = text , TextTransform = transform };
+			var control = new Editor() { Text = text, TextTransform = transform };
 			var platformText = await GetPlatformText(await CreateHandlerAsync<EditorHandler>(control));
 			Assert.Equal(expected, platformText);
 		}

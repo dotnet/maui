@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Platform
 			{
 				this.AddView(BorderView = new AView(Context));
 			}
-			BorderView.UpdateMauiDrawable(Border);
+			BorderView.UpdateBorderStroke(Border);
 		}
 
 		void ClipChild(Canvas canvas)

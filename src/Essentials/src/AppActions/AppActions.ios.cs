@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public string Type => "XE_APP_ACTION_TYPE";
 
 		public bool IsSupported
-			=> Platform.HasOSVersion(9, 0);
+			=> true;
 
 		public Task<IEnumerable<AppAction>> GetAsync()
 		{

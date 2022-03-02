@@ -57,6 +57,8 @@ namespace Microsoft.Maui.Handlers
 				_dialog.Dispose();
 				_dialog = null;
 			}
+			
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 
 			base.DisconnectHandler(platformView);
 		}

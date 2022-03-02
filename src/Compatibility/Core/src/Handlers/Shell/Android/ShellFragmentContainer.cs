@@ -22,8 +22,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
-			_ = _page.ToPlatform(_mauiContext);
-			return new ShellPageContainer(RequireContext(), (IPlatformViewHandler)_page.Handler, true)
+			
+			var pageMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
+			
+			return new ShellPageContainer(RequireContext(), (IPlatformViewHandler)_page.ToHandler(pageMauiContext), true)
 			{
 				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
 			};
