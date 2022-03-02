@@ -193,6 +193,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return sizeThatFits;
 		}
 
+		[PortHandler]
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);

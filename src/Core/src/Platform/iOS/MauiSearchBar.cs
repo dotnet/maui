@@ -7,8 +7,15 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiSearchBar : UISearchBar
+	public class MauiSearchBar : UISearchBar, IMauiSearchBar
 	{
+		event EventHandler? _onTraitCollectionDidChange;
+		event EventHandler? IMauiSearchBar.OnTraitCollectionDidChange
+		{
+			add => _onTraitCollectionDidChange += value;
+			remove => _onTraitCollectionDidChange -= value;
+		}
+
 		public MauiSearchBar() : this(RectangleF.Empty)
 		{
 		}
@@ -45,8 +52,19 @@ namespace Microsoft.Maui.Platform
 
 				if (old != value)
 				{
-					TextSetOrChanged?.Invoke(this, new UISearchBarTextChangedEventArgs(value ?? String.Empty));
+					TextSetOrChanged?.Invoke(this, new UISearchBarTextChangedEventArgs(value ?? string.Empty));
 				}
+			}
+		}
+
+		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+
+			// Make sure the control adheres to changes in UI theme
+			if (PlatformVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			{
+				_onTraitCollectionDidChange?.Invoke(this, EventArgs.Empty);
 			}
 		}
 	}

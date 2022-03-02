@@ -38,6 +38,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.OnEditingStarted += OnEditingStarted;
 			platformView.OnEditingStopped += OnEditingEnded;
 
+			if(platformView is IMauiSearchBar mauiSearchBar)
+				mauiSearchBar.OnTraitCollectionDidChange += OnTraitCollectionDidChange;
+
 			base.ConnectHandler(platformView);
 			SetupDefaults(platformView);
 		}
@@ -52,6 +55,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.OnEditingStarted -= OnEditingStarted;
 			platformView.OnEditingStopped -= OnEditingEnded;
 
+			if (platformView is IMauiSearchBar mauiSearchBar)
+				mauiSearchBar.OnTraitCollectionDidChange -= OnTraitCollectionDidChange;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -189,6 +194,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = true;
+		}
+
+		void OnTraitCollectionDidChange(object? sender, EventArgs e)
+		{
+			if (VirtualView == null)
+				return;
+
+			QueryEditor?.UpdateTextColor(VirtualView, _defaultTextColor);
 		}
 	}
 }
