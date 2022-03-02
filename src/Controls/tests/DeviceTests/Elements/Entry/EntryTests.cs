@@ -68,7 +68,16 @@ namespace Microsoft.Maui.DeviceTests
 				cursorPosition = GetCursorStartPosition(handler);
 			});
 
+			// iOS won't reset your cursor position when changing the value.
+			// We could force iOS to act like winui/android
+			// but that starts to become a rabbit hole.
+			// If the developer cares they can use the cursor APIs
+			// to specifically move the cursor where they want it to be
+#if IOS
+			Assert.Equal(3, cursorPosition);
+#else
 			Assert.Equal(0, cursorPosition);
+#endif
 		}
 	}
 }
