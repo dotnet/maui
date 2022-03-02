@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 	public class LayoutPanel : Panel
 	{
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		public bool ClipsToBounds { get; set; }
 
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Platform
 			var width = finalSize.Width;
 			var height = finalSize.Height;
 
-			CrossPlatformArrange(new Rectangle(0, 0, width, height));
+			CrossPlatformArrange(new Rect(0, 0, width, height));
 
 			Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
 
