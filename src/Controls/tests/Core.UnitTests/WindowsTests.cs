@@ -7,6 +7,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class WindowsTests : BaseTestFixture
 	{
 		[Test]
+		public void ContentPageFlowDirectionSetsOnIWindow()
+		{
+			var app = new TestApp();
+			var window = app.CreateWindow();
+			window.Page.FlowDirection = FlowDirection.RightToLeft;
+
+			Assert.IsTrue((window as IWindow)
+				.FlowDirection == FlowDirection.RightToLeft);
+		}
+
+		[Test]
+		public void WindowFlowDirectionSetsOnPage()
+		{
+			var app = new TestApp();
+			var window = app.CreateWindow();
+			window.FlowDirection = FlowDirection.RightToLeft;
+
+			Assert.IsTrue((window.Page as IFlowDirectionController)
+				.EffectiveFlowDirection
+				.IsRightToLeft());
+
+			window.Page = new ContentPage();
+
+			Assert.IsTrue((window.Page as IFlowDirectionController)
+				.EffectiveFlowDirection
+				.IsRightToLeft());
+		}
+
+		[Test]
 		public void AddWindow()
 		{
 			var app = new TestApp();

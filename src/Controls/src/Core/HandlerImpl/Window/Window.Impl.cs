@@ -12,17 +12,16 @@ using Microsoft.Maui.Controls.Platform;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
 
-		public static readonly BindableProperty MenuBarProperty = BindableProperty.Create(
-			nameof(MenuBar), typeof(MenuBar), typeof(Window), default(MenuBar));
-
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanged: OnPageChanged);
+
+		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -148,6 +147,56 @@ namespace Microsoft.Maui.Controls
 
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
+
+		IFlowDirectionController FlowController => this;
+
+		public FlowDirection FlowDirection
+		{
+			get { return (FlowDirection)GetValue(FlowDirectionProperty); }
+			set { SetValue(FlowDirectionProperty, value); }
+		}
+
+		EffectiveFlowDirection _effectiveFlowDirection = default(EffectiveFlowDirection);
+		EffectiveFlowDirection IFlowDirectionController.EffectiveFlowDirection
+		{
+			get => _effectiveFlowDirection;
+			set => SetEffectiveFlowDirection(value, true);
+		}
+
+		double IFlowDirectionController.Width => (Page as VisualElement)?.Width ?? 0;
+
+		void SetEffectiveFlowDirection(EffectiveFlowDirection value, bool fireFlowDirectionPropertyChanged)
+		{
+			if (value == _effectiveFlowDirection)
+				return;
+
+			_effectiveFlowDirection = value;
+
+			if (fireFlowDirectionPropertyChanged)
+				OnPropertyChanged(FlowDirectionProperty.PropertyName);
+
+		}
+
+		static void FlowDirectionChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			var self = (IFlowDirectionController)bindable;
+
+			if (self.EffectiveFlowDirection.IsExplicit() && oldValue == newValue)
+				return;
+
+			var newFlowDirection = ((FlowDirection)newValue).ToEffectiveFlowDirection(isExplicit: true);
+			self.EffectiveFlowDirection = newFlowDirection;
+		}
+
+		static void FlowDirectionChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			PropertyPropagationExtensions.PropagatePropertyChanged(
+				FlowDirectionProperty.PropertyName,
+				(Element)bindable,
+				((IElementController)bindable).LogicalChildren);
+		}
+
+		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 
 		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
@@ -277,6 +326,36 @@ namespace Microsoft.Maui.Controls
 			OnBackgrounding(state);
 		}
 
+		FlowDirection IWindow.FlowDirection
+		{
+			get
+			{
+				// If the user has set the root page to be RTL
+				// Then we want the window to also reflect RTL
+				// We don't want to force the user to reach into the window
+				// in order to enable RTL Window features on WinUI
+				if (FlowDirection == FlowDirection.MatchParent &&
+					Page is IFlowDirectionController controller &&
+					controller.EffectiveFlowDirection.IsExplicit())
+				{
+					return controller.EffectiveFlowDirection.ToFlowDirection();
+				}
+
+				return _effectiveFlowDirection.ToFlowDirection();
+			}
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+			var mauiContext = args?.NewHandler?.MauiContext;
+
+			if (FlowDirection == FlowDirection.MatchParent && mauiContext != null)
+			{
+				FlowController.EffectiveFlowDirection = mauiContext.GetFlowDirection().ToEffectiveFlowDirection(true);
+			}
+		}
+
 		// Currently this returns MainPage + ModalStack
 		// Depending on how we want this to show up inside LVT
 		// we might want to change this to only return the currently visible page
@@ -314,6 +393,8 @@ namespace Microsoft.Maui.Controls
 				if (newPage.Handler != null)
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
 			}
+
+			window?.Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
 			{

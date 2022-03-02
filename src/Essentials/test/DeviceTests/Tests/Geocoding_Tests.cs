@@ -64,6 +64,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		static bool IsEmulatorFailure(Exception ex) =>
-			ex.Message.ToLower().Contains("grpc") || ex.Message.ToLower().Contains("service not available");
+			ex.Message.Contains("grpc", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("service not available", StringComparison.OrdinalIgnoreCase);
 	}
 }

@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				var directory = IOPath.GetDirectoryName(filePath);
 
-				if (string.IsNullOrEmpty(directory) || !IOPath.GetFullPath(directory).Equals(IOPath.GetFullPath(imageDirectory)))
+				if (string.IsNullOrEmpty(directory) || !IOPath.GetFullPath(directory).Equals(IOPath.GetFullPath(imageDirectory), StringComparison.Ordinal))
 				{
 					filePath = IOPath.Combine(imageDirectory, filePath);
 					fileSource.File = filePath;
