@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return true;
 			}
 #pragma warning disable CS0618 // Type or member is obsolete
-			if (DeviceInfo.Platform == DevicePlatform.UWP && UWP != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
