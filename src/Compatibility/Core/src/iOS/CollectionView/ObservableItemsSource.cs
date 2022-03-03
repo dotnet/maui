@@ -100,14 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
-			}
-			else
-			{
-				CollectionChanged(args);
-			}
+			CollectionView.BeginInvokeOnMainThread(() => CollectionChanged(args));
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -286,7 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void OnCollectionViewUpdated(NotifyCollectionChangedEventArgs args)
 		{
-			Device.BeginInvokeOnMainThread(() =>
+			CollectionView.BeginInvokeOnMainThread(() =>
 			{
 				CollectionViewUpdated?.Invoke(this, args);
 			});

@@ -219,19 +219,19 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 			await Task.Delay(500);
 
-			Device.BeginInvokeOnMainThread(() =>
-		 {
-			 Items = new ObservableCollection<CarouselData>();
+			Dispatcher.Dispatch(() =>
+			{
+				Items = new ObservableCollection<CarouselData>();
 
-			 for (int n = 0; n < 5; n++)
-			 {
-				 Items.Add(new CarouselData
-				 {
-					 Color = Color.FromRgb(_random.Next(0, 255), _random.Next(0, 255), _random.Next(0, 255)),
-					 Name = $"Thead {n + 1}"
-				 });
-			 }
-		 });
+				for (int n = 0; n < 5; n++)
+				{
+					Items.Add(new CarouselData
+					{
+						Color = Color.FromRgb(_random.Next(0, 255), _random.Next(0, 255), _random.Next(0, 255)),
+						Name = $"Thead {n + 1}"
+					});
+				}
+			});
 		}
 	}
 }

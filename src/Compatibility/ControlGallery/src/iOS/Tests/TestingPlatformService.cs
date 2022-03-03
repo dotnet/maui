@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.Tests;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests;
+using Microsoft.Maui.Dispatching;
 
 [assembly: Dependency(typeof(TestingPlatformService))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.Tests
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.Tests
 	{
 		public async Task CreateRenderer(VisualElement visualElement)
 		{
-			await Device.InvokeOnMainThreadAsync(() => Platform.iOS.Platform.CreateRenderer(visualElement));
+			await visualElement.Dispatcher.DispatchAsync(() => Platform.iOS.Platform.CreateRenderer(visualElement));
 		}
 	}
 }

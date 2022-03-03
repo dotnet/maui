@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 			// TODO This is Tizen TV Limitation.
 			// UX is defined and the focus move processing is complete, it should be removed(After Tizen 5.0)
-			if (Device.Idiom == TargetIdiom.TV)
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				KeyDown += (s, e) =>
 				{

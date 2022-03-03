@@ -718,11 +718,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			// And remove the fragment from our own stack
 			_fragmentStack.Remove(fragment);
 
-			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
-			{
-				UpdateToolbar();
-				return false;
-			});
+			PostDelayed(() => UpdateToolbar(), 10);
 		}
 
 		void ResetToolbar()
@@ -1092,7 +1088,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		void AddTransitionTimer(TaskCompletionSource<bool> tcs, Fragment fragment, FragmentManager fragmentManager, IReadOnlyCollection<Fragment> fragmentsToRemove, int duration, bool shouldUpdateToolbar)
 		{
-			Device.StartTimer(TimeSpan.FromMilliseconds(duration), () =>
+			PostDelayed(() =>
 			{
 				tcs.TrySetResult(true);
 				Current?.SendAppearing();
@@ -1108,9 +1104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 					fragmentTransaction.CommitAllowingStateLossEx();
 				}
-
-				return false;
-			});
+			}, duration);
 		}
 
 		void PushCurrentPages()
