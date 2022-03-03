@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		internal object macOS { get; set; } = s_notset;
 		public object MacCatalyst { get; set; } = s_notset;
 		public object Tizen { get; set; } = s_notset;
-		internal object UWP { get; set; } = s_notset;
+		public object UWP { get; set; } = s_notset;
 		internal object WPF { get; set; } = s_notset;
 		public object WinUI { get; set; } = s_notset;
 
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return true;
 			}
 #pragma warning disable CS0618 // Type or member is obsolete
-			if (Device.RuntimePlatform == Device.UWP && UWP != s_notset)
+			if (Device.RuntimePlatform == Device.WinUI && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = WPF;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.WinUI && WinUI != s_notset)
+			if (Device.RuntimePlatform == Device.WinUI &&  WinUI != s_notset)
 			{
 				value = WinUI;
 				return true;
