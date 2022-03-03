@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 		public const string Android = "Android";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='UWP']/Docs" />
 		[Obsolete("Use Essentials.DevicePlatform.WinUI instead.")]
-		internal const string UWP = "UWP";
+		public const string UWP = WinUI;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='macOS']/Docs" />
 		[Obsolete("Use Essentials.DevicePlatform.macOS instead.")]
 		internal const string macOS = "macOS";

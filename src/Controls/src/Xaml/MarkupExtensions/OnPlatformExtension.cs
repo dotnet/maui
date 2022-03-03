@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		internal object macOS { get; set; } = s_notset;
 		public object MacCatalyst { get; set; } = s_notset;
 		public object Tizen { get; set; } = s_notset;
+		[Obsolete("Use WinUI instead.")]
 		public object UWP { get; set; } = s_notset;
 		internal object WPF { get; set; } = s_notset;
 		public object WinUI { get; set; } = s_notset;
@@ -34,8 +35,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& macOS == s_notset
 				&& MacCatalyst == s_notset
 				&& Tizen == s_notset
+#pragma warning disable CS0618 // Type or member is obsolete
 				&& UWP == s_notset
-				&& WPF == s_notset 
+#pragma warning restore CS0618 // Type or member is obsolete
+				&& WPF == s_notset
 				&& WinUI == s_notset
 				&& Default == s_notset)
 			{
@@ -140,7 +143,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = Tizen;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.WinUI && WinUI != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI && WinUI != s_notset)
 			{
 				value = WinUI;
 				return true;

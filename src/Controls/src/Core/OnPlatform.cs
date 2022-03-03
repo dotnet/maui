@@ -36,7 +36,8 @@ namespace Microsoft.Maui.Controls
 			{
 				if (onPlat.Platform == null)
 					continue;
-				if (!onPlat.Platform.Contains(DeviceInfo.Platform.ToString()))
+				if (!onPlat.Platform.Contains(DeviceInfo.Platform.ToString()) ||
+					(!onPlat.Platform.Contains("UWP") && DeviceInfo.Platform == DevicePlatform.WinUI))
 					continue;
 				if (s_valueConverter == null)
 					continue;
