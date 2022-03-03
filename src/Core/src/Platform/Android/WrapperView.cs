@@ -50,7 +50,8 @@ namespace Microsoft.Maui.Platform
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			_borderView?.BringToFront();
-			if (ChildCount == 0 || GetChildAt(0) is not View child)
+
+			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
 			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
