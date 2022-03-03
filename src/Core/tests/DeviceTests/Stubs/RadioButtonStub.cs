@@ -24,7 +24,7 @@
 
 		public int CornerRadius { get; set; }
 
-		public Size CrossPlatformArrange(Rectangle bounds)
+		public Size CrossPlatformArrange(Rect bounds)
 		{
 			return bounds.Size;
 		}

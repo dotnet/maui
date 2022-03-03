@@ -156,7 +156,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var platformViewBounds = await GetValueAsync(view, handler => GetPlatformViewBounds(handler));
-			Assert.NotEqual(platformViewBounds, new Graphics.Rectangle());
+			Assert.NotEqual(platformViewBounds, new Graphics.Rect());
 		}
 
 		[Theory(DisplayName = "Native View Bounding Box are not empty")]
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
-			Assert.NotEqual(nativeBoundingBox, new Graphics.Rectangle());
+			Assert.NotEqual(nativeBoundingBox, new Graphics.Rect());
 		}
 
 
