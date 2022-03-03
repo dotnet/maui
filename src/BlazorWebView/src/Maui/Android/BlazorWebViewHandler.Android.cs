@@ -27,11 +27,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// To allow overriding ExternalLinkMode.InsecureOpenInWebView and open links in browser with a _blank target
 			blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
 
-			if (Capabilities?.GetDevelopmentMode() == true)
-			{
-				BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: true);
-			}
-
 			if (blazorAndroidWebView.Settings != null)
 			{
 				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
@@ -71,7 +66,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private bool RequiredStartupPropertiesSet =>
 			//_webview != null &&
 			HostPage != null &&
-			Services != null;
+			Services != null &&
+			Capabilities != null;
 
 		private void StartWebViewCoreIfPossible()
 		{
@@ -83,6 +79,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (PlatformView == null)
 			{
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
+			}
+
+			if (Capabilities?.GetDevelopmentMode() == true)
+			{
+				BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: true);
 			}
 
 			// We assume the host page is always in the root of the content directory, because it's

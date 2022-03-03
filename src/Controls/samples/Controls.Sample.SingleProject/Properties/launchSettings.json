@@ -2,7 +2,10 @@
   "profiles": {
     "Windows Machine (on 10.0.19041)": {
       "commandName": "MsixPackage",
-      "nativeDebugging": true
+      "nativeDebugging": true,
+      "environmentVariables": {
+        "ASPNETCORE_Environment": "Development"
+      }
     },
     "Unpackaged Windows Machine (on 10.0.20348)": {
       "commandName": "Project"

@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			SetValue(RootComponentsProperty, new RootComponentsCollection());
 			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
+			SetValue(BlazorWebViewCapabilitiesProperty, new BlazorWebViewCapabilities());
 
 			Template = new ControlTemplate
 			{
