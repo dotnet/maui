@@ -32,15 +32,15 @@
     <MicrosoftJSInteropPackageVersion>6.0.1</MicrosoftJSInteropPackageVersion>
     <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.1</MicrosoftWindowsDesktopAppRuntimewinx64Version>
     <!-- Other packages -->
-    <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1073</MicrosoftMauiGraphicsVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1077</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
     <_MicrosoftWebWebView2Version>1.0.1020.30</_MicrosoftWebWebView2Version>
     <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
     <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.2</_XamarinGoogleCryptoTinkAndroidVersion>
-    <_SkiaSharpVersion>2.88.0-preview.179</_SkiaSharpVersion>
-    <_HarfBuzzSharpVersion>2.8.2-preview.179</_HarfBuzzSharpVersion>
-    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.fffae82cf6ec1c4a6f490ddb780709ce9211725e.179</_SkiaSharpNativeAssetsVersion>
+    <_SkiaSharpVersion>2.88.0-preview.224</_SkiaSharpVersion>
+    <_HarfBuzzSharpVersion>2.8.2-preview.224</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.657aa9de304a299edb8ed8560e4f48199e0b5c4d.224</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.2.22102.8</MicrosoftTemplateEngineTasksVersion>
   </PropertyGroup>
   <PropertyGroup>
