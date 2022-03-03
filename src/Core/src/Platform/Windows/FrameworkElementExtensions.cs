@@ -208,12 +208,13 @@ namespace Microsoft.Maui.Platform
 				return new ActionDisposable(() => { });
 			}
 
-			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
+			RoutedEventHandler? routedEventHandler = null;
 			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					frameworkElement.Loaded -= routedEventHandler;
 			});
+
 			routedEventHandler = (_, __) =>
 			{
 				disposable.Dispose();
@@ -232,8 +233,7 @@ namespace Microsoft.Maui.Platform
 				return new ActionDisposable(() => { });
 			}
 
-			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
-
+			RoutedEventHandler? routedEventHandler = null;
 			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
@@ -245,6 +245,8 @@ namespace Microsoft.Maui.Platform
 				disposable.Dispose();
 				action();
 			};
+
+			frameworkElement.Unloaded += routedEventHandler;
 
 			return disposable;
 		}

@@ -437,6 +437,7 @@ namespace Microsoft.Maui.Platform
 				if (routedEventHandler != null)
 					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
 			});
+
 			routedEventHandler = (_, __) =>
 			{
 				disposable.Dispose();

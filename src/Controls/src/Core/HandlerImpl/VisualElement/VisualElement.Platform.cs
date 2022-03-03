@@ -34,7 +34,6 @@ namespace Microsoft.Maui.Controls
 					OnUnloadedCore();
 					_loadedUnloadedToken = view.OnLoaded(OnLoadedCore);
 				}
-
 			}
 			else
 			{

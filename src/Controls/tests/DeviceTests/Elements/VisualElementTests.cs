@@ -38,12 +38,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<EditorHandler>(editor, (handler) =>
 			{
-				Assert.True(loaded == 1);
-				Assert.True(unloaded == 0);
+				Assert.Equal(1, loaded);
+				Assert.Equal(0, unloaded);
 			});
 
-			Assert.True(loaded == 1);
-			Assert.True(unloaded == 1);
+			Assert.Equal(1, loaded);
+			Assert.Equal(1, unloaded);
 		}
 
 		[Fact]
@@ -71,26 +71,21 @@ namespace Microsoft.Maui.DeviceTests
 				await OnUnloadedAsync(layout);
 				await OnUnloadedAsync(editor);
 
-				Assert.True(loaded == 1);
-				Assert.True(unloaded == 1);
+				Assert.Equal(1, loaded);
+				Assert.Equal(1, unloaded);
 
 				parentLayout.Add(layout);
 				await OnLoadedAsync(layout);
 				await OnLoadedAsync(editor);
 
-				Assert.True(loaded == 2);
-				Assert.True(unloaded == 1);
-
+				Assert.Equal(2, loaded);
+				Assert.Equal(1, unloaded);
 			});
 
-			await Device.InvokeOnMainThreadAsync(async () =>
-			{
-				await OnUnloadedAsync(layout);
-				await OnUnloadedAsync(editor);
-			});
+			await Task.Delay(1000);
 
-			Assert.True(loaded == 2);
-			Assert.True(unloaded == 2);
+			Assert.Equal(2, loaded);
+			Assert.Equal(2, unloaded);
 		}
 	}
 }

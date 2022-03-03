@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
-		bool _isLoaded;
+		bool _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
@@ -326,8 +326,19 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(Shadow, BindingContext);
 		}
 
+		public bool IsLoaded
+		{
+			get
+			{
+#if PLATFORM
+				bool isLoaded = (Handler as IPlatformViewHandler)?.PlatformView?.IsLoaded() == true;
+#else
+				bool isLoaded = Window != null;
+#endif
 
-		public bool IsLoaded => _isLoaded;
+				return isLoaded;
+			}
+		}
 
 		public event EventHandler? Loaded
 		{
@@ -359,19 +370,19 @@ namespace Microsoft.Maui.Controls
 
 		void OnLoadedCore()
 		{
-			if (_isLoaded)
+			if (_isLoadedFired)
 				return;
 
-			_isLoaded = true;
+			_isLoadedFired = true;
 			_loaded?.Invoke(this, EventArgs.Empty);
 		}
 
 		void OnUnloadedCore()
 		{
-			if (!_isLoaded)
+			if (!_isLoadedFired)
 				return;
 
-			_isLoaded = false;
+			_isLoadedFired = false;
 			_unloaded?.Invoke(this, EventArgs.Empty);
 		}
 
@@ -394,7 +405,7 @@ namespace Microsoft.Maui.Controls
 		// if the user is watching for them. Otherwise
 		// this will get wired up for every single VE that's on 
 		// the screen
-		void UpdatePlatformUnloadedLoadedWiring(IWindow window)
+		void UpdatePlatformUnloadedLoadedWiring(IWindow? window)
 		{
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
