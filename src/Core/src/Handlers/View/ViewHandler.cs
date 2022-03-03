@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
-		public abstract void PlatformArrange(Rectangle frame);
+		public abstract void PlatformArrange(Rect frame);
 
 		private protected abstract PlatformView OnCreatePlatformView();
 

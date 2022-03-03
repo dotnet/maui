@@ -1535,7 +1535,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			_viewHandlerWrapper.GetDesiredSize(widthConstraint, heightConstraint);
 
-		void IViewHandler.PlatformArrange(Rectangle rect) =>
+		void IViewHandler.PlatformArrange(Rect rect) =>
 			_viewHandlerWrapper.PlatformArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
@@ -1744,7 +1744,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_child?.VirtualView != null)
 				{
-					Rectangle layoutBounds = new Rectangle(IconWidth, 0, Bounds.Width - IconWidth, height);
+					Rect layoutBounds = new Rect(IconWidth, 0, Bounds.Width - IconWidth, height);
 
 					_child.PlatformArrangeHandler(layoutBounds);
 				}

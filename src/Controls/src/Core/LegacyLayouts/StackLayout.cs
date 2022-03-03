@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			layout.Constraint = new Size(widthConstraint, heightConstraint);
 			layout.Expanders = 0;
 			layout.CompressionSpace = 0;
-			layout.Plots = new Rectangle[Children.Count];
+			layout.Plots = new Rect[Children.Count];
 			layout.Requests = new SizeRequest[Children.Count];
 
 			StackOrientation orientation = Orientation;
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					}
 					SizeRequest request = child.Measure(widthConstraint, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 
-					var bounds = new Rectangle(x, yOffset, request.Request.Width, request.Request.Height);
+					var bounds = new Rect(x, yOffset, request.Request.Width, request.Request.Height);
 					layout.Plots[i] = bounds;
 					layout.Requests[i] = request;
 					layout.CompressionSpace += Math.Max(0, request.Request.Height - request.Minimum.Height);
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					}
 					SizeRequest request = child.Measure(double.PositiveInfinity, heightConstraint, MeasureFlags.IncludeMargins);
 
-					var bounds = new Rectangle(xOffset, y, request.Request.Width, request.Request.Height);
+					var bounds = new Rect(xOffset, y, request.Request.Width, request.Request.Height);
 					layout.Plots[i] = bounds;
 					layout.Requests[i] = request;
 					layout.CompressionSpace += Math.Max(0, request.Request.Width - request.Minimum.Width);
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					ComputeConstraintForView(expander, layout.Expanders == 1);
 			}
 
-			layout.Bounds = new Rectangle(x, y, boundsWidth, boundsHeight);
+			layout.Bounds = new Rect(x, y, boundsWidth, boundsHeight);
 			layout.MinimumSize = new Size(minimumWidth, minimumHeight);
 		}
 
@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 				layout.Plots[i].X -= xOffset;
 
-				Rectangle plot = layout.Plots[i];
+				Rect plot = layout.Plots[i];
 				double availableSpace = plot.Width - minimum.Width;
 				if (availableSpace <= 0)
 					continue;
@@ -313,7 +313,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 				layout.Plots[i].Y -= yOffset;
 
-				Rectangle plot = layout.Plots[i];
+				Rect plot = layout.Plots[i];
 				double availableSpace = plot.Height - minimum.Height;
 				if (availableSpace <= 0)
 					continue;
@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					var child = (View)LogicalChildrenInternal[i];
 					if (!child.IsVisible)
 						continue;
-					Rectangle plot = layout.Plots[i];
+					Rect plot = layout.Plots[i];
 					plot.Y += yOffset;
 
 					if (child.VerticalOptions.Expands)
@@ -444,7 +444,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					var child = (View)LogicalChildrenInternal[i];
 					if (!child.IsVisible)
 						continue;
-					Rectangle plot = layout.Plots[i];
+					Rect plot = layout.Plots[i];
 					plot.X += xOffset;
 
 					if (child.HorizontalOptions.Expands)
@@ -462,12 +462,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		class LayoutInformation
 		{
-			public Rectangle Bounds;
+			public Rect Bounds;
 			public double CompressionSpace;
 			public Size Constraint;
 			public int Expanders;
 			public Size MinimumSize;
-			public Rectangle[] Plots;
+			public Rect[] Plots;
 			public SizeRequest[] Requests;
 		}
 	}

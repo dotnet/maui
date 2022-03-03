@@ -121,13 +121,13 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		protected Maui.Graphics.Rectangle GetPlatformViewBounds(IViewHandler viewHandler) =>
+		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
 			((FrameworkElement)viewHandler.PlatformView).GetPlatformViewBounds();
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
 			((FrameworkElement)viewHandler.PlatformView).GetViewTransform();
 
-		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
+		protected Maui.Graphics.Rect GetBoundingBox(IViewHandler viewHandler) =>
 			((FrameworkElement)viewHandler.PlatformView).GetBoundingBox();
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
