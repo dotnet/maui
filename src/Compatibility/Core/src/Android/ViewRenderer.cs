@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// So in case we're setting the focus in response to another control's un-focusing,
 				// we need to post the handling of it to the main looper so that it happens _after_ all the other focus
 				// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set here
-				Device.BeginInvokeOnMainThread(() =>
+				Post(() =>
 				{
 					if (Control == null || Control.IsDisposed())
 						return;

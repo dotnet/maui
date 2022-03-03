@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			// Ignore the IsPresented value being set to false for Split mode on desktop
 			// and allow the master view to be made initially visible
-            if (Device.Idiom == TargetIdiom.Desktop && !view.Hidden && FlyoutPage.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
+            if (DeviceInfo.Idiom == DeviceIdiom.Desktop && !view.Hidden && FlyoutPage.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
 				return;
 
 			if (FlyoutPage.IsPresented && view.Hidden)

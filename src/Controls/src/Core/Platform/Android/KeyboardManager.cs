@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Platform
 				view.ShowKeyboard();
 			};
 
-			Device.BeginInvokeOnMainThread(ShowKeyboard);
+			view.Post(ShowKeyboard);
 		}
 	}
 }

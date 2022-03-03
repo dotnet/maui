@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			Device.BeginInvokeOnMainThread(() =>
+			Post(() =>
 			{
 
 				SetCurrentItem(carouselPosition);

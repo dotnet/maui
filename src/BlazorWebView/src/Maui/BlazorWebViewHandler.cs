@@ -33,10 +33,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 		}
 
-#if !NETSTANDARD
-		private MauiDispatcher ComponentsDispatcher { get; } = new MauiDispatcher();
-#endif
-
 		/// <summary>
 		/// Maps the <see cref="IBlazorWebView.HostPage"/> property to the specified handler.
 		/// </summary>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
@@ -17,22 +18,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Test, Category("Frame")]
 		public async Task ReusingFrameRendererDoesCauseOverlapWithPreviousContent()
 		{
-			await Device.InvokeOnMainThreadAsync(() =>
+			ContentPage page = new ContentPage();
+			Frame frame1 = new Frame()
 			{
-
-
-				ContentPage page = new ContentPage();
-				Frame frame1 = new Frame()
+				Content = new Label()
 				{
-					Content = new Label()
-					{
-						Text = "I am frame 1"
-					}
-				};
+					Text = "I am frame 1"
+				}
+			};
 
-				page.Content = frame1;
+			page.Content = frame1;
 
-
+			await page.Dispatcher.DispatchAsync(() =>
+			{
 				using (var pageRenderer = GetRenderer(page))
 				using (var renderer = GetRenderer(frame1))
 				{
