@@ -33,12 +33,29 @@ namespace Microsoft.Maui.Controls
 			HandlerChanged?.Invoke(this, EventArgs.Empty);
 
 			OnHandlerChanged();
+			
+			if (this is VisualElement visual && visual.Behaviors.Count > 0 && Handler != null)
+			{
+				foreach (var behavior in visual.Behaviors)
+				{
+					if (behavior is IPlatformAttachedObject attachedObject)
+							attachedObject.OnPlatformAttachBehavior(this);
+				}
+			}
 		}
 
 		private protected virtual void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
 			HandlerChanging?.Invoke(this, args);
 			OnHandlerChanging(args);
+			if (this is VisualElement visual && visual.Behaviors.Count > 0 && args.NewHandler == null)
+			{
+				foreach (var behavior in visual.Behaviors)
+				{
+					if (behavior is IPlatformAttachedObject attachedObject)
+						attachedObject.OnPlatformDeattachBehavior(this);
+				}
+			}
 		}
 
 		IElementHandler _previousHandler;
