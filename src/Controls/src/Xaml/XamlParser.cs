@@ -298,7 +298,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					if (targetPlatform != DeviceInfo.Platform.ToString())
 					{
 						// Special case for Windows backward compatibility
-						if (targetPlatform == "Windows" && DeviceInfo.Platform == DevicePlatform.UWP)
+						if (targetPlatform == "Windows" && DeviceInfo.Platform == DevicePlatform.WinUI)
 							continue;
 
 						prefixes.Add(prefix);
