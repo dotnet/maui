@@ -32,7 +32,7 @@
     <MicrosoftJSInteropPackageVersion>6.0.1</MicrosoftJSInteropPackageVersion>
     <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.1</MicrosoftWindowsDesktopAppRuntimewinx64Version>
     <!-- Other packages -->
-    <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1077</MicrosoftMauiGraphicsVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1079</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
     <_MicrosoftWebWebView2Version>1.0.1020.30</_MicrosoftWebWebView2Version>
     <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
