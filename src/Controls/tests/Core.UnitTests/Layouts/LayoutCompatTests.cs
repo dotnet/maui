@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var page = new ContentPage() { IsPlatformEnabled = true };
 			var button = new Button() { IsPlatformEnabled = true };
 			var expectedSize = new Size(100, 100);
-			var expectedRect = new Rectangle(Point.Zero, expectedSize);
+			var expectedRect = new Rect(Point.Zero, expectedSize);
 
 			var buttonHandler = Substitute.For<IViewHandler>();
 			buttonHandler.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			grid.Children.Add(label);
 			contentPage.Content = stackLayout;
 
-			var rect = new Rectangle(Point.Zero, expectedSize);
+			var rect = new Rect(Point.Zero, expectedSize);
 
 			(contentPage as Microsoft.Maui.IContentView).CrossPlatformMeasure(expectedSize.Width, expectedSize.Height);
 			(contentPage as Microsoft.Maui.IContentView).CrossPlatformArrange(rect);
