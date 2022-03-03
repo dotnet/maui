@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Essentials
 		public static DevicePlatform Tizen { get; } = new DevicePlatform(nameof(Tizen));
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='UWP']/Docs" />
+		[Obsolete("Use WinUI instead.")]
 		public static DevicePlatform UWP { get; } = new DevicePlatform(nameof(UWP));
 
 		public static DevicePlatform WinUI { get; } = new DevicePlatform(nameof(WinUI));
