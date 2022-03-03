@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='CrossPlatformArrange']/Docs" />
-		public Graphics.Size CrossPlatformArrange(Graphics.Rectangle bounds)
+		public Graphics.Size CrossPlatformArrange(Graphics.Rect bounds)
 		{
 			return LayoutManager.ArrangeChildren(bounds);
 		}

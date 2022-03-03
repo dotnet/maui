@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var searchBar = new UISearchBar(RectangleF.Zero) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
+					var searchBar = new UISearchBar(CGRect.Empty) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
 					var cancelButton = searchBar.FindDescendantView<UIButton>();
 					_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);

@@ -61,7 +61,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			carouselView.SetBinding(CarouselView.PositionProperty, nameof(_viewModel.CarouselPosition));
 
 			var absolute = new Microsoft.Maui.Controls.AbsoluteLayout();
-			AbsoluteLayout.SetLayoutBounds(carouselView, new Rectangle(0, 0, 1, 1));
+			AbsoluteLayout.SetLayoutBounds(carouselView, new Rect(0, 0, 1, 1));
 			AbsoluteLayout.SetLayoutFlags(carouselView, AbsoluteLayoutFlags.All);
 			absolute.Add(carouselView);
 
@@ -90,7 +90,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 			carouselView.IndicatorView = indicators;
 
-			AbsoluteLayout.SetLayoutBounds(indicators, new Rectangle(.5, 1, -1, -1));
+			AbsoluteLayout.SetLayoutBounds(indicators, new Rect(.5, 1, -1, -1));
 			AbsoluteLayout.SetLayoutFlags(indicators, AbsoluteLayoutFlags.PositionProportional);
 			absolute.Add(indicators);
 
