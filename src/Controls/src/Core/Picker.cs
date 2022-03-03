@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs" />
-		string ITextElement.UpdateFormsText(string source, TextTransform textTransform)
+		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>

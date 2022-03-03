@@ -35,9 +35,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs" />
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='TextTransformProperty']/Docs" />
-		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
-
 		readonly Lazy<PlatformConfigurationRegistry<TimePicker>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='.ctor']/Docs" />
@@ -104,10 +101,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='TextTransform']/Docs" />
-		public TextTransform TextTransform
+		TextTransform ITextElement.TextTransform
 		{
-			get => (TextTransform)GetValue(TextTransformProperty);
-			set => SetValue(TextTransformProperty, value);
+			get => TextTransform.Default;
+			set { }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs" />
