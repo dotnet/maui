@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 			platformEntry.IsPassword = entry.IsPassword;
 
 			// it is workaround, Text does not instantly changed
-			platformEntry.Text = entry.Text;
+			platformEntry.Text = platformEntry.Text;
 		}
 
 		public static void UpdateReturnType(this Entry platformEntry, IEntry entry)
