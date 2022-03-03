@@ -112,7 +112,6 @@ resources:
       endpoint: xamarin
 
 stages:
-
   - stage: build_net6
     displayName: Build .NET 6
     dependsOn: []
