@@ -80,9 +80,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			}
 		}
 
-		public Rectangle Rectangle
+		public Rect Rectangle
 		{
-			get { return new Rectangle(RectangleX, RectangleY, RectangleWidth, RectangleHeight); }
+			get { return new Rect(RectangleX, RectangleY, RectangleWidth, RectangleHeight); }
 		}
 	}
 	public class AbsoluteLayoutGallery : ContentPage

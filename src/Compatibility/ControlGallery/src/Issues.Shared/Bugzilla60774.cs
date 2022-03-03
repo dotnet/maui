@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			for (var i = 0; i < 100; i++)
 			{
 				var label = new Label { Text = "label " + i };
-				AbsoluteLayout.SetLayoutBounds(label, new Rectangle(0, i * 50, 100, 30));
+				AbsoluteLayout.SetLayoutBounds(label, new Rect(0, i * 50, 100, 30));
 				al.Children.Add(label);
 			}
 
