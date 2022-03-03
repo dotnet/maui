@@ -356,6 +356,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnPlatform Android=20, macOS=25}", "macOS", 25)]
 		[TestCase("{OnPlatform Android=20, Tizen=25}", "Tizen", 25)]
 		[TestCase("{OnPlatform Android=20, WinUI=25}", "WinUI", 25)]
+		[TestCase("{OnPlatform Android=20, UWP=25}", "WinUI", 25)]
+		[TestCase("{OnPlatform Android=20, WinUI=25, UWP=20}", "WinUI", 25)]
 		[TestCase("{OnPlatform Android=20, UWP=25}", "UWP", 25)]
 		[TestCase("{OnPlatform Android=20, WPF=25}", "WPF", 25)]
 		[TestCase("{OnPlatform 20}", "Android", 20)]
