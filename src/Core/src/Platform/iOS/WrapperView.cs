@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Platform
 
 			if (BorderView == null)
 			{
-				AddSubview(BorderView = new UIView(Bounds) { BackgroundColor = UIColor.Black });
+				AddSubview(BorderView = new UIView(Bounds) { UserInteractionEnabled = false});
 			}
 
 			BorderView.UpdateMauiCALayer(Border);
