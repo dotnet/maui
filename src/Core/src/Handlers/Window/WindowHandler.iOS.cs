@@ -14,10 +14,34 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeContent = window.Content.ToUIViewController(handler.MauiContext);
 
-			handler.NativeView.RootViewController = nativeContent;
+			handler.PlatformView.RootViewController = nativeContent;
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();
+		}
+
+		public static void MapMenuBar(IWindowHandler handler, IWindow view)
+		{
+			if (view is IMenuBarElement mb)
+			{
+				if (MauiUIApplicationDelegate.Current.MenuBuilder == null)
+				{
+					UIMenuSystem
+						.MainSystem
+						.SetNeedsRebuild();
+				}
+				else
+				{
+					// The handlers that are part of MenuBar
+					// are only relevant while the menu is being built
+					// because you can only build a menu while the
+					// `AppDelegate.BuildMenu` override is running
+					mb.MenuBar?.Handler?.DisconnectHandler();
+					mb.MenuBar?
+						.ToHandler(handler.MauiContext!)?
+						.DisconnectHandler();
+				}
+			}
 		}
 	}
 }

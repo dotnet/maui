@@ -7,6 +7,7 @@ using Windows.UI.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.Maui.Essentials;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using System.Text;
@@ -348,7 +349,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (IsPassword)
 			{
 				// If we are on the phone, we might need to delay obfuscating the last character
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				{
 					DelayObfuscation();
 					return;

@@ -12,15 +12,25 @@ namespace Microsoft.Maui.Controls
 		Semantics _semantics;
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
-		public Rectangle Frame
+		public Rect Frame
 		{
 			get => Bounds;
 			set
 			{
+				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
+					return;
+
+				BatchBegin();
+
 				X = value.X;
 				Y = value.Y;
 				Width = value.Width;
 				Height = value.Height;
+
+				SizeAllocated(Width, Height);
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+
+				BatchCommit();
 			}
 		}
 
@@ -99,27 +109,27 @@ namespace Microsoft.Maui.Controls
 		public Size DesiredSize { get; protected set; }
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Arrange']/Docs" />
-		public void Arrange(Rectangle bounds)
+		public void Arrange(Rect bounds)
 		{
 			Layout(bounds);
 		}
 
-		Size IView.Arrange(Rectangle bounds)
+		Size IView.Arrange(Rect bounds)
 		{
 			return ArrangeOverride(bounds);
 		}
 
 		// ArrangeOverride provides a way to allow subclasses (e.g., ScrollView) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
-		protected virtual Size ArrangeOverride(Rectangle bounds)
+		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
-			Handler?.NativeArrange(Frame);
+			Handler?.PlatformArrange(Frame);
 			return Frame.Size;
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Layout']/Docs" />
-		public void Layout(Rectangle bounds)
+		public void Layout(Rect bounds)
 		{
 			Bounds = bounds;
 		}
@@ -148,6 +158,12 @@ namespace Microsoft.Maui.Controls
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 			return DesiredSize;
+		}
+
+		bool IView.IsFocused
+		{
+			get => (bool)GetValue(IsFocusedProperty);
+			set => SetValueCore(IsFocusedPropertyKey, value);
 		}
 
 		Maui.FlowDirection IView.FlowDirection

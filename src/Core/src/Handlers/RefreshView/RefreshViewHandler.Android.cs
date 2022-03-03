@@ -4,15 +4,15 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RefreshViewHandler : ViewHandler<IRefreshView, MauiSwipeRefreshLayout>
 	{
-		protected override MauiSwipeRefreshLayout CreateNativeView()
+		protected override MauiSwipeRefreshLayout CreatePlatformView()
 		{
 			return new MauiSwipeRefreshLayout(Context);
 		}
 
-		protected override void ConnectHandler(MauiSwipeRefreshLayout nativeView)
+		protected override void ConnectHandler(MauiSwipeRefreshLayout platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.Refresh += OnSwipeRefresh;
+			base.ConnectHandler(platformView);
+			platformView.Refresh += OnSwipeRefresh;
 		}
 
 		void OnSwipeRefresh(object? sender, System.EventArgs e)
@@ -20,51 +20,51 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsRefreshing = true;
 		}
 
-		protected override void DisconnectHandler(MauiSwipeRefreshLayout nativeView)
+		protected override void DisconnectHandler(MauiSwipeRefreshLayout platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			nativeView.Refresh -= OnSwipeRefresh;
-			nativeView.UpdateContent(null, null);
-			base.DisconnectHandler(nativeView);
+			platformView.Refresh -= OnSwipeRefresh;
+			platformView.UpdateContent(null, null);
+			base.DisconnectHandler(platformView);
 		}
 
-		void UpdateContent() =>
-			NativeView.UpdateContent(VirtualView.Content, MauiContext);
+		static void UpdateContent(IRefreshViewHandler handler) =>
+			handler.PlatformView.UpdateContent(handler.VirtualView.Content, handler.MauiContext);
 
-		void UpdateRefreshColor()
+		static void UpdateRefreshColor(IRefreshViewHandler handler)
 		{
-			if (VirtualView.RefreshColor == null)
+			if (handler.VirtualView.RefreshColor == null)
 				return;
 
-			var color = VirtualView.RefreshColor.ToColor()?.ToInt();
+			var color = handler.VirtualView.RefreshColor.ToColor()?.ToInt();
 
 			if (color != null)
-				NativeView.SetColorSchemeColors(color.Value);
+				handler.PlatformView.SetColorSchemeColors(color.Value);
 		}
 
-		void UpdateIsRefreshing() =>
-			NativeView.Refreshing = VirtualView.IsRefreshing;
+		static void UpdateIsRefreshing(IRefreshViewHandler handler) =>
+			handler.PlatformView.Refreshing = handler.VirtualView.IsRefreshing;
 
-		void UpdateBackground()
+		static void UpdateBackground(IRefreshViewHandler handler)
 		{
-			if (VirtualView.Background == null)
+			if (handler.VirtualView.Background == null)
 				return;
 
-			var color = VirtualView.Background.ToColor()?.ToInt();
+			var color = handler.VirtualView.Background.ToColor()?.ToInt();
 			if (color != null)
-				NativeView.SetProgressBackgroundColorSchemeColor(color.Value);
+				handler.PlatformView.SetProgressBackgroundColorSchemeColor(color.Value);
 		}
 
-		public static void MapBackground(RefreshViewHandler handler, IView view)
-			=> handler.UpdateBackground();
+		public static void MapBackground(IRefreshViewHandler handler, IView view)
+			=> UpdateBackground(handler);
 
-		public static void MapIsRefreshing(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateIsRefreshing();
+		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateIsRefreshing(handler);
 
-		public static void MapContent(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateContent();
+		public static void MapContent(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateContent(handler);
 
-		public static void MapRefreshColor(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateRefreshColor();
+		public static void MapRefreshColor(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateRefreshColor(handler);
 	}
 }

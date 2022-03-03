@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void OnElementReady()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				_moreOption = new Lazy<MoreOption>(CreateMoreOption);
 				if (Element.ToolbarItems is INotifyCollectionChanged items)
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					_page.LayoutUpdated -= OnLayoutUpdated;
 				}
 
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					if (Element.ToolbarItems is INotifyCollectionChanged items)
 					{
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (Element.BackgroundColor.IsDefault || Element.BackgroundColor.A == 0)
 				_page.Color = EColor.Transparent;
 			else
-				_page.Color = Element.BackgroundColor.ToNative();
+				_page.Color = Element.BackgroundColor.ToPlatform();
 		}
 
 		protected override void UpdateLayout()

@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		protected virtual EScroller CreateScroller(EvasObject parent)
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new CircleScroller(parent, Forms.CircleSurface);
 			}

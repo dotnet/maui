@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 				contentPage.FlowDirection = flowDirection;
 			}
 
-			var nativeAlignment = await Device.InvokeOnMainThreadAsync(() =>
+			var nativeAlignment = await contentPage.Dispatcher.DispatchAsync(() =>
 			{
 				if (!isExplicit)
 				{
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 				contentPage.FlowDirection = flowDirection;
 			}
 
-			var (nativeAlignment, nativeFlowDirection) = await Device.InvokeOnMainThreadAsync(() =>
+			var (nativeAlignment, nativeFlowDirection) = await contentPage.Dispatcher.DispatchAsync(() =>
 			{
 				if (!isExplicit)
 				{

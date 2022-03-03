@@ -12,6 +12,8 @@ using CoreMotion;
 using CoreMotion;
 #endif
 
+using Microsoft.Maui.Essentials.Implementations;
+
 namespace Microsoft.Maui.Essentials
 {
 	public static partial class Platform
@@ -66,9 +68,6 @@ namespace Microsoft.Maui.Essentials
 
 			return returnValue;
 		}
-
-		internal static bool HasOSVersion(int major, int minor) =>
-			OperatingSystem.IsIOSVersionAtLeast(major, minor);
 
 #if __IOS__ || __TVOS__
 

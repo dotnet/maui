@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			base.OnAppearing();
 			// WPF doesn't show ToolbarItems for pages in modal stack 
 			// so we use NavigationBehavior.SetApplicationRoot and pop TestCases page from modal stack to make this test case visible with toolbar items
-			if (Device.RuntimePlatform == Device.WPF)
+			if (DeviceInfo.Platform == DevicePlatform.Create("WPF"))
 				Navigation.PopModalAsync();
 		}
 	}

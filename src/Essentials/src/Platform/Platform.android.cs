@@ -14,6 +14,7 @@ using Android.OS;
 using Android.Views;
 using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -148,7 +149,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				var root = FileProvider.GetTemporaryRootDirectory();
 
-				var tmpFile = FileSystem.GetEssentialsTemporaryFile(root, file.FileName);
+				var tmpFile = FileSystem.GetTemporaryFile(root, file.FileName);
 
 				System.IO.File.Copy(file.FullPath, tmpFile.CanonicalPath);
 

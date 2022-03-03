@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using Android.Content;
 using Android.Content.PM;
@@ -82,5 +83,23 @@ namespace Microsoft.Maui.Essentials.Implementations
 				UiMode.NightNo => AppTheme.Light,
 				_ => AppTheme.Unspecified
 			};
+
+		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
+
+		public LayoutDirection RequestedLayoutDirection
+		{
+			get
+			{
+				if (!OperatingSystem.IsAndroidVersionAtLeast(17))
+					return LayoutDirection.LeftToRight;
+
+				var config = Platform.AppContext.Resources?.Configuration;
+				if (config == null)
+					return LayoutDirection.Unknown;
+
+				return (config.LayoutDirection == Android.Views.LayoutDirection.Rtl) ? LayoutDirection.RightToLeft :
+					LayoutDirection.LeftToRight;
+			}
+		}
 	}
 }

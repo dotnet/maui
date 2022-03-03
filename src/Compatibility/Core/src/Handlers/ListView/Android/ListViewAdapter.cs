@@ -7,6 +7,7 @@ using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AListView = Android.Widget.ListView;
@@ -248,7 +249,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// so we just reuse the layout already created for the cell
 				// This only ever happens if the ListView is forced to measure itself because
 				// it has infinite height
-				if (convertView == null && cell.Handler?.NativeView is AView aView &&
+				if (convertView == null && cell.Handler?.PlatformView is AView aView &&
 					aView.Parent is ConditionalFocusLayout cfl)
 				{
 					layout = cfl;
@@ -704,7 +705,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Color separatorColor = _listView.SeparatorColor;
 
 			if (isHeader || separatorColor != null)
-				bline.SetBackgroundColor(separatorColor.ToNative(Application.AccentColor));
+				bline.SetBackgroundColor(separatorColor.ToPlatform(Application.AccentColor));
 			else
 			{
 				if (s_dividerHorizontalDarkId == int.MinValue)

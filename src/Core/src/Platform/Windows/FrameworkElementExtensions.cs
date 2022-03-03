@@ -81,6 +81,11 @@ namespace Microsoft.Maui.Platform
 			element.SetBinding(GetForegroundProperty(element), binding);
 		}
 
+		public static void UpdateVerticalTextAlignment(this Control platformControl, ITextAlignment textAlignment)
+		{
+			platformControl.VerticalAlignment = textAlignment.VerticalTextAlignment.ToPlatformVerticalAlignment();
+		}
+
 		internal static IEnumerable<T?> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
 		{
 			var myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
@@ -233,7 +238,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void Arrange(this IView view, FrameworkElement frameworkElement)
 		{
-			var rect = new Graphics.Rectangle(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
+			var rect = new Graphics.Rect(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
 
 			if (!view.Frame.Equals(rect))
 				view.Arrange(rect);

@@ -16,18 +16,18 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class HandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			GetSemanticNativeElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
+			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
 
 
 		protected bool GetExcludedWithChildren(IViewHandler viewHandler) =>
-			GetSemanticNativeElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
+			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
 
-		public AView GetSemanticNativeElement(IViewHandler viewHandler)
+		public AView GetSemanticPlatformElement(IViewHandler viewHandler)
 		{
-			if (viewHandler.NativeView is AndroidX.AppCompat.Widget.SearchView sv)
+			if (viewHandler.PlatformView is AndroidX.AppCompat.Widget.SearchView sv)
 				return sv.FindViewById(Resource.Id.search_button)!;
 
-			return (AView)viewHandler.NativeView;
+			return (AView)viewHandler.PlatformView;
 		}
 
 		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
@@ -36,6 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				AViewGroup rootView = MauiContext.Context.GetActivity().Window.DecorView as AViewGroup;
+				var decorBackground = rootView.Background;
 				var linearLayoutCompat = new LinearLayoutCompat(MauiContext.Context);
 
 				var fragmentManager = MauiContext.GetFragmentManager();
@@ -74,6 +75,16 @@ namespace Microsoft.Maui.DeviceTests
 					await linearLayoutCompat.OnUnloadedAsync();
 					if (viewFragment.View != null)
 						await viewFragment.View.OnUnloadedAsync();
+
+					// This is mainly to remove changes to the decor view that shell imposes
+					if (decorBackground != rootView.Background)
+						rootView.Background = decorBackground;
+
+					// Unset the Support Action bar if the calling code has set the support action bar
+					if (MauiContext.Context.GetActivity() is AppCompatActivity aca)
+					{
+						aca.SetSupportActionBar(null);
+					}
 				}
 			});
 		}

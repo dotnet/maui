@@ -384,17 +384,19 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll']/Docs" />
+		[Obsolete]
 		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll']/Docs" />
+		[Obsolete]
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(
 				AppDomain.CurrentDomain.GetAssemblies(),
-				Device.PlatformServices.GetType().GetTypeInfo().Assembly,
+				Device.DefaultRendererAssembly,
 				attrTypes,
 				flags,
 				null,
@@ -411,16 +413,17 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			Profile.FrameBegin();
 
-
 			if (ExtraAssemblies != null)
 				assemblies = assemblies.Union(ExtraAssemblies).ToArray();
 
-			int indexOfExecuting = Array.IndexOf(assemblies, defaultRendererAssembly);
-
-			if (indexOfExecuting > 0)
+			if (defaultRendererAssembly != null)
 			{
-				assemblies[indexOfExecuting] = assemblies[0];
-				assemblies[0] = defaultRendererAssembly;
+				int indexOfExecuting = Array.IndexOf(assemblies, defaultRendererAssembly);
+				if (indexOfExecuting > 0)
+				{
+					assemblies[indexOfExecuting] = assemblies[0];
+					assemblies[0] = defaultRendererAssembly;
+				}
 			}
 
 			if (fontRegistrar == null)

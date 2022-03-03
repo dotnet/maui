@@ -1,10 +1,19 @@
-﻿using Microsoft.Maui.Graphics;
+﻿#if __IOS__ || MACCATALYST
+using PlatformView = Microsoft.Maui.Platform.MauiShapeView;
+#elif MONOANDROID
+using PlatformView = Microsoft.Maui.Platform.MauiShapeView;
+#elif WINDOWS
+using PlatformView = Microsoft.Maui.Graphics.Win2D.W2DGraphicsView;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ShapeViewHandler
+	public partial class ShapeViewHandler : IShapeViewHandler
 	{
-		public static IPropertyMapper<IShapeView, ShapeViewHandler> ShapeViewMapper = new PropertyMapper<IShapeView, ShapeViewHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IShapeView, IShapeViewHandler> Mapper = new PropertyMapper<IShapeView, IShapeViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IShapeView.Shape)] = MapShape,
 			[nameof(IShapeView.Aspect)] = MapAspect,
@@ -17,14 +26,20 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IShapeView.StrokeMiterLimit)] = MapStrokeMiterLimit
 		};
 
-		public ShapeViewHandler() : base(ShapeViewMapper)
+		public static CommandMapper<IShapeView, IShapeViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
+		};
 
+		public ShapeViewHandler() : base(Mapper)
+		{
 		}
 
-		public ShapeViewHandler(IPropertyMapper mapper) : base(mapper ?? ShapeViewMapper)
+		public ShapeViewHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		IShapeView IShapeViewHandler.VirtualView => VirtualView;
+
+		PlatformView IShapeViewHandler.PlatformView => PlatformView;
 	}
 }

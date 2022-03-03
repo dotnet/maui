@@ -1,6 +1,6 @@
 variables:
 - name: BuildVersion
-  value: $[counter('handler-counter', 1)]
+  value: $[counter('buildversion-counter', 5000)]
 - name: NUGET_VERSION
   value: 5.8.1
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
@@ -30,6 +30,8 @@ variables:
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
   value: $(Build.ArtifactStagingDirectory)/test-results
+- name: provisioningVS
+  value: true
 - name: provisionator.xcode
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path

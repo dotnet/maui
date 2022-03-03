@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// if the target sdk >= 17 then setting the LayoutDirection on the scroll view natively takes care of the scroll
 			if (!_checkedForRtlScroll && _hScrollView != null && Element is IVisualElementController controller && controller.EffectiveFlowDirection.IsRightToLeft())
 			{
-				Device.BeginInvokeOnMainThread(() => UpdateScrollPosition(_hScrollView.ScrollX, ScrollY));
+				Post(() => UpdateScrollPosition(_hScrollView.ScrollX, ScrollY));
 			}
 
 			_checkedForRtlScroll = true;

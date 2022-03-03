@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 
 #if WINDOWS
@@ -30,28 +31,28 @@ namespace Microsoft.Maui
 		public static IDispatcher? GetOptionalDispatcher(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<IDispatcher>();
 
-		public static IMauiContext MakeApplicationScope(this IMauiContext mauiContext, NativeApplication nativeApplication)
+		public static IMauiContext MakeApplicationScope(this IMauiContext mauiContext, NativeApplication platformApplication)
 		{
 			var scopedContext = new MauiContext(mauiContext.Services);
 
-			scopedContext.AddSpecific(nativeApplication);
+			scopedContext.AddSpecific(platformApplication);
 
 			scopedContext.InitializeScopedServices();
 
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, NativeWindow nativeWindow, out IServiceScope scope)
+		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, NativeWindow platformWindow, out IServiceScope scope)
 		{
 			scope = mauiContext.Services.CreateScope();
 
 #if __ANDROID__
-			var scopedContext = new MauiContext(scope.ServiceProvider, nativeWindow);
+			var scopedContext = new MauiContext(scope.ServiceProvider, platformWindow);
 #else
 			var scopedContext = new MauiContext(scope.ServiceProvider);
 #endif
 
-			scopedContext.AddWeakSpecific(nativeWindow);
+			scopedContext.AddWeakSpecific(platformWindow);
 
 #if WINDOWS || __ANDROID__
 			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
@@ -66,6 +67,16 @@ namespace Microsoft.Maui
 
 			foreach (var service in scopedServices)
 				service.Initialize(scopedContext.Services);
+		}
+
+		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
+		{
+			var appInfo = AppInfo.Current;
+
+			if (appInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft)
+				return FlowDirection.RightToLeft;
+
+			return FlowDirection.LeftToRight;
 		}
 	}
 }

@@ -363,7 +363,7 @@ namespace Microsoft.Maui.Controls
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
 				var assembly = rootObjectType.GetTypeInfo().Assembly;
 
-				if (value.Contains(";assembly="))
+				if (value.IndexOf(";assembly=", StringComparison.Ordinal) != -1)
 				{
 					var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
 					value = parts[0];

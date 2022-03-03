@@ -12,14 +12,14 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
-		Google.Android.Material.ImageView.ShapeableImageView GetNativeImageButton(ImageButtonHandler buttonHandler) =>
-			buttonHandler.NativeView;
+		Google.Android.Material.ImageView.ShapeableImageView GetPlatformImageButton(ImageButtonHandler buttonHandler) =>
+			buttonHandler.PlatformView;
 
 		Task PerformClick(IButton button)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				GetNativeImageButton(CreateHandler(button)).PerformClick();
+				GetPlatformImageButton(CreateHandler(button)).PerformClick();
 			});
 		}
 	}

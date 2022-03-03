@@ -66,10 +66,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (element is IView view)
 			{
-				view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+				view.Arrange(new Rect(0, 0, view.Width, view.Height));
 
 				if (handler is IViewHandler ivh)
-					ivh.NativeArrange(view.Frame);
+					ivh.PlatformArrange(view.Frame);
 			}
 		}
 

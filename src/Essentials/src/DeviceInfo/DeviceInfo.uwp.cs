@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					if (string.IsNullOrWhiteSpace(systemProductName))
 						systemProductName = deviceInfo.SystemProductName;
 
-					var isVirtual = systemProductName.Contains("Virtual") || systemProductName == "HMV domU";
+					var isVirtual = systemProductName.Contains("Virtual", StringComparison.Ordinal) || systemProductName == "HMV domU";
 
 					currentType = isVirtual ? DeviceType.Virtual : DeviceType.Physical;
 				}

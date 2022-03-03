@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 						ie.TextBlockFocused -= OnTextBlockFocused;
 						ie.EntryLayoutFocused -= OnFocused;
 						ie.EntryLayoutUnfocused -= OnUnfocused;
-						if (Device.Idiom == TargetIdiom.TV)
+						if (DeviceInfo.Idiom == DeviceIdiom.TV)
 						{
 							ie.EntryLayoutFocused -= OnLayoutFocused;
 							ie.EntryLayoutUnfocused -= OnLayoutUnfocused;
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					ie.EntryLayoutFocused += OnFocused;
 					ie.EntryLayoutUnfocused += OnUnfocused;
 
-					if (Device.Idiom == TargetIdiom.TV)
+					if (DeviceInfo.Idiom == DeviceIdiom.TV)
 					{
 						ie.EntryLayoutFocused += OnLayoutFocused;
 						ie.EntryLayoutUnfocused += OnLayoutUnfocused;
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.PlaceholderColor = Element.TitleColor.ToNative();
+				ie.PlaceholderColor = Element.TitleColor.ToPlatform();
 			}
 		}
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.TextColor = Element.TextColor.ToNative();
+				ie.TextColor = Element.TextColor.ToPlatform();
 			}
 		}
 
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
 			}
 		}
 
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (Element.IsEnabled)
 			{
 				int i = 0;
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					_dialog = new WatchDialog(Forms.NativeParent, false);
 				}
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				_dialog.AlignmentX = -1;
 				_dialog.AlignmentY = -1;
 				_dialog.Title = Element.Title;
-				_dialog.TitleColor = Element.TitleColor.ToNative();
+				_dialog.TitleColor = Element.TitleColor.ToPlatform();
 				_dialog.Dismissed += OnDialogDismissed;
 				_dialog.BackButtonPressed += (object senders, EventArgs es) =>
 				{

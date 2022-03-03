@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static Drawable CreateItemBackgroundDrawable()
 		{
-			var stateList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.2f).ToNative());
+			var stateList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.2f).ToPlatform());
 			var colorDrawable = new ColorDrawable(AColor.White);
 			return new RippleDrawable(stateList, colorDrawable, null);
 		}
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 					image.LayoutParameters = lp;
 					lp.Dispose();
 
-					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToNative());
+					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToPlatform());
 
 					shellContent.icon.LoadImage(mauiContext, result =>
 					{

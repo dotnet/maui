@@ -1,0 +1,66 @@
+parameters:
+  platform: ''
+  poolName: ''
+  provisionatorChannel: latest
+  artifact: 'nuget'
+
+steps:
+  - ${{ if eq(parameters.platform, 'macOS') }}:
+    - template: agent-cleanser/v1.yml@xamarin-templates
+      parameters:
+        UninstallMono: false
+        UninstallXamarinMac: false
+        CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
+  - template: provision.yml
+    parameters:
+      platform: ${{ parameters.platform }}
+      poolName: ${{ parameters.poolName }}
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+    displayName: 'Install .NET'
+    retryCountOnTaskFailure: 3
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
+    displayName: 'Pack .NET Maui'
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+  - ${{ if eq(parameters.platform, 'Windows') }}:
+    - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
+      displayName: 'Diff .NET Maui artifacts with NuGet'
+  - task: CopyFiles@2
+    condition: always()
+    displayName: 'Copy files to staging'
+    inputs:
+      Contents: |
+        artifacts/**/*.*nupkg
+        artifacts/**/*.zip
+        artifacts/vs-workload.props
+        eng/automation/SignList.xml
+      TargetFolder: $(build.artifactstagingdirectory)
+      flattenFolders: true
+  - task: CopyFiles@2
+    condition: always()
+    displayName: 'Copy metadata to staging'
+    inputs:
+      SourceFolder: artifacts
+      Contents: |
+        metadata/**
+        api-diff/**
+      TargetFolder: $(build.artifactstagingdirectory)
+  - task: CopyFiles@2
+    displayName: 'Copy Log Files'
+    condition: always()
+    inputs:
+      Contents: |
+        artifacts/logs/**
+      TargetFolder: $(build.artifactstagingdirectory)/logs
+      flattenFolders: true
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    displayName: publish artifacts
+    inputs:
+      ArtifactName: ${{ parameters.artifact }}
+        
