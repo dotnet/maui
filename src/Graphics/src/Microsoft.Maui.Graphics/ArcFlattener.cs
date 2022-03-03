@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Graphics
 
             angle *= -1;
 
-            var radians = (float)Geometry.DegreesToRadians(angle);
+            var radians = (float)GeometryUtil.DegreesToRadians(angle);
             var point = GetPointAtAngle(0, 0, _radius, radians);
             point.X = _cx + (point.X * _fx);
             point.Y = _cy + (point.Y * _fy);
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Graphics
                 if (endPoint == null)
                     endPoint = GetPointOnArc(candidate);
                 var midPointOnLine = GetCenter(_startPoint, (PointF)endPoint);
-                if (Geometry.GetDistance(midPointOnArc.X, midPointOnArc.Y, midPointOnLine.X, midPointOnLine.Y) <= flatness)
+                if (GeometryUtil.GetDistance(midPointOnArc.X, midPointOnArc.Y, midPointOnLine.X, midPointOnLine.Y) <= flatness)
                 {
                     found = true;
                     n = n << 1;

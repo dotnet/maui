@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Graphics
 			{
 				var currentOffset = stops[i].Offset;
 
-				if (Math.Abs(currentOffset - offset) < Geometry.Epsilon)
+				if (Math.Abs(currentOffset - offset) < GeometryUtil.Epsilon)
 				{
 					return stops[i].Color;
 				}
@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Graphics
 				return StartColor;
 			}
 
-			var f = Geometry.GetFactor(before, after, offset);
+			var f = GeometryUtil.GetFactor(before, after, offset);
 			return BlendStartAndEndColors(stops[beforeIndex].Color, stops[afterIndex].Color, f);
 		}
 
@@ -247,10 +247,10 @@ namespace Microsoft.Maui.Graphics
 			startColor ??= Colors.White;
 			endColor ??= Colors.White;
 
-			var r = Geometry.GetLinearValue(startColor.Red, endColor.Red, factor);
-			var g = Geometry.GetLinearValue(startColor.Green, endColor.Green, factor);
-			var b = Geometry.GetLinearValue(startColor.Blue, endColor.Blue, factor);
-			var a = Geometry.GetLinearValue(startColor.Alpha, endColor.Alpha, factor);
+			var r = GeometryUtil.GetLinearValue(startColor.Red, endColor.Red, factor);
+			var g = GeometryUtil.GetLinearValue(startColor.Green, endColor.Green, factor);
+			var b = GeometryUtil.GetLinearValue(startColor.Blue, endColor.Blue, factor);
+			var a = GeometryUtil.GetLinearValue(startColor.Alpha, endColor.Alpha, factor);
 
 			return new Color(r, g, b, a);
 		}

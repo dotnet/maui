@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Graphics.Skia
 					}
 
 					var rect = new SKRect(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
-					var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+					var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 
 					startAngle *= -1;
 					if (!clockwise)
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				}
 
 				var rect = new SKRect(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
-				var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+				var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 
 				startAngle *= -1;
 				if (!clockwise)
@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Graphics.Skia
 					}
 
 					var rect = new SKRect(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
-					var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+					var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 
 					startAngle *= -1;
 					if (!clockwise)

@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Graphics.GDI
 						var width = (bottomRight.X - topLeft.X) * ppux;
 						var height = (bottomRight.Y - topLeft.Y) * ppuy;
 
-						float sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+						float sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 						if (!clockwise)
 						{
 							startAngle = endAngle;

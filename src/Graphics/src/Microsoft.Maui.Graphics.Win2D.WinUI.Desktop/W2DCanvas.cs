@@ -158,7 +158,7 @@ After:
 				endAngle += 360;
 			}
 
-			var rotation = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 			var absRotation = Math.Abs(rotation);
 
 			float strokeWidth = CurrentState.StrokeSize;
@@ -167,8 +167,8 @@ After:
 			_size.Width = _rect.Width / 2;
 			_size.Height = _rect.Height / 2;
 
-			var startPoint = Geometry.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -startAngle);
-			var endPoint = Geometry.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -endAngle);
+			var startPoint = GeometryUtil.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -startAngle);
+			var endPoint = GeometryUtil.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -endAngle);
 
 			_point1.X = startPoint.X;
 			_point1.Y = startPoint.Y;
@@ -546,7 +546,7 @@ After:
 				endAngle += 360;
 			}
 
-			var rotation = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 			var absRotation = Math.Abs(rotation);
 
 			float strokeWidth = CurrentState.StrokeSize;
@@ -555,8 +555,8 @@ After:
 			_size.Width = _rect.Width / 2;
 			_size.Height = _rect.Height / 2;
 
-			var startPoint = Geometry.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -startAngle);
-			var endPoint = Geometry.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -endAngle);
+			var startPoint = GeometryUtil.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -startAngle);
+			var endPoint = GeometryUtil.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -endAngle);
 
 			_point1.X = startPoint.X;
 			_point1.Y = startPoint.Y;

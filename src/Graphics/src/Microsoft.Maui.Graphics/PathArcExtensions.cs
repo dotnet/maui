@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Graphics
 			float dy2 = (lastPointY - y) / 2.0f;
 
 			// Convert angle from degrees to radians
-			angle = Geometry.DegreesToRadians(angle);
+			angle = GeometryUtil.DegreesToRadians(angle);
 			float cosAngle = (float) Math.Cos(angle);
 			float sinAngle = (float) Math.Sin(angle);
 
@@ -76,13 +76,13 @@ namespace Microsoft.Maui.Graphics
 
 			sign = uy < 0 ? -1.0f : 1.0f;
 
-			float angleStart = Geometry.RadiansToDegrees(sign * (float) Math.Acos(p / n));
+			float angleStart = GeometryUtil.RadiansToDegrees(sign * (float) Math.Acos(p / n));
 
 			// Compute the angle extent
 			n = (float) Math.Sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy));
 			p = ux * vx + uy * vy;
 			sign = ux * vy - uy * vx < 0 ? -1.0f : 1.0f;
-			float angleExtent = Geometry.RadiansToDegrees(sign * (float) Math.Acos(p / n));
+			float angleExtent = GeometryUtil.RadiansToDegrees(sign * (float) Math.Acos(p / n));
 
 			if (!sweepFlag && angleExtent > 0)
 			{
@@ -118,13 +118,13 @@ namespace Microsoft.Maui.Graphics
 			// Now calculate the sweep of each segment
 			float segAngle = arc / segs;
 
-			float theta = Geometry.DegreesToRadians(segAngle);
-			float angle = Geometry.DegreesToRadians(startAngle);
+			float theta = GeometryUtil.DegreesToRadians(segAngle);
+			float angle = GeometryUtil.DegreesToRadians(startAngle);
 
 			// Draw as 45 degree segments
 			if (segs > 0)
 			{
-				float beta = Geometry.DegreesToRadians(xAxisRotation);
+				float beta = GeometryUtil.DegreesToRadians(xAxisRotation);
 				float sinbeta = (float) Math.Sin(beta);
 				float cosbeta = (float) Math.Cos(beta);
 

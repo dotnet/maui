@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Graphics.Xaml
  						float radius = (float)radialGradientPaint.Radius * Math.Max(_fillRectangle.Height, _fillRectangle.Width);
 
 						if (radius == 0)
-							radius = Geometry.GetDistance(_fillRectangle.Left, _fillRectangle.Top, _fillRectangle.Right, _fillRectangle.Bottom);
+							radius = GeometryUtil.GetDistance(_fillRectangle.Left, _fillRectangle.Top, _fillRectangle.Right, _fillRectangle.Bottom);
 
 						var brush = new RadialGradientBrush();
 						brush.MappingMode = BrushMappingMode.Absolute;

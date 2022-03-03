@@ -58,16 +58,16 @@ namespace Microsoft.Maui.Graphics
 
 		public bool AllValuesAreEqualTo(double value)
 		{
-			return Math.Abs(_top - value) < Geometry.Epsilon && Math.Abs(_left - value) < Geometry.Epsilon && Math.Abs(_right - value) < Geometry.Epsilon &&
-				   Math.Abs(_bottom - value) < Geometry.Epsilon;
+			return Math.Abs(_top - value) < GeometryUtil.Epsilon && Math.Abs(_left - value) < GeometryUtil.Epsilon && Math.Abs(_right - value) < GeometryUtil.Epsilon &&
+				   Math.Abs(_bottom - value) < GeometryUtil.Epsilon;
 		}
 
 		public override bool Equals(object obj)
 		{
 			if (obj is Insets vCompareTo)
 			{
-				return Math.Abs(vCompareTo.Top - Top) < Geometry.Epsilon && Math.Abs(vCompareTo.Left - Left) < Geometry.Epsilon && Math.Abs(vCompareTo.Bottom - Bottom) < Geometry.Epsilon &&
-					   Math.Abs(vCompareTo.Right - Right) < Geometry.Epsilon;
+				return Math.Abs(vCompareTo.Top - Top) < GeometryUtil.Epsilon && Math.Abs(vCompareTo.Left - Left) < GeometryUtil.Epsilon && Math.Abs(vCompareTo.Bottom - Bottom) < GeometryUtil.Epsilon &&
+					   Math.Abs(vCompareTo.Right - Right) < GeometryUtil.Epsilon;
 			}
 
 			return false;

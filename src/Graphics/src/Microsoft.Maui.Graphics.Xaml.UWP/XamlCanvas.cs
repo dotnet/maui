@@ -374,10 +374,10 @@ namespace Microsoft.Maui.Graphics.Xaml
 			var figure = geometry.Figures[0];
 			var arcSegment = (ArcSegment)figure.Segments[0];
 
-			var sweep = Geometry.GetSweep(startAngle,endAngle,clockwise);
+			var sweep = GeometryUtil.GetSweep(startAngle,endAngle,clockwise);
 			var absSweep = Math.Abs(sweep);
-			var startPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
-			var endPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
+			var startPoint = GeometryUtil.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
+			var endPoint = GeometryUtil.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
 
 			figure.StartPoint = new global::Windows.Foundation.Point(startPoint.X, startPoint.Y);
 			arcSegment.Point = new global::Windows.Foundation.Point(endPoint.X, endPoint.Y);
@@ -763,10 +763,10 @@ namespace Microsoft.Maui.Graphics.Xaml
 			var figure = geometry.Figures[0];
 			var arcSegment = (ArcSegment)figure.Segments[0];
 
-			var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 			var absSweep = Math.Abs(sweep);
-			var startPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
-			var endPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
+			var startPoint = GeometryUtil.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
+			var endPoint = GeometryUtil.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
 
 			figure.StartPoint = new global::Windows.Foundation.Point(startPoint.X, startPoint.Y);
 			arcSegment.Point = new global::Windows.Foundation.Point(endPoint.X, endPoint.Y);

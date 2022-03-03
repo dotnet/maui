@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void Rotate(float degrees, float x, float y)
 		{
-			var radians = Geometry.DegreesToRadians(degrees);
+			var radians = GeometryUtil.DegreesToRadians(degrees);
 
 			var transform = _currentState.Transform;
 			transform = Matrix3x2.CreateTranslation(x, y) * transform;
@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void Rotate(float degrees)
 		{
-			var radians = Geometry.DegreesToRadians(degrees);
+			var radians = GeometryUtil.DegreesToRadians(degrees);
 
 			var transform = _currentState.Transform;			
 			transform = Matrix3x2.CreateRotation(radians) * transform;			

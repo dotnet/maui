@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 							endAngle += 360;
 						}
 
-						var rotation = Geometry.GetSweep(startAngle, endAngle, clockwise);
+						var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 						var absRotation = Math.Abs(rotation);
 
 						var rectX = ox + topLeft.X * fx;
@@ -143,8 +143,8 @@ namespace Microsoft.Maui.Graphics.Win2D
 						var rectWidth = (ox + bottomRight.X * fx) - rectX;
 						var rectHeight = (oy + bottomRight.Y * fy) - rectY;
 
-						var startPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
-						var endPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
+						var startPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
+						var endPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
 
 
 						if (!figureOpen)
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 					endAngle += 360;
 				}
 
-				var rotation = Geometry.GetSweep(startAngle, endAngle, clockwise);
+				var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 				var absRotation = Math.Abs(rotation);
 
 				var rectX = topLeft.X * scale;
@@ -265,8 +265,8 @@ namespace Microsoft.Maui.Graphics.Win2D
 				var rectWidth = (bottomRight.X * scale) - rectX;
 				var rectHeight = (bottomRight.Y * scale) - rectY;
 
-				var startPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
-				var endPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
+				var startPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
+				var endPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
 
 				builder.BeginFigure(startPoint.X * scale, startPoint.Y * scale, CanvasFigureFill.Default);
 

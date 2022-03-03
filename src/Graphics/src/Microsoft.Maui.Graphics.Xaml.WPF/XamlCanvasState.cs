@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 						float radius = (float)radialGradientPaint.Radius * Math.Max(_fillRectangle.Height, _fillRectangle.Width);
 
 						if (radius == 0)
-							radius = Geometry.GetDistance(_fillRectangle.Left, _fillRectangle.Top, _fillRectangle.Right, _fillRectangle.Bottom);
+							radius = GeometryUtil.GetDistance(_fillRectangle.Left, _fillRectangle.Top, _fillRectangle.Right, _fillRectangle.Bottom);
 
 						var brush = new RadialGradientBrush { MappingMode = BrushMappingMode.Absolute };
 						brush.GradientOrigin = brush.Center = new System.Windows.Point(centerX, centerY);
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 							BlurRadius = _shadowBlur,
 							Color = _shadowColor.AsWpfColor(),
 							Opacity = Alpha * .5,
-							Direction = Geometry.GetAngleAsDegrees(0, 0, _shadowOffset.Width, _shadowOffset.Height)
+							Direction = GeometryUtil.GetAngleAsDegrees(0, 0, _shadowOffset.Width, _shadowOffset.Height)
 						};
 					}
 

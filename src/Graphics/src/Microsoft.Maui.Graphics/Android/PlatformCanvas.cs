@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				float radius = (float)radialGradientPaint.Radius * Math.Max(rectangle.Height, rectangle.Width);
 
 				if (radius == 0)
-					radius = Geometry.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+					radius = GeometryUtil.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
 
 				try
 				{
@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var rectWidth = width;
 			var rectHeight = height;
 
-			float sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			float sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 
 			var rect = new global::Android.Graphics.RectF(rectX, rectY, rectX + rectWidth, rectY + rectHeight);
 
@@ -434,7 +434,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				endAngle += 360;
 			}
 
-			var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 			var rect = new global::Android.Graphics.RectF(x, y, x + width, y + height);
 
 			startAngle *= -1;

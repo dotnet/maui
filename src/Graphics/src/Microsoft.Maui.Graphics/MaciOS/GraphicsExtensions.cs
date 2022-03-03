@@ -130,8 +130,8 @@ namespace Microsoft.Maui.Graphics.Platform
 					float endAngle = target.GetArcAngle(arcAngleIndex++);
 					var clockwise = target.GetArcClockwise(arcClockwiseIndex++);
 
-					var startAngleInRadians = Geometry.DegreesToRadians(-startAngle);
-					var endAngleInRadians = Geometry.DegreesToRadians(-endAngle);
+					var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
+					var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 					while (startAngleInRadians < 0)
 					{
@@ -219,8 +219,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				var endAngle = target.GetArcAngle(arcAngleIndex++);
 				var clockwise = target.GetArcClockwise(arcClockwiseIndex++);
 
-				var startAngleInRadians = Geometry.DegreesToRadians(-startAngle);
-				var endAngleInRadians = Geometry.DegreesToRadians(-endAngle);
+				var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
+				var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 				while (startAngleInRadians < 0)
 				{
@@ -299,8 +299,8 @@ namespace Microsoft.Maui.Graphics.Platform
 					float endAngle = target.GetArcAngle(arcAngleIndex++);
 					var clockwise = target.GetArcClockwise(arcClockwiseIndex++);
 
-					var startAngleInRadians = Geometry.DegreesToRadians(-startAngle);
-					var endAngleInRadians = Geometry.DegreesToRadians(-endAngle);
+					var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
+					var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 					while (startAngleInRadians < 0)
 					{
@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					var height = bottomRight.Y - topLeft.Y;
 					var r = width / 2;
 
-					var rotatedCenter = Geometry.RotatePoint(center, new PointF(cx, cy), angle);
+					var rotatedCenter = GeometryUtil.RotatePoint(center, new PointF(cx, cy), angle);
 
 					var transform = CGAffineTransform.MakeTranslation(rotatedCenter.X * ppu, rotatedCenter.Y * ppu);
 					transform = CGAffineTransform.Multiply(CGAffineTransform.MakeScale(1, height / width), transform);
