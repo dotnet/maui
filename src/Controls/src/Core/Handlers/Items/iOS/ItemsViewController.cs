@@ -623,6 +623,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (CollectionView.Hidden)
 				{
+					CollectionView.ReloadData();
 					CollectionView.Hidden = false;
 					Layout.InvalidateLayout();
 					CollectionView.LayoutIfNeeded();
