@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 		TextTransform ITextElement.TextTransform
 		{
 			get => TextTransform.Default;
-			set => _ = value;
+			set { }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs" />
