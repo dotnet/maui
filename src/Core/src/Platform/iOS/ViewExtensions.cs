@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -458,22 +459,16 @@ namespace Microsoft.Maui.Platform
 				return new ActionDisposable(() => { });
 			}
 
-			List<IDisposable> observers = new List<IDisposable>();
+			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
 			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				foreach (var thing in observers)
-					thing.Dispose();
+					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
 			});
 
-			observers.Add(uiView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("transform", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("position", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("zPosition", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("anchorPoint", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("anchorPointZ", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+
 
 			void OnLoadedCheck()
 			{
@@ -496,22 +491,15 @@ namespace Microsoft.Maui.Platform
 				return new ActionDisposable(() => { });
 			}
 
-			List<IDisposable> observers = new List<IDisposable>();
+			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
 			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				foreach (var thing in observers)
-					thing.Dispose();
+					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
 			});
 
-			observers.Add(uiView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("transform", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("position", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("zPosition", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("anchorPoint", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("anchorPointZ", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
 
 			void UnLoadedCheck()
 			{
