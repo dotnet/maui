@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Handlers
 				heightConstraint = result.Height;
 			}
 
-			return fullSize.AdjustForFill(new Rectangle(0, 0, widthConstraint, heightConstraint), scrollView.PresentedContent);
+			return fullSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), scrollView.PresentedContent);
 		}
 	}
 }

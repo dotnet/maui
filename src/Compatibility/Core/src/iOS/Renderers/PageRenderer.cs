@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (rect != _pageContainer.Frame)
 				_pageContainer.Frame = rect;
 
-			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public override void LoadView()

@@ -30,6 +30,6 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="bounds">The bounds in which the IContentView's content should be arranged.</param>
 		/// <returns>The actual size of the arranged IContentView.</returns>
-		Size CrossPlatformArrange(Rectangle bounds);
+		Size CrossPlatformArrange(Rect bounds);
 	}
 }

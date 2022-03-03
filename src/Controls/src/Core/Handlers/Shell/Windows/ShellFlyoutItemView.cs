@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				var request = view.Handler.GetDesiredSizeFromHandler(availableSize.Width, availableSize.Height);
-				view.Frame = new Rectangle(0, 0, request.Width, request.Height);
+				view.Frame = new Rect(0, 0, request.Width, request.Height);
 				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
 				return request.ToPlatform();
 			}
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (this.ActualWidth > 0 && _content is IView view)
 			{
-				view.Handler.PlatformArrangeHandler(new Rectangle(0, 0, finalSize.Width, finalSize.Height));
+				view.Handler.PlatformArrangeHandler(new Rect(0, 0, finalSize.Width, finalSize.Height));
 				return finalSize;
 			}
 

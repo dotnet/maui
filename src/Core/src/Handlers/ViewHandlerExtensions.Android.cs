@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 
 		}
 
-		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rectangle frame)
+		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rect frame)
 		{
 			var platformView = viewHandler.ToPlatform();
 

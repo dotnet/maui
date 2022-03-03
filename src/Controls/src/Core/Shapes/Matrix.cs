@@ -705,7 +705,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 	internal static class MatrixUtil
 	{
-		internal static void TransformRect(ref Microsoft.Maui.Graphics.Rectangle rect, ref Matrix matrix)
+		internal static void TransformRect(ref Microsoft.Maui.Graphics.Rect rect, ref Matrix matrix)
 		{
 			if (rect.IsEmpty)
 			{
