@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Platform
 		Canvas _shadowCanvas;
 		Android.Graphics.Paint _shadowPaint;
 		bool _invalidateShadow;
-		AView BorderView;
+
+		AView _borderView;
 
 		public WrapperView(Context context)
 			: base(context)
@@ -37,6 +38,8 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnDetachedFromWindow();
 
+			_invalidateShadow = true;
+
 			if (_shadowBitmap != null)
 			{
 				_shadowBitmap.Recycle();
@@ -46,7 +49,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			BorderView?.BringToFront();
+			_borderView?.BringToFront();
 			if (ChildCount == 0 || GetChildAt(0) is not View child)
 				return;
 
@@ -55,7 +58,7 @@ namespace Microsoft.Maui.Platform
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
-			BorderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
+			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -121,17 +124,17 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Border == null)
 			{
-				if (BorderView != null)
-					this.RemoveView(BorderView);
-				BorderView = null;
+				if (_borderView != null)
+					this.RemoveView(_borderView);
+				_borderView = null;
 				return;
 			}
 
-			if (BorderView == null)
+			if (_borderView == null)
 			{
-				this.AddView(BorderView = new AView(Context));
+				this.AddView(_borderView = new AView(Context));
 			}
-			BorderView.UpdateBorderStroke(Border);
+			_borderView.UpdateBorderStroke(Border);
 		}
 
 		void ClipChild(Canvas canvas)
