@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				BackgroundColor = Colors.Aqua,
 				Orientation = ScrollOrientation.Horizontal,
-				HeightRequest = Device.RuntimePlatform == Device.UWP ? 80 : 44,
+				HeightRequest = Device.RuntimePlatform == Device.WinUI ? 80 : 44,
 				Content = buttonStack
 			});
 

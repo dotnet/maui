@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = WPF;
 				return true;
 			}
-			if (Device.RuntimePlatform == Device.WinUI &&  WinUI != s_notset)
+			if (Device.RuntimePlatform == Device.WinUI && WinUI != s_notset)
 			{
 				value = WinUI;
 				return true;

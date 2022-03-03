@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				case Device.Android:
 					fontName = "sans-serif-light";
 					break;
-				case Device.UWP:
+				case Device.WinUI:
 					fontName = "Comic Sans MS";
 					break;
 			}

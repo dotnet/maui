@@ -363,7 +363,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				default:
 					page.Title = "Test Cases";
 					break;
-				case Device.UWP:
+				case Device.WinUI:
 					page.Title = "Tests";
 					break;
 			}

@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					HorizontalOptions = LayoutOptions.Start,
 					VerticalOptions = LayoutOptions.Start,
 					Orientation = this.Orientation,
-					WidthRequest = Device.RuntimePlatform == Device.UWP ? 20 : 50,
+					WidthRequest = Device.RuntimePlatform == Device.WinUI ? 20 : 50,
 				};
 
 				this.SetBinding(HeightRequestProperty, new Binding(nameof(Height), BindingMode.OneWay, source: showButton));
