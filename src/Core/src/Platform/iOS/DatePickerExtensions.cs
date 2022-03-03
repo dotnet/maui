@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Platform
 			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
 
-			datePicker.Text = datePicker.Date.ToString(datePicker.Format);
+			datePicker.Text = platformDatePicker.Text = datePicker.Date.ToString(datePicker.Format);
 
 			platformDatePicker.UpdateCharacterSpacing(datePicker);
 		}

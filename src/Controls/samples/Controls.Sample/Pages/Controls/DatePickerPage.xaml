@@ -22,6 +22,11 @@
             <DatePicker 
                 TextColor="Red"/>   
             <Label
+                Text="Date (01/01/2022)"
+                Style="{StaticResource Headline}"/>
+            <DatePicker
+                Date="01/01/2022"/>
+            <Label
                 Text="TextTransform (Uppercase)"
                 Style="{StaticResource Headline}"/>
             <DatePicker 
