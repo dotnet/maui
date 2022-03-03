@@ -100,7 +100,6 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='TextTransform']/Docs" />
 		TextTransform ITextElement.TextTransform
 		{
 			get => TextTransform.Default;

@@ -64,7 +64,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FormatProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='TextTransform']/Docs" />
 		TextTransform ITextElement.TextTransform
 		{
 			get => TextTransform.Default;
