@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 			}
-			else
+			else 
 			{
 				// My handler is still set but the window handler isn't set.
 				// This means I'm starting to detach from the platform window

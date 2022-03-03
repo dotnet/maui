@@ -12,7 +12,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.VisualElement)]
 	public partial class VisualElementTests : HandlerTestBase
 	{
-#if ANDROID || WINDOWS
 		[Fact]
 		public async Task Basic()
 		{
@@ -73,6 +72,5 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(loaded == 2);
 			Assert.True(unloaded == 2);
 		}
-#endif
 	}
 }
