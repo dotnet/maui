@@ -113,10 +113,10 @@
       <Version>0.22.1</Version>
     </PackageReference>
     <PackageReference Include="SkiaSharp">
-      <Version>2.88.0-preview.179</Version>
+      <Version>2.88.0-preview.224</Version>
     </PackageReference>
     <PackageReference Include="SkiaSharp.Views">
-      <Version>2.88.0-preview.179</Version>
+      <Version>2.88.0-preview.224</Version>
     </PackageReference>
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>

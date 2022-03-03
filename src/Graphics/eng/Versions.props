@@ -16,13 +16,13 @@
     <MicrosofttvOSSdkPackageVersion>15.2.302-preview.14.91</MicrosofttvOSSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.2</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
-    <!-- <DotNetVersionBandMonoToolchain></DotNetVersionBandMonoToolchain> -->
-    <!-- <DotNetVersionBandEmscripten>6.0.200</DotNetVersionBandEmscripten> -->
-    <!-- <DotNetVersionBandAndroid></DotNetVersionBandAndroid> -->
-    <!-- <DotNetVersionBandApple></DotNetVersionBandApple> -->
+    <DotNetVersionBandMonoToolchain>6.0.200</DotNetVersionBandMonoToolchain>
+    <DotNetVersionBandEmscripten>6.0.200</DotNetVersionBandEmscripten>
+    <DotNetVersionBandAndroid>6.0.200</DotNetVersionBandAndroid>
+    <DotNetVersionBandApple>6.0.200</DotNetVersionBandApple>
   </PropertyGroup>
   <PropertyGroup>
     <!-- NOTE: temporarily hardcode 6.0.100, until we have new branding on dotnet/runtime packs -->
-    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.200</DotNetVersionBand>
+    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.300</DotNetVersionBand>
   </PropertyGroup>
 </Project>
