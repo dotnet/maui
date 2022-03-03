@@ -118,7 +118,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			// Force UICollectionView to get the internal accounting straight
-			CollectionView.NumberOfItemsInSection(_section);
+			if (!CollectionView.Hidden)
+				CollectionView.NumberOfItemsInSection(_section);
 
 			switch (args.Action)
 			{
