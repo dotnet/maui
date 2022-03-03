@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Microsoft.Maui.Platform
 {
 	class ActionDisposable : IDisposable
 	{
-		Action? _action;
+		volatile Action? _action;
 		public ActionDisposable(Action action)
 		{
 			_action = action;
@@ -14,9 +15,7 @@ namespace Microsoft.Maui.Platform
 
 		public void Dispose()
 		{
-			var action = _action;
-			_action = null;
-			action?.Invoke();
+			Interlocked.Exchange(ref _action, null)?.Invoke();
 		}
 	}
 }

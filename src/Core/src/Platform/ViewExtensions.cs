@@ -84,7 +84,7 @@ namespace Microsoft.Maui
 		}
 #endif
 
-#if WINDOWS || ANDROID || IOS
+#if PLATFORM
 		internal static Task OnUnloadedAsync(this PlatformView platformView, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);

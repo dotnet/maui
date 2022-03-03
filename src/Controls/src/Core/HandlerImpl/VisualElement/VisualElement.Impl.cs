@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
+		bool _isLoaded;
+		EventHandler? _loaded;
+		EventHandler? _unloaded;
+		bool _watchingPlatformLoaded;
+		IDisposable? _loadedUnloadedToken;
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
 		public Rectangle Frame
@@ -323,49 +328,96 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		bool _isLoaded;
 		public bool IsLoaded => _isLoaded;
 
-		public event EventHandler<EventArgs> Loaded;
+		public event EventHandler? Loaded
+		{
+			add
+			{
+				_loaded += value;
+				UpdatePlatformUnloadedLoadedWiring();
+			}
+			remove
+			{
+				_loaded -= value;
+				UpdatePlatformUnloadedLoadedWiring();
+			}
+		}
 
-		protected private void OnLoadedCore()
+		public event EventHandler? Unloaded
+		{
+			add
+			{
+				_unloaded += value;
+				UpdatePlatformUnloadedLoadedWiring();
+			}
+			remove
+			{
+				_unloaded -= value;
+				UpdatePlatformUnloadedLoadedWiring();
+			}
+		}
+
+		void OnLoadedCore()
 		{
 			if (_isLoaded)
 				return;
 
 			_isLoaded = true;
-			Loaded?.Invoke(this, EventArgs.Empty);
+			_loaded?.Invoke(this, EventArgs.Empty);
 		}
 
-		public event EventHandler<EventArgs> Unloaded;
-		protected private void OnUnloadedCore()
+		void OnUnloadedCore()
 		{
 			if (!_isLoaded)
 				return;
 
 			_isLoaded = false;
-			Unloaded?.Invoke(this, EventArgs.Empty);
+			_unloaded?.Invoke(this, EventArgs.Empty);
 		}
 
 		private protected override void OnWindowChanged(IWindow oldValue, IWindow newValue)
 		{
 			base.OnWindowChanged(oldValue, newValue);
 
-			if (oldValue is Element oldWindow)
+			if (_watchingPlatformLoaded && oldValue is Element oldWindow)
 				oldWindow.HandlerChanged -= OnWindowHandlerChanged;
 
-			if (newValue is Element newWindow)
-				newWindow.HandlerChanged += OnWindowHandlerChanged;
-
-			HandlePlatformUnloadedLoaded();
+			UpdatePlatformUnloadedLoadedWiring(newValue);
 		}
 
 		void OnWindowHandlerChanged(object? sender, EventArgs e)
 		{
+			UpdatePlatformUnloadedLoadedWiring(Window);
+		}
+
+		// We only want to wire up to platform loaded events
+		// if the user is watching for them. Otherwise
+		// this will get wired up for every single VE that's on 
+		// the screen
+		void UpdatePlatformUnloadedLoadedWiring(IWindow window)
+		{
+			if ((_unloaded == null && _loaded == null) || window == null)
+			{
+				if (window is Element elementWindow)
+					elementWindow.HandlerChanged -= OnWindowHandlerChanged;
+
+				_loadedUnloadedToken?.Dispose();
+				_watchingPlatformLoaded = false;
+				return;
+			}
+
+			if (!_watchingPlatformLoaded)
+			{
+				if (window is Element elementWindow)
+					elementWindow.HandlerChanged += OnWindowHandlerChanged;
+
+				_watchingPlatformLoaded = true;
+			}
+
 			HandlePlatformUnloadedLoaded();
 		}
 
 		partial void HandlePlatformUnloadedLoaded();
-
 	}
 }

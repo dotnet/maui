@@ -2,13 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.UI.Xaml;
+#if IOS || MACCATALYST
+using PlatformView = UIKit.UIView;
+#elif MONOANDROID
+using PlatformView = Android.Views.View;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#endif
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class VisualElement
 	{
-		IDisposable? _loadedUnloadedToken;
 		partial void HandlePlatformUnloadedLoaded()
 		{
 			_loadedUnloadedToken?.Dispose();
@@ -16,7 +21,7 @@ namespace Microsoft.Maui.Controls
 
 			// Window and this VisualElement both have a handler to work with
 			if (Window?.Handler?.PlatformView != null &&
-				Handler?.PlatformView is FrameworkElement view)
+				Handler?.PlatformView is PlatformView view)
 			{
 				if (view.IsLoaded())
 				{
@@ -36,7 +41,7 @@ namespace Microsoft.Maui.Controls
 				// This means I'm starting to detach from the platform window
 				// So we wait for the platform detatch events to fire before calling 
 				// OnUnloaded
-				if (Handler?.PlatformView is FrameworkElement detachingView &&
+				if (Handler?.PlatformView is PlatformView detachingView &&
 					detachingView.IsLoaded())
 				{
 					_loadedUnloadedToken = detachingView.OnUnloaded(OnUnloadedCore);

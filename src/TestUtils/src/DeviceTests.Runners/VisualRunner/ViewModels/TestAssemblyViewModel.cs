@@ -21,8 +21,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		TestState _result;
 		TestState _resultFilter;
 		RunStatus _runStatus;
-		string? _searchQuery = "VisualElement";
-
+		string? _searchQuery;
 		string? _detailText;
 		string? _displayName;
 
