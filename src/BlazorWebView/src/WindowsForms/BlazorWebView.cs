@@ -57,6 +57,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// </summary>
 		public WebView2WebViewManager WebViewManager => _webviewManager;
 
+		/// <summary>
+		/// Returns the current <see cref="BlazorWebViewCapabilities"/> of the underlying WebView.
+		/// </summary>
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		public BlazorWebViewCapabilities Capabilities { get; } = new();
+
 		private WindowsFormsDispatcher ComponentsDispatcher { get; }
 
 		/// <inheritdoc />
@@ -169,7 +175,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args));
+				(args) => ExternalNavigationStarting?.Invoke(this, args),
+				Capabilities);
 
 			foreach (var rootComponent in RootComponents)
 			{

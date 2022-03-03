@@ -20,11 +20,13 @@ using System.Diagnostics;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 #elif WEBVIEW2_WPF
 using System.Diagnostics;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
+using Microsoft.AspNetCore.Components.WebView.Wpf;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Web.WebView2.Core;
@@ -58,6 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
 		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
+		private readonly BlazorWebViewCapabilities _capabilities;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
@@ -69,6 +72,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="externalNavigationStarting">Callback invoked when external navigation starts.</param>
+		/// <param name="capabilities">Capabilities of the underlying WebView.</param>
 		public WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
@@ -76,12 +80,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
-			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting)
+			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting,
+			BlazorWebViewCapabilities capabilities)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 
 		{
 			_webview = webview;
 			_externalNavigationStarting = externalNavigationStarting;
+			_capabilities = capabilities;
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -121,6 +127,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// so keep track of a task we can await during LoadUri.
 			_webviewReadyTask = InitializeWebView2();
 		}
+#else
+#error Must define WEBVIEW2_MAUI, WEBVIEW2_WPF or WEBVIEW2_WINFORMS
 #endif
 
 		/// <inheritdoc />
@@ -203,6 +211,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 #elif WEBVIEW2_MAUI
 			// No-op here because all the work is done in the derived WinUIWebViewManager
+#else
+#error Must define WEBVIEW2_MAUI, WEBVIEW2_WPF or WEBVIEW2_WINFORMS
 #endif
 			return Task.CompletedTask;
 		}
@@ -224,6 +234,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				_externalNavigationStarting?.Invoke(callbackArgs);
 #elif WEBVIEW2_MAUI
 				_blazorWebViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
+#else
+#error Must define WEBVIEW2_MAUI, WEBVIEW2_WPF or WEBVIEW2_WINFORMS
 #endif
 
 				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
@@ -257,6 +269,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 #elif WEBVIEW2_MAUI
 			_ = Launcher.LaunchUriAsync(uri);
+#else
+#error Must define WEBVIEW2_MAUI, WEBVIEW2_WPF or WEBVIEW2_WINFORMS
 #endif
 		}
 
@@ -271,10 +285,24 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// Desktop applications almost never want to show a URL preview when hovering over a link
 			_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
 
-			// Automatically enable or disable web tools based on whether the debugger is attached.
-			_webview.CoreWebView2.Settings.AreDevToolsEnabled = System.Diagnostics.Debugger.IsAttached;
+
+
+#if WEBVIEW2_MAUI
+			var capabilities = _blazorWebViewHandler.Capabilities;
+#elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			var capabilities = _capabilities;
+#else
+#error Must define WEBVIEW2_MAUI, WEBVIEW2_WPF or WEBVIEW2_WINFORMS
+#endif
+			if (capabilities?.GetDevelopmentMode() == true)
+			{
+				_webview.CoreWebView2.Settings.AreDevToolsEnabled = true;
+			}
+			else
+			{
+				_webview.CoreWebView2.Settings.AreDevToolsEnabled = false;
+			}
 		}
 	}
 }
-
 #endif

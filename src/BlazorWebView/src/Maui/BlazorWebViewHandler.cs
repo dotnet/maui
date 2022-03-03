@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
+			[nameof(IBlazorWebView.Capabilities)] = MapCapabilities,
 			[nameof(IBlazorWebView.ExternalNavigationStarting)] = MapNotifyExternalNavigationStarting,
 		};
 
@@ -68,6 +69,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
+		public static void MapCapabilities(BlazorWebViewHandler handler, IBlazorWebView webView)
+		{
+#if !NETSTANDARD
+            handler.Capabilities = webView.Capabilities;
+#endif
+		}
+
+		/// <summary>
+		/// Maps the <see cref="BlazorWebView.NotifyExternalNavigationStarting"/> property to the specified handler.
+		/// </summary>
+		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
+		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapNotifyExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
@@ -111,6 +124,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					_rootComponents.CollectionChanged += OnRootComponentsCollectionChanged;
 				}
 			}
+		}
+
+		private BlazorWebViewCapabilities? _capabilities;
+
+		internal BlazorWebViewCapabilities? Capabilities
+		{
+			get { return _capabilities; }
+			set { _capabilities = value; }
 		}
 
 		private void OnRootComponentsCollectionChanged(object? sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs eventArgs)

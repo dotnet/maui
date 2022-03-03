@@ -26,6 +26,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		JSComponentConfigurationStore JSComponents { get; }
 
 		/// <summary>
+		/// Gets the capabilities supported by the underlying webview.
+		/// </summary>
+		BlazorWebViewCapabilities Capabilities { get; }
+
+		/// <summary>
 		/// Allows customizing how external links are opened.
 		/// Opens external links in the system browser by default.
 		/// </summary>

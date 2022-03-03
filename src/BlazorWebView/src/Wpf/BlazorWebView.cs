@@ -41,6 +41,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			ownerType: typeof(BlazorWebView));
 
 		/// <summary>
+		/// The backing store for the <see cref="RootComponent"/> property.
+		/// </summary>
+		public static readonly DependencyProperty BlazorWebViewCapabilitiesProperty = DependencyProperty.Register(
+			name: nameof(BlazorWebViewCapabilities),
+			propertyType: typeof(BlazorWebViewCapabilities),
+			ownerType: typeof(BlazorWebView));
+
+		/// <summary>
 		/// The backing store for the <see cref="Services"/> property.
 		/// </summary>
 		public static readonly DependencyProperty ServicesProperty = DependencyProperty.Register(
@@ -105,6 +113,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// </summary>
 		public RootComponentsCollection RootComponents =>
 			(RootComponentsCollection)GetValue(RootComponentsProperty);
+
+		/// <summary>
+		/// The capabilities of the underlying WebView.
+		/// </summary>
+		public BlazorWebViewCapabilities Capabilities =>
+			(BlazorWebViewCapabilities)GetValue(BlazorWebViewCapabilitiesProperty);
 
 		/// <summary>
 		/// Allows customizing how external links are opened.
@@ -196,7 +210,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args));
+				(args) => ExternalNavigationStarting?.Invoke(this, args),
+				Capabilities);
 
 			foreach (var rootComponent in RootComponents)
 			{

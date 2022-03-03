@@ -19,12 +19,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)"/>
+    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Remove="build\**\*" />
     <None Include="build\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Maui\BlazorWebViewCapabilities.cs" Link="BlazorWebViewCapabilities.cs" />
+    <Compile Include="..\Maui\BlazorWebViewCapabilityExtensions.cs" Link="BlazorWebViewCapabilityExtensions.cs" />
+    <Compile Include="..\Maui\BlazorWebViewCapabilityNames.cs" Link="BlazorWebViewCapabilityNames.cs" />
   </ItemGroup>
 
 </Project>

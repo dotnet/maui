@@ -47,7 +47,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
-			config.Preferences.SetValueForKey(NSObject.FromObject(System.Diagnostics.Debugger.IsAttached), new NSString("developerExtrasEnabled"));
+			if (Capabilities?.GetDevelopmentMode() == true)
+			{
+				config.Preferences.SetValueForKey(NSObject.FromObject(System.Diagnostics.Debugger.IsAttached), new NSString("developerExtrasEnabled"));
+			}
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
 			config.UserContentController.AddUserScript(new WKUserScript(

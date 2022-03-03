@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls;
@@ -32,6 +34,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		/// <inheritdoc />
 		public RootComponentsCollection RootComponents { get; }
+
+		/// <inheritdoc />
+		public BlazorWebViewCapabilities Capabilities { get; } = new();
 
 		/// <inheritdoc/>
 		public event EventHandler<ExternalLinkNavigationEventArgs>? ExternalNavigationStarting;

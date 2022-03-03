@@ -27,7 +27,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// To allow overriding ExternalLinkMode.InsecureOpenInWebView and open links in browser with a _blank target
 			blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
 
-			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: System.Diagnostics.Debugger.IsAttached);
+			if (Capabilities?.GetDevelopmentMode() == true)
+			{
+				BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: true);
+			}
 
 			if (blazorAndroidWebView.Settings != null)
 			{
