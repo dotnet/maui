@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					else
 					{
 						var rootGrid = rootPage.Content as Grid;
-						popupStack.Layout(new Rectangle(x, y, popupStack.WidthRequest, height));
+						popupStack.Layout(new Rect(x, y, popupStack.WidthRequest, height));
 						rootGrid.Children.Add(popupStack);
 						popupStack.Parent = rootGrid;
 						rootGrid.RaiseChild(popupStack);

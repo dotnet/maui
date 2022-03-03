@@ -288,7 +288,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				{
 					using (var renderer = GetRenderer(view))
 					{
-						page.Layout(new Rectangle(0, 0, 200, 200));
+						page.Layout(new Rect(0, 0, 200, 200));
 						return getRendererProperty(renderer);
 					}
 				}

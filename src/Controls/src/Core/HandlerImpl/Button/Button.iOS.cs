@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView.UpdatePadding(button);
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			var result = base.ArrangeOverride(bounds);
 			Handler?.UpdateValue(nameof(ContentLayout));

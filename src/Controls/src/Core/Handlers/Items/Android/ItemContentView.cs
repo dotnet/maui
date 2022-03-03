@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (mauiControlsView == null)
 				return;
 
-			mauiControlsView.Layout(new Rectangle(Point.Zero, size));
+			mauiControlsView.Layout(new Rect(Point.Zero, size));
 
 			UpdateContentLayout();
 		}

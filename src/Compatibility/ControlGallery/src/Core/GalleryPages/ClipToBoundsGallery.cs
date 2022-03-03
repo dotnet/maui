@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var layout = new AbsoluteLayout
 			{
 				Children = {
-					{child1, new Rectangle (-50, 0, 100, 100)},
-					{child2, new Rectangle (0, -50, 100, 100)},
-					{button, new Rectangle (1.0, 0.5, 100, 100), AbsoluteLayoutFlags.PositionProportional}
+					{child1, new Rect (-50, 0, 100, 100)},
+					{child2, new Rect (0, -50, 100, 100)},
+					{button, new Rect (1.0, 0.5, 100, 100), AbsoluteLayoutFlags.PositionProportional}
 				}
 			};
 

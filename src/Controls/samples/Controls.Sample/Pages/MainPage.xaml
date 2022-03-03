@@ -57,7 +57,7 @@
             <Image
                 Grid.Row="0"
                 Aspect="AspectFill"
-                Source="header_background"/>
+                Source="header_background.png"/>
             <Grid
                 RowSpacing="0"
                 Grid.Row="0"

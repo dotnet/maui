@@ -68,7 +68,7 @@ Task("dotnet-samples")
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = "true",
-            ["GenerateAppxPackageOnBuild"] = "true",
+            // ["GenerateAppxPackageOnBuild"] = "true",
         });
     });
 
@@ -103,7 +103,7 @@ Task("dotnet-templates")
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
-            { "GenerateAppxPackageOnBuild", "true" },
+            // { "GenerateAppxPackageOnBuild", "true" },
             { "RestorePackagesPath", MakeAbsolute(templatesTest.CombineWithFilePath("packages")).FullPath },
             { "RestoreConfigFile", MakeAbsolute(templatesTest.CombineWithFilePath("nuget.config")).FullPath },
 

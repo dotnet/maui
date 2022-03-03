@@ -304,8 +304,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			global::Windows.Foundation.Size masterSize = Control.FlyoutSize;
 			global::Windows.Foundation.Size detailSize = Control.DetailSize;
 
-			FlyoutPageController.FlyoutBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
-			FlyoutPageController.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
+			FlyoutPageController.FlyoutBounds = new Rect(0, 0, masterSize.Width, masterSize.Height);
+			FlyoutPageController.DetailBounds = new Rect(0, 0, detailSize.Width, detailSize.Height);
 		}
 
 		void UpdateDetail()

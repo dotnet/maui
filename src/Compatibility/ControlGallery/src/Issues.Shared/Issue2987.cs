@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			AbsoluteLayout.SetLayoutFlags(datePicker, AbsoluteLayoutFlags.None);
-			AbsoluteLayout.SetLayoutBounds(datePicker, new Rectangle(0f, 0f, 300f, 50f));
+			AbsoluteLayout.SetLayoutBounds(datePicker, new Rect(0f, 0f, 300f, 50f));
 
 			layout.Children.Add(datePicker);
 

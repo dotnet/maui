@@ -25,11 +25,11 @@ namespace Microsoft.Maui.Controls
 
 		Page _detail;
 
-		Rectangle _detailBounds;
+		Rect _detailBounds;
 
 		Page _flyout;
 
-		Rectangle _flyoutBounds;
+		Rect _flyoutBounds;
 
 		IFlyoutPageController FlyoutPageController => this;
 
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls
 
 		bool IFlyoutPageController.CanChangeIsPresented { get; set; } = true;
 
-		Rectangle IFlyoutPageController.DetailBounds
+		Rect IFlyoutPageController.DetailBounds
 		{
 			get { return _detailBounds; }
 			set
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Rectangle IFlyoutPageController.FlyoutBounds
+		Rect IFlyoutPageController.FlyoutBounds
 		{
 			get { return _flyoutBounds; }
 			set
