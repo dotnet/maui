@@ -20,9 +20,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		CancellationTokenSource? _filterCancellationTokenSource;
 		TestState _result;
 		TestState _resultFilter;
-		RunStatus _runStatus;		
+		RunStatus _runStatus;
 		string? _searchQuery;
-		
+
 		string? _detailText;
 		string? _displayName;
 
