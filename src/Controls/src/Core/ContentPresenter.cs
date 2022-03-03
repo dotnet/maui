@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 				Element element = LogicalChildrenInternal[i];
 				var child = element as View;
 				if (child != null)
-					LayoutChildIntoBoundingRegion(child, new Rectangle(x, y, width, height));
+					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
 			}
 		}
 
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls
 			return this.MeasureContent(widthConstraint, heightConstraint);
 		}
 
-		Size IContentView.CrossPlatformArrange(Rectangle bounds)
+		Size IContentView.CrossPlatformArrange(Rect bounds)
 		{
 			this.ArrangeContent(bounds);
 			return bounds.Size;

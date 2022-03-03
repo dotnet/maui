@@ -332,25 +332,25 @@ namespace Microsoft.Maui.Platform
 		public static Task<byte[]?> RenderAsJPEG(this AView view)
 			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
 
-		internal static Rectangle GetPlatformViewBounds(this IView view)
+		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView?.Context == null)
 			{
-				return new Rectangle();
+				return new Rect();
 			}
 
 			return platformView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this View platformView)
+		internal static Rect GetPlatformViewBounds(this View platformView)
 		{
 			if (platformView?.Context == null)
-				return new Rectangle();
+				return new Rect();
 
 			var location = new int[2];
 			platformView.GetLocationOnScreen(location);
-			return new Rectangle(
+			return new Rect(
 				location[0],
 				location[1],
 				(int)platformView.Context.ToPixels(platformView.Width),
@@ -407,17 +407,17 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this View? platformView)
+		internal static Graphics.Rect GetBoundingBox(this View? platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 
 			var rect = new Android.Graphics.Rect();
 			platformView.GetGlobalVisibleRect(rect);
-			return new Rectangle(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
+			return new Rect(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
 		}
 
 
@@ -493,7 +493,7 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentTop = context.FromPixels(top);
 			var deviceIndependentRight = context.FromPixels(right);
 			var deviceIndependentBottom = context.FromPixels(bottom);
-			var destination = Rectangle.FromLTRB(0, 0,
+			var destination = Rect.FromLTRB(0, 0,
 				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
 
 			if (!view.Frame.Equals(destination))

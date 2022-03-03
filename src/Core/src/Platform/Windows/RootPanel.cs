@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 	public class RootPanel : Panel
 	{
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{

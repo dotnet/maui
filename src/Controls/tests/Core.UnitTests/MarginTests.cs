@@ -54,8 +54,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			child.Margin = new Thickness(10, 20, 30, 40);
 			parent.Content = child;
 
-			parent.Layout(new Rectangle(0, 0, 140, 110));
-			Assert.AreEqual(new Rectangle(10, 20, 100, 50), child.Bounds);
+			parent.Layout(new Rect(0, 0, 140, 110));
+			Assert.AreEqual(new Rect(10, 20, 100, 50), child.Bounds);
 		}
 
 		[Test]
@@ -77,8 +77,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			child.Margin = new Thickness(10, 20, 30, 40);
 			parent.Content = child;
 
-			parent.Layout(new Rectangle(0, 0, 1000, 1000));
-			Assert.AreEqual(new Rectangle(10, 20, 100, 50), child.Bounds);
+			parent.Layout(new Rect(0, 0, 1000, 1000));
+			Assert.AreEqual(new Rect(10, 20, 100, 50), child.Bounds);
 		}
 
 		[Test]
@@ -112,10 +112,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			parent.Children.Add(child1);
 			parent.Children.Add(child2);
 
-			parent.Layout(new Rectangle(0, 0, 1000, 1000));
+			parent.Layout(new Rect(0, 0, 1000, 1000));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 50), child1.Bounds);
-			Assert.AreEqual(new Rectangle(5, 60, 980, 50), child2.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 50), child1.Bounds);
+			Assert.AreEqual(new Rect(5, 60, 980, 50), child2.Bounds);
 
 			child1.Margin = new Thickness(10, 20, 30, 40);
 
@@ -123,8 +123,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			AssertInvalidated(handler);
 			parent.ForceLayout();
 
-			Assert.AreEqual(new Rectangle(10, 20, 100, 50), child1.Bounds);
-			Assert.AreEqual(new Rectangle(5, 120, 980, 50), child2.Bounds);
+			Assert.AreEqual(new Rect(10, 20, 100, 50), child1.Bounds);
+			Assert.AreEqual(new Rect(5, 120, 980, 50), child2.Bounds);
 		}
 
 		void AssertInvalidated(IViewHandler handler)

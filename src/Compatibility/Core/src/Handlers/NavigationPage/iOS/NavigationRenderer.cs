@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				parentViewController.Appearing -= appearing;
 				parentViewController.Disappearing -= disappearing;
 
-				Device.BeginInvokeOnMainThread(() => { tcs.SetResult(true); });
+				BeginInvokeOnMainThread(() => { tcs.SetResult(true); });
 			};
 
 			disappearing = (s, e) =>
@@ -396,7 +396,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				parentViewController.Appearing -= appearing;
 				parentViewController.Disappearing -= disappearing;
 
-				Device.BeginInvokeOnMainThread(() => { tcs.SetResult(false); });
+				BeginInvokeOnMainThread(() => { tcs.SetResult(false); });
 			};
 
 			parentViewController.Appearing += appearing;
@@ -585,7 +585,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				_removeControllers = ViewControllers.Remove(target);
 				ViewControllers = _removeControllers;
-				Device.BeginInvokeOnMainThread(() => { _removeControllers = null; });
+				BeginInvokeOnMainThread(() => { _removeControllers = null; });
 			}
 			else
 			{
@@ -1535,7 +1535,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			_viewHandlerWrapper.GetDesiredSize(widthConstraint, heightConstraint);
 
-		void IViewHandler.PlatformArrange(Rectangle rect) =>
+		void IViewHandler.PlatformArrange(Rect rect) =>
 			_viewHandlerWrapper.PlatformArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
@@ -1680,7 +1680,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (Superview?.Bounds.Height > 0)
 						return Superview.Bounds.Height;
 
-					return (Device.Idiom == TargetIdiom.Phone && DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
+					return (DeviceInfo.Idiom == DeviceIdiom.Phone && DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
 				}
 			}
 
@@ -1744,7 +1744,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_child?.VirtualView != null)
 				{
-					Rectangle layoutBounds = new Rectangle(IconWidth, 0, Bounds.Width - IconWidth, height);
+					Rect layoutBounds = new Rect(IconWidth, 0, Bounds.Width - IconWidth, height);
 
 					_child.PlatformArrangeHandler(layoutBounds);
 				}

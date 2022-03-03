@@ -1598,14 +1598,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(cell.Parent, Is.Null);
 		}
 
-		[TestCase(Device.Android, ListViewCachingStrategy.RecycleElement)]
-		[TestCase(Device.iOS, ListViewCachingStrategy.RecycleElement)]
-		[TestCase(Device.UWP, ListViewCachingStrategy.RetainElement)]
+		[TestCase("Android", ListViewCachingStrategy.RecycleElement)]
+		[TestCase("iOS", ListViewCachingStrategy.RecycleElement)]
+		[TestCase("UWP", ListViewCachingStrategy.RetainElement)]
 		[TestCase("Other", ListViewCachingStrategy.RetainElement)]
 		public void EnforcesCachingStrategy(string platform, ListViewCachingStrategy expected)
 		{
 			// we need to do this because otherwise we cant set the caching strategy
-			mockDeviceInfo.RuntimePlatform = platform;
+			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 
 			Assert.AreEqual(expected, listView.CachingStrategy);

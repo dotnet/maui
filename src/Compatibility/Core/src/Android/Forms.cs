@@ -28,6 +28,7 @@ using Trace = System.Diagnostics.Trace;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[Obsolete]
 	public struct InitializationOptions
 	{
 		public struct EffectScope
@@ -97,9 +98,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return _ColorButtonNormal;
 		}
 
+		[Obsolete]
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			Init(activationState.Context, options);
 
+		[Obsolete]
 		public static void Init(IMauiContext context, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
@@ -113,6 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
+		[Obsolete]
 		public static void Init(IMauiContext context, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
@@ -143,15 +147,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
+		[Obsolete]
 		static bool IsInitializedRenderers;
 
 		// Once we get essentials/cg converted to using startup.cs
 		// we will delete all the renderer code inside this file
+		[Obsolete]
 		internal static void RenderersRegistered()
 		{
 			IsInitializedRenderers = true;
 		}
 
+		[Obsolete]
 		internal static void RegisterCompatRenderers(IMauiContext context, InitializationOptions? maybeOptions)
 		{
 			if (!IsInitializedRenderers)
@@ -196,6 +203,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[Obsolete]
 		static void SetupInit(
 			IMauiContext context,
 			Assembly resourceAssembly,
