@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='UWP']/Docs" />
 		[Obsolete("Use WinUI instead.")]
-		public static DevicePlatform UWP { get; } = WinUI;
+		public static DevicePlatform UWP { get; } = new DevicePlatform(nameof(WinUI));
 
 		public static DevicePlatform WinUI { get; } = new DevicePlatform(nameof(WinUI));
 

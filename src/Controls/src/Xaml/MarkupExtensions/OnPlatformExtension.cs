@@ -154,6 +154,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = UWP;
 				return true;
 			}
+			if (DeviceInfo.Platform == DevicePlatform.Create("UWP") && UWP != s_notset)
+			{
+				value = UWP;
+				return true;
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			if (DeviceInfo.Platform == DevicePlatform.Create("WPF") && WPF != s_notset)
 			{
