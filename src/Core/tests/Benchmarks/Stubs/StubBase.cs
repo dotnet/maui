@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public bool InputTransparent { get; set; }
 
-		public Size Arrange(Rectangle bounds)
+		public Size Arrange(Rect bounds)
 		{
 			Frame = bounds;
 			DesiredSize = bounds.Size;
