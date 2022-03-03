@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public GeometryStub? Data { get; set; }
 
-		public PathF PathForBounds(Rectangle rect)
+		public PathF PathForBounds(Rect rect)
 		{
 			var path = new PathF();
 

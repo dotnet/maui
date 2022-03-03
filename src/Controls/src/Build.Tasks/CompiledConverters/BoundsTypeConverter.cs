@@ -16,14 +16,14 @@ namespace Microsoft.Maui.Controls.XamlC
 			var module = context.Body.Method.Module;
 
 			if (string.IsNullOrEmpty(value))
-				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rectangle));
+				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rect));
 
 			double x = -1, y = -1, w = -1, h = -1;
 			bool hasX, hasY, hasW, hasH;
 			var xywh = value.Split(',');
 
 			if (xywh.Length != 2 && xywh.Length != 4)
-				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rectangle));
+				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rect));
 
 			hasX = (xywh.Length == 2 || xywh.Length == 4) && double.TryParse(xywh[0], NumberStyles.Number, CultureInfo.InvariantCulture, out x);
 			hasY = (xywh.Length == 2 || xywh.Length == 4) && double.TryParse(xywh[1], NumberStyles.Number, CultureInfo.InvariantCulture, out y);
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			}
 
 			if (!hasX || !hasY || !hasW || !hasH)
-				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rectangle));
+				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rect));
 
 			return GenerateIL(x, y, w, h, module);
 		}
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			yield return Instruction.Create(OpCodes.Ldc_R8, y);
 			yield return Instruction.Create(OpCodes.Ldc_R8, w);
 			yield return Instruction.Create(OpCodes.Ldc_R8, h);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Rectangle"), parameterTypes: new[] {
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Rect"), parameterTypes: new[] {
 				("mscorlib", "System", "Double"),
 				("mscorlib", "System", "Double"),
 				("mscorlib", "System", "Double"),

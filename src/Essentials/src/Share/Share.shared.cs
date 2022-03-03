@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Essentials
 		public string Title { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareRequestBase.xml" path="//Member[@MemberName='PresentationSourceBounds']/Docs" />
-		public Rectangle PresentationSourceBounds { get; set; } = Rectangle.Zero;
+		public Rect PresentationSourceBounds { get; set; } = Rect.Zero;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ShareTextRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ShareTextRequest']/Docs" />

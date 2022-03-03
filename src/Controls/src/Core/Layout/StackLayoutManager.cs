@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 			return _horizontalStackLayoutManager ??= new HorizontalStackLayoutManager(_stackLayout);
 		}
 
-		public Size ArrangeChildren(Rectangle bounds)
+		public Size ArrangeChildren(Rect bounds)
 		{
 			return SelectLayoutManager().ArrangeChildren(bounds);
 		}

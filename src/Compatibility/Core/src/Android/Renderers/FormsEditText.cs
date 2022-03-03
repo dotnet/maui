@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		[PortHandler]
+
 		public override bool OnKeyPreIme(Keycode keyCode, KeyEvent e)
 		{
 			if (keyCode != Keycode.Back || e.Action != KeyEventActions.Down)

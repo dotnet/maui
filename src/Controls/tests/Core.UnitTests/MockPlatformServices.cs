@@ -118,11 +118,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	class MockDeviceInfo : IDeviceInfo
 	{
-		DeviceIdiom _deviceIdiom;
-		TargetIdiom _targetIdiom;
-		DevicePlatform _devicePlatform;
-		string _runtimePlatform;
-
 		public MockDeviceInfo()
 		{
 			Platform = DevicePlatform.Unknown;
@@ -137,13 +132,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			DeviceType = deviceType ?? DeviceType.Unknown;
 		}
 
-		public MockDeviceInfo(string platform = null, TargetIdiom idiom = TargetIdiom.Unsupported, DeviceType? deviceType = null)
-		{
-			RuntimePlatform = platform;
-			TargetIdiom = idiom;
-			DeviceType = deviceType ?? DeviceType.Unknown;
-		}
-
 		public string Model { get; set; }
 
 		public string Manufacturer { get; set; }
@@ -154,76 +142,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public Version Version { get; set; }
 
-		public DevicePlatform Platform
-		{
-			get => _devicePlatform;
-			set
-			{
-				if (_devicePlatform == value)
-					return;
+		public DevicePlatform Platform { get; set; }
 
-				_devicePlatform = value;
-				_runtimePlatform = value.ToString();
-			}
-		}
-
-		public string RuntimePlatform
-		{
-			get => _runtimePlatform;
-			set
-			{
-				if (_runtimePlatform == value)
-					return;
-
-				_runtimePlatform = value;
-				_devicePlatform = DevicePlatform.Create(value);
-			}
-		}
-
-		public DeviceIdiom Idiom
-		{
-			get => _deviceIdiom;
-			set
-			{
-				if (_deviceIdiom == value)
-					return;
-
-				_deviceIdiom = value;
-				if (value == DeviceIdiom.Tablet)
-					_targetIdiom = TargetIdiom.Tablet;
-				else if (value == DeviceIdiom.Phone)
-					_targetIdiom = TargetIdiom.Phone;
-				else if (value == DeviceIdiom.Desktop)
-					_targetIdiom = TargetIdiom.Desktop;
-				else if (value == DeviceIdiom.TV)
-					_targetIdiom = TargetIdiom.TV;
-				else if (value == DeviceIdiom.Watch)
-					_targetIdiom = TargetIdiom.Watch;
-				else
-					_targetIdiom = TargetIdiom.Unsupported;
-			}
-		}
-
-		public TargetIdiom TargetIdiom
-		{
-			get => _targetIdiom;
-			set
-			{
-				if (_targetIdiom == value)
-					return;
-
-				_targetIdiom = value;
-				_deviceIdiom = value switch
-				{
-					TargetIdiom.Phone => DeviceIdiom.Phone,
-					TargetIdiom.Tablet => DeviceIdiom.Tablet,
-					TargetIdiom.Desktop => DeviceIdiom.Desktop,
-					TargetIdiom.Watch => DeviceIdiom.Watch,
-					TargetIdiom.TV => DeviceIdiom.TV,
-					_ => DeviceIdiom.Unknown,
-				};
-			}
-		}
+		public DeviceIdiom Idiom { get; set; }
 
 		public DeviceType DeviceType { get; set; }
 	}

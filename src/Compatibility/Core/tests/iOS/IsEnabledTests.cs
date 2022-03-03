@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("VisualElement enabled should match renderer enabled")]
 		public async Task EnabledConsistent(View view)
 		{
-			await Device.InvokeOnMainThreadAsync(() =>
+			await view.Dispatcher.DispatchAsync(() =>
 			{
 				using (var renderer = GetRenderer(view))
 				{

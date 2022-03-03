@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -147,7 +148,7 @@ namespace Microsoft.Maui.Controls
 				if (navigationRequest.Request.GlobalRoutes.Count > 0 && navigationRequest.StackRequest != ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					await Device.InvokeOnMainThreadAsync(() =>
+					await _shell.Dispatcher.DispatchAsync(() =>
 					{
 						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 					});
@@ -157,7 +158,7 @@ namespace Microsoft.Maui.Controls
 					currentShellSection?.Navigation?.NavigationStack?.Count > 1)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					await Device.InvokeOnMainThreadAsync(() =>
+					await _shell.Dispatcher.DispatchAsync(() =>
 					{
 						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 					});

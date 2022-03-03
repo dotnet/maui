@@ -75,7 +75,7 @@ namespace Maui.Controls.Sample.Pages
 					bool lastItem = i == Children.Count;
 					if (lastItem & LastChildFill)
 					{
-						LayoutChildIntoBoundingRegion(child, new Rectangle(x, y, width, height));
+						LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
 						return;
 					}
 
@@ -121,7 +121,7 @@ namespace Maui.Controls.Sample.Pages
 							}
 					}
 
-					LayoutChildIntoBoundingRegion(child, new Rectangle(childX, childY, childWidth, childHeight));
+					LayoutChildIntoBoundingRegion(child, new Rect(childX, childY, childWidth, childHeight));
 				}
 			}
 		}

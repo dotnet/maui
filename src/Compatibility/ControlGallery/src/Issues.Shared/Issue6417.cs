@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var label1 = new Label { Text = "Label 1" };
 			label1.SetBinding(Label.TextProperty, new Binding("."));
-			var hint = Device.RuntimePlatform == Device.iOS ? "Tip: swipe left for context action" : "Tip: long press for context action";
+			var hint = DeviceInfo.Platform == DevicePlatform.iOS ? "Tip: swipe left for context action" : "Tip: long press for context action";
 			var label2 = new Label { Text = hint };
 			var grid = new Grid() { BackgroundColor = Colors.Gray };
 			grid.RowDefinitions.Add(new RowDefinition());
