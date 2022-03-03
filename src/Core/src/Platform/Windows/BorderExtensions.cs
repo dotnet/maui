@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 			if (width <= 0 || height <= 0)
 				return;
 
-			var pathSize = new Graphics.Rectangle(0, 0, width + strokeThickness, height + strokeThickness);
+			var pathSize = new Graphics.Rect(0, 0, width + strokeThickness, height + strokeThickness);
 			var shapePath = borderShape.PathForBounds(pathSize);
 			var geometry = shapePath.AsPathGeometry();
 

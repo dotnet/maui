@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 
 		internal Path? BorderPath => _borderPath;
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Graphics.Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Graphics.Rect, Size>? CrossPlatformArrange { get; set; }
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 			var width = finalSize.Width;
 			var height = finalSize.Height;
 
-			var actual = CrossPlatformArrange(new Graphics.Rectangle(0, 0, width, height));
+			var actual = CrossPlatformArrange(new Graphics.Rect(0, 0, width, height));
 
 			return new global::Windows.Foundation.Size(actual.Width, actual.Height);
 		}
