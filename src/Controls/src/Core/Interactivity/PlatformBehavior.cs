@@ -1,4 +1,6 @@
-﻿#if __IOS__
+﻿#nullable enable
+
+#if __IOS__
 using PlatformView = UIKit.UIView;
 #elif __MACOS__
 using PlatformView = AppKit.NSView;
@@ -7,8 +9,6 @@ using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #endif
-
-#nullable enable
 
 namespace Microsoft.Maui.Controls;
 
@@ -32,7 +32,7 @@ public abstract partial class BasePlatformBehavior<TView, TPlatformView> : Behav
 	/// <inheritdoc />
 	protected override void OnAttachedTo(TView bindable)
 	{
-		if (bindable.Handler == null)
+		if (bindable.Handler is null)
 			return;
 
 		_isRemoved = false;
@@ -51,15 +51,15 @@ public abstract partial class BasePlatformBehavior<TView, TPlatformView> : Behav
 		OnPlatformDeattachedBehavior();
 		_isRemoved = true;
 	}
+
 	/// <summary>
-	/// 
+	/// This method is called when the Handler is attached to the View. Use this method to perform your customizations in the control
 	/// </summary>
-	/// <param name="view"></param>
 	protected abstract void OnPlatformAttachedBehavior();
+
 	/// <summary>
-	/// 
+	/// This method is called when the Handler is dettached from the View. Use this method to perform your customizations in the control
 	/// </summary>
-	/// <param name="view"></param>
 	protected abstract void OnPlatformDeattachedBehavior();
 
 	void IPlatformAttachedObject.OnPlatformAttachBehavior(BindableObject bindable)
