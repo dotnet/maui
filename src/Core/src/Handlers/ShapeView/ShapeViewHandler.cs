@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IShapeView.Stroke)] = MapStroke,
 			[nameof(IShapeView.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IShapeView.StrokeDashPattern)] = MapStrokeDashPattern,
+			[nameof(IShapeView.StrokeDashOffset)] = MapStrokeDashOffset,
 			[nameof(IShapeView.StrokeLineCap)] = MapStrokeLineCap,
 			[nameof(IShapeView.StrokeLineJoin)] = MapStrokeLineJoin,
 			[nameof(IShapeView.StrokeMiterLimit)] = MapStrokeMiterLimit
