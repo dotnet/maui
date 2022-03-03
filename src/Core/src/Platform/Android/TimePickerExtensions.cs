@@ -17,7 +17,7 @@
 			var time = timePicker.Time;
 			var format = timePicker.Format;
 
-			timePicker.Text = time.ToFormattedString(format);
+			timePicker.Text = mauiTimePicker.Text = time.ToFormattedString(format);
 		}
 	}
 }
