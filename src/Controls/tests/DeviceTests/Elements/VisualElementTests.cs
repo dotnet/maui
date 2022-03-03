@@ -83,6 +83,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			});
 
+			await Device.InvokeOnMainThreadAsync(async () =>
+			{
+				await OnUnloadedAsync(layout);
+				await OnUnloadedAsync(editor);
+			});
+
 			Assert.True(loaded == 2);
 			Assert.True(unloaded == 2);
 		}

@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Controls
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
-		IDisposable? _loadedUnloadedToken;
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
 		public Rectangle Frame
@@ -335,12 +334,12 @@ namespace Microsoft.Maui.Controls
 			add
 			{
 				_loaded += value;
-				UpdatePlatformUnloadedLoadedWiring();
+				UpdatePlatformUnloadedLoadedWiring(Window);
 			}
 			remove
 			{
 				_loaded -= value;
-				UpdatePlatformUnloadedLoadedWiring();
+				UpdatePlatformUnloadedLoadedWiring(Window);
 			}
 		}
 
@@ -349,12 +348,12 @@ namespace Microsoft.Maui.Controls
 			add
 			{
 				_unloaded += value;
-				UpdatePlatformUnloadedLoadedWiring();
+				UpdatePlatformUnloadedLoadedWiring(Window);
 			}
 			remove
 			{
 				_unloaded -= value;
-				UpdatePlatformUnloadedLoadedWiring();
+				UpdatePlatformUnloadedLoadedWiring(Window);
 			}
 		}
 
@@ -397,12 +396,21 @@ namespace Microsoft.Maui.Controls
 		// the screen
 		void UpdatePlatformUnloadedLoadedWiring(IWindow window)
 		{
-			if ((_unloaded == null && _loaded == null) || window == null)
+			// If I'm not attached to a window and I haven't started watching any platform events
+			// then it's not useful to wire anything up. We will just wait until
+			// This VE gets connected to the xplat Window before wiring up any events
+			if (!_watchingPlatformLoaded && window == null)
+				return;
+
+			if (_unloaded == null && _loaded == null)
 			{
 				if (window is Element elementWindow)
 					elementWindow.HandlerChanged -= OnWindowHandlerChanged;
 
+#if PLATFORM
 				_loadedUnloadedToken?.Dispose();
+				_loadedUnloadedToken = null;
+#endif
 				_watchingPlatformLoaded = false;
 				return;
 			}

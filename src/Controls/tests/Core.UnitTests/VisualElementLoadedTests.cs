@@ -23,13 +23,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.True(loaded == 1);
-			Assert.True(unloaded == 0);
+			Assert.AreEqual(1, loaded);
+			Assert.AreEqual(0, unloaded);
 
 			window.Page = null;
 
-			Assert.True(loaded == 1);
-			Assert.True(unloaded == 1);
+			Assert.AreEqual(1, loaded);
+			Assert.AreEqual(1, unloaded);
 		}
 
 		[Test]
@@ -61,18 +61,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			parentLayout.Remove(layout);
 
-			Assert.True(loaded == 1);
-			Assert.True(unloaded == 1);
+			Assert.AreEqual(1, loaded);
+			Assert.AreEqual(1, unloaded);
 
 			parentLayout.Add(layout);
 
-			Assert.True(loaded == 2);
-			Assert.True(unloaded == 1);
+			Assert.AreEqual(2, loaded);
+			Assert.AreEqual(1, unloaded);
 
 			window.Page = null;
 
-			Assert.True(loaded == 2);
-			Assert.True(unloaded == 2);
+			Assert.AreEqual(2, loaded);
+			Assert.AreEqual(2, unloaded);
 		}
 	}
 }

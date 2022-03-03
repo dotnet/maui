@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class VisualElement
 	{
+		IDisposable? _loadedUnloadedToken;
 		partial void HandlePlatformUnloadedLoaded()
 		{
 			_loadedUnloadedToken?.Dispose();

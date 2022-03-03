@@ -179,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 				return;
 			}
 
-			EventHandler<System.EventArgs> loaded = null;
+			EventHandler loaded = null;
 
 			loaded = (_, __) =>
 			{
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.DeviceTests
 				return;
 			}
 
-			EventHandler<System.EventArgs> unloaded = null;
+			EventHandler unloaded = null;
 
 			unloaded = (_, __) =>
 			{
