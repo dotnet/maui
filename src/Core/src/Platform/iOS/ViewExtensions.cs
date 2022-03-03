@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
-			ActionDisposable disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				foreach (var thing in observers)
 					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
@@ -468,13 +468,14 @@ namespace Microsoft.Maui.Platform
 
 			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
 			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-
+			uiView.BeginInvokeOnMainThread(OnLoadedCheck);
 
 			void OnLoadedCheck()
 			{
-				if (uiView.IsLoaded())
+				if (uiView.IsLoaded() && disposable != null)
 				{
 					disposable.Dispose();
+					disposable = null;
 					action();
 				}
 			};
@@ -492,7 +493,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
-			ActionDisposable disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				foreach (var thing in observers)
 					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
@@ -500,12 +501,14 @@ namespace Microsoft.Maui.Platform
 
 			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
 			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 
 			void UnLoadedCheck()
 			{
-				if (!uiView.IsLoaded())
+				if (!uiView.IsLoaded() && disposable != null)
 				{
 					disposable.Dispose();
+					disposable = null;
 					action();
 				}
 			};

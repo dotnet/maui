@@ -56,10 +56,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-#if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
 					handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
-#endif
 				});
 
 			additionalCreationActions?.Invoke(appBuilder);

@@ -22,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
 			VirtualView
+				.Content
 				.ToPlatform()
 				.RemoveFromSuperview();
 				
