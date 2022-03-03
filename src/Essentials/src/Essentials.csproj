@@ -7,7 +7,7 @@
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
-	<WarningsNotAsErrors>CS1571;CS1572;CS1734</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CS1571;CS1572;CS1734</WarningsNotAsErrors>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">

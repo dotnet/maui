@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Internals
 			propertyChanged = propertyChanged ?? target as INotifyPropertyChanged;
 			var targetPropertyInfo = target.GetType().GetProperty(targetProperty);
 			var propertyType = targetPropertyInfo?.PropertyType;
-			var defaultValue = targetPropertyInfo?.GetMethod.Invoke(target, new object[] { });
+			var defaultValue = targetPropertyInfo?.GetMethod.Invoke(target, Array.Empty<object>());
 			bindableProperty = CreateBindableProperty<TPlatformView>(targetProperty, propertyType, defaultValue);
 			if (binding != null && binding.Mode != BindingMode.OneWay && propertyChanged != null)
 				propertyChanged.PropertyChanged += (sender, e) =>
