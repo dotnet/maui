@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				VisualElementRenderer, widthConstraint, heightConstraint);
 		}
 
-		public override void PlatformArrange(Rectangle frame)
+		public override void PlatformArrange(Rect frame)
 		{
 			// This is a hack to force the shimmed control to actually do layout; without this, some controls won't actually
 			// call OnLayout after SetFrame if their sizes haven't changed (e.g., ScrollView)
