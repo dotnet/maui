@@ -182,9 +182,11 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 				Assert.True(timer.IsRunning);
 
-				await Task.Delay(TimeSpan.FromSeconds(1.1));
+				// Give it time to repeat at least once
+				await Task.Delay(TimeSpan.FromSeconds(1));
 
-				Assert.Equal(5, ticks);
+				// If it's repeating, ticks will be greater than 1
+				Assert.True(ticks > 1);
 			});
 	}
 }
