@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void Arrange(this IView view, FrameworkElement frameworkElement)
 		{
-			var rect = new Graphics.Rectangle(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
+			var rect = new Graphics.Rect(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
 
 			if (!view.Frame.Equals(rect))
 				view.Arrange(rect);

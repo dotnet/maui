@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Handlers;
-
-namespace Microsoft.Maui.Platform
+﻿namespace Microsoft.Maui.Platform
 {
 	public static class StrokeExtensions
 	{
@@ -21,7 +19,7 @@ namespace Microsoft.Maui.Platform
 			if (stroke == null)
 				return;
 
-			platformView.UpdateStroke(stroke);
+			platformView.BorderPath?.UpdateStroke(stroke);
 		}
 
 		public static void UpdateStrokeThickness(this ContentPanel platformView, IBorderStroke border)
@@ -32,7 +30,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeThickness = border.StrokeThickness;
-			platformView.UpdateStrokeThickness(strokeThickness);
+			platformView.BorderPath?.UpdateStrokeThickness(strokeThickness);
 		}
 
 		public static void UpdateStrokeDashPattern(this ContentPanel platformView, IBorderStroke border)
@@ -42,7 +40,7 @@ namespace Microsoft.Maui.Platform
 			if (strokeDashPattern == null)
 				return;
 
-			platformView.UpdateStrokeDashPattern(strokeDashPattern);
+			platformView.BorderPath?.UpdateStrokeDashPattern(strokeDashPattern);
 		}
 
 		public static void UpdateStrokeDashOffset(this ContentPanel platformView, IBorderStroke border)
@@ -53,7 +51,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeDashOffset = border.StrokeDashOffset;
-			platformView.UpdateBorderDashOffset(strokeDashOffset);
+			platformView.BorderPath?.UpdateBorderDashOffset(strokeDashOffset);
 		}
 
 		public static void UpdateStrokeMiterLimit(this ContentPanel platformView, IBorderStroke border)
@@ -64,7 +62,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeMiterLimit = border.StrokeMiterLimit;
-			platformView.UpdateStrokeMiterLimit(strokeMiterLimit);
+			platformView.BorderPath?.UpdateStrokeMiterLimit(strokeMiterLimit);
 		}
 
 		public static void UpdateStrokeLineCap(this ContentPanel platformView, IBorderStroke border) 
@@ -75,7 +73,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeLineCap = border.StrokeLineCap;
-			platformView.UpdateStrokeLineCap(strokeLineCap);
+			platformView.BorderPath?.UpdateStrokeLineCap(strokeLineCap);
 		}
 
 		public static void UpdateStrokeLineJoin(this ContentPanel platformView, IBorderStroke border)
@@ -86,7 +84,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var strokeLineJoin = border.StrokeLineJoin;
-			platformView.UpdateStrokeLineJoin(strokeLineJoin);
+			platformView.BorderPath?.UpdateStrokeLineJoin(strokeLineJoin);
 		}
 	}
 }

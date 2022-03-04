@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 #if UITEST
@@ -141,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				listView.ScrollTo(person, ScrollToPosition.End, true);
 			};
 
-			Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
+			Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
 
 			Content = new StackLayout
 			{

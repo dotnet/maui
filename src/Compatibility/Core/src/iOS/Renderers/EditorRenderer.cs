@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -174,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				SetNativeControl(CreateNativeControl());
 
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				{
 					// iPhone does not have a dismiss keyboard button
 					var keyboardWidth = UIScreen.MainScreen.Bounds.Width;

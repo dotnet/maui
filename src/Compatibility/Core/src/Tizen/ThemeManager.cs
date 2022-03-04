@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static void SetTitleColor(this Popup popup, EColor color)
 		{
-			popup.SetPartColor(Device.Idiom == TargetIdiom.TV ? ThemeConstants.Popup.ColorClass.TV.Title : ThemeConstants.Popup.ColorClass.Title, color);
+			popup.SetPartColor(DeviceInfo.Idiom == DeviceIdiom.TV ? ThemeConstants.Popup.ColorClass.TV.Title : ThemeConstants.Popup.ColorClass.Title, color);
 		}
 
 		public static void SetTitleBackgroundColor(this Popup popup, EColor color)
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static string[] GetColorParts(this Check check)
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				if (check.Style == ThemeConstants.Check.Styles.Toggle)
 				{
@@ -386,7 +386,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					};
 				}
 			}
-			else if (Device.Idiom == TargetIdiom.TV)
+			else if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				if (check.Style == ThemeConstants.Check.Styles.Toggle)
 				{
@@ -459,7 +459,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static NaviItem SetTabBarStyle(this NaviItem item)
 		{
-			if (Device.Idiom == TargetIdiom.TV)
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				//According to TV UX Guideline, item style should be set to "tabbar" in case of TabbedPage only for TV profile.
 				item.Style = ThemeConstants.NaviItem.Styles.TV.TabBar;
@@ -653,7 +653,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		#region CellRenderer
 		public static string GetTextCellRendererStyle()
 		{
-			return Device.Idiom == TargetIdiom.TV ? ThemeConstants.GenItemClass.Styles.Default : ThemeConstants.GenItemClass.Styles.DoubleLabel;
+			return DeviceInfo.Idiom == DeviceIdiom.TV ? ThemeConstants.GenItemClass.Styles.Default : ThemeConstants.GenItemClass.Styles.DoubleLabel;
 		}
 
 		public static string GetTextCellGroupModeStyle(bool isGroupMode)
@@ -687,12 +687,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static string GetSwitchCellRendererStyle()
 		{
-			return Device.Idiom == TargetIdiom.Watch ? ThemeConstants.GenItemClass.Styles.Watch.Text1Icon1 : ThemeConstants.GenItemClass.Styles.Default;
+			return DeviceInfo.Idiom == DeviceIdiom.Watch ? ThemeConstants.GenItemClass.Styles.Watch.Text1Icon1 : ThemeConstants.GenItemClass.Styles.Default;
 		}
 
 		public static string GetSwitchPart(this SwitchCellRenderer switchCell)
 		{
-			return Device.Idiom == TargetIdiom.Watch ? ThemeConstants.GenItemClass.Parts.Watch.Icon : ThemeConstants.GenItemClass.Parts.End;
+			return DeviceInfo.Idiom == DeviceIdiom.Watch ? ThemeConstants.GenItemClass.Parts.Watch.Icon : ThemeConstants.GenItemClass.Parts.End;
 		}
 
 		public static int GetDefaultHeightPixel(this EntryCellRenderer entryCell)
@@ -702,12 +702,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static string GetImageCellRendererStyle()
 		{
-			return Device.Idiom == TargetIdiom.Watch ? ThemeConstants.GenItemClass.Styles.Watch.Icon2Text : Device.Idiom == TargetIdiom.TV ? ThemeConstants.GenItemClass.Styles.Default : ThemeConstants.GenItemClass.Styles.DoubleLabel;
+			return DeviceInfo.Idiom == DeviceIdiom.Watch ? ThemeConstants.GenItemClass.Styles.Watch.Icon2Text : DeviceInfo.Idiom == DeviceIdiom.TV ? ThemeConstants.GenItemClass.Styles.Default : ThemeConstants.GenItemClass.Styles.DoubleLabel;
 		}
 
 		public static string GetImagePart(this ImageCellRenderer imageCell)
 		{
-			return Device.Idiom == TargetIdiom.Watch ? ThemeConstants.GenItemClass.Parts.Watch.Icon : ThemeConstants.GenItemClass.Parts.Icon;
+			return DeviceInfo.Idiom == DeviceIdiom.Watch ? ThemeConstants.GenItemClass.Parts.Watch.Icon : ThemeConstants.GenItemClass.Parts.Icon;
 		}
 
 		public static int GetDefaultHeightPixel(this ImageCellRenderer imageCell)
@@ -818,7 +818,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		#region Index
 		public static Index SetStyledIndex(this Index index)
 		{
-			index.Style = Device.Idiom == TargetIdiom.Watch ? ThemeConstants.Index.Styles.Circle : ThemeConstants.Index.Styles.PageControl;
+			index.Style = DeviceInfo.Idiom == DeviceIdiom.Watch ? ThemeConstants.Index.Styles.Circle : ThemeConstants.Index.Styles.PageControl;
 			return index;
 		}
 		#endregion
@@ -891,7 +891,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (s_shellNavBarDefaultMenuSize > 0)
 				return s_shellNavBarDefaultMenuSize;
-			return s_shellNavBarDefaultMenuSize = CalculateDoubleScaledSizeInLargeScreen(Device.Idiom == TargetIdiom.TV ? 70 : 40);
+			return s_shellNavBarDefaultMenuSize = CalculateDoubleScaledSizeInLargeScreen(DeviceInfo.Idiom == DeviceIdiom.TV ? 70 : 40);
 		}
 
 		static double s_shellNavBarDefaultMargin = -1;

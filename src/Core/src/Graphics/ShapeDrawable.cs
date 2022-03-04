@@ -14,7 +14,7 @@
 
 		public IShapeView? ShapeView { get; set; }
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			var rect = dirtyRect;
 
@@ -34,7 +34,7 @@
 			DrawFillPath(canvas, rect, path);
 		}
 
-		void DrawBackground(ICanvas canvas, RectangleF dirtyRect)
+		void DrawBackground(ICanvas canvas, RectF dirtyRect)
 		{
 			if (ShapeView == null)
 				return;
@@ -49,8 +49,8 @@
 
 			canvas.RestoreState();
 		}
-	
-		void DrawStrokePath(ICanvas canvas, RectangleF dirtyRect, PathF path)
+
+		void DrawStrokePath(ICanvas canvas, RectF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null || ShapeView.StrokeThickness <= 0 || ShapeView.Stroke == null)
 				return;
@@ -96,7 +96,7 @@
 			canvas.RestoreState();
 		}
 
-		void DrawFillPath(ICanvas canvas, RectangleF dirtyRect, PathF path)
+		void DrawFillPath(ICanvas canvas, RectF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null)
 				return;

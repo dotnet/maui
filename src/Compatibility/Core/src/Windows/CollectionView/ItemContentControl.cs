@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var formsElement = _renderer.Element;
 			if (ItemHeight != default || ItemWidth != default)
 			{
-				formsElement.Layout(new Rectangle(0, 0, ItemWidth, ItemHeight));
+				formsElement.Layout(new Rect(0, 0, ItemWidth, ItemHeight));
 
 				var wsize = new WSize(ItemWidth, ItemHeight);
 
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				width = Max(width, availableSize.Width);
 				height = Max(height, availableSize.Height);
 
-				formsElement.Layout(new Rectangle(0, 0, width, height));
+				formsElement.Layout(new Rect(0, 0, width, height));
 
 				var wsize = new WSize(width, height);
 

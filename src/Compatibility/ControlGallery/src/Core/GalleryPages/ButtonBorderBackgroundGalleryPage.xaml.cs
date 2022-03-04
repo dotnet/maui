@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Visual = visual;
 
 			// buttons are transparent on default iOS, so we have to give them something
-			if (Device.RuntimePlatform == Device.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				if (Visual != VisualMarker.Material)
 				{
