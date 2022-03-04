@@ -182,11 +182,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (pageParent != null)
 						actionSheet.ShowAt(pageParent);
+					else
+						arguments.SetResult(null);
 				}
 				catch (ArgumentException) // If the page is not in the visual tree
 				{
-					if (UI.Xaml.Window.Current.Content is FrameworkElement mainPage)
+					if (UI.Xaml.Window.Current != null && UI.Xaml.Window.Current.Content is FrameworkElement mainPage)
 						actionSheet.ShowAt(mainPage);
+					else
+						arguments.SetResult(null);
 				}
 			}
 
