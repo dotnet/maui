@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			KeyboardFlags spellCheckForUwp = KeyboardFlags.None;
 
-			if (DeviceInfo.Platform == DevicePlatform.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI)
 			{
 				spellCheckForUwp = KeyboardFlags.Spellcheck;
 			}
@@ -63,12 +63,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeSentence", FlagsToSet = KeyboardFlags.CapitalizeSentence, FlagsToTestFor = KeyboardFlags.CapitalizeSentence });
 			inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeWord", FlagsToSet = KeyboardFlags.CapitalizeWord, FlagsToTestFor = KeyboardFlags.CapitalizeWord });
 
-			if (Device.RuntimePlatform != Device.UWP)
+			if (Device.RuntimePlatform != Device.WinUI)
 			{
 				inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeCharacter", FlagsToSet = KeyboardFlags.CapitalizeCharacter });
 			}
 
-			if (DeviceInfo.Platform == DevicePlatform.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI)
 			{
 				layout.Children.Add(new Label() { Text = "Capitalization settings only work when using touch keyboard" });
 				layout.Children.Add(new Label() { Text = "Character doesn't do anything on UWP" });

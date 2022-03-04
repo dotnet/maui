@@ -108,6 +108,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			Entry.RemapForControls();
 			SearchBar.RemapForControls();
 			TabbedPage.RemapForControls();
+			Layout.RemapForControls();
 
 			return builder;
 		}

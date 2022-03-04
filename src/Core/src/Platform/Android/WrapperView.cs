@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Platform
 		bool _invalidateShadow;
 		AView BorderView;
 
+		public bool InputTransparent { get; set; }
+
 		public WrapperView(Context context)
 			: base(context)
 		{
@@ -103,6 +105,16 @@ namespace Microsoft.Maui.Platform
 
 			// Draw child`s
 			base.DispatchDraw(canvas);
+		}
+
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (InputTransparent)
+			{
+				return false;
+			}
+
+			return base.DispatchTouchEvent(e);
 		}
 
 		partial void ClipChanged()

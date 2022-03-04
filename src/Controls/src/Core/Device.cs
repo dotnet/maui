@@ -24,20 +24,22 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use Essentials.DevicePlatform.Android instead.")]
 		public const string Android = "Android";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='UWP']/Docs" />
-		[Obsolete("Use Essentials.DevicePlatform.UWP instead.")]
-		public const string UWP = "UWP";
+		[Obsolete("Use Essentials.DevicePlatform.WinUI instead.")]
+		public const string UWP = "WinUI";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='macOS']/Docs" />
 		[Obsolete("Use Essentials.DevicePlatform.macOS instead.")]
-		public const string macOS = "macOS";
+		internal const string macOS = "macOS";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GTK']/Docs" />
 		[Obsolete("Use Essentials.DevicePlatform.GTK instead.")]
-		public const string GTK = "GTK";
+		internal const string GTK = "GTK";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Tizen']/Docs" />
 		[Obsolete("Use Essentials.DevicePlatform.Tizen instead.")]
 		public const string Tizen = "Tizen";
+		[Obsolete("Use Essentials.DevicePlatform.WinUI instead.")]
+		public const string WinUI = "WinUI";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='WPF']/Docs" />
 		[Obsolete("Use Essentials.DevicePlatform.WPF instead.")]
-		public const string WPF = "WPF";
+		internal const string WPF = "WPF";
 		[Obsolete("Use Essentials.DevicePlatform.MacCatalyst instead.")]
 		public const string MacCatalyst = "MacCatalyst";
 		[Obsolete("Use Essentials.DevicePlatform.tvOS instead.")]
