@@ -31,7 +31,7 @@ variables:
 - name: TestResultsDirectory
   value: $(Build.ArtifactStagingDirectory)/test-results
 - name: provisioningVS
-  value: true
+  value: false
 - name: provisionator.xcode
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path
