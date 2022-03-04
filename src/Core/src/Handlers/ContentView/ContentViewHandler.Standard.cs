@@ -4,9 +4,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ContentViewHandler : ViewHandler<IContentView, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		public static void MapContent(ContentViewHandler handler, IContentView page)
+		public static void MapContent(IContentViewHandler handler, IContentView page)
 		{
 		}
 	}

@@ -52,7 +52,7 @@ if(bases.length == 0){
 			_internalWebView.NavigationCompleted += async (sender, args) =>
 			{
 				// Generate a version of the <base> script with the correct <base> tag
-				var script = BaseInsertionScript.Replace("baseTag", baseTag);
+				var script = BaseInsertionScript.Replace("baseTag", baseTag, StringComparison.Ordinal);
 
 				// Run it and retrieve the updated HTML from our WebView
 				await sender.ExecuteScriptAsync(script);
@@ -230,8 +230,10 @@ if(bases.length == 0){
 			}
 		}
 
+		[PortHandler]
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
+		[PortHandler]
 		Uri CreateUriForCookies(string url)
 		{
 			if (url == null)
@@ -253,6 +255,7 @@ if(bases.length == 0){
 			return null;
 		}
 
+		[PortHandler]
 		HttpCookieCollection GetCookiesFromNativeStore(string url)
 		{
 			var uri = CreateUriForCookies(url);
@@ -262,6 +265,7 @@ if(bases.length == 0){
 			return nativeCookies;
 		}
 
+		[PortHandler]
 		void InitialCookiePreloadIfNecessary(string url)
 		{
 			var myCookieJar = Element.Cookies;
@@ -286,6 +290,7 @@ if(bases.length == 0){
 			}
 		}
 
+		[PortHandler]
 		void SyncNativeCookiesToElement(string url)
 		{
 			var myCookieJar = Element.Cookies;
@@ -317,6 +322,7 @@ if(bases.length == 0){
 			SyncNativeCookies(url);
 		}
 
+		[PortHandler]
 		void SyncNativeCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
@@ -408,6 +414,7 @@ if(bases.length == 0){
 			Control.Reload();
 		}
 
+		[PortHandler("Partially ported")]
 		async void NavigationSucceeded(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
 		{
 			// TODO WINUI3
@@ -424,6 +431,7 @@ if(bases.length == 0){
 
 		}
 
+		[PortHandler]
 		void NavigationFailed(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
 		{
 			Uri uri = sender.Source;
@@ -446,6 +454,7 @@ if(bases.length == 0){
 				await new global::Windows.UI.Popups.MessageDialog(e.TryGetWebMessageAsString()).ShowAsync();
 		}
 
+		[PortHandler]
 		void OnNavigationStarted(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs e)
 		{
 			// TODO WINUI3
@@ -468,6 +477,7 @@ if(bases.length == 0){
 			}
 		}
 
+		[PortHandler]
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)
 		{
 			_updating = true;

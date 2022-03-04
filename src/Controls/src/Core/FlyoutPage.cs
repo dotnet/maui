@@ -25,11 +25,11 @@ namespace Microsoft.Maui.Controls
 
 		Page _detail;
 
-		Rectangle _detailBounds;
+		Rect _detailBounds;
 
 		Page _flyout;
 
-		Rectangle _flyoutBounds;
+		Rect _flyoutBounds;
 
 		IFlyoutPageController FlyoutPageController => this;
 
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls
 
 		bool IFlyoutPageController.CanChangeIsPresented { get; set; } = true;
 
-		Rectangle IFlyoutPageController.DetailBounds
+		Rect IFlyoutPageController.DetailBounds
 		{
 			get { return _detailBounds; }
 			set
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Rectangle IFlyoutPageController.FlyoutBounds
+		Rect IFlyoutPageController.FlyoutBounds
 		{
 			get { return _flyoutBounds; }
 			set
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 					return false;
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='ShouldShowToolbarButton']/Docs" />
 		public virtual bool ShouldShowToolbarButton()
 		{
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				return true;
 
 			FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls
 
 		static object GetDefaultValue(BindableObject bindable)
 		{
-			return Device.RuntimePlatform == Device.macOS;
+			return DeviceInfo.Platform == DevicePlatform.macOS;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='.ctor']/Docs" />

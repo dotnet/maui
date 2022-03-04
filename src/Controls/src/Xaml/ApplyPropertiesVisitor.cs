@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		static bool GetRealNameAndType(ref Type elementType, string namespaceURI, ref string localname,
 			object rootElement, IXmlLineInfo lineInfo)
 		{
-			var dotIdx = localname.IndexOf('.');
+			var dotIdx = localname.IndexOf(".", StringComparison.Ordinal);
 			if (dotIdx > 0)
 			{
 				var typename = localname.Substring(0, dotIdx);

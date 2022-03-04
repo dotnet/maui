@@ -69,8 +69,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			get { return _isInvokeRequired; }
 		}
 
-		public string RuntimePlatform { get; set; }
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			if (invokeOnMainThread == null)
@@ -104,11 +102,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			return getStreamAsync(uri, cancellationToken);
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			if (getNativeSizeFunc != null)
@@ -133,7 +126,7 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			return new SizeRequest(new Size(100, 20));
 		}
 
-		public OSAppTheme RequestedTheme => OSAppTheme.Unspecified;
+		public AppTheme RequestedTheme => AppTheme.Unspecified;
 	}
 
 	internal class MockDeserializer : Internals.IDeserializer

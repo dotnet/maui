@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			SetLayoutCallback(OnLayout);
 
 			_viewStack = new SimpleViewStack(Forms.NativeParent);
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 			{
 				_viewStack.BackgroundColor = ElmSharp.Color.White;
 			}
@@ -141,9 +141,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var backgroundColor = appearance?.BackgroundColor ?? Microsoft.Maui.Controls.Compatibility.Color.Default;
 			var foregroundColor = appearance?.ForegroundColor ?? Microsoft.Maui.Controls.Compatibility.Color.Default;
 
-			_navBar.TitleColor = titleColor.IsDefault ? ShellRenderer.DefaultTitleColor.ToNative() : titleColor.ToNative();
-			_navBar.BackgroundColor = backgroundColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToNative() : backgroundColor.ToNative();
-			_navBar.ForegroundColor = foregroundColor.IsDefault ? ShellRenderer.DefaultForegroundColor.ToNative() : foregroundColor.ToNative();
+			_navBar.TitleColor = titleColor.IsDefault ? ShellRenderer.DefaultTitleColor.ToPlatform() : titleColor.ToPlatform();
+			_navBar.BackgroundColor = backgroundColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : backgroundColor.ToPlatform();
+			_navBar.ForegroundColor = foregroundColor.IsDefault ? ShellRenderer.DefaultForegroundColor.ToPlatform() : foregroundColor.ToPlatform();
 		}
 
 

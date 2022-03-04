@@ -6,10 +6,11 @@ namespace Microsoft.Maui.Controls
 	public partial class Label
 	{
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='ControlsLabelMapper']/Docs" />
-		public static IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper = new PropertyMapper<Label, LabelHandler>(LabelHandler.LabelMapper)
+		public static IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper = new PropertyMapper<Label, LabelHandler>(LabelHandler.Mapper)
 		{
 			[nameof(TextType)] = MapTextType,
 			[nameof(Text)] = MapText,
+			[nameof(FormattedText)] = MapText,
 			[nameof(TextTransform)] = MapText,
 #if __IOS__
 			[nameof(TextDecorations)] = MapTextDecorations,
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			// ILabel does not include the TextType property, so we map it here to handle HTML text
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
 
-			LabelHandler.LabelMapper = ControlsLabelMapper;
+			LabelHandler.Mapper = ControlsLabelMapper;
 		}
 	}
 }

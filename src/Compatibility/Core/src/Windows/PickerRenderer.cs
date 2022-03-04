@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTextColor()
 		{
 			Color color = Element.TextColor;
-			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? color.ToNative()) : color.ToNative();
+			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? color.ToPlatform()) : color.ToPlatform();
 		}
 
 		[PortHandler]
@@ -238,12 +238,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalContentAlignment = Element.HorizontalTextAlignment.ToNativeHorizontalAlignment();
+			Control.HorizontalContentAlignment = Element.HorizontalTextAlignment.ToPlatformHorizontalAlignment();
 		}
         [PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 	}
 }

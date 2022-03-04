@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 		/// Initializes a new instance of the EvaluateJavaScriptAsyncRequest class.
 		/// </summary>
 		/// <param name="script">The JavaScript to be evaluated.</param>
-		public EvaluateJavaScriptAsyncRequest(string script) 
+		public EvaluateJavaScriptAsyncRequest(string script)
 		{
 			Script = script;
 		}

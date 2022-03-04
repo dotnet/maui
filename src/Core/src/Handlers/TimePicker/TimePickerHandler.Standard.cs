@@ -4,12 +4,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		public static void MapFormat(TimePickerHandler handler, ITimePicker view) { }
-		public static void MapTime(TimePickerHandler handler, ITimePicker view) { }
-		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker view) { }
-		public static void MapFont(TimePickerHandler handler, ITimePicker view) { }
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
+		public static void MapFormat(ITimePickerHandler handler, ITimePicker view) { }
+		public static void MapTime(ITimePickerHandler handler, ITimePicker view) { }
+		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker view) { }
+		public static void MapFont(ITimePickerHandler handler, ITimePicker view) { }
+		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker) { }
 	}
 }

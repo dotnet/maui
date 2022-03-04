@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public View WithBounds(View v, double x, double y, double w, double h)
 		{
-			AbsoluteLayout.SetLayoutBounds(v, new Rectangle(x, y, w, h));
+			AbsoluteLayout.SetLayoutBounds(v, new Rect(x, y, w, h));
 			return v;
 		}
 

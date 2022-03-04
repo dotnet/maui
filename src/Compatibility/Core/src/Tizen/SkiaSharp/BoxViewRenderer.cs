@@ -72,13 +72,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 				else
 				{
 					// Use BackgroundColor only if color is default and background color is not default.
-					RealControl.Color = Element.BackgroundColor.MultiplyAlpha(Element.Opacity).ToNative();
+					RealControl.Color = Element.BackgroundColor.MultiplyAlpha(Element.Opacity).ToPlatform();
 				}
 			}
 			else
 			{
 				// Color has higer priority than BackgroundColor.
-				RealControl.Color = Element.Color.MultiplyAlpha(Element.Opacity).ToNative();
+				RealControl.Color = Element.Color.MultiplyAlpha(Element.Opacity).ToPlatform();
 			}
 		}
 	}

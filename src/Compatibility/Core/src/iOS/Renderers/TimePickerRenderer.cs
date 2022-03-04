@@ -156,16 +156,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateFlowDirection();
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
+		[PortHandler]
 		void OnValueChanged(object sender, EventArgs e)
 		{
 			if (Element.OnThisPlatform().UpdateMode() == UpdateMode.Immediately)
@@ -230,13 +233,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.Text = DateTime.Today.Add(Element.Time).ToString(Element.Format, cultureInfos);
 			}
 
-			if (Element.Format?.Contains('H') == true)
+			if (Element.Format?.Contains('H', StringComparison.Ordinal) == true)
 			{
 				var ci = new System.Globalization.CultureInfo("de-DE");
 				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 				_picker.Locale = locale;
 			}
-			else if (Element.Format?.Contains('h') == true)
+			else if (Element.Format?.Contains('h', StringComparison.Ordinal) == true)
 			{
 				var ci = new System.Globalization.CultureInfo("en-US");
 				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);

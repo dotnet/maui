@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeTimePicker.Time = timePicker.Time;
 
-			if (timePicker.Format?.Contains('H') == true)
+			if (timePicker.Format?.Contains('H', StringComparison.Ordinal) == true)
 			{
 				nativeTimePicker.ClockIdentifier = "24HourClock";
 			}
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this TimePicker nativeTimePicker, ITimePicker timePicker,WBrush? defaultForeground)
 		{
 			Color textColor = timePicker.TextColor;
-			nativeTimePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToNative()) : textColor.ToNative();
+			nativeTimePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToPlatform()) : textColor.ToPlatform();
 		}
 	}
 }

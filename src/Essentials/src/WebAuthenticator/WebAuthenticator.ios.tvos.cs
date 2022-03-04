@@ -13,16 +13,11 @@ using UIKit;
 using WebKit;
 using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class WebAuthenticator
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 #if __IOS__
-		[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Required for iOS Export")]
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Required for iOS Export")]
-		static extern void void_objc_msgSend_IntPtr(IntPtr receiver, IntPtr selector, IntPtr arg1);
-
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
 		const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
 
@@ -30,16 +25,16 @@ namespace Microsoft.Maui.Essentials
 		const string sfAuthenticationErrorDomain = "com.apple.SafariServices.Authentication";
 #endif
 
-		static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
-		static UIViewController currentViewController;
-		static Uri redirectUri;
+		TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
+		UIViewController currentViewController;
+		Uri redirectUri;
 
 #if __IOS__
-		static ASWebAuthenticationSession was;
-		static SFAuthenticationSession sf;
+		ASWebAuthenticationSession was;
+		SFAuthenticationSession sf;
 #endif
 
-		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
@@ -57,10 +52,10 @@ namespace Microsoft.Maui.Essentials
 			var scheme = redirectUri.Scheme;
 
 #if __IOS__
-			static void AuthSessionCallback(NSUrl cbUrl, NSError error)
+			void AuthSessionCallback(NSUrl cbUrl, NSError error)
 			{
 				if (error == null)
-					OpenUrl(cbUrl);
+					OpenUrlCallback(cbUrl);
 				else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
 					tcsResponse.TrySetCanceled();
 				else if (error.Domain == sfAuthenticationErrorDomain && error.Code == sfAuthenticationErrorCanceledLogin)
@@ -72,14 +67,14 @@ namespace Microsoft.Maui.Essentials
 				sf = null;
 			}
 
-			if (UIDevice.CurrentDevice.CheckSystemVersion(12, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(12, 0))
 			{
 				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 
-				if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+				if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
 				{
 					var ctx = new ContextProvider(Platform.GetCurrentWindow());
-					void_objc_msgSend_IntPtr(was.Handle, ObjCRuntime.Selector.GetHandle("setPresentationContextProvider:"), ctx.Handle);
+					was.PresentationContextProvider = ctx;
 					was.PrefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession;
 				}
 				else if (prefersEphemeralWebBrowserSession)
@@ -97,7 +92,7 @@ namespace Microsoft.Maui.Essentials
 			if (prefersEphemeralWebBrowserSession)
 				ClearCookies();
 
-			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 			{
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 				using (sf)
@@ -132,12 +127,12 @@ namespace Microsoft.Maui.Essentials
 			return await tcsResponse.Task;
 		}
 
-		static void ClearCookies()
+		void ClearCookies()
 		{
 			NSUrlCache.SharedCache.RemoveAllCachedResponses();
 
 #if __IOS__
-			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 			{
 				WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.GetAllCookies((cookies) =>
 				{
@@ -150,7 +145,7 @@ namespace Microsoft.Maui.Essentials
 #endif
 		}
 
-		internal static bool OpenUrl(Uri uri)
+		public bool OpenUrlCallback(Uri uri)
 		{
 			// If we aren't waiting on a task, don't handle the url
 			if (tcsResponse?.Task?.IsCompleted ?? true)
@@ -178,7 +173,7 @@ namespace Microsoft.Maui.Essentials
 		static bool VerifyHasUrlSchemeOrDoesntRequire(string scheme)
 		{
 			// iOS11+ uses sfAuthenticationSession which handles its own url routing
-			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast (11, 0))
 				return true;
 
 			return AppInfoImplementation.VerifyHasUrlScheme(scheme);
@@ -193,13 +188,12 @@ namespace Microsoft.Maui.Essentials
 				DidFinishHandler?.Invoke(controller);
 		}
 
-		[ObjCRuntime.Adopts("ASWebAuthenticationPresentationContextProviding")]
-		class ContextProvider : NSObject
+		class ContextProvider : NSObject, IASWebAuthenticationPresentationContextProviding
 		{
 			public ContextProvider(UIWindow window) =>
 				Window = window;
 
-			public UIWindow Window { get; private set; }
+			public readonly UIWindow Window;
 
 			[Export("presentationAnchorForWebAuthenticationSession:")]
 			public UIWindow GetPresentationAnchor(ASWebAuthenticationSession session)

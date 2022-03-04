@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		/// <summary>
 		/// The default flyout layout behavior (a.k.a mode).
 		/// </summary>
-		static readonly FlyoutLayoutBehavior s_defaultFlyoutLayoutBehavior = (Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.Watch) ? FlyoutLayoutBehavior.Popover : FlyoutLayoutBehavior.SplitOnLandscape;
+		static readonly FlyoutLayoutBehavior s_defaultFlyoutLayoutBehavior = (DeviceInfo.Idiom == DeviceIdiom.Phone || DeviceInfo.Idiom == DeviceIdiom.Watch) ? FlyoutLayoutBehavior.Popover : FlyoutLayoutBehavior.SplitOnLandscape;
 
 		/// <summary>
 		/// The Flyout native container.

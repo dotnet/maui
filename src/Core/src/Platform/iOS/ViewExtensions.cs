@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
-using CoreAnimation;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -17,34 +16,44 @@ namespace Microsoft.Maui.Platform
 	{
 		internal const string BackgroundLayerName = "MauiBackgroundLayer";
 
-		public static void UpdateIsEnabled(this UIView nativeView, IView view)
+		public static void UpdateIsEnabled(this UIView platformView, IView view)
 		{
-			if (nativeView is not UIControl uiControl)
+			if (platformView is not UIControl uiControl)
 				return;
 
 			uiControl.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateVisibility(this UIView nativeView, IView view) =>
-			ViewExtensions.UpdateVisibility(nativeView, view.Visibility);
+		public static void Focus(this UIView platformView, FocusRequest request)
+		{
+			platformView.BecomeFirstResponder();
+		}
 
-		public static void UpdateVisibility(this UIView nativeView, Visibility visibility)
+		public static void Unfocus(this UIView platformView, IView view)
+		{
+			platformView.ResignFirstResponder();
+		}
+
+		public static void UpdateVisibility(this UIView platformView, IView view) =>
+			ViewExtensions.UpdateVisibility(platformView, view.Visibility);
+
+		public static void UpdateVisibility(this UIView platformView, Visibility visibility)
 		{
 			var shouldLayout = false;
 
 			switch (visibility)
 			{
 				case Visibility.Visible:
-					shouldLayout = nativeView.Inflate();
-					nativeView.Hidden = false;
+					shouldLayout = platformView.Inflate();
+					platformView.Hidden = false;
 					break;
 				case Visibility.Hidden:
-					shouldLayout = nativeView.Inflate();
-					nativeView.Hidden = true;
+					shouldLayout = platformView.Inflate();
+					platformView.Hidden = true;
 					break;
 				case Visibility.Collapsed:
-					nativeView.Hidden = true;
-					nativeView.Collapse();
+					platformView.Hidden = true;
+					platformView.Collapse();
 					shouldLayout = true;
 					break;
 			}
@@ -55,27 +64,27 @@ namespace Microsoft.Maui.Platform
 
 			if (shouldLayout)
 			{
-				nativeView.Superview?.SetNeedsLayout();
+				platformView.Superview?.SetNeedsLayout();
 			}
 		}
 
-		public static void UpdateBackground(this ContentView nativeView, IBorderStroke border)
+		public static void UpdateBackground(this ContentView platformView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (hasBorder)
 			{
-				nativeView.UpdateMauiCALayer(border);
+				platformView.UpdateMauiCALayer(border);
 			}
 		}
 
-		public static void UpdateBackground(this UIView nativeView, IView view) =>
-			nativeView.UpdateBackground(view.Background);
+		public static void UpdateBackground(this UIView platformView, IView view) =>
+			platformView.UpdateBackground(view.Background);
 
-		public static void UpdateBackground(this UIView nativeView, Paint? paint)
+		public static void UpdateBackground(this UIView platformView, Paint? paint)
 		{
 			// Remove previous background gradient layer if any
-			nativeView.RemoveBackgroundLayer();
+			platformView.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
 				return;
@@ -85,28 +94,28 @@ namespace Microsoft.Maui.Platform
 				Color backgroundColor = solidPaint.Color;
 
 				if (backgroundColor == null)
-					nativeView.BackgroundColor = ColorExtensions.BackgroundColor;
+					platformView.BackgroundColor = ColorExtensions.BackgroundColor;
 				else
-					nativeView.BackgroundColor = backgroundColor.ToNative();
+					platformView.BackgroundColor = backgroundColor.ToPlatform();
 
 				return;
 			}
 			else if (paint is GradientPaint gradientPaint)
 			{
-				var backgroundLayer = gradientPaint?.ToCALayer(nativeView.Bounds);
+				var backgroundLayer = gradientPaint?.ToCALayer(platformView.Bounds);
 
 				if (backgroundLayer != null)
 				{
 					backgroundLayer.Name = BackgroundLayerName;
-					nativeView.BackgroundColor = UIColor.Clear;
-					nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+					platformView.BackgroundColor = UIColor.Clear;
+					platformView.InsertBackgroundLayer(backgroundLayer, 0);
 				}
 			}
 		}
 
-		public static void UpdateFlowDirection(this UIView nativeView, IView view)
+		public static void UpdateFlowDirection(this UIView platformView, IView view)
 		{
-			UISemanticContentAttribute updateValue = nativeView.SemanticContentAttribute;
+			UISemanticContentAttribute updateValue = platformView.SemanticContentAttribute;
 
 			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
 				view.FlowDirection == FlowDirection.MatchParent)
@@ -118,25 +127,25 @@ namespace Microsoft.Maui.Platform
 			else if (view.FlowDirection == FlowDirection.LeftToRight)
 				updateValue = UISemanticContentAttribute.ForceLeftToRight;
 
-			if (updateValue != nativeView.SemanticContentAttribute)
-				nativeView.SemanticContentAttribute = updateValue;
+			if (updateValue != platformView.SemanticContentAttribute)
+				platformView.SemanticContentAttribute = updateValue;
 		}
 
-		public static void UpdateOpacity(this UIView nativeView, IView view)
+		public static void UpdateOpacity(this UIView platformView, IView view)
 		{
-			nativeView.Alpha = (float)view.Opacity;
+			platformView.Alpha = (float)view.Opacity;
 		}
 
-		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
-			nativeView.AccessibilityIdentifier = view.AutomationId;
+		public static void UpdateAutomationId(this UIView platformView, IView view) =>
+			platformView.AccessibilityIdentifier = view.AutomationId;
 
-		public static void UpdateClip(this UIView nativeView, IView view)
+		public static void UpdateClip(this UIView platformView, IView view)
 		{
-			if (nativeView is WrapperView wrapper)
+			if (platformView is WrapperView wrapper)
 				wrapper.Clip = view.Clip;
 		}
 
-		public static void UpdateShadow(this UIView nativeView, IView view)
+		public static void UpdateShadow(this UIView platformView, IView view)
 		{
 			var shadow = view.Shadow;
 			var clip = view.Clip;
@@ -145,20 +154,20 @@ namespace Microsoft.Maui.Platform
 			if (clip == null)
 			{
 				if (shadow == null)
-					nativeView.ClearShadow();
+					platformView.ClearShadow();
 				else
-					nativeView.SetShadow(shadow);
+					platformView.SetShadow(shadow);
 			}
 			else
 			{
-				if (nativeView is WrapperView wrapperView)
+				if (platformView is WrapperView wrapperView)
 					wrapperView.Shadow = view.Shadow;
 			}
 		}
-		public static void UpdateBorder(this UIView nativeView, IView view)
+		public static void UpdateBorder(this UIView platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;
-			if (nativeView is WrapperView wrapperView)
+			if (platformView is WrapperView wrapperView)
 				wrapperView.Border = border;
 		}
 
@@ -201,43 +210,43 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void InvalidateMeasure(this UIView nativeView, IView view)
+		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
-			nativeView.SetNeedsLayout();
-			nativeView.Superview?.SetNeedsLayout();
+			platformView.SetNeedsLayout();
+			platformView.Superview?.SetNeedsLayout();
 		}
 
-		public static void UpdateWidth(this UIView nativeView, IView view)
+		public static void UpdateWidth(this UIView platformView, IView view)
 		{
-			UpdateFrame(nativeView, view);
+			UpdateFrame(platformView, view);
 		}
 
-		public static void UpdateHeight(this UIView nativeView, IView view)
+		public static void UpdateHeight(this UIView platformView, IView view)
 		{
-			UpdateFrame(nativeView, view);
+			UpdateFrame(platformView, view);
 		}
 
-		public static void UpdateMinimumHeight(this UIView nativeView, IView view)
+		public static void UpdateMinimumHeight(this UIView platformView, IView view)
 		{
-			UpdateFrame(nativeView, view);
+			UpdateFrame(platformView, view);
 		}
 
-		public static void UpdateMaximumHeight(this UIView nativeView, IView view)
+		public static void UpdateMaximumHeight(this UIView platformView, IView view)
 		{
-			UpdateFrame(nativeView, view);
+			UpdateFrame(platformView, view);
 		}
 
-		public static void UpdateMinimumWidth(this UIView nativeView, IView view)
+		public static void UpdateMinimumWidth(this UIView platformView, IView view)
 		{
-			UpdateFrame(nativeView, view);
+			UpdateFrame(platformView, view);
 		}
 
-		public static void UpdateMaximumWidth(this UIView nativeView, IView view)
+		public static void UpdateMaximumWidth(this UIView platformView, IView view)
 		{
-			UpdateFrame(nativeView, view);
+			UpdateFrame(platformView, view);
 		}
 
-		public static void UpdateFrame(UIView nativeView, IView view)
+		public static void UpdateFrame(UIView platformView, IView view)
 		{
 			if (!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
 			{
@@ -247,33 +256,20 @@ namespace Microsoft.Maui.Platform
 
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
 			// Handling of the default width/height will be taken care of by GetDesiredSize
-			var currentFrame = nativeView.Frame;
-			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
+			var currentFrame = platformView.Frame;
+			platformView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
 
-		public static int IndexOfSubview(this UIView nativeView, UIView subview)
+		public static int IndexOfSubview(this UIView platformView, UIView subview)
 		{
-			if (nativeView.Subviews.Length == 0)
+			if (platformView.Subviews.Length == 0)
 				return -1;
 
-			return Array.IndexOf(nativeView.Subviews, subview);
+			return Array.IndexOf(platformView.Subviews, subview);
 		}
 
 		public static UIImage? ConvertToImage(this UIView view)
 		{
-			if (!NativeVersion.IsAtLeast(10))
-			{
-				UIGraphics.BeginImageContext(view.Frame.Size);
-				view.Layer.RenderInContext(UIGraphics.GetCurrentContext());
-				var image = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
-
-				if (image.CGImage == null)
-					return null;
-
-				return new UIImage(image.CGImage);
-			}
-
 			var imageRenderer = new UIGraphicsImageRenderer(view.Bounds.Size);
 
 			return imageRenderer.CreateImage((a) =>
@@ -341,99 +337,210 @@ namespace Microsoft.Maui.Platform
 
 		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, false) : Task.FromResult<byte[]?>(null);
 
-		static Task<byte[]?> RenderAsImage(this UIView nativeView, bool skipChildren, bool asPng)
+		static Task<byte[]?> RenderAsImage(this UIView platformView, bool skipChildren, bool asPng)
 		{
 			byte[]? result;
 			if (asPng)
-				result = nativeView?.Window?.RenderAsPng(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+				result = platformView?.Window?.RenderAsPng(platformView.Layer, UIScreen.MainScreen.Scale, skipChildren);
 			else
-				result = nativeView?.Window?.RenderAsJpeg(nativeView.Layer, UIScreen.MainScreen.Scale, skipChildren);
+				result = platformView?.Window?.RenderAsJpeg(platformView.Layer, UIScreen.MainScreen.Scale, skipChildren);
 			return Task.FromResult<byte[]?>(result);
 		}
 
 		static Task<byte[]?> RenderAsImage(this IView view, bool asPng)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 				return Task.FromResult<byte[]?>(null);
 			var skipChildren = !(view is IView && !(view is ILayout));
-			return nativeView.RenderAsImage(skipChildren, asPng);
+			return platformView.RenderAsImage(skipChildren, asPng);
 		}
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		internal static Rect GetPlatformViewBounds(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 			{
-				return new Rectangle();
+				return new Rect();
 			}
 
-			return nativeView.GetNativeViewBounds();
+			return platformView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this UIView nativeView)
+		internal static Rect GetPlatformViewBounds(this UIView platformView)
 		{
-			if (nativeView == null)
-				return new Rectangle();
+			if (platformView == null)
+				return new Rect();
 
-			var superview = nativeView;
+			var superview = platformView;
 			while (superview.Superview is not null)
 			{
 				superview = superview.Superview;
 			}
 
-			var convertPoint = nativeView.ConvertRectToView(nativeView.Bounds, superview);
+			var convertPoint = platformView.ConvertRectToView(platformView.Bounds, superview);
 
 			var X = convertPoint.X;
 			var Y = convertPoint.Y;
 			var Width = convertPoint.Width;
 			var Height = convertPoint.Height;
 
-			return new Rectangle(X, Y, Width, Height);
+			return new Rect(X, Y, Width, Height);
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 				return new Matrix4x4();
-			return nativeView.Layer.GetViewTransform();
+			return platformView.Layer.GetViewTransform();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this UIView view)
 			=> view.Layer.GetViewTransform();
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this UIView? nativeView)
+		internal static Graphics.Rect GetBoundingBox(this UIView? platformView)
 		{
-			if (nativeView == null)
-				return new Rectangle();
-			var nvb = nativeView.GetNativeViewBounds();
-			var transform = nativeView.GetViewTransform();
+			if (platformView == null)
+				return new Rect();
+			var nvb = platformView.GetPlatformViewBounds();
+			var transform = platformView.GetViewTransform();
 			var radians = transform.ExtractAngleInRadians();
 			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
 			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
-			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
+			return new Rect(nvb.X, nvb.Y, nvb.Width, nvb.Height);
 		}
 
-		internal static T? GetParentOfType<T>(this UIView view)
-			where T : class
+		internal static UIView? GetParent(this UIView? view)
 		{
-			if (view is T t)
-				return t;
+			return view?.Superview;
+		}
 
-			while (view != null)
+		internal static void LayoutToSize(this IView view, double width, double height)
+		{
+			var platformFrame = new CGRect(0, 0, width, height);
+
+			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+				viewHandler.PlatformView.Frame = platformFrame;
+
+			view.Arrange(platformFrame.ToRectangle());
+		}
+
+		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
+		{
+			var size = view.Measure(width, height);
+			var platformFrame = new CGRect(0, 0, size.Width, size.Height);
+
+			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+				viewHandler.PlatformView.Frame = platformFrame;
+
+			view.Arrange(platformFrame.ToRectangle());
+			return size;
+		}
+		
+		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
+		{
+			if (view is ITextInput textInput)
 			{
-				T? parent = view.Superview as T;
-				if (parent != null)
-					return parent;
-
-				view = view.Superview;
+				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
+				return;
 			}
 
-			return default(T);
+			platformView.UserInteractionEnabled = !view.InputTransparent;
+		}
+
+		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent) 
+		{
+			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
+		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
+
+		internal static IWindow? GetHostedWindow(this UIView? view)
+			=> GetHostedWindow(view?.Window);
+
+		internal static bool IsLoaded(this UIView uiView) =>
+			uiView.Window != null;
+
+		internal static IDisposable OnLoaded(this UIView uiView, Action action)
+		{
+			if (uiView.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
+			ActionDisposable? disposable = new ActionDisposable(() =>
+			{
+				foreach (var thing in observers)
+					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
+			});
+
+			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
+			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
+			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+
+			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
+			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
+			// to get attached.
+			uiView.BeginInvokeOnMainThread(OnLoadedCheck);
+
+			void OnLoadedCheck()
+			{
+				if (uiView.IsLoaded() && disposable != null)
+				{
+					disposable.Dispose();
+					disposable = null;
+					action();
+				}
+			};
+
+			return disposable;
+		}
+
+		internal static IDisposable OnUnloaded(this UIView uiView, Action action)
+		{
+
+			if (!uiView.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
+			ActionDisposable? disposable = new ActionDisposable(() =>
+			{
+				foreach (var thing in observers)
+					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
+			});
+
+			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
+			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.	
+			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+
+			// OnUnloaded is called at the point in time where the xplat view knows it's going to be detached from the window.
+			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
+			// to get detached.
+			uiView.BeginInvokeOnMainThread(UnLoadedCheck);
+
+			void UnLoadedCheck()
+			{
+				if (!uiView.IsLoaded() && disposable != null)
+				{
+					disposable.Dispose();
+					disposable = null;
+					action();
+				}
+			};
+
+			return disposable;
 		}
 	}
 }

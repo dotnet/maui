@@ -4,9 +4,9 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		NSObject? observer;
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Essentials
 				density: scale,
 				orientation: CalculateOrientation(),
 				rotation: CalculateRotation(),
-				rate: Platform.HasOSVersion(10, 3) ? UIScreen.MainScreen.MaximumFramesPerSecond : 0);
+				rate: (OperatingSystem.IsIOSVersionAtLeast(10, 3) || OperatingSystem.IsTvOSVersionAtLeast(10, 3)) ? UIScreen.MainScreen.MaximumFramesPerSecond : 0);
 		}
 
 		public void StartScreenMetricsListeners()

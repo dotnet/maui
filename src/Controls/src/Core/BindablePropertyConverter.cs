@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 
 			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
-			if (strValue.Contains(":"))
+			if (strValue.IndexOf(":", StringComparison.Ordinal) != -1)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning("Can't resolve properties with xml namespace prefix.");
 				return null;
@@ -122,10 +122,9 @@ namespace Microsoft.Maui.Controls
 				throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parents[2]}.", lineInfo);
 			}
 
-			var vsTarget = parents[3];
 
 			// Are these Visual States directly on a VisualElement?
-			if (vsTarget is VisualElement)
+			if (parents[3] is VisualElement vsTarget)
 			{
 				return vsTarget.GetType();
 			}
@@ -133,6 +132,11 @@ namespace Microsoft.Maui.Controls
 			if (!(parents[3] is VisualStateGroupList))
 			{
 				throw new XamlParseException($"Expected {nameof(VisualStateGroupList)} but found {parents[3]}.", lineInfo);
+			}
+
+			if (parents[4] is VisualElement veTarget)
+			{
+				return veTarget.GetType();
 			}
 
 			if (!(parents[4] is Setter))

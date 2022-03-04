@@ -126,14 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => InnerCollectionChanged(args));
-			}
-			else
-			{
-				InnerCollectionChanged(args);
-			}
+			_container.Dispatcher.DispatchIfRequired(() => InnerCollectionChanged(args));
 		}
 
 		void InnerCollectionChanged(NotifyCollectionChangedEventArgs args)
