@@ -60,9 +60,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='VerticalTextAlignmentProperty']/Docs" />
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextTransformProperty']/Docs" />
-		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
-
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='.ctor']/Docs" />
@@ -100,11 +97,10 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextTransform']/Docs" />
-		public TextTransform TextTransform
+		TextTransform ITextElement.TextTransform
 		{
-			get => (TextTransform)GetValue(TextTransformProperty);
-			set => SetValue(TextTransformProperty, value);
+			get => TextTransform.Default;
+			set { }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs" />

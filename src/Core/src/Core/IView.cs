@@ -159,5 +159,10 @@ namespace Microsoft.Maui
 		/// Unsets focus to this View.
 		/// </summary>
 		void Unfocus();
+
+		/// <summary>
+		/// Gets a value indicating whether this element should be involved in the user interaction cycle.
+		/// </summary>
+		bool InputTransparent { get; }
 	}
 }

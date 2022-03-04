@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Controls
 			return new DataTemplate(() =>
 			{
 				var grid = new Grid();
-				if (DeviceInfo.Platform == DevicePlatform.UWP)
+				if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					grid.ColumnSpacing = grid.RowSpacing = 0;
 
 				grid.Resources = new ResourceDictionary();
@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls
 				var selectedState = new VisualState();
 				selectedState.Name = "Selected";
 
-				if (DeviceInfo.Platform != DevicePlatform.UWP)
+				if (DeviceInfo.Platform != DevicePlatform.WinUI)
 				{
 					selectedState.Setters.Add(new Setter
 					{
@@ -375,7 +375,7 @@ namespace Microsoft.Maui.Controls
 					columnDefinitions.Add(new ColumnDefinition { Width = 54 });
 				else if (DeviceInfo.Platform == DevicePlatform.iOS)
 					columnDefinitions.Add(new ColumnDefinition { Width = 50 });
-				else if (DeviceInfo.Platform == DevicePlatform.UWP)
+				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls
 					sizeRequest = 24;
 				else if (DeviceInfo.Platform == DevicePlatform.iOS)
 					sizeRequest = 22;
-				else if (DeviceInfo.Platform == DevicePlatform.UWP)
+				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					sizeRequest = 16;
 
 				if (sizeRequest > 0)
@@ -397,7 +397,7 @@ namespace Microsoft.Maui.Controls
 					defaultImageClass.Setters.Add(new Setter() { Property = Image.WidthRequestProperty, Value = sizeRequest });
 				}
 
-				if (DeviceInfo.Platform == DevicePlatform.UWP)
+				if (DeviceInfo.Platform == DevicePlatform.WinUI)
 				{
 					defaultImageClass.Setters.Add(new Setter { Property = Image.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });
@@ -437,7 +437,7 @@ namespace Microsoft.Maui.Controls
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = Device.GetNamedSize(NamedSize.Small, label) });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
 				}
-				else if (DeviceInfo.Platform == DevicePlatform.UWP)
+				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 				{
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });

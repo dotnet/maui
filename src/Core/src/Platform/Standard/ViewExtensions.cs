@@ -77,5 +77,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> null;
+
+		public static void UpdateInputTransparent(this object nativeView, IViewHandler handler, IView view) { }
 	}
 }
