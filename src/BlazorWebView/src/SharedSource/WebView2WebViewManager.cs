@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			await _webview.EnsureCoreWebView2Async();
 
 #if WEBVIEW2_MAUI
-            var settings = _blazorWebViewHandler.WebviewSettings;
+            var developerTools = _blazorWebViewHandler.DeveloperTools;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			var developerTools = _developerTools;
 #endif
