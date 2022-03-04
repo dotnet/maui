@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages.ShapesGalleries
@@ -62,20 +63,37 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 
 	public class AnimateShapeGallery : SpiralDemoPage
 	{
+		IDispatcherTimer _timer;
+
 		public AnimateShapeGallery()
 		{
 			Title = "Animate Shape Gallery";
 
 			polyline.StrokeDashArray.Add(4);
 			polyline.StrokeDashArray.Add(2);
+		}
+
+		protected override void OnAppearing()
+		{
+			_timer = Dispatcher.CreateTimer();
+
+			_timer.Interval = TimeSpan.FromMilliseconds(15);
+			_timer.IsRepeating = true;
+			_timer.Start();
+
 			double total = polyline.StrokeDashArray[0] + polyline.StrokeDashArray[1];
 
-			Device.StartTimer(TimeSpan.FromMilliseconds(15), () =>
+			_timer.Tick += (_, _) =>
 			{
 				double secs = DateTime.Now.TimeOfDay.TotalSeconds;
 				polyline.StrokeDashOffset = total * (secs % 1);
-				return true;
-			});
+			};
+		}
+
+		protected override void OnDisappearing()
+		{
+			_timer.Stop();
+			_timer = null;
 		}
 	}
 }
