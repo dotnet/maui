@@ -9,8 +9,10 @@ using Tizen.Applications;
 using Tizen.Common;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Essentials;
 using EWindow = ElmSharp.Window;
 using ELayout = ElmSharp.Layout;
+using EDisplayRotation = ElmSharp.DisplayRotation;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -217,7 +219,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				conformant.SetContent(BaseLayout);
 			}
 
-			MainWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
+			MainWindow.AvailableRotations = EDisplayRotation.Degree_0 | EDisplayRotation.Degree_90 | EDisplayRotation.Degree_180 | EDisplayRotation.Degree_270;
 
 			MainWindow.Deleted += (s, e) =>
 			{

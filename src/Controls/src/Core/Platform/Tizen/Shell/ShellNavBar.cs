@@ -3,6 +3,7 @@
 using System;
 using System.Reflection;
 using ElmSharp;
+using Microsoft.Maui.Essentials;
 using Microsoft.Extensions.DependencyInjection;
 using Tizen.UIExtensions.ElmSharp;
 using EBox = ElmSharp.Box;
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool _hasBackButton = false;
 		private bool disposedValue;
-		bool _isTV = Device.Idiom == TargetIdiom.TV;
+		bool _isTV = DeviceInfo.Idiom == DeviceIdiom.TV;
 
 		public ShellNavBar(IMauiContext context) : base(context?.GetNativeParent())
 		{

@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 
 		public IShape? Clip { get; set; }
 
-		PathF GetBoundaryPath(RectangleF bounds)
+		PathF GetBoundaryPath(Rect bounds)
 		{
 			if (Clip != null)
 			{
@@ -33,11 +33,11 @@ namespace Microsoft.Maui
 			return path;
 		}
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			canvas.SaveState();
 			canvas.Translate((float)ShadowThickness.Left, (float)ShadowThickness.Top);
-			RectangleF drawBounds = new Rectangle(0, 0, dirtyRect.Width - ShadowThickness.HorizontalThickness, dirtyRect.Height - ShadowThickness.VerticalThickness);
+			RectF drawBounds = new Rect(0, 0, dirtyRect.Width - ShadowThickness.HorizontalThickness, dirtyRect.Height - ShadowThickness.VerticalThickness);
 			var drawablePath = GetBoundaryPath(drawBounds);
 
 			if (Shadow != null)

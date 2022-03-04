@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
+using Microsoft.Maui.Essentials;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, OnAlertRequest);
 			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, OnActionSheetRequest);
 			MessagingCenter.Subscribe<Page, PromptArguments>(this, Page.PromptSignalName, OnPromptRequested);
-		}
+	}
 
 		public void Dispose()
 		{
@@ -236,7 +237,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					new Label
 					{
 						LineBreakMode = LineBreakMode.CharacterWrap,
-						TextColor = DeviceInfo.Idiom == TargetIdiom.Watch ? Color.FromRgb(255,255,255) : Application.AccentColor,
+						TextColor = DeviceInfo.Idiom == DeviceIdiom.Watch ? Color.FromRgb(255,255,255) : Application.AccentColor,
 						Text = args.Message,
 						HorizontalOptions = LayoutOptions.Fill,
 						HorizontalTextAlignment = TextAlignment.Center,

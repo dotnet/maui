@@ -1,3 +1,4 @@
+using Microsoft.Maui.Essentials;
 using Tizen.Common;
 using EColor = ElmSharp.Color;
 using Color = Microsoft.Maui.Graphics.Color;

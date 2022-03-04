@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 			_rootPageRenderer = ShellRendererFactory.Default.CreateItemRenderer(ShellSection);
 			_viewStack.Push(_rootPageRenderer.NativeView);
 
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				(_rootPageRenderer.NativeView as Widget)?.SetFocus(true);
 			});
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 			var renderer = Platform.GetOrCreateRenderer(request.Page);
 			_viewStack.Push(renderer.NativeView);
 			request.Task = Task.FromResult(true);
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				(renderer.NativeView as Widget)?.SetFocus(true);
 			});

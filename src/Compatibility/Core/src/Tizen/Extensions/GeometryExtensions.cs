@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using SkiaSharp;
 using Microsoft.Maui.Controls.Shapes;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using Point = Microsoft.Maui.Graphics.Point;
 
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		static SKPath MakePath(RectangleGeometry rectangleGeometry)
 		{
 			var path = new SKPath();
-			Rectangle rect = rectangleGeometry.Rect;
+			Rect rect = rectangleGeometry.Rect;
 
 			path.AddRect(new SKRect(
 				Forms.ConvertToScaledPixel(rect.Left),

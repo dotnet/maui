@@ -233,11 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			((Application)Page.RealParent).NavigationProxy.Inner = this;
 
-			Device.StartTimer(TimeSpan.Zero, () =>
-			{
-				CurrentPageController?.SendAppearing();
-				return false;
-			});
+			Application.Current.Dispatcher.DispatchDelayed(TimeSpan.Zero, () => CurrentPageController?.SendAppearing());
 		}
 
 		public bool SendBackButtonPressed()
@@ -335,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		async Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
 			var previousPage = CurrentPageController;
-			Device.BeginInvokeOnMainThread(() => previousPage?.SendDisappearing());
+			Application.Current.Dispatcher.Dispatch(() => previousPage?.SendDisappearing());
 
 			_navModel.PushModal(modal);
 

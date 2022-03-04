@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Graphics;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using ERect = ElmSharp.Rect;
 using PlatformView = ElmSharp.EvasObject;
 
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		public override void PlatformArrange(Rectangle frame)
+		public override void PlatformArrange(Rect frame)
 		{
 			base.PlatformArrange(frame);
 			VisualElementRenderer.UpdateLayout();

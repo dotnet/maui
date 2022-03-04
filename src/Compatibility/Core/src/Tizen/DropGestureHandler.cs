@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (currentStateData.DataPackage == null || currentStateData.AcceptedOperation == DataPackageOperation.None)
 				return false;
 
-			Device.BeginInvokeOnMainThread(async () =>
+			Application.Current?.Dispatcher.Dispatch(async () =>
 			{
 				if (Recognizer is DropGestureRecognizer dropRecognizer && dropRecognizer.AllowDrop)
 					await dropRecognizer.SendDrop(new DropEventArgs(currentStateData.DataPackage.View));

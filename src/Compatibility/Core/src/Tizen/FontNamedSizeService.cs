@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.FontNamedSizeService))]
 

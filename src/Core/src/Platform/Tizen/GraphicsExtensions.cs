@@ -5,9 +5,9 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class GraphicsExtensions
 	{
-		public static Rectangle ExpandTo(this Rectangle geometry, Thickness shadowMargin)
+		public static Rect ExpandTo(this Rect geometry, Thickness shadowMargin)
 		{
-			var canvasGeometry = new Rectangle(
+			var canvasGeometry = new Rect(
 			geometry.X - shadowMargin.Left,
 			geometry.Y - shadowMargin.Top,
 			geometry.Width + shadowMargin.HorizontalThickness,

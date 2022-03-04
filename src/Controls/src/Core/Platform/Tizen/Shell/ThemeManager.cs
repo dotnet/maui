@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (s_shellNavBarDefaultMenuSize > 0)
 				return s_shellNavBarDefaultMenuSize;
 			return s_shellNavBarDefaultMenuSize = DeviceInfo.CalculateDoubleScaledSizeInLargeScreen(
-				Device.Idiom == TargetIdiom.TV ? ThemeConstants.Shell.Resources.TV.DefaultMenuSize : ThemeConstants.Shell.Resources.DefaultMenuSize);
+				Microsoft.Maui.Essentials.DeviceInfo.Idiom == Microsoft.Maui.Essentials.DeviceIdiom.TV ? ThemeConstants.Shell.Resources.TV.DefaultMenuSize : ThemeConstants.Shell.Resources.DefaultMenuSize);
 		}
 
 		static double s_shellNavBarDefaultMargin = -1;

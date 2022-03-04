@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 					if (CurrentItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 					{
-						Device.BeginInvokeOnMainThread(() =>
+						Application.Current.Dispatcher.Dispatch(() =>
 						{
 							_ = SwipeCloseAsync();
 						});

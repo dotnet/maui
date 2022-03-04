@@ -327,10 +327,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[Obsolete]
 		public static void Init(IActivationState activationState) => Init(activationState.Context);
 
+		[Obsolete]
 		public static void Init(IActivationState activationState, InitializationOptions options) => Init(activationState.Context, options);
 
+		[Obsolete]
 		public static void Init(IMauiContext context, InitializationOptions options = null)
 		{
 			if (options != null && options.DisplayResolutionUnit != null)
@@ -340,6 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			SetupInit(context, options);
 		}
 
+		[Obsolete]
 		static void SetupInit(IMauiContext context, InitializationOptions options = null)
 		{
 			MauiContext = context;
@@ -381,6 +385,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitialized = true;
 		}
 
+		[Obsolete]
 		internal static void RegisterCompatRenderers(InitializationOptions maybeOptions = null)
 		{
 			if (!IsInitializedRenderers)
@@ -450,19 +455,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			// On iOS and Android this instance is set to a contrasting color that is visible on the default
 			// background but is not the same as the default text color.
 
-			switch (Device.Idiom)
-			{
-				case TargetIdiom.Phone:
-					// [Tizen_3.0]Basic_Interaction_GUI_[REF].xlsx Theme 001 (Default) 1st HSB: 188 70 80
-					return Color.FromRgba(61, 185, 204, 255);
-				case TargetIdiom.TV:
-					return Color.FromRgba(15, 15, 15, 230);
-				case TargetIdiom.Watch:
-					// Theme A (Default) 1st HSB: 207 75 16
-					return Color.FromRgba(10, 27, 41, 255);
-				default:
-					return Color.FromRgb(0, 0, 0);
-			}
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				// [Tizen_3.0]Basic_Interaction_GUI_[REF].xlsx Theme 001 (Default) 1st HSB: 188 70 80
+				return Color.FromRgba(61, 185, 204, 255);
+			else if (DeviceInfo.Idiom == DeviceIdiom.TV)
+				return Color.FromRgba(15, 15, 15, 230);
+			else if (DeviceInfo.Idiom == DeviceIdiom.Watch)
+				// Theme A (Default) 1st HSB: 207 75 16
+				return Color.FromRgba(10, 27, 41, 255);
+			else
+				return Color.FromRgb(0, 0, 0);
 		}
 
 		/// <summary>

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Tizen.WebView;
 using TChromium = Tizen.WebView.Chromium;
@@ -108,7 +110,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new TizenWebViewManager(this, NativeWebView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new TizenWebViewManager(
+				this,
+				NativeWebView,
+				Services!,
+				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
+				fileProvider,
+				VirtualView.JSComponents,
+				hostPageRelativePath);
+
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)

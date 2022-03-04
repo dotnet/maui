@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Essentials;
 using ElmSharp;
 using Index = ElmSharp.Index;
 

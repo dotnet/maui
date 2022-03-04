@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DPExtensions
 	{
-		public static Rectangle ToDP(this ERect rect)
+		public static Rect ToDP(this ERect rect)
 		{
-			return new Rectangle(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
+			return new Rect(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
 		}
 
-		public static ERect ToEFLPixel(this Rectangle rect)
+		public static ERect ToEFLPixel(this Rect rect)
 		{
 			return new ERect(ConvertToScaledPixel(rect.X), ConvertToScaledPixel(rect.Y), ConvertToScaledPixel(rect.Width), ConvertToScaledPixel(rect.Height));
 		}
@@ -30,12 +30,12 @@ namespace Microsoft.Maui.Platform
 			return new ESize(ConvertToScaledPixel(size.Width), ConvertToScaledPixel(size.Height));
 		}
 
-		public static Rectangle ToDP(this TRect rect)
+		public static Rect ToDP(this TRect rect)
 		{
-			return new Rectangle(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
+			return new Rect(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
 		}
 
-		public static TRect ToPixel(this Rectangle rect)
+		public static TRect ToPixel(this Rect rect)
 		{
 			return new TRect(ConvertToScaledPixel(rect.X), ConvertToScaledPixel(rect.Y), ConvertToScaledPixel(rect.Width), ConvertToScaledPixel(rect.Height));
 		}

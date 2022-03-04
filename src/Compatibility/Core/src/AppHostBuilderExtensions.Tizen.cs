@@ -37,14 +37,18 @@ namespace Microsoft.Maui.Controls.Hosting
 					TDeviceInfo.DisplayResolutionUnit = options.DisplayResolutionUnit.ToDeviceInfo();
 				}
 				options.Flags |= InitializationFlags.SkipRenderers;
+#pragma warning disable CS0612 // Type or member is obsolete
 				Forms.Init(state, options);
+#pragma warning disable CS0612 // Type or member is obsolete
 			})
 			.OnMauiContextCreated((mauiContext) =>
 			{
 				// This is the final Init that sets up the real context from the application.
 
 				var state = new ActivationState(mauiContext!);
+#pragma warning disable CS0612 // Type or member is obsolete
 				Forms.Init(state);
+#pragma warning disable CS0612 // Type or member is obsolete
 			});
 		}
 	}

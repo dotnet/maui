@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Renderers
 
 				if (_hasAppearedToParent)
 				{
-					Device.BeginInvokeOnMainThread(() =>
+					Application.Current.Dispatcher.Dispatch(() =>
 					{
 						if (!_disposed && _hasAppearedToParent)
 							PageController?.SendAppearing();

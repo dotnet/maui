@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics.Skia.Views;
 using SkiaSharp.Views.Tizen;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
+using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Platform
 			canvas.FillRectangle(e.DirtyRect);
 
 			canvas.FillColor = Colors.White;
-			var clipPath = Clip?.PathForBounds(new Graphics.Rectangle(0, 0, width, height)) ?? null;
+			var clipPath = Clip?.PathForBounds(new Rect(0, 0, width, height)) ?? null;
 			if (clipPath == null)
 			{
 				canvas.FillRectangle(e.DirtyRect);
@@ -227,7 +228,7 @@ namespace Microsoft.Maui.Platform
 
 	public class DrawClipEventArgs : EventArgs
 	{
-		public DrawClipEventArgs(ICanvas canvas, RectangleF dirtyRect)
+		public DrawClipEventArgs(ICanvas canvas, RectF dirtyRect)
 		{
 			Canvas = canvas;
 			DirtyRect = dirtyRect;
@@ -235,7 +236,7 @@ namespace Microsoft.Maui.Platform
 
 		public ICanvas Canvas { get; set; }
 
-		public RectangleF DirtyRect { get; set; }
+		public RectF DirtyRect { get; set; }
 	}
 
 	public class SKClipperView : SKCanvasView
@@ -281,7 +282,7 @@ namespace Microsoft.Maui.Platform
 
 			if (DeviceScalingFactor > 0)
 				_scalingCanvas.Scale(DeviceScalingFactor, DeviceScalingFactor);
-			DrawClip?.Invoke(this, new DrawClipEventArgs(_scalingCanvas, new RectangleF(0, 0, width, height)));
+			DrawClip?.Invoke(this, new DrawClipEventArgs(_scalingCanvas, new RectF(0, 0, width, height)));
 			_scalingCanvas.RestoreState();
 		}
 	}

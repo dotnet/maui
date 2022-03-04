@@ -2,6 +2,7 @@ using System;
 using ElmSharp;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

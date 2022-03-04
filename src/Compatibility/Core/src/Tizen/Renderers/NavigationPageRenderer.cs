@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
 			{
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					(_previousPage as IPageController)?.SendDisappearing();
 					_previousPage = Element.CurrentPage;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Maui.Essentials;
 using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

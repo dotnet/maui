@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
 
 			// It is workaround of Panel.IsOpen bug, Panel.IsOpen property is not working when layouting was triggered
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current?.Dispatcher.Dispatch(() =>
 			{
 				_navigationDrawer.IsOpen = Element.FlyoutIsPresented;
 			});
@@ -386,7 +386,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnHeaderSizeChanged(object? sender, EventArgs e)
 		{
 			var bound = (_navigationView as EvasObject)?.Geometry;
-			Device.BeginInvokeOnMainThread(()=> {
+			Application.Current?.Dispatcher.Dispatch(()=> {
 				UpdateHeaderLayout((bound?.Width).GetValueOrDefault(), (bound?.Height).GetValueOrDefault());
 			});
 		}
@@ -394,7 +394,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnFooterSizeChanged(object? sender, EventArgs e)
 		{
 			var bound = (_navigationView as EvasObject)?.Geometry;
-			Device.BeginInvokeOnMainThread(() => {
+			Application.Current?.Dispatcher.Dispatch(() => {
 				UpdateFooterLayout((bound?.Width).GetValueOrDefault(), (bound?.Height).GetValueOrDefault());
 			});
 		}

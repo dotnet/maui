@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			_shadowDrawable?.Draw(canvas, dirtyRect);
 			_backgroundDrawable?.Draw(canvas, dirtyRect);

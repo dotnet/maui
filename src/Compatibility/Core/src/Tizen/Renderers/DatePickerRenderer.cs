@@ -1,7 +1,8 @@
 using System;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Graphics;
 using NIEntery = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
 using EEntry = ElmSharp.Entry;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				dialog.MinimumDateTime = Element.MinimumDate;
 				// You need to call Show() after ui thread occupation because of EFL problem.
 				// Otherwise, the content of the popup will not receive focus.
-				Device.BeginInvokeOnMainThread(() => dialog.Show());
+				Application.Current.Dispatcher.Dispatch(() => dialog.Show());
 			}
 		}
 

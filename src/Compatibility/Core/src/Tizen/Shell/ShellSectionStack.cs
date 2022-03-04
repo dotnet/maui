@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			_shellSectionRenderer.NativeView.Show();
 			_viewStack.Push(_shellSectionRenderer.NativeView);
 
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				(_shellSectionRenderer.NativeView as Widget)?.SetFocus(true);
 			});
@@ -221,7 +222,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var renderer = Platform.GetOrCreateRenderer(request.Page);
 			_viewStack.Push(renderer.NativeView);
 			request.Task = Task.FromResult(true);
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				(renderer.NativeView as Widget)?.SetFocus(true);
 			});

@@ -467,7 +467,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			else
 			{
-				Device.BeginInvokeOnMainThread(OnLayout);
+				Application.Current.Dispatcher.Dispatch(OnLayout);
 			}
 		}
 

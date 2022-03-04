@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		protected virtual void UpdateFlyoutIsPresented()
 		{
 			// It is workaround of Panel.IsOpen bug, Panel.IsOpen property is not working when layouting was triggered
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				_drawer.IsOpen = Element.FlyoutIsPresented;
 			});

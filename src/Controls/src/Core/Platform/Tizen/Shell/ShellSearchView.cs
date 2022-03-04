@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (data != null)
 			{
 				SearchHandlerController.ItemSelected(data);
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current?.Dispatcher.Dispatch(() =>
 				{
 					DeinitializeSearchResultList();
 				});
@@ -337,13 +337,9 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_searchResultList.Hide();
 				}
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current?.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
 				{
-					Device.StartTimer(TimeSpan.FromMilliseconds(100), () =>
-					{
-						DeinitializeSearchResultList();
-						return false;
-					});
+					DeinitializeSearchResultList();
 				});
 			}
 		}

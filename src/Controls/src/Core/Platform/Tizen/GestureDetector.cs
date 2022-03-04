@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ElmSharp;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Controls.Internals;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			_handlerCache?.Clear();
 
-			if (Device.Idiom == TargetIdiom.TV)
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				if (Control != null)
 					Control.KeyDown -= OnKeyDown;
@@ -120,7 +121,7 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 			UpdateGestureLayerEnabled();
 
-			if (Device.Idiom == TargetIdiom.TV)
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				if (Control != null)
 					Control.KeyDown += OnKeyDown;

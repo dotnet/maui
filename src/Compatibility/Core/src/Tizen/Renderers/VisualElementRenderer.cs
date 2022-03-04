@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using Tizen.UIExtensions.ElmSharp;
 using Size = Microsoft.Maui.Graphics.Size;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using Point = Microsoft.Maui.Graphics.Point;
 using EFocusDirection = ElmSharp.FocusDirection;
 using ERect = ElmSharp.Rect;
@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					}
 
 					// Reset Element geometry, to re-calculate when Renderer was re-attached
-					Element.Layout(new Rectangle(0, 0, -1, -1));
+					Element.Layout(new Rect(0, 0, -1, -1));
 
 					Element = default(TElement);
 				}
@@ -514,7 +514,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateNativeGeometry()
 		{
-			var updatedGeometry = new Rectangle(ComputeAbsolutePoint(Element), new Size(Element.Width, Element.Height)).ToEFLPixel();
+			var updatedGeometry = new Rect(ComputeAbsolutePoint(Element), new Size(Element.Width, Element.Height)).ToEFLPixel();
 
 			if (NativeView.Geometry != updatedGeometry)
 			{

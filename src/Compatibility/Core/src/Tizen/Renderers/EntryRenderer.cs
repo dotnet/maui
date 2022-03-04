@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				SetNativeControl(entry);
 
 				// An initial CursorPosition is set after layouting to avoid timing issue when the EditField entry is initialized.
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					UpdateSelectionLength(false);
 				});

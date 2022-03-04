@@ -1,8 +1,9 @@
 using System;
 using System.Globalization;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Graphics;
 using EEntry = ElmSharp.Entry;
 using NIEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				// You need to call Show() after ui thread occupation because of EFL problem.
 				// Otherwise, the content of the popup will not receive focus.
-				Device.BeginInvokeOnMainThread(() => dialog.Show());
+				Application.Current.Dispatcher.Dispatch(() => dialog.Show());
 			}
 		}
 

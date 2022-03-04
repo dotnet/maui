@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Essentials;
 using ElmSharp;
 using ElmSharp.Wearable;
 using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.TableView;
@@ -217,9 +218,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static EButton SetWatchPopupRightStyle(this EButton button)
 		{
-			if (Device.Idiom != TargetIdiom.Watch)
+			if (DeviceInfo.Idiom != DeviceIdiom.Watch)
 			{
-				Log.Error($"ToWatchPopupRightStyleButton is only supported on TargetIdiom.Watch : {0}", Device.Idiom);
+				Log.Error($"ToWatchPopupRightStyleButton is only supported on DeviceIdiom.Watch : {0}", DeviceInfo.Idiom);
 				return button;
 			}
 			button.Style = ThemeConstants.Button.Styles.Watch.PopupRight;
@@ -228,9 +229,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static EButton SetWatchPopupLeftStyle(this EButton button)
 		{
-			if (Device.Idiom != TargetIdiom.Watch)
+			if (DeviceInfo.Idiom != DeviceIdiom.Watch)
 			{
-				Log.Error($"WatchPopupLeftStyleButton is only supported on TargetIdiom.Watch : {0}", Device.Idiom);
+				Log.Error($"WatchPopupLeftStyleButton is only supported on DeviceIdiom.Watch : {0}", DeviceInfo.Idiom);
 				return button;
 			}
 			button.Style = ThemeConstants.Button.Styles.Watch.PopupLeft;
@@ -239,9 +240,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static EButton SetWatchTextStyle(this EButton button)
 		{
-			if (Device.Idiom != TargetIdiom.Watch)
+			if (DeviceInfo.Idiom != DeviceIdiom.Watch)
 			{
-				Log.Error($"ToWatchPopupRightStyleButton is only supported on TargetIdiom.Watch : {0}", Device.Idiom);
+				Log.Error($"ToWatchPopupRightStyleButton is only supported on DeviceIdiom.Watch : {0}", DeviceInfo.Idiom);
 				return button;
 			}
 			button.Style = ThemeConstants.Button.Styles.Watch.Text;
@@ -292,9 +293,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		#region Popup
 		public static Popup SetWatchCircleStyle(this Popup popup)
 		{
-			if (Device.Idiom != TargetIdiom.Watch)
+			if (DeviceInfo.Idiom != DeviceIdiom.Watch)
 			{
-				Log.Error($"WatchCircleStylePopup is only supported on TargetIdiom.Watch : {0}", Device.Idiom);
+				Log.Error($"WatchCircleStylePopup is only supported on DeviceIdiom.Watch : {0}", DeviceInfo.Idiom);
 				return popup;
 			}
 			popup.Style = ThemeConstants.Popup.Styles.Watch.Circle;
@@ -482,9 +483,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static EToolbar SetTVTabBarWithTitleStyle(this EToolbar toolbar)
 		{
-			if (Device.Idiom != TargetIdiom.TV)
+			if (DeviceInfo.Idiom != DeviceIdiom.TV)
 			{
-				Log.Error($"TabBarWithTitleStyle is only supported on TargetIdiom.TV : {0}", Device.Idiom);
+				Log.Error($"TabBarWithTitleStyle is only supported on DeviceIdiom.TV : {0}", DeviceInfo.Idiom);
 				return toolbar;
 			}
 			toolbar.Style = ThemeConstants.Toolbar.Styles.TV.TabbarWithTitle;
@@ -637,7 +638,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public static void SendSignalToItem(this Cell cell, GenListItem item)
 		{
 			// This is only required for TV profile.
-			if (Device.Idiom != TargetIdiom.TV)
+			if (DeviceInfo.Idiom != DeviceIdiom.TV)
 				return;
 
 			if (cell is ImageCell)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Essentials;
 using ElmSharp;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 

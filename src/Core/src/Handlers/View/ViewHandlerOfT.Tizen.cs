@@ -5,7 +5,7 @@ using Tizen.UIExtensions.ElmSharp;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
 using Point = Microsoft.Maui.Graphics.Point;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Shadow != null ||
 			base.NeedsContainer;
 
-		public override void PlatformArrange(Rectangle frame)
+		public override void PlatformArrange(Rect frame)
 		{
 			if (NativeParent == null)
 				return;
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			platformView.UpdateBounds(new Rectangle(ComputeAbsolutePoint(frame), new Size(frame.Width, frame.Height)).ToPixel());
+			platformView.UpdateBounds(new Rect(ComputeAbsolutePoint(frame), new Size(frame.Width, frame.Height)).ToPixel());
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Handlers
 			return new ESize(platformView.MinimumWidth, platformView.MinimumHeight).ToDP();
 		}
 
-		protected virtual double ComputeAbsoluteX(Rectangle frame)
+		protected virtual double ComputeAbsoluteX(Rect frame)
 		{
 			if (Parent != null)
 			{
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected virtual double ComputeAbsoluteY(Rectangle frame)
+		protected virtual double ComputeAbsoluteY(Rect frame)
 		{
 			if (Parent != null)
 			{
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected virtual Point ComputeAbsolutePoint(Rectangle frame)
+		protected virtual Point ComputeAbsolutePoint(Rect frame)
 		{
 			return new Point(ComputeAbsoluteX(frame), ComputeAbsoluteY(frame));
 		}

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using ERect = ElmSharp.Rect;
 using EvasObject = ElmSharp.EvasObject;
 using GestureLayer = ElmSharp.GestureLayer;
@@ -31,14 +32,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Color = Color.FromRgb(200, 200, 200),
 				CornerRadius = new CornerRadius(IconSize),
-			}, new Rectangle(0.5, 0.5, IconSize, IconSize), AbsoluteLayoutFlags.PositionProportional);
+			}, new Rect(0.5, 0.5, IconSize, IconSize), AbsoluteLayoutFlags.PositionProportional);
 
 			_icon = new Image
 			{
 				Source = ImageSource.FromResource(IconPath, typeof(ShellItemRenderer).Assembly),
 			};
 
-			Children.Add(_icon, new Rectangle(0.5, 0.5, IconSize - 8, IconSize - 8), AbsoluteLayoutFlags.PositionProportional);
+			Children.Add(_icon, new Rect(0.5, 0.5, IconSize - 8, IconSize - 8), AbsoluteLayoutFlags.PositionProportional);
 
 			IconColor = DefaultColor;
 		}

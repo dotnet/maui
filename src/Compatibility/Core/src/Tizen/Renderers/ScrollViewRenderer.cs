@@ -3,6 +3,7 @@ using System.ComponentModel;
 using ElmSharp;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Essentials;
 using EContainer = ElmSharp.Container;
 using ERect = ElmSharp.Rect;
 using NBox = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Box;
@@ -184,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			_scrollCanvas.MinimumHeight = Forms.ConvertToScaledPixel(Element.ContentSize.Height + Element.Padding.VerticalThickness);
 
 			// elm-scroller updates the CurrentRegion after render
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				if (Control != null)
 				{
@@ -211,7 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				y = itemPosition.Y;
 			}
 
-			ERect region = new Graphics.Rectangle(x, y, Element.Width, Element.Height).ToEFLPixel();
+			ERect region = new Graphics.Rect(x, y, Element.Width, Element.Height).ToEFLPixel();
 			await Control.ScrollToAsync(region, e.ShouldAnimate);
 			Element.SendScrollFinished();
 		}

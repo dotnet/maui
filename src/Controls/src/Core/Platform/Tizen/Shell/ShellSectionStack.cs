@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 			SetLayoutCallback(OnLayout);
 
 			_viewStack = new SimpleViewStack(NativeParent);
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 			{
 				_viewStack.BackgroundColor = ElmSharp.Color.White;
 			}
@@ -125,7 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_shellSectionHandler.PlatformView.Show();
 			_viewStack.Push(_shellSectionHandler.PlatformView);
 
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current?.Dispatcher.Dispatch(() =>
 			{
 				(_shellSectionHandler.PlatformView as Widget)?.SetFocus(true);
 			});
@@ -238,7 +239,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var nativePage = request.Page.ToPlatform(MauiContext);
 			_viewStack.Push(nativePage);
 			request.Task = Task.FromResult(true);
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current?.Dispatcher.Dispatch(() =>
 			{
 				(nativePage as Widget)?.SetFocus(true);
 			});

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using ElmSharp;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Essentials;
 using EBox = ElmSharp.Box;
 using ELayout = ElmSharp.Layout;
 using ERect = ElmSharp.Rect;
@@ -139,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			_scroller.Geometry = _outterLayout.Geometry;
 			var newGeometry = _outterLayout.Geometry;
-			if (Device.Idiom != TargetIdiom.Watch)
+			if (DeviceInfo.Idiom != DeviceIdiom.Watch)
 				newGeometry.Y += (int)(newGeometry.Height * 0.9);
 			newGeometry.Height = (int)(newGeometry.Height * 0.1);
 			_index.Geometry = newGeometry;

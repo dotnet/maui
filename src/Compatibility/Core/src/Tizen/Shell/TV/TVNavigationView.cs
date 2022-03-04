@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnHeaderSizeChanged(object sender, EventArgs e)
 		{
-			Device.BeginInvokeOnMainThread(OnLayout);
+			Application.Current.Dispatcher.Dispatch(OnLayout);
 		}
 
 		void OnLayout()
