@@ -131,9 +131,6 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'Windows') }}:
-                demands:
-                  - ImageOverride -equals server2022-VS2022-17-2-p1
               ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
                   - macOS.Name -equals BigSur
@@ -186,9 +183,6 @@ stages:
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
-            ${{ if eq(PackPlatform.name, 'Windows') }}:
-              demands:
-                - ImageOverride -equals server2022-VS2022-17-2-p1
             ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
               demands:
                 - macOS.Name -equals BigSur
@@ -221,9 +215,6 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'Windows') }}:
-                demands:
-                  - ImageOverride -equals server2022-VS2022-17-2-p1
               ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
                   - macOS.Name -equals BigSur
@@ -282,9 +273,6 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'Windows') }}:
-                demands:
-                  - ImageOverride -equals server2022-VS2022-17-2-p1
               ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
                   - macOS.Name -equals BigSur
