@@ -64,11 +64,21 @@
                 RowDefinitions="Auto,*">
                 <Label
                     Text=".NET MAUI"
-                    Style="{StaticResource TitleStyle}"/>
+                    Style="{StaticResource TitleStyle}">
+                    <!-- 
+                    <Label.Shadow>
+                        <Shadow 
+                            Brush="White"
+                            Opacity="0.5"
+                            Radius="12"
+                            Offset="6, 6" />
+                    </Label.Shadow>
+                    -->
+                </Label>
                 <Label
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
-                    Style="{StaticResource SubTitleStyle}"/>
+                    Style="{StaticResource SubTitleStyle}"/>     
             </Grid>
             <!-- SECTIONS -->
             <Grid
