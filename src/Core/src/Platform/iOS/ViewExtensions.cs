@@ -445,6 +445,7 @@ namespace Microsoft.Maui.Platform
 			if (view is ITextInput textInput)
 			{
 				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
+				return;
 			}
 
 			platformView.UserInteractionEnabled = !view.InputTransparent;
