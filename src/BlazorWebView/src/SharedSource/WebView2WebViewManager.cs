@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
 		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
-		private readonly BlazorWebViewDeveloperTools _settings;
+		private readonly BlazorWebViewDeveloperTools _developerTools;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			_webview = webview;
 			_externalNavigationStarting = externalNavigationStarting;
-			_settings = services.GetRequiredService<BlazorWebViewDeveloperTools>();
+			_developerTools = services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -155,9 +155,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_MAUI
             var settings = _blazorWebViewHandler.WebviewSettings;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			var settings = _settings;
+			var developerTools = _developerTools;
 #endif
-			ApplyDefaultWebViewSettings(settings);
+			ApplyDefaultWebViewSettings(developerTools);
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 
@@ -275,9 +275,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private protected static string GetHeaderString(IDictionary<string, string> headers) =>
 			string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
-		private void ApplyDefaultWebViewSettings(BlazorWebViewDeveloperTools settings)
+		private void ApplyDefaultWebViewSettings(BlazorWebViewDeveloperTools devTools)
 		{
-			_webview.CoreWebView2.Settings.AreDevToolsEnabled = settings.Enabled;
+			_webview.CoreWebView2.Settings.AreDevToolsEnabled = devTools.Enabled;
 
 			// Desktop applications typically don't want the default web browser context menu
 			_webview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
