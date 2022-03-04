@@ -476,7 +476,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
 
 					if (ActualWidth >= 0 && ActualHeight >= 0)
-						_formsEmptyView?.Layout(new Rectangle(0, 0, ActualWidth, ActualHeight));
+						_formsEmptyView?.Layout(new Rect(0, 0, ActualWidth, ActualHeight));
 				}
 
 				_emptyViewDisplayed = true;

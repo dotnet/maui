@@ -6,7 +6,7 @@ using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rectangle = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform

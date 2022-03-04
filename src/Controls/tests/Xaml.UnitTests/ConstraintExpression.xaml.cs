@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void ConstraintRelativeToParent(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml);
-				layout.relativeLayout.Layout(new Rectangle(0, 0, 200, 200));
+				layout.relativeLayout.Layout(new Rect(0, 0, 200, 200));
 				var label = layout.constraintRelativeToParent;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
@@ -53,8 +53,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				{
 					IsPlatformEnabled = true
 				};
-				layout.relativeLayout.Layout(new Rectangle(0, 0, 200, 100));
-				layout.foo.Layout(new Rectangle(5, 5, 190, 25));
+				layout.relativeLayout.Layout(new Rect(0, 0, 200, 100));
+				layout.foo.Layout(new Rect(5, 5, 190, 25));
 
 				var label = layout.constraintRelativeToView;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);

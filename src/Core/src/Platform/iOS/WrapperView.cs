@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Platform
 
 			mask ??= MaskLayer = new CAShapeLayer();
 			var frame = Frame;
-			var bounds = new RectangleF(0, 0, (float)frame.Width, (float)frame.Height);
+			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
 
 			var path = _clip?.PathForBounds(bounds);
 			var nativePath = path?.AsCGPath();
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Platform
 			shadowLayer ??= ShadowLayer = new CAShapeLayer();
 
 			var frame = Frame;
-			var bounds = new RectangleF(0, 0, (float)frame.Width, (float)frame.Height);
+			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
 
 			shadowLayer.FillColor = new CGColor(0, 0, 0, 1);
 
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Platform
 
 			if (BorderView == null)
 			{
-				AddSubview(BorderView = new UIView(Bounds) { BackgroundColor = UIColor.Black });
+				AddSubview(BorderView = new UIView(Bounds) { UserInteractionEnabled = false});
 			}
 
 			BorderView.UpdateMauiCALayer(Border);

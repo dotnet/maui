@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 #if UITEST
 using NUnit.Framework;
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 
 				// Accomodate iPhone status bar.
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
 
 				// Build the page.
 				Content = new StackLayout

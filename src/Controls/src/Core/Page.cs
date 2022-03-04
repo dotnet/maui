@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
 		bool _allocatedFlag;
-		Rectangle _containerArea;
+		Rect _containerArea;
 
 		bool _containerAreaSet;
 
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ContainerArea']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle ContainerArea
+		public Rect ContainerArea
 		{
 			get { return _containerArea; }
 			set
@@ -277,8 +277,8 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
-			var area = new Rectangle(x, y, width, height);
-			Rectangle originalArea = area;
+			var area = new Rect(x, y, width, height);
+			Rect originalArea = area;
 			if (_containerAreaSet)
 			{
 				area = ContainerArea;
@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var logicalChildren = ((IElementController)this).LogicalChildren;
-			var startingLayout = new List<Rectangle>(logicalChildren.Count);
+			var startingLayout = new List<Rect>(logicalChildren.Count);
 			foreach (Element el in logicalChildren)
 			{
 				if (el is VisualElement c)

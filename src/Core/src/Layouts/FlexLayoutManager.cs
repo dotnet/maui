@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Layouts
 			FlexLayout = flexLayout;
 		}
 
-		public Size ArrangeChildren(Rectangle bounds)
+		public Size ArrangeChildren(Rect bounds)
 		{
 			FlexLayout.Layout(bounds.Width, bounds.Height);
 

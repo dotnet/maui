@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface IAbsoluteLayout : ILayout
 	{
-		Rectangle GetLayoutBounds(IView view);
+		Rect GetLayoutBounds(IView view);
 
 		AbsoluteLayoutFlags GetLayoutFlags(IView view);
 	}

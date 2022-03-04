@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_viewHandler.VirtualView != null)
 				{
-					_viewHandler.VirtualView.Frame = new Rectangle(0, 0, Context.FromPixels(width), Context.FromPixels(height));
+					_viewHandler.VirtualView.Frame = new Rect(0, 0, Context.FromPixels(width), Context.FromPixels(height));
 
 				}
 
